@@ -146,10 +146,10 @@ def make_df(processed_result, mode):
 
 
 def make_vis_history(df_history):
-    label_dict = {'linear': 'Linear', 'mlp': 'MLP', 'cnn': 'CNN'}
-    color_dict = {'linear': 'red', 'mlp': 'orange', 'cnn': 'dodgerblue'}
-    linestyle_dict = {'linear': '-', 'mlp': '--', 'orange': ':'}
-    marker_dict = {'linear': 'o', 'mlp': 's', 'orange': 'p'}
+    label_dict = {'linear': 'Linear', 'mlp': 'MLP', 'cnn': 'CNN', 'resnet18': 'ResNet18'}
+    color_dict = {'linear': 'red', 'mlp': 'orange', 'cnn': 'blue', 'resnet18': 'dodgerblue'}
+    linestyle_dict = {'linear': '-', 'mlp': '--', 'cnn': ':', 'resnet18': '-.'}
+    marker_dict = {'linear': 'o', 'mlp': 's', 'cnn': 'p', 'resnet18': 'd'}
     loc_dict = {'Accuracy': 'lower right', 'Loss': 'upper right'}
     fontsize = {'legend': 16, 'label': 16, 'ticks': 16}
     figsize = (5, 4)
@@ -162,7 +162,7 @@ def make_vis_history(df_history):
         if mask:
             model_name = df_name_list[1]
             df_name_std = '_'.join([*df_name_list[:-1], 'std'])
-            fig_name = '_'.join([*df_name_list[:-2]])
+            fig_name = '_'.join([df_name_list[0], *df_name_list[2:]])
             fig[fig_name] = plt.figure(fig_name, figsize=figsize)
             if fig_name not in ax_dict_1:
                 ax_dict_1[fig_name] = fig[fig_name].add_subplot(111)
@@ -172,8 +172,8 @@ def make_vis_history(df_history):
             x = np.arange(len(y))
             xlabel = 'Epoch'
             pivot = model_name
-            ylabel = label_dict[pivot]
-            ax_1.plot(x, y, label=ylabel, color=color_dict[pivot],
+            ylabel = metric_name
+            ax_1.plot(x, y, label=label_dict[pivot], color=color_dict[pivot],
                       linestyle=linestyle_dict[pivot])
             ax_1.fill_between(x, (y - y_err), (y + y_err), color=color_dict[pivot], alpha=.1)
             ax_1.set_xlabel(xlabel, fontsize=fontsize['label'])
