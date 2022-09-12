@@ -34,10 +34,12 @@ See `requirements.txt`
 
 ## Results
 - Learning curves of MNIST
-![MNIST_Accuracy_mean](/asset/MNIST_Accuracy_mean.pdf)
+
+![MNIST_Accuracy_mean](/asset/MNIST_Accuracy_mean.png)
 
 - Learning curves of CIFAR10
-![CIFAR10_Accuracy_mean](/asset/CIFAR10_Accuracy_mean.pdf)
+
+![CIFAR10_Accuracy_mean](/asset/CIFAR10_Accuracy_mean.png)
 
 
 ## Acknowledgement
