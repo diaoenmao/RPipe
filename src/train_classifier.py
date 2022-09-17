@@ -55,6 +55,7 @@ def runExperiment():
         model.load_state_dict(result['model_state_dict'])
         optimizer.load_state_dict(result['optimizer_state_dict'])
         scheduler.load_state_dict(result['scheduler_state_dict'])
+        metric.load_state_dict(result['metric_state_dict'])
         logger = result['logger']
     for epoch in range(last_epoch, cfg[cfg['model_name']]['num_epochs'] + 1):
         logger.save(True)
@@ -64,7 +65,7 @@ def runExperiment():
         scheduler.step()
         result = {'cfg': cfg, 'epoch': epoch + 1, 'model_state_dict': model.state_dict(),
                   'optimizer_state_dict': optimizer.state_dict(), 'scheduler_state_dict': scheduler.state_dict(),
-                  'logger': logger}
+                  'metric_state_dict': metric.state_dict(), 'logger': logger}
         save(result, checkpoint_path)
         if metric.compare(logger.mean['test/{}'.format(metric.pivot_name)]):
             metric.update(logger.mean['test/{}'.format(metric.pivot_name)])
