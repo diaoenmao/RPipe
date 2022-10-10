@@ -4,11 +4,11 @@ This is a Pipeline for machine learning Research (RPipe)
 ## Requirements
 See `requirements.txt`
 
-## Instruction
-- Use make.sh to generate run script
-- Use make.py to generate exp script
-- Use process.py to process exp results
-- Hyperparameters can be found in config.yml and process_control() in utils.py
+## Instructions
+- Use `make.sh` to generate run script
+- Use `make.py` to generate exp script
+- Use `process.py` to process exp results
+- Hyperparameters can be found in `config.yml` and `process_control()` in `utils.py`
 
 ## Examples
  - Generate run script
@@ -34,13 +34,16 @@ See `requirements.txt`
 
 ## Results
 - Learning curves of MNIST
+<p align="center">
+<img src="/asset/MNIST_Accuracy_mean.png">
+</p>
 
-![MNIST_Accuracy_mean](/asset/MNIST_Accuracy_mean.png)
 
 - Learning curves of CIFAR10
+<p align="center">
+<img src="/asset/CIFAR10_Accuracy_mean.png">
+</p>
 
-![CIFAR10_Accuracy_mean](/asset/CIFAR10_Accuracy_mean.png)
 
-
-## Acknowledgement
+## Acknowledgements
 *Enmao Diao*
