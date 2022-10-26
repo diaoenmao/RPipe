@@ -24,7 +24,7 @@ def make_control(control_name):
     return controls
 
 
-def make_controls(mode):
+def make_all_controls(mode):
     if mode == 'base':
         data_names = ['MNIST', 'CIFAR10']
         model_names = ['linear', 'mlp', 'cnn', 'resnet18']
@@ -39,7 +39,7 @@ def main():
     modes = ['base']
     controls = []
     for mode in modes:
-        controls += make_controls(mode)
+        controls += make_all_controls(mode)
     processed_result = process_result(controls)
     df_mean = make_df(processed_result, 'mean')
     df_history = make_df(processed_result, 'history')
@@ -151,7 +151,7 @@ def make_vis_history(df_history):
     linestyle_dict = {'linear': '-', 'mlp': '--', 'cnn': ':', 'resnet18': '-.'}
     marker_dict = {'linear': 'o', 'mlp': 's', 'cnn': 'p', 'resnet18': 'd'}
     loc_dict = {'Accuracy': 'lower right', 'Loss': 'upper right'}
-    fontsize = {'legend': 16, 'label': 16, 'ticks': 16}
+    fontsize_dict = {'legend': 16, 'label': 16, 'ticks': 16}
     figsize = (5, 4)
     fig = {}
     ax_dict_1 = {}
@@ -176,11 +176,11 @@ def make_vis_history(df_history):
             ax_1.plot(x, y, label=label_dict[pivot], color=color_dict[pivot],
                       linestyle=linestyle_dict[pivot])
             ax_1.fill_between(x, (y - y_err), (y + y_err), color=color_dict[pivot], alpha=.1)
-            ax_1.set_xlabel(xlabel, fontsize=fontsize['label'])
-            ax_1.set_ylabel(ylabel, fontsize=fontsize['label'])
-            ax_1.xaxis.set_tick_params(labelsize=fontsize['ticks'])
-            ax_1.yaxis.set_tick_params(labelsize=fontsize['ticks'])
-            ax_1.legend(loc=loc_dict[metric_name], fontsize=fontsize['legend'])
+            ax_1.set_xlabel(xlabel, fontsize=fontsize_dict['label'])
+            ax_1.set_ylabel(ylabel, fontsize=fontsize_dict['label'])
+            ax_1.xaxis.set_tick_params(labelsize=fontsize_dict['ticks'])
+            ax_1.yaxis.set_tick_params(labelsize=fontsize_dict['ticks'])
+            ax_1.legend(loc=loc_dict[metric_name], fontsize=fontsize_dict['legend'])
     for fig_name in fig:
         fig[fig_name] = plt.figure(fig_name)
         ax_dict_1[fig_name].grid(linestyle='--', linewidth='0.5')
