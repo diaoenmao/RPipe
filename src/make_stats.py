@@ -7,7 +7,7 @@ from data import fetch_dataset, make_data_loader
 from utils import save, collate, Stats, makedir_exist_ok, process_control, process_dataset
 
 if __name__ == "__main__":
-    stats_path = os.path.join('res', 'path')
+    stats_path = os.path.join('res', 'stats')
     dim = 1
     data_names = ['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100']
     process_control()
