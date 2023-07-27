@@ -1,5 +1,5 @@
 # RPipe
-This is a Pipeline for machine learning Research (RPipe)
+Research Pipeline
  
 ## Requirements
 See `requirements.txt`

@@ -8,7 +8,6 @@ import numpy as np
 from PIL import Image
 from tqdm import tqdm
 from collections import Counter
-from utils import makedir_exist_ok
 
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif']
 

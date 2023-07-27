@@ -4,6 +4,7 @@ control:
   data_name: MNIST
   model_name: linear
 # experiment
+pin_memory: True
 num_workers: 0
 init_seed: 0
 num_experiments: 1

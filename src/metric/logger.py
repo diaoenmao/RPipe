@@ -2,28 +2,24 @@ from collections import defaultdict
 from collections.abc import Iterable
 from torch.utils.tensorboard import SummaryWriter
 from numbers import Number
-from utils import ntuple
+from module import ntuple
 
 
 class Logger:
     def __init__(self, path):
         self.path = path
-        self.writer = None
+        self.writer = SummaryWriter(self.path)
         self.tracker = defaultdict(int)
         self.counter = defaultdict(int)
         self.mean = defaultdict(int)
         self.history = defaultdict(list)
         self.iterator = defaultdict(int)
 
-    def save(self, write):
-        if write:
-            self.writer = SummaryWriter(self.path)
-        else:
-            if self.writer is not None:
-                self.writer.close()
-                self.writer = None
-            for name in self.mean:
-                self.history[name].append(self.mean[name])
+    def save(self, flush):
+        for name in self.mean:
+            self.history[name].append(self.mean[name])
+        if flush:
+            self.flush()
         return
 
     def reset(self):
@@ -32,26 +28,23 @@ class Logger:
         self.mean = defaultdict(int)
         return
 
-    def append(self, result, tag, n=1, mean=True):
+    def append(self, result, tag, n=1):
         for k in result:
             name = '{}/{}'.format(tag, k)
             self.tracker[name] = result[k]
-            if mean:
-                if isinstance(result[k], Number):
-                    self.counter[name] += n
-                    self.mean[name] = ((self.counter[name] - n) * self.mean[name] + n * result[k]) / self.counter[name]
-                elif isinstance(result[k], Iterable):
-                    if name not in self.mean:
-                        self.counter[name] = [0 for _ in range(len(result[k]))]
-                        self.mean[name] = [0 for _ in range(len(result[k]))]
-                    _ntuple = ntuple(len(result[k]))
-                    n = _ntuple(n)
-                    for i in range(len(result[k])):
-                        self.counter[name][i] += n[i]
-                        self.mean[name][i] = ((self.counter[name][i] - n[i]) * self.mean[name][i] + n[i] *
-                                              result[k][i]) / self.counter[name][i]
-                else:
-                    raise ValueError('Not valid data type')
+            if isinstance(result[k], Number):
+                self.counter[name] += n
+                self.mean[name] = ((self.counter[name] - n) * self.mean[name] + n * result[k]) / self.counter[name]
+            elif isinstance(result[k], list) and len(result[k]) > 0 and isinstance(result[k][0], Number):
+                if name not in self.mean:
+                    self.counter[name] = [0 for _ in range(len(result[k]))]
+                    self.mean[name] = [0 for _ in range(len(result[k]))]
+                _ntuple = ntuple(len(result[k]))
+                n = _ntuple(n)
+                for i in range(len(result[k])):
+                    self.counter[name][i] += n[i]
+                    self.mean[name][i] = ((self.counter[name][i] - n[i]) * self.mean[name][i] + n[i] *
+                                          result[k][i]) / self.counter[name][i]
         return
 
     def write(self, tag, metric_names):
@@ -85,6 +78,18 @@ class Logger:
     def flush(self):
         self.writer.flush()
         return
+
+    def load_state_dict(self, state_dict):
+        self.tracker = state_dict['tracker']
+        self.counter = state_dict['counter']
+        self.mean = state_dict['mean']
+        self.history = state_dict['history']
+        self.iterator = state_dict['iterator']
+        return
+
+    def state_dict(self):
+        return {'tracker': self.tracker, 'counter': self.counter, 'mean': self.mean, 'history': self.history,
+                'iterator': self.iterator}
 
 
 def make_logger(path):
