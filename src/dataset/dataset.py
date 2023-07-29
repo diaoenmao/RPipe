@@ -54,15 +54,6 @@ def make_dataset(data_name, verbose=True):
         dataset_['test'].transform = dataset.Compose([
             transforms.ToTensor(),
             transforms.Normalize(*data_stats[data_name])])
-    elif data_name in ['FPB']:
-        dataset_ = load_dataset('financial_phrasebank', 'sentences_allagree', cache_dir=root)
-        dataset_ = dataset_['train'].train_test_split(test_size=0.1)
-        classes = dataset_['train'].features['label'].names
-        dataset_ = dataset_.map(
-            lambda x: {"text_label": [classes[label] for label in x["label"]]},
-            batched=True,
-            num_proc=1,
-        )
     else:
         raise ValueError('Not valid dataset name')
     if verbose:
@@ -79,8 +70,6 @@ def make_data_collate(collate_mode):
         return input_collate
     elif collate_mode == 'default':
         return default_collate
-    elif collate_mode == 'transformer':
-        return default_data_collator
     else:
         raise ValueError('Not valid collate mode')
 
@@ -114,5 +103,5 @@ def collate(input):
 def process_dataset(dataset):
     processed_dataset = dataset
     cfg['data_size'] = {'train': len(processed_dataset['train']), 'test': len(processed_dataset['test'])}
-    cfg['target_size'] = dataset['train'].target_size
+    cfg['target_size'] = processed_dataset['train'].target_size
     return processed_dataset

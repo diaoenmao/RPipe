@@ -46,7 +46,7 @@ def main():
     resume_mode = [[resume_mode]]
     filename = '{}_{}'.format(run, mode)
     if mode == 'base':
-        script_name = [['{}_classifier.py'.format(run)]]
+        script_name = [['{}_model.py'.format(run)]]
         data_names = ['MNIST', 'CIFAR10']
         model_names = ['linear', 'mlp', 'cnn', 'resnet18']
         control_name = [[data_names, model_names]]
