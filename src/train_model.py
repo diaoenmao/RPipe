@@ -92,6 +92,7 @@ def train(data_loader, model, optimizer, scheduler, metric, logger):
         optimizer.zero_grad()
         evaluation = metric.evaluate(metric.metric_name['train'], input, output)
         logger.append(evaluation, 'train', n=input_size)
+        cfg['step'] += 1
         if i % int((len(data_loader) * cfg['log_interval']) + 1) == 0:
             batch_time = (time.time() - start_time) / (i + 1)
             lr = optimizer.param_groups[0]['lr']
