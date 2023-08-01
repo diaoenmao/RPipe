@@ -41,7 +41,7 @@ def runExperiment():
     input = collate(input)
     input = to_device(input, cfg['device'])
     model = make_model(cfg['model_name'])
-    content = summary(model, input_data=[{'data': input['data']}],
+    content = summary(model, input_data=[{'data': input['data']}], depth=50,
                       col_names=['input_size', 'output_size', 'num_params', 'params_percent', 'kernel_size',
                                  'mult_adds', 'trainable'])
     print(content)

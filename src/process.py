@@ -2,17 +2,25 @@ import os
 import itertools
 import numpy as np
 import pandas as pd
-from utils import save, load, makedir_exist_ok
+import matplotlib
 import matplotlib.pyplot as plt
+from module import save, load, makedir_exist_ok
 from collections import defaultdict
 
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 result_path = os.path.join('output', 'result')
 save_format = 'png'
 vis_path = os.path.join('output', 'vis', '{}'.format(save_format))
 num_experiments = 4
 exp = [str(x) for x in list(range(num_experiments))]
 dpi = 300
+matplotlib.rcParams['font.sans-serif'] = 'Arial'
+matplotlib.rcParams['font.family'] = 'sans-serif'
+matplotlib.rcParams['font.weight'] = 'bold'
+matplotlib.rcParams['axes.labelweight'] = 'bold'
+matplotlib.rcParams['axes.titleweight'] = 'bold'
+matplotlib.rcParams['axes.linewidth'] = 1.5
+matplotlib.rcParams['xtick.labelsize'] = 'large'
+matplotlib.rcParams['ytick.labelsize'] = 'large'
 
 
 def make_control(control_name):
@@ -57,7 +65,7 @@ def process_result(controls):
         model_tag = '_'.join(control)
         gather_result(list(control), model_tag, result)
     summarize_result(None, result)
-    save(result, os.path.join(result_path, 'processed_result.pt'))
+    save(result, os.path.join(result_path, 'processed_result'))
     processed_result = tree()
     extract_result(processed_result, result, [])
     return processed_result
@@ -66,16 +74,16 @@ def process_result(controls):
 def gather_result(control, model_tag, processed_result):
     if len(control) == 1:
         exp_idx = exp.index(control[0])
-        base_result_path_i = os.path.join(result_path, '{}.pt'.format(model_tag))
+        base_result_path_i = os.path.join(result_path, '{}'.format(model_tag))
         if os.path.exists(base_result_path_i):
             base_result = load(base_result_path_i)
-            for split in base_result['logger']:
-                for metric_name in base_result['logger'][split].mean:
-                    processed_result[split][metric_name]['mean'][exp_idx] = base_result['logger'][split].mean[
-                        metric_name]
-                for metric_name in base_result['logger'][split].history:
-                    processed_result[split][metric_name]['history'][exp_idx] = base_result['logger'][split].history[
-                        metric_name]
+            for split in base_result['logger_state_dict']:
+                for metric_name in base_result['logger_state_dict'][split]['mean']:
+                    processed_result[split][metric_name]['mean'][exp_idx] \
+                        = base_result['logger_state_dict'][split]['mean'][metric_name]
+                for metric_name in base_result['logger_state_dict'][split]['history']:
+                    processed_result[split][metric_name]['history'][exp_idx] \
+                        = base_result['logger_state_dict'][split]['history'][metric_name]
         else:
             print('Missing {}'.format(base_result_path_i))
     else:
@@ -135,13 +143,12 @@ def make_df(processed_result, mode):
         index_name = [1]
         df[df_name].append(pd.DataFrame(data=processed_result[mode][exp_name].reshape(1, -1), index=index_name))
     startrow = 0
-    writer = pd.ExcelWriter('{}/result_{}.xlsx'.format(result_path, mode), engine='xlsxwriter')
-    for df_name in df:
-        df[df_name] = pd.concat(df[df_name])
-        df[df_name].to_excel(writer, sheet_name='Sheet1', startrow=startrow + 1)
-        writer.sheets['Sheet1'].write_string(startrow, 0, df_name)
-        startrow = startrow + len(df[df_name].index) + 3
-    writer.save()
+    with pd.ExcelWriter('{}/result_{}.xlsx'.format(result_path, mode), engine='xlsxwriter') as writer:
+        for df_name in df:
+            df[df_name] = pd.concat(df[df_name])
+            df[df_name].to_excel(writer, sheet_name='Sheet1', startrow=startrow + 1, header=False, index=False)
+            writer.sheets['Sheet1'].write_string(startrow, 0, df_name)
+            startrow = startrow + len(df[df_name].index) + 3
     return df
 
 
@@ -151,7 +158,7 @@ def make_vis_history(df_history):
     linestyle_dict = {'linear': '-', 'mlp': '--', 'cnn': ':', 'resnet18': '-.'}
     marker_dict = {'linear': 'o', 'mlp': 's', 'cnn': 'p', 'resnet18': 'd'}
     loc_dict = {'Accuracy': 'lower right', 'Loss': 'upper right'}
-    fontsize_dict = {'legend': 16, 'label': 16, 'ticks': 16}
+    fontsize_dict = {'legend': 12, 'label': 16, 'ticks': 16}
     figsize = (5, 4)
     fig = {}
     ax_dict_1 = {}
@@ -184,12 +191,12 @@ def make_vis_history(df_history):
     for fig_name in fig:
         fig[fig_name] = plt.figure(fig_name)
         ax_dict_1[fig_name].grid(linestyle='--', linewidth='0.5')
-        fig[fig_name].tight_layout()
         dir_name = 'lc'
         dir_path = os.path.join(vis_path, dir_name)
         fig_path = os.path.join(dir_path, '{}.{}'.format(fig_name, save_format))
         makedir_exist_ok(dir_path)
-        plt.savefig(fig_path, dpi=dpi, bbox_inches='tight', pad_inches=0)
+        plt.tight_layout()
+        plt.savefig(fig_path, dpi=dpi, bbox_inches='tight', pad_inches=0.03)
         plt.close(fig_name)
     return
 
