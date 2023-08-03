@@ -21,11 +21,11 @@ See `requirements.txt`
     ```
  - Train with MNIST and linear model
     ```ruby
-    python train_classifier.py --control_name MNIST_linear
+    python train_model.py --control_name MNIST_linear
     ```
  - Test with CIFAR10 and resnet18 model
     ```ruby
-    python test_classifier.py --control_name CIFAR10_resnet18
+    python test_model.py --control_name CIFAR10_resnet18
     ```
  - Process exp results
     ```ruby
