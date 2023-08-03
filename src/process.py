@@ -143,7 +143,7 @@ def make_df(processed_result, mode):
         index_name = [1]
         df[df_name].append(pd.DataFrame(data=processed_result[mode][exp_name].reshape(1, -1), index=index_name))
     startrow = 0
-    with pd.ExcelWriter('{}/result_{}.xlsx'.format(result_path, mode), engine='xlsxwriter') as writer:
+    with pd.ExcelWriter(os.path.join(result_path, 'result_{}.xlsx'.format(mode)), engine='xlsxwriter') as writer:
         for df_name in df:
             df[df_name] = pd.concat(df[df_name])
             df[df_name].to_excel(writer, sheet_name='Sheet1', startrow=startrow + 1, header=False, index=False)
