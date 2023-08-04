@@ -41,7 +41,7 @@ def runExperiment():
     dataset = process_dataset(dataset)
     model = make_model(cfg['model_name'])
     data_loader = make_data_loader(dataset, cfg['model_name'])
-    metric = make_metric({'train': ['Loss', 'Accuracy'], 'test': ['Loss', 'Accuracy']})
+    metric = make_metric({'train': ['Loss'], 'test': ['Loss']})
     result = resume(os.path.join(best_path, 'model'))
     model.load_state_dict(result['model_state_dict'])
     cfg['epoch'] = result['epoch']

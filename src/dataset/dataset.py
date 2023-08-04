@@ -102,6 +102,6 @@ def collate(input):
 
 def process_dataset(dataset):
     processed_dataset = dataset
-    cfg['data_size'] = {'train': len(processed_dataset['train']), 'test': len(processed_dataset['test'])}
+    cfg['data_size'] = {k: len(processed_dataset[k]) for k in processed_dataset}
     cfg['target_size'] = processed_dataset['train'].target_size
     return processed_dataset
