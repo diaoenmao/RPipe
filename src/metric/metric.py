@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+from collections import defaultdict
 from config import cfg
 from module import recur
 
@@ -34,21 +35,41 @@ def RMSE(output, target):
     return rmse
 
 
-class Metric(object):
+class Metric:
     def __init__(self, metric_name, pivot, pivot_direction, pivot_name):
         self.pivot, self.pivot_name, self.pivot_direction = pivot, pivot_name, pivot_direction
-        self.metric_name = self.make_metric_name(metric_name)
-        self.metric = {'Loss': (lambda input, output: output['loss'].item()),
-                       'Accuracy': (lambda input, output: recur(Accuracy, output['target'], input['target'])),
-                       'RMSE': (lambda input, output: recur(RMSE, output['target'], input['target']))}
+        self.metric_name = metric_name
+        self.metric = self.make_metric(metric_name)
 
-    def make_metric_name(self, metric_name):
-        return metric_name
+    def make_metric(self, metric_name):
+        metric = defaultdict(dict)
+        for split in metric_name:
+            for m in metric_name[split]:
+                if m == 'Loss':
+                    metric[split][m] = {'mode': 'batch', 'metric': (lambda input, output: output['loss'].item())}
+                elif m == 'Accuracy':
+                    metric[split][m] = {'mode': 'batch',
+                                        'metric': (
+                                            lambda input, output: recur(Accuracy, output['target'], input['target']))}
+                elif m == 'RMSE':
+                    metric[split][m] = {'mode': 'batch',
+                                        'metric': (
+                                            lambda input, output: recur(RMSE, output['target'], input['target']))}
+                else:
+                    raise ValueError('Not valid metric name')
+        return metric
 
-    def evaluate(self, metric_names, input, output):
+    def add(self, split, input, output):
+        for metric_name in self.metric_name[split]:
+            if self.metric[split][metric_name]['mode'] == 'full':
+                self.metric[split][metric_name]['metric'].add(input, output)
+        return
+
+    def evaluate(self, split, mode, input=None, output=None):
         evaluation = {}
-        for metric_name in metric_names:
-            evaluation[metric_name] = self.metric[metric_name](input, output)
+        for metric_name in self.metric_name[split]:
+            if self.metric[split][metric_name]['mode'] == mode:
+                evaluation[metric_name] = self.metric[split][metric_name]['metric'](input, output)
         return evaluation
 
     def compare(self, val):

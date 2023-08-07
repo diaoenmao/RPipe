@@ -48,12 +48,10 @@ def runExperiment():
     result = resume(os.path.join(checkpoint_path, 'model'), resume_mode=cfg['resume_mode'])
     if result is None:
         cfg['epoch'] = 1
-        cfg['step'] = 0
         optimizer = make_optimizer(model.parameters(), cfg['model_name'])
         scheduler = make_scheduler(optimizer, cfg['model_name'])
     else:
         cfg['epoch'] = result['epoch']
-        cfg['step'] = result['step']
         model.load_state_dict(result['model_state_dict'])
         optimizer = make_optimizer(model.parameters(), cfg['model_name'])
         optimizer.load_state_dict(result['optimizer_state_dict'])
@@ -65,7 +63,7 @@ def runExperiment():
         cfg['epoch'] = epoch
         train(data_loader['train'], model, optimizer, scheduler, metric, logger)
         test(data_loader['test'], model, metric, logger)
-        result = {'cfg': cfg, 'epoch': cfg['epoch'] + 1, 'step': cfg['step'], 'model_state_dict': model.state_dict(),
+        result = {'cfg': cfg, 'epoch': cfg['epoch'] + 1, 'model_state_dict': model.state_dict(),
                   'optimizer_state_dict': optimizer.state_dict(), 'scheduler_state_dict': scheduler.state_dict(),
                   'metric_state_dict': metric.state_dict(), 'logger_state_dict': logger.state_dict()}
         save(result, os.path.join(checkpoint_path, 'model'))
@@ -90,9 +88,8 @@ def train(data_loader, model, optimizer, scheduler, metric, logger):
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
         optimizer.step()
         optimizer.zero_grad()
-        evaluation = metric.evaluate(metric.metric_name['train'], input, output)
+        evaluation = metric.evaluate('train', 'batch', input, output)
         logger.append(evaluation, 'train', n=input_size)
-        cfg['step'] += 1
         if i % int((len(data_loader) * cfg['log_interval']) + 1) == 0:
             batch_time = (time.time() - start_time) / (i + 1)
             lr = optimizer.param_groups[0]['lr']
@@ -117,8 +114,10 @@ def test(data_loader, model, metric, logger):
             input_size = input['data'].size(0)
             input = to_device(input, cfg['device'])
             output = model(input)
-            evaluation = metric.evaluate(metric.metric_name['test'], input, output)
+            evaluation = metric.evaluate('test', 'batch', input, output)
             logger.append(evaluation, 'test', input_size)
+        evaluation = metric.evaluate('test', 'full')
+        logger.append(evaluation, 'test', input_size)
         info = {'info': ['Model: {}'.format(cfg['model_tag']), 'Test Epoch: {}({:.0f}%)'.format(cfg['epoch'], 100.)]}
         logger.append(info, 'test')
         print(logger.write('test', metric.metric_name['test']))
