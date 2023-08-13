@@ -47,9 +47,9 @@ def main():
     filename = '{}_{}'.format(run, mode)
     if mode == 'base':
         script_name = [['{}_model.py'.format(run)]]
-        data_names = ['MNIST', 'CIFAR10']
-        model_names = ['linear', 'mlp', 'cnn', 'resnet18']
-        control_name = [[data_names, model_names]]
+        data_name = ['MNIST', 'CIFAR10']
+        model_name = ['linear', 'mlp', 'cnn', 'resnet18']
+        control_name = [[data_name, model_name]]
         controls = make_controls(script_name, init_seeds, world_size, num_experiments, resume_mode, control_name)
     else:
         raise ValueError('Not valid mode')

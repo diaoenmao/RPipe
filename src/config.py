@@ -20,27 +20,25 @@ def process_args(args):
 
 def make_control(control, control_name):
     """Reconstruct the control dictionary using the provided template and flattened string."""
-    delimiters = ['_', '-', '~', ';', '#']
 
     def recursive_reconstruct(d, s, level=0):
         """Recursively reconstruct dictionary using the template structure."""
         reconstructed = {}
 
-        for key in d:
-            if not s:
-                break  # If the flattened string segment is empty, stop the reconstruction for this level
+        segments = s.split(delimiters[level]) if level < len(delimiters) and delimiters[level] in s else [s]
 
+        # If the number of segments doesn't match the number of keys, partition the string based on the number of keys
+        if len(segments) != len(d):
+            segments = s.split(delimiters[level], len(d) - 1) if level < len(delimiters) else [s]
+
+        for key, segment in zip(d.keys(), segments):
             if isinstance(d[key], dict):  # If the value in the template is a dictionary
-                # Calculate the number of top-level segments we should extract for this key
-                num_segments = len(d[key])
-                segments = s.split(delimiters[level], num_segments)
-                segment_for_key = segments[0]
-                sub_dict = recursive_reconstruct(d[key], segment_for_key, level + 1)
+                sub_dict = recursive_reconstruct(d[key], segment, level + 1)
                 if sub_dict:  # Only add the sub-dictionary if it has content
                     reconstructed[key] = sub_dict
             else:  # If the value in the template is not a dictionary
-                segment, _, s = s.partition(delimiters[level] if s and level < len(delimiters) else "")
                 reconstructed[key] = segment
+
         return reconstructed
 
     return recursive_reconstruct(control, control_name)
