@@ -82,12 +82,12 @@ def make_data_loader(dataset, tag, batch_size=None, shuffle=None, sampler=None):
         _shuffle = cfg[tag]['shuffle'][k] if shuffle is None else shuffle[k]
         if sampler is None:
             data_loader[k] = DataLoader(dataset=dataset[k], batch_size=_batch_size, shuffle=_shuffle,
-                                        pin_memory=cfg['pin_memory'], num_workers=cfg['num_workers'],
+                                        pin_memory=cfg['pin_memory'], num_workers=cfg['num_worker'],
                                         collate_fn=make_data_collate(cfg['collate_mode']),
                                         worker_init_fn=np.random.seed(cfg['seed']))
         else:
             data_loader[k] = DataLoader(dataset=dataset[k], batch_size=_batch_size, sampler=sampler[k],
-                                        pin_memory=cfg['pin_memory'], num_workers=cfg['num_workers'],
+                                        pin_memory=cfg['pin_memory'], num_workers=cfg['num_worker'],
                                         collate_fn=make_data_collate(cfg['collate_mode']),
                                         worker_init_fn=np.random.seed(cfg['seed']))
         cfg['num_steps'][k] = len(data_loader[k])

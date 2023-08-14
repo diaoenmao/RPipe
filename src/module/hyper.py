@@ -22,7 +22,7 @@ def process_control():
     cfg[model_name]['momentum'] = 0.9
     cfg[model_name]['weight_decay'] = 5e-4
     cfg[model_name]['nesterov'] = True
-    cfg[model_name]['scheduler_name'] = 'CosineAnnealingLR'
     cfg[model_name]['num_epochs'] = 400
     cfg[model_name]['batch_size'] = {'train': 250, 'test': 250}
+    cfg[model_name]['scheduler_name'] = 'CosineAnnealingLR'
     return

@@ -10,8 +10,8 @@ from collections import defaultdict
 result_path = os.path.join('output', 'result')
 save_format = 'png'
 vis_path = os.path.join('output', 'vis', '{}'.format(save_format))
-num_experiments = 4
-exp = [str(x) for x in list(range(num_experiments))]
+num_experiment = 4
+exp = [str(x) for x in list(range(num_experiment))]
 dpi = 300
 matplotlib.rcParams['font.sans-serif'] = 'Arial'
 matplotlib.rcParams['font.family'] = 'sans-serif'

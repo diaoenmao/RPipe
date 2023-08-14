@@ -8,7 +8,7 @@ See `requirements.txt`
 - Use `make.sh` to generate run script
 - Use `make.py` to generate exp script
 - Use `process.py` to process exp results
-- Hyperparameters can be found in `config.yml` and `process_control()` in `utils.py`
+- Hyperparameters can be found in `config.yml` and `process_control()` in `module/hyper.py`
 
 ## Examples
  - Generate run script

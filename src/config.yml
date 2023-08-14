@@ -5,9 +5,9 @@ control:
   model_name: linear
 # experiment
 pin_memory: True
-num_workers: 0
+num_worker: 0
 init_seed: 0
-num_experiments: 1
+num_experiment: 1
 log_interval: 0.25
 device: cuda
 resume_mode: 0
