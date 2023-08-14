@@ -42,23 +42,20 @@ def runExperiment():
     dataset = make_dataset(cfg['data_name'])
     dataset = process_dataset(dataset)
     model = make_model(cfg['model_name'])
-    data_loader = make_data_loader(dataset, cfg['model_name'])
+    result = resume(os.path.join(checkpoint_path, 'model'), resume_mode=cfg['resume_mode'])
+    cfg['epoch'] = 1
+    optimizer = make_optimizer(model.parameters(), cfg['model_name'])
+    scheduler = make_scheduler(optimizer, cfg['model_name'])
     metric = make_metric({'train': ['Loss'], 'test': ['Loss']})
     logger = make_logger(os.path.join('output', 'runs', 'train_{}'.format(cfg['model_tag'])))
-    result = resume(os.path.join(checkpoint_path, 'model'), resume_mode=cfg['resume_mode'])
-    if result is None:
-        cfg['epoch'] = 1
-        optimizer = make_optimizer(model.parameters(), cfg['model_name'])
-        scheduler = make_scheduler(optimizer, cfg['model_name'])
-    else:
+    if result is not None:
         cfg['epoch'] = result['epoch']
         model.load_state_dict(result['model_state_dict'])
-        optimizer = make_optimizer(model.parameters(), cfg['model_name'])
         optimizer.load_state_dict(result['optimizer_state_dict'])
-        scheduler = make_scheduler(optimizer, cfg['model_name'])
         scheduler.load_state_dict(result['scheduler_state_dict'])
         metric.load_state_dict(result['metric_state_dict'])
         logger.load_state_dict(result['logger_state_dict'])
+    data_loader = make_data_loader(dataset, cfg['model_name'])
     for epoch in range(cfg['epoch'], cfg[cfg['model_name']]['num_epochs'] + 1):
         cfg['epoch'] = epoch
         train(data_loader['train'], model, optimizer, scheduler, metric, logger)
