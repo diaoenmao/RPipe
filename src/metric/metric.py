@@ -65,11 +65,12 @@ class Metric:
                 self.metric[split][metric_name]['metric'].add(input, output)
         return
 
-    def evaluate(self, split, mode, input=None, output=None):
+    def evaluate(self, split, mode, input=None, output=None, metric_name=None):
+        metric_name = self.metric_name if metric_name is None else metric_name
         evaluation = {}
-        for metric_name in self.metric_name[split]:
-            if self.metric[split][metric_name]['mode'] == mode:
-                evaluation[metric_name] = self.metric[split][metric_name]['metric'](input, output)
+        for metric_name_ in metric_name[split]:
+            if self.metric[split][metric_name_]['mode'] == mode:
+                evaluation[metric_name_] = self.metric[split][metric_name_]['metric'](input, output)
         return evaluation
 
     def compare(self, val):
