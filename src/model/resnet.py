@@ -82,13 +82,13 @@ class ResNet(nn.Module):
         x = x.view(x.size(0), -1)
         return x
 
-    def classify(self, x):
+    def output(self, x):
         x = self.linear(x)
         return x
 
     def f(self, x):
         x = self.feature(x)
-        x = self.classify(x)
+        x = self.output(x)
         return x
 
     def forward(self, input):
