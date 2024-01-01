@@ -3,6 +3,7 @@ from collections.abc import Iterable
 from torch.utils.tensorboard import SummaryWriter
 from numbers import Number
 from module import ntuple
+from .metric import make_metric
 
 
 class Logger:
@@ -14,6 +15,7 @@ class Logger:
         self.mean = defaultdict(int)
         self.history = defaultdict(list)
         self.iterator = defaultdict(int)
+        self.metric = make_metric(['train', 'test'])
 
     def save(self, flush):
         for name in self.mean:
@@ -28,9 +30,9 @@ class Logger:
         self.mean = defaultdict(int)
         return
 
-    def append(self, result, tag, n=1):
+    def append(self, result, split, n=1):
         for k in result:
-            name = '{}/{}'.format(tag, k)
+            name = '{}/{}'.format(split, k)
             self.tracker[name] = result[k]
             if isinstance(result[k], Number):
                 self.counter[name] += n
@@ -47,11 +49,12 @@ class Logger:
                                           result[k][i]) / self.counter[name][i]
         return
 
-    def write(self, tag, metric_names):
-        names = ['{}/{}'.format(tag, k) for k in metric_names]
+    def write(self, split, metric_name=None):
+        metric_name = self.metric.metric_name[split] if metric_name is None else metric_name
+        names = ['{}/{}'.format(split, k) for k in metric_name]
         evaluation_info = []
         for name in names:
-            tag, k = name.split('/')
+            split, k = name.split('/')
             if isinstance(self.mean[name], Number):
                 s = self.mean[name]
                 evaluation_info.append('{}: {:.4f}'.format(k, s))
@@ -66,7 +69,7 @@ class Logger:
                     self.writer.add_scalar(name, s[0], self.iterator[name])
             else:
                 raise ValueError('Not valid data type')
-        info_name = '{}/info'.format(tag)
+        info_name = '{}/info'.format(split)
         info = self.tracker[info_name]
         info[2:2] = evaluation_info
         info = '  '.join(info)
@@ -74,6 +77,15 @@ class Logger:
             self.iterator[info_name] += 1
             self.writer.add_text(info_name, info, self.iterator[info_name])
         return info
+
+    def evaluate(self, split, mode, input=None, output=None, metric_name=None):
+        metric_name = self.metric.metric_name if metric_name is None else metric_name
+        evaluation = self.metric.evaluate(split, mode, input, output, metric_name)
+        return evaluation
+
+    def compare(self, split, if_update=True):
+        compare = self.metric.compare(self.mean['{}/{}'.format(split, self.metric.best_metric_name)], if_update)
+        return compare
 
     def flush(self):
         self.writer.flush()
@@ -85,11 +97,12 @@ class Logger:
         self.mean = state_dict['mean']
         self.history = state_dict['history']
         self.iterator = state_dict['iterator']
+        self.metric.load_state_dict(state_dict['metric'])
         return
 
     def state_dict(self):
         return {'tracker': self.tracker, 'counter': self.counter, 'mean': self.mean, 'history': self.history,
-                'iterator': self.iterator}
+                'iterator': self.iterator, 'metric': self.metric.state_dict()}
 
 
 def make_logger(path):

@@ -41,12 +41,11 @@ def runExperiment():
     dataset = process_dataset(dataset)
     model = make_model(cfg['model_name'])
     data_loader = make_data_loader(dataset, cfg['model_name'])
-    metric = make_metric({'train': ['Loss'], 'test': ['Loss']})
     result = resume(os.path.join(best_path, 'model'))
     model.load_state_dict(result['model_state_dict'])
     cfg['epoch'] = result['epoch']
     test_logger = make_logger(os.path.join('output', 'runs', 'test_{}'.format(cfg['model_tag'])))
-    test(data_loader['test'], model, metric, test_logger)
+    test(data_loader['test'], model, test_logger)
     result = resume(os.path.join(checkpoint_path, 'model'))
     result = {'cfg': cfg, 'epoch': cfg['epoch'], 'logger_state_dict': {'train': result['logger_state_dict'],
                                                                        'test': test_logger.state_dict()}}
@@ -54,7 +53,7 @@ def runExperiment():
     return
 
 
-def test(data_loader, model, metric, logger):
+def test(data_loader, model, logger):
     with torch.no_grad():
         model.train(False)
         for i, input in enumerate(data_loader):
@@ -62,13 +61,13 @@ def test(data_loader, model, metric, logger):
             input_size = input['data'].size(0)
             input = to_device(input, cfg['device'])
             output = model(input)
-            evaluation = metric.evaluate('test', 'batch', input, output)
+            evaluation = logger.evaluate('test', 'batch', input, output)
             logger.append(evaluation, 'test', input_size)
-        evaluation = metric.evaluate('test', 'full')
+        evaluation = logger.evaluate('test', 'full')
         logger.append(evaluation, 'test', input_size)
         info = {'info': ['Model: {}'.format(cfg['model_tag']), 'Test Epoch: {}({:.0f}%)'.format(cfg['epoch'], 100.)]}
         logger.append(info, 'test')
-        print(logger.write('test', metric.metric_name['test']))
+        print(logger.write('test'))
     return
 
 

@@ -5,16 +5,17 @@ from config import cfg
 from module import recur
 
 
-def make_metric(metric_name):
+def make_metric(split):
+    metric_name = {k: [] for k in split}
     if cfg['data_name'] in ['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100']:
-        pivot = -float('inf')
-        pivot_direction = 'up'
-        pivot_name = 'Accuracy'
+        best = -float('inf')
+        best_direction = 'up'
+        best_metric_name = 'Accuracy'
         for k in metric_name:
-            metric_name[k].extend(['Accuracy'])
+            metric_name[k].extend(['Loss', 'Accuracy'])
     else:
         raise ValueError('Not valid data name')
-    metric = Metric(metric_name, pivot, pivot_direction, pivot_name)
+    metric = Metric(metric_name, best, best_direction, best_metric_name)
     return metric
 
 
@@ -36,9 +37,9 @@ def RMSE(output, target):
 
 
 class Metric:
-    def __init__(self, metric_name, pivot, pivot_direction, pivot_name):
-        self.pivot, self.pivot_name, self.pivot_direction = pivot, pivot_name, pivot_direction
+    def __init__(self, metric_name, best, best_direction, best_metric_name):
         self.metric_name = metric_name
+        self.best, self.best_metric_name, self.best_direction = best, best_metric_name, best_direction
         self.metric = self.make_metric(metric_name)
 
     def make_metric(self, metric_name):
@@ -65,32 +66,29 @@ class Metric:
                 self.metric[split][metric_name]['metric'].add(input, output)
         return
 
-    def evaluate(self, split, mode, input=None, output=None, metric_name=None):
-        metric_name = self.metric_name if metric_name is None else metric_name
+    def evaluate(self, split, mode, input, output, metric_name):
         evaluation = {}
-        for metric_name_ in metric_name[split]:
-            if self.metric[split][metric_name_]['mode'] == mode:
-                evaluation[metric_name_] = self.metric[split][metric_name_]['metric'](input, output)
+        for metric_name_i in metric_name[split]:
+            if self.metric[split][metric_name_i]['mode'] == mode:
+                evaluation[metric_name_i] = self.metric[split][metric_name_i]['metric'](input, output)
         return evaluation
 
-    def compare(self, val):
-        if self.pivot_direction == 'down':
-            compared = self.pivot > val
-        elif self.pivot_direction == 'up':
-            compared = self.pivot < val
+    def compare(self, val, if_update):
+        if self.best_direction == 'down':
+            compared = self.best > val
+        elif self.best_direction == 'up':
+            compared = self.best < val
         else:
-            raise ValueError('Not valid pivot direction')
+            raise ValueError('Not valid best direction')
+        if if_update:
+            self.best = val
         return compared
 
-    def update(self, val):
-        self.pivot = val
-        return
-
     def load_state_dict(self, state_dict):
-        self.pivot = state_dict['pivot']
-        self.pivot_name = state_dict['pivot_name']
-        self.pivot_direction = state_dict['pivot_direction']
+        self.best = state_dict['best']
+        self.best_metric_name = state_dict['best_metric_name']
+        self.best_direction = state_dict['best_direction']
         return
 
     def state_dict(self):
-        return {'pivot': self.pivot, 'pivot_name': self.pivot_name, 'pivot_direction': self.pivot_direction}
+        return {'best': self.best, 'best_metric_name': self.best_metric_name, 'best_direction': self.best_direction}
