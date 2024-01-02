@@ -60,11 +60,9 @@ def to_device(input, device):
     return output
 
 
-def resume(path, verbose=True, resume_mode=1):
+def resume(path, resume_mode=1):
     if os.path.exists(path) and resume_mode == 1:
         result = load(path)
-        if verbose:
-            print('Resume from {}'.format(result['epoch']))
     else:
         if resume_mode == 1:
             print('Not exists: {}'.format(path))

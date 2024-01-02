@@ -19,8 +19,8 @@ process_args(args)
 
 def main():
     process_control()
-    seeds = list(range(cfg['init_seed'], cfg['init_seed'] + cfg['num_experiment']))
-    for i in range(cfg['num_experiment']):
+    seeds = list(range(cfg['init_seed'], cfg['init_seed'] + cfg['num_experiments']))
+    for i in range(cfg['num_experiments']):
         model_tag_list = [str(seeds[i]), cfg['control_name']]
         cfg['model_tag'] = '_'.join([x for x in model_tag_list if x])
         print('Experiment: {}'.format(cfg['model_tag']))
@@ -38,17 +38,18 @@ def runExperiment():
     checkpoint_path = os.path.join(model_tag_path, 'checkpoint')
     best_path = os.path.join(model_tag_path, 'best')
     dataset = make_dataset(cfg['data_name'])
-    dataset = process_dataset(dataset)
     model = make_model(cfg['model_name'])
-    data_loader = make_data_loader(dataset, cfg['model_name'])
     result = resume(os.path.join(best_path, 'model'))
+    cfg['iteration'] = result['cfg']['iteration']
+    model = model.to(cfg['device'])
     model.load_state_dict(result['model_state_dict'])
-    cfg['epoch'] = result['epoch']
+    dataset = process_dataset(dataset)
+    data_loader = make_data_loader(dataset, cfg[cfg['model_name']]['batch_size'])
     test_logger = make_logger(os.path.join('output', 'runs', 'test_{}'.format(cfg['model_tag'])))
     test(data_loader['test'], model, test_logger)
     result = resume(os.path.join(checkpoint_path, 'model'))
-    result = {'cfg': cfg, 'epoch': cfg['epoch'], 'logger_state_dict': {'train': result['logger_state_dict'],
-                                                                       'test': test_logger.state_dict()}}
+    result = {'cfg': cfg, 'logger_state_dict': {'train': result['logger_state_dict'],
+                                                'test': test_logger.state_dict()}}
     save(result, os.path.join(result_path, cfg['model_tag']))
     return
 
@@ -57,7 +58,6 @@ def test(data_loader, model, logger):
     with torch.no_grad():
         model.train(False)
         for i, input in enumerate(data_loader):
-            input = collate(input)
             input_size = input['data'].size(0)
             input = to_device(input, cfg['device'])
             output = model(input)
@@ -65,9 +65,11 @@ def test(data_loader, model, logger):
             logger.append(evaluation, 'test', input_size)
         evaluation = logger.evaluate('test', 'full')
         logger.append(evaluation, 'test', input_size)
-        info = {'info': ['Model: {}'.format(cfg['model_tag']), 'Test Epoch: {}({:.0f}%)'.format(cfg['epoch'], 100.)]}
+        info = {'info': ['Model: {}'.format(cfg['model_tag']),
+                         'Test Epoch: {}({:.0f}%)'.format(cfg['iteration'] // cfg['eval_period'], 100.)]}
         logger.append(info, 'test')
         print(logger.write('test'))
+        logger.save(True)
     return
 
 

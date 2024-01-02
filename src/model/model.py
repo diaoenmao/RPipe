@@ -3,12 +3,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import model
+from transformers import get_linear_schedule_with_warmup
 from config import cfg
 
 
 def make_model(model_name):
     model = eval('model.{}()'.format(model_name))
-    model = model.to(cfg['device'])
     return model
 
 
@@ -75,7 +75,7 @@ def make_optimizer(parameters, tag):
 
 def make_scheduler(optimizer, tag):
     if cfg[tag]['scheduler_name'] == 'None':
-        scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[65535])
+        scheduler = NoOpScheduler(optimizer)
     elif cfg[tag]['scheduler_name'] == 'StepLR':
         scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=cfg[tag]['step_size'], gamma=cfg[tag]['factor'])
     elif cfg[tag]['scheduler_name'] == 'MultiStepLR':
@@ -84,7 +84,8 @@ def make_scheduler(optimizer, tag):
     elif cfg[tag]['scheduler_name'] == 'ExponentialLR':
         scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.99)
     elif cfg[tag]['scheduler_name'] == 'CosineAnnealingLR':
-        scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=cfg[tag]['num_epochs'], eta_min=0)
+        scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=cfg['num_steps'],
+                                                         eta_min=0)
     elif cfg[tag]['scheduler_name'] == 'ReduceLROnPlateau':
         scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=cfg[tag]['factor'],
                                                          patience=cfg[tag]['patience'], verbose=False,
@@ -92,6 +93,20 @@ def make_scheduler(optimizer, tag):
                                                          min_lr=cfg[tag]['min_lr'])
     elif cfg[tag]['scheduler_name'] == 'CyclicLR':
         scheduler = optim.lr_scheduler.CyclicLR(optimizer, base_lr=cfg[tag]['lr'], max_lr=10 * cfg[tag]['lr'])
+    elif cfg['scheduler_name'] == 'LinearAnnealingLR':
+        scheduler = get_linear_schedule_with_warmup(optimizer,
+                                                    num_warmup_steps=int(cfg['num_steps'] * cfg['warmup_ratio']),
+                                                    num_training_steps=cfg['num_steps'])
+    elif cfg['scheduler_name'] == 'ConstantLR':
+        scheduler = optim.lr_scheduler.ConstantLR(optimizer, factor=cfg['factor'])
     else:
         raise ValueError('Not valid scheduler name')
     return scheduler
+
+
+class NoOpScheduler(torch.optim.lr_scheduler._LRScheduler):
+    def __init__(self, optimizer, last_epoch=-1):
+        super(NoOpScheduler, self).__init__(optimizer, last_epoch)
+
+    def get_lr(self):
+        return [group['lr'] for group in self.optimizer.param_groups]
