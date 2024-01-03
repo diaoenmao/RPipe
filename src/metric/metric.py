@@ -39,7 +39,7 @@ def RMSE(output, target):
 class Metric:
     def __init__(self, metric_name, best, best_direction, best_metric_name):
         self.metric_name = metric_name
-        self.best, self.best_metric_name, self.best_direction = best, best_metric_name, best_direction
+        self.best, self.best_direction, self.best_metric_name = best, best_direction, best_metric_name
         self.metric = self.make_metric(metric_name)
 
     def make_metric(self, metric_name):

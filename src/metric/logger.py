@@ -9,7 +9,8 @@ from .metric import make_metric
 class Logger:
     def __init__(self, path):
         self.path = path
-        self.writer = SummaryWriter(self.path)
+        if path is not None:
+            self.writer = SummaryWriter(self.path)
         self.tracker = defaultdict(int)
         self.counter = defaultdict(int)
         self.mean = defaultdict(int)
@@ -20,7 +21,7 @@ class Logger:
     def save(self, flush):
         for name in self.mean:
             self.history[name].append(self.mean[name])
-        if flush:
+        if flush and self.writer is not None:
             self.flush()
         return
 
@@ -49,8 +50,9 @@ class Logger:
                                           result[k][i]) / self.counter[name][i]
         return
 
-    def write(self, split, metric_name=None):
+    def write(self, split, metric_name=None, writer=None):
         metric_name = self.metric.metric_name[split] if metric_name is None else metric_name
+        writer = self.writer if writer is None else writer
         names = ['{}/{}'.format(split, k) for k in metric_name]
         evaluation_info = []
         for name in names:
@@ -58,25 +60,29 @@ class Logger:
             if isinstance(self.mean[name], Number):
                 s = self.mean[name]
                 evaluation_info.append('{}: {:.4f}'.format(k, s))
-                if self.writer is not None:
+                if writer is not None:
                     self.iterator[name] += 1
-                    self.writer.add_scalar(name, s, self.iterator[name])
+                    writer.add_scalar(name, s, self.iterator[name])
             elif isinstance(self.mean[name], Iterable):
                 s = tuple(self.mean[name])
                 evaluation_info.append('{}: {}'.format(k, s))
-                if self.writer is not None:
+                if writer is not None:
                     self.iterator[name] += 1
-                    self.writer.add_scalar(name, s[0], self.iterator[name])
+                    writer.add_scalar(name, s[0], self.iterator[name])
             else:
                 raise ValueError('Not valid data type')
         info_name = '{}/info'.format(split)
         info = self.tracker[info_name]
         info[2:2] = evaluation_info
         info = '  '.join(info)
-        if self.writer is not None:
+        if writer is not None:
             self.iterator[info_name] += 1
-            self.writer.add_text(info_name, info, self.iterator[info_name])
+            writer.add_text(info_name, info, self.iterator[info_name])
         return info
+
+    def add(self, split, input, output):
+        evaluation = self.metric.add(split, input, output)
+        return evaluation
 
     def evaluate(self, split, mode, input=None, output=None, metric_name=None):
         metric_name = self.metric.metric_name if metric_name is None else metric_name
@@ -105,6 +111,6 @@ class Logger:
                 'iterator': self.iterator, 'metric': self.metric.state_dict()}
 
 
-def make_logger(path):
+def make_logger(path=None):
     logger = Logger(path)
     return logger

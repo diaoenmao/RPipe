@@ -2,7 +2,7 @@ from config import cfg
 
 
 def process_control():
-    cfg['collate_mode'] = 'transformer'
+    cfg['collate_mode'] = 'dict'
     data_shape = {'MNIST': [1, 28, 28], 'FashionMNIST': [1, 28, 28], 'SVHN': [3, 32, 32], 'CIFAR10': [3, 32, 32],
                   'CIFAR100': [3, 32, 32]}
     target_size = {'MNIST': 10, 'FashionMNIST': 10, 'SVHN': 10, 'CIFAR10': 10, 'CIFAR100': 100}

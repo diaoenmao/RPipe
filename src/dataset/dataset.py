@@ -5,7 +5,6 @@ import torch
 from torchvision import transforms
 from torch.utils.data import DataLoader
 from torch.utils.data.dataloader import default_collate
-from transformers import default_data_collator
 from config import cfg
 
 data_stats = {'MNIST': ((0.1307,), (0.3081,)), 'FashionMNIST': ((0.2860,), (0.3530,)),
@@ -62,17 +61,25 @@ def make_dataset(data_name, verbose=True):
     return dataset_
 
 
-def input_collate(batch):
-    return {key: [b[key] for b in batch] for key in batch[0]}
+def input_collate(input):
+    first = input[0]
+    batch = {}
+    for k, v in first.items():
+        if v is not None and not isinstance(v, str):
+            if isinstance(v, torch.Tensor):
+                batch[k] = torch.stack([f[k] for f in input])
+            elif isinstance(v, np.ndarray):
+                batch[k] = torch.tensor(np.stack([f[k] for f in input]))
+            else:
+                batch[k] = torch.tensor([f[k] for f in input])
+    return batch
 
-
+                
 def make_data_collate(collate_mode):
     if collate_mode == 'dict':
         return input_collate
     elif collate_mode == 'default':
         return default_collate
-    elif collate_mode == 'transformer':
-        return default_data_collator
     else:
         raise ValueError('Not valid collate mode')
 
@@ -80,7 +87,7 @@ def make_data_collate(collate_mode):
 def make_data_loader(dataset, batch_size):
     data_loader = {}
     for k in dataset:
-        if k == 'train':
+        if k == 'train' and cfg['num_samples'] > 0:
             generator = torch.Generator()
             generator.manual_seed(cfg['seed'])
             sampler = torch.utils.data.RandomSampler(dataset[k], replacement=False, num_samples=cfg['num_samples'],
