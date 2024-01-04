@@ -74,7 +74,7 @@ def input_collate(input):
                 batch[k] = torch.tensor([f[k] for f in input])
     return batch
 
-                
+
 def make_data_collate(collate_mode):
     if collate_mode == 'dict':
         return input_collate
@@ -102,12 +102,6 @@ def make_data_loader(dataset, batch_size):
                                         collate_fn=make_data_collate(cfg['collate_mode']),
                                         worker_init_fn=np.random.seed(cfg['seed']))
     return data_loader
-
-
-def collate(input):
-    for k in input:
-        input[k] = torch.stack(input[k], 0)
-    return input
 
 
 def process_dataset(dataset):

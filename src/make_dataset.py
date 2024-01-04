@@ -2,7 +2,7 @@ import os
 import torch
 from torchvision import transforms
 from config import cfg
-from dataset import make_dataset, make_data_loader, process_dataset, collate, Compose
+from dataset import make_dataset, make_data_loader, process_dataset, Compose
 from module import save, Stats, makedir_exist_ok, process_control
 
 if __name__ == "__main__":
@@ -15,11 +15,13 @@ if __name__ == "__main__":
         for data_name in data_names:
             dataset = make_dataset(data_name)
             dataset['train'].transform = Compose([transforms.ToTensor()])
+            cfg['num_samples'] = len(dataset['train'])
+            cfg['iteration'] = 0
             process_dataset(dataset)
-            data_loader = make_data_loader(dataset, cfg['model_name'])
+            cfg['num_samples'] = 0
+            data_loader = make_data_loader(dataset, cfg[cfg['model_name']]['batch_size'])
             stats = Stats(dim=dim)
             for i, input in enumerate(data_loader['train']):
-                input = collate(input)
                 stats.update(input['data'])
             stats = (stats.mean.tolist(), stats.std.tolist())
             print(data_name, stats)
