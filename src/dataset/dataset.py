@@ -107,6 +107,5 @@ def make_data_loader(dataset, batch_size):
 def process_dataset(dataset):
     processed_dataset = dataset
     cfg['data_size'] = {k: len(processed_dataset[k]) for k in processed_dataset}
-    cfg['num_steps'] = cfg['num_steps'] - cfg['iteration'] * cfg['step_period']
-    cfg['num_samples'] = cfg['batch_size'] * cfg['num_steps'] * cfg['step_period']
+    cfg['num_samples'] = cfg['batch_size'] * (cfg['num_steps'] - cfg['iteration']) * cfg['step_period']
     return processed_dataset

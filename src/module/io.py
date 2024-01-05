@@ -60,11 +60,13 @@ def to_device(input, device):
     return output
 
 
-def resume(path, resume_mode=1):
+def resume(path, resume_mode=1, verbose=True):
     if os.path.exists(path) and resume_mode == 1:
         result = load(path)
+        if result is not None and verbose:
+            print('Resume from checkpoint')
     else:
-        if resume_mode == 1:
+        if resume_mode == 1 and verbose:
             print('Not exists: {}'.format(path))
         result = None
     return result
