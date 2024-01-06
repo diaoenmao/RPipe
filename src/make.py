@@ -1,5 +1,6 @@
 import argparse
 import itertools
+import os
 
 parser = argparse.ArgumentParser(description='config')
 parser.add_argument('--run', default='train', type=str)
@@ -61,7 +62,9 @@ def main():
             s = s[:-2] + '\nwait\n'
             if j % split_round == 0:
                 print(s)
-                run_file = open('{}_{}.sh'.format(filename, k), 'w')
+                if not os.path.exists('scripts'):
+                    os.makedirs('scripts')
+                run_file = open(os.path.join('scripts', '{}_{}.sh'.format(filename, k)), 'w')
                 run_file.write(s)
                 run_file.close()
                 s = '#!/bin/bash\n'
@@ -71,7 +74,9 @@ def main():
         if s[-5:-1] != 'wait':
             s = s + 'wait\n'
         print(s)
-        run_file = open('{}_{}.sh'.format(filename, k), 'w')
+        if not os.path.exists('scripts'):
+            os.makedirs('scripts')
+        run_file = open(os.path.join('scripts', '{}_{}.sh'.format(filename, k)), 'w')
         run_file.write(s)
         run_file.close()
     return

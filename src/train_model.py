@@ -6,7 +6,7 @@ import time
 import torch
 import torch.backends.cudnn as cudnn
 from config import cfg, process_args
-from dataset import make_dataset, make_data_loader, process_dataset, collate
+from dataset import make_dataset, make_data_loader, process_dataset
 from metric import make_logger
 from model import make_model, make_optimizer, make_scheduler
 from module import save, to_device, process_control, resume, makedir_exist_ok
@@ -58,6 +58,7 @@ def runExperiment():
         scheduler.load_state_dict(result['scheduler_state_dict'])
         logger = make_logger(os.path.join('output', 'runs', 'train_{}'.format(cfg['model_tag'])))
         logger.load_state_dict(result['logger_state_dict'])
+        logger.reset()
     dataset = process_dataset(dataset)
     data_loader = make_data_loader(dataset, cfg[cfg['model_name']]['batch_size'])
     data_iterator = enumerate(data_loader['train'])
