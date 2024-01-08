@@ -159,7 +159,7 @@ def make_vis_history(df_history):
     marker_dict = {'linear': 'o', 'mlp': 's', 'cnn': 'p', 'resnet18': 'd'}
     loc_dict = {'Accuracy': 'lower right', 'Loss': 'upper right'}
     fontsize_dict = {'legend': 12, 'label': 16, 'ticks': 16}
-    figsize = (5, 4)
+    figsize = (6.4, 4.8)
     fig = {}
     ax_dict_1 = {}
     for df_name in df_history:
