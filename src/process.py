@@ -77,13 +77,13 @@ def gather_result(control, model_tag, processed_result):
         base_result_path_i = os.path.join(result_path, '{}'.format(model_tag))
         if os.path.exists(base_result_path_i):
             base_result = load(base_result_path_i)
-            for split in base_result['logger_state_dict']:
-                for metric_name in base_result['logger_state_dict'][split]['mean']:
+            for split in base_result['logger']:
+                for metric_name in base_result['logger'][split]['mean']:
                     processed_result[split][metric_name]['mean'][exp_idx] \
-                        = base_result['logger_state_dict'][split]['mean'][metric_name]
-                for metric_name in base_result['logger_state_dict'][split]['history']:
+                        = base_result['logger'][split]['mean'][metric_name]
+                for metric_name in base_result['logger'][split]['history']:
                     processed_result[split][metric_name]['history'][exp_idx] \
-                        = base_result['logger_state_dict'][split]['history'][metric_name]
+                        = base_result['logger'][split]['history'][metric_name]
         else:
             print('Missing {}'.format(base_result_path_i))
     else:

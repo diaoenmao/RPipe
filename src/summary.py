@@ -22,16 +22,18 @@ def main():
     seeds = list(range(cfg['init_seed'], cfg['init_seed'] + cfg['num_experiments']))
     for i in range(cfg['num_experiments']):
         model_tag_list = [str(seeds[i]), cfg['control_name']]
-        cfg['model_tag'] = '_'.join([x for x in model_tag_list if x])
-        print('Experiment: {}'.format(cfg['model_tag']))
+        cfg['tag'] = '_'.join([x for x in model_tag_list if x])
+        print('Experiment: {}'.format(cfg['tag']))
         runExperiment()
     return
 
 
 def runExperiment():
-    cfg['seed'] = int(cfg['model_tag'].split('_')[0])
+    cfg['seed'] = int(cfg['tag'].split('_')[0])
     torch.manual_seed(cfg['seed'])
     torch.cuda.manual_seed(cfg['seed'])
+    path = os.path.join('output', 'exp')
+    tag_path = os.path.join(path, cfg['tag'])
     dataset = make_dataset(cfg['data_name'])
     cfg['iteration'] = 0
     dataset = process_dataset(dataset)
@@ -46,7 +48,7 @@ def runExperiment():
                       col_names=['input_size', 'output_size', 'num_params', 'params_percent', 'kernel_size',
                                  'mult_adds', 'trainable'])
     print(content)
-    save(content, os.path.join('output', 'summary', '{}'.format(cfg['model_tag'])))
+    save(content, os.path.join(tag_path, 'summary', '{}'.format(cfg['tag'])))
     return
 
 

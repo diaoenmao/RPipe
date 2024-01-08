@@ -60,11 +60,22 @@ def to_device(input, device):
     return output
 
 
-def resume(path, resume_mode=1, verbose=True):
+def check(result, path):
+    for filename in result:
+        save(result[filename], os.path.join(path, filename))
+    return
+
+
+def resume(path, resume_mode=1, key=None, verbose=True):
     if os.path.exists(path) and resume_mode == 1:
-        result = load(path)
-        if result is not None and verbose:
-            print('Resume from checkpoint')
+        result = {}
+        filenames = os.listdir(path)
+        for filename in filenames:
+            if key is not None and filename not in key:
+                continue
+            result[filename] = load(os.path.join(path, filename))
+        if len(result) > 0 and verbose:
+            print('Resume complete')
     else:
         if resume_mode == 1 and verbose:
             print('Not exists: {}'.format(path))
