@@ -1,3 +1,4 @@
+import torch
 from collections import defaultdict
 from collections.abc import Iterable
 from torch.utils.tensorboard import SummaryWriter
@@ -11,6 +12,18 @@ class Logger:
         self.path = path
         if path is not None:
             self.writer = SummaryWriter(self.path)
+            self.profiler = torch.profiler.profile(
+                activities=[
+                    torch.profiler.ProfilerActivity.CPU,
+                    torch.profiler.ProfilerActivity.CUDA,
+                ],
+                schedule=torch.profiler.schedule(wait=1, warmup=1, active=10, repeat=1),
+                on_trace_ready=torch.profiler.tensorboard_trace_handler(self.path),
+                record_shapes=True,
+                profile_memory=True,
+                with_stack=True,
+                with_flops=True
+            )
         self.tracker = defaultdict(int)
         self.counter = defaultdict(int)
         self.mean = defaultdict(int)

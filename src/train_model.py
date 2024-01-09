@@ -78,38 +78,41 @@ def runExperiment():
 def train(data_loader, model, optimizer, scheduler, logger):
     model.train(True)
     start_time = time.time()
-    for i, input in data_loader:
-        input_size = input['data'].size(0)
-        input = to_device(input, cfg['device'])
-        output = model(input)
-        loss = 1 / cfg['step_period'] * output['loss']
-        loss.backward()
-        if (i + 1) % cfg['step_period'] == 0:
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
-            optimizer.step()
-            scheduler.step()
-            optimizer.zero_grad()
-        evaluation = logger.evaluate('train', 'batch', input, output)
-        logger.append(evaluation, 'train', n=input_size)
-        idx = cfg['iteration'] % cfg['eval_period']
-        if idx % int(cfg['eval_period'] * cfg['log_interval']) == 0 and (i + 1) % cfg['step_period'] == 0:
-            step_time = (time.time() - start_time) / (idx + 1)
-            lr = optimizer.param_groups[0]['lr']
-            epoch_finished_time = datetime.timedelta(
-                seconds=round((cfg['eval_period'] - (idx + 1)) * step_time))
-            exp_finished_time = datetime.timedelta(
-                seconds=round((cfg['num_steps'] - (cfg['iteration'] + 1)) * step_time))
-            info = {'info': ['Model: {}'.format(cfg['tag']),
-                             'Train Epoch: {}({:.0f}%)'.format((cfg['iteration'] // cfg['eval_period']) + 1,
-                                                               100. * idx / cfg['eval_period']),
-                             'Learning rate: {:.6f}'.format(lr), 'Epoch Finished Time: {}'.format(epoch_finished_time),
-                             'Experiment Finished Time: {}'.format(exp_finished_time)]}
-            logger.append(info, 'train')
-            print(logger.write('train'))
-        if (i + 1) % cfg['step_period'] == 0:
-            cfg['iteration'] += 1
-        if (idx + 1) % cfg['eval_period'] == 0 and (i + 1) % cfg['step_period'] == 0:
-            break
+    with logger.profiler:
+        for i, input in data_loader:
+            if i % cfg['step_period'] == 0 and cfg['profile']:
+                logger.profiler.step()
+            input_size = input['data'].size(0)
+            input = to_device(input, cfg['device'])
+            output = model(input)
+            loss = 1 / cfg['step_period'] * output['loss']
+            loss.backward()
+            if (i + 1) % cfg['step_period'] == 0:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
+                optimizer.step()
+                scheduler.step()
+                optimizer.zero_grad()
+            evaluation = logger.evaluate('train', 'batch', input, output)
+            logger.append(evaluation, 'train', n=input_size)
+            idx = cfg['iteration'] % cfg['eval_period']
+            if idx % int(cfg['eval_period'] * cfg['log_interval']) == 0 and (i + 1) % cfg['step_period'] == 0:
+                step_time = (time.time() - start_time) / (idx + 1)
+                lr = optimizer.param_groups[0]['lr']
+                epoch_finished_time = datetime.timedelta(
+                    seconds=round((cfg['eval_period'] - (idx + 1)) * step_time))
+                exp_finished_time = datetime.timedelta(
+                    seconds=round((cfg['num_steps'] - (cfg['iteration'] + 1)) * step_time))
+                info = {'info': ['Model: {}'.format(cfg['tag']),
+                                 'Train Epoch: {}({:.0f}%)'.format((cfg['iteration'] // cfg['eval_period']) + 1,
+                                                                   100. * idx / cfg['eval_period']),
+                                 'Learning rate: {:.6f}'.format(lr), 'Epoch Finished Time: {}'.format(epoch_finished_time),
+                                 'Experiment Finished Time: {}'.format(exp_finished_time)]}
+                logger.append(info, 'train')
+                print(logger.write('train'))
+            if (i + 1) % cfg['step_period'] == 0:
+                cfg['iteration'] += 1
+            if (idx + 1) % cfg['eval_period'] == 0 and (i + 1) % cfg['step_period'] == 0:
+                break
     return
 
 
