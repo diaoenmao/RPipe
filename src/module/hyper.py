@@ -19,9 +19,11 @@ def process_control():
     cfg['model_name'] = cfg['control']['model_name']
 
     cfg['batch_size'] = 250
+
     cfg['step_period'] = 1
     cfg['num_steps'] = 80000
     cfg['eval_period'] = 200
+    # cfg['num_epochs'] = 400
 
     model_name = cfg['model_name']
     cfg[model_name]['shuffle'] = {'train': True, 'test': False}

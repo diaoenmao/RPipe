@@ -40,6 +40,7 @@ def runExperiment():
     checkpoint_path = os.path.join(tag_path, 'checkpoint')
     best_path = os.path.join(tag_path, 'best')
     dataset = make_dataset(cfg['data_name'])
+    dataset = process_dataset(dataset)
     model = make_model(cfg['model_name'])
     result = resume(checkpoint_path, resume_mode=cfg['resume_mode'])
     if result is None:
@@ -59,7 +60,6 @@ def runExperiment():
         scheduler.load_state_dict(result['scheduler'])
         logger.load_state_dict(result['logger'])
         logger.reset()
-    dataset = process_dataset(dataset)
     data_loader = make_data_loader(dataset, cfg[cfg['model_name']]['batch_size'])
     data_iterator = enumerate(data_loader['train'])
     while cfg['iteration'] < cfg['num_steps']:
@@ -105,7 +105,8 @@ def train(data_loader, model, optimizer, scheduler, logger):
                 info = {'info': ['Model: {}'.format(cfg['tag']),
                                  'Train Epoch: {}({:.0f}%)'.format((cfg['iteration'] // cfg['eval_period']) + 1,
                                                                    100. * idx / cfg['eval_period']),
-                                 'Learning rate: {:.6f}'.format(lr), 'Epoch Finished Time: {}'.format(epoch_finished_time),
+                                 'Learning rate: {:.6f}'.format(lr),
+                                 'Epoch Finished Time: {}'.format(epoch_finished_time),
                                  'Experiment Finished Time: {}'.format(exp_finished_time)]}
                 logger.append(info, 'train')
                 print(logger.write('train'))

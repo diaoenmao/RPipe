@@ -87,6 +87,8 @@ def make_data_collate(collate_mode):
 def make_data_loader(dataset, batch_size):
     data_loader = {}
     for k in dataset:
+        if k == 'train':
+            cfg['num_samples'] = batch_size[k] * (cfg['num_steps'] - cfg['iteration']) * cfg['step_period']
         if k == 'train' and cfg['num_samples'] > 0:
             generator = torch.Generator()
             generator.manual_seed(cfg['seed'])
@@ -107,5 +109,7 @@ def make_data_loader(dataset, batch_size):
 def process_dataset(dataset):
     processed_dataset = dataset
     cfg['data_size'] = {k: len(processed_dataset[k]) for k in processed_dataset}
-    cfg['num_samples'] = cfg['batch_size'] * (cfg['num_steps'] - cfg['iteration']) * cfg['step_period']
+    if 'num_epochs' in cfg:
+        cfg['num_steps'] = int(np.ceil(len(processed_dataset['train']) / cfg['batch_size'])) * cfg['num_epochs']
+        cfg['eval_period'] = int(np.ceil(len(processed_dataset['train']) / cfg['batch_size']))
     return processed_dataset

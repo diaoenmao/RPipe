@@ -15,10 +15,9 @@ if __name__ == "__main__":
         for data_name in data_names:
             dataset = make_dataset(data_name)
             dataset['train'].transform = Compose([transforms.ToTensor()])
-            cfg['num_samples'] = len(dataset['train'])
-            cfg['iteration'] = 0
             process_dataset(dataset)
-            cfg['num_samples'] = 0
+            cfg['iteration'] = 0
+            cfg['step_period'] = 0
             data_loader = make_data_loader(dataset, cfg[cfg['model_name']]['batch_size'])
             stats = Stats(dim=dim)
             for i, input in enumerate(data_loader['train']):
