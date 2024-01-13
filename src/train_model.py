@@ -60,7 +60,9 @@ def runExperiment():
         scheduler.load_state_dict(result['scheduler'])
         logger.load_state_dict(result['logger'])
         logger.reset()
-    data_loader = make_data_loader(dataset, cfg[cfg['model_name']]['batch_size'])
+    data_loader = make_data_loader(dataset, cfg[cfg['model_name']]['batch_size'], cfg['num_steps'], cfg['iteration'],
+                                   cfg['step_period'], cfg['pin_memory'], cfg['num_workers'], cfg['collate_mode'],
+                                   cfg['seed'])
     data_iterator = enumerate(data_loader['train'])
     while cfg['iteration'] < cfg['num_steps']:
         train(data_iterator, model, optimizer, scheduler, logger)

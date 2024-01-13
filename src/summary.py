@@ -21,8 +21,8 @@ def main():
     process_control()
     seeds = list(range(cfg['init_seed'], cfg['init_seed'] + cfg['num_experiments']))
     for i in range(cfg['num_experiments']):
-        model_tag_list = [str(seeds[i]), cfg['control_name']]
-        cfg['tag'] = '_'.join([x for x in model_tag_list if x])
+        tag_list = [str(seeds[i]), cfg['control_name']]
+        cfg['tag'] = '_'.join([x for x in tag_list if x])
         print('Experiment: {}'.format(cfg['tag']))
         runExperiment()
     return

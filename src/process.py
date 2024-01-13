@@ -62,8 +62,8 @@ def tree():
 def process_result(controls):
     result = tree()
     for control in controls:
-        model_tag = '_'.join(control)
-        gather_result(list(control), model_tag, result)
+        tag = '_'.join(control)
+        gather_result(list(control), tag, result)
     summarize_result(None, result)
     save(result, os.path.join(result_path, 'processed_result'))
     processed_result = tree()
@@ -71,10 +71,10 @@ def process_result(controls):
     return processed_result
 
 
-def gather_result(control, model_tag, processed_result):
+def gather_result(control, tag, processed_result):
     if len(control) == 1:
         exp_idx = exp.index(control[0])
-        base_result_path_i = os.path.join(result_path, '{}'.format(model_tag))
+        base_result_path_i = os.path.join(result_path, '{}'.format(tag))
         if os.path.exists(base_result_path_i):
             base_result = load(base_result_path_i)
             for split in base_result['logger']:
@@ -87,7 +87,7 @@ def gather_result(control, model_tag, processed_result):
         else:
             print('Missing {}'.format(base_result_path_i))
     else:
-        gather_result([control[0]] + control[2:], model_tag, processed_result[control[1]])
+        gather_result([control[0]] + control[2:], tag, processed_result[control[1]])
     return
 
 
