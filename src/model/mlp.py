@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import math
-from config import cfg
 from .model import init_param, make_loss
 
 
@@ -46,7 +45,7 @@ class MLP(nn.Module):
         return output
 
 
-def mlp():
+def mlp(cfg):
     data_shape = cfg['data_shape']
     target_size = cfg['target_size']
     hidden_size = cfg['mlp']['hidden_size']

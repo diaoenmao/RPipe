@@ -1,13 +1,12 @@
 import torch
 import torch.nn.functional as F
 from collections import defaultdict
-from config import cfg
 from module import recur
 
 
-def make_metric(split):
+def make_metric(data_name, split):
     metric_name = {k: [] for k in split}
-    if cfg['data_name'] in ['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100']:
+    if data_name in ['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100']:
         best = -float('inf')
         best_direction = 'up'
         best_metric_name = 'Accuracy'

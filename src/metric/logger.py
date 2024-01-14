@@ -8,7 +8,7 @@ from .metric import make_metric
 
 
 class Logger:
-    def __init__(self, path):
+    def __init__(self, data_name, path):
         self.path = path
         if path is not None:
             self.writer = SummaryWriter(self.path)
@@ -29,7 +29,7 @@ class Logger:
         self.mean = defaultdict(int)
         self.history = defaultdict(list)
         self.iterator = defaultdict(int)
-        self.metric = make_metric(['train', 'test'])
+        self.metric = make_metric(data_name, ['train', 'test'])
 
     def save(self, flush):
         for name in self.mean:
@@ -110,6 +110,10 @@ class Logger:
         self.writer.flush()
         return
 
+    def state_dict(self):
+        return {'tracker': self.tracker, 'counter': self.counter, 'mean': self.mean, 'history': self.history,
+                'iterator': self.iterator, 'metric': self.metric.state_dict()}
+
     def load_state_dict(self, state_dict):
         self.tracker = state_dict['tracker']
         self.counter = state_dict['counter']
@@ -119,11 +123,31 @@ class Logger:
         self.metric.load_state_dict(state_dict['metric'])
         return
 
-    def state_dict(self):
-        return {'tracker': self.tracker, 'counter': self.counter, 'mean': self.mean, 'history': self.history,
-                'iterator': self.iterator, 'metric': self.metric.state_dict()}
+    def update_state_dict(self, state_dict):
+        for name in state_dict['tracker']:
+            self.tracker[name] = state_dict['tracker'][name]
+            if isinstance(state_dict['mean'][name], Number):
+                n = state_dict['counter'][name]
+                self.counter[name] += n
+                self.mean[name] = ((self.counter[name] - n) * self.mean[name] + n * state_dict['mean'][name]) / \
+                                  self.counter[name]
+            elif isinstance(state_dict['mean'][name], list) and len(state_dict['mean'][name]) > 0:
+                if name not in self.mean:
+                    self.counter[name] = [0 for _ in range(len(state_dict['mean'][name]))]
+                    self.mean[name] = [0 for _ in range(len(state_dict['mean'][name]))]
+                _ntuple = ntuple(len(state_dict['mean'][name]))
+                n = state_dict['counter'][name]
+                n = _ntuple(n)
+                for i in range(len(state_dict['mean'][name])):
+                    if isinstance(state_dict['mean'][name][i], Number):
+                        self.counter[name][i] += n[i]
+                        self.mean[name][i] = ((self.counter[name][i] - n[i]) * self.mean[name][i] + n[i] *
+                                              state_dict['mean'][name][i]) / self.counter[name][i]
+            self.history[name].extend(state_dict['history'][name])
+            self.iterator[name] += state_dict['iterator'][name]
+        return
 
 
-def make_logger(path=None):
-    logger = Logger(path)
+def make_logger(data_name, path=None):
+    logger = Logger(data_name, path)
     return logger

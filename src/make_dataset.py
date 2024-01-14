@@ -9,15 +9,16 @@ if __name__ == "__main__":
     stats_path = os.path.join('output', 'stats')
     dim = 1
     data_names = ['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100']
-    process_control()
     cfg['seed'] = 0
+    cfg['tag'] = 'make_dataset'
+    process_control()
     with torch.no_grad():
         for data_name in data_names:
             dataset = make_dataset(data_name)
             dataset['train'].transform = Compose([transforms.ToTensor()])
             process_dataset(dataset)
             cfg['iteration'] = 0
-            data_loader = make_data_loader(dataset, cfg[cfg['model_name']]['batch_size'], num_steps=None, shuffle=False)
+            data_loader = make_data_loader(dataset, cfg[cfg['tag']]['optimizer']['batch_size'], shuffle=False)
             stats = Stats(dim=dim)
             for i, input in enumerate(data_loader['train']):
                 stats.update(input['data'])

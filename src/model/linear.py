@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import math
-from config import cfg
 from .model import init_param, make_loss
 
 
@@ -33,7 +32,7 @@ class Linear(nn.Module):
         return output
 
 
-def linear():
+def linear(cfg):
     data_shape = cfg['data_shape']
     target_size = cfg['target_size']
     model = Linear(data_shape, target_size)

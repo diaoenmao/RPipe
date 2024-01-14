@@ -18,11 +18,11 @@ process_args(args)
 
 
 def main():
-    process_control()
     seeds = list(range(cfg['init_seed'], cfg['init_seed'] + cfg['num_experiments']))
     for i in range(cfg['num_experiments']):
         tag_list = [str(seeds[i]), cfg['control_name']]
         cfg['tag'] = '_'.join([x for x in tag_list if x])
+        process_control()
         print('Experiment: {}'.format(cfg['tag']))
         runExperiment()
     return
@@ -32,27 +32,26 @@ def runExperiment():
     cfg['seed'] = int(cfg['tag'].split('_')[0])
     torch.manual_seed(cfg['seed'])
     torch.cuda.manual_seed(cfg['seed'])
-    path = os.path.join('output', 'exp')
-    tag_path = os.path.join(path, cfg['tag'])
-    checkpoint_path = os.path.join(tag_path, 'checkpoint')
-    best_path = os.path.join(tag_path, 'best')
-    result_path = os.path.join('output', 'result', cfg['tag'])
+    cfg['path'] = os.path.join('output', 'exp')
+    cfg['tag_path'] = os.path.join(cfg['path'], cfg['tag'])
+    cfg['checkpoint_path'] = os.path.join(cfg['tag_path'], 'checkpoint')
+    cfg['best_path'] = os.path.join(cfg['tag_path'], 'best')
+    cfg['logger_path'] = os.path.join(cfg['tag_path'], 'logger', 'test', 'runs')
+    cfg['result_path'] = os.path.join('output', 'result', cfg['tag'])
     dataset = make_dataset(cfg['data_name'])
-    model = make_model(cfg['model_name'])
-    result = resume(best_path)
+    model = make_model(cfg['model'])
+    result = resume(cfg['best_path'])
     cfg['iteration'] = result['cfg']['iteration']
     model = model.to(cfg['device'])
     model.load_state_dict(result['model'])
     dataset = process_dataset(dataset)
-    data_loader = make_data_loader(dataset, cfg[cfg['model_name']]['batch_size'], cfg['num_steps'], cfg['iteration'],
-                                   cfg['step_period'], cfg['pin_memory'], cfg['num_workers'], cfg['collate_mode'],
-                                   cfg['seed'])
-    test_logger = make_logger(os.path.join(tag_path, 'logger', 'test', 'runs'))
+    data_loader = make_data_loader(dataset, cfg[cfg['tag']]['optimizer']['batch_size'])
+    test_logger = make_logger(cfg['data_name'], cfg['logger_path'])
     test(data_loader['test'], model, test_logger)
-    result = resume(checkpoint_path)
+    result = resume(cfg['checkpoint_path'])
     result = {'cfg': cfg, 'logger': {'train': result['logger'],
                                      'test': test_logger.state_dict()}}
-    save(result, result_path)
+    save(result, cfg['result_path'])
     return
 
 
