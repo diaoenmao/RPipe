@@ -45,27 +45,27 @@ def runExperiment():
     model = make_model(cfg['model'])
     result = resume(cfg['checkpoint_path'], resume_mode=cfg['resume_mode'])
     if result is None:
-        cfg['iteration'] = 0
+        cfg['step'] = 0
         model = model.to(cfg['device'])
         optimizer = make_optimizer(model.parameters(), cfg[cfg['tag']]['optimizer'])
         scheduler = make_scheduler(optimizer, cfg[cfg['tag']]['optimizer'])
-        logger = make_logger(cfg['data_name'], cfg['logger_path'])
+        logger = make_logger(cfg['logger_path'], data_name=cfg['data_name'])
     else:
-        cfg['iteration'] = result['cfg']['iteration']
+        cfg['step'] = result['cfg']['step']
         model = model.to(cfg['device'])
         optimizer = make_optimizer(model.parameters(), cfg[cfg['tag']]['optimizer'])
         scheduler = make_scheduler(optimizer, cfg[cfg['tag']]['optimizer'])
-        logger = make_logger(cfg['data_name'], cfg['logger_path'])
+        logger = make_logger(cfg['logger_path'], data_name=cfg['data_name'])
         model.load_state_dict(result['model'])
         optimizer.load_state_dict(result['optimizer'])
         scheduler.load_state_dict(result['scheduler'])
         logger.load_state_dict(result['logger'])
         logger.reset()
     data_loader = make_data_loader(dataset, cfg[cfg['tag']]['optimizer']['batch_size'], cfg['num_steps'],
-                                   cfg['iteration'], cfg['step_period'], cfg['pin_memory'], cfg['num_workers'],
+                                   cfg['step'], cfg['step_period'], cfg['pin_memory'], cfg['num_workers'],
                                    cfg['collate_mode'], cfg['seed'])
     data_iterator = enumerate(data_loader['train'])
-    while cfg['iteration'] < cfg['num_steps']:
+    while cfg['step'] < cfg['num_steps']:
         train(data_iterator, model, optimizer, scheduler, logger)
         test(data_loader['test'], model, logger)
         result = {'cfg': cfg, 'model': model.state_dict(),
@@ -97,16 +97,16 @@ def train(data_loader, model, optimizer, scheduler, logger):
                 optimizer.zero_grad()
             evaluation = logger.evaluate('train', 'batch', input, output)
             logger.append(evaluation, 'train', n=input_size)
-            idx = cfg['iteration'] % cfg['eval_period']
+            idx = cfg['step'] % cfg['eval_period']
             if idx % int(cfg['eval_period'] * cfg['log_interval']) == 0 and (i + 1) % cfg['step_period'] == 0:
                 step_time = (time.time() - start_time) / (idx + 1)
                 lr = optimizer.param_groups[0]['lr']
                 epoch_finished_time = datetime.timedelta(
                     seconds=round((cfg['eval_period'] - (idx + 1)) * step_time))
                 exp_finished_time = datetime.timedelta(
-                    seconds=round((cfg['num_steps'] - (cfg['iteration'] + 1)) * step_time))
+                    seconds=round((cfg['num_steps'] - (cfg['step'] + 1)) * step_time))
                 info = {'info': ['Model: {}'.format(cfg['tag']),
-                                 'Train Epoch: {}({:.0f}%)'.format((cfg['iteration'] // cfg['eval_period']) + 1,
+                                 'Train Epoch: {}({:.0f}%)'.format((cfg['step'] // cfg['eval_period']) + 1,
                                                                    100. * idx / cfg['eval_period']),
                                  'Learning rate: {:.6f}'.format(lr),
                                  'Epoch Finished Time: {}'.format(epoch_finished_time),
@@ -114,7 +114,7 @@ def train(data_loader, model, optimizer, scheduler, logger):
                 logger.append(info, 'train')
                 print(logger.write('train'))
             if (i + 1) % cfg['step_period'] == 0:
-                cfg['iteration'] += 1
+                cfg['step'] += 1
             if (idx + 1) % cfg['eval_period'] == 0 and (i + 1) % cfg['step_period'] == 0:
                 break
     return
@@ -132,7 +132,7 @@ def test(data_loader, model, logger):
         evaluation = logger.evaluate('test', 'full')
         logger.append(evaluation, 'test', input_size)
         info = {'info': ['Model: {}'.format(cfg['tag']),
-                         'Test Epoch: {}({:.0f}%)'.format(cfg['iteration'] // cfg['eval_period'], 100.)]}
+                         'Test Epoch: {}({:.0f}%)'.format(cfg['step'] // cfg['eval_period'], 100.)]}
         logger.append(info, 'test')
         print(logger.write('test'))
         logger.save(True)

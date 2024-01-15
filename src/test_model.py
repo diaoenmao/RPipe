@@ -41,12 +41,12 @@ def runExperiment():
     dataset = make_dataset(cfg['data_name'])
     model = make_model(cfg['model'])
     result = resume(cfg['best_path'])
-    cfg['iteration'] = result['cfg']['iteration']
+    cfg['step'] = result['cfg']['step']
     model = model.to(cfg['device'])
     model.load_state_dict(result['model'])
     dataset = process_dataset(dataset)
     data_loader = make_data_loader(dataset, cfg[cfg['tag']]['optimizer']['batch_size'])
-    test_logger = make_logger(cfg['data_name'], cfg['logger_path'])
+    test_logger = make_logger(cfg['logger_path'], data_name=cfg['data_name'])
     test(data_loader['test'], model, test_logger)
     result = resume(cfg['checkpoint_path'])
     result = {'cfg': cfg, 'logger': {'train': result['logger'],
@@ -67,7 +67,7 @@ def test(data_loader, model, logger):
         evaluation = logger.evaluate('test', 'full')
         logger.append(evaluation, 'test', input_size)
         info = {'info': ['Model: {}'.format(cfg['tag']),
-                         'Test Epoch: {}({:.0f}%)'.format(cfg['iteration'] // cfg['eval_period'], 100.)]}
+                         'Test Epoch: {}({:.0f}%)'.format(cfg['step'] // cfg['eval_period'], 100.)]}
         logger.append(info, 'test')
         print(logger.write('test'))
         logger.save(True)

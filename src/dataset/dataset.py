@@ -84,13 +84,13 @@ def make_data_collate(collate_mode):
         raise ValueError('Not valid collate mode')
 
 
-def make_data_loader(dataset, batch_size, num_steps=None, iteration=0, step_period=1, pin_memory=True,
+def make_data_loader(dataset, batch_size, num_steps=None, step=0, step_period=1, pin_memory=True,
                      num_workers=0, collate_mode='dict', seed=0, shuffle=True):
     data_loader = {}
     for k in dataset:
         if k == 'train':
-            if num_steps is not None:
-                num_samples = batch_size[k] * (num_steps - iteration) * step_period
+            num_samples = batch_size[k] * (num_steps - step) * step_period
+            if num_steps is not None and num_samples > 0:
                 generator = torch.Generator()
                 generator.manual_seed(seed)
                 sampler = torch.utils.data.RandomSampler(dataset[k], replacement=False, num_samples=num_samples,

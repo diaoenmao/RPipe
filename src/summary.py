@@ -35,7 +35,7 @@ def runExperiment():
     cfg['path'] = os.path.join('output', 'exp')
     cfg['tag_path'] = os.path.join(cfg['path'], cfg['tag'])
     dataset = make_dataset(cfg['data_name'])
-    cfg['iteration'] = 0
+    cfg['step'] = 0
     dataset = process_dataset(dataset)
     model = make_model(cfg['model'])
     model = model.to(cfg['device'])

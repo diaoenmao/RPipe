@@ -4,7 +4,8 @@ from collections import defaultdict
 from module import recur
 
 
-def make_metric(data_name, split):
+def make_metric(split, **kwargs):
+    data_name = kwargs['data_name']
     metric_name = {k: [] for k in split}
     if data_name in ['MNIST', 'FashionMNIST', 'SVHN', 'CIFAR10', 'CIFAR100']:
         best = -float('inf')
@@ -29,10 +30,10 @@ def Accuracy(output, target, topk=1):
     return acc
 
 
-def RMSE(output, target):
+def MSE(output, target):
     with torch.no_grad():
-        rmse = F.mse_loss(output, target).sqrt().item()
-    return rmse
+        mse = F.mse_loss(output, target).item()
+    return mse
 
 
 class Metric:
@@ -51,10 +52,10 @@ class Metric:
                     metric[split][m] = {'mode': 'batch',
                                         'metric': (
                                             lambda input, output: recur(Accuracy, output['target'], input['target']))}
-                elif m == 'RMSE':
+                elif m == 'MSE':
                     metric[split][m] = {'mode': 'batch',
                                         'metric': (
-                                            lambda input, output: recur(RMSE, output['target'], input['target']))}
+                                            lambda input, output: recur(MSE, output['target'], input['target']))}
                 else:
                     raise ValueError('Not valid metric name')
         return metric

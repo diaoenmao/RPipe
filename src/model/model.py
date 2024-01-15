@@ -74,7 +74,7 @@ def make_optimizer(parameters, cfg):
 
 def make_scheduler(optimizer, cfg):
     if cfg['scheduler_name'] == 'None':
-        scheduler = NoOpScheduler(optimizer)
+        scheduler = optim.lr_scheduler.ConstantLR(optimizer, factor=1)
     elif cfg['scheduler_name'] == 'StepLR':
         scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=cfg['step_size'], gamma=cfg['factor'])
     elif cfg['scheduler_name'] == 'MultiStepLR':
@@ -101,24 +101,3 @@ def make_scheduler(optimizer, cfg):
     else:
         raise ValueError('Not valid scheduler name')
     return scheduler
-
-
-class NoOpScheduler(torch.optim.lr_scheduler._LRScheduler):
-    def __init__(self, optimizer, last_epoch=-1):
-        super(NoOpScheduler, self).__init__(optimizer, last_epoch)
-
-    def get_lr(self):
-        return [group['lr'] for group in self.optimizer.param_groups]
-
-
-def make_batchnorm(model, momentum, track_running_stats):
-    flag = False
-    for k, m in model.named_modules():
-        if isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):
-            flag = True
-            m.momentum = momentum
-            m.track_running_stats = track_running_stats
-            m.register_buffer('running_mean', torch.zeros(m.num_features, device=m.weight.device))
-            m.register_buffer('running_var', torch.ones(m.num_features, device=m.weight.device))
-            m.register_buffer('num_batches_tracked', torch.tensor(0, dtype=torch.long, device=m.weight.device))
-    return flag

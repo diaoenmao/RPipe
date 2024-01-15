@@ -8,7 +8,7 @@ from .metric import make_metric
 
 
 class Logger:
-    def __init__(self, data_name, path):
+    def __init__(self, path, **kwargs):
         self.path = path
         if path is not None:
             self.writer = SummaryWriter(self.path)
@@ -29,7 +29,7 @@ class Logger:
         self.mean = defaultdict(int)
         self.history = defaultdict(list)
         self.iterator = defaultdict(int)
-        self.metric = make_metric(data_name, ['train', 'test'])
+        self.metric = make_metric(['train', 'test'], **kwargs)
 
     def save(self, flush):
         for name in self.mean:
@@ -148,6 +148,6 @@ class Logger:
         return
 
 
-def make_logger(data_name, path=None):
-    logger = Logger(data_name, path)
+def make_logger(path=None, **kwargs):
+    logger = Logger(path, **kwargs)
     return logger

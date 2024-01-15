@@ -33,6 +33,7 @@ def process_control():
     cfg[tag]['optimizer']['optimizer_name'] = 'SGD'
     cfg[tag]['optimizer']['lr'] = 1e-1
     cfg[tag]['optimizer']['momentum'] = 0.9
+    cfg[tag]['optimizer']['betas'] = (0.9, 0.999)
     cfg[tag]['optimizer']['weight_decay'] = 5e-4
     cfg[tag]['optimizer']['nesterov'] = True
     cfg[tag]['optimizer']['batch_size'] = {'train': cfg['batch_size'], 'test': cfg['batch_size']}

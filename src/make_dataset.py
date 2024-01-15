@@ -17,7 +17,7 @@ if __name__ == "__main__":
             dataset = make_dataset(data_name)
             dataset['train'].transform = Compose([transforms.ToTensor()])
             process_dataset(dataset)
-            cfg['iteration'] = 0
+            cfg['step'] = 0
             data_loader = make_data_loader(dataset, cfg[cfg['tag']]['optimizer']['batch_size'], shuffle=False)
             stats = Stats(dim=dim)
             for i, input in enumerate(data_loader['train']):
