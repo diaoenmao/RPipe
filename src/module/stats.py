@@ -5,7 +5,7 @@ from .io import makedir_exist_ok, load
 
 def make_stats():
     stats = {}
-    stats_path = os.path.join('output', 'res')
+    stats_path = os.path.join('output', 'stats')
     makedir_exist_ok(stats_path)
     filenames = os.listdir(stats_path)
     for filename in filenames:
