@@ -3,14 +3,15 @@ import torch
 from .io import makedir_exist_ok, load
 
 
-def make_stats():
-    stats = {}
+def make_stats(name):
+    stats = None
     stats_path = os.path.join('output', 'stats')
     makedir_exist_ok(stats_path)
     filenames = os.listdir(stats_path)
     for filename in filenames:
         stats_name = os.path.splitext(filename)[0]
-        stats[stats_name] = load(os.path.join(stats_path, filename))
+        if name == stats_name:
+            stats = load(os.path.join(stats_path, filename))
     return stats
 
 
