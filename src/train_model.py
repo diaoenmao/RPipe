@@ -91,7 +91,6 @@ def train(data_loader, model, optimizer, scheduler, logger):
             loss = 1 / cfg['step_period'] * output['loss']
             loss.backward()
             if (i + 1) % cfg['step_period'] == 0:
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
                 optimizer.step()
                 scheduler.step()
                 optimizer.zero_grad()
