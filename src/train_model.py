@@ -97,7 +97,7 @@ def train(data_loader, model, optimizer, scheduler, logger):
             evaluation = logger.evaluate('train', 'batch', input, output)
             logger.append(evaluation, 'train', n=input_size)
             idx = cfg['step'] % cfg['eval_period']
-            if idx % int(cfg['eval_period'] * cfg['log_interval']) == 0 and (i + 1) % cfg['step_period'] == 0:
+            if idx % max(int(cfg['eval_period'] * cfg['log_interval']), 1) == 0 and (i + 1) % cfg['step_period'] == 0:
                 step_time = (time.time() - start_time) / (idx + 1)
                 lr = optimizer.param_groups[0]['lr']
                 epoch_finished_time = datetime.timedelta(

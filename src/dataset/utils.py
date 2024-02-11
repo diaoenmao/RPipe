@@ -9,7 +9,7 @@ from PIL import Image
 from tqdm import tqdm
 from collections import Counter
 
-IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif']
+IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif')
 
 
 def find_classes(dir):
@@ -136,21 +136,17 @@ def make_data(root, extensions):
     return path
 
 
-def make_img(path, classes_to_labels, extensions=IMG_EXTENSIONS):
+def make_img(path, extensions=IMG_EXTENSIONS):
     img, label = [], []
-    classes = []
-    for node in classes_to_labels:
-        classes.append(node.name)
-    for c in sorted(classes):
-        d = os.path.join(path, c)
-        if not os.path.isdir(d):
-            continue
-        for root, _, filenames in sorted(os.walk(d)):
-            for filename in sorted(filenames):
-                if has_file_allowed_extension(filename, extensions):
-                    cur_path = os.path.join(root, filename)
-                    img.append(cur_path)
-                    label.append(classes_to_labels[c])
+    for root, dirs, filenames in sorted(os.walk(path)):
+        for filename in sorted(filenames):
+            if has_file_allowed_extension(filename, extensions):
+                path_i = os.path.join(root, filename)
+                img.append(path_i)
+                dir_name = os.path.dirname(path_i)
+                if dir_name != path:
+                    c = os.path.basename(dir_name)
+                    label.append(c)
     return img, label
 
 
