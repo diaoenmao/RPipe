@@ -80,7 +80,7 @@ class Metric:
             compared = self.best < val
         else:
             raise ValueError('Not valid best direction')
-        if if_update:
+        if compared and if_update:
             self.best = val
         return compared
 
