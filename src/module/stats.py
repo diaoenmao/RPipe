@@ -9,8 +9,7 @@ def make_stats(name):
     makedir_exist_ok(stats_path)
     filenames = os.listdir(stats_path)
     for filename in filenames:
-        stats_name = os.path.splitext(filename)[0]
-        if name == stats_name:
+        if name == filename:
             stats = load(os.path.join(stats_path, filename))
     return stats
 

@@ -46,7 +46,6 @@ def runExperiment():
     content = summary(model, input_data=[{'data': input['data']}], depth=50,
                       col_names=['input_size', 'output_size', 'num_params', 'params_percent', 'kernel_size',
                                  'mult_adds', 'trainable'])
-    print(content)
     save(content, os.path.join(cfg['tag_path'], 'summary'))
     return
 

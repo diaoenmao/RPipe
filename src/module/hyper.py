@@ -22,7 +22,7 @@ def process_control():
     cfg['model']['linear'] = {}
     cfg['model']['mlp'] = {'hidden_size': 128, 'scale_factor': 2, 'num_layers': 2, 'activation': 'relu'}
     cfg['model']['cnn'] = {'hidden_size': [64, 128, 256, 512]}
-    cfg['model']['resnet9'] = {'hidden_size': [64, 128, 256, 512]}
+    cfg['model']['resnet10'] = {'hidden_size': [64, 128, 256, 512]}
     cfg['model']['resnet18'] = {'hidden_size': [64, 128, 256, 512]}
     cfg['model']['wresnet28x2'] = {'depth': 28, 'widen_factor': 2, 'drop_rate': 0.0}
     cfg['model']['wresnet28x8'] = {'depth': 28, 'widen_factor': 8, 'drop_rate': 0.0}

@@ -34,8 +34,18 @@ def cross_entropy_loss(output, target, reduction='mean'):
     return ce
 
 
-def kld_loss(output, target, reduction='batchmean'):
-    kld = F.kl_div(F.log_softmax(output, dim=-1), target, reduction=reduction)
+def kld_loss(output, target, reduction='none'):
+    kld = F.kl_div(F.log_softmax(output, dim=-1), target, reduction='none')
+    if reduction == 'none':
+        return kld
+    elif reduction == 'sum':
+        kld = torch.nansum(kld, dim=-1)
+        kld = kld.sum()
+    elif reduction == 'mean':
+        kld = torch.nansum(kld, dim=-1)
+        kld = kld.mean()
+    else:
+        raise ValueError('Not valid reduction')
     return kld
 
 
