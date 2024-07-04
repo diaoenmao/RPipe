@@ -21,6 +21,8 @@ class Stats(object):
         self.n_features = None
         self.mean = None
         self.std = None
+        self.min = None
+        self.max = None
 
     def update(self, data):
         data = data.transpose(self.dim, -1).reshape(-1, data.size(self.dim))
@@ -40,4 +42,22 @@ class Stats(object):
             self.std = torch.sqrt(m / (m + n) * old_std ** 2 + n / (m + n) * new_std ** 2 + m * n / (m + n) ** 2 * (
                     old_mean - new_mean) ** 2)
             self.n_samples += n
+
+        new_min = data.min(dim=0)[0]
+        if self.min is None:
+            self.min = new_min
+        min_mask = new_min < self.min
+        self.min[min_mask] = new_min[min_mask]
+
+        new_max = data.max(dim=0)[0]
+        if self.max is None:
+            self.max = new_max
+        max_mask = new_max > self.max
+        self.max[max_mask] = new_max[max_mask]
         return
+
+    def __repr__(self):
+        attrs = {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
+        attrs_str = ', '.join(f'{k}={v}' for k, v in attrs.items())
+        return 'Stats({})'.format(attrs_str)
+

@@ -36,6 +36,26 @@ def MSE(output, target):
     return mse
 
 
+class RMSE:
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.se = torch.zeros((1,))
+        self.count = torch.zeros((1,))
+        return
+
+    def add(self, input, output):
+        self.se += F.mse_loss(output['target'], input['target'], reduction='sum')
+        self.count += output['target'].numel()
+        return
+
+    def __call__(self, input, output):
+        rmse = ((self.se / self.count) ** 0.5).item()
+        self.reset()
+        return rmse
+
+
 class Metric:
     def __init__(self, metric_name, best, best_direction, best_metric_name):
         self.metric_name = metric_name
@@ -56,6 +76,8 @@ class Metric:
                     metric[split][m] = {'mode': 'batch',
                                         'metric': (
                                             lambda input, output: recur(MSE, output['target'], input['target']))}
+                elif m == 'RMSE':
+                    metric[split][m] = {'mode': 'full', 'metric': RMSE()}
                 else:
                     raise ValueError('Not valid metric name')
         return metric
