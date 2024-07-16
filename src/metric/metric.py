@@ -77,7 +77,7 @@ class Metric:
                                         'metric': (
                                             lambda input, output: recur(MSE, output['target'], input['target']))}
                 elif m == 'RMSE':
-                    metric[split][m] = {'mode': 'full', 'metric': RMSE()}
+                    metric[split][m] = {'mode': 'full', 'metric': (lambda input, output: RMSE())},
                 else:
                     raise ValueError('Not valid metric name')
         return metric

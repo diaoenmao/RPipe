@@ -37,8 +37,9 @@ def main():
     resume_mode = args['resume_mode']
     mode = args['mode']
     split_round = args['split_round']
-    gpu_ids = [','.join(str(i) for i in list(range(x, x + 1))) for x in
-               list(range(init_gpu, init_gpu + num_gpus))]
+    if num_gpus > 0:
+        gpu_ids = [','.join(str(i) for i in list(range(x, x + 1))) for x in
+                   list(range(init_gpu, init_gpu + num_gpus))]
     init_seeds = [list(range(init_seed, init_seed + num_experiments, experiment_step))]
     num_experiments = [[experiment_step]]
     resume_mode = [[resume_mode]]
@@ -56,8 +57,12 @@ def main():
     k = 1
     for i in range(len(controls)):
         controls[i] = list(controls[i])
-        s = s + 'CUDA_VISIBLE_DEVICES=\"{}\" python {} --init_seed {} --num_experiments {} ' \
-                '--resume_mode {} --control_name {}&\n'.format(gpu_ids[i % len(gpu_ids)], *controls[i])
+        if num_gpus > 0:
+            s = s + 'CUDA_VISIBLE_DEVICES=\"{}\" python {} --init_seed {} --num_experiments {} ' \
+                    '--resume_mode {} --control_name {}&\n'.format(gpu_ids[i % len(gpu_ids)], *controls[i])
+        else:
+            s = s + 'python {} --init_seed {} --num_experiments {} ' \
+                    '--resume_mode {} --device cpu --control_name {}&\n'.format(*controls[i])
         if i % round == round - 1:
             s = s[:-2] + '\nwait\n'
             if j % split_round == 0:
