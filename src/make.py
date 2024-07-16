@@ -5,7 +5,7 @@ import os
 parser = argparse.ArgumentParser(description='config')
 parser.add_argument('--run', default='train', type=str)
 parser.add_argument('--init_gpu', default=0, type=int)
-parser.add_argument('--num_gpus', default=4, type=int)
+parser.add_argument('--num_gpus', default=1, type=int)
 parser.add_argument('--init_seed', default=0, type=int)
 parser.add_argument('--round', default=4, type=int)
 parser.add_argument('--experiment_step', default=1, type=int)
