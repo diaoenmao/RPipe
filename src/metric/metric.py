@@ -41,8 +41,8 @@ class RMSE:
         self.reset()
 
     def reset(self):
-        self.se = torch.zeros((1,))
-        self.count = torch.zeros((1,))
+        self.se = 0
+        self.count = 0
         return
 
     def add(self, input, output):
@@ -70,14 +70,14 @@ class Metric:
                     metric[split][m] = {'mode': 'batch', 'metric': (lambda input, output: output['loss'].item())}
                 elif m == 'Accuracy':
                     metric[split][m] = {'mode': 'batch',
-                                        'metric': (
-                                            lambda input, output: recur(Accuracy, output['target'], input['target']))}
+                                        'metric': (lambda input, output: recur(Accuracy,
+                                                                               output['target'], input['target']))}
                 elif m == 'MSE':
                     metric[split][m] = {'mode': 'batch',
                                         'metric': (
                                             lambda input, output: recur(MSE, output['target'], input['target']))}
                 elif m == 'RMSE':
-                    metric[split][m] = {'mode': 'full', 'metric': (lambda input, output: RMSE())},
+                    metric[split][m] = {'mode': 'full', 'metric': RMSE()}
                 else:
                     raise ValueError('Not valid metric name')
         return metric
