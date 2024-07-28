@@ -37,6 +37,7 @@ def main():
     resume_mode = args['resume_mode']
     mode = args['mode']
     split_round = args['split_round']
+    script_path = os.path.join('output', 'script')
     if num_gpus > 0:
         gpu_ids = [','.join(str(i) for i in list(range(x, x + 1))) for x in
                    list(range(init_gpu, init_gpu + num_gpus))]
@@ -59,7 +60,8 @@ def main():
         controls[i] = list(controls[i])
         if num_gpus > 0:
             s = s + 'CUDA_VISIBLE_DEVICES=\"{}\" python {} --init_seed {} --num_experiments {} ' \
-                    '--resume_mode {} --control_name {}&\n'.format(gpu_ids[i % len(gpu_ids)], *controls[i])
+                    '--resume_mode {} --device cuda ' \
+                    '--control_name {}&\n'.format(gpu_ids[i % len(gpu_ids)], *controls[i])
         else:
             s = s + 'python {} --init_seed {} --num_experiments {} ' \
                     '--resume_mode {} --device cpu --control_name {}&\n'.format(*controls[i])
@@ -67,9 +69,9 @@ def main():
             s = s[:-2] + '\nwait\n'
             if j % split_round == 0:
                 print(s)
-                if not os.path.exists('scripts'):
-                    os.makedirs('scripts')
-                run_file = open(os.path.join('scripts', '{}_{}.sh'.format(filename, k)), 'w')
+                if not os.path.exists(script_path):
+                    os.makedirs(script_path)
+                run_file = open(os.path.join(script_path, '{}_{}.sh'.format(filename, k)), 'w')
                 run_file.write(s)
                 run_file.close()
                 s = '#!/bin/bash\n'
@@ -79,9 +81,9 @@ def main():
         if s[-5:-1] != 'wait':
             s = s + 'wait\n'
         print(s)
-        if not os.path.exists('scripts'):
-            os.makedirs('scripts')
-        run_file = open(os.path.join('scripts', '{}_{}.sh'.format(filename, k)), 'w')
+        if not os.path.exists(script_path):
+            os.makedirs(script_path)
+        run_file = open(os.path.join(script_path, '{}_{}.sh'.format(filename, k)), 'w')
         run_file.write(s)
         run_file.close()
     return
