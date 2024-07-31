@@ -41,6 +41,8 @@ def runExperiment():
     dataset = make_dataset(cfg['data_name'])
     model = make_model(cfg['model'])
     result = resume(cfg['best_path'])
+    if result is None:
+        raise ValueError('No valid model, please train model first')
     cfg['step'] = result['cfg']['step']
     model = model.to(cfg['device'])
     model.load_state_dict(result['model'])
