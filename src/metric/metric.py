@@ -1,7 +1,6 @@
 import torch
 import torch.nn.functional as F
 from collections import defaultdict
-from module import recur
 
 
 def make_metric(split, **kwargs):
@@ -70,12 +69,10 @@ class Metric:
                     metric[split][m] = {'mode': 'batch', 'metric': (lambda input, output: output['loss'].item())}
                 elif m == 'Accuracy':
                     metric[split][m] = {'mode': 'batch',
-                                        'metric': (lambda input, output: recur(Accuracy,
-                                                                               output['target'], input['target']))}
+                                        'metric': (lambda input, output: Accuracy(output['target'], input['target']))}
                 elif m == 'MSE':
                     metric[split][m] = {'mode': 'batch',
-                                        'metric': (
-                                            lambda input, output: recur(MSE, output['target'], input['target']))}
+                                        'metric': (lambda input, output: MSE(output['target'], input['target']))}
                 elif m == 'RMSE':
                     metric[split][m] = {'mode': 'full', 'metric': RMSE()}
                 else:
