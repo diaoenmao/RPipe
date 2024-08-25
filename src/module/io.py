@@ -37,18 +37,19 @@ def save(input, path, mode='torch'):
 
 def load(path, mode='torch'):
     if mode == 'torch':
-        return torch.load(path, weights_only=False)
+        output = torch.load(path, weights_only=False)
     elif mode == 'np':
-        return np.load(path, allow_pickle=True)
+        output = np.load(path, allow_pickle=True)
     elif mode == 'pickle':
         with open(path, 'rb') as file:
-            return pickle.load(file)
+            output = pickle.load(file)
     else:
         raise ValueError('Not valid save mode')
+    return output
 
 
 def io_mode(filename):
-    if filename in ['model', 'optimizer']:
+    if filename in ['cfg', 'model', 'optimizer']:
         mode = 'torch'
     else:
         mode = 'pickle'
@@ -78,8 +79,10 @@ def resume(path, resume_mode=True, key=None, verbose=True):
                     continue
                 result[filename] = load(os.path.join(path, filename), io_mode(filename))
         else:
-            raise ValueError('Not valid resume mode')
-        if len(result) > 0 and verbose:
+            result = None
+            if resume_mode and verbose:
+                print('Not exists: {}'.format(path))
+        if result is not None and len(result) > 0 and verbose:
             print('Resume complete')
     else:
         if resume_mode and verbose:

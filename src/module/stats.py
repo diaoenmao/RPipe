@@ -10,7 +10,7 @@ def make_stats(name):
     filenames = os.listdir(stats_path)
     for filename in filenames:
         if name == filename:
-            stats = load(os.path.join(stats_path, filename))
+            stats = load(os.path.join(stats_path, filename), 'torch')
     return stats
 
 

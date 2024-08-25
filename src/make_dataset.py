@@ -25,4 +25,4 @@ if __name__ == "__main__":
                 stats.update(input['data'])
             print(data_name, stats)
             makedir_exist_ok(stats_path)
-            save(stats, os.path.join(stats_path, '{}'.format(data_name)))
+            save(stats, os.path.join(stats_path, '{}'.format(data_name)), 'torch')
