@@ -50,9 +50,9 @@ def io_mode(filename):
 
 
 def check(result, path, mode=None):
-    mode = io_mode(filename) if mode is None else mode
     for filename in result:
-        save(result[filename], os.path.join(path, filename), mode)
+        mode_i = io_mode(filename) if mode is None else mode
+        save(result[filename], os.path.join(path, filename), mode_i)
     return
 
 
@@ -64,16 +64,16 @@ def resume(path, resume_mode=True, key=None, verbose=True, mode=None):
             for filename in filenames:
                 if not os.path.isfile(os.path.join(path, filename)) or (key is not None and filename not in key):
                     continue
-                mode = io_mode(filename) if mode is None else mode
-                result[filename] = load(os.path.join(path, filename), mode)
+                mode_i = io_mode(filename) if mode is None else mode
+                result[filename] = load(os.path.join(path, filename), mode_i)
         elif isinstance(resume_mode, dict):
             result = {}
             for filename in resume_mode:
                 if not resume_mode[filename] or not os.path.isfile(os.path.join(path, filename)) or \
                         (key is not None and filename not in key):
                     continue
-                mode = io_mode(filename) if mode is None else mode
-                result[filename] = load(os.path.join(path, filename), mode)
+                mode_i = io_mode(filename) if mode is None else mode
+                result[filename] = load(os.path.join(path, filename), mode_i)
         else:
             result = None
             if resume_mode and verbose:
