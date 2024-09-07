@@ -1,4 +1,3 @@
-import errno
 import numpy as np
 import os
 import pickle
@@ -10,13 +9,7 @@ def check_exists(path):
 
 
 def makedir_exist_ok(path):
-    try:
-        os.makedirs(path)
-    except OSError as e:
-        if e.errno == errno.EEXIST:
-            pass
-        else:
-            raise
+    os.makedirs(path, exist_ok=True)
     return
 
 
@@ -62,7 +55,7 @@ def check(result, path):
     return
 
 
-def resume(path, resume_mode=True, key=None, verbose=True):
+def resume(path, resume_mode=True, key=None, verbose=True, mode=None):
     if os.path.exists(path):
         if isinstance(resume_mode, bool) and resume_mode:
             result = {}
@@ -70,14 +63,16 @@ def resume(path, resume_mode=True, key=None, verbose=True):
             for filename in filenames:
                 if not os.path.isfile(os.path.join(path, filename)) or (key is not None and filename not in key):
                     continue
-                result[filename] = load(os.path.join(path, filename), io_mode(filename))
+                mode = io_mode(filename) if mode is None else mode
+                result[filename] = load(os.path.join(path, filename), mode)
         elif isinstance(resume_mode, dict):
             result = {}
             for filename in resume_mode:
                 if not resume_mode[filename] or not os.path.isfile(os.path.join(path, filename)) or \
                         (key is not None and filename not in key):
                     continue
-                result[filename] = load(os.path.join(path, filename), io_mode(filename))
+                mode = io_mode(filename) if mode is None else mode
+                result[filename] = load(os.path.join(path, filename), mode)
         else:
             result = None
             if resume_mode and verbose:
