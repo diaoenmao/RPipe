@@ -49,9 +49,10 @@ def io_mode(filename):
     return mode
 
 
-def check(result, path):
+def check(result, path, mode=None):
+    mode = io_mode(filename) if mode is None else mode
     for filename in result:
-        save(result[filename], os.path.join(path, filename), io_mode(filename))
+        save(result[filename], os.path.join(path, filename), mode)
     return
 
 
