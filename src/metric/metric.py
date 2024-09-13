@@ -45,12 +45,14 @@ class RMSE:
         return
 
     def add(self, input, output):
-        self.se += F.mse_loss(output['target'], input['target'], reduction='sum')
-        self.count += output['target'].numel()
+        with torch.no_grad():
+            self.se += F.mse_loss(output['target'], input['target'], reduction='sum')
+            self.count += output['target'].numel()
         return
 
     def __call__(self, input, output):
-        rmse = ((self.se / self.count) ** 0.5).item()
+        with torch.no_grad():
+            rmse = ((self.se / self.count) ** 0.5).item()
         self.reset()
         return rmse
 
