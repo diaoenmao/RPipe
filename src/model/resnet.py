@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from .model import init_param, make_loss
+from .model import init_param
 
 
 class Block(nn.Module):
@@ -60,7 +60,7 @@ class ResNet(nn.Module):
         self.layer3 = self._make_layer(block, hidden_size[2], num_blocks[2], stride=2)
         self.layer4 = self._make_layer(block, hidden_size[3], num_blocks[3], stride=2)
         self.n4 = nn.BatchNorm2d(hidden_size[3] * block.expansion)
-        self.linear = nn.Linear(hidden_size[3] * block.expansion, target_size)
+        self.output_proj = nn.Linear(hidden_size[3] * block.expansion, target_size)
 
     def _make_layer(self, block, planes, num_blocks, stride):
         strides = [stride] + [1] * (num_blocks - 1)
@@ -82,21 +82,13 @@ class ResNet(nn.Module):
         return x
 
     def output(self, x):
-        x = self.linear(x)
+        x = self.output_proj(x)
         return x
 
-    def f(self, x):
+    def forward(self, x):
         x = self.feature(x)
         x = self.output(x)
         return x
-
-    def forward(self, input):
-        output = {}
-        x = input['data']
-        x = self.f(x)
-        output['target'] = x
-        output['loss'] = make_loss(output, input)
-        return output
 
 
 def resnet10(cfg):

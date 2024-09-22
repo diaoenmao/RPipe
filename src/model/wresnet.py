@@ -2,7 +2,7 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from .model import init_param, make_loss
+from .model import init_param
 
 
 class BasicBlock(nn.Module):
@@ -70,28 +70,20 @@ class WideResNet(nn.Module):
         blocks.append(nn.AdaptiveAvgPool2d(1))
         blocks.append(nn.Flatten())
         self.blocks = nn.Sequential(*blocks)
-        self.linear = nn.Linear(hidden_size[-1], num_classes)
+        self.output_proj = nn.Linear(hidden_size[-1], num_classes)
 
     def feature(self, x):
         x = self.blocks(x)
         return x
 
     def output(self, x):
-        x = self.linear(x)
+        x = self.output_proj(x)
         return x
 
-    def f(self, x):
+    def forward(self, x):
         x = self.feature(x)
         x = self.output(x)
         return x
-
-    def forward(self, input):
-        output = {}
-        x = input['data']
-        x = self.f(x)
-        output['target'] = x
-        output['loss'] = make_loss(output, input)
-        return output
 
 
 def wresnet28x2(cfg):

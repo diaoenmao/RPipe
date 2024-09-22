@@ -87,7 +87,7 @@ def train(data_loader, model, optimizer, scheduler, logger):
                 logger.profiler.step()
             input_size = input['data'].size(0)
             input = to_device(input, cfg['device'])
-            output = model(input)
+            output = model(**input)
             loss = 1 / cfg['step_period'] * output['loss']
             loss.backward()
             if (i + 1) % cfg['step_period'] == 0:
@@ -125,7 +125,7 @@ def test(data_loader, model, logger):
         for i, input in enumerate(data_loader):
             input_size = input['data'].size(0)
             input = to_device(input, cfg['device'])
-            output = model(input)
+            output = model(**input)
             evaluation = logger.evaluate('test', 'batch', input, output)
             logger.append(evaluation, 'test', input_size)
             logger.add('test', input, output)
