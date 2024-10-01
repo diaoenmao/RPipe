@@ -98,7 +98,6 @@ class Logger:
         return evaluation
 
     def evaluate(self, split, mode, input=None, output=None, metric_name=None):
-        metric_name = self.metric.metric_name if metric_name is None else metric_name
         evaluation = self.metric.evaluate(split, mode, input, output, metric_name)
         return evaluation
 

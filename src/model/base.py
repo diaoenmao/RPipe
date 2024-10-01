@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from .model import make_loss
+from .loss import make_loss
 
 
 class Base(nn.Module):
@@ -11,7 +11,7 @@ class Base(nn.Module):
 
     def forward(self, **input):
         output = {}
-        output['target'] = self.model(input['data'])
+        output['pred'] = self.model(input['data'])
         output['loss'] = self.loss(output, input)
         return output
 

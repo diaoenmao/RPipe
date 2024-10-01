@@ -12,44 +12,6 @@ def make_model(cfg):
     return model_
 
 
-def make_loss(output, input):
-    if 'target' in input:
-        loss = loss_fn(output['target'], input['target'])
-    else:
-        return
-    return loss
-
-
-def loss_fn(output, target, reduction='mean'):
-    if target.dtype == torch.int64:
-        loss = F.cross_entropy(output, target, reduction=reduction)
-    else:
-        loss = kld_loss(output, target, reduction=reduction)
-    return loss
-
-
-def cross_entropy_loss(output, target, reduction='mean'):
-    if target.dtype != torch.int64:
-        target = (target.topk(1, 1, True, True)[1]).view(-1)
-    ce = F.cross_entropy(output, target, reduction=reduction)
-    return ce
-
-
-def kld_loss(output, target, reduction='none'):
-    kld = F.kl_div(F.log_softmax(output, dim=-1), target, reduction='none')
-    if reduction == 'none':
-        return kld
-    elif reduction == 'sum':
-        kld = torch.nansum(kld, dim=-1)
-        kld = kld.sum()
-    elif reduction == 'mean':
-        kld = torch.nansum(kld, dim=-1)
-        kld = kld.mean()
-    else:
-        raise ValueError('Not valid reduction')
-    return kld
-
-
 def init_param(m):
     if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d)):
         nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
