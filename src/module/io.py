@@ -56,9 +56,9 @@ def check(result, path, mode=None):
     return
 
 
-def resume(path, resume_mode=True, key=None, verbose=True, mode=None):
+def resume(path, resume_mode=1, key=None, verbose=True, mode=None):
     if os.path.exists(path):
-        if isinstance(resume_mode, bool) and resume_mode:
+        if (isinstance(resume_mode, bool) or isinstance(resume_mode, int)) and resume_mode:
             result = {}
             filenames = os.listdir(path)
             for filename in filenames:
