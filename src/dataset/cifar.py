@@ -21,7 +21,7 @@ class CIFAR10(Dataset):
         self.id, self.data, self.target = load(os.path.join(self.processed_folder, self.split))
         self.other = {}
         self.classes_counts = make_classes_counts(self.target)
-        self.classes_to_labels, self.target_size = load(os.path.join(self.processed_folder, 'meta'))
+        self.data_shape, self.target_size, self.classes_to_labels = load(os.path.join(self.processed_folder, 'meta'))
 
     def __getitem__(self, index):
         id, data, target = torch.tensor(self.id[index]), Image.fromarray(self.data[index]), torch.tensor(
@@ -73,12 +73,14 @@ class CIFAR10(Dataset):
                                                     train_filenames)
         test_data, test_target = read_pickle_file(os.path.join(self.raw_folder, 'cifar-10-batches-py'), test_filenames)
         train_id, test_id = np.arange(len(train_data)).astype(np.int64), np.arange(len(test_data)).astype(np.int64)
+        data_shape = (3, 32, 32)
         with open(os.path.join(self.raw_folder, 'cifar-10-batches-py', 'batches.meta'), 'rb') as f:
             data = pickle.load(f, encoding='latin1')
             classes = data['label_names']
         classes_to_labels = {classes[i]: i for i in range(len(classes))}
         target_size = len(classes)
-        return (train_id, train_data, train_target), (test_id, test_data, test_target), (classes_to_labels, target_size)
+        return (train_id, train_data, train_target), (test_id, test_data, test_target), (
+            data_shape, target_size, classes_to_labels)
 
 
 class CIFAR100(CIFAR10):
@@ -91,12 +93,14 @@ class CIFAR100(CIFAR10):
         train_data, train_target = read_pickle_file(os.path.join(self.raw_folder, 'cifar-100-python'), train_filenames)
         test_data, test_target = read_pickle_file(os.path.join(self.raw_folder, 'cifar-100-python'), test_filenames)
         train_id, test_id = np.arange(len(train_data)).astype(np.int64), np.arange(len(test_data)).astype(np.int64)
+        data_shape = (3, 32, 32)
         with open(os.path.join(self.raw_folder, 'cifar-100-python', 'meta'), 'rb') as f:
             data = pickle.load(f, encoding='latin1')
             classes = data['fine_label_names']
         classes_to_labels = {classes[i]: i for i in range(len(classes))}
         target_size = len(classes)
-        return (train_id, train_data, train_target), (test_id, test_data, test_target), (classes_to_labels, target_size)
+        return (train_id, train_data, train_target), (test_id, test_data, test_target), (
+            data_shape, target_size, classes_to_labels)
 
 
 def read_pickle_file(path, filenames):

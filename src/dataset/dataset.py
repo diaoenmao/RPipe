@@ -116,6 +116,8 @@ def make_data_loader(dataset, batch_size, num_steps=None, step=0, step_period=1,
 def process_dataset(dataset):
     processed_dataset = dataset
     cfg['data_size'] = {k: len(processed_dataset[k]) for k in processed_dataset}
+    cfg['model']['data_shape'] = dataset['train'].data_shape
+    cfg['model']['target_size'] = dataset['train'].target_size
     if 'num_epochs' in cfg:
         cfg['num_steps'] = int(np.ceil(len(processed_dataset['train']) / cfg['batch_size'])) * cfg['num_epochs']
         cfg['eval_period'] = int(np.ceil(len(processed_dataset['train']) / cfg['batch_size']))
