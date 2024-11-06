@@ -1,4 +1,5 @@
 from config import cfg
+from .stats import make_stats
 
 
 def process_control():
@@ -21,6 +22,7 @@ def process_control():
     cfg['model']['resnet18'] = {'hidden_size': [64, 128, 256, 512]}
     cfg['model']['wresnet28x2'] = {'depth': 28, 'widen_factor': 2, 'drop_rate': 0.0}
     cfg['model']['wresnet28x8'] = {'depth': 28, 'widen_factor': 8, 'drop_rate': 0.0}
+    cfg['model']['stats'] = make_stats(cfg['control']['data_name'])
 
     tag = cfg['tag']
     cfg[tag] = {}

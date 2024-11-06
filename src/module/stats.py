@@ -1,16 +1,15 @@
 import os
 import torch
-from .io import makedir_exist_ok, load
+from .io import load
 
 
 def make_stats(name):
-    stats = None
-    stats_path = os.path.join('output', 'stats')
-    makedir_exist_ok(stats_path)
-    filenames = os.listdir(stats_path)
-    for filename in filenames:
-        if name == filename:
-            stats = load(os.path.join(stats_path, filename), 'torch')
+    stats_path = os.path.join('output', 'stats', name)
+    if os.path.exists(stats_path):
+        stats = load(stats_path, 'torch')
+    else:
+        print('Data stats not exists')
+        stats = None
     return stats
 
 
@@ -60,4 +59,3 @@ class Stats(object):
         attrs = {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
         attrs_str = ', '.join(f'{k}={v}' for k, v in attrs.items())
         return 'Stats({})'.format(attrs_str)
-
