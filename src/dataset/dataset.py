@@ -19,8 +19,8 @@ def make_dataset(data_name, transform=True, verbose=True):
                                  'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
         dataset_['test'] = eval('dataset.{}(root=root, split="test", '
                                 'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
-        data_stats = (cfg['model']['stats'].mean.tolist(), cfg['model']['stats'].std.tolist())
         if transform:
+            data_stats = (cfg['model']['stats'].mean.tolist(), cfg['model']['stats'].std.tolist())
             dataset_['train'].transform = dataset.Compose([
                 transforms.ToTensor(),
                 transforms.Normalize(*data_stats)])
@@ -32,8 +32,8 @@ def make_dataset(data_name, transform=True, verbose=True):
                                  'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
         dataset_['test'] = eval('dataset.{}(root=root, split="test", '
                                 'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
-        data_stats = (cfg['model']['stats'].mean.tolist(), cfg['model']['stats'].std.tolist())
         if transform:
+            data_stats = (cfg['model']['stats'].mean.tolist(), cfg['model']['stats'].std.tolist())
             dataset_['train'].transform = dataset.Compose([
                 transforms.RandomHorizontalFlip(),
                 transforms.RandomCrop(32, padding=4, padding_mode='reflect'),
@@ -47,8 +47,8 @@ def make_dataset(data_name, transform=True, verbose=True):
                                  'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
         dataset_['test'] = eval('dataset.{}(root=root, split="test", '
                                 'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
-        data_stats = (cfg['model']['stats'].mean.tolist(), cfg['model']['stats'].std.tolist())
         if transform:
+            data_stats = (cfg['model']['stats'].mean.tolist(), cfg['model']['stats'].std.tolist())
             dataset_['train'].transform = dataset.Compose([
                 transforms.RandomCrop(32, padding=4, padding_mode='reflect'),
                 transforms.ToTensor(),
