@@ -39,6 +39,7 @@ def runExperiment():
     cfg['logger_path'] = os.path.join('output', 'logger', 'test', 'runs', cfg['tag'])
     cfg['result_path'] = os.path.join('output', 'result', cfg['tag'])
     dataset = make_dataset(cfg['data_name'])
+    dataset = process_dataset(dataset)
     model = make_model(cfg['model'])
     result = resume(cfg['best_path'])
     if result is None:
@@ -46,7 +47,6 @@ def runExperiment():
     cfg['step'] = result['cfg']['step']
     model = model.to(cfg['device'])
     model.load_state_dict(result['model'])
-    dataset = process_dataset(dataset)
     data_loader = make_data_loader(dataset, cfg[cfg['tag']]['optimizer']['batch_size'])
     test_logger = make_logger(cfg['logger_path'], data_name=cfg['data_name'])
     test(data_loader['test'], model, test_logger)
