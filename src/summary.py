@@ -1,6 +1,7 @@
 import argparse
 import os
 import torch
+import torch.nn as nn
 import torch.backends.cudnn as cudnn
 from torchinfo import summary
 from config import cfg, process_args
@@ -39,6 +40,7 @@ def runExperiment():
     dataset = process_dataset(dataset)
     model = make_model(cfg['model'])
     model = model.to(cfg['device'])
+    model = ModelWrapper(model)
     batch_size = {'train': 2, 'test': 2}
     data_loader = make_data_loader(dataset, batch_size)
     input = next(iter(data_loader['train']))
@@ -48,6 +50,15 @@ def runExperiment():
                                  'mult_adds', 'trainable'])
     save(content, os.path.join(cfg['tag_path'], 'summary'))
     return
+
+
+class ModelWrapper(nn.Module):
+    def __init__(self, model):
+        super().__init__()
+        self.model = model
+
+    def forward(self, input):
+        return self.model(**input)
 
 
 if __name__ == "__main__":
