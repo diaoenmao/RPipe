@@ -51,9 +51,9 @@ class NetworkBlock(nn.Module):
 
 
 class WideResNet(nn.Module):
-    def __init__(self, data_shape, num_classes, depth, widen_factor, drop_rate):
+    def __init__(self, data_size, num_classes, depth, widen_factor, drop_rate):
         super().__init__()
-        num_down = int(min(round(math.log2(data_shape[1])), round(math.log2(data_shape[2])))) - 3
+        num_down = int(min(round(math.log2(data_size[1])), round(math.log2(data_size[2])))) - 3
         hidden_size = [16]
         for i in range(num_down + 1):
             hidden_size.append(16 * (2 ** i) * widen_factor)
@@ -61,7 +61,7 @@ class WideResNet(nn.Module):
         n = ((depth - 1) / (num_down + 1) - 1) / 2
         block = BasicBlock
         blocks = []
-        blocks.append(nn.Conv2d(data_shape[0], hidden_size[0], kernel_size=3, stride=1, padding=1, bias=False))
+        blocks.append(nn.Conv2d(data_size[0], hidden_size[0], kernel_size=3, stride=1, padding=1, bias=False))
         blocks.append(NetworkBlock(n, hidden_size[0], hidden_size[1], block, 1, drop_rate))
         for i in range(num_down):
             blocks.append(NetworkBlock(n, hidden_size[i + 1], hidden_size[i + 2], block, 2, drop_rate))
@@ -87,22 +87,22 @@ class WideResNet(nn.Module):
 
 
 def wresnet28x2(cfg):
-    data_shape = cfg['data_shape']
+    data_size = cfg['data_size']
     target_size = cfg['target_size']
     depth = cfg['wresnet28x2']['depth']
     widen_factor = cfg['wresnet28x2']['widen_factor']
     drop_rate = cfg['wresnet28x2']['drop_rate']
-    model = WideResNet(data_shape, target_size, depth, widen_factor, drop_rate)
+    model = WideResNet(data_size, target_size, depth, widen_factor, drop_rate)
     model.apply(init_param)
     return model
 
 
 def wresnet28x8(cfg):
-    data_shape = cfg['data_shape']
+    data_size = cfg['data_size']
     target_size = cfg['target_size']
     depth = cfg['wresnet28x8']['depth']
     widen_factor = cfg['wresnet28x8']['widen_factor']
     drop_rate = cfg['wresnet28x8']['drop_rate']
-    model = WideResNet(data_shape, target_size, depth, widen_factor, drop_rate)
+    model = WideResNet(data_size, target_size, depth, widen_factor, drop_rate)
     model.apply(init_param)
     return model

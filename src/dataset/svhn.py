@@ -22,7 +22,7 @@ class SVHN(Dataset):
         self.id, self.data, self.target = load(os.path.join(self.processed_folder, self.split))
         self.other = {}
         self.classes_counts = make_classes_counts(self.target)
-        self.data_shape, self.target_size, self.classes_to_labels = load(os.path.join(self.processed_folder, 'meta'))
+        self.data_size, self.target_size, self.classes_to_labels = load(os.path.join(self.processed_folder, 'meta'))
 
     def __getitem__(self, index):
         id, data, target = torch.tensor(self.id[index]), Image.fromarray(self.data[index]), torch.tensor(
@@ -74,12 +74,12 @@ class SVHN(Dataset):
         extra_data, extra_target = read_data_file(os.path.join(self.raw_folder, 'extra_32x32.mat'))
         train_id, test_id, extra_id = np.arange(len(train_data)).astype(np.int64), np.arange(len(test_data)).astype(
             np.int64), np.arange(len(extra_data)).astype(np.int64)
-        data_shape = (3, 32, 32)
+        data_size = (3, 32, 32)
         classes = list(map(str, list(range(10))))
         classes_to_labels = {classes[i]: i for i in range(len(classes))}
         target_size = len(classes)
         return (train_id, train_data, train_target), (test_id, test_data, test_target), (
-            extra_id, extra_data, extra_target), (data_shape, target_size, classes_to_labels)
+            extra_id, extra_data, extra_target), (data_size, target_size, classes_to_labels)
 
 
 def read_data_file(path):

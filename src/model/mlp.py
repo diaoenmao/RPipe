@@ -5,9 +5,9 @@ from .model import init_param
 
 
 class MLP(nn.Module):
-    def __init__(self, data_shape, hidden_size, scale_factor, num_layers, activation, target_size):
+    def __init__(self, data_size, hidden_size, scale_factor, num_layers, activation, target_size):
         super().__init__()
-        input_size = math.prod(data_shape)
+        input_size = math.prod(data_size)
         blocks = []
         for _ in range(num_layers):
             blocks.append(nn.Linear(input_size, hidden_size))
@@ -38,12 +38,12 @@ class MLP(nn.Module):
 
 
 def mlp(cfg):
-    data_shape = cfg['data_shape']
+    data_size = cfg['data_size']
     target_size = cfg['target_size']
     hidden_size = cfg['mlp']['hidden_size']
     scale_factor = cfg['mlp']['scale_factor']
     num_layers = cfg['mlp']['num_layers']
     activation = cfg['mlp']['activation']
-    model = MLP(data_shape, hidden_size, scale_factor, num_layers, activation, target_size)
+    model = MLP(data_size, hidden_size, scale_factor, num_layers, activation, target_size)
     model.apply(init_param)
     return model

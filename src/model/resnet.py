@@ -51,10 +51,10 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, data_shape, hidden_size, block, num_blocks, target_size):
+    def __init__(self, data_size, hidden_size, block, num_blocks, target_size):
         super().__init__()
         self.in_planes = hidden_size[0]
-        self.conv1 = nn.Conv2d(data_shape[0], hidden_size[0], kernel_size=3, stride=1, padding=1, bias=False)
+        self.conv1 = nn.Conv2d(data_size[0], hidden_size[0], kernel_size=3, stride=1, padding=1, bias=False)
         self.layer1 = self._make_layer(block, hidden_size[0], num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, hidden_size[1], num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, hidden_size[2], num_blocks[2], stride=2)
@@ -92,18 +92,18 @@ class ResNet(nn.Module):
 
 
 def resnet10(cfg):
-    data_shape = cfg['data_shape']
+    data_size = cfg['data_size']
     target_size = cfg['target_size']
     hidden_size = cfg['resnet9']['hidden_size']
-    model = ResNet(data_shape, hidden_size, Block, [1, 1, 1, 1], target_size)
+    model = ResNet(data_size, hidden_size, Block, [1, 1, 1, 1], target_size)
     model.apply(init_param)
     return model
 
 
 def resnet18(cfg):
-    data_shape = cfg['data_shape']
+    data_size = cfg['data_size']
     target_size = cfg['target_size']
     hidden_size = cfg['resnet18']['hidden_size']
-    model = ResNet(data_shape, hidden_size, Block, [2, 2, 2, 2], target_size)
+    model = ResNet(data_size, hidden_size, Block, [2, 2, 2, 2], target_size)
     model.apply(init_param)
     return model

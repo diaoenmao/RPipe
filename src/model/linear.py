@@ -5,9 +5,9 @@ from .model import init_param
 
 
 class Linear(nn.Module):
-    def __init__(self, data_shape, target_size):
+    def __init__(self, data_size, target_size):
         super().__init__()
-        input_size = math.prod(data_shape)
+        input_size = math.prod(data_size)
         self.output_proj = nn.Linear(input_size, target_size)
 
     def feature(self, x):
@@ -25,8 +25,8 @@ class Linear(nn.Module):
 
 
 def linear(cfg):
-    data_shape = cfg['data_shape']
+    data_size = cfg['data_size']
     target_size = cfg['target_size']
-    model = Linear(data_shape, target_size)
+    model = Linear(data_size, target_size)
     model.apply(init_param)
     return model

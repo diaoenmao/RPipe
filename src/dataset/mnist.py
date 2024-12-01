@@ -28,7 +28,7 @@ class MNIST(Dataset):
         self.id, self.data, self.target = load(os.path.join(self.processed_folder, self.split))
         self.other = {}
         self.classes_counts = make_classes_counts(self.target)
-        self.data_shape, self.target_size, self.classes_to_labels = load(os.path.join(self.processed_folder, 'meta'))
+        self.data_size, self.target_size, self.classes_to_labels = load(os.path.join(self.processed_folder, 'meta'))
 
     def __getitem__(self, index):
         id, data, target = torch.tensor(self.id[index]), Image.fromarray(self.data[index], mode='L'), torch.tensor(
@@ -79,12 +79,12 @@ class MNIST(Dataset):
         train_target = read_label_file(os.path.join(self.raw_folder, 'train-labels-idx1-ubyte'))
         test_target = read_label_file(os.path.join(self.raw_folder, 't10k-labels-idx1-ubyte'))
         train_id, test_id = np.arange(len(train_data)).astype(np.int64), np.arange(len(test_data)).astype(np.int64)
-        data_shape = (1, 28, 28)
+        data_size = (1, 28, 28)
         classes = list(map(str, list(range(10))))
         classes_to_labels = {classes[i]: i for i in range(len(classes))}
         target_size = len(classes)
         return (train_id, train_data, train_target), (test_id, test_data, test_target), (
-            data_shape, target_size, classes_to_labels)
+            data_size, target_size, classes_to_labels)
 
 
 class FashionMNIST(MNIST):
@@ -104,13 +104,13 @@ class FashionMNIST(MNIST):
         train_target = read_label_file(os.path.join(self.raw_folder, 'train-labels-idx1-ubyte'))
         test_target = read_label_file(os.path.join(self.raw_folder, 't10k-labels-idx1-ubyte'))
         train_id, test_id = np.arange(len(train_data)).astype(np.int64), np.arange(len(test_data)).astype(np.int64)
-        data_shape = (1, 28, 28)
+        data_size = (1, 28, 28)
         classes = ['T-shirt_top', 'Trouser', 'Pullover', 'Dress', 'Coat', 'Sandal', 'Shirt', 'Sneaker', 'Bag',
                    'Ankle boot']
         classes_to_labels = {classes[i]: i for i in range(len(classes))}
         target_size = len(classes)
         return (train_id, train_data, train_target), (test_id, test_data, test_target), (
-            data_shape, target_size, classes_to_labels)
+            data_size, target_size, classes_to_labels)
 
 
 def get_int(b):
