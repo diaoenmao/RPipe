@@ -1,6 +1,8 @@
 import argparse
 import itertools
 import os
+import yaml
+from config import make_control
 
 parser = argparse.ArgumentParser(description='config')
 parser.add_argument('--run', default='train', type=str)
@@ -26,6 +28,15 @@ def make_controls(script_name, init_seeds, num_experiments, resume_mode, control
     return controls
 
 
+def make_config(cfg, control, config_path):
+    cfg['init_seeds'], cfg['num_experiments'], cfg['resume_mode'], control_name = control[1:]
+    os.makedirs(config_path, exist_ok=True)
+    cfg['control'] = make_control(cfg['control'], control_name)
+    with open(os.path.join(config_path, '{}.yml'.format(control_name)), 'w') as f:
+        yaml.dump(cfg, f, default_flow_style=False)
+    return
+
+
 def main():
     run = args['run']
     init_gpu = args['init_gpu']
@@ -38,6 +49,7 @@ def main():
     mode = args['mode']
     split_round = args['split_round']
     script_path = os.path.join('output', 'script')
+    config_path = os.path.join('output', 'config')
     if num_gpus > 0:
         gpu_ids = [','.join(str(i) for i in list(range(x, x + 1))) for x in
                    list(range(init_gpu, init_gpu + num_gpus))]
@@ -53,11 +65,14 @@ def main():
         controls = make_controls(script_name, init_seeds, num_experiments, resume_mode, control_name)
     else:
         raise ValueError('Not valid mode')
+    with open('config.yml', 'r') as f:
+        cfg = yaml.load(f, Loader=yaml.FullLoader)
     s = '#!/bin/bash\n'
     j = 1
     k = 1
     for i in range(len(controls)):
         controls[i] = list(controls[i])
+        make_config(cfg, controls[i], config_path)
         if num_gpus > 0:
             s = s + 'CUDA_VISIBLE_DEVICES=\"{}\" python {} --init_seed {} --num_experiments {} ' \
                     '--resume_mode {} --device cuda ' \
