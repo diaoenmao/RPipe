@@ -29,7 +29,7 @@ def make_controls(script_name, init_seeds, num_experiments, resume_mode, control
 
 
 def make_config(cfg, control, config_path):
-    cfg['init_seeds'], cfg['num_experiments'], cfg['resume_mode'], control_name = control[1:]
+    cfg['init_seed'], cfg['num_experiments'], cfg['resume_mode'], control_name = control[1:]
     os.makedirs(config_path, exist_ok=True)
     cfg['control'] = make_control(cfg['control'], control_name)
     with open(os.path.join(config_path, '{}.yml'.format(control_name)), 'w') as f:
