@@ -15,8 +15,8 @@ def process_args(args):
         config_path = os.path.join('output', 'config', '{}.yml'.format(args['control_name']))
         with open(config_path, 'r') as f:
             parsed_cfg = yaml.load(f, Loader=yaml.FullLoader)
-    for k in parsed_cfg:
-        cfg[k] = parsed_cfg[k]
+        for k in parsed_cfg:
+            cfg[k] = parsed_cfg[k]
     for k in cfg:
         if k != 'control':
             cfg[k] = args[k]

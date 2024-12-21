@@ -39,10 +39,10 @@ class Accuracy(BaseMetric):
     def __call__(self, pred, target):
         with torch.no_grad():
             if target.dtype != torch.int64:
-                target = (target.topk(1, -1, True, True)[1]).view(-1)
+                target = (target.topk(1, 1, True, True)[1]).view(-1)
             batch_size = torch.numel(target)
             if pred.dtype != torch.int64:
-                pred_k = pred.topk(self.topk, -1, True, True)[1]
+                pred_k = pred.topk(self.topk, 1, True, True)[1]
                 correct_k = pred_k.eq(target.unsqueeze(-1).expand_as(pred_k)).float().sum()
             else:
                 correct_k = pred.eq(target).float().sum()

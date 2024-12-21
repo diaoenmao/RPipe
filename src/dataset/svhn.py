@@ -13,11 +13,11 @@ class SVHN(Dataset):
             ('http://ufldl.stanford.edu/housenumbers/test_32x32.mat', 'eb5a983be6a315427106f1b164d9cef3'),
             ('http://ufldl.stanford.edu/housenumbers/extra_32x32.mat', 'a93ce644f1a588dc4d68dda5feec44a7')]
 
-    def __init__(self, root, split, transform=None):
+    def __init__(self, root, split, process=False, transform=None):
         self.root = os.path.expanduser(root)
         self.split = split
         self.transform = transform
-        if not check_exists(self.processed_folder):
+        if not check_exists(self.processed_folder) or process:
             self.process()
         self.id, self.data, self.target = load(os.path.join(self.processed_folder, self.split))
         self.other = {}

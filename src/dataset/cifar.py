@@ -12,11 +12,11 @@ class CIFAR10(Dataset):
     data_name = 'CIFAR10'
     file = [('https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz', 'c58f30108f718f92721af3b95e74349a')]
 
-    def __init__(self, root, split, transform=None):
+    def __init__(self, root, split, process=False, transform=None):
         self.root = os.path.expanduser(root)
         self.split = split
         self.transform = transform
-        if not check_exists(self.processed_folder):
+        if not check_exists(self.processed_folder) or process:
             self.process()
         self.id, self.data, self.target = load(os.path.join(self.processed_folder, self.split))
         self.other = {}

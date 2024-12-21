@@ -8,14 +8,14 @@ from torch.utils.data.dataloader import default_collate
 from config import cfg
 
 
-def make_dataset(data_name, transform=True, verbose=True):
+def make_dataset(data_name, transform=True, process=False, verbose=True):
     dataset_ = {}
     if verbose:
         print('fetching data {}...'.format(data_name))
     root = os.path.join('data', data_name)
 
     if data_name in ['MNIST', 'FashionMNIST']:
-        dataset_['train'] = eval('dataset.{}(root=root, split="train", '
+        dataset_['train'] = eval('dataset.{}(root=root, split="train", process=process, '
                                  'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
         dataset_['test'] = eval('dataset.{}(root=root, split="test", '
                                 'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
@@ -28,7 +28,7 @@ def make_dataset(data_name, transform=True, verbose=True):
                 transforms.ToTensor(),
                 transforms.Normalize(*data_stats)])
     elif data_name in ['CIFAR10', 'CIFAR100']:
-        dataset_['train'] = eval('dataset.{}(root=root, split="train", '
+        dataset_['train'] = eval('dataset.{}(root=root, split="train", process=process, '
                                  'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
         dataset_['test'] = eval('dataset.{}(root=root, split="test", '
                                 'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
@@ -43,7 +43,7 @@ def make_dataset(data_name, transform=True, verbose=True):
                 transforms.ToTensor(),
                 transforms.Normalize(*data_stats)])
     elif data_name in ['SVHN']:
-        dataset_['train'] = eval('dataset.{}(root=root, split="train", '
+        dataset_['train'] = eval('dataset.{}(root=root, split="train", process=process, '
                                  'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
         dataset_['test'] = eval('dataset.{}(root=root, split="test", '
                                 'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))

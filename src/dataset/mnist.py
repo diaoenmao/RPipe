@@ -19,11 +19,11 @@ class MNIST(Dataset):
             ('https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz',
              'ec29112dd5afa0611ce80d1b7f02629c')]
 
-    def __init__(self, root, split, transform=None):
+    def __init__(self, root, split, process=False, transform=None):
         self.root = os.path.expanduser(root)
         self.split = split
         self.transform = transform
-        if not check_exists(self.processed_folder):
+        if not check_exists(self.processed_folder) or process:
             self.process()
         self.id, self.data, self.target = load(os.path.join(self.processed_folder, self.split))
         self.other = {}
