@@ -5,6 +5,7 @@ import torch
 from torchvision import transforms
 from torch.utils.data import DataLoader
 from torch.utils.data.dataloader import default_collate
+from module import apply_recursively
 from config import cfg
 
 
@@ -64,16 +65,25 @@ def make_dataset(data_name, transform=True, process=False, verbose=True):
 
 
 def input_collate(input):
-    first = input[0]
+    def add_(input_, key=None):
+        split_names = key.split('.')
+        current = batch
+        for split_name in split_names[:-1]:
+            if split_name not in current:
+                current[split_name] = {}
+            current = current[split_name]
+        if split_names[-1] not in current:
+            current[split_names[-1]] = input_.unsqueeze(0)
+        else:
+            current[split_names[-1]] = torch.cat([current[split_names[-1]], input_.unsqueeze(0)], dim=0)
+        return
+
     batch = {}
-    for k, v in first.items():
-        if v is not None and not isinstance(v, str):
-            if isinstance(v, torch.Tensor):
-                batch[k] = torch.stack([f[k] for f in input])
-            elif isinstance(v, np.ndarray):
-                batch[k] = torch.tensor(np.stack([f[k] for f in input]))
-            else:
-                batch[k] = torch.tensor([f[k] for f in input])
+    apply_condition = lambda x: isinstance(x, torch.Tensor)
+    identity_condition = lambda x: isinstance(x, (str, type(None)))
+    for i in range(len(input)):
+        input_i = input[i]
+        apply_recursively(add_, input_i, apply_condition=apply_condition, identity_condition=identity_condition)
     return batch
 
 

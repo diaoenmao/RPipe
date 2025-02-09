@@ -153,14 +153,14 @@ class Metric:
             raise ValueError('Not valid mode')
         return evaluation
 
-    def compare(self, val, if_update):
+    def compare(self, val, is_update):
         if self.best_direction == 'down':
             compared = self.best > val
         elif self.best_direction == 'up':
             compared = self.best < val
         else:
             raise ValueError('Not valid best direction')
-        if compared and if_update:
+        if compared and is_update:
             self.best = val
         return compared
 

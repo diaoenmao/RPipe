@@ -101,8 +101,8 @@ class Logger:
         evaluation = self.metric.evaluate(split, mode, input, output, metric_name)
         return evaluation
 
-    def compare(self, split, if_update=True):
-        compare = self.metric.compare(self.mean['{}/{}'.format(split, self.metric.best_metric_name)], if_update)
+    def compare(self, split, is_update=True):
+        compare = self.metric.compare(self.mean['{}/{}'.format(split, self.metric.best_metric_name)], is_update)
         return compare
 
     def flush(self):

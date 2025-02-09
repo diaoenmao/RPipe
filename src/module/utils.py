@@ -1,6 +1,13 @@
+import inspect
 import torch
 from collections.abc import Iterable, Mapping
 from itertools import repeat
+
+
+def filter_args(func, arg_dict):
+    sig = inspect.signature(func)
+    valid_args = {k: v for k, v in arg_dict.items() if k in sig.parameters}
+    return valid_args
 
 
 def ntuple(n):
@@ -12,19 +19,31 @@ def ntuple(n):
     return parse
 
 
-def apply_recursively(fn, input, *args, apply_condition, identity_condition=None):
+def apply_recursively(fn, input, *args, apply_condition, identity_condition=None, key=None):
     if apply_condition(input):
-        return fn(input, *args)
+        sig = inspect.signature(fn)
+        if 'key' in sig.parameters:
+            result = fn(input, *args, key=key)
+        else:
+            result = fn(input, *args)
     elif identity_condition is not None and identity_condition(input):
-        return input
+        result = input
     elif isinstance(input, Mapping):
-        return {key: apply_recursively(fn, value, *args, apply_condition=apply_condition,
-                                       identity_condition=identity_condition) for key, value in input.items()}
+        result = {}
+        for key_, value_ in input.items():
+            updated_key = key_ if key is None else '{}.{}'.format(key, key_)
+            result[key_] = apply_recursively(fn, value_, *args, apply_condition=apply_condition,
+                                             identity_condition=identity_condition, key=updated_key)
     elif isinstance(input, Iterable) and not isinstance(input, (str, bytes)):
-        return [apply_recursively(fn, item, *args, apply_condition=apply_condition,
-                                  identity_condition=identity_condition) for item in input]
+        result = []
+        for i, item in enumerate(input):
+            updated_key = i if key is None else '{}.{}'.format(key, i)
+            result_i = apply_recursively(fn, item, *args, apply_condition=apply_condition,
+                                         identity_condition=identity_condition, key=updated_key)
+            result.append(result_i)
     else:
         raise ValueError('Not valid input type: {} with value {}'.format(type(input), input))
+    return result
 
 
 def to_device(input, device):
