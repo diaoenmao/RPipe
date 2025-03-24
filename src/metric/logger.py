@@ -8,22 +8,43 @@ from .metric import make_metric
 
 
 class Logger:
-    def __init__(self, path, **kwargs):
+    def __init__(self, path, tensorboard=True, profile=False, schedule=None, **kwargs):
+        # self.path = path
+        # if path is not None:
+        #     self.writer = SummaryWriter(self.path)
+        #     self.profiler = torch.profiler.profile(
+        #         activities=[
+        #             torch.profiler.ProfilerActivity.CPU,
+        #             torch.profiler.ProfilerActivity.CUDA,
+        #         ],
+        #         schedule=torch.profiler.schedule(wait=2, warmup=3, active=10, repeat=1),
+        #         on_trace_ready=torch.profiler.tensorboard_trace_handler(self.path),
+        #         record_shapes=True,
+        #         profile_memory=True,
+        #         with_stack=True,
+        #         with_flops=True
+        #     )
         self.path = path
         if path is not None:
-            self.writer = SummaryWriter(self.path)
-            self.profiler = torch.profiler.profile(
-                activities=[
-                    torch.profiler.ProfilerActivity.CPU,
-                    torch.profiler.ProfilerActivity.CUDA,
-                ],
-                schedule=torch.profiler.schedule(wait=2, warmup=3, active=10, repeat=1),
-                on_trace_ready=torch.profiler.tensorboard_trace_handler(self.path),
-                record_shapes=True,
-                profile_memory=True,
-                with_stack=True,
-                with_flops=True
-            )
+            if tensorboard:
+                self.writer = SummaryWriter(self.path)
+            else:
+                self.writer = None
+            if profile:
+                self.profiler = torch.profiler.profile(
+                    activities=[
+                        torch.profiler.ProfilerActivity.CPU,
+                        torch.profiler.ProfilerActivity.CUDA,
+                    ],
+                    schedule=torch.profiler.schedule(**schedule),
+                    on_trace_ready=torch.profiler.tensorboard_trace_handler(self.path),
+                    profile_memory=True,
+                )
+            else:
+                self.profiler = None
+        else:
+            self.writer = None
+            self.profiler = None
         self.tracker = defaultdict(int)
         self.counter = defaultdict(int)
         self.mean = defaultdict(int)

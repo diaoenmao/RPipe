@@ -14,6 +14,9 @@ def process_control():
     cfg['eval']['num_steps'] = -1
     cfg['num_epochs'] = 400
     cfg['collate_mode'] = 'dict'
+    cfg['save_checkpoint'] = True  # TODO: add save period
+    cfg['log'] = {'tensorboard': True, 'profile': cfg['profile'],
+                  'schedule': {'wait': 1, 'warmup': 4, 'active': 8, 'repeat': 1}}
 
     cfg['model'] = {}
     cfg['model']['model_name'] = cfg['model_name']

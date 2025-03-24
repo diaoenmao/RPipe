@@ -49,13 +49,13 @@ def runExperiment():
         model = model.to(cfg['device'])
         optimizer = make_optimizer(model.parameters(), cfg[cfg['tag']]['optimizer'])
         scheduler = make_scheduler(optimizer, cfg[cfg['tag']]['optimizer'])
-        logger = make_logger(cfg['logger_path'], data_name=cfg['data_name'])
+        logger = make_logger(cfg['logger_path'], **cfg['log'], data_name=cfg['data_name'])
     else:
         cfg['step'] = result['cfg']['step']
         model = model.to(cfg['device'])
         optimizer = make_optimizer(model.parameters(), cfg[cfg['tag']]['optimizer'])
         scheduler = make_scheduler(optimizer, cfg[cfg['tag']]['optimizer'])
-        logger = make_logger(cfg['logger_path'], data_name=cfg['data_name'])
+        logger = make_logger(cfg['logger_path'], **cfg['log'], data_name=cfg['data_name'])
         model.load_state_dict(result['model'])
         optimizer.load_state_dict(result['optimizer'])
         scheduler.load_state_dict(result['scheduler'])
@@ -68,12 +68,13 @@ def runExperiment():
     while cfg['step'] < cfg['num_steps']:
         train(data_iterator, model, optimizer, scheduler, logger)
         test(data_loader['test'], model, logger)
-        result = {'cfg': cfg, 'model': model.state_dict(),
-                  'optimizer': optimizer.state_dict(), 'scheduler': scheduler.state_dict(),
-                  'logger': logger.state_dict()}
-        check(result, cfg['checkpoint_path'])
-        if logger.compare('test'):
-            shutil.copytree(cfg['checkpoint_path'], cfg['best_path'], dirs_exist_ok=True)
+        if cfg['save_checkpoint'] or (not cfg['save_checkpoint'] and cfg['step'] >= cfg['num_steps']):
+            result = {'cfg': cfg, 'model': model.state_dict(),
+                      'optimizer': optimizer.state_dict(), 'scheduler': scheduler.state_dict(),
+                      'logger': logger.state_dict()}
+            check(result, cfg['checkpoint_path'])
+            if logger.compare('test'):
+                shutil.copytree(cfg['checkpoint_path'], cfg['best_path'], dirs_exist_ok=True)
         logger.reset()
     return
 
@@ -81,41 +82,45 @@ def runExperiment():
 def train(data_loader, model, optimizer, scheduler, logger):
     model.train(True)
     start_time = time.time()
-    with logger.profiler:
-        for i, input in data_loader:
-            if i % cfg['step_period'] == 0 and cfg['profile']:
-                logger.profiler.step()
-            input_size = input['data'].size(0)
-            input = to_device(input, cfg['device'])
-            output = model(**input)
-            loss = 1 / cfg['step_period'] * output['loss']
-            loss.backward()
-            if (i + 1) % cfg['step_period'] == 0:
-                optimizer.step()
-                scheduler.step()
-                optimizer.zero_grad()
-            evaluation = logger.evaluate('train', 'batch', input, output)
-            logger.append(evaluation, 'train', n=input_size)
-            idx = cfg['step'] % cfg['eval_period']
-            if idx % max(int(cfg['eval_period'] * cfg['log_interval']), 1) == 0 and (i + 1) % cfg['step_period'] == 0:
-                step_time = (time.time() - start_time) / (idx + 1)
-                lr = optimizer.param_groups[0]['lr']
-                epoch_finished_time = datetime.timedelta(
-                    seconds=round((cfg['eval_period'] - (idx + 1)) * step_time))
-                exp_finished_time = datetime.timedelta(
-                    seconds=round((cfg['num_steps'] - (cfg['step'] + 1)) * step_time))
-                info = {'info': ['Model: {}'.format(cfg['tag']),
-                                 'Train Epoch: {}({:.0f}%)'.format((cfg['step'] // cfg['eval_period']) + 1,
-                                                                   100. * idx / cfg['eval_period']),
-                                 'Learning rate: {:.6f}'.format(lr),
-                                 'Epoch Finished Time: {}'.format(epoch_finished_time),
-                                 'Experiment Finished Time: {}'.format(exp_finished_time)]}
-                logger.append(info, 'train')
-                print(logger.write('train'))
-            if (i + 1) % cfg['step_period'] == 0:
-                cfg['step'] += 1
-            if (idx + 1) % cfg['eval_period'] == 0 and (i + 1) % cfg['step_period'] == 0:
-                break
+    profile = cfg['log']['profile'] and logger.profiler is not None
+    if profile:
+        logger.profiler.start()
+    for i, input in data_loader:
+        if profile:
+            logger.profiler.step()
+        input_size = input['data'].size(0)
+        input = to_device(input, cfg['device'])
+        output = model(**input)
+        loss = 1 / cfg['step_period'] * output['loss']
+        loss.backward()
+        if (i + 1) % cfg['step_period'] == 0:
+            optimizer.step()
+            scheduler.step()
+            optimizer.zero_grad()
+        evaluation = logger.evaluate('train', 'batch', input, output)
+        logger.append(evaluation, 'train', n=input_size)
+        idx = cfg['step'] % cfg['eval_period']
+        if idx % max(int(cfg['eval_period'] * cfg['log_interval']), 1) == 0 and (i + 1) % cfg['step_period'] == 0:
+            step_time = (time.time() - start_time) / (idx + 1)
+            lr = optimizer.param_groups[0]['lr']
+            epoch_finished_time = datetime.timedelta(
+                seconds=round((cfg['eval_period'] - (idx + 1)) * step_time))
+            exp_finished_time = datetime.timedelta(
+                seconds=round((cfg['num_steps'] - (cfg['step'] + 1)) * step_time))
+            info = {'info': ['Model: {}'.format(cfg['tag']),
+                             'Train Epoch: {}({:.0f}%)'.format((cfg['step'] // cfg['eval_period']) + 1,
+                                                               100. * idx / cfg['eval_period']),
+                             'Learning rate: {:.6f}'.format(lr),
+                             'Epoch Finished Time: {}'.format(epoch_finished_time),
+                             'Experiment Finished Time: {}'.format(exp_finished_time)]}
+            logger.append(info, 'train')
+            print(logger.write('train'))
+        if (i + 1) % cfg['step_period'] == 0:
+            cfg['step'] += 1
+        if (idx + 1) % cfg['eval_period'] == 0 and (i + 1) % cfg['step_period'] == 0:
+            break
+    if profile:
+        logger.profiler.stop()
     return
 
 
