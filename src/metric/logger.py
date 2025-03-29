@@ -9,21 +9,6 @@ from .metric import make_metric
 
 class Logger:
     def __init__(self, path, tensorboard=True, profile=False, schedule=None, **kwargs):
-        # self.path = path
-        # if path is not None:
-        #     self.writer = SummaryWriter(self.path)
-        #     self.profiler = torch.profiler.profile(
-        #         activities=[
-        #             torch.profiler.ProfilerActivity.CPU,
-        #             torch.profiler.ProfilerActivity.CUDA,
-        #         ],
-        #         schedule=torch.profiler.schedule(wait=2, warmup=3, active=10, repeat=1),
-        #         on_trace_ready=torch.profiler.tensorboard_trace_handler(self.path),
-        #         record_shapes=True,
-        #         profile_memory=True,
-        #         with_stack=True,
-        #         with_flops=True
-        #     )
         self.path = path
         if path is not None:
             if tensorboard:
@@ -50,7 +35,7 @@ class Logger:
         self.mean = defaultdict(int)
         self.history = defaultdict(list)
         self.iterator = defaultdict(int)
-        self.metric = make_metric(['train', 'test'], **kwargs)
+        self.metric = make_metric(**kwargs)
 
     def save(self, flush):
         for name in self.mean:

@@ -49,13 +49,13 @@ def runExperiment():
         model = model.to(cfg['device'])
         optimizer = make_optimizer(model.parameters(), cfg[cfg['tag']]['optimizer'])
         scheduler = make_scheduler(optimizer, cfg[cfg['tag']]['optimizer'])
-        logger = make_logger(cfg['logger_path'], **cfg['log'], data_name=cfg['data_name'])
+        logger = make_logger(cfg['logger_path'], **cfg['log'], split=['train', 'test'], data_name=cfg['data_name'])
     else:
         cfg['step'] = result['cfg']['step']
         model = model.to(cfg['device'])
         optimizer = make_optimizer(model.parameters(), cfg[cfg['tag']]['optimizer'])
         scheduler = make_scheduler(optimizer, cfg[cfg['tag']]['optimizer'])
-        logger = make_logger(cfg['logger_path'], **cfg['log'], data_name=cfg['data_name'])
+        logger = make_logger(cfg['logger_path'], **cfg['log'], split=['train', 'test'], data_name=cfg['data_name'])
         model.load_state_dict(result['model'])
         optimizer.load_state_dict(result['optimizer'])
         scheduler.load_state_dict(result['scheduler'])
@@ -68,7 +68,8 @@ def runExperiment():
     while cfg['step'] < cfg['num_steps']:
         train(data_iterator, model, optimizer, scheduler, logger)
         test(data_loader['test'], model, logger)
-        if cfg['save_checkpoint'] or (not cfg['save_checkpoint'] and cfg['step'] >= cfg['num_steps']):
+        if (cfg['save_checkpoint'] or (not cfg['save_checkpoint'] and cfg['step'] >= cfg['num_steps'])) and \
+                cfg['step'] % cfg['save_period'] == 0:
             result = {'cfg': cfg, 'model': model.state_dict(),
                       'optimizer': optimizer.state_dict(), 'scheduler': scheduler.state_dict(),
                       'logger': logger.state_dict()}

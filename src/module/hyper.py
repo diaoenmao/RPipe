@@ -8,13 +8,14 @@ def process_control():
 
     cfg['batch_size'] = 250
     cfg['step_period'] = 1
-    cfg['num_steps'] = 80000
-    cfg['eval_period'] = 200
+    cfg['num_steps'] = 60
+    cfg['eval_period'] = 30
     cfg['eval'] = {}
     cfg['eval']['num_steps'] = -1
-    cfg['num_epochs'] = 400
+    # cfg['num_epochs'] = 400
     cfg['collate_mode'] = 'dict'
-    cfg['save_checkpoint'] = True  # TODO: add save period
+    cfg['save_checkpoint'] = True
+    cfg['save_period'] = 30
     cfg['log'] = {'tensorboard': True, 'profile': cfg['profile'],
                   'schedule': {'wait': 1, 'warmup': 4, 'active': 8, 'repeat': 1}}
 
