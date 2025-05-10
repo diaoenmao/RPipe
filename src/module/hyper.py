@@ -12,7 +12,8 @@ def process_control():
     cfg['eval_period'] = 30
     cfg['eval'] = {}
     cfg['eval']['num_steps'] = -1
-    # cfg['num_epochs'] = 400
+    cfg['num_epochs'] = None
+    
     cfg['collate_mode'] = 'dict'
     cfg['save_checkpoint'] = True
     cfg['save_period'] = 30
