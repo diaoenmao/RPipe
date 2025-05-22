@@ -19,6 +19,9 @@ def process_control():
     cfg['save_period'] = 30
     cfg['log'] = {'tensorboard': True, 'profile': cfg['profile'],
                   'schedule': {'wait': 1, 'warmup': 4, 'active': 8, 'repeat': 1}}
+    cfg['metric'] = {'metric_name': {'train': ['Loss', 'Accuracy'], 'test': ['Loss', 'Accuracy']},
+                     'best_split': 'test',
+                     'best_metric_name': 'Loss'}
 
     cfg['model'] = {}
     cfg['model']['model_name'] = cfg['model_name']

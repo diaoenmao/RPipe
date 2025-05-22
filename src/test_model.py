@@ -48,7 +48,7 @@ def runExperiment():
     model = model.to(cfg['device'])
     model.load_state_dict(result['model'])
     data_loader = make_data_loader(dataset, cfg[cfg['tag']]['optimizer']['batch_size'])
-    test_logger = make_logger(cfg['logger_path'], **cfg['log'], split=['test'], data_name=cfg['data_name'])
+    test_logger = make_logger(cfg['logger_path'], **cfg['log'], tag=cfg['tag'], metric=cfg['metric'])
     test(data_loader['test'], model, test_logger)
     result = resume(cfg['checkpoint_path'])
     result = {'cfg': cfg, 'logger': {'train': result['logger'],
@@ -73,7 +73,7 @@ def test(data_loader, model, logger):
                          'Test Epoch: {}({:.0f}%)'.format(cfg['step'] // cfg['eval_period'], 100.)]}
         logger.append(info, 'test')
         print(logger.write('test'))
-        logger.save(True)
+        logger.save()
     return
 
 

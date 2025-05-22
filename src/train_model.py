@@ -49,13 +49,13 @@ def runExperiment():
         model = model.to(cfg['device'])
         optimizer = make_optimizer(model.parameters(), cfg[cfg['tag']]['optimizer'])
         scheduler = make_scheduler(optimizer, cfg[cfg['tag']]['optimizer'])
-        logger = make_logger(cfg['logger_path'], **cfg['log'], split=['train', 'test'], data_name=cfg['data_name'])
+        logger = make_logger(cfg['logger_path'], **cfg['log'], tag=cfg['tag'], metric=cfg['metric'])
     else:
         cfg['step'] = result['cfg']['step']
         model = model.to(cfg['device'])
         optimizer = make_optimizer(model.parameters(), cfg[cfg['tag']]['optimizer'])
         scheduler = make_scheduler(optimizer, cfg[cfg['tag']]['optimizer'])
-        logger = make_logger(cfg['logger_path'], **cfg['log'], split=['train', 'test'], data_name=cfg['data_name'])
+        logger = make_logger(cfg['logger_path'], **cfg['log'], tag=cfg['tag'], metric=cfg['metric'])
         model.load_state_dict(result['model'])
         optimizer.load_state_dict(result['optimizer'])
         scheduler.load_state_dict(result['scheduler'])
@@ -144,7 +144,7 @@ def test(data_loader, model, logger):
                          'Test Epoch: {}({:.0f}%)'.format(cfg['step'] // cfg['eval_period'], 100.)]}
         logger.append(info, 'test')
         print(logger.write('test'))
-        logger.save(True)
+        logger.save()
     return
 
 

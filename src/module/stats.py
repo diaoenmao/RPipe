@@ -8,7 +8,7 @@ def make_stats(name):
     if os.path.exists(stats_path):
         stats = load(stats_path, 'torch')
     else:
-        print('Data stats not exists')
+        # print('Data stats not exists')
         stats = None
     return stats
 

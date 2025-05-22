@@ -128,8 +128,9 @@ def make_data_loader(dataset, batch_size, num_steps=None, step=0, step_period=1,
 def process_dataset(dataset):
     processed_dataset = dataset
     cfg['num_samples'] = {k: len(processed_dataset[k]) for k in processed_dataset}
-    cfg['model']['data_size'] = dataset['train'].data_size
-    cfg['model']['target_size'] = dataset['train'].target_size
+    if hasattr(dataset['train'], 'data_size'):
+        cfg['model']['data_size'] = dataset['train'].data_size
+        cfg['model']['target_size'] = dataset['train'].target_size
     if 'num_epochs' in cfg and cfg['num_epochs'] is not None:
         if cfg['batch_size'] > len(processed_dataset['train']):
             cfg['batch_size'] = len(processed_dataset['train'])

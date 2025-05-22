@@ -1,6 +1,6 @@
+import copy
 import torch
 from collections import defaultdict
-from collections.abc import Iterable
 from torch.utils.tensorboard import SummaryWriter
 from numbers import Number
 from module import ntuple
@@ -16,13 +16,17 @@ class Logger:
             else:
                 self.writer = None
             if profile:
+                tag = kwargs.get('tag', None)
+                with_default_name = kwargs.get('with_default_name', True)
+                with_ts = kwargs.get('with_ts', True)
                 self.profiler = torch.profiler.profile(
                     activities=[
                         torch.profiler.ProfilerActivity.CPU,
                         torch.profiler.ProfilerActivity.CUDA,
                     ],
                     schedule=torch.profiler.schedule(**schedule),
-                    on_trace_ready=torch.profiler.tensorboard_trace_handler(self.path),
+                    on_trace_ready=tensorboard_trace_handler(self.path, worker_name=tag,
+                                                             with_default_name=with_default_name, with_ts=with_ts),
                     profile_memory=True,
                 )
             else:
@@ -35,13 +39,11 @@ class Logger:
         self.mean = defaultdict(int)
         self.history = defaultdict(list)
         self.iterator = defaultdict(int)
-        self.metric = make_metric(**kwargs)
+        self.metric = make_metric(copy.deepcopy(kwargs['metric']))
 
-    def save(self, flush):
+    def save(self):
         for name in self.mean:
             self.history[name].append(self.mean[name])
-        if flush and self.writer is not None:
-            self.flush()
         return
 
     def reset(self):
@@ -69,33 +71,30 @@ class Logger:
                                           result[k][i]) / self.counter[name][i]
         return
 
-    def write(self, split, metric_name=None):
-        metric_name = self.metric.metric_name[split] if metric_name is None else metric_name
-        names = ['{}/{}'.format(split, k) for k in metric_name]
-        evaluation_info = []
-        for name in names:
-            split, k = name.split('/')
-            if isinstance(self.mean[name], Number):
-                s = self.mean[name]
-                evaluation_info.append('{}: {:.4f}'.format(k, s))
-                if self.writer is not None:
-                    self.iterator[name] += 1
-                    self.writer.add_scalar(name, s, self.iterator[name])
-            elif isinstance(self.mean[name], Iterable):
-                s = tuple(self.mean[name])
-                evaluation_info.append('{}: {}'.format(k, s))
-                if self.writer is not None:
-                    self.iterator[name] += 1
-                    self.writer.add_scalar(name, s[0], self.iterator[name])
-            else:
-                raise ValueError('Not valid data type')
+    def write(self, split, metric_name=None, writer=None):
+        writer = self.writer if writer is None else writer
+        if metric_name is None and split in self.metric.metric_name:
+            metric_name = self.metric.metric_name[split]
+
         info_name = '{}/info'.format(split)
         info = self.tracker[info_name]
-        info[2:2] = evaluation_info
+
+        evaluation_info = []
+        if metric_name is not None:
+            names = ['{}/{}'.format(split, k) for k in metric_name]
+            for name in names:
+                split, k = name.split('/')
+                s = self.mean[name]
+                evaluation_info.append('{}: {:.4f}'.format(k, s))
+                if writer is not None:
+                    self.iterator[name] += 1
+                    writer.add_scalar(name, s, self.iterator[name])
+            info[2:2] = evaluation_info
+
         info = '  '.join(info)
-        if self.writer is not None:
+        if writer is not None:
             self.iterator[info_name] += 1
-            self.writer.add_text(info_name, info, self.iterator[info_name])
+            writer.add_text(info_name, info, self.iterator[info_name])
         return info
 
     def add(self, split, input, output):
@@ -107,8 +106,9 @@ class Logger:
         evaluation = self.metric.evaluate(split, mode, input, output, metric_name)
         return evaluation
 
-    def compare(self, split, is_update=True):
-        compare = self.metric.compare(self.mean['{}/{}'.format(split, self.metric.best_metric_name)], is_update)
+    def compare(self, if_update=True):
+        compare = self.metric.compare(self.mean['{}/{}'.format(self.metric.best_split,
+                                                               self.metric.best_metric_name)], if_update)
         return compare
 
     def flush(self):
@@ -151,6 +151,42 @@ class Logger:
             self.history[name].extend(state_dict['history'][name])
             self.iterator[name] += state_dict['iterator'][name]
         return
+
+
+def tensorboard_trace_handler(dir_name, worker_name=None, with_default_name=True, with_ts=True, use_gzip=False):
+    """
+    Outputs tracing files to directory of ``dir_name``, then that directory can be
+    directly delivered to tensorboard as logdir.
+    ``worker_name`` should be unique for each worker in distributed scenario,
+    it will be set to '[hostname]_[pid]' by default.
+    """
+    import os
+    import socket
+    import time
+
+    def handler_fn(prof) -> None:
+        nonlocal worker_name
+        if not os.path.isdir(dir_name):
+            try:
+                os.makedirs(dir_name, exist_ok=True)
+            except Exception as e:
+                raise RuntimeError("Can't create directory: " + dir_name) from e
+        if not worker_name:
+            worker_name = f"{socket.gethostname()}_{os.getpid()}"
+        else:
+            if with_default_name:
+                worker_name = f"{worker_name}_{socket.gethostname()}_{os.getpid()}"
+
+        # Use nanosecond here to avoid naming clash when exporting the trace
+        if with_ts:
+            file_name = f"{worker_name}.{time.time_ns()}.pt.trace.json"
+        else:
+            file_name = f"{worker_name}.pt.trace.json"
+        if use_gzip:
+            file_name = file_name + ".gz"
+        prof.export_chrome_trace(os.path.join(dir_name, file_name))
+
+    return handler_fn
 
 
 def make_logger(path=None, **kwargs):
