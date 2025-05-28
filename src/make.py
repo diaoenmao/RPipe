@@ -33,7 +33,7 @@ def make_config(cfg, control, config_path):
     os.makedirs(config_path, exist_ok=True)
     cfg['control'] = make_control(cfg['control'], control_name)
     with open(os.path.join(config_path, '{}.yml'.format(control_name)), 'w') as f:
-        yaml.dump(cfg, f, default_flow_style=False)
+        yaml.dump(cfg, f, default_flow_style=False, sort_keys=False)
     return
 
 
