@@ -76,10 +76,10 @@ def main():
         if num_gpus > 0:
             s = s + 'CUDA_VISIBLE_DEVICES=\"{}\" python {} --init_seed {} --num_experiments {} ' \
                     '--resume_mode {} --device cuda ' \
-                    '--control_name {}&\n'.format(gpu_ids[i % len(gpu_ids)], *controls[i])
+                    '--control_name "{}"&\n'.format(gpu_ids[i % len(gpu_ids)], *controls[i])
         else:
             s = s + 'python {} --init_seed {} --num_experiments {} ' \
-                    '--resume_mode {} --device cpu --control_name {}&\n'.format(*controls[i])
+                    '--resume_mode {} --device cpu --control_name "{}"&\n'.format(*controls[i])
         if i % round == round - 1:
             s = s[:-2] + '\nwait\n'
             if j % split_round == 0:
