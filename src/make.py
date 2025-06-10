@@ -86,7 +86,7 @@ def main():
                 print(s)
                 if not os.path.exists(script_path):
                     os.makedirs(script_path)
-                run_file = open(os.path.join(script_path, '{}_{}.sh'.format(filename, k)), 'w')
+                run_file = open(os.path.join(script_path, '{}_{}.sh'.format(filename, k)), 'w', newline='\n')
                 run_file.write(s)
                 run_file.close()
                 s = '#!/bin/bash\n'
@@ -98,7 +98,7 @@ def main():
         print(s)
         if not os.path.exists(script_path):
             os.makedirs(script_path)
-        run_file = open(os.path.join(script_path, '{}_{}.sh'.format(filename, k)), 'w')
+        run_file = open(os.path.join(script_path, '{}_{}.sh'.format(filename, k)), 'w', newline='\n')
         run_file.write(s)
         run_file.close()
     return
