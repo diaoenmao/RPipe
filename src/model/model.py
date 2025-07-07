@@ -9,7 +9,7 @@ from module import filter_args
 
 def make_model(cfg):
     core = eval('model.{}(cfg)'.format(cfg['model_name']))
-    model_ = model.base(core)
+    model_ = model.base(core, cfg['data_name'], cfg['stats'])
     return model_
 
 

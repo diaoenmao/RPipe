@@ -15,48 +15,53 @@ def make_dataset(data_name, transform=True, process=False, verbose=True):
         print('fetching data {}...'.format(data_name))
     root = os.path.join('data', data_name)
 
-    if data_name in ['MNIST', 'FashionMNIST']:
-        dataset_['train'] = eval('dataset.{}(root=root, split="train", process=process, '
-                                 'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
-        dataset_['test'] = eval('dataset.{}(root=root, split="test", '
-                                'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
-        if transform:
-            data_stats = (cfg['model']['stats'].mean.tolist(), cfg['model']['stats'].std.tolist())
-            dataset_['train'].transform = dataset.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize(*data_stats)])
-            dataset_['test'].transform = dataset.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize(*data_stats)])
-    elif data_name in ['CIFAR10', 'CIFAR100']:
-        dataset_['train'] = eval('dataset.{}(root=root, split="train", process=process, '
-                                 'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
-        dataset_['test'] = eval('dataset.{}(root=root, split="test", '
-                                'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
-        if transform:
-            data_stats = (cfg['model']['stats'].mean.tolist(), cfg['model']['stats'].std.tolist())
-            dataset_['train'].transform = dataset.Compose([
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomCrop(32, padding=4, padding_mode='reflect'),
-                transforms.ToTensor(),
-                transforms.Normalize(*data_stats)])
-            dataset_['test'].transform = dataset.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize(*data_stats)])
-    elif data_name in ['SVHN']:
-        dataset_['train'] = eval('dataset.{}(root=root, split="train", process=process, '
-                                 'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
-        dataset_['test'] = eval('dataset.{}(root=root, split="test", '
-                                'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
-        if transform:
-            data_stats = (cfg['model']['stats'].mean.tolist(), cfg['model']['stats'].std.tolist())
-            dataset_['train'].transform = dataset.Compose([
-                transforms.RandomCrop(32, padding=4, padding_mode='reflect'),
-                transforms.ToTensor(),
-                transforms.Normalize(*data_stats)])
-            dataset_['test'].transform = dataset.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize(*data_stats)])
+    # if data_name in ['MNIST', 'FashionMNIST']:
+    #     dataset_['train'] = eval('dataset.{}(root=root, split="train", process=process, '
+    #                              'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
+    #     dataset_['test'] = eval('dataset.{}(root=root, split="test", '
+    #                             'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
+    #     # if transform:
+    #     #     data_stats = (cfg['model']['stats'].mean.tolist(), cfg['model']['stats'].std.tolist())
+    #     #     dataset_['train'].transform = dataset.Compose([
+    #     #         transforms.ToTensor(),
+    #     #         transforms.Normalize(*data_stats)])
+    #     #     dataset_['test'].transform = dataset.Compose([
+    #     #         transforms.ToTensor(),
+    #     #         transforms.Normalize(*data_stats)])
+    # elif data_name in ['CIFAR10', 'CIFAR100']:
+    #     dataset_['train'] = eval('dataset.{}(root=root, split="train", process=process, '
+    #                              'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
+    #     dataset_['test'] = eval('dataset.{}(root=root, split="test", '
+    #                             'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
+    #     # if transform:
+    #     #     data_stats = (cfg['model']['stats'].mean.tolist(), cfg['model']['stats'].std.tolist())
+    #     #     dataset_['train'].transform = dataset.Compose([
+    #     #         transforms.RandomHorizontalFlip(),
+    #     #         transforms.RandomCrop(32, padding=4, padding_mode='reflect'),
+    #     #         transforms.ToTensor(),
+    #     #         transforms.Normalize(*data_stats)])
+    #     #     dataset_['test'].transform = dataset.Compose([
+    #     #         transforms.ToTensor(),
+    #     #         transforms.Normalize(*data_stats)])
+    # elif data_name in ['SVHN']:
+    #     dataset_['train'] = eval('dataset.{}(root=root, split="train", process=process, '
+    #                              'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
+    #     dataset_['test'] = eval('dataset.{}(root=root, split="test", '
+    #                             'transform=dataset.Compose([transforms.ToTensor()]))'.format(data_name))
+        # if transform:
+        #     data_stats = (cfg['model']['stats'].mean.tolist(), cfg['model']['stats'].std.tolist())
+        #     dataset_['train'].transform = dataset.Compose([
+        #         transforms.RandomCrop(32, padding=4, padding_mode='reflect'),
+        #         transforms.ToTensor(),
+        #         transforms.Normalize(*data_stats)])
+        #     dataset_['test'].transform = dataset.Compose([
+        #         transforms.ToTensor(),
+        #         transforms.Normalize(*data_stats)])
+    if data_name in ['MNIST', 'FashionMNIST', 'CIFAR10', 'CIFAR100', 'SVHN']:
+        dataset_cls = getattr(dataset, data_name)
+        base_transform = dataset.Compose([transforms.ToTensor()])
+        dataset_['train'] = dataset_cls(root=root, split='train', process=process, transform=base_transform)
+        dataset_['test'] = dataset_cls(root=root, split='test', process=process, transform=base_transform)
     else:
         raise ValueError('Not valid dataset name')
     if verbose:

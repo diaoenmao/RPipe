@@ -24,6 +24,7 @@ def process_control():
                      'best_metric_name': 'Loss'}
 
     cfg['model'] = {}
+    cfg['model']['data_name'] = cfg['data_name']
     cfg['model']['model_name'] = cfg['model_name']
     cfg['model']['linear'] = {}
     cfg['model']['mlp'] = {'hidden_size': 128, 'scale_factor': 2, 'num_layers': 2, 'activation': 'relu'}
