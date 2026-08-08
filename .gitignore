@@ -112,8 +112,9 @@ ENV/
 # PowerPoint temporary
 ~$*.ppt*
 
-# data
-data
+# downloaded datasets (repo root only; do not ignore src/**/data package dirs)
+/data/
+/data
 
 #output
 output/

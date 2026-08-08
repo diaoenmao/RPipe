@@ -1,0 +1,29 @@
+# Shared experiment suites for the research foundation.
+
+suites:
+  base:
+    description: Baseline CV classification grid
+    data_names: [MNIST, CIFAR10]
+    model_names: [linear, mlp, cnn, resnet18]
+    num_experiments: 4
+    init_seed: 0
+
+  smoke:
+    description: Smoke联调 — MNIST + linear, short steps
+    data_names: [MNIST]
+    model_names: [linear]
+    num_experiments: 1
+    init_seed: 0
+    hyper:
+      batch_size: 250
+      num_steps: 4
+      eval_period: 2
+      save_period: 2
+      step_period: 1
+
+  extended:
+    description: Extra datasets and wider architectures
+    data_names: [MNIST, FashionMNIST, CIFAR10, CIFAR100, SVHN]
+    model_names: [linear, mlp, cnn, resnet10, resnet18, wresnet28x2]
+    num_experiments: 1
+    init_seed: 0

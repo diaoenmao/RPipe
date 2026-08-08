@@ -1,0 +1,85 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rpipe"
+version = "0.2.0"
+description = "Research foundation library: data / model / algorithm / system"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Enmao Diao" }]
+dependencies = [
+  "matplotlib",
+  "numpy",
+  "pandas",
+  "Pillow",
+  "PyYAML",
+  "scipy",
+  "torch",
+  "torchvision",
+  "torchinfo",
+  "tqdm",
+  "kornia",
+  "xlsxwriter",
+  "tensorboard",
+]
+
+[project.optional-dependencies]
+# extras named after primary use; packages listed explicitly
+nlp = ["transformers", "evaluate", "datasets", "lm_eval", "peft", "modelscope"]
+vision = ["timm", "diffusers"]
+train = ["accelerate"]
+metrics = ["torchmetrics", "evaluate", "lm_eval", "opencompass"]
+local_llm = ["ollama", "llama-cpp-python"]
+all = [
+  "transformers", "evaluate", "datasets", "lm_eval", "peft", "modelscope",
+  "timm", "diffusers", "accelerate", "torchmetrics", "opencompass",
+  "ollama", "llama-cpp-python",
+]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+rpipe-run = "experiments.cli:main"
+
+[project.entry-points."rpipe.data"]
+native = "rpipe.plugins.data.native:NativeDataProvider"
+datasets = "rpipe.plugins.data.datasets_:DatasetsDataProvider"
+
+[project.entry-points."rpipe.model"]
+native = "rpipe.plugins.model.native:NativeModelProvider"
+timm = "rpipe.plugins.model.timm_:TimmModelProvider"
+transformers = "rpipe.plugins.model.transformers_:TransformersModelProvider"
+modelscope = "rpipe.plugins.model.modelscope_:ModelScopeModelProvider"
+peft = "rpipe.plugins.model.peft_:PeftModelProvider"
+ollama = "rpipe.plugins.model.ollama_:OllamaModelProvider"
+
+[project.entry-points."rpipe.algorithm"]
+native = "rpipe.plugins.algorithm.native:NativeMetricProvider"
+torchmetrics = "rpipe.plugins.algorithm.torchmetrics_:TorchMetricsProvider"
+evaluate = "rpipe.plugins.algorithm.evaluate_:EvaluateMetricProvider"
+lm_eval = "rpipe.plugins.algorithm.lm_eval_:LMEvalMetricProvider"
+opencompass = "rpipe.plugins.algorithm.opencompass_:OpenCompassMetricProvider"
+
+[project.entry-points."rpipe.system"]
+native = "rpipe.plugins.system.native:NativeSystemProvider"
+accelerate = "rpipe.plugins.system.accelerate_:AccelerateSystemProvider"
+llama_cpp = "rpipe.plugins.system.llama_cpp_:LlamaCppSystemProvider"
+diffusers = "rpipe.plugins.system.diffusers_:DiffusersSystemProvider"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src", "."]
+include = ["rpipe*", "experiments"]
+exclude = ["examples*", "configs*", "output*", "data*", "asset*", "build*", "dist*", "tests*"]
+
+[tool.setuptools.package-data]
+rpipe = ["config/*.yaml"]
+experiments = ["*.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]

@@ -1,0 +1,15 @@
+---
+# control
+control:
+  data_name: MNIST
+  model_name: linear
+# experiment
+pin_memory: true
+num_workers: 0
+init_seed: 0
+num_experiments: 1
+log_interval: 0.25
+device: cuda
+resume_mode: 0
+profile: false
+output_root: output
