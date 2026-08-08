@@ -95,9 +95,15 @@ class ExperimentConfig:
     hyper_overrides: dict[str, Any] = field(default_factory=dict)
     data_provider: str = 'native'
     model_provider: str = 'native'
-    metric_provider: str = 'native'
-    trainer_backend: str = 'native'
+    train_algorithm: str = 'native'
+    metric_algorithm: str = 'native'
+    generate_algorithm: str | None = None
+    system_provider: str = 'pytorch'
     mixed_precision: str | None = None
+    algorithm_provider: str | None = None
+    pytorch_accelerator: str | None = None
+    metric_provider: str | None = None
+    trainer_backend: str | None = None
 
     @property
     def control_name(self) -> str:
@@ -135,10 +141,75 @@ def experiment_from_mapping(raw: dict[str, Any], hyper: dict | None = None) -> E
         hyper_overrides=dict(hyper),
         data_provider=str(raw.get('data_provider', hyper.get('data_provider', 'native'))),
         model_provider=str(raw.get('model_provider', hyper.get('model_provider', 'native'))),
-        metric_provider=str(raw.get('metric_provider', hyper.get('metric_provider', 'native'))),
-        trainer_backend=str(raw.get('trainer_backend', hyper.get('trainer_backend', 'native'))),
+        train_algorithm=str(
+            raw.get(
+                'train_algorithm',
+                hyper.get(
+                    'train_algorithm',
+                    _legacy_train(
+                        raw.get('trainer_backend', hyper.get('trainer_backend')),
+                        raw.get('pytorch_accelerator', hyper.get('pytorch_accelerator')),
+                        raw.get('algorithm_provider', hyper.get('algorithm_provider')),
+                    ),
+                ),
+            )
+        ),
+        metric_algorithm=str(
+            raw.get(
+                'metric_algorithm',
+                hyper.get(
+                    'metric_algorithm',
+                    raw.get('metric_provider', hyper.get('metric_provider', 'native')),
+                ),
+            )
+        ),
+        generate_algorithm=raw.get(
+            'generate_algorithm',
+            hyper.get(
+                'generate_algorithm',
+                _legacy_generate(
+                    raw.get('trainer_backend', hyper.get('trainer_backend')),
+                    raw.get('algorithm_provider', hyper.get('algorithm_provider')),
+                ),
+            ),
+        ),
+        system_provider=str(
+            raw.get(
+                'system_provider',
+                hyper.get(
+                    'system_provider',
+                    _legacy_system(raw.get('trainer_backend', hyper.get('trainer_backend'))),
+                ),
+            )
+        ),
         mixed_precision=raw.get('mixed_precision', hyper.get('mixed_precision')),
+        algorithm_provider=raw.get('algorithm_provider', hyper.get('algorithm_provider')),
+        pytorch_accelerator=raw.get('pytorch_accelerator', hyper.get('pytorch_accelerator')),
+        metric_provider=raw.get('metric_provider', hyper.get('metric_provider')),
+        trainer_backend=raw.get('trainer_backend', hyper.get('trainer_backend')),
     )
+
+
+def _legacy_system(trainer_backend: str | None) -> str:
+    if trainer_backend in (None, '', 'native', 'accelerate', 'diffusers', 'pytorch'):
+        return 'pytorch'
+    if trainer_backend in ('llama_cpp', 'ggml'):
+        return 'ggml'
+    return 'pytorch'
+
+
+def _legacy_train(trainer_backend, pytorch_accelerator, algorithm_provider) -> str:
+    if algorithm_provider == 'accelerate' or pytorch_accelerator == 'accelerate' or trainer_backend == 'accelerate':
+        return 'accelerate'
+    return 'native'
+
+
+def _legacy_generate(trainer_backend, algorithm_provider):
+    if trainer_backend == 'llama_cpp' or algorithm_provider == 'llama_cpp':
+        return 'llama_cpp'
+    if trainer_backend == 'diffusers' or algorithm_provider == 'diffusers':
+        return 'diffusers'
+    return None
 
 
 def apply_control_name(exp: ExperimentConfig, control_name: str) -> ExperimentConfig:
@@ -206,7 +277,13 @@ def build_runtime_cfg(exp: ExperimentConfig, seed: int) -> RuntimeConfig:
         optimizer=optimizer,
         data_provider=exp.data_provider,
         model_provider=exp.model_provider,
+        train_algorithm=exp.train_algorithm,
+        metric_algorithm=exp.metric_algorithm,
+        generate_algorithm=exp.generate_algorithm,
+        system_provider=exp.system_provider,
+        mixed_precision=exp.mixed_precision,
+        algorithm_provider=exp.algorithm_provider,
+        pytorch_accelerator=exp.pytorch_accelerator,
         metric_provider=exp.metric_provider,
         trainer_backend=exp.trainer_backend,
-        mixed_precision=exp.mixed_precision,
     )

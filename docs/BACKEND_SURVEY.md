@@ -15,16 +15,21 @@
 
 ---
 
-## 0. 修订结论（相对上一版）
+## 0. 修订结论
 
-| 层 | 保留 | 去掉 / 不接 | 新增 |
-|----|------|-------------|------|
-| **data** | `native`，**`datasets`** | WebDataset / Mosaic / LitData / DataPipes（研究底座不需要） | — |
-| **model** | `native`，`timm`，`transformers`，`peft` | **`vllm`（推理服务框架，不当作 model zoo）** | **`modelscope`**，**`ollama`**（本地 GGUF 生态） |
-| **algorithm** | `native`，`torchmetrics`，`evaluate`，**`lm_eval`**，**`opencompass`** | Inspect / EvalPlus / HELM / RAGAS 等（非当前主流必需） | — |
-| **system** | `native`，`accelerate` | **Fabric**（非大众默认） | **`llama_cpp`**（`llama-cpp-python` / GGUF），**`diffusers`**（扩散推理） |
+| 层 | Provider / 旋钮 | 说明 |
+|----|-----------------|------|
+| data | `native`, `datasets` | 仅此 |
+| model | `native`, `timm`, `transformers`, `modelscope`, `peft`, `ollama` | 无 vLLM |
+| **algorithm** | **typed**：`algorithm_type=metric\|generate` | metric≠独立层；generate=推理算法 |
+| **system** | **`pytorch` \| `ggml`** | 张量库基底，不是 trainer 品牌名 |
 
-**metric 约定不变**：`lm_eval` / `opencompass` 与 `torchmetrics` 同属 **algorithm**，`mode=benchmark` vs `online`，无独立 eval 层。
+归属纠正：
+
+- `accelerate` → `system_provider=pytorch` + `pytorch_accelerator=accelerate`
+- `diffusers` → **algorithm** `generate`，要求 `system_provider=pytorch`
+- `llama_cpp` generate → **algorithm** `generate`，要求 **`system_provider=ggml`**
+- 废弃错位名：`metric_provider`、`trainer_backend`
 
 ---
 
@@ -134,21 +139,22 @@
 
 ---
 
-## 6. Runtime 旋钮（与 package 对齐）
+## 6. Runtime 旋钮（与 package / 张量库对齐）
 
 ```yaml
-data_provider:   native | datasets
-model_provider:  native | timm | transformers | modelscope | peft | ollama
-metric_provider: native | torchmetrics | evaluate | lm_eval | opencompass
-trainer_backend: native | accelerate | llama_cpp | diffusers
+data_provider: native | datasets
+model_provider: native | timm | transformers | modelscope | peft | ollama
+algorithm_provider: native | torchmetrics | evaluate | lm_eval | opencompass | llama_cpp | diffusers
+system_provider: pytorch | ggml
+pytorch_accelerator: native | accelerate   # only if system_provider=pytorch
 ```
 
-```python
-# LLM benchmark（algorithm / lm_eval）
-get_provider('algorithm', 'lm_eval').evaluate(
-    model_args='pretrained=gpt2', tasks=['gsm8k'], device='cpu'
-)
-```
+| 组合 | algorithm | system |
+|------|-----------|--------|
+| 训练 + online metric | `native` / `torchmetrics` | `pytorch` |
+| LLM benchmark metric | `lm_eval` | `pytorch` |
+| GGUF generate | `llama_cpp` | **`ggml`** |
+| 扩散 generate | `diffusers` | `pytorch` |
 
 ---
 

@@ -110,12 +110,19 @@ class RuntimeConfig:
         'best_split': 'test',
         'best_metric_name': 'Loss',
     })
-    # pluggable providers (see rpipe.plugins)
+    # pluggable providers
     data_provider: str = 'native'
     model_provider: str = 'native'
-    metric_provider: str = 'native'
-    trainer_backend: str = 'native'
+    train_algorithm: str = 'native'
+    metric_algorithm: str = 'native'
+    generate_algorithm: str | None = None
+    system_provider: str = 'pytorch'
     mixed_precision: str | None = None
+    # deprecated
+    algorithm_provider: str | None = None
+    pytorch_accelerator: str | None = None
+    metric_provider: str | None = None
+    trainer_backend: str | None = None
     # filled by backend
     path: str | None = None
     tag_path: str | None = None

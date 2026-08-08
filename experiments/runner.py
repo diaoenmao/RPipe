@@ -7,7 +7,7 @@ from rpipe.config import (
     load_default_dict,
 )
 from rpipe.system.backend import Evaluator, Trainer
-import rpipe.plugins  # noqa: F401 — register built-in providers
+import rpipe.provider  # noqa: F401 — register layer providers
 from experiments.artifacts import write_run_manifest
 from experiments.prepare import prepare_datasets
 from experiments.process import process_suite_results
@@ -34,8 +34,11 @@ class ResearchPipeline:
         self.base_exp.output_root = output_root
         if self.device == 'cpu':
             self.base_exp.pin_memory = False
-        # suite-level provider overrides
-        for key in ('data_provider', 'model_provider', 'metric_provider', 'trainer_backend', 'mixed_precision'):
+        for key in (
+            'data_provider', 'model_provider',
+            'train_algorithm', 'metric_algorithm', 'generate_algorithm',
+            'system_provider', 'mixed_precision',
+        ):
             if key in self.suite:
                 setattr(self.base_exp, key, self.suite[key])
             elif key in (self.suite.get('hyper') or {}):

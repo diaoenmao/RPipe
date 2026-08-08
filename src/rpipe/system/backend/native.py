@@ -14,7 +14,7 @@ from rpipe.algorithm import make_logger
 from rpipe.config import RuntimeConfig
 from rpipe.data import make_data_loader, process_dataset
 from rpipe.model import make_optimizer, make_scheduler
-from rpipe.plugins.api import get_provider
+from rpipe.provider import get_algorithm, get_provider
 from rpipe.schema import assert_valid_result_blob
 from rpipe.system import check, resume, save, to_device
 
@@ -40,10 +40,10 @@ class NativeTrainer:
 
     def _build_logger(self, path: str):
         r = self.runtime
-        metric_provider = get_provider('algorithm', getattr(r, 'metric_provider', 'native'))
+        algo = get_algorithm('metric', getattr(r, 'metric_algorithm', None) or 'native')
         metric_obj = None
-        if hasattr(metric_provider, 'make_metric'):
-            metric_obj = metric_provider.make_metric(r.metric)
+        if hasattr(algo, 'make_metric'):
+            metric_obj = algo.make_metric(r.metric)
         return make_logger(path, **r.log, tag=r.tag, metric=r.metric, metric_obj=metric_obj)
 
     def _backward(self, loss):
@@ -178,10 +178,10 @@ class Evaluator:
 
     def _build_logger(self, path: str):
         r = self.runtime
-        metric_provider = get_provider('algorithm', getattr(r, 'metric_provider', 'native'))
+        algo = get_algorithm('metric', getattr(r, 'metric_algorithm', None) or 'native')
         metric_obj = None
-        if hasattr(metric_provider, 'make_metric'):
-            metric_obj = metric_provider.make_metric(r.metric)
+        if hasattr(algo, 'make_metric'):
+            metric_obj = algo.make_metric(r.metric)
         return make_logger(path, **r.log, tag=r.tag, metric=r.metric, metric_obj=metric_obj)
 
     def run(self):

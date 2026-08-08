@@ -44,29 +44,36 @@ dev = ["pytest>=7.0"]
 rpipe-run = "experiments.cli:main"
 
 [project.entry-points."rpipe.data"]
-native = "rpipe.plugins.data.native:NativeDataProvider"
-datasets = "rpipe.plugins.data.datasets_:DatasetsDataProvider"
+native = "rpipe.data.native:NativeDataProvider"
+datasets = "rpipe.data.datasets:DatasetsDataProvider"
 
 [project.entry-points."rpipe.model"]
-native = "rpipe.plugins.model.native:NativeModelProvider"
-timm = "rpipe.plugins.model.timm_:TimmModelProvider"
-transformers = "rpipe.plugins.model.transformers_:TransformersModelProvider"
-modelscope = "rpipe.plugins.model.modelscope_:ModelScopeModelProvider"
-peft = "rpipe.plugins.model.peft_:PeftModelProvider"
-ollama = "rpipe.plugins.model.ollama_:OllamaModelProvider"
+native = "rpipe.model.native:NativeModelProvider"
+timm = "rpipe.model.timm:TimmModelProvider"
+transformers = "rpipe.model.transformers:TransformersModelProvider"
+modelscope = "rpipe.model.modelscope:ModelScopeModelProvider"
+peft = "rpipe.model.peft:PeftModelProvider"
+ollama = "rpipe.model.ollama:OllamaModelProvider"
+gguf = "rpipe.model.gguf:GgufModelProvider"
 
-[project.entry-points."rpipe.algorithm"]
-native = "rpipe.plugins.algorithm.native:NativeMetricProvider"
-torchmetrics = "rpipe.plugins.algorithm.torchmetrics_:TorchMetricsProvider"
-evaluate = "rpipe.plugins.algorithm.evaluate_:EvaluateMetricProvider"
-lm_eval = "rpipe.plugins.algorithm.lm_eval_:LMEvalMetricProvider"
-opencompass = "rpipe.plugins.algorithm.opencompass_:OpenCompassMetricProvider"
+[project.entry-points."rpipe.algorithm.train"]
+native = "rpipe.algorithm.train.native:NativeTrainAlgorithm"
+accelerate = "rpipe.algorithm.train.accelerate:AccelerateTrainAlgorithm"
+
+[project.entry-points."rpipe.algorithm.metric"]
+native = "rpipe.algorithm.metric.native:NativeMetricAlgorithm"
+torchmetrics = "rpipe.algorithm.metric.torchmetrics:TorchMetricsAlgorithm"
+evaluate = "rpipe.algorithm.metric.evaluate:EvaluateMetricAlgorithm"
+lm_eval = "rpipe.algorithm.metric.lm_eval:LMEvalMetricAlgorithm"
+opencompass = "rpipe.algorithm.metric.opencompass:OpenCompassMetricAlgorithm"
+
+[project.entry-points."rpipe.algorithm.generate"]
+llama_cpp = "rpipe.algorithm.generate.llama_cpp:LlamaCppGenerateAlgorithm"
+diffusers = "rpipe.algorithm.generate.diffusers:DiffusersGenerateAlgorithm"
 
 [project.entry-points."rpipe.system"]
-native = "rpipe.plugins.system.native:NativeSystemProvider"
-accelerate = "rpipe.plugins.system.accelerate_:AccelerateSystemProvider"
-llama_cpp = "rpipe.plugins.system.llama_cpp_:LlamaCppSystemProvider"
-diffusers = "rpipe.plugins.system.diffusers_:DiffusersSystemProvider"
+pytorch = "rpipe.system.pytorch:PyTorchSystemProvider"
+ggml = "rpipe.system.ggml:GgmlSystemProvider"
 
 [tool.setuptools]
 include-package-data = true
@@ -83,3 +90,36 @@ experiments = ["*.yaml"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src", "."]
+addopts = "-q --tb=short"
+filterwarnings = [
+  "ignore::DeprecationWarning",
+]
+markers = [
+  "unit: Unit test",
+  "integration: Integration test",
+  "e2e: End-to-end test",
+  "location: Location / structure test",
+  "content: Content / functional test",
+  "physical: Physical resource test",
+  "p1: Priority 1",
+  "p2: Priority 2",
+  "p3: Priority 3",
+  "data_layer: data layer",
+  "model_layer: model layer",
+  "algorithm_layer: algorithm layer",
+  "system_layer: system layer",
+  "config_layer: config layer",
+  "schema_layer: schema layer",
+  "plugins_layer: plugins layer",
+  "application_layer: application / experiments layer",
+  "runtime: runtime physical trait",
+  "memory: memory physical trait",
+  "slow: slow test",
+  "external: optional third-party / network",
+  "gpu: uses CUDA when available",
+  "module_registry: module registry",
+  "module_provider: module provider",
+  "module_trainer: module trainer",
+  "feature_smoke: feature smoke",
+  "feature_providers: feature providers",
+]
