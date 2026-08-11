@@ -85,7 +85,6 @@ exclude = ["examples*", "configs*", "output*", "data*", "asset*", "build*", "dis
 
 [tool.setuptools.package-data]
 rpipe = ["config/*.yaml"]
-experiments = ["*.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

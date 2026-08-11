@@ -11,7 +11,7 @@ def build_parser():
         prog='rpipe-run',
         description='Run research suites: prepare → train → test → process → artifacts',
     )
-    parser.add_argument('--suite', default='smoke', help='Suite name from experiments/suites.yaml')
+    parser.add_argument('--suite', default='smoke', help='Suite name from configs/suites/default.yaml')
     parser.add_argument('--stages', default=','.join(STAGES), help='Comma-separated stages')
     parser.add_argument('--device', default=None, help='cpu | cuda (default: auto)')
     parser.add_argument('--output-root', default='output')

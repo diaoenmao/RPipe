@@ -4,11 +4,11 @@ import itertools
 from pathlib import Path
 from typing import Any
 
-from rpipe.config import load_yaml
+from rpipe.config import load_yaml, repo_root
 
 
 def suites_path() -> Path:
-    return Path(__file__).resolve().parent / 'suites.yaml'
+    return repo_root() / 'configs' / 'suites' / 'default.yaml'
 
 
 def list_suites(path=None) -> list[str]:

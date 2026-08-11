@@ -1,90 +1,30 @@
 # RPipe
 
-Research Pipeline **v0.2** — 可安装研究底座（`rpipe`）+ 包外实验编排（`experiments/`）。
+Research Pipeline — **可重复、可编排、可序列化的研究执行底座**。
 
-> 约定：每次代码改动后同步更新本 README。  
-> 调研：[`docs/BACKEND_SURVEY.md`](docs/BACKEND_SURVEY.md) · 接线：[`docs/PROVIDERS.md`](docs/PROVIDERS.md)
+设计文档：[docs/CONCEPT.md](docs/CONCEPT.md)（概念定稿后再写布局与代码结构文档）
 
----
-
-## 1. 分层与目录（按 package / 实现名）
-
-第三方**不**堆在 `plugins/`。实现就在层目录下，路径 = 旋钮名：
-
-```
-src/rpipe/
-  provider/                 # 仅 registry + bindings（薄）
-  data/native/              data/datasets/
-  model/native/ timm/ transformers/ modelscope/ peft/ ollama/ gguf/
-  algorithm/
-    train/native/  train/accelerate/
-    metric/native/ torchmetrics/ evaluate/ lm_eval/ opencompass/
-    generate/llama_cpp/  generate/diffusers/
-  system/pytorch/  system/ggml/
-```
-
-```
-data → model → algorithm(train | metric | generate) → system(pytorch | ggml)
-```
-
-| 旋钮 | 取值 |
-|------|------|
-| `data_provider` | `native` \| `datasets` |
-| `model_provider` | `native` \| `timm` \| `transformers` \| `modelscope` \| `peft` \| `ollama` \| **`gguf`** |
-| `train_algorithm` | `native` \| **`accelerate`**（训练算法，不是 system） |
-| `metric_algorithm` | `native` \| `torchmetrics` \| `evaluate` \| `lm_eval` \| `opencompass` |
-| `generate_algorithm` | `llama_cpp` \| `diffusers` |
-| `system_provider` | `pytorch` \| `ggml`（张量基底；常由绑定自动填） |
-
-### 绑定（选一边会带上另一边）
-
-| 选择 | 自动绑定 |
-|------|----------|
-| `train_algorithm: accelerate` | `system_provider: pytorch` |
-| `generate_algorithm: llama_cpp` | `system: ggml` + `model: gguf`（llama.cpp 栈固定） |
-| `model_provider: gguf` | `generate: llama_cpp` + `system: ggml` |
-| `generate_algorithm: diffusers` | `system: pytorch` |
+历史交接：[docs/HANDOVER.md](docs/HANDOVER.md)
 
 ---
 
-## 2. API
-
-```python
-from rpipe.provider import get_provider, get_algorithm, list_providers
-
-list_providers()
-# {'data': [...], 'model': [...],
-#  'algorithm': {'train': [...], 'metric': [...], 'generate': [...]},
-#  'system': ['pytorch', 'ggml']}
-
-get_provider('data', 'datasets')
-get_provider('model', 'gguf')
-get_algorithm('train', 'accelerate')
-get_algorithm('metric', 'lm_eval').evaluate(
-    model_args='pretrained=gpt2', tasks=['gsm8k'], device='cpu'
-)
-get_algorithm('generate', 'llama_cpp')  # implies ggml + gguf
-```
-
-```yaml
-data_provider: native
-model_provider: native
-train_algorithm: native          # | accelerate
-metric_algorithm: native         # | torchmetrics | lm_eval | ...
-# generate_algorithm: llama_cpp  # then system→ggml, model→gguf
-system_provider: pytorch         # | ggml
-```
-
----
-
-## 3. 安装与测试
+## 安装
 
 ```bash
 pip install -e ".[dev]"
-pytest
-python tests/generate_report.py
-python -m experiments --suite smoke --device cpu
 ```
+
+---
+
+## 快速运行（当前实现，待与 CONCEPT 阶段模型对齐）
+
+```bash
+pytest
+python -m experiments --suite smoke --device cpu
+python -m experiments --list-suites
+```
+
+Suite 定义：`configs/suites/default.yaml`
 
 ---
 
