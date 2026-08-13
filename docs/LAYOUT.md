@@ -14,22 +14,25 @@
 
 | 概念 | 目录落点 |
 |------|----------|
-| **Study** | `examples/studies/…` — 编排 Experiment，在变量轴上展开并**落盘 Config** |
-| **Experiment** | `examples/experiments/…` — 声明 Structure + Flow 的可运行单元 |
+| **Study** | `examples/studies/…` — 编排 Experiment；触发展开与运行 |
+| **Experiment** | `examples/experiments/…` — 声明 Structure + Flow；Control → Config 落盘 |
 | **Structure** | `src/rpipe/structure/` — Control 与 data / model / algorithm / system |
 | **Flow** | `src/rpipe/flow/` — prepare → execute → collect → summarize → index |
 | **Artifact** | 各次运行的持久化子树 — Config、Result、Asset 同树共存 |
-| **Control** | Structure 成员；对象代码在 `structure/control/`；**无**独立 examples 代码目录 |
+| **Control** | Structure 成员；对象代码在 `structure/control/`；Config 由其得到 |
 
 读写边界（与 CONCEPT §5、§6 一致）：
 
-- **Config**：Study（或 Experiment 的 `grid/`）写入 Artifact；**prepare 只读**；Flow 其余阶段不修改
+- **Config**：由 Experiment 的 **Control** 得到并落盘到 Artifact（经 `grid/` 等）；**prepare 只读**；Flow 其余阶段不修改
 - **Result**：collect / summarize / index 写入 Artifact
 - **Asset**：prepare / execute 读写；collect / summarize / index 不操作 Asset 文件
 
 ---
 
 ## 2. 概念与路径总览
+
+Config **不是** Study 树上的独立支路产物，而是由 **Experiment 侧 Structure 中的 Control** 得到：Control 承载变量指派与 Structure 字段，落盘为 Artifact 内的 Config；prepare 再读回 Config 构造 Control 对象。
+
 
 ```mermaid
 flowchart TB
@@ -39,27 +42,30 @@ flowchart TB
   end
   subgraph lib [src/rpipe/]
   structure[structure/]
+  control[structure/control/]
   flow[flow/]
   artifact_io[artifact/]
   end
-  studies -->|落盘 Config| artifact_tree[artifact/run_slug/]
-  studies -->|调用| exps
+  studies -->|编排调用| exps
+  exps --> structure
+  structure --> control
+  control -->|得到并落盘| artifact_tree[artifact/run_slug/ Config]
   exps -->|launch/ 跑 Flow| flow
-  flow -->|读 Config| artifact_tree
+  flow -->|prepare 读 Config| artifact_tree
   flow -->|写 Result Asset| artifact_tree
   flow --> structure
   flow --> artifact_io
 ```
 
+
 | 概念 | 仓库路径 | 说明 |
 |------|----------|------|
-| Study | `examples/studies/<study_slug>/` | 变量轴展开、落盘 Config、选定 Experiment 与运行 |
+| Study | `examples/studies/<study_slug>/` | 编排：选定 Experiment、展开运行、触发 `grid/` / `launch/` |
 | Experiment | `examples/experiments/<experiment_slug>/` | 含 `launch/`、`grid/`、本实验 `artifact/` |
-| Control（对象） | `src/rpipe/structure/control/` | prepare 读 Config 后构造；summarize 可写入 Result |
+| Control（对象） | `src/rpipe/structure/control/` | Structure 成员；Config 由其字段得到；prepare 读 Config 后构造 |
 | Structure 四层 | `src/rpipe/structure/{data,model,algorithm,system}/` | algorithm 下分 `train/`、`eval/`、`inference/` |
 | Flow 五阶段 | `src/rpipe/flow/{prepare,execute,collect,summarize,index}/` | Experiment `launch/` import 并驱动 |
-| Artifact IO | `src/rpipe/artifact/{config,result,asset}/` | 库内读写门面，对应磁盘上的 Artifact 成员 |
-| Result 契约 | `src/rpipe/schema/` | Result 定稿校验；非业务层，服务 autoresearch 消费 |
+| Artifact IO | `src/rpipe/artifact/{config,result,asset}/` | 库内读写门面；Config 对应 Control 的 declarative 落盘 |
 
 ---
 
@@ -90,8 +96,6 @@ RPipe/
         config/
         result/
         asset/
-      schema/
-      defaults/              # 包级默认（非概念 Config）；过渡期可仍名 config/
   examples/
     studies/
       mnist_lr_seed/         # Study：展开 lr × seed，落盘多份 Config
@@ -104,20 +108,41 @@ RPipe/
             assets/
           lr0.01_seed1/
             assets/
-  configs/
-    suites/                    # 包外 suite 定义（过渡编排，非 CONCEPT 核心）
   docs/
   tests/
-    unit/
+    rpipe/                       # 镜像 src/rpipe/ 目录骨架
       structure/
+        control/
+        data/
+        model/
+        algorithm/
+          train/
+          eval/
+          inference/
+        system/
       flow/
+        prepare/
+        execute/
+        collect/
+        summarize/
+        index/
       artifact/
-    integration/
-    e2e/
-    fixtures/
+        config/
+        result/
+        asset/
+    examples/                    # 镜像 examples/（Study / Experiment 入口）
+      studies/
+        mnist_lr_seed/
+      experiments/
+        mnist_linear/
+          launch/
+          grid/
+    _fixtures/                   # 共享测试数据（不参与源码镜像）
       artifact/
         lr0.01_seed0/
           assets/
+    _helpers/                    # 测试辅助（不得以 test_ 命名）
+    README.md                    # 标签、执行入口、排除项与例外
 ```
 
 根下另有工程元数据（`.gitignore`、`pyproject.toml` 等），不进入概念映射。
@@ -126,7 +151,7 @@ RPipe/
 
 | 成员 | 典型叶路径 | 写入方 |
 |------|------------|--------|
-| Config | `<run_slug>/config.yaml` | Study / `grid/` |
+| Config | `<run_slug>/config.yaml` | Experiment：由 Control 得到（如经 `grid/`） |
 | Result | `<run_slug>/result.json`（或 `result/` 目录） | Flow：collect → summarize → index |
 | Asset | `<run_slug>/assets/` | Flow：prepare / execute |
 
@@ -140,9 +165,9 @@ Config 与 Result 均在 Artifact 子树内，**不在** Artifact 外另设平�
 
 **Study**（`examples/studies/<study_slug>/`）只做编排，不实现 Structure / Flow：
 
-- 在变量轴上展开多次运行（含 Control 所指派的 data / model / algorithm / system 取值）
-- 为各次运行落盘 Config 到对应 `artifact/<run_slug>/`
-- 选定 Experiment，调用其 `launch/`（或先经 `grid/` 再 `launch/`）
+- 选定 Experiment，按变量轴触发展开（调用该 Experiment 的 `grid/` 等）
+- Control 取值经 Experiment 落为各 `artifact/<run_slug>/` 下的 Config
+- 调用 Experiment 的 `launch/` 跑 Flow
 
 **Experiment**（`examples/experiments/<experiment_slug>/`）是可运行单元，各自独立持有：
 
@@ -158,7 +183,7 @@ Config 与 Result 均在 Artifact 子树内，**不在** Artifact 外另设平�
 
 ```
 examples/experiments/mnist_linear/artifact/lr0.01_seed0/
-  config.yaml       # Config（Study / grid 写；prepare 读）
+  config.yaml       # Config（由 Control 得到；grid 写；prepare 读）
   result.json       # Result（index 定稿后）
   assets/           # Asset（checkpoint、缓存、日志、生成样本等）
 ```
@@ -188,7 +213,7 @@ examples/studies/mnist_lr_seed/
 
 ## 5. 可安装库 `src/rpipe/`
 
-仓库名 **RPipe**，包名 **`rpipe`**。库一级目录与 CONCEPT 三柱对齐：**Structure**、**Flow**、**Artifact**（加 schema / defaults 支撑）。
+仓库名 **RPipe**，包名 **`rpipe`**。库一级目录与 CONCEPT 三柱对齐：**Structure**、**Flow**、**Artifact**。
 
 | 目录 | 对应 CONCEPT | 职责 |
 |------|--------------|------|
@@ -198,11 +223,11 @@ examples/studies/mnist_lr_seed/
 | `structure/algorithm/eval/` | algorithm §4.3.2 | 评测：metric、benchmark 聚合 |
 | `structure/algorithm/inference/` | algorithm §4.3.3 | 推理 / 生成 |
 | `flow/prepare/` … `flow/index/` | Flow 五阶段 | 见 CONCEPT §5.1–§5.5 |
-| `artifact/config/` | Config IO | 读取 Study 落盘的 declarative 配置 |
+| `artifact/config/` | Config IO | 读写 Artifact 内 Config（由 Control 得到） |
 | `artifact/result/` | Result IO | collect / summarize / index 写入与定稿 |
 | `artifact/asset/` | Asset IO | prepare / execute 读写文件型产物 |
-| `schema/` | Result 契约 | autoresearch 可校验的结构化 Result |
-| `defaults/` | （包级） | 与概念 Config 区分；库内默认 YAML / 运行时过渡 |
+
+**Schema（不单立目录）：** Result / Config 的结构契约由 **Control 侧代码**声明与校验，视为 Config 能力的一部分（落盘仍走 Artifact Config / Result），不在 `src/rpipe/` 下另建 `schema/` 包。
 
 第三方运行时（PyTorch、HF、`datasets` 等）在 **Structure 各层内部**按需适配，不单独占与 CONCEPT 无关的一级目录（如平行 `provider/` 树）。
 
@@ -220,14 +245,42 @@ examples/studies/mnist_lr_seed/
 
 ## 6. tests
 
-| 目录 | 对齐 |
-|------|------|
-| `tests/unit/structure/` | Control、四层 Structure |
-| `tests/unit/flow/` | 五阶段模块与编排 |
-| `tests/unit/artifact/` | Config / Result / Asset IO |
-| `tests/integration/` | prepare → execute 等跨模块链 |
-| `tests/e2e/` | Study → Experiment → Artifact 整链 |
-| `tests/fixtures/artifact/` | 模拟 `artifact/<run_slug>/` 子树 |
+测试目录遵循「测试结构映射代码结构」：在 `tests/` 下建立与被测程序同名的镜像目录，复制有效目录骨架与相对路径。**`unit` / `integration` / `e2e` 是强制标签，不得作为 `tests/` 下额外一级分类目录。**
+
+### 6.1 镜像范围
+
+| 镜像根 | 对应被测根 | 用途 |
+|--------|------------|------|
+| `tests/rpipe/` | `src/rpipe/` | 库：Structure / Flow / Artifact |
+| `tests/examples/` | `examples/` | 包外 Study / Experiment 入口（launch、grid、Study 脚本） |
+
+尚无测试的源目录也应保留占位或在 `tests/README.md` 登记。构建产物、缓存、虚拟环境、`.test-results/` 等不镜像，排除项必须登记。
+
+共享数据与辅助代码放在镜像外：
+
+- `_fixtures/` — 稳定公共数据（如预制 Artifact Config）
+- `_helpers/` — 辅助函数（禁止 `test_` 前缀，避免被收集为用例）
+
+### 6.2 落位规则
+
+| 层级（标签） | 落位 | 说明 |
+|--------------|------|------|
+| `unit` | 被测源文件镜像位置 | 如 `src/rpipe/structure/control/` → `tests/rpipe/structure/control/test_control.py` |
+| `integration` | 调用路径起点的镜像位置 | 不建 `integration/` 目录；跨 `flow`+`structure` 的路径落在起点包下 |
+| `e2e` | 系统外部入口镜像位置 | 如 Study / launch 入口 → `tests/examples/studies/…` 或 `tests/examples/experiments/…/launch/`；无法归单入口时放镜像根 |
+
+每项测试必须且只能带一个测试层级标签、一个主要类型标签、一个优先级标签（见 CODE_STRUCTURE 与 `tests/README.md`）。
+
+### 6.3 与本仓库概念的对齐
+
+| 被测区域 | 镜像下典型覆盖 |
+|----------|----------------|
+| `structure/control` | Control ↔ Config 往返；契约字段 / 校验（schema 能力）；location |
+| `structure` 四层 / algorithm | prepare 钩子、semantics `run` |
+| `flow/*` | 各阶段 `run(ctx)`；Runner 子集 |
+| `artifact/*` | layout 与 Config / Result / Asset IO |
+| Experiment `grid` / `launch` | 展开落盘、驱动 Flow |
+| Study | 编排整链（多为 `e2e`） |
 
 ---
 
@@ -237,26 +290,9 @@ examples/studies/mnist_lr_seed/
 |------|------|
 | [CONCEPT.md](CONCEPT.md) | 概念与关系（主文档） |
 | [LAYOUT.md](LAYOUT.md) | 本文：目录树与落盘 |
-| [CODE_STRUCTURE.md](CODE_STRUCTURE.md) | 模块、类与方法职责 |
+| [CODE_STRUCTURE.md](CODE_STRUCTURE.md) | 代码结构总览与依赖；细则见分册 |
+| [code_structure/structure.md](code_structure/structure.md) | Structure：control / 四层模块与叶文件 |
+| [code_structure/flow.md](code_structure/flow.md) | Flow：上下文、Runner、五阶段模块与叶文件 |
+| [code_structure/artifact.md](code_structure/artifact.md) | Artifact：layout 与 Config / Result / Asset IO |
+| [TESTING.md](TESTING.md) | 测试规范（目录镜像、标签、优先级、执行与结果持久化） |
 | [HANDOVER.md](HANDOVER.md) | v0.2 历史交接 |
-
----
-
-## 8. 版本库与忽略
-
-忽略缓存与 Artifact 下大体积 Asset（`assets/` 内 checkpoint、生成样本等）。`config.yaml` 等小体积 declarative 是否进 git 由 Study / Experiment 约定。
-
----
-
-## 9. 与当前实现的差距（过渡）
-
-当前分支仍保留 v0.2 实现痕迹，与本文目标布局尚未完全一致，迁移时参考：
-
-| 目标（本文） | 当前实现（过渡） |
-|--------------|------------------|
-| `examples/studies/` + `examples/experiments/` | 根目录 `experiments/` CLI + `examples/run_smoke.py` |
-| `structure/` + `flow/` + `artifact/` | `data/`、`model/`、`algorithm/`、`system/` + `provider/` |
-| `artifact/<run_slug>/` 在 Experiment 下 | `output/` 或 suite 驱动路径 |
-| algorithm：`train` / `eval` / `inference` | algorithm：`train` / `metric` / `generate` |
-
-以 [CONCEPT.md](CONCEPT.md) 为准逐步收敛；本文描述的是目标落点，而非现状快照。
