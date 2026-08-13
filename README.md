@@ -2,7 +2,7 @@
 
 Research Pipeline — **可重复、可编排、可序列化的研究执行底座**。
 
-设计文档：[docs/CONCEPT.md](docs/CONCEPT.md)（概念定稿后再写布局与代码结构文档）
+设计文档：[docs/CONCEPT.md](docs/CONCEPT.md) · [docs/LAYOUT.md](docs/LAYOUT.md)
 
 历史交接：[docs/HANDOVER.md](docs/HANDOVER.md)
 

@@ -1,7 +1,7 @@
 # 代码结构
 
 > **状态：** 大纲 v3（文字叙述 + 文末摘要表），待审。  
-> **前置：** [CONCEPT.md](CONCEPT.md)、[REPO_LAYOUT.md](REPO_LAYOUT.md)。
+> **前置：** [CONCEPT.md](CONCEPT.md)、[LAYOUT.md](LAYOUT.md)。
 
 ## 一、导读
 

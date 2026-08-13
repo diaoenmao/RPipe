@@ -1,7 +1,7 @@
 # RPipe Handover（压缩）
 
 > **当前设计以 [CONCEPT.md](CONCEPT.md) 为准**；本文档仅保留 v0.2 暂停线时的历史上下文。  
-> REPO_LAYOUT / CODE_STRUCTURE / PROVIDERS 等派生文档待 CONCEPT 定稿后再写。
+> LAYOUT / CODE_STRUCTURE 等派生文档随 CONCEPT 迭代；以 CONCEPT 为准。
 
 > 用途：暂停当前实现线，**重新梳理项目**前的上下文交接。  
 > 日期：2026-08-09  
