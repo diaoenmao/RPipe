@@ -1,0 +1,11 @@
+slug: seed_0
+seed: 0
+data:
+  name: MNIST
+model:
+  name: linear
+algorithm:
+  semantics: [train]
+  num_steps: 1
+system:
+  device: cpu

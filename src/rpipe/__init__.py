@@ -1,13 +1,10 @@
-"""RPipe — research foundation library package.
+"""RPipe — research execution substrate.
 
-Layers:
-  - data
-  - model
-  - algorithm (metrics, …)
-  - system (io/device/stats + backend Trainer/Evaluator)
-  - config (ExperimentConfig, registries)
+Public surface maps to CONCEPT / LAYOUT:
 
-Experiment orchestration lives outside this package in ``experiments/``.
+- ``rpipe.structure`` — Control + data / model / algorithm / system
+- ``rpipe.flow`` — prepare → execute → collect → summarize → index
+- ``rpipe.artifact`` — Config / Result / Asset IO
 """
 
-__version__ = '0.2.0'
+__version__ = '0.3.0'

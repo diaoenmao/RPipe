@@ -1,10 +1,11 @@
 # RPipe
 
-Research Pipeline — **可重复、可编排、可序列化的研究执行底座**。
+Research Pipeline — **可重复、可编排、可序列化的研究执行底座**（包名 `rpipe`）。
 
-设计文档：[docs/CONCEPT.md](docs/CONCEPT.md) · [docs/LAYOUT.md](docs/LAYOUT.md)
+设计文档：
 
-历史交接：[docs/HANDOVER.md](docs/HANDOVER.md)
+- [docs/CONCEPT.md](docs/CONCEPT.md)
+- [docs/LAYOUT.md](docs/LAYOUT.md)
 
 ---
 
@@ -16,18 +17,35 @@ pip install -e ".[dev]"
 
 ---
 
-## 快速运行（当前实现，待与 CONCEPT 阶段模型对齐）
+## 目录（摘要）
 
-```bash
-pytest
-python -m experiments --suite smoke --device cpu
-python -m experiments --list-suites
+```
+src/rpipe/{structure,flow,artifact}
+examples/studies/…
+examples/experiments/<exp>/{launch,grid,artifact}
 ```
 
-Suite 定义：`configs/suites/default.yaml`
+---
+
+## 快速运行
+
+```bash
+# 生成 / 刷新 Config，再跑 Flow
+python examples/studies/mnist_seeds/run_study.py
+
+# 或直接 launch 已有 Artifact Config
+python examples/experiments/mnist_linear/launch/__init__.py --slugs seed_0
+
+pytest
+```
 
 ---
 
 ## Acknowledgements
 
-*Enmao Diao*
+[Federated Learning Platform](https://github.com/IBM/federated-learning-lib),
+[EasyFL](https://github.com/EasyFL-AI/EasyFL/),
+[FedLab](https://github.com/SMILELab-FL/FedLab),
+[Flower](https://flower.dev/),
+[NIID-Bench](https://github.com/Xtra-Computing/NIID-Bench),
+[FedTorch](https://github.com/OPTML-Group/FedTorch)

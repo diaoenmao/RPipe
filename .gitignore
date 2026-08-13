@@ -112,17 +112,20 @@ ENV/
 # PowerPoint temporary
 ~$*.ppt*
 
-# downloaded datasets (repo root only; do not ignore src/**/data package dirs)
+# downloaded datasets (repo root only)
 /data/
 /data
 
-#output
+# outputs & experiment assets
 output/
 tmp/
 res/
+examples/experiments/**/artifact/**/assets/
+examples/experiments/**/artifact/**/result.json
 
 .idea/
 .vscode/
 .DS_Store
 scripts/
+.pytest_cache/
 
