@@ -16,7 +16,7 @@
 |------|----------|
 | **Study** | `examples/studies/…` — 编排 Experiment；触发展开与运行 |
 | **Experiment** | `examples/experiments/…` — 声明 Structure + Flow；Control → Config 落盘 |
-| **Structure** | `src/rpipe/structure/` — Control 与 data / model / algorithm / system |
+| **Structure** | `src/rpipe/structure/` — Control、四层实现与 `api/` 门面 |
 | **Flow** | `src/rpipe/flow/` — prepare → execute → collect → summarize → index |
 | **Artifact** | 各次运行的持久化子树 — Config、Result、Asset 同树共存 |
 | **Control** | Structure 成员；对象代码在 `structure/control/`；Config 由其得到 |
@@ -63,7 +63,8 @@ flowchart TB
 | Study | `examples/studies/<study_slug>/` | 编排：选定 Experiment、展开运行、触发 `grid/` / `launch/` |
 | Experiment | `examples/experiments/<experiment_slug>/` | 含 `launch/`、`grid/`、本实验 `artifact/` |
 | Control（对象） | `src/rpipe/structure/control/` | Structure 成员；Config 由其字段得到；prepare 读 Config 后构造 |
-| Structure 四层 | `src/rpipe/structure/{data,model,algorithm,system}/` | algorithm 下分 `train/`、`eval/`、`inference/` |
+| Structure 四层 | `src/rpipe/structure/{data,model,algorithm,system}/` | 层实现；对外经 `structure/api/` |
+| Structure API | `src/rpipe/structure/api/` | 层间与 Flow 门面：`data_api`、`model_api` 等 |
 | Flow 五阶段 | `src/rpipe/flow/{prepare,execute,collect,summarize,index}/` | Experiment `launch/` import 并驱动 |
 | Artifact IO | `src/rpipe/artifact/{config,result,asset}/` | 库内读写门面；Config 对应 Control 的 declarative 落盘 |
 
@@ -73,18 +74,18 @@ flowchart TB
 
 下列为**目标**目录布局。实例名用示例 slug（可换）；叶文件不列出。
 
+**深度约定（控制技术债）：** `structure/` **只展开到下一层**（`api` / `control` / `data` / `model` / `algorithm` / `system`）。更深层目录与类由 [code_structure/structure.md](code_structure/structure.md) 按层推进，**暂不归 LAYOUT 管理**。
+
 ```
 RPipe/
   src/
     rpipe/
       structure/
+        api/
         control/
         data/
         model/
         algorithm/
-          train/
-          eval/
-          inference/
         system/
       flow/
         prepare/
@@ -112,13 +113,11 @@ RPipe/
   tests/
     rpipe/                       # 镜像 src/rpipe/ 目录骨架
       structure/
+        api/
         control/
         data/
         model/
         algorithm/
-          train/
-          eval/
-          inference/
         system/
       flow/
         prepare/
@@ -213,23 +212,24 @@ examples/studies/mnist_lr_seed/
 
 ## 5. 可安装库 `src/rpipe/`
 
-仓库名 **RPipe**，包名 **`rpipe`**。库一级目录与 CONCEPT 三柱对齐：**Structure**、**Flow**、**Artifact**。
+仓库名 **RPipe**，包名 **`rpipe`**。库一级与 CONCEPT 三柱对齐：**Structure**、**Flow**、**Artifact**。
+
+LAYOUT 对 **Structure** 只管到其**下一层**目录；`algorithm` 等更深层、类与模块见 [code_structure/structure.md](code_structure/structure.md)，避免本文件堆积实现细节。
 
 | 目录 | 对应 CONCEPT | 职责 |
 |------|--------------|------|
+| `structure/api/` | （门面） | `data_api` / `model_api` 等；跨层与 Flow 只经此交流 |
 | `structure/control/` | Control | 变量指派对象；prepare 读 Config 后构造 |
-| `structure/data/` 等 | Structure 四层 | 静态能力：数据、模型、算法语义、系统运行时 |
-| `structure/algorithm/train/` | algorithm §4.3.1 | 训练：backward、参数更新、checkpoint |
-| `structure/algorithm/eval/` | algorithm §4.3.2 | 评测：metric、benchmark 聚合 |
-| `structure/algorithm/inference/` | algorithm §4.3.3 | 推理 / 生成 |
-| `flow/prepare/` … `flow/index/` | Flow 五阶段 | 见 CONCEPT §5.1–§5.5 |
-| `artifact/config/` | Config IO | 读写 Artifact 内 Config（由 Control 得到） |
-| `artifact/result/` | Result IO | collect / summarize / index 写入与定稿 |
-| `artifact/asset/` | Asset IO | prepare / execute 读写文件型产物 |
+| `structure/data/` | Structure · data | 数据层实现 |
+| `structure/model/` | Structure · model | 模型层实现 |
+| `structure/algorithm/` | Structure · algorithm | 算法层实现（更下层暂不在 LAYOUT 展开） |
+| `structure/system/` | Structure · system | 系统层实现 |
+| `flow/` | Flow | 五阶段过程（阶段子目录见 CONCEPT；细节见 flow 分册） |
+| `artifact/` | Artifact IO | Config / Result / Asset 库内读写门面 |
 
 **Schema（不单立目录）：** Result / Config 的结构契约由 **Control 侧代码**声明与校验，视为 Config 能力的一部分（落盘仍走 Artifact Config / Result），不在 `src/rpipe/` 下另建 `schema/` 包。
 
-第三方运行时（PyTorch、HF、`datasets` 等）在 **Structure 各层内部**按需适配，不单独占与 CONCEPT 无关的一级目录（如平行 `provider/` 树）。
+第三方运行时（PyTorch、HF、`datasets` 等）在 **Structure 各层实现内部**按需适配，经 `structure/api/` 对外；不单独占与 CONCEPT 无关的一级目录（如平行 `provider/`）。
 
 ### 5.1 Flow 与 Artifact 的库内边界
 
@@ -275,8 +275,9 @@ examples/studies/mnist_lr_seed/
 
 | 被测区域 | 镜像下典型覆盖 |
 |----------|----------------|
+| `structure/api` | 经 `data_api` 等的跨层调用契约 |
 | `structure/control` | Control ↔ Config 往返；契约字段 / 校验（schema 能力）；location |
-| `structure` 四层 / algorithm | prepare 钩子、semantics `run` |
+| `structure` 四层 / algorithm | 经 api 的 prepare / semantics |
 | `flow/*` | 各阶段 `run(ctx)`；Runner 子集 |
 | `artifact/*` | layout 与 Config / Result / Asset IO |
 | Experiment `grid` / `launch` | 展开落盘、驱动 Flow |
@@ -291,7 +292,7 @@ examples/studies/mnist_lr_seed/
 | [CONCEPT.md](CONCEPT.md) | 概念与关系（主文档） |
 | [LAYOUT.md](LAYOUT.md) | 本文：目录树与落盘 |
 | [CODE_STRUCTURE.md](CODE_STRUCTURE.md) | 代码结构总览与依赖；细则见分册 |
-| [code_structure/structure.md](code_structure/structure.md) | Structure：control / 四层模块与叶文件 |
+| [code_structure/structure.md](code_structure/structure.md) | Structure：`structure/` 更深层、模块与类（LAYOUT 只到下一层） |
 | [code_structure/flow.md](code_structure/flow.md) | Flow：上下文、Runner、五阶段模块与叶文件 |
 | [code_structure/artifact.md](code_structure/artifact.md) | Artifact：layout 与 Config / Result / Asset IO |
 | [TESTING.md](TESTING.md) | 测试规范（目录镜像、标签、优先级、执行与结果持久化） |

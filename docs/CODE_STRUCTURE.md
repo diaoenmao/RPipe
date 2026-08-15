@@ -22,10 +22,10 @@
 `rpipe` 库一级只有三柱：**structure**、**flow**、**artifact**。不设库顶层 `schema/`、`defaults/`、`provider/`。
 
 - `examples` 只 import `rpipe`，不反向被库依赖
-- `flow` 可 import `structure`、`artifact`
+- `flow` 可 import `structure`、`artifact`；Structure 内跨层只经 `structure.api`
 - `structure` 不 import `flow`；仅在需要路径 / Asset 约定时可 import `artifact`
 - `artifact` 不 import `structure` 四层业务，不 import `flow`
-- 第三方运行时适配写在 **Structure 各层内部**，不平行占库顶层目录
+- 第三方运行时适配写在 **Structure 各层实现内部**，经对应 `*_api` 对外；不设库顶层 `provider/`
 
 **Config 链路：** Control →（Experiment `grid/`）→ Artifact Config → prepare 读回构造 Control。Flow 不修改 Config。  
 **契约 / schema：** 由 Control 侧代码声明与校验，视为 Config 能力；不单立包。
@@ -39,13 +39,11 @@
 ```
 src/rpipe/
   structure/
+    api/                 # data_api / model_api / … 层间门面
     control/
     data/
     model/
     algorithm/
-      train/
-      eval/
-      inference/
     system/
   flow/
     prepare/
@@ -59,7 +57,7 @@ src/rpipe/
     asset/
 ```
 
-编排入口：`flow/context.py`、`flow/runner.py`；落盘路径：`artifact/layout.py`。符号与叶文件见对应分册。
+编排入口与叶文件见各柱分册。`algorithm` 更下层（如语义目录）在 [structure.md](code_structure/structure.md) 定该层时再写，不在本总览展开。
 
 ---
 
