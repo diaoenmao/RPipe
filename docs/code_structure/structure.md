@@ -3,9 +3,22 @@
 前置：[CONCEPT.md](../CONCEPT.md) §4、[LAYOUT.md](../LAYOUT.md) §5、[CODE_STRUCTURE.md](../CODE_STRUCTURE.md)。  
 并列分册：[flow.md](flow.md)、[artifact.md](artifact.md)。
 
-本文按层推进：**模块 → 类 → 叶文件**。当前 **data** 已定到**类**；control / model / algorithm / system 待定。
+本文按层推进：**模块 → 类 → 叶文件**。当前 **data**、**model**、**algorithm**、**system**、**control** 已定到类（control 见 §8）。
 
-**层间只经** `structure/api/` **交流。** 各层实现（`data/`、`model/` 等）不互相直接 import；Flow、algorithm、其它层消费方只依赖对应 `*_api`（`data_api`、`model_api`、`system_api`、`algorithm_api`）。第三方适配留在各层实现内部，由该层 Factory / Registry 使用。**不设** `control_api`：Control 留在 `control/`。
+**层间只经** `structure/api/` **交流。** 各层实现不互相直接 import；跨层与外部调用方只依赖对应 `*_api`。**不设** `control_api`：Control 留在 `control/`。
+
+运行时类（`Data`、`Model`、`Algorithm`、`System`）与配置 dataclass 分开：前者供 prepare/execute 消费；后者为 **`DataConfig` / `ModelConfig` / `AlgorithmConfig` / `SystemConfig`**，专责从 JSON / Artifact Config 加载声明字段。
+
+**Config 字段约定：** 各 `*Config` **只规定必须字段**。其余键为可选扩展，由对应 `source` / 注册项解释。
+
+各层统一还有两类约定（字段名可微调，语义固定）：
+
+| 约定 | 落在哪 | 说明 |
+|------|--------|------|
+| **内容配置** `config` | 每一层 `*Config` | 可装入从 `path` 读出的超参/子配置，也可由 Control / 实验侧**覆写**；合并与优先级做到更下游细节时再定 |
+| **向上兼容** | Model → Data；Algorithm → Model；System → Algorithm | **下一层声明对上一层的兼容**；Data 无更上一层，不设此项 |
+
+`path` 仍是资源/超参文件根；读出来的内容应能进入本层 `config`，并允许被覆写。
 
 ---
 
@@ -19,287 +32,523 @@
 - 在 prepare 经各层 api 落地可消费实例；在 execute 期经 api 使用它们
 - 在 Control 侧声明并执行 Config / Result **契约校验**
 - 经 Asset 路径读写缓存、权重、checkpoint、样本、日志
-- 将可 JSON 化的观测写入 `state`，供 Flow 后续阶段写入 Result
-
-
+- 经 api 产出可 JSON 化的观测（loss、metric、路径等），供后续写入 Result
 
 ### 1.2 能力 vs 取值（对齐 CONCEPT §4）
 
-
-| 概念                     | 谁声明                                 | 落在哪                                          |
-| ---------------------- | ----------------------------------- | -------------------------------------------- |
-| **能力**（能接什么数据、模型、哪些语义） | Experiment + 各层 Registry（经 api 可查询） | 注册名解析到第三方实现                                  |
-| **取值**（这次跑什么）          | Study / grid 展开写入                   | Artifact `config.yaml` → prepare → `Control` |
-| **层间调用**               | Flow / 其它 Structure 层               | 只 import `structure.api.`*                   |
-
-
-同一套 Experiment 代码服务多次运行；各次差异体现在 Config / Control 取值上。
+| 概念 | 谁声明 | 落在哪 |
+|------|--------|--------|
+| **能力** | Experiment + 各层 Registry（经 api 可查询） | 注册名解析到第三方实现 |
+| **取值** | Study / grid 展开写入 | Artifact Config → prepare → `Control` |
+| **层间调用** | Structure 柱内 / 外部调用方 | 四层经 `structure.api.*`；Control 经 `control/` |
 
 ### 1.3 柱内依赖方向
 
 ```
-api/                 → 四层门面：data_api / model_api / system_api / algorithm_api
+api/                 → data_api / model_api / system_api / algorithm_api
 control/             → Control 与编解码/契约；无 control_api
-data/                → 实现 Dataset / DataRegistry / DataFactory；只被 data_api 引用
-model/               → 实现细节只被 model_api 引用（待定）
-system/              → 实现细节只被 system_api 引用（待定）
-algorithm/           → 经 data_api / model_api / system_api 消费其它层；实现只被 algorithm_api 引用
-flow / examples      → 依赖 structure.api 与 control（及 artifact）
+data/                → Data / DataRegistry / DataFactory / DataConfig
+model/               → Model / ModelRegistry / ModelFactory / ModelConfig
+system/              → System / SystemRegistry / SystemFactory / SystemConfig
+algorithm/           → Algorithm / AlgorithmRegistry / AlgorithmFactory / AlgorithmConfig
 ```
 
-正向约定：
-
-- **四层跨层调用只走** `api/` 的 `data_api`、`model_api`、`system_api`、`algorithm_api`
-- 层实现目录（`data/`、`model/`、…）之间不直连
-- Control 经 `control/` 使用，不设 `control_api`
-- Structure 可依赖 `artifact`（路径约定）；不依赖 `flow`
-- algorithm 把观测写入 `state`；Result 落盘由 Flow 完成
-- 第三方（torch / HF / ModelScope 等）只出现在对应层实现内，经该层 Factory 接到 api 上的对接接口
-
-
+- 四层跨层只走对应 `*_api`
+- 层实现目录之间不直连
+- 第三方建构在各层实现内完成；经 Factory 得到运行时对象再经 api 交出
+- algorithm 经 `data_api` / `model_api` / `system_api` 使用 `Data` / `Model` / `System`；产出观测供后续写入 Result
 
 ### 1.4 分册推进状态
 
-
-| 区域        | 状态                                               |
-| --------- | ------------------------------------------------ |
-| **api**   | 约定已定：门面目录；`data_api` 随 data 类定稿；其余 `*_api` 随各层补齐 |
-| **data**  | 自有三类 + 经 `data_api` 暴露的对接接口（本文 data 节） |
-| control   | 待定                                               |
-| model     | 待定                                               |
-| algorithm | 待定                                               |
-| system    | 待定                                               |
-
-
-叶文件在类清单稳定后再对齐落地。
+| 区域 | 状态 |
+|------|------|
+| **api** | 门面已定 |
+| **data** | `Data` + `DataRegistry` + `DataFactory` + `DataConfig` |
+| **model** | `Model` + `ModelRegistry` + `ModelFactory` + `ModelConfig` |
+| **algorithm** | `Algorithm` + `AlgorithmRegistry` + `AlgorithmFactory` + `AlgorithmConfig` |
+| **system** | `System` + `SystemRegistry` + `SystemFactory` + `SystemConfig` |
+| control | `Control` + 编解码 / 契约（§8）；无 control_api |
 
 ---
-
-
 
 ## 2. 目录骨架（仅到层 / api）
 
 ```
 structure/
-  api/          # 层间与对外门面：data_api、model_api、…
-  control/      # 待定
-  data/         # 实现；见下文 data 节
-  model/        # 待定
-  algorithm/    # 待定（更下层在定 algorithm 时再写）
-  system/       # 待定
+  api/
+  control/
+  data/
+  model/
+  algorithm/
+  system/
 ```
 
-`api/` 与 `data/`、`model/` 等**同级**（在四层「外面」那一层级），不是某层子目录。
-
 ---
-
-
 
 ## 3. `structure/api/`（门面）
 
-
-
-### 3.1 职责
-
-
 | 单元 | 职责 |
 |------|------|
-| `data_api` | 暴露 data 层稳定入口与类型：如 `Dataset`、对接接口、`DataFactory.build`（或等价 prepare 入口） |
-| `model_api` | 暴露 model 层稳定入口（待该层定类后补） |
-| `system_api` | 暴露 system 层稳定入口（待定） |
-| `algorithm_api` | 暴露 train/eval/inference 调度入口（待定） |
-
-消费方经 **`structure.api.*`** 使用四层能力；Control 走 `control/`，不设 `control_api`。  
-`DataRegistry` 等装配细节可留在 `data/` 内，是否再导出由 `data_api` 决定（默认仅导出消费与构造所需符号）。
-
-### 3.2 依赖
-
-```
-flow / algorithm / …  →  api.data_api / api.model_api / …
-api.data_api          →  data（实现）
-api.model_api         →  model（实现）
-data                  ↛  model / algorithm / …（不直连）
-```
+| `data_api` | 暴露 `Data`、`DataFactory.build`、`DataConfig` |
+| `model_api` | 暴露 `Model`、`ModelFactory.build`、`ModelConfig` |
+| `system_api` | 暴露 `System`、`SystemFactory.build`、`SystemConfig` |
+| `algorithm_api` | 暴露 `Algorithm`、`AlgorithmFactory.build`、`AlgorithmConfig` |
 
 ---
 
-
-
 ## 4. `structure/data/`（实现 + 类）
 
-把研究所需输入组织为可消费数据流（CONCEPT §4.1）。**数据集本体由第三方提供**；本层实现声明取值、注册来源、工厂装配，并将结果接到 `data_api` **上的对接接口**，兼容至少：
+把研究所需输入组织为可消费数据流（CONCEPT §4.1）。数据集本体由第三方提供；本层负责注册、建构与对外可消费的 **`Data`**。声明字段由 **`DataConfig`** 从 JSON / Config 加载。
 
-- `torch.utils.data.Dataset`（及 DataLoader）
-- Hugging Face `datasets`
-- ModelScope dataset
+### 4.1 本层自有类型
 
-预处理、增强、batch、workers 等**复用**各生态已有能力。本层不另建 Transform / BatchLoader / 自有第三方 Dataset 类树。
+| 类型 | 职责 |
+|------|------|
+| **`Data`** | 对上提供统一的数据消费能力（划分、batch 迭代、元信息等）；持有并使用第三方已建构的数据对象 / loader |
+| **`DataRegistry`** | name + source → 如何向第三方建构数据；`register` / `get` / `list` |
+| **`DataFactory`** | 读 `DataConfig` + `assets_dir` → 经 registry 建构 → 得到 **`Data`** |
+| **`DataConfig`** | dataclass；从 JSON / Artifact Config / Control.data 加载声明字段 |
 
-### 4.1 本层自有类（仅此三个）
+对外：`DataFactory.build(data_config, assets_dir) → Data`。
 
+### 4.2 `Data` 职责要点
 
-| 类              | 形态        | 职责                                                             |
-| -------------- | --------- | -------------------------------------------------------------- |
-| `Dataset`      | dataclass | 一次运行的 data **取值声明**（对应 Control.data / Config）；不是第三方 Dataset 本体 |
-| `DataRegistry` | 类         | name（及可选来源标识）→ 如何向第三方要数据；`register` / `get` / `list`           |
-| `DataFactory`  | 类         | 读 `Dataset` + `assets_dir`，经 registry 拉取第三方数据、按需缓存，装配为对接接口实例   |
+- 按 split 提供可迭代 batch（供 algorithm）
+- 暴露来源、划分规模等只读元信息
+- 需要时取出底层第三方对象（调试 / 进阶）
+- 不承载「配置字段表」本身（那是 `DataConfig`）
 
+### 4.3 下游来源（至少）
 
-对外主路径经 `data_api`：`DataFactory.build(dataset, assets_dir) → 对接接口实例`（Flow 调 api，不调 `data` 包内部路径）。
+| 来源 | 复用什么 |
+|------|----------|
+| PyTorch Dataset | `torch.utils.data.Dataset`、`DataLoader`；transform 可用 torchvision 等 |
+| Hugging Face | `datasets.Dataset` / `DatasetDict` 及加载、格式化 API |
+| ModelScope | ModelScope 数据集加载 API |
 
-### 4.2 对接接口（挂在 `data_api`）
+其它来源经 Registry 注册即可。
 
-消费侧 **一个** Protocol / ABC（名称可定为 `DataHandle` 等），定义在或再导出自 `data_api`。algorithm / Flow 只依赖该接口。
+### 4.4 `DataConfig`
 
+dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必须字段：**
 
-| 能力（例）              | 含义                            |
-| ------------------ | ----------------------------- |
-| 按 split 取可迭代 batch | execute 供给 algorithm          |
-| 暴露底层第三方对象（可选）      | 调试时取出原生 Dataset / DatasetDict |
-| 只读元信息              | name、来源、split 规模等             |
+| 字段 | 说明 |
+|------|------|
+| `name` | Registry 查找用的数据集标识 |
+| `source` | 下游来源（如 `torch` / `hf` / `modelscope`） |
+| `path` | 数据相关路径（资源或该侧超参/清单所在位置） |
+| `config` | **内容配置**：可装入 `path` 内读出的配置，或由上层覆写；合并规则下游再定 |
 
+Data 是兼容链最上游，**不设**对更上层的兼容字段。`batch_size`、`split`、`transforms` 等不进必须表；优先进 `path` / `config`。
 
-各第三方来源用薄适配接到该接口；适配逻辑在 `data/` 实现内（registry 注册项或 Factory），经 `data_api` 交出实例。
+### 4.5 Registry / Factory
 
+| 类 | 能力 |
+|----|------|
+| `DataRegistry` | `register` / `get` / `list` |
+| `DataFactory` | `build(data_config: DataConfig, assets_dir) → Data` |
 
-| 来源           | 复用什么                                                              |
-| ------------ | ----------------------------------------------------------------- |
-| PyTorch      | `torch.utils.data.Dataset`、`DataLoader`；transform 用 torchvision 等 |
-| Hugging Face | `datasets.Dataset` / `DatasetDict` 及其加载与格式化 API                   |
-| ModelScope   | ModelScope 数据集加载 API                                              |
-
-
-
-
-### 4.3 各类要点
-
-
-
-#### `Dataset`（dataclass）
-
-
-| 字段（例）                                   | 含义                                                    |
-| --------------------------------------- | ----------------------------------------------------- |
-| `name`                                  | 注册名 / 第三方数据集标识                                        |
-| `source`                                | `torch` / `hf` / `modelscope` 等（原 backend 语义，表示第三方来源） |
-| `split` / `splits`                      | 划分与用途                                                 |
-| `batch_size`、`num_workers`、`pin_memory` | 交给第三方 Loader 的参数                                      |
-| `transforms`                            | 声明或配置片段，交给第三方 transform 管线                            |
-| `cache`                                 | 是否写入 Asset 缓存（由 Factory 解释）                           |
-| 其它                                      | 版本、子集、HF config 名等按来源扩展                               |
-
-
-`Control.data` 即该 dataclass 的 mapping 形态（或与之往返）。
-
-#### `DataRegistry`
-
-
-| 能力                           | 含义            |
-| ---------------------------- | ------------- |
-| `register(name, …)`          | 登记如何构造某第三方数据集 |
-| `get(name)` / `list()`       | 查询            |
-| 解析 `Dataset.source` + `name` | 选出对应加载路径      |
-
-
-
-
-#### `DataFactory`
-
-
-| 能力                                             | 含义                                                                  |
-| ---------------------------------------------- | ------------------------------------------------------------------- |
-| `build(dataset: Dataset, assets_dir) → 对接接口实例` | prepare 主路径（经 data_api 暴露）                                          |
-| 内部分步                                           | 查 registry → 第三方 load → 按需 Asset 缓存 → 第三方 transform/batch → 包装为对接接口 |
-
-
-
-
-### 4.4 协作
+### 4.6 协作
 
 ```mermaid
 flowchart LR
-  cfg[Control.data]
-  ds[Dataset dataclass]
-  api[data_api]
-  factory[DataFactory]
-  registry[DataRegistry]
-  third[torch_HF_ModelScope]
-  port[对接接口]
-  algo[algorithm via api]
+  json["JSON / Config"]
+  cfg["DataConfig"]
+  api["data_api"]
+  factory["DataFactory"]
+  registry["DataRegistry"]
+  third["第三方数据"]
+  dataObj["Data"]
+  algo["Algorithm"]
 
-  cfg --> ds
-  ds --> api
+  json --> cfg
+  cfg --> api
   api --> factory
   factory --> registry
   registry --> third
   third --> factory
-  factory --> port
-  port --> api
+  factory --> dataObj
+  dataObj --> api
   api --> algo
 ```
 
+### 4.7 Asset / 测试
 
+| 操作 | 谁 | 路径意图 |
+|------|-----|----------|
+| 数据缓存 | `DataFactory` | `assets/cache/…` |
 
-
-
-### 4.5 Asset 触点
-
-
-| 操作      | 阶段                   | 谁发起           | 路径意图                                     |
-| ------- | -------------------- | ------------- | ---------------------------------------- |
-| 写/读数据缓存 | prepare（及按需 execute） | `DataFactory` | `assets/cache/…`（经 artifact.asset.kinds） |
-
-
-
-
-### 4.6 测试镜像
-
-
-| 镜像位置                          | 覆盖                                     |
-| ----------------------------- | -------------------------------------- |
-| `tests/rpipe/structure/data/` | `Dataset`、`DataRegistry`、`DataFactory` |
-| `tests/rpipe/structure/api/`  | `data_api` 导出与经 api 的 build 路径         |
-
-
-多来源 / 外网标 `external`。强制标签见 [TESTING.md](../TESTING.md)。
+测试：`tests/rpipe/structure/data/`（`DataConfig` 往返、Registry、Factory→`Data`）；`tests/rpipe/structure/api/`（`data_api`）。
 
 ---
 
+## 5. `structure/model/`（实现 + 类）
 
+构建可调用模型能力（CONCEPT §4.2）。网络本体由第三方提供；本层负责注册、建构与对外可消费的 **`Model`**。声明字段由 **`ModelConfig`** 从 JSON / Config 加载。
 
-## 5. 其余层（待定）
+### 5.1 本层自有类型
 
+| 类型 | 职责 |
+|------|------|
+| **`Model`** | 对上提供 forward、模式切换、参数与权重协作等；持有并使用第三方已建构的模型 / 推理句柄 |
+| **`ModelRegistry`** | name + source → 如何向第三方建构模型 |
+| **`ModelFactory`** | 读 `ModelConfig` + `assets_dir` → 建构/加载 → 得到 **`Model`** |
+| **`ModelConfig`** | dataclass；从 JSON / Config / Control.model 加载声明字段 |
 
-| 层 | CONCEPT | 下一步 |
-|----|---------|--------|
-| `control/` | 变量指派；Config 编解码与契约（无 control_api） | 模块 → 类 |
-| `model/` + `model_api` | 模型句柄、权重、结构 | 模块 → 类 → api 导出 |
-| `algorithm/` + `algorithm_api` | train / eval / inference | 同上；经其它 `*_api` 消费 |
-| `system/` + `system_api` | 设备、精度、并行、IO、resume | 同上 |
+对外：`ModelFactory.build(model_config, assets_dir) → Model`。
 
+### 5.2 `Model` 职责要点
+
+- 前向调用；train / eval 模式
+- 可训练参数（供优化器）
+- 权重加载 / 导出（与 Asset、checkpoint 协作）
+- 需要时取出底层第三方对象
+- 设备等精细放置经 `system_api` 的 `System` 协作
+- 不承载配置字段表本身（那是 `ModelConfig`）
+
+### 5.3 下游来源（至少）
+
+| 来源 | 复用什么 |
+|------|----------|
+| Custom PyTorch | 用户/实验侧 `torch.nn.Module`，经 Registry 注册 |
+| `torchvision.models` | torchvision 预置结构与权重接口 |
+| `timm` | timm 模型创建与权重接口 |
+| **Diffusers** | Hugging Face `diffusers` 管线 / 模型 |
+| **DiffSynth** | DiffSynth 等扩散合成相关加载与推理 API |
+| llama.cpp | llama.cpp / Python 绑定 |
+| Hugging Face Transformers | `transformers`；PEFT 用官方包装 |
+| ModelScope | ModelScope 模型加载 API |
+
+均可经同一 Registry 注册；Factory 产出统一的 `Model`。来源列表可随接入继续加，不改本层类型结构。
+
+### 5.4 `ModelConfig`
+
+dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必须字段：**
+
+| 字段 | 说明 |
+|------|------|
+| `name` | Registry 查找用的模型标识 |
+| `source` | 下游来源（如 `custom_torch` / `torchvision` / `timm` / `hf` / …） |
+| `path` | 模型资源根路径：其下可含权重、模型超参配置及其它 source 约定文件；**不**假定只有 weights |
+| `config` | **内容配置**：可装入 `path` 内读出的配置，或由上层覆写；合并规则下游再定 |
+| `compat_data` | **兼容的 Data**（如允许的 `name` / `source` 集合；空表示不限制——形状下游再定） |
+
+结构变体、freeze、adapter 等不进必须表；优先进 `path` / `config`。
+
+### 5.5 Registry / Factory
+
+| 类 | 能力 |
+|----|------|
+| `ModelRegistry` | `register` / `get` / `list` |
+| `ModelFactory` | `build(model_config: ModelConfig, assets_dir) → Model` |
+
+### 5.6 协作
+
+```mermaid
+flowchart LR
+  json["JSON / Config"]
+  cfg["ModelConfig"]
+  api["model_api"]
+  factory["ModelFactory"]
+  registry["ModelRegistry"]
+  third["第三方模型"]
+  modelObj["Model"]
+  algo["Algorithm"]
+
+  json --> cfg
+  cfg --> api
+  api --> factory
+  factory --> registry
+  registry --> third
+  third --> factory
+  factory --> modelObj
+  modelObj --> api
+  api --> algo
+```
+
+### 5.7 Asset / 测试
+
+| 操作 | 谁 | 路径意图 |
+|------|-----|----------|
+| 读 `path` 资源（权重 / 超参配置等） | `ModelFactory` | `ModelConfig.path` 及 Asset 约定 |
+| checkpoint | `Model` / `System` | `assets/checkpoints/…` |
+
+测试：`tests/rpipe/structure/model/`（`ModelConfig` 往返、Registry、Factory→`Model`）；`tests/rpipe/structure/api/`（`model_api`）。
 
 ---
 
+## 6. `structure/algorithm/`（实现 + 类）
 
+在任务范式下定义怎么算（CONCEPT §4.3）。本层用 **`mode`** 区分 **train / eval / inference**（一次配置一个 mode；要组合多种 mode 由 Study / 多次运行或 Control 切换）。经 `data_api` / `model_api` / `system_api` 使用已落地的 `Data` / `Model` / `System`。声明字段由 **`AlgorithmConfig`** 加载。
 
-## 6. 与 Artifact / Flow 的触点（摘要）
+更下层目录（若实现时按 mode 拆分）由本分册后续补，**不在 LAYOUT 展开**。
 
+### 6.1 本层自有类型
 
-| 触点            | Structure 侧（已定部分）                             | 对端                                 |
-| ------------- | --------------------------------------------- | ---------------------------------- |
-| Config        | Control 取值中的 `data` 字段 / `Dataset`            | `artifact.config`；grid 写、prepare 读 |
-| Asset         | `DataFactory` 缓存                              | `artifact.asset`（cache 等）          |
-| Result        | （待 control / algorithm 定稿）                    | flow summarize / index             |
-| Context.state | 经 `data_api` build → `state["data"]` = 对接接口实例 | `flow.context`                     |
+| 类型 | 职责 |
+|------|------|
+| **`Algorithm`** | 按当前 `mode` 执行计算；使用 `Data` / `Model` / `System`；产出观测 / metrics |
+| **`AlgorithmRegistry`** | `mode` + `source` → 具体执行能力；`register` / `get` / `list` |
+| **`AlgorithmFactory`** | 读 `AlgorithmConfig` → 经 registry 装配 → 得到 **`Algorithm`** |
+| **`AlgorithmConfig`** | dataclass；从 JSON / Config / Control 加载 |
 
+对外：`AlgorithmFactory.build(algorithm_config, …) → Algorithm`。  
+execute 典型调用：`algorithm.run(data, model, system) → observations`（经 `algorithm_api` 导出）。
+
+### 6.2 `Algorithm` 职责要点
+
+- 按 `mode` 执行 train **或** eval **或** inference（三者行为不同）
+- 从 `Data` 取 batch；调用 `Model`；经 `System` 做设备 / IO 协作
+- 汇总观测（供后续写入 Result）
+- train：更新参数；可触发 checkpoint / 日志
+- eval：聚合质量指标
+- inference：生成；可写样本 Asset
+- 不承载配置字段表本身（那是 `AlgorithmConfig`）；超参主要进 `path` / `config`
+
+### 6.3 `mode`（取代原先的 semantics 列表 / paradigm）
+
+| 取值 | 含义 |
+|------|------|
+| `train` | 训练 |
+| `eval` | 评测 |
+| `inference` | 推理 / 生成 |
+
+不设 `paradigm` 必须字段。
+
+### 6.4 下游来源（至少）
+
+循环、优化器、metric、生成管线等**复用生态能力**，经 Registry 按 **mode + source** 挂接：
+
+| 来源 | 典型用于 | 复用什么 |
+|------|----------|----------|
+| Custom PyTorch | train / eval / inference | 手写 loop、`torch.optim`、手写 metric |
+| Accelerate | train（及需其封装的执行） | 在 PyTorch 之上的分布式 / 混合精度等编排；底层仍是 PyTorch |
+| Diffusers | train / inference（扩散） | diffusers 训练与 pipeline 推理 |
+| DiffSynth | train / inference（扩散合成） | DiffSynth 相关 API |
+| TorchMetrics / HF Evaluate | eval | 现成 metric 与聚合 |
+| lm-eval 等 harness | eval | 标准评测任务集 |
+| Transformers generate | inference | `generate` 等解码 API |
+| **vLLM** | inference | 高吞吐 LLM 推理 |
+| **SGLang** | inference | 结构化生成 / LLM 推理运行时 |
+| llama.cpp | inference | 本地 LLM 推理（亦可与 system 侧句柄协作） |
+
+其它来源按同样方式注册；不在本层另造完整训练框架。Accelerate 属**算法层**编排，不放入 system 下游。
+
+### 6.5 `AlgorithmConfig`
+
+dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必须字段：**
+
+| 字段 | 说明 |
+|------|------|
+| `mode` | `train` / `eval` / `inference`（一次一个；默认必须有） |
+| `source` | 执行实现来源（如 `custom_torch` / `accelerate` / `diffusers` / `vllm` / `sglang` / …） |
+| `path` | 算法超参等资源路径 |
+| `config` | **内容配置**：可装入 `path` 内读出的配置，或由上层覆写；合并规则下游再定 |
+| `compat_model` | **兼容的 Model**（如允许的 `name` / `source` 集合；空表示不限制——形状下游再定） |
+
+不设对 Data 的兼容字段（兼容链是 Algorithm → Model，再由 Model → Data）。lr、步数、解码参数等不进必须表；优先进 `path` / `config`。
+
+### 6.6 Registry / Factory
+
+| 类 | 能力 |
+|----|------|
+| `AlgorithmRegistry` | 按 `mode` + `source` `register` / `get` / `list` |
+| `AlgorithmFactory` | `build(algorithm_config: AlgorithmConfig, …) → Algorithm` |
+
+### 6.7 协作
+
+```mermaid
+flowchart LR
+  json["JSON / Config"]
+  cfg["AlgorithmConfig"]
+  api["algorithm_api"]
+  factory["AlgorithmFactory"]
+  registry["AlgorithmRegistry"]
+  algo["Algorithm"]
+  dataObj["Data"]
+  modelObj["Model"]
+  systemObj["System"]
+  caller["调用方"]
+
+  json --> cfg
+  cfg --> api
+  api --> factory
+  factory --> registry
+  factory --> algo
+  dataObj --> algo
+  modelObj --> algo
+  systemObj --> algo
+  caller --> api
+  api --> algo
+```
+
+### 6.8 Asset / 测试
+
+| 操作 | 谁 | 路径意图 |
+|------|-----|----------|
+| checkpoint / 日志 | `Algorithm` + `System`（train） | `assets/checkpoints/`、`assets/logs/` |
+| 生成样本 | `Algorithm`（inference） | `assets/samples/` |
+
+测试：`tests/rpipe/structure/algorithm/`（`AlgorithmConfig`、Registry、Factory→`Algorithm`、单 mode run）；`tests/rpipe/structure/api/`（`algorithm_api`）。跨 `Data`+`Model`+`System`+`Algorithm` 的路径标 integration，落在调用起点。
 
 ---
 
+## 7. `structure/system/`（实现 + 类）
 
+管理计算在硬件上的执行（CONCEPT §4.4）：设备、精度、并行、内存与 IO、恢复等。prepare 确认设备与输出位置、可读 resume Asset；execute 落实执行策略并与 checkpoint / 日志等 Asset 协作。声明字段由 **`SystemConfig`** 从 JSON / Config 加载。
 
-## 7. 演进
+### 7.1 本层自有类型
 
-1. 新层：实现目录 + 对应 `*_api`（Control 除外）；跨层经 api 导出。
-2. data 叶文件：对齐三类、`data_api`、对接接口。
-3. 字段键更名时同步 `Dataset`、Control、Experiment grid、`data_api` 与测试。
+| 类型 | 职责 |
+|------|------|
+| **`System`** | 对上提供设备放置、精度上下文、并行策略、输出路径、checkpoint / resume 等执行环境能力 |
+| **`SystemRegistry`** | source（及能力名）→ 如何建构执行环境；`register` / `get` / `list` |
+| **`SystemFactory`** | 读 `SystemConfig` + `assets_dir` → 经 registry 建构 → 得到 **`System`** |
+| **`SystemConfig`** | dataclass；从 JSON / Config / Control.system 加载声明字段 |
 
+对外：`SystemFactory.build(system_config, assets_dir) → System`（经 `system_api`）。
+
+### 7.2 `System` 职责要点
+
+- 解析并暴露当前 device；放置 module / batch
+- 精度策略（fp32 / fp16 / bf16 / mixed）与 autocast 类上下文
+- 并行策略（单卡 / DDP 等）钩子
+- 输出路径约定（checkpoints、logs）与写节奏相关能力
+- resume：从 Asset 恢复运行态
+- 可选 profile / 调试钩子
+- 不承载配置字段表本身（那是 `SystemConfig`）
+
+### 7.3 下游来源（至少）
+
+执行环境与推理运行时；与 PyTorch 生态共轭、按需接入。**Accelerate 不在本层**（见 algorithm §6.4）。
+
+| 来源 | 复用什么 |
+|------|----------|
+| Native PyTorch | `torch.device`、`.to(device)`、autocast / GradScaler、单进程 IO；分布式原语若直用也归在此，不单列 `torch.distributed` |
+| CUDA / MPS / CPU | 设备枚举与可用性探测 |
+| **llama.cpp** | 本地推理引擎句柄与设备/内存相关设定 |
+| **vLLM** | 推理服务 / 引擎侧的设备与批处理运行时 |
+| **SGLang** | 推理运行时与设备相关能力 |
+
+其它集群启动器等经 Registry 注册即可。
+
+### 7.4 `SystemConfig`
+
+dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必须字段：**
+
+| 字段 | 说明 |
+|------|------|
+| `source` | 执行环境来源（如 `native` / `llama_cpp` / `vllm` / `sglang`） |
+| `path` | system 超参等资源路径 |
+| `config` | **内容配置**：可装入 `path` 内读出的配置，或由上层覆写；合并规则下游再定 |
+| `compat_algorithm` | **兼容的 Algorithm**（如允许的 `mode` / `source` 集合；空表示不限制——形状下游再定） |
+
+`device` **不是**必须字段；需要时进 `path` / `config` 或作扩展键。
+
+### 7.5 Registry / Factory
+
+| 类 | 能力 |
+|----|------|
+| `SystemRegistry` | `register` / `get` / `list` |
+| `SystemFactory` | `build(system_config: SystemConfig, assets_dir) → System` |
+
+### 7.6 协作
+
+```mermaid
+flowchart LR
+  json["JSON / Config"]
+  cfg["SystemConfig"]
+  api["system_api"]
+  factory["SystemFactory"]
+  registry["SystemRegistry"]
+  systemObj["System"]
+  algo["Algorithm"]
+  modelObj["Model"]
+  caller["调用方"]
+
+  json --> cfg
+  cfg --> api
+  api --> factory
+  factory --> registry
+  factory --> systemObj
+  caller --> api
+  systemObj --> algo
+  systemObj --> modelObj
+```
+
+prepare 顺序建议：先 `SystemFactory.build`，再 data / model（设备与输出根就绪后再放置模型）。
+
+### 7.7 Asset / 测试
+
+| 操作 | 谁 | 路径意图 |
+|------|-----|----------|
+| resume 读 | `SystemFactory` / `System` | `assets/checkpoints/…` 等 |
+| checkpoint / 日志写 | `System`（受 algorithm 触发） | `assets/checkpoints/`、`assets/logs/` |
+
+测试：`tests/rpipe/structure/system/`（`SystemConfig`、Registry、Factory→`System`、device 解析）；`tests/rpipe/structure/api/`（`system_api`）。多设备 / 外网推理运行时标 `external` 或 `slow`。
+
+---
+
+## 8. `structure/control/`（实验侧控制器）
+
+**Control** 是实验侧用来**覆写 / 指派各层变量**的控制器：不同 Experiment / Study 取值不同，从而得到不同的 `DataConfig` / `ModelConfig` / `AlgorithmConfig` / `SystemConfig`（及落盘 Artifact Config）。**不设 `control_api`**；Study / grid 等直接使用 `control/`。
+
+### 8.1 职责
+
+- 持有（或生成）对各层 `*Config` 的覆写：如改 `path`、`source`、`mode`、`name`、`config`、`compat_*` 等
+- 与 Artifact Config 编解码往返（`control_from_config` / `control_to_config` 一类）
+- 可选：契约校验（必须字段、`mode` 合法、兼容链是否满足等）
+- 不实现 data/model/algorithm/system 的建构与计算（那是各层 Factory / 运行时类）
+
+### 8.2 建议类型（先定职责，叶文件后定）
+
+| 类型 | 职责 |
+|------|------|
+| **`Control`** | 一次运行的层变量指派对象；可导出/合并为各层 `*Config` |
+| **编解码** | Artifact Config mapping ↔ `Control` / 各 `*Config` |
+| **契约** | 校验必须字段与合法性（可选独立类型） |
+
+### 8.3 与四层关系
+
+```mermaid
+flowchart TB
+  control["Control"]
+  dc["DataConfig"]
+  mc["ModelConfig"]
+  ac["AlgorithmConfig"]
+  sc["SystemConfig"]
+  dataApi["data_api"]
+  modelApi["model_api"]
+  algoApi["algorithm_api"]
+  systemApi["system_api"]
+
+  control --> dc
+  control --> mc
+  control --> ac
+  control --> sc
+  dc --> dataApi
+  mc --> modelApi
+  ac --> algoApi
+  sc --> systemApi
+```
+
+同一套层实现 + 不同 Control，即可表达不同实验，而无需为每个实验复制四层代码。
+
+---
+
+## 9. 与 Artifact 的触点（摘要）
+
+| 触点 | Structure 侧 | 对端 |
+|------|-------------|------|
+| Config | Control 编出的各层 `*Config`（`path` + 可装入/覆写的 `config`） | `artifact.config` |
+| Asset | data 缓存；model `path` 资源；system/algorithm checkpoint、logs、samples | `artifact.asset` |
+| 观测 | algorithm 等产出的 metrics / observations | 后续写入 `artifact` Result |
+
+---
+
+## 10. 演进
+
+1. 各层 `*Config`：`source` + `path` + `config`（+ `name` / `mode`）；兼容链为 Model→Data、Algorithm→Model、System→Algorithm。
+2. `path` ↔ `config` 的装入与覆写优先级，做到更下游细节时再定。
+3. Control 职责已定；编解码与契约强度可再收一版。
+4. 叶文件按已定类对齐。
