@@ -67,7 +67,7 @@ algorithm/           → Algorithm / AlgorithmRegistry / AlgorithmFactory / Algo
 | **model** | `Model` + `ModelRegistry` + `ModelFactory` + `ModelConfig` |
 | **algorithm** | `Algorithm` + `AlgorithmRegistry` + `AlgorithmFactory` + `AlgorithmConfig` |
 | **system** | `System` + `SystemRegistry` + `SystemFactory` + `SystemConfig` |
-| control | `Control` + 编解码 / 契约（§8）；无 control_api |
+| control | `ExperimentConfig` + `RunConfig` + `Control` + 四层 `*Config` + 合并/编解码/契约（§8） |
 
 ---
 
@@ -491,28 +491,124 @@ prepare 顺序建议：先 `SystemFactory.build`，再 data / model（设备与�
 
 ## 8. `structure/control/`（实验侧控制器）
 
-**Control** 是实验侧用来**覆写 / 指派各层变量**的控制器：不同 Experiment / Study 取值不同，从而得到不同的 `DataConfig` / `ModelConfig` / `AlgorithmConfig` / `SystemConfig`（及落盘 Artifact Config）。**不设 `control_api`**；Study / grid 等直接使用 `control/`。
+编排层级（与 CONCEPT 对齐，并补上 **Run**）：
 
-### 8.1 职责
-
-- 持有（或生成）对各层 `*Config` 的覆写：如改 `path`、`source`、`mode`、`name`、`config`、`compat_*` 等
-- 与 Artifact Config 编解码往返（`control_from_config` / `control_to_config` 一类）
-- 可选：契约校验（必须字段、`mode` 合法、兼容链是否满足等）
-- 不实现 data/model/algorithm/system 的建构与计算（那是各层 Factory / 运行时类）
-
-### 8.2 建议类型（先定职责，叶文件后定）
-
-| 类型 | 职责 |
+| 层级 | 含义 |
 |------|------|
-| **`Control`** | 一次运行的层变量指派对象；可导出/合并为各层 `*Config` |
-| **编解码** | Artifact Config mapping ↔ `Control` / 各 `*Config` |
-| **契约** | 校验必须字段与合法性（可选独立类型） |
+| **Study** | 一类 / 一轮研究（编排多种 Experiment、多次 Run） |
+| **Experiment** | 一种实验类型（一套 Structure + Flow 实现） |
+| **Run** | 该 Experiment 下的一次具体运行；**`slug` = 这次 Run 的名字**（亦作 `artifact/<slug>/` 目录名） |
 
-### 8.3 与四层关系
+配置也分两级：**`experiment_config` 更底层（基底）**；**`run_config` 套在其上**（本 Run 的已决 / 补丁合并结果）。
+
+**Control** 是 Structure 内对象：内容即本 Run 已决的 **`RunConfig`**（四层 + `seed` + `slug` 等）。**不设 `control_api`**。  
+库内不设顶层 `defaults/`；`experiment_config` 文件放在各 Experiment 侧。
+
+### 8.1 本层类型
+
+| 类型 / 单元 | 职责 |
+|-------------|------|
+| **`DataConfig` / `ModelConfig` / `AlgorithmConfig` / `SystemConfig`** | 各层 dataclass（§4–§7） |
+| **`ExperimentConfig`** | dataclass；Experiment 级基底（`experiment_config` 的类型化） |
+| **`RunConfig`** | dataclass；Run 级配置：四层 + `seed` + **`slug`（run 名）** 等；由 `experiment_config` 与 Run 侧补丁合并得到 |
+| **`Control`** | 持有已决 `RunConfig`（或与之同构）；prepare / 契约 / 导出四层的入口 |
+| **编解码 / 合并** | JSON/YAML ↔ `ExperimentConfig` / `RunConfig`；deep-merge |
+| **契约** | 必须字段、`mode`、兼容链 |
+
+### 8.2 Study / Experiment / Run 与两级 Config
 
 ```mermaid
 flowchart TB
+  study["Study 一类研究"]
+  exp["Experiment 一种实验"]
+  run["Run 一次运行"]
+  expCfg["experiment_config"]
+  runCfg["run_config"]
   control["Control"]
+
+  study --> exp
+  exp --> run
+  exp --> expCfg
+  expCfg --> runCfg
+  run --> runCfg
+  runCfg --> control
+```
+
+| 形态 | 落盘 / 位置 | 说明 |
+|------|-------------|------|
+| **`experiment_config`** | Experiment 目录内（如 `experiment_config.json`；文件名可约定） | 该实验类型的**基底**默认；类型 → `ExperimentConfig` |
+| **`run_config`** | `artifact/<slug>/`（如 `config.yaml`） | **套在** `experiment_config` 之上的本 Run 完整配置；类型 → `RunConfig`；含四层 + `seed` + `slug` |
+| **`Control`** | 内存对象 | 由已决 `run_config` 构造；供 prepare 落地四层 |
+
+**合并原则：**
+
+1. 读 `experiment_config` → `ExperimentConfig`。
+2. grid / Study 为每次 Run 提供补丁（至少常改 `slug`、`seed`、部分层字段）。
+3. `merge(experiment_config, patch) → RunConfig`（补丁覆盖同名键；`run_config` **套在**基底上）。
+4. 落盘的是**完整** `run_config`（不写 diff）；目录用 **`slug`（run 名）**。
+5. prepare：只读该 Run 的 `run_config` → `Control`（一般不再回读 `experiment_config`）。
+
+### 8.3 `RunConfig` 字段（亦为 Control 所持）
+
+| 字段 | 说明 |
+|------|------|
+| `slug` | **Run 的名字**；同时对应 `artifact/<slug>/` |
+| `seed` | 本 Run 的 seed（与其它变量同质，放在 run 级） |
+| `experiment` | 所属 Experiment 标识（如 `mnist_linear`），可选但建议有 |
+| `data` / `model` / `algorithm` / `system` | 四层 `*Config` |
+
+**`ExperimentConfig`** 与 `RunConfig` 在四层上同构，便于合并；基底里通常**没有**（或不强调）本次 `slug` / `seed`，由各 Run 补上。
+
+示例（已决 `run_config` / Artifact Config）：
+
+```yaml
+slug: seed_0
+seed: 0
+experiment: mnist_linear
+data:
+  name: ...
+  source: ...
+  path: ...
+  config: { ... }
+model:
+  name: ...
+  source: ...
+  path: ...
+  config: { ... }
+  compat_data: ...
+algorithm:
+  mode: train
+  source: ...
+  path: ...
+  config: { ... }
+  compat_model: ...
+system:
+  source: ...
+  path: ...
+  config: { ... }
+  compat_algorithm: ...
+```
+
+| API（名可微调） | 行为 |
+|----------------|------|
+| `experiment_config_from_json(path) → ExperimentConfig` | 读 Experiment 基底 |
+| `run_config_from_merge(exp, patch) → RunConfig` | 基底 ⊕ 补丁 |
+| `control_from_run_config(run) → Control` | 供 prepare |
+| `run_config_to_mapping` / `control_to_config` | 落盘完整 run_config |
+| `control_from_config(mapping) → Control` | prepare 读回 |
+
+- Flow 不修改已落盘的 `run_config`。
+- 各层 `path` 不在编解码时自动展开；装入层内 `config` 由 Factory / prepare 下游再定。
+
+### 8.4 契约校验
+
+对已决 `RunConfig` / `Control`：必须字段、`algorithm.mode`、兼容链（`compat_*` 空则跳过）。不校验第三方能否加载。
+
+### 8.5 与四层关系
+
+```mermaid
+flowchart TB
+  control["Control / RunConfig"]
   dc["DataConfig"]
   mc["ModelConfig"]
   ac["AlgorithmConfig"]
@@ -532,7 +628,11 @@ flowchart TB
   sc --> systemApi
 ```
 
-同一套层实现 + 不同 Control，即可表达不同实验，而无需为每个实验复制四层代码。
+prepare：`control_from_config` →（可选契约）→ 各 `*_api` Factory.build（建议先 system，再 data / model，再 algorithm）。
+
+### 8.6 测试意图
+
+`tests/rpipe/structure/control/`：`ExperimentConfig` / `RunConfig` / `Control` 往返；`experiment_config` ⊕ 补丁 → `run_config`；`slug` 为 run 名；契约校验。Experiment 文件与 grid 集成见 `tests/examples/`。
 
 ---
 
@@ -540,7 +640,7 @@ flowchart TB
 
 | 触点 | Structure 侧 | 对端 |
 |------|-------------|------|
-| Config | Control 编出的各层 `*Config`（`path` + 可装入/覆写的 `config`） | `artifact.config` |
+| Config | 已决 `run_config`（四层 + `seed` + `slug`）；由 `experiment_config` 套出来 | `artifact.config` |
 | Asset | data 缓存；model `path` 资源；system/algorithm checkpoint、logs、samples | `artifact.asset` |
 | 观测 | algorithm 等产出的 metrics / observations | 后续写入 `artifact` Result |
 
@@ -548,7 +648,8 @@ flowchart TB
 
 ## 10. 演进
 
-1. 各层 `*Config`：`source` + `path` + `config`（+ `name` / `mode`）；兼容链为 Model→Data、Algorithm→Model、System→Algorithm。
-2. `path` ↔ `config` 的装入与覆写优先级，做到更下游细节时再定。
-3. Control 职责已定；编解码与契约强度可再收一版。
-4. 叶文件按已定类对齐。
+1. 编排：Study → Experiment → Run；**`slug` = run 名**。
+2. 配置：`experiment_config`（基底）←套上— `run_config`（四层 + `seed` + `slug`）→ `Control`；Artifact 落盘完整 `run_config`。
+3. `path` ↔ 层内 `config` 合并优先级下游再定。
+4. 代码与 examples 从旧 `BaseConfig`/`slug` 混用对齐到 `ExperimentConfig` / `RunConfig`。
+5. 随后可对齐 flow 分册 prepare 调用面；CONCEPT 词表可补 **Run**。
