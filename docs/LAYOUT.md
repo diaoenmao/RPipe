@@ -14,16 +14,19 @@
 
 | 概念 | 目录落点 |
 |------|----------|
-| **Study** | `examples/studies/…` — 编排 Experiment；触发展开与运行 |
-| **Experiment** | `examples/experiments/…` — 声明 Structure + Flow；Control → Config 落盘 |
+| **Study** | `examples/studies/…` — 编排 Experiment 与多次 Run |
+| **Experiment** | `examples/experiments/…` — 声明 Structure + Flow；经 `grid/` 等落盘 Config |
+| **Run** | 一次具体运行；有 **`id`**（由 Config 内容导出）；每次 Run 对应一份 Artifact |
 | **Structure** | `src/rpipe/structure/` — Control、四层实现与 `api/` 门面 |
 | **Flow** | `src/rpipe/flow/` — prepare → execute → collect → summarize → index |
-| **Artifact** | 各次运行的持久化子树 — Config、Result、Asset 同树共存 |
-| **Control** | Structure 成员；对象代码在 `structure/control/`；Config 由其得到 |
+| **Artifact** | `examples/experiments/<experiment>/artifact/…` — Config、Result、Asset 同树；目录名用 `<id>` 或 `<id>_<timestamp>` |
+| **Control** | Structure 成员；对象代码在 `structure/control/`；由 Config 构造 / 导出 Config |
+
+**Artifact 目录名（对齐 structure 分册）：** Config 内 **`id`** 为除 `id` 外内容的 hash；落盘目录可用 `<id>`，同 `id` 多次存储时用 **`<id>_<timestamp>`**。
 
 读写边界（与 CONCEPT §5、§6 一致）：
 
-- **Config**：由 Experiment 的 **Control** 得到并落盘到 Artifact（经 `grid/` 等）；**prepare 只读**；Flow 其余阶段不修改
+- **Config**：Study / Experiment `grid/` 等写入 Artifact；**prepare 只读**；Flow 其余阶段不修改
 - **Result**：collect / summarize / index 写入 Artifact
 - **Asset**：prepare / execute 读写；collect / summarize / index 不操作 Asset 文件
 
@@ -31,7 +34,7 @@
 
 ## 2. 概念与路径总览
 
-Config **不是** Study 树上的独立支路产物，而是由 **Experiment 侧 Structure 中的 Control** 得到：Control 承载变量指派与 Structure 字段，落盘为 Artifact 内的 Config；prepare 再读回 Config 构造 Control 对象。
+Config **不是** Study 树上的独立支路产物，而是由 **Experiment 侧 Structure 中的 Control** 得到并落盘到该次 **Run** 的 Artifact；prepare 再读回 Config 构造 Control。
 
 
 ```mermaid
@@ -49,7 +52,7 @@ flowchart TB
   studies -->|编排调用| exps
   exps --> structure
   structure --> control
-  control -->|得到并落盘| artifact_tree[artifact/run_slug/ Config]
+  control -->|得到并落盘| artifact_tree["artifact/id 或 id_timestamp/ Config"]
   exps -->|launch/ 跑 Flow| flow
   flow -->|prepare 读 Config| artifact_tree
   flow -->|写 Result Asset| artifact_tree
@@ -60,19 +63,20 @@ flowchart TB
 
 | 概念 | 仓库路径 | 说明 |
 |------|----------|------|
-| Study | `examples/studies/<study_slug>/` | 编排：选定 Experiment、展开运行、触发 `grid/` / `launch/` |
-| Experiment | `examples/experiments/<experiment_slug>/` | 含 `launch/`、`grid/`、本实验 `artifact/` |
-| Control（对象） | `src/rpipe/structure/control/` | Structure 成员；Config 由其字段得到；prepare 读 Config 后构造 |
+| Study | `examples/studies/<study>/` | 编排：选定 Experiment、展开 Run、触发 `grid/` / `launch/` |
+| Experiment | `examples/experiments/<experiment>/` | 含 `launch/`、`grid/`、本实验 `artifact/` |
+| Artifact | `…/artifact/<id>/` 或 `…/artifact/<id>_<timestamp>/` | Config / Result / Asset；每次 Run 一份 |
+| Control（对象） | `src/rpipe/structure/control/` | Structure 成员；Config ↔ Control；prepare 读 Config 后构造 |
 | Structure 四层 | `src/rpipe/structure/{data,model,algorithm,system}/` | 层实现；对外经 `structure/api/` |
-| Structure API | `src/rpipe/structure/api/` | 层间与 Flow 门面：`data_api`、`model_api` 等 |
+| Structure API | `src/rpipe/structure/api/` | 层间与外部调用门面：`data_api`、`model_api` 等 |
 | Flow 五阶段 | `src/rpipe/flow/{prepare,execute,collect,summarize,index}/` | Experiment `launch/` import 并驱动 |
-| Artifact IO | `src/rpipe/artifact/{config,result,asset}/` | 库内读写门面；Config 对应 Control 的 declarative 落盘 |
+| Artifact IO | `src/rpipe/artifact/{config,result,asset}/` | 库内读写门面 |
 
 ---
 
 ## 3. 完整目录树
 
-下列为**目标**目录布局。实例名用示例 slug（可换）；叶文件不列出。
+下列为**目标**目录布局。实例名可换；叶文件不列出。
 
 **深度约定（控制技术债）：** `structure/` **只展开到下一层**（`api` / `control` / `data` / `model` / `algorithm` / `system`）。更深层目录与类由 [code_structure/structure.md](code_structure/structure.md) 按层推进，**暂不归 LAYOUT 管理**。
 
@@ -99,15 +103,15 @@ RPipe/
         asset/
   examples/
     studies/
-      mnist_lr_seed/         # Study：展开 lr × seed，落盘多份 Config
+      mnist_lr_seed/         # Study：展开变量轴，落盘多份 Config / 触发 Run
     experiments/
       mnist_linear/          # Experiment
-        launch/                # 指定 run_slug，调用库内 Flow
-        grid/                  # 按本 Experiment Structure 展开变量轴 → 写 Config
+        launch/                # 按 Run 目录（id 或 id_timestamp）调用库内 Flow
+        grid/                  # 展开变量轴 → 写 Config（内含 hash 得到的 id）
         artifact/
-          lr0.01_seed0/        # 一次运行的 Artifact 子树（run_slug）
+          a1b2c3d4/            # 示意：目录名 = Config.id（hash）
             assets/
-          lr0.01_seed1/
+          a1b2c3d4_1710000000/ # 示意：同 id 再次落盘时用 id_timestamp
             assets/
   docs/
   tests/
@@ -138,7 +142,7 @@ RPipe/
           grid/
     _fixtures/                   # 共享测试数据（不参与源码镜像）
       artifact/
-        lr0.01_seed0/
+        a1b2c3d4/
           assets/
     _helpers/                    # 测试辅助（不得以 test_ 命名）
     README.md                    # 标签、执行入口、排除项与例外
@@ -146,13 +150,15 @@ RPipe/
 
 根下另有工程元数据（`.gitignore`、`pyproject.toml` 等），不进入概念映射。
 
-**同一 run_slug 目录内**（与 `assets/` 同级，叶文件名可约定）：
+**同一 Run 的 Artifact 目录内**（与 `assets/` 同级，叶文件名可约定）：
 
 | 成员 | 典型叶路径 | 写入方 |
 |------|------------|--------|
-| Config | `<run_slug>/config.yaml` | Experiment：由 Control 得到（如经 `grid/`） |
-| Result | `<run_slug>/result.json`（或 `result/` 目录） | Flow：collect → summarize → index |
-| Asset | `<run_slug>/assets/` | Flow：prepare / execute |
+| Config | `<run_dir>/config.yaml` | Experiment：经 Control / `grid/` 等 |
+| Result | `<run_dir>/result.json`（或 `result/` 目录） | Flow：collect → summarize → index |
+| Asset | `<run_dir>/assets/` | Flow：prepare / execute |
+
+其中 `<run_dir>` 为 `<id>` 或 `<id>_<timestamp>`。Config 正文内带有字段 **`id`**（hash）；目录名与之对齐或在同 id 多次存储时附加 timestamp。
 
 Config 与 Result 均在 Artifact 子树内，**不在** Artifact 外另设平行配置目录。
 
@@ -162,39 +168,41 @@ Config 与 Result 均在 Artifact 子树内，**不在** Artifact 外另设平�
 
 ### 4.1 分工
 
-**Study**（`examples/studies/<study_slug>/`）只做编排，不实现 Structure / Flow：
+**Study**（`examples/studies/<study>/`）只做编排，不实现 Structure / Flow：
 
 - 选定 Experiment，按变量轴触发展开（调用该 Experiment 的 `grid/` 等）
-- Control 取值经 Experiment 落为各 `artifact/<run_slug>/` 下的 Config
+- 为各次 **Run** 落盘 Config（内容决定 `id`；目录用 `id` 或 `id` + timestamp）
 - 调用 Experiment 的 `launch/` 跑 Flow
 
-**Experiment**（`examples/experiments/<experiment_slug>/`）是可运行单元，各自独立持有：
+**Experiment**（`examples/experiments/<experiment>/`）是一种实验类型，各自独立持有：
 
 | 子目录 | 职责 |
 |--------|------|
-| `launch/` | 接收 run_slug（或 Config 路径），import 库内 Flow，prepare 读 Config、写 Result / Asset |
-| `grid/` | 按本 Experiment 的 Structure 字段做变量轴展开，向 `artifact/<run_slug>/` 写入 Config |
-| `artifact/` | 各次运行的 Artifact 子树根 |
+| `launch/` | 接收 Run 目录名或 Config 路径，import 库内 Flow；prepare 读 Config、写 Result / Asset |
+| `grid/` | 按本 Experiment 的 Structure 字段做变量轴展开，写入各 `artifact/<run_dir>/` 下的 Config |
+| `artifact/` | 本 Experiment 下各次 Run 的 Artifact 子树根 |
 
-同一套 Experiment 代码可服务多个 Control / run_slug，**不为每个 Control 再建代码目录**。Study 与 Experiment 之间不设跨 Experiment 的 `_common/`；共性逻辑进 `rpipe` 库。
+同一套 Experiment 代码服务多次 Run，**不为每次 Run 再建代码目录**。Study 与 Experiment 之间不设跨 Experiment 的 `_common/`；共性逻辑进 `rpipe` 库。
+
+Experiment 侧还可放**默认配置文件**（实现上的基底 Config；文件名与合并规则见 [structure.md](code_structure/structure.md) §8）。LAYOUT **不**展开其内部键名。
 
 ### 4.2 Artifact 子树示例
 
 ```
-examples/experiments/mnist_linear/artifact/lr0.01_seed0/
-  config.yaml       # Config（由 Control 得到；grid 写；prepare 读）
+examples/experiments/mnist_linear/artifact/a1b2c3d4/
+  config.yaml       # Config（含 id: a1b2c3d4；grid 写；prepare 读）
   result.json       # Result（index 定稿后）
   assets/           # Asset（checkpoint、缓存、日志、生成样本等）
 ```
 
-`lr0.01_seed1/` 等同构，差异仅在 Config 承载的变量取值。
+同配置再次落盘时可写到例如 `a1b2c3d4_1710000000/`，Config 内 `id` 仍为 `a1b2c3d4`。
 
 ### 4.3 调用关系
 
 ```
 examples/studies/mnist_lr_seed/
         │
-        ├─► examples/experiments/mnist_linear/grid/    → 写 artifact/<run_slug>/config.yaml
+        ├─► examples/experiments/mnist_linear/grid/    → 写 artifact/<run_dir>/config.yaml
         └─► examples/experiments/mnist_linear/launch/   → 跑 Flow
                     │
                     ▼
@@ -203,10 +211,10 @@ examples/studies/mnist_lr_seed/
             src/rpipe/artifact/      读写 Config / Result / Asset
                     │
                     ▼
-            artifact/<run_slug>/       Result、Asset 落盘；Config 不被 Flow 修改
+            artifact/<run_dir>/        Result、Asset 落盘；Config 不被 Flow 修改
 ```
 
-绑定关系（哪次运行用哪份 Config、哪个 Experiment）由 **Study** 持有。
+绑定关系（哪次 Run、哪份 Config、哪个 Experiment）由 **Study** 持有。
 
 ---
 
@@ -218,8 +226,8 @@ LAYOUT 对 **Structure** 只管到其**下一层**目录；`algorithm` 等更深
 
 | 目录 | 对应 CONCEPT | 职责 |
 |------|--------------|------|
-| `structure/api/` | （门面） | `data_api` / `model_api` 等；跨层与 Flow 只经此交流 |
-| `structure/control/` | Control | 变量指派对象；prepare 读 Config 后构造 |
+| `structure/api/` | （门面） | `data_api` / `model_api` 等；跨层与外部只经此交流 |
+| `structure/control/` | Control | 变量指派；Config ↔ Control；契约校验 |
 | `structure/data/` | Structure · data | 数据层实现 |
 | `structure/model/` | Structure · model | 模型层实现 |
 | `structure/algorithm/` | Structure · algorithm | 算法层实现（更下层暂不在 LAYOUT 展开） |
@@ -276,10 +284,10 @@ LAYOUT 对 **Structure** 只管到其**下一层**目录；`algorithm` 等更深
 | 被测区域 | 镜像下典型覆盖 |
 |----------|----------------|
 | `structure/api` | 经 `data_api` 等的跨层调用契约 |
-| `structure/control` | Control ↔ Config 往返；契约字段 / 校验（schema 能力）；location |
-| `structure` 四层 / algorithm | 经 api 的 prepare / semantics |
+| `structure/control` | Control ↔ Config 往返；`id` hash；契约校验 |
+| `structure` 四层 / algorithm | 经 api 的 prepare / `mode` |
 | `flow/*` | 各阶段 `run(ctx)`；Runner 子集 |
-| `artifact/*` | layout 与 Config / Result / Asset IO |
+| `artifact/*` | layout 与 Config / Result / Asset IO（含 `id` / `id_timestamp` 路径） |
 | Experiment `grid` / `launch` | 展开落盘、驱动 Flow |
 | Study | 编排整链（多为 `e2e`） |
 
