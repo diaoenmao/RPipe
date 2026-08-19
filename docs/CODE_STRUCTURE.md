@@ -27,12 +27,13 @@
 - `artifact` 不 import `structure` 四层业务，不 import `flow`
 - 第三方运行时适配写在 **Structure 各层实现内部**，经对应 `*_api` 对外；不设库顶层 `provider/`
 
-**Config 链路：** Control →（Experiment `grid/`）→ Artifact Config → prepare 读回构造 Control。Flow 不修改 Config。  
+**编排：** Study → Experiment → Run（见 CONCEPT）。  
+
+**Config 链路：** Experiment 基底 ⊕ Run 补丁 → 完整 Config（含内容 hash 的 `id`）经 `grid/` 落入 Artifact → prepare 读回构造 `Control`。Flow 不修改 Config。  
+
 **契约 / schema：** 由 Control 侧代码声明与校验，视为 Config 能力；不单立包。
 
 ---
-
-
 
 ## 2. 三柱文件树（只到子包，叶文件见分册）
 
@@ -40,63 +41,57 @@
 src/rpipe/
   structure/
     api/                 # data_api / model_api / … 层间门面
-    control/
+    control/             # ExperimentConfig / RunConfig / Control
     data/
     model/
     algorithm/
     system/
   flow/
+    context.py
+    runner.py
     prepare/
     execute/
     collect/
     summarize/
     index/
   artifact/
+    layout.py
     config/
     result/
     asset/
 ```
 
-编排入口与叶文件见各柱分册。`algorithm` 更下层（如语义目录）在 [structure.md](code_structure/structure.md) 定该层时再写，不在本总览展开。
+编排入口与叶文件见各柱分册。Structure 更下层（含 Control 字段、`id` hash）见 [structure.md](code_structure/structure.md)，不在本总览展开。
 
 ---
 
-
-
 ## 3. examples（包外，摘要）
 
-目录约定见 LAYOUT §4。叶文件建议：
+目录约定见 LAYOUT §4。摘要：
 
 ```
 examples/
-  studies/<study_slug>/
+  studies/<study>/
     run.py                 # 选定 Experiment；调 grid / launch
-  experiments/<experiment_slug>/
-    grid/
-      expand.py            # 轴展开 → control_to_config → write_config
-      axes.py              # 本实验变量轴定义（可选拆分）
-      __main__.py          # CLI
-    launch/
-      run.py               # run_one / run_many / discover_slugs
-      __main__.py          # CLI
+  experiments/<experiment>/
+    grid/                  # 展开变量轴 → 写 Artifact Config（含 id）
+    launch/                # 按 run_dir 驱动 Flow
     artifact/
-      <run_slug>/
+      <id>/                # 或 <id>_<timestamp>/
         config.yaml
-        result.json        # Flow 写入后
+        result.json
         assets/
 ```
 
 
-| 模块               | 职责                                                           |
-| ---------------- | ------------------------------------------------------------ |
-| `grid/expand.py` | 笛卡尔 / 自定义展开；落盘各 `artifact/<run_slug>/config.yaml`            |
-| `launch/run.py`  | `artifact_layout` → 确认 Config → `FlowContext` + `FlowRunner` |
-| Study `run.py`   | 只编排；不实现 Structure / Flow                                     |
+| 模块 | 职责 |
+|------|------|
+| `grid/` | 基底 ⊕ 补丁 → hash `id` → `write_config` 到 `artifact/<run_dir>/` |
+| `launch/` | `artifact_layout(experiment_dir, run_dir)` → 确认 Config → `FlowContext` + `FlowRunner` |
+| Study `run.py` | 只编排；不实现 Structure / Flow |
 
 
 ---
-
-
 
 ## 4. tests（摘要）
 
@@ -104,11 +99,8 @@ examples/
 
 ---
 
-
-
 ## 5. 读法
 
 1. CONCEPT 定概念 → LAYOUT 定目录 → **本总览**定依赖
-2. 实现某柱时打开对应分册，按 folder → 模块 → 叶文件落地
-3. 包外 Study / Experiment 只依赖库公开入口，细节不进三柱分册
-
+2. 实现某柱时打开对应分册，按模块 → 类 → 叶文件落地
+3. 包外 Study / Experiment / Run 只依赖库公开入口，细节不进三柱分册

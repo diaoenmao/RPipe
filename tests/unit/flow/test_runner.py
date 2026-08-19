@@ -13,7 +13,7 @@ def test_full_flow_writes_result(tmp_path: Path):
             'seed': 0,
             'data': {'name': 'MNIST'},
             'model': {'name': 'linear'},
-            'algorithm': {'semantics': ['train', 'eval'], 'num_steps': 2},
+            'algorithm': {'mode': 'train', 'num_steps': 2},
             'system': {'device': 'cpu'},
         },
     )
@@ -21,7 +21,8 @@ def test_full_flow_writes_result(tmp_path: Path):
     result_path = FlowRunner().run(ctx)
     assert result_path.is_file()
     assert ctx.control is not None
-    assert ctx.control.slug == 'seed_0'
+    assert ctx.control.id
+    assert ctx.control.seed == 0
     assert 'accuracy' in (ctx.state.get('result') or {}).get('metrics', {}) or 'loss' in (
         ctx.state.get('result') or {}
     ).get('metrics', {})

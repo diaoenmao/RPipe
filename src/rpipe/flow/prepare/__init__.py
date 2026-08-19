@@ -14,10 +14,10 @@ from rpipe.structure.system import prepare_system
 def run(ctx: FlowContext) -> None:
     cfg = load_config(ctx.layout.config_path)
     ctx.config = cfg
-    ctx.control = control_from_config(cfg, slug=ctx.layout.root.name)
+    ctx.control = control_from_config(cfg)
     ensure_assets(ctx.layout)
     ctx.state['data'] = prepare_data(ctx.control.data, ctx.layout.assets_dir)
     ctx.state['model'] = prepare_model(ctx.control.model, ctx.layout.assets_dir)
     ctx.state['system'] = prepare_system(ctx.control.system, ctx.layout.assets_dir)
-    write_text_asset(ctx.layout, 'prepare.log', f'prepared control={ctx.control.slug}\n')
+    write_text_asset(ctx.layout, 'prepare.log', f'prepared control={ctx.control.id}\n')
     ctx.state.setdefault('observations', [])

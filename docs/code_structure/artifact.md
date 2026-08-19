@@ -8,7 +8,7 @@
 
 ---
 
-## 0. 目录总树
+## 1. 目录总树
 
 ```
 artifact/
@@ -27,52 +27,56 @@ artifact/
     kinds.py
 ```
 
-磁盘上一次运行（概念 Artifact 子树）落在 Experiment 下：
+磁盘上一次 Artifact（对应一次 Run）落在 Experiment 下。目录名用 Config 的 **`id`**（内容 hash），或同 `id` 多次落盘时用 **`id` + timestamp**：
 
 ```
-<experiment_dir>/artifact/<run_slug>/
-  config.yaml          # Config（grid 写；prepare 读）
+<experiment_dir>/artifact/<id>/
+  config.yaml          # Config（grid 写；prepare 读；正文含 id）
   result.json          # Result（index 定稿）
   assets/              # Asset 根
     ...
+
+<experiment_dir>/artifact/<id>_<timestamp>/   # 可选：同 id 再次存储
+  ...
 ```
 
-叶文件名可通过 `paths.py` 常量配置，**同树原则不变**（Config / Result / Asset 不平行拆到 Artifact 外）。
+叶文件名可通过 `paths.py` 常量配置，**同树原则不变**（Config / Result / Asset 不平行拆到 Artifact 外）。`id` 的生成规则见 [structure.md](structure.md) §8；本柱只负责路径拼装与 IO。
 
 ---
 
-## 1. 布局与路径
+## 2. 布局与路径
 
-### 1.1 `layout.py`
+### 2.1 `layout.py`
 
 | 符号 | 职责 |
 |------|------|
-| `ArtifactLayout` | 一次 run 的路径句柄 |
-| `artifact_layout(experiment_dir, slug) → ArtifactLayout` | 工厂 |
+| `ArtifactLayout` | 一次 Artifact 的路径句柄 |
+| `artifact_layout(experiment_dir, run_dir) → ArtifactLayout` | 工厂；`run_dir` 为 `<id>` 或 `<id>_<timestamp>` |
 
 `ArtifactLayout` 建议属性 / 方法：
 
 | 成员 | 含义 |
 |------|------|
-| `root` | `…/artifact/<run_slug>/` |
+| `root` | `…/artifact/<run_dir>/` |
 | `config_path` | Config 叶路径 |
 | `result_path` | Result 叶路径 |
 | `assets_dir` | Asset 根目录 |
 | `ensure()` | 创建 root / assets（及约定子目录） |
 | `exists_config()` / `exists_result()` | 存在性 |
 
-### 1.2 `paths.py`
+### 2.2 `paths.py`
 
 | 符号 | 职责 |
 |------|------|
 | `CONFIG_NAME` | 默认 `config.yaml` |
 | `RESULT_NAME` | 默认 `result.json` |
 | `ASSETS_DIRNAME` | 默认 `assets` |
-| `slug_path(experiment_dir, slug)` | 拼 root |
+| `run_dir_path(experiment_dir, run_dir)` | 拼 root |
+| `make_run_dir(id, timestamp=None)` | 可选：拼 `<id>` 或 `<id>_<timestamp>` |
 
-集中改名，避免 layout / IO 魔法字符串散落。
+集中改名，避免 layout / IO 魔法字符串散落。不用 `slug` 命名。
 
-### 1.3 `errors.py`
+### 2.3 `errors.py`
 
 | 符号 | 职责 |
 |------|------|
@@ -82,9 +86,9 @@ artifact/
 
 ---
 
-## 2. `artifact/config/`
+## 3. `artifact/config/`
 
-Config 是 Artifact 成员：declarative 落盘；由 Control 得到；Flow 不修改。
+Config 是 Artifact 成员：declarative 落盘；由 Control / grid 得到；Flow 不修改。正文通常含 **`id`**（hash）及四层等字段。
 
 | 文件 | 模块职责 | 主要符号 |
 |------|----------|----------|
@@ -109,7 +113,7 @@ Config 是 Artifact 成员：declarative 落盘；由 Control 得到；Flow 不�
 
 ---
 
-## 3. `artifact/result/`
+## 4. `artifact/result/`
 
 Result 由 collect → summarize → index 形成；index 后定稿。
 
@@ -136,7 +140,7 @@ Result 由 collect → summarize → index 形成；index 后定稿。
 
 ---
 
-## 4. `artifact/asset/`
+## 5. `artifact/asset/`
 
 文件型产物根；prepare / execute 读写；collect / summarize / index **不操作 Asset 文件内容**（index 只登记路径）。
 
@@ -163,7 +167,7 @@ Structure 的 data/model/system/algorithm 经 `kinds` 解析路径，避免硬�
 
 ---
 
-## 5. 成员与阶段权限（复述）
+## 6. 成员与阶段权限（复述）
 
 | Phase | config IO | asset IO | result IO |
 |-------|-----------|----------|-----------|
@@ -177,7 +181,7 @@ Structure 的 data/model/system/algorithm 经 `kinds` 解析路径，避免硬�
 
 ---
 
-## 6. 与 Control 契约的分工
+## 7. 与 Control 契约的分工
 
 | 层次 | 位置 | 做什么 |
 |------|------|--------|
@@ -189,11 +193,11 @@ Structure 的 data/model/system/algorithm 经 `kinds` 解析路径，避免硬�
 
 ---
 
-## 7. 布局单测与 location
+## 8. 布局单测与 location
 
 | 镜像位置 | 层级 | 覆盖 |
 |----------|------|------|
-| `tests/rpipe/artifact/test_layout.py` | unit | `ArtifactLayout` 路径拼法、`ensure` |
+| `tests/rpipe/artifact/test_layout.py` | unit | `ArtifactLayout` 路径拼法（`id` / `id_timestamp`）、`ensure` |
 | `tests/rpipe/artifact/test_paths_location.py` | unit + location | 模块路径 / 公开符号仍在约定位置 |
 | `tests/rpipe/artifact/config/` | unit | load/write 往返 |
 | `tests/rpipe/artifact/result/` | unit | load/write 往返 |
