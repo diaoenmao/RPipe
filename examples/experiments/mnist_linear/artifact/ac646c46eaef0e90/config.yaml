@@ -1,11 +1,12 @@
-slug: seed_0
+id: ac646c46eaef0e90
 seed: 0
+experiment: mnist_linear
 data:
   name: MNIST
 model:
   name: linear
 algorithm:
-  semantics: [train, eval]
+  mode: train
   num_steps: 4
 system:
   device: cpu

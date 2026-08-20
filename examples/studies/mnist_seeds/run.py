@@ -7,28 +7,31 @@ Usage (from repo root)::
 
 from __future__ import annotations
 
-import runpy
+import importlib.util
 import sys
 from pathlib import Path
 
 _REPO = Path(__file__).resolve().parents[3]
 _EXP = _REPO / 'examples' / 'experiments' / 'mnist_linear'
+_SRC = _REPO / 'src'
+if str(_SRC) not in sys.path:
+    sys.path.insert(0, str(_SRC))
+
+
+def _load(path: Path, name: str):
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
 
 
 def main() -> int:
-    grid = _EXP / 'grid' / 'run.py'
-    launch = _EXP / 'launch' / 'run.py'
-    runpy.run_path(str(grid), run_name='__main__')
-    # re-exec launch main without SystemExit from grid
-    sys.argv = [str(launch)]
-    runpy.run_path(str(launch), run_name='__not_main__')
-    from importlib.util import module_from_spec, spec_from_file_location
-
-    spec = spec_from_file_location('mnist_linear_launch', launch)
-    mod = module_from_spec(spec)
-    assert spec.loader is not None
-    spec.loader.exec_module(mod)
-    return mod.main([])
+    grid = _load(_EXP / 'grid' / '__init__.py', 'mnist_linear_grid')
+    launch = _load(_EXP / 'launch' / '__init__.py', 'mnist_linear_launch')
+    for path in grid.expand([0, 1]):
+        print(path)
+    return launch.main([])
 
 
 if __name__ == '__main__':

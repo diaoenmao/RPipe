@@ -1,5 +1,5 @@
-id: fixture_seed_0
-seed: 0
+id: cf697e38b7683a74
+seed: 1
 experiment: mnist_linear
 data:
   name: MNIST
@@ -7,5 +7,6 @@ model:
   name: linear
 algorithm:
   mode: train
+  num_steps: 4
 system:
   device: cpu

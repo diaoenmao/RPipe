@@ -1,4 +1,4 @@
-"""Write Control Configs into this Experiment's Artifact tree."""
+"""Write Run Configs into this Experiment's Artifact tree."""
 
 from __future__ import annotations
 
@@ -12,33 +12,32 @@ _SRC = Path(__file__).resolve().parents[4] / 'src'
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
-from rpipe.artifact import artifact_layout, write_config
+from rpipe.artifact import artifact_layout, load_config, write_config
+from rpipe.structure.control import experiment_config_from_mapping, run_config_from_merge
 
 
 def experiment_dir() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-def base_config(seed: int) -> dict[str, Any]:
-    return {
-        'slug': f'seed_{seed}',
-        'seed': seed,
-        'data': {'name': 'MNIST'},
-        'model': {'name': 'linear'},
-        'algorithm': {
-            'semantics': ['train', 'eval'],
-            'num_steps': 4,
-        },
-        'system': {'device': 'cpu'},
-    }
+def experiment_config_path(exp_dir: Path | None = None) -> Path:
+    return (exp_dir or experiment_dir()) / 'experiment_config.yaml'
+
+
+def load_base(exp_dir: Path | None = None) -> Any:
+    path = experiment_config_path(exp_dir)
+    return experiment_config_from_mapping(load_config(path))
 
 
 def expand(seeds: list[int], exp_dir: Path | None = None) -> list[Path]:
+    """Merge experiment_config ⊕ {seed} → RunConfig (hash id) → write Artifact Config."""
     exp_dir = exp_dir or experiment_dir()
+    base = load_base(exp_dir)
     written: list[Path] = []
     for seed in seeds:
-        cfg = base_config(seed)
-        layout = artifact_layout(exp_dir, cfg['slug'])
+        run = run_config_from_merge(base, {'seed': seed})
+        cfg = run.to_mapping()
+        layout = artifact_layout(exp_dir, run.id)
         written.append(write_config(layout.config_path, cfg))
     return written
 

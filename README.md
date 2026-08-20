@@ -34,7 +34,7 @@ examples/experiments/<exp>/{launch,grid,artifact}
 python examples/studies/mnist_seeds/run_study.py
 
 # 或直接 launch 已有 Artifact Config
-python examples/experiments/mnist_linear/launch/__init__.py --slugs seed_0
+python examples/experiments/mnist_linear/launch/__init__.py --run-dirs ac646c46eaef0e90
 
 pytest
 ```

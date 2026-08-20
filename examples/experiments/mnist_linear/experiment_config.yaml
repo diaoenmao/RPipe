@@ -1,11 +1,10 @@
-slug: seed_1
-seed: 1
+experiment: mnist_linear
 data:
   name: MNIST
 model:
   name: linear
 algorithm:
-  semantics: [train, eval]
+  mode: train
   num_steps: 4
 system:
   device: cpu
