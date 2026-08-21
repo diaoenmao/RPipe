@@ -5,6 +5,7 @@ from __future__ import annotations
 from importlib import import_module
 from pathlib import Path
 
+from rpipe.artifact.result import STATUS_FAILED, write_result
 from rpipe.flow.context import FlowContext
 
 PHASES = ('prepare', 'execute', 'collect', 'summarize', 'index')
@@ -18,7 +19,35 @@ class FlowRunner:
             raise ValueError(f'unknown phases: {unknown}; allowed: {PHASES}')
 
     def run(self, ctx: FlowContext) -> Path:
-        for name in self.phases:
-            module = import_module(f'rpipe.flow.{name}')
-            module.run(ctx)
+        try:
+            for name in self.phases:
+                module = import_module(f'rpipe.flow.{name}')
+                module.run(ctx)
+        except Exception as exc:
+            self._write_failed_result(ctx, exc)
+            raise
         return ctx.layout.result_path
+
+    def _write_failed_result(self, ctx: FlowContext, exc: BaseException) -> None:
+        """Best-effort failed Result; must not hide the original error."""
+        try:
+            draft = dict(ctx.state.get('result_draft') or {})
+            draft['status'] = STATUS_FAILED
+            draft['error'] = f'{type(exc).__name__}: {exc}'
+            paths = dict(draft.get('paths') or {})
+            paths.setdefault('artifact', str(ctx.layout.root))
+            paths.setdefault('config', str(ctx.layout.config_path))
+            paths.setdefault('assets', str(ctx.layout.assets_dir))
+            paths['result'] = str(ctx.layout.result_path)
+            draft['paths'] = paths
+            if ctx.control is not None and 'control' not in draft:
+                draft['control'] = ctx.control.to_dict()
+            if 'metrics' not in draft:
+                collected = ctx.state.get('collected') or {}
+                draft['metrics'] = collected.get('metrics') or {}
+            if 'experiment' not in draft:
+                draft['experiment'] = str(ctx.experiment_dir)
+            write_result(ctx.layout.result_path, draft)
+            ctx.state['result'] = draft
+        except Exception:
+            return

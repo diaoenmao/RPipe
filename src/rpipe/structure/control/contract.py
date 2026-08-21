@@ -31,9 +31,14 @@ def validate_control(control: Control, *, require_mode: bool = False) -> None:
 
 
 def validate_result_draft(result: dict[str, Any]) -> None:
-    """Minimal Result shape check (object with str keys)."""
+    """Minimal Result shape check (object with str keys + status)."""
     if not isinstance(result, dict):
         raise ContractError('result must be a mapping')
     for key in result:
         if not isinstance(key, str):
             raise ContractError('result keys must be strings')
+    status = result.get('status')
+    if status not in {'succeeded', 'failed'}:
+        raise ContractError(f'invalid result status: {status!r}')
+    if status == 'failed' and not result.get('error'):
+        raise ContractError('failed result requires error')

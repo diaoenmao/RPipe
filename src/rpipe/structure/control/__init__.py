@@ -13,7 +13,7 @@ from rpipe.structure.control.control import (
     control_from_run_config,
     control_to_config,
 )
-from rpipe.structure.control.hashing import canonical_json, compute_run_id
+from rpipe.structure.control.hashing import canonical_json, compute_index_id, compute_run_id
 from rpipe.structure.control.layers import (
     AlgorithmConfig,
     DataConfig,
@@ -39,6 +39,7 @@ __all__ = [
     'RunConfig',
     'SystemConfig',
     'canonical_json',
+    'compute_index_id',
     'compute_run_id',
     'control_from_config',
     'control_from_run_config',

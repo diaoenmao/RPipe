@@ -29,13 +29,23 @@ def load_base(exp_dir: Path | None = None) -> Any:
     return experiment_config_from_mapping(load_config(path))
 
 
-def expand(seeds: list[int], exp_dir: Path | None = None) -> list[Path]:
-    """Merge experiment_config ⊕ {seed} → RunConfig (hash id) → write Artifact Config."""
+def expand(
+    seeds: list[int],
+    exp_dir: Path | None = None,
+    tags_by_seed: dict[int, list[str]] | None = None,
+) -> list[Path]:
+    """Merge experiment_config ⊕ {seed, description, tags} → RunConfig → write Artifact Config."""
     exp_dir = exp_dir or experiment_dir()
     base = load_base(exp_dir)
+    tag_map = tags_by_seed or {}
     written: list[Path] = []
     for seed in seeds:
-        run = run_config_from_merge(base, {'seed': seed})
+        desc = f'{base.experiment or exp_dir.name} seed={seed}'
+        patch: dict[str, Any] = {'seed': seed, 'description': desc}
+        tags = tag_map.get(seed)
+        if tags:
+            patch['tags'] = list(tags)
+        run = run_config_from_merge(base, patch)
         cfg = run.to_mapping()
         layout = artifact_layout(exp_dir, run.id)
         written.append(write_config(layout.config_path, cfg))

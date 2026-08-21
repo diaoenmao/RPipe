@@ -70,3 +70,16 @@ def test_legacy_slug_ignored_for_id():
     a = control_from_config({'slug': 'seed_0', 'seed': 0, 'data': {'name': 'X'}})
     b = control_from_config({'seed': 0, 'data': {'name': 'X'}})
     assert a.id == b.id
+
+
+def test_description_and_tags_ignored_for_run_id():
+    a = control_from_config(
+        {'seed': 0, 'data': {'name': 'X'}, 'description': 'one', 'tags': ['baseline']}
+    )
+    b = control_from_config(
+        {'seed': 0, 'data': {'name': 'X'}, 'description': 'two', 'tags': ['smoke']}
+    )
+    assert a.id == b.id
+    assert a.to_dict()['description'] == 'one'
+    assert a.to_dict()['tags'] == ['baseline']
+    assert b.to_dict()['tags'] == ['smoke']

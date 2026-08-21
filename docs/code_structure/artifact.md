@@ -15,6 +15,7 @@ artifact/
   layout.py
   paths.py
   errors.py
+  index.py
   config/
     io.py
     format.py
@@ -31,13 +32,19 @@ artifact/
 
 ```
 <experiment_dir>/artifact/<id>/
-  config.yaml          # Config（grid 写；prepare 读；正文含 id）
-  result.json          # Result（index 定稿）
-  assets/              # Asset 根
+  config.yaml            # Config（grid 写；prepare 读；含 id、推荐 description）
+  result.json            # Result（含 status；Flow index 定稿或 Runner 失败落盘）
+  assets/                # Asset 根
     ...
 
 <experiment_dir>/artifact/<id>_<timestamp>/   # 可选：同 id 再次存储
   ...
+```
+
+**统一编排清单**（不属于单次 Artifact 子树）：
+
+```
+examples/studies/<study>/index.json   # Study 写；launch 之前；见 §5
 ```
 
 叶文件名可通过 `paths.py` 常量配置，**同树原则不变**（Config / Result / Asset 不平行拆到 Artifact 外）。`id` 的生成规则见 [structure.md](structure.md) §8；本柱只负责路径拼装与 IO。
@@ -71,8 +78,10 @@ artifact/
 | `CONFIG_NAME` | 默认 `config.yaml` |
 | `RESULT_NAME` | 默认 `result.json` |
 | `ASSETS_DIRNAME` | 默认 `assets` |
+| `INDEX_NAME` | 默认 `index.json`（位于 **Study 目录**，非 `artifact/<run_dir>/`） |
 | `run_dir_path(experiment_dir, run_dir)` | 拼 root |
 | `make_run_dir(id, timestamp=None)` | 可选：拼 `<id>` 或 `<id>_<timestamp>` |
+| `index_path(study_dir)` | 拼 `…/studies/<study>/index.json` |
 
 集中改名，避免 layout / IO 魔法字符串散落。不用 `slug` 命名。
 
@@ -115,7 +124,15 @@ Config 是 Artifact 成员：declarative 落盘；由 Control / grid 得到；Fl
 
 ## 4. `artifact/result/`
 
-Result 由 collect → summarize → index 形成；index 后定稿。
+Result 由 collect → summarize → index 形成；成功路径下 index 后定稿。失败时可由 `FlowRunner` 直接 `write_result`（见 flow 分册）。
+
+定稿（含失败落盘）宜含：
+
+| 键 | 要求 |
+|----|------|
+| `status` | 必选：`succeeded` \| `failed` |
+| `error` | `failed` 时宜有；字符串摘要 |
+| `control` / `structure` / `metrics` / `paths` | 成功路径宜有；失败时可部分缺失 |
 
 | 文件 | 模块职责 | 主要符号 |
 |------|----------|----------|
@@ -127,12 +144,13 @@ Result 由 collect → summarize → index 形成；index 后定稿。
 | 谁 | 操作 |
 |----|------|
 | collect / summarize | 通常只持有内存草稿；也可写草稿文件（若约定） |
-| index | `write_result` 定稿 |
+| index | `write_result` 定稿（`status: succeeded`） |
+| FlowRunner | 失败时尽量 `write_result`（`status: failed`） |
 | Study / autoresearch | `load_result` 消费 |
 
 规则：
 
-- 定稿前业务契约用 `structure.control.contract.validate_result`
+- 定稿前业务契约用 `structure.control.contract.validate_result`（至少检查 `status` ∈ 允许集合）
 - `artifact.result` 可做「必须是 object、顶层键为 str」等最小校验，不替代 contract
 - 同样建议原子写
 
@@ -140,7 +158,55 @@ Result 由 collect → summarize → index 形成；index 后定稿。
 
 ---
 
-## 5. `artifact/asset/`
+## 5. `artifact/index.py`（统一 `index.json`）
+
+Study 编排清单（CONCEPT §6.4）。模块路径为 `rpipe.artifact.index`，**不是** Flow 的 `rpipe.flow.index` 阶段；也**不是** Experiment `artifact/index.json`。
+
+| 符号 | 职责 |
+|------|------|
+| `build_index(...) → dict` | 由 Study 描述 + Experiment 描述 + 已规划 Run（Config 路径等）组装；写入前算 **`id`** |
+| `write_index(study_dir, mapping) → Path` | 写入 `studies/<study>/index.json` |
+| `load_index(study_dir) → dict` | 读清单 |
+| `compute_index_id(mapping) → str` | content hash（排除 `id`）；可复用 control hashing |
+
+建议 shape：
+
+```json
+{
+  "id": "<hash>",
+  "description": "mnist seed sweep",
+  "study": "mnist_seeds",
+  "experiments": [
+    {
+      "name": "mnist_linear",
+      "description": "MNIST linear train stub",
+      "path": "…/experiments/mnist_linear",
+      "runs": [
+        {
+          "id": "<run hash>",
+          "description": "seed=0",
+          "tags": ["baseline"],
+          "run_dir": "<run hash>",
+          "config": "…/artifact/<run_dir>/config.yaml"
+        }
+      ]
+    }
+  ]
+}
+```
+
+规则：
+
+- **先于 launch** 写出；条目来自编排 / Config，**不要求**已有 `result.json`
+- Study 与每个 Experiment 都有短 **`description`**
+- 每个 Run Artifact 的 Config 自带 **`description`** / 可选 **`tags`**（如约定 tag `baseline`）；index 中的 Run 条目与之对齐
+- 可选：跑完后回填 `status` / metrics；默认不以 Result 扫描作为建清单手段
+
+测试：`tests/unit/artifact/test_artifact_io.py`（或现有 unit 镜像）
+
+---
+
+## 6. `artifact/asset/`
 
 文件型产物根；prepare / execute 读写；collect / summarize / index **不操作 Asset 文件内容**（index 只登记路径）。
 
@@ -167,7 +233,7 @@ Structure 的 data/model/system/algorithm 经 `kinds` 解析路径，避免硬�
 
 ---
 
-## 6. 成员与阶段权限（复述）
+## 7. 成员与阶段权限（复述）
 
 | Phase | config IO | asset IO | result IO |
 |-------|-----------|----------|-----------|
@@ -176,24 +242,25 @@ Structure 的 data/model/system/algorithm 经 `kinds` 解析路径，避免硬�
 | collect | — | — | 内存草稿 |
 | summarize | — | — | 内存草稿 |
 | index | — | 读路径列表 | 写定稿 |
+| Runner（失败） | — | — | 尽量写 `failed` Result |
 
-`grid/`（及 Study 触发）是 Config 的**唯一常规写入方**；Flow 禁止改 Config。
+`grid/`（及 Study 触发）是 Config 的**唯一常规写入方**；Flow 禁止改 Config。统一 `index.json` 由 Study 在 launch **之前**写入 Study 目录。
 
 ---
 
-## 7. 与 Control 契约的分工
+## 8. 与 Control 契约的分工
 
 | 层次 | 位置 | 做什么 |
 |------|------|--------|
 | 字节 / 格式 | `artifact/*/format.py`、`io.py` | 能否解析为 mapping、原子写 |
-| 业务契约 | `structure/control/contract.py` | 字段、类型、Result 必选键 |
-| 消费方 | Study / autoresearch | 读 Result；需要时再读同树 Config |
+| 业务契约 | `structure/control/contract.py` | 字段、类型、Result 必选键（含 `status`） |
+| 消费方 | Study / autoresearch | 读 Result / Study `index.json`；需要时再读同树 Config |
 
 不在 `artifact/` 下建 `schema/` 包。
 
 ---
 
-## 8. 布局单测与 location
+## 9. 布局单测与 location
 
 | 镜像位置 | 层级 | 覆盖 |
 |----------|------|------|
@@ -201,6 +268,7 @@ Structure 的 data/model/system/algorithm 经 `kinds` 解析路径，避免硬�
 | `tests/rpipe/artifact/test_paths_location.py` | unit + location | 模块路径 / 公开符号仍在约定位置 |
 | `tests/rpipe/artifact/config/` | unit | load/write 往返 |
 | `tests/rpipe/artifact/result/` | unit | load/write 往返 |
+| `tests/unit/artifact/test_artifact_io.py` | unit | build / write / load 统一 `index.json`（先于 Result） |
 | `tests/rpipe/artifact/asset/` | unit | ensure、kinds、列举 |
 
 集成「grid 写 Config → prepare 读」路径起点在 `tests/examples/.../grid/` 或 `tests/rpipe/flow/prepare/`，不在 artifact 内重复造 Flow。

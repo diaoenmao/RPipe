@@ -1,6 +1,7 @@
 id: cf697e38b7683a74
 seed: 1
 experiment: mnist_linear
+description: mnist_linear seed=1
 data:
   name: MNIST
 model:

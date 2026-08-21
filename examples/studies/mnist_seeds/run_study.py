@@ -22,19 +22,56 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument('--skip-grid', action='store_true')
     args = parser.parse_args(argv)
 
+    study_dir = Path(__file__).resolve().parent
     repo = Path(__file__).resolve().parents[2]
     exp = repo / 'experiments' / 'mnist_linear'
     src = repo.parent / 'src'
     if str(src) not in sys.path:
         sys.path.insert(0, str(src))
 
+    from rpipe.artifact import build_index, load_config, write_index
+
     grid = _load(exp / 'grid' / '__init__.py', 'mnist_linear_grid')
     launch = _load(exp / 'launch' / '__init__.py', 'mnist_linear_launch')
 
+    configs: list[Path] = []
     if not args.skip_grid:
         seeds = [int(s.strip()) for s in args.seeds.split(',') if s.strip()]
-        for path in grid.expand(seeds, exp_dir=exp):
+        configs = grid.expand(seeds, exp_dir=exp, tags_by_seed={0: ['baseline']})
+        for path in configs:
             print(path)
+    else:
+        # still need configs for index: discover existing
+        art = exp / 'artifact'
+        if art.is_dir():
+            configs = sorted(p for p in art.glob('*/config.yaml'))
+
+    base = load_config(exp / 'experiment_config.yaml')
+    runs = []
+    for path in configs:
+        cfg = load_config(path)
+        runs.append(
+            {
+                'id': cfg.get('id'),
+                'description': cfg.get('description'),
+                'tags': cfg.get('tags') or [],
+                'run_dir': path.parent.name,
+                'config': str(path),
+            }
+        )
+    index = build_index(
+        study='mnist_seeds',
+        description='MNIST linear seed sweep',
+        experiments=[
+            {
+                'name': base.get('experiment') or 'mnist_linear',
+                'description': base.get('description') or '',
+                'path': str(exp),
+                'runs': runs,
+            }
+        ],
+    )
+    print(write_index(study_dir, index))
     return launch.main([])
 
 

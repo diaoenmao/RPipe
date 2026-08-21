@@ -1,4 +1,5 @@
 experiment: mnist_linear
+description: MNIST linear train stub (cpu, few steps)
 data:
   name: MNIST
 model:

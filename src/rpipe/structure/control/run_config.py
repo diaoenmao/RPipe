@@ -16,6 +16,19 @@ from rpipe.structure.control.merge import deep_merge
 
 # Legacy keys that must not affect run id / are not RunConfig fields.
 _IGNORE_TOP = frozenset({'slug', 'control_slug', 'raw'})
+_LAYER_KEYS = frozenset(
+    {'seed', 'experiment', 'description', 'tags', 'data', 'model', 'algorithm', 'system'}
+)
+
+
+def _normalize_tags(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [value] if value else []
+    if isinstance(value, (list, tuple)):
+        return [str(item) for item in value]
+    raise TypeError(f'tags must be a list of strings, got {type(value)!r}')
 
 
 @dataclass
@@ -24,6 +37,8 @@ class ExperimentConfig:
 
     seed: int | None = None
     experiment: str | None = None
+    description: str | None = None
+    tags: list[str] = field(default_factory=list)
     data: DataConfig = field(default_factory=DataConfig)
     model: ModelConfig = field(default_factory=ModelConfig)
     algorithm: AlgorithmConfig = field(default_factory=AlgorithmConfig)
@@ -33,14 +48,12 @@ class ExperimentConfig:
     @classmethod
     def from_mapping(cls, mapping: dict[str, Any] | None) -> ExperimentConfig:
         body = {k: v for k, v in dict(mapping or {}).items() if k not in _IGNORE_TOP and k != 'id'}
-        extras = {
-            k: body.pop(k)
-            for k in list(body)
-            if k not in {'seed', 'experiment', 'data', 'model', 'algorithm', 'system'}
-        }
+        extras = {k: body.pop(k) for k in list(body) if k not in _LAYER_KEYS}
         return cls(
             seed=body.get('seed'),
             experiment=body.get('experiment'),
+            description=body.get('description'),
+            tags=_normalize_tags(body.get('tags')),
             data=DataConfig.from_mapping(body.get('data') or {}),
             model=ModelConfig.from_mapping(body.get('model') or {}),
             algorithm=AlgorithmConfig.from_mapping(body.get('algorithm') or {}),
@@ -54,6 +67,10 @@ class ExperimentConfig:
             out['seed'] = self.seed
         if self.experiment is not None:
             out['experiment'] = self.experiment
+        if self.description is not None:
+            out['description'] = self.description
+        if self.tags:
+            out['tags'] = list(self.tags)
         out['data'] = self.data.to_mapping()
         out['model'] = self.model.to_mapping()
         out['algorithm'] = self.algorithm.to_mapping()
@@ -64,11 +81,13 @@ class ExperimentConfig:
 
 @dataclass
 class RunConfig:
-    """Run-level config; id is content hash of all other fields."""
+    """Run-level config; id is content hash of fields except id/description/tags."""
 
     id: str = ''
     seed: int | None = None
     experiment: str | None = None
+    description: str | None = None
+    tags: list[str] = field(default_factory=list)
     data: DataConfig = field(default_factory=DataConfig)
     model: ModelConfig = field(default_factory=ModelConfig)
     algorithm: AlgorithmConfig = field(default_factory=AlgorithmConfig)
@@ -79,15 +98,13 @@ class RunConfig:
     def from_mapping(cls, mapping: dict[str, Any] | None, *, assign_id: bool = True) -> RunConfig:
         body = {k: v for k, v in dict(mapping or {}).items() if k not in _IGNORE_TOP}
         run_id = str(body.pop('id')) if body.get('id') not in (None, '') else ''
-        extras = {
-            k: body.pop(k)
-            for k in list(body)
-            if k not in {'seed', 'experiment', 'data', 'model', 'algorithm', 'system'}
-        }
+        extras = {k: body.pop(k) for k in list(body) if k not in _LAYER_KEYS}
         run = cls(
             id=run_id,
             seed=body.get('seed'),
             experiment=body.get('experiment'),
+            description=body.get('description'),
+            tags=_normalize_tags(body.get('tags')),
             data=DataConfig.from_mapping(body.get('data') or {}),
             model=ModelConfig.from_mapping(body.get('model') or {}),
             algorithm=AlgorithmConfig.from_mapping(body.get('algorithm') or {}),
@@ -106,6 +123,10 @@ class RunConfig:
             out['seed'] = self.seed
         if self.experiment is not None:
             out['experiment'] = self.experiment
+        if self.description is not None:
+            out['description'] = self.description
+        if self.tags:
+            out['tags'] = list(self.tags)
         out['data'] = self.data.to_mapping()
         out['model'] = self.model.to_mapping()
         out['algorithm'] = self.algorithm.to_mapping()

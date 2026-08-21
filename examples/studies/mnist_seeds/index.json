@@ -1,0 +1,30 @@
+{
+  "description": "MNIST linear seed sweep (0, 1)",
+  "study": "mnist_seeds",
+  "experiments": [
+    {
+      "name": "mnist_linear",
+      "description": "MNIST linear train stub (cpu, few steps)",
+      "path": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear",
+      "runs": [
+        {
+          "id": "ac646c46eaef0e90",
+          "description": "mnist_linear seed=0",
+          "tags": [
+            "baseline"
+          ],
+          "run_dir": "ac646c46eaef0e90",
+          "config": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear\\artifact\\ac646c46eaef0e90\\config.yaml"
+        },
+        {
+          "id": "cf697e38b7683a74",
+          "description": "mnist_linear seed=1",
+          "tags": [],
+          "run_dir": "cf697e38b7683a74",
+          "config": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear\\artifact\\cf697e38b7683a74\\config.yaml"
+        }
+      ]
+    }
+  ],
+  "id": "ee2505beaf3f3299"
+}

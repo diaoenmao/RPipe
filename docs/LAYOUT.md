@@ -8,7 +8,7 @@
 
 ## 1. 导读
 
-本文一次定清目录树：哪些目录存在、每个概念落在哪条路径。不列叶文件（如具体 `.py` / `.yaml` / `.json`）。
+本文定清目录树：`src/rpipe/` 与 `tests/rpipe/` 同构；`structure/` 只到下一层。不列叶文件；`examples/` 实例细节见 §4。
 
 与 CONCEPT 对齐的要点：
 
@@ -74,11 +74,9 @@ flowchart TB
 
 ---
 
-## 3. 完整目录树
+## 3. 目录树
 
-下列为**目标**目录布局。实例名可换；叶文件不列出。
-
-**深度约定（控制技术债）：** `structure/` **只展开到下一层**（`api` / `control` / `data` / `model` / `algorithm` / `system`）。更深层目录与类由 [code_structure/structure.md](code_structure/structure.md) 按层推进，**暂不归 LAYOUT 管理**。
+`src/rpipe/` 与 `tests/rpipe/` **目录骨架保持一致**（镜像）。`structure/` **只展开到下一层**（`api` / `control` / 四层）；更深层由 [code_structure/structure.md](code_structure/structure.md) 管理。**不**在此展开 `examples/` 下的 Study / Experiment 实例名（见 §4）。
 
 ```
 RPipe/
@@ -102,20 +100,9 @@ RPipe/
         result/
         asset/
   examples/
-    studies/
-      mnist_lr_seed/         # Study：展开变量轴，落盘多份 Config / 触发 Run
-    experiments/
-      mnist_linear/          # Experiment
-        launch/                # 按 Run 目录（id 或 id_timestamp）调用库内 Flow
-        grid/                  # 展开变量轴 → 写 Config（内含 hash 得到的 id）
-        artifact/
-          a1b2c3d4/            # 示意：目录名 = Config.id（hash）
-            assets/
-          a1b2c3d4_1710000000/ # 示意：同 id 再次落盘时用 id_timestamp
-            assets/
   docs/
   tests/
-    rpipe/                       # 镜像 src/rpipe/ 目录骨架
+    rpipe/                       # 与 src/rpipe/ 同构镜像
       structure/
         api/
         control/
@@ -133,19 +120,10 @@ RPipe/
         config/
         result/
         asset/
-    examples/                    # 镜像 examples/（Study / Experiment 入口）
-      studies/
-        mnist_lr_seed/
-      experiments/
-        mnist_linear/
-          launch/
-          grid/
+    examples/                    # 镜像 examples/ 入口（实例细节见 §4 / 实测布局）
     _fixtures/                   # 共享测试数据（不参与源码镜像）
-      artifact/
-        a1b2c3d4/
-          assets/
     _helpers/                    # 测试辅助（不得以 test_ 命名）
-    README.md                    # 标签、执行入口、排除项与例外
+    README.md
 ```
 
 根下另有工程元数据（`.gitignore`、`pyproject.toml` 等），不进入概念映射。
@@ -154,11 +132,17 @@ RPipe/
 
 | 成员 | 典型叶路径 | 写入方 |
 |------|------------|--------|
-| Config | `<run_dir>/config.yaml` | Experiment：经 Control / `grid/` 等 |
-| Result | `<run_dir>/result.json`（或 `result/` 目录） | Flow：collect → summarize → index |
+| Config | `<run_dir>/config.yaml` | Experiment：经 Control / `grid/` 等（可含 `description`） |
+| Result | `<run_dir>/result.json`（或 `result/` 目录） | Flow：collect → summarize → index；失败时 Runner 尽量写入 |
 | Asset | `<run_dir>/assets/` | Flow：prepare / execute |
 
 其中 `<run_dir>` 为 `<id>` 或 `<id>_<timestamp>`。Config 正文内带有字段 **`id`**（hash）；目录名与之对齐或在同 id 多次存储时附加 timestamp。
+
+**Study 目录下的统一编排清单**（不是某次 Run Artifact 的成员）：
+
+| 成员 | 典型叶路径 | 写入方 |
+|------|------------|--------|
+| `index.json` | `examples/studies/<study>/index.json` | Study：展开 Config 之后、launch 之前（CONCEPT §6.4） |
 
 Config 与 Result 均在 Artifact 子树内，**不在** Artifact 外另设平行配置目录。
 
@@ -171,8 +155,9 @@ Config 与 Result 均在 Artifact 子树内，**不在** Artifact 外另设平�
 **Study**（`examples/studies/<study>/`）只做编排，不实现 Structure / Flow：
 
 - 选定 Experiment，按变量轴触发展开（调用该 Experiment 的 `grid/` 等）
-- 为各次 **Run** 落盘 Config（内容决定 `id`；目录用 `id` 或 `id` + timestamp）
-- 调用 Experiment 的 `launch/` 跑 Flow
+- 为各次 **Run** 落盘 Config（内容决定 `id`；目录用 `id` 或 `id` + timestamp；含 Run **`description`**）
+- **先**写本 Study 的统一 **`index.json`**（Study + Experiment 层索引，见 CONCEPT §6.4）
+- **再**调用 Experiment 的 `launch/` 跑 Flow
 
 **Experiment**（`examples/experiments/<experiment>/`）是一种实验类型，各自独立持有：
 
@@ -189,10 +174,16 @@ Experiment 侧还可放**默认配置文件**（实现上的基底 Config；文�
 ### 4.2 Artifact 子树示例
 
 ```
-examples/experiments/mnist_linear/artifact/a1b2c3d4/
-  config.yaml       # Config（含 id: a1b2c3d4；grid 写；prepare 读）
-  result.json       # Result（index 定稿后）
-  assets/           # Asset（checkpoint、缓存、日志、生成样本等）
+examples/studies/mnist_seeds/
+  index.json            # 统一编排清单（先于 Flow；含 study/experiment/run 描述与 id）
+  run.py
+  run_study.py
+
+examples/experiments/mnist_linear/artifact/
+  a1b2c3d4/
+    config.yaml         # Config（含 id、description；grid 写；prepare 读）
+    result.json         # Result（含 status；成功经 Flow index 定稿，失败可由 Runner 落盘）
+    assets/             # Asset（checkpoint、缓存、日志、生成样本等）
 ```
 
 同配置再次落盘时可写到例如 `a1b2c3d4_1710000000/`，Config 内 `id` 仍为 `a1b2c3d4`。

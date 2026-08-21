@@ -1,6 +1,9 @@
 id: ac646c46eaef0e90
 seed: 0
 experiment: mnist_linear
+description: mnist_linear seed=0
+tags:
+- baseline
 data:
   name: MNIST
 model:

@@ -65,8 +65,18 @@ flow/
 | **prepare** | `load_config` → `control_from_config` → 落地 Structure（经现有 prepare 入口）；不改 Config |
 | **execute** | 按 Control 的 `algorithm.mode`（`train` / `eval` / `inference`）跑计算；可写 Asset |
 | **collect** | 从 `state` 收观测 / metrics 缓冲；不碰 Asset 文件 |
-| **summarize** | 整理 Control、快照、metrics 等进 Result 草稿 |
-| **index** | 登记 Asset 路径，写入 `result.json` 定稿 |
+| **summarize** | 整理 Control、快照、metrics、**`status: succeeded`** 等进 Result 草稿 |
+| **index** | 登记 Asset 路径，写入 `result.json` 定稿（成功时保留 `status: succeeded`） |
+
+### 4.1 Runner 与失败 Result
+
+`FlowRunner.run`：
+
+- 正常跑完所选阶段 → 由 summarize / index 定稿，`status: succeeded`
+- 任一阶段抛错 → **尽量**写入 `status: failed` 与简短 `error`（及已知 `paths` / 已有草稿字段），再重新抛出原异常
+- 失败写入不得掩盖原异常；写盘本身再失败时以原异常为准向上抛
+
+不在此引入中间态 status。统一 `index.json`（Study 编排清单）不属于 Flow，见 CONCEPT §6.4 / artifact 分册。
 
 细节（四层如何 build、`mode` 语义、Config/`id`）见 Structure / Artifact 分册与 CONCEPT，本分册不重复。
 

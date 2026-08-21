@@ -120,7 +120,7 @@ Study 选定 Experiment，并为各次 Run 落盘 Config 后执行 Flow。prepar
 
 ### 3.6 Result
 
-结构化摘要与产物路径索引；Artifact 成员。由 collect、summarize、index 写入。见 **§6.1**。
+结构化摘要与产物路径索引；Artifact 成员。由 collect、summarize、index 写入（失败时可由 Runner 直接落盘）。定稿须含 **`status`**（`succeeded` / `failed`）。见 **§6.1**。
 
 ### 3.7 Artifact
 
@@ -300,15 +300,28 @@ flowchart TB
 
 ### 5.4 summarize
 
-在 collect 素材上整理 Result。不读写 Asset。典型内容包括 Control 指派、Structure 快照、聚合 metric、执行元数据等。产物路径可由 index 补全。
+在 collect 素材上整理 Result。不读写 Asset。典型内容包括 Control 指派、Structure 快照、聚合 metric、**`status`**、执行元数据等。产物路径可由 index 补全。
+
+成功路径下 Result 草稿带 **`status: succeeded`**。失败路径见 **§5.5** / **§6.1**（Runner 可在未走完五阶段时仍落盘失败 Result）。
 
 ### 5.5 index
 
-将 prepare、execute 产出的 Asset 路径编入 Result 并定稿。不改动 Asset 文件本身。
+将 prepare、execute 产出的 Asset 路径编入 Result 并定稿。不改动 Asset 文件本身。成功定稿时 Result 含 **`status: succeeded`**。
+
+若某阶段抛错：Flow Runner 应尽量向该 Run 的 Artifact 写入一份 **`status: failed`** 的 Result（含简短 **`error`**），再向上抛出异常，避免「无 Result」与「未跑」无法区分。失败 Result 仍可缺部分块（如未完成的 Structure 快照）；**`status` / `error` / 已知 `paths` 优先保证**。
 
 ### 5.6 Study 编排
 
 Study 在变量轴上展开多次 **Run**，为各次 Run 落盘 Config；并定义或引用若干 Experiment。每次 Run 由 Study 指定 Experiment 与该次 Config；prepare 读 Config 得到 Control 并落地 Structure，随后 Flow 写入 Result、Asset。组合关系由 Study 持有。
+
+**编排顺序（先计划、后执行）**：
+
+1. 确定 Study / Experiment 的短描述，以及各次 Run 的内容描述  
+2. 为各次 Run 落盘 Artifact Config（含该 Run 的 **`description`**）  
+3. 写出统一的 **`index.json`**（Study 持有；见 **§6.4**）——此时尚未跑 Flow  
+4. 再按 index / Config 调用 launch 执行 Flow  
+
+不要等跑完再从 Result「反推」主清单：`index.json` 是编排契约，Result 是执行结局。
 
 ---
 
@@ -333,17 +346,30 @@ flowchart TB
 
 | 成员 | 写入方 | 说明 |
 |------|--------|------|
-| **Config** | Study 落盘；prepare 读取 | declarative 配置；Flow 不修改 |
-| **Result** | Flow | 结构化摘要与路径索引 |
+| **Config** | Study 落盘；prepare 读取 | declarative 配置（含 Run **`description`**）；Flow 不修改 |
+| **Result** | Flow（含失败时 Runner 尽量落盘） | 结构化摘要、**status**、路径索引 |
 | **Asset** | Flow | 文件型产物 |
+
+跨 Run / 跨 Experiment 的统一清单不是某次 Artifact 的成员，见 **§6.4 `index.json`**。
 
 ### 6.1 Result
 
-结构化 Artifact。collect、summarize、index 写入；index 后可视为定稿。面向 Study 内对比、autoresearch 排序与选优、AI 解读。一条 Result 宜能还原 Control、所用 Experiment / Run（含 `id`）、结论与相关路径；完整 declarative 原文见同树 Config。
+结构化 Artifact。collect、summarize、index 写入；成功路径下 index 后可视为定稿。面向 Study 内对比、autoresearch 排序与选优、AI 解读。一条 Result 宜能还原 Control、所用 Experiment / Run（含 `id`）、结论与相关路径；完整 declarative 原文见同树 Config。
+
+**`status`（必选，定稿时）**：本 Run 的结局，供消费方先判断结果是否可信。
+
+| 值 | 含义 |
+|------|------|
+| `succeeded` | Flow 按所选阶段跑完并定稿 |
+| `failed` | 某阶段失败；见同条 **`error`** |
+
+本阶段不引入 `pending` / `running` / `aborted` 等中间态（可随后演进）。**`error`**：失败时的简短说明（字符串即可）；成功时省略或为空。
 
 
 | 块（例） | 来源 Phase | 内容 |
 |------|------|------|
+| **status** | summarize / Runner | `succeeded` 或 `failed` |
+| **error** | Runner（失败时） | 失败原因摘要 |
 | Control | summarize | 本 Run 的变量指派 |
 | Structure 快照 | summarize | 源于 Config 的结构取值 |
 | metric | collect、summarize | train / eval / inference 等聚合结果 |
@@ -369,3 +395,21 @@ flowchart TB
 Artifact 的 declarative 成员，有实体落盘。承载该次 Run 的变量取值与 Structure 字段，供 prepare 读取并构造 Control。
 
 由 Study 落盘；prepare 读取，Flow 不修改。Result 中的快照便于对比；Config 保留 declarative 原文。
+
+**`description`（推荐）**：本 Run / 本份 Artifact 的短文字说明（给人与 agent 扫读）。写入 Config，与四层字段同树。实现上 **`description` 不参与 Run `id` 的 content hash**（改文案不换目录）；细则见代码结构分册。
+
+**`tags`（推荐）**：字符串列表，给本 Run 打标签（如 `baseline`、`ablation`、`smoke`）。这是 **Run 元数据 / 标记**，不是 Structure 四层上的实验变量：改 tag 不换 `id`、不改变计算语义。约定上可用 tag **`baseline`** 标出对照 Run，**不必**另设 baseline 专用字段。
+
+### 6.4 统一 `index.json`（Study 编排清单）
+
+**一份** `index.json`，由 **Study** 在编排阶段写出，在 **跑 Flow 之前** 落盘。它同时承载 Study 层与 Experiment 层的索引，不是「Experiment 一份 + Study 一份」，也不是 Flow 五阶段里的 index。
+
+- **落盘位置**：`examples/studies/<study>/index.json`（Study 目录下；见 LAYOUT）  
+- **何时写**：变量轴展开、各 Run Config 已落盘（或已可枚举）之后、**launch 之前**  
+- **`id`**：对该清单正文做 content hash（规则对齐 Run：hash 时排除自身 `id`）  
+- **`description`**：Study 的短描述字符串  
+- **内嵌 Experiment 层**：每个 Experiment 条目含 `name` / `description` / 其下计划的 Run 列表  
+- **Run 条目**：至少 `id`、`description`、指向该 Run Artifact 的路径（如 `run_dir` / `config`）；宜带上 Config 中的 **`tags`**；**不依赖**已有 Result  
+- **与 Result 的关系**：Result 仍是单次执行真相（含 `status`）；`index.json` 是编排地图。跑完后可选回填 `status` / metrics，但 **不以「跑完再建主清单」为默认**  
+
+不做选优 / Bayesian / Findings；只做可机器读的编排与导航。

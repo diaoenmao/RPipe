@@ -179,10 +179,16 @@ Study (mnist_seeds)
 
 ---
 
-## 8. 建议结论（供拍板）
+## 8. 建议结论（已拍板切片）
 
 - **学机制，不学产品形态**：durable 契约、baseline、失败保留、窄 API、人类可介入。  
 - **决策与 UI 继续外包**：Findings / Map / Agent 属于消费方；RPipe 把 Result 做硬。  
-- **下一刀最小**：Result `status` + Study `index.json` + brief 里的 baseline 指针——用现有 mnist_seeds 验证，再决定要不要 Findings / MCP。
+- **已采纳的下一刀（文档已写入 CONCEPT / LAYOUT / flow / artifact）**：  
+  1. Result **`status`**（`succeeded` \| `failed`）+ 失败 **`error`**  
+  2. **统一 `index.json`**（Study 目录；编排时先写，再 launch；内含 Study + Experiment 层与各 Run 描述 / id）  
+  3. 每个 Run Artifact Config 带 **`description`**（不参与 Run id hash）  
+  4. Run **`tags`**（字符串列表；不参与 id hash）。**`baseline` 只是一个约定 tag**，不是独立概念 / 专用字段  
+- **仍暂缓**：Findings、MCP、daemon；也不再单开 baseline 子系统。  
+- **已废弃的中间设想**：Experiment 下单独 `artifact/index.json`、跑完再扫 Result 建「Study index」、`run_index.py` 命名、独立 MetricContract baseline 对象。
 
-若采纳某一条，再开单独设计短文写进 CONCEPT / LAYOUT；本文保持 brainstorm，避免污染权威词表。
+权威表述以 CONCEPT §5.4–§5.6、§6.1、§6.4 为准；本文其余章节仍作对照笔记。

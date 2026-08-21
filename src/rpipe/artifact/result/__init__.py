@@ -6,17 +6,26 @@ import json
 from pathlib import Path
 from typing import Any
 
-
-REQUIRED_TOP = ('control', 'metrics', 'paths')
+STATUS_SUCCEEDED = 'succeeded'
+STATUS_FAILED = 'failed'
+VALID_STATUS = frozenset({STATUS_SUCCEEDED, STATUS_FAILED})
+SUCCEEDED_REQUIRED = ('control', 'metrics', 'paths')
 
 
 def validate_result(data: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     if not isinstance(data, dict):
         return ['result must be an object']
-    for key in REQUIRED_TOP:
-        if key not in data:
-            errors.append(f'missing field: {key}')
+    status = data.get('status')
+    if status not in VALID_STATUS:
+        errors.append(f'status must be one of {sorted(VALID_STATUS)}')
+        return errors
+    if status == STATUS_SUCCEEDED:
+        for key in SUCCEEDED_REQUIRED:
+            if key not in data:
+                errors.append(f'missing field: {key}')
+    elif status == STATUS_FAILED and not data.get('error'):
+        errors.append('failed result should include error')
     return errors
 
 
