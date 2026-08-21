@@ -8,13 +8,13 @@
       "path": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear",
       "runs": [
         {
-          "id": "ac646c46eaef0e90",
+          "id": "ed8257d65238c60d",
           "description": "mnist_linear seed=0",
           "tags": [
             "baseline"
           ],
-          "run_dir": "ac646c46eaef0e90",
-          "config": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear\\artifact\\ac646c46eaef0e90\\config.yaml"
+          "run_dir": "ed8257d65238c60d",
+          "config": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear\\artifact\\ed8257d65238c60d\\config.yaml"
         },
         {
           "id": "cf697e38b7683a74",
@@ -26,5 +26,5 @@
       ]
     }
   ],
-  "id": "ee2505beaf3f3299"
+  "id": "0ee17f809f7ca373"
 }

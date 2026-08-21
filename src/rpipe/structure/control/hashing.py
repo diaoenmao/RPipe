@@ -7,11 +7,11 @@ import json
 from typing import Any
 
 # Human metadata / self id — must not change content-addressed identity.
-_HASH_EXCLUDE = frozenset({'id', 'description', 'tags'})
+_HASH_EXCLUDE = frozenset({'id', 'description'})
 
 
 def canonical_json(mapping: dict[str, Any]) -> str:
-    """Stable JSON: sorted keys, exclude id/description/tags, compact separators."""
+    """Stable JSON: sorted keys, exclude id/description, compact separators."""
     body = {k: v for k, v in mapping.items() if k not in _HASH_EXCLUDE}
     return json.dumps(body, sort_keys=True, separators=(',', ':'), default=str)
 

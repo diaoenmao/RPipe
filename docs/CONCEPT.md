@@ -396,9 +396,9 @@ Artifact 的 declarative 成员，有实体落盘。承载该次 Run 的变量�
 
 由 Study 落盘；prepare 读取，Flow 不修改。Result 中的快照便于对比；Config 保留 declarative 原文。
 
-**`description`（推荐）**：本 Run / 本份 Artifact 的短文字说明（给人与 agent 扫读）。写入 Config，与四层字段同树。实现上 **`description` 不参与 Run `id` 的 content hash**（改文案不换目录）；细则见代码结构分册。
+**`description`（推荐）**：本 Run / 本份 Artifact 的短文字说明（给人与 agent 扫读）。写入 Config。实现上 **`description` 不参与 Run `id` 的 content hash**（改文案不换目录）。
 
-**`tags`（推荐）**：字符串列表，给本 Run 打标签（如 `baseline`、`ablation`、`smoke`）。这是 **Run 元数据 / 标记**，不是 Structure 四层上的实验变量：改 tag 不换 `id`、不改变计算语义。约定上可用 tag **`baseline`** 标出对照 Run，**不必**另设 baseline 专用字段。
+**`tags`（推荐）**：字符串列表，给本 Run 打标签（如 `baseline`、`ablation`、`smoke`）。不是 Structure 四层字段，但 **参与 Run `id` 的 content hash**：改 tag 即换 `id` / Artifact 目录。约定上可用 tag **`baseline`** 标出对照 Run，**不必**另设 baseline 专用字段。
 
 ### 6.4 统一 `index.json`（Study 编排清单）
 

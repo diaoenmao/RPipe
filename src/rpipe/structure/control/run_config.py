@@ -25,10 +25,13 @@ def _normalize_tags(value: Any) -> list[str]:
     if value is None:
         return []
     if isinstance(value, str):
-        return [value] if value else []
-    if isinstance(value, (list, tuple)):
-        return [str(item) for item in value]
-    raise TypeError(f'tags must be a list of strings, got {type(value)!r}')
+        items = [value] if value else []
+    elif isinstance(value, (list, tuple)):
+        items = [str(item) for item in value]
+    else:
+        raise TypeError(f'tags must be a list of strings, got {type(value)!r}')
+    # Stable identity: order-independent, unique.
+    return sorted(set(items))
 
 
 @dataclass
@@ -81,7 +84,7 @@ class ExperimentConfig:
 
 @dataclass
 class RunConfig:
-    """Run-level config; id is content hash of fields except id/description/tags."""
+    """Run-level config; id is content hash of fields except id/description."""
 
     id: str = ''
     seed: int | None = None

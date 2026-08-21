@@ -186,8 +186,8 @@ Study (mnist_seeds)
 - **已采纳的下一刀（文档已写入 CONCEPT / LAYOUT / flow / artifact）**：  
   1. Result **`status`**（`succeeded` \| `failed`）+ 失败 **`error`**  
   2. **统一 `index.json`**（Study 目录；编排时先写，再 launch；内含 Study + Experiment 层与各 Run 描述 / id）  
-  3. 每个 Run Artifact Config 带 **`description`**（不参与 Run id hash）  
-  4. Run **`tags`**（字符串列表；不参与 id hash）。**`baseline` 只是一个约定 tag**，不是独立概念 / 专用字段  
+  3. 每个 Run Artifact Config 带 **`description`**（**不**参与 Run id hash）  
+  4. Run **`tags`**（字符串列表；**参与** id hash）。**`baseline` 只是一个约定 tag**，不是独立概念 / 专用字段  
 - **仍暂缓**：Findings、MCP、daemon；也不再单开 baseline 子系统。  
 - **已废弃的中间设想**：Experiment 下单独 `artifact/index.json`、跑完再扫 Result 建「Study index」、`run_index.py` 命名、独立 MetricContract baseline 对象。
 

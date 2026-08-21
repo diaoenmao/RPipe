@@ -72,14 +72,17 @@ def test_legacy_slug_ignored_for_id():
     assert a.id == b.id
 
 
-def test_description_and_tags_ignored_for_run_id():
+def test_description_ignored_tags_affect_run_id():
     a = control_from_config(
         {'seed': 0, 'data': {'name': 'X'}, 'description': 'one', 'tags': ['baseline']}
     )
     b = control_from_config(
-        {'seed': 0, 'data': {'name': 'X'}, 'description': 'two', 'tags': ['smoke']}
+        {'seed': 0, 'data': {'name': 'X'}, 'description': 'two', 'tags': ['baseline']}
     )
-    assert a.id == b.id
-    assert a.to_dict()['description'] == 'one'
+    c = control_from_config(
+        {'seed': 0, 'data': {'name': 'X'}, 'description': 'one', 'tags': ['smoke']}
+    )
+    assert a.id == b.id  # description excluded from hash
+    assert a.id != c.id  # tags included in hash
     assert a.to_dict()['tags'] == ['baseline']
-    assert b.to_dict()['tags'] == ['smoke']
+    assert c.to_dict()['tags'] == ['smoke']
