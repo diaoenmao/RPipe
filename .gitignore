@@ -120,8 +120,9 @@ ENV/
 output/
 tmp/
 res/
-examples/experiments/**/artifact/**/assets/
-examples/experiments/**/artifact/**/result.json
+# Run outputs under examples — regenerate via Study/grid/launch; do not commit
+examples/experiments/**/artifact/
+examples/studies/**/artifact/
 
 .idea/
 .vscode/
