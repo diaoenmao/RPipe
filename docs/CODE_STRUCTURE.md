@@ -1,6 +1,6 @@
 # 代码结构
 
-前置阅读 [CONCEPT.md](CONCEPT.md)、[LAYOUT.md](LAYOUT.md)。
+前置阅读 [CONCEPT.md](CONCEPT.md)、[LAYOUT.md](LAYOUT.md)、[STUDY_GUIDE.md](STUDY_GUIDE.md)。
 
 本文是**代码结构总览**：依赖规则、三柱文档入口、包外 examples / tests 要点。  
 **每个 folder 内应有哪些模块与叶文件**，按柱拆开写（最细粒度；不列 `__init__.py`）：

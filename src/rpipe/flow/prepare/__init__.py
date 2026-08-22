@@ -16,8 +16,22 @@ def run(ctx: FlowContext) -> None:
     ctx.config = cfg
     ctx.control = control_from_config(cfg)
     ensure_assets(ctx.layout)
+    if ctx.control.seed is not None:
+        _seed_everything(ctx.control.seed)
+    ctx.state['seed'] = ctx.control.seed
     ctx.state['data'] = prepare_data(ctx.control.data, ctx.layout.assets_dir)
     ctx.state['model'] = prepare_model(ctx.control.model, ctx.layout.assets_dir)
     ctx.state['system'] = prepare_system(ctx.control.system, ctx.layout.assets_dir)
     write_text_asset(ctx.layout, 'prepare.log', f'prepared control={ctx.control.id}\n')
     ctx.state.setdefault('observations', [])
+
+
+def _seed_everything(seed: int) -> None:
+    import random
+
+    import numpy as np
+    import torch
+
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)

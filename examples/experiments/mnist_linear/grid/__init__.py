@@ -30,21 +30,33 @@ def load_base(exp_dir: Path | None = None) -> Any:
 
 
 def expand(
-    seeds: list[int],
+    seeds: list[int] | None = None,
     exp_dir: Path | None = None,
     tags_by_seed: dict[int, list[str]] | None = None,
+    patches: list[dict[str, Any]] | None = None,
 ) -> list[Path]:
-    """Merge experiment_config ⊕ {seed, description, tags} → RunConfig → write Artifact Config."""
+    """Merge experiment_config ⊕ patch → RunConfig → write Artifact Config.
+
+    Prefer ``patches`` for multi-axis studies. Legacy ``seeds`` still works.
+    """
     exp_dir = exp_dir or experiment_dir()
     base = load_base(exp_dir)
     tag_map = tags_by_seed or {}
+    if patches is None:
+        seed_list = seeds if seeds is not None else [0]
+        patches = []
+        for seed in seed_list:
+            patch: dict[str, Any] = {
+                'seed': seed,
+                'description': f'{base.experiment or exp_dir.name} seed={seed}',
+            }
+            tags = tag_map.get(seed)
+            if tags:
+                patch['tags'] = list(tags)
+            patches.append(patch)
+
     written: list[Path] = []
-    for seed in seeds:
-        desc = f'{base.experiment or exp_dir.name} seed={seed}'
-        patch: dict[str, Any] = {'seed': seed, 'description': desc}
-        tags = tag_map.get(seed)
-        if tags:
-            patch['tags'] = list(tags)
+    for patch in patches:
         run = run_config_from_merge(base, patch)
         cfg = run.to_mapping()
         layout = artifact_layout(exp_dir, run.id)
@@ -63,7 +75,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument('--seeds', default='0,1', help='comma-separated seeds')
     args = parser.parse_args(argv)
     seeds = [int(s.strip()) for s in args.seeds.split(',') if s.strip()]
-    for path in expand(seeds):
+    for path in expand(seeds=seeds):
         print(path)
     return 0
 

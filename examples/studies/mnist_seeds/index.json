@@ -1,30 +1,23 @@
 {
-  "description": "MNIST linear seed sweep (0, 1)",
+  "description": "e2e smoke",
   "study": "mnist_seeds",
   "experiments": [
     {
       "name": "mnist_linear",
-      "description": "MNIST linear train stub (cpu, few steps)",
+      "description": "MNIST linear classifier (real train + test accuracy)",
       "path": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear",
       "runs": [
         {
-          "id": "ed8257d65238c60d",
+          "id": "83bdd96c6b01d869",
           "description": "mnist_linear seed=0",
           "tags": [
             "baseline"
           ],
-          "run_dir": "ed8257d65238c60d",
-          "config": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear\\artifact\\ed8257d65238c60d\\config.yaml"
-        },
-        {
-          "id": "cf697e38b7683a74",
-          "description": "mnist_linear seed=1",
-          "tags": [],
-          "run_dir": "cf697e38b7683a74",
-          "config": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear\\artifact\\cf697e38b7683a74\\config.yaml"
+          "run_dir": "83bdd96c6b01d869",
+          "config": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear\\artifact\\83bdd96c6b01d869\\config.yaml"
         }
       ]
     }
   ],
-  "id": "0ee17f809f7ca373"
+  "id": "4d229bc7956ad4e1"
 }

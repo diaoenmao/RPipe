@@ -646,20 +646,42 @@ prepare：`control_from_config` →（可选契约）→ 各 `*_api` Factory.bui
 
 ---
 
-## 9. 与 Artifact 的触点（摘要）
+## 9. 与 Artifact / Result 的触点
 
 | 触点 | Structure 侧 | 对端 |
 |------|-------------|------|
-| Config | 本 Run 的 `run_config`（`id` = 除 id 外内容的 hash；四层 + `seed` 等） | `artifact.config` |
-| Asset | data 缓存；model `path` 资源；system/algorithm checkpoint、logs、samples | `artifact.asset` |
-| 观测 | algorithm 等产出的 metrics / observations | 后续写入 `artifact` Result |
+| Config | 本 Run 的 `run_config`（`id` = 除 `id`/`description` 外内容的 hash；**`tags` 进 hash**） | `artifact` 下 Run 子树 |
+| Asset（共享） | data 下载缓存、可复用 model 权重等 | Study 级 `artifact/shared/`（见 CONCEPT / LAYOUT） |
+| Asset（按 Run） | checkpoint、logs、本 Run 专有文件 | `artifact/runs/<id>/assets/` |
+| 观测 | algorithm 等产出的 metrics / observations | 写入 Result（须可 JSON 化） |
+
+### 9.1 Runtime state vs Result 快照（必守）
+
+真实验踩过的坑：`state['data']` / `state['model']` 里有 `DataLoader`、`nn.Module` 等 **runtime handle**；若原样塞进 Result，`json.dump` 会炸。
+
+约定：
+
+| 层 | 可持有 | 不可直接进 Result |
+|----|--------|-------------------|
+| Flow `ctx.state` | Loader、Module、Optimizer、打开的文件句柄 | — |
+| Result / Structure 快照 | 标量、短字符串、纯 dict/list、路径字符串 | Loader、Module、Tensor、不可序列化对象 |
+
+规则：
+
+1. **prepare / execute** 可在 `state` 里放 runtime 对象（供本 Run 计算）。
+2. **summarize**（及任何写入 Result 的路径）只写入 **可 JSON 化投影**；默认丢弃键如 `train_loader`、`test_loader`、`module`、`optimizer`（实现可集中在 `flow/summarize` 或各层 `to_result_snapshot()`）。
+3. 需要持久化的大对象（权重、缓存）走 **Asset 文件**，Result 只记路径。
+4. Control 契约 / `validate_result` 应假设 Result 已是纯 JSON 友好 mapping。
+
+推荐演进：各层运行时对象提供 `to_result_snapshot() -> dict`，summarize 只调用快照 API，而不是手工删键。
+
+`source`（如 `stub` / `torch`）应显式区分玩具路径与真数据路径，避免 `name: MNIST` 在 unit 测里默认触发下载与真训（见 [STUDY_GUIDE.md](../STUDY_GUIDE.md)）。
 
 ---
 
 ## 10. 演进
 
-1. 编排：Study → Experiment → Run；`run_config.id` **由除 id 外配置内容 hash**；落盘可用 **`id` + timestamp**。
-2. 配置（本分册）：`experiment_config`（基底）←套上— `run_config` → `Control`；CONCEPT 只谈 Config。
-3. `path` ↔ 层内 `config` 合并优先级下游再定。
-4. 代码与 examples 对齐 hash `id`（及可选 timestamp 目录）。
-5. CONCEPT / LAYOUT 已对齐 Study → Experiment → Run 与 **`id` / `id`+timestamp** 路径；随后可对齐 flow / artifact 分册与 examples。
+1. 编排：Study → Experiment → Run；Artifact **挂在 Study 下**（共享 data/model + 按 Run 的 Result）。
+2. 配置：`experiment_config` ←套上— `run_config` → `Control`；Study 侧用 `study.yaml` 声明变量轴（见 STUDY_GUIDE）。
+3. Result 快照契约（§9.1）先文档后单测固化。
+4. Flow 阶段：`index` 更名为 **`persist`**（定稿写 Result）；其后增加 **`process`**（见 CONCEPT / flow 分册）。

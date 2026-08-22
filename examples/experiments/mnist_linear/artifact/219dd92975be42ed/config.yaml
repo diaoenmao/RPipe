@@ -1,15 +1,17 @@
+id: 219dd92975be42ed
+seed: 0
 experiment: mnist_linear
-description: MNIST linear classifier (real train + test accuracy)
+description: mnist_linear train_size=8000
 data:
   name: MNIST
   config:
-    train_size: 1000
+    train_size: 8000
     batch_size: 64
 model:
   name: linear
 algorithm:
   mode: train
-  num_epochs: 1
+  num_epochs: 2
   lr: 0.1
 system:
   device: cpu

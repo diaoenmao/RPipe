@@ -13,7 +13,7 @@ def test_full_flow_writes_succeeded_status(tmp_path: Path):
         {
             'slug': 'seed_0',
             'seed': 0,
-            'data': {'name': 'MNIST'},
+            'data': {'name': 'Toy'},
             'model': {'name': 'linear'},
             'algorithm': {'mode': 'train', 'num_steps': 2},
             'system': {'device': 'cpu'},
@@ -36,7 +36,7 @@ def test_failed_flow_writes_failed_result(tmp_path: Path):
         layout.config_path,
         {
             'seed': 0,
-            'data': {'name': 'MNIST'},
+            'data': {'name': 'Toy'},
             'model': {'name': 'linear'},
             'algorithm': {'mode': 'train'},
             'system': {'device': 'cpu'},

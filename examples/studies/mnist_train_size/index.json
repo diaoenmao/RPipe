@@ -1,0 +1,37 @@
+{
+  "description": "MNIST train_size sweep → test accuracy",
+  "study": "mnist_train_size",
+  "experiments": [
+    {
+      "name": "mnist_linear",
+      "description": "MNIST linear classifier (real train + test accuracy)",
+      "path": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear",
+      "runs": [
+        {
+          "id": "03d885fff93ebdb8",
+          "description": "mnist_linear train_size=500",
+          "tags": [
+            "baseline"
+          ],
+          "run_dir": "03d885fff93ebdb8",
+          "config": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear\\artifact\\03d885fff93ebdb8\\config.yaml"
+        },
+        {
+          "id": "05d8fd2bd9e28389",
+          "description": "mnist_linear train_size=2000",
+          "tags": [],
+          "run_dir": "05d8fd2bd9e28389",
+          "config": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear\\artifact\\05d8fd2bd9e28389\\config.yaml"
+        },
+        {
+          "id": "219dd92975be42ed",
+          "description": "mnist_linear train_size=8000",
+          "tags": [],
+          "run_dir": "219dd92975be42ed",
+          "config": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear\\artifact\\219dd92975be42ed\\config.yaml"
+        }
+      ]
+    }
+  ],
+  "id": "d66c71ca2eccec3f"
+}
