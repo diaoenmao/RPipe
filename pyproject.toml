@@ -18,6 +18,9 @@ dependencies = [
   "tqdm",
 ]
 
+[project.scripts]
+rpipe = "rpipe.cli:main"
+
 [project.optional-dependencies]
 dev = ["pytest>=7.0"]
 nlp = ["transformers", "evaluate", "datasets", "lm_eval", "peft", "modelscope"]

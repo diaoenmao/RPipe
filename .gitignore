@@ -26,8 +26,6 @@ wheels/
 *.egg
 
 # PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
 
@@ -112,21 +110,20 @@ ENV/
 # PowerPoint temporary
 ~$*.ppt*
 
-# downloaded datasets (repo root only)
+# Legacy root folders (do not recreate; use Study shared/runs)
 /data/
-/data
+/output/
 
-# outputs & experiment assets
-output/
 tmp/
 res/
-# Run outputs under examples — regenerate via Study/grid/launch; do not commit
-examples/experiments/**/artifact/
-examples/studies/**/artifact/
+
+# Study run trees & shared caches — regenerate via Study; do not commit
+studies/**/runs/
+studies/**/shared/
+# docs/ under Study is human narrative — keep tracked
 
 .idea/
 .vscode/
 .DS_Store
 scripts/
 .pytest_cache/
-

@@ -19,7 +19,7 @@ def test_full_flow_writes_succeeded_status(tmp_path: Path):
             'system': {'device': 'cpu'},
         },
     )
-    ctx = FlowContext(experiment_dir=tmp_path, layout=layout, config={})
+    ctx = FlowContext(study_dir=tmp_path, layout=layout, config={})
     result_path = FlowRunner().run(ctx)
     assert result_path.is_file()
     result = load_result(result_path)
@@ -42,7 +42,7 @@ def test_failed_flow_writes_failed_result(tmp_path: Path):
             'system': {'device': 'cpu'},
         },
     )
-    ctx = FlowContext(experiment_dir=tmp_path, layout=layout, config={})
+    ctx = FlowContext(study_dir=tmp_path, layout=layout, config={})
 
     def boom(_ctx):
         raise RuntimeError('boom')

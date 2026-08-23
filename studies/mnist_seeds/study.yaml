@@ -1,0 +1,31 @@
+study: mnist_seeds
+description: MNIST linear seed sweep (0, 1)
+
+experiment:
+  name: mnist_linear
+
+fixed:
+  data:
+    name: MNIST
+    source: torch
+    config:
+      train_size: 1000
+      batch_size: 64
+  model:
+    name: linear
+  algorithm:
+    mode: train
+    num_epochs: 1
+    lr: 0.1
+  system:
+    device: cpu
+
+axes:
+  seed: [0, 1]
+
+tags:
+  - when:
+      seed: 0
+    tags: [baseline]
+
+run_description: "mnist_linear seed={seed}"

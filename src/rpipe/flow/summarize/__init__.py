@@ -49,5 +49,5 @@ def run(ctx: FlowContext) -> None:
             'config': str(ctx.layout.config_path),
             'assets': str(ctx.layout.assets_dir),
         },
-        'experiment': str(ctx.experiment_dir),
+        'study': str(ctx.study_dir),
     }

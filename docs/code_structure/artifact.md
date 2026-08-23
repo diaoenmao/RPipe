@@ -28,23 +28,23 @@ artifact/
     kinds.py
 ```
 
-磁盘上一次 Artifact（对应一次 Run）落在 Experiment 下。目录名用 Config 的 **`id`**（内容 hash），或同 `id` 多次落盘时用 **`id` + timestamp**：
+磁盘上一次 Run 落在 **Study** 下。目录名用 Config 的 **`id`**（内容 hash），或同 `id` 多次落盘时用 **`id` + timestamp**：
 
 ```
-<experiment_dir>/artifact/<id>/
-  config.yaml            # Config（grid 写；prepare 读；含 id、推荐 description）
-  result.json            # Result（含 status；Flow index 定稿或 Runner 失败落盘）
-  assets/                # Asset 根
-    ...
-
-<experiment_dir>/artifact/<id>_<timestamp>/   # 可选：同 id 再次存储
-  ...
+studies/<study>/
+  docs/
+  shared/{data,model}/
+  runs/<id>/
+    config.yaml
+    result.json
+    assets/
+  index.json                 # Study 编排清单（launch 前）
 ```
 
-**统一编排清单**（不属于单次 Artifact 子树）：
+**统一编排清单**（不属于单次 Run 子树）：
 
 ```
-examples/studies/<study>/index.json   # Study 写；launch 之前；见 §5
+studies/<study>/index.json   # Study 写；launch 之前；见 §5
 ```
 
 叶文件名可通过 `paths.py` 常量配置，**同树原则不变**（Config / Result / Asset 不平行拆到 Artifact 外）。`id` 的生成规则见 [structure.md](structure.md) §8；本柱只负责路径拼装与 IO。
@@ -57,19 +57,22 @@ examples/studies/<study>/index.json   # Study 写；launch 之前；见 §5
 
 | 符号 | 职责 |
 |------|------|
-| `ArtifactLayout` | 一次 Artifact 的路径句柄 |
-| `artifact_layout(experiment_dir, run_dir) → ArtifactLayout` | 工厂；`run_dir` 为 `<id>` 或 `<id>_<timestamp>` |
+| `ArtifactLayout` | 一次 Run 的路径句柄（含 `study_dir`） |
+| `artifact_layout(study_dir, run_dir) → ArtifactLayout` | 工厂；根为 `study_dir/runs/<run_dir>/` |
+| `ensure_study_layout(study_dir)` | 确保 `docs/`、`shared/`、`runs/` |
 
 `ArtifactLayout` 建议属性 / 方法：
 
 | 成员 | 含义 |
 |------|------|
-| `root` | `…/artifact/<run_dir>/` |
+| `root` | `…/runs/<run_dir>/` |
+| `study_dir` | Study 根 |
 | `config_path` | Config 叶路径 |
 | `result_path` | Result 叶路径 |
-| `assets_dir` | Asset 根目录 |
-| `ensure()` | 创建 root / assets（及约定子目录） |
-| `exists_config()` / `exists_result()` | 存在性 |
+| `assets_dir` | 本 Run Asset 根 |
+| `shared_dir` / `shared_data_dir` / `shared_model_dir` | Study 共享 |
+| `docs_dir` | Study 人文文档 |
+| `ensure()` | 创建 root / assets / shared / docs |
 
 ### 2.2 `paths.py`
 

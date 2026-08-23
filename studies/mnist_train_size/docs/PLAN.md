@@ -1,6 +1,6 @@
 # Study Plan: mnist_train_size
 
-> 状态：计划（执行前契约）。跑完后结果见同目录 `RESULTS.md`。
+> 状态：计划（执行前契约）。跑完后结果见同目录 `STUDY_REPORT.md`。
 
 ## 1. 研究问题
 

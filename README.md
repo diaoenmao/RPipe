@@ -6,6 +6,7 @@ Research Pipeline — **可重复、可编排、可序列化的研究执行底�
 
 - [docs/CONCEPT.md](docs/CONCEPT.md)
 - [docs/LAYOUT.md](docs/LAYOUT.md)
+- [docs/STUDY_GUIDE.md](docs/STUDY_GUIDE.md)
 
 ---
 
@@ -20,9 +21,8 @@ pip install -e ".[dev]"
 ## 目录（摘要）
 
 ```
-src/rpipe/{structure,flow,artifact}
-examples/studies/…
-examples/experiments/<exp>/{launch,grid,artifact}
+src/rpipe/{structure,flow,artifact,study}
+studies/<name>/{docs,shared,runs,study.yaml,experiment_config.yaml}
 ```
 
 ---
@@ -30,11 +30,11 @@ examples/experiments/<exp>/{launch,grid,artifact}
 ## 快速运行
 
 ```bash
-# 生成 / 刷新 Config，再跑 Flow
-python examples/studies/mnist_seeds/run_study.py
+# 一条命令跑 Study（读 study.yaml → Config + index → Flow）
+python -m rpipe study run studies/mnist_seeds
 
-# 或直接 launch 已有 Artifact Config
-python examples/experiments/mnist_linear/launch/__init__.py --run-dirs ed8257d65238c60d
+# 或薄包装
+python studies/mnist_seeds/run.py
 
 pytest
 ```

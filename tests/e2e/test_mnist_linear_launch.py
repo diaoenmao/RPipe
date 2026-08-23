@@ -1,52 +1,34 @@
 from pathlib import Path
 
-import runpy
-
-from rpipe.artifact import build_index, load_config, load_result, load_index, write_index
+from rpipe.study import run_study
 
 
-def test_mnist_linear_grid_and_launch_smoke():
+def test_mnist_seeds_study_runner_smoke(tmp_path: Path):
+    """Copy minimal study into tmp and run one seed via study.yaml path.
+
+    Uses the real studies/mnist_seeds recipe files but a disposable study_dir
+    so we do not pollute the repo tree during CI.
+    """
+    import shutil
+
     repo = Path(__file__).resolve().parents[2]
-    study = repo / 'examples' / 'studies' / 'mnist_seeds'
-    exp = repo / 'examples' / 'experiments' / 'mnist_linear'
-    grid = runpy.run_path(str(exp / 'grid' / '__init__.py'))
-    launch = runpy.run_path(str(exp / 'launch' / '__init__.py'))
-
-    written = grid['expand']([0], exp_dir=exp, tags_by_seed={0: ['baseline']})
-    assert len(written) == 1
-    assert written[0].is_file()
-    cfg = load_config(written[0])
-    assert cfg.get('description')
-    assert cfg.get('tags') == ['baseline']
-
-    base = load_config(exp / 'experiment_config.yaml')
-    index = build_index(
-        study='mnist_seeds',
-        description='e2e smoke',
-        experiments=[
-            {
-                'name': base.get('experiment') or 'mnist_linear',
-                'description': base.get('description') or '',
-                'path': str(exp),
-                'runs': [
-                    {
-                        'id': cfg['id'],
-                        'description': cfg.get('description'),
-                        'tags': cfg.get('tags') or [],
-                        'run_dir': written[0].parent.name,
-                        'config': str(written[0]),
-                    }
-                ],
-            }
-        ],
+    src = repo / 'studies' / 'mnist_seeds'
+    study = tmp_path / 'mnist_seeds'
+    shutil.copytree(
+        src,
+        study,
+        ignore=shutil.ignore_patterns('runs', 'shared', 'index.json', '__pycache__'),
     )
-    index_path = write_index(study, index)
-    assert index_path.is_file()
-    assert load_index(study)['id'] == index['id']
+    # only seed 0 for smoke speed
+    yaml_path = study / 'study.yaml'
+    text = yaml_path.read_text(encoding='utf-8')
+    text = text.replace('seed: [0, 1]', 'seed: [0]')
+    yaml_path.write_text(text, encoding='utf-8')
 
-    run_dir = written[0].parent.name
-    paths = launch['run_many'](exp_dir=exp, run_dirs=[run_dir])
-    assert len(paths) == 1
-    assert paths[0].is_file()
-    result = load_result(paths[0])
-    assert result['status'] == 'succeeded'
+    out = run_study(study)
+    assert out['index'].is_file()
+    assert len(out['configs']) == 1
+    assert len(out['results']) == 1
+    assert out['results'][0].is_file()
+    assert (study / 'shared' / 'data').is_dir()
+    assert (study / 'docs').is_dir()

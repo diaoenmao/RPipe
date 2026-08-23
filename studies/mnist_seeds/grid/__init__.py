@@ -1,4 +1,4 @@
-"""Write Run Configs into this Experiment's Artifact tree."""
+"""Write Run Configs into this Study's ``runs/<id>/`` tree."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-_SRC = Path(__file__).resolve().parents[4] / 'src'
+_SRC = Path(__file__).resolve().parents[3] / 'src'
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
@@ -16,31 +16,28 @@ from rpipe.artifact import artifact_layout, load_config, write_config
 from rpipe.structure.control import experiment_config_from_mapping, run_config_from_merge
 
 
-def experiment_dir() -> Path:
+def study_dir() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-def experiment_config_path(exp_dir: Path | None = None) -> Path:
-    return (exp_dir or experiment_dir()) / 'experiment_config.yaml'
+def experiment_config_path(root: Path | None = None) -> Path:
+    return (root or study_dir()) / 'experiment_config.yaml'
 
 
-def load_base(exp_dir: Path | None = None) -> Any:
-    path = experiment_config_path(exp_dir)
-    return experiment_config_from_mapping(load_config(path))
+def load_base(root: Path | None = None) -> Any:
+    return experiment_config_from_mapping(load_config(experiment_config_path(root)))
 
 
 def expand(
     seeds: list[int] | None = None,
     exp_dir: Path | None = None,
+    study_dir_path: Path | None = None,
     tags_by_seed: dict[int, list[str]] | None = None,
     patches: list[dict[str, Any]] | None = None,
 ) -> list[Path]:
-    """Merge experiment_config ⊕ patch → RunConfig → write Artifact Config.
-
-    Prefer ``patches`` for multi-axis studies. Legacy ``seeds`` still works.
-    """
-    exp_dir = exp_dir or experiment_dir()
-    base = load_base(exp_dir)
+    """Merge experiment_config ⊕ patch → RunConfig → write under ``runs/<id>/``."""
+    root = study_dir_path or exp_dir or study_dir()
+    base = load_base(root)
     tag_map = tags_by_seed or {}
     if patches is None:
         seed_list = seeds if seeds is not None else [0]
@@ -48,7 +45,7 @@ def expand(
         for seed in seed_list:
             patch: dict[str, Any] = {
                 'seed': seed,
-                'description': f'{base.experiment or exp_dir.name} seed={seed}',
+                'description': f'{base.experiment or root.name} seed={seed}',
             }
             tags = tag_map.get(seed)
             if tags:
@@ -59,7 +56,7 @@ def expand(
     for patch in patches:
         run = run_config_from_merge(base, patch)
         cfg = run.to_mapping()
-        layout = artifact_layout(exp_dir, run.id)
+        layout = artifact_layout(root, run.id)
         written.append(write_config(layout.config_path, cfg))
     return written
 
@@ -71,7 +68,7 @@ def cartesian(axes: dict[str, list[Any]]) -> list[dict[str, Any]]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description='Grid Configs for mnist_linear')
+    parser = argparse.ArgumentParser(description='Grid Configs for this Study')
     parser.add_argument('--seeds', default='0,1', help='comma-separated seeds')
     args = parser.parse_args(argv)
     seeds = [int(s.strip()) for s in args.seeds.split(',') if s.strip()]

@@ -8,12 +8,16 @@ from pathlib import Path
 from rpipe.artifact.result import STATUS_FAILED, write_result
 from rpipe.flow.context import FlowContext
 
-PHASES = ('prepare', 'execute', 'collect', 'summarize', 'index')
+PHASES = ('prepare', 'execute', 'collect', 'summarize', 'persist', 'process')
+
+# Old CLI / callers may still pass ``index``; map to ``persist``.
+_PHASE_ALIASES = {'index': 'persist'}
 
 
 class FlowRunner:
     def __init__(self, phases: tuple[str, ...] | list[str] | None = None):
-        self.phases = tuple(phases) if phases else PHASES
+        raw = tuple(phases) if phases else PHASES
+        self.phases = tuple(_PHASE_ALIASES.get(p, p) for p in raw)
         unknown = [p for p in self.phases if p not in PHASES]
         if unknown:
             raise ValueError(f'unknown phases: {unknown}; allowed: {PHASES}')
@@ -38,6 +42,7 @@ class FlowRunner:
             paths.setdefault('artifact', str(ctx.layout.root))
             paths.setdefault('config', str(ctx.layout.config_path))
             paths.setdefault('assets', str(ctx.layout.assets_dir))
+            paths.setdefault('shared', str(ctx.layout.shared_dir))
             paths['result'] = str(ctx.layout.result_path)
             draft['paths'] = paths
             if ctx.control is not None and 'control' not in draft:
@@ -45,8 +50,7 @@ class FlowRunner:
             if 'metrics' not in draft:
                 collected = ctx.state.get('collected') or {}
                 draft['metrics'] = collected.get('metrics') or {}
-            if 'experiment' not in draft:
-                draft['experiment'] = str(ctx.experiment_dir)
+            draft['study'] = str(ctx.study_dir)
             write_result(ctx.layout.result_path, draft)
             ctx.state['result'] = draft
         except Exception:

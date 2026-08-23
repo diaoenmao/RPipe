@@ -37,7 +37,7 @@ flow/
 | `FlowContext` | `context.py` | 一次 Run 的上下文 |
 | `FlowRunner` / `PHASES` | `runner.py` | 按序调用各阶段；可裁剪 |
 
-`FlowContext` 宜含：`study_dir`（共享 Asset 根）、`experiment_dir`、`layout`（指向 `artifact/runs/<id>/`）、`config`、`control`、`state`。
+`FlowContext` 宜含：`study_dir`（Study 根：docs/shared/runs）、`layout`（指向 `runs/<id>/`）、`config`、`control`、`state`。
 
 ---
 

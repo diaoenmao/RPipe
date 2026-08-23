@@ -4,10 +4,11 @@
 
 ## 原则
 
-- **镜像源码**：`tests/rpipe/` ↔ `src/rpipe/`；`tests/examples/` ↔ `examples/`
+- **镜像源码**：`tests/rpipe/` ↔ `src/rpipe/`
 - **层级是标签**：`unit` / `integration` / `e2e`，不设同名一级目录
 - **强制三维标签**：Level × Type（`location`|`content`|`physical`）× Priority（`p1`|`p2`|`p3`）
 - **辅助目录**：`_fixtures/`、`_helpers/`（辅助函数不得 `test_` 前缀）
+- **包外 Study**：e2e 指向仓库根 `studies/`（不再有 `tests/examples/`）
 
 ## 排除不镜像项
 

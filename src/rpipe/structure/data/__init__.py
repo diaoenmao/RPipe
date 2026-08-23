@@ -9,8 +9,8 @@ from typing import Any
 def prepare_data(control_data: dict[str, Any], assets_dir) -> dict[str, Any]:
     """Land data handles for prepare.
 
-    MNIST: download/cache under assets, optional train subset via
-    ``data.config.train_size``.
+    MNIST: download/cache under Study ``shared/data`` (passed as assets root),
+    optional train subset via ``data.config.train_size``.
     """
     name = control_data.get('name', 'unknown')
     cfg = dict(control_data.get('config') or {})

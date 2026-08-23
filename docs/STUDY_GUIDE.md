@@ -1,57 +1,73 @@
 # Study 使用指南
 
-如何用 RPipe 做一轮可复现实验。权威概念见 [CONCEPT.md](CONCEPT.md)；本页是**操作契约 + 模版**。
+如何用 RPipe 做一轮可复现实验。权威概念见 [CONCEPT.md](CONCEPT.md)；目录约定见 [LAYOUT.md](LAYOUT.md)。
 
 ---
 
-## 1. 推荐流程
+## 1. Study 和 Experiment 是什么（先分清）
 
-1. 选 / 写 Experiment（Structure + Flow 能力；`experiment_config.yaml` 基底）  
-2. 新建 Study 目录，**先填 `study.yaml`**（变量轴、tags、描述）  
-3. 根据 `study.yaml` 展开 → 写各 Run Config → 写 **`index.json`**（launch 前）  
+| | **Study** | **Experiment（配方）** |
+|--|-----------|------------------------|
+| 问的是 | **这一轮研究比什么**（变量轴、对照、结论） | **这一类任务怎么跑**（数据/模型/算法能力 + Flow） |
+| 例子 | 「train_size 变大，准确率是否升」 | 「MNIST + linear + train」 |
+| 磁盘 | **`studies/<name>/` 一整棵树** | **住在 Study 里**：`experiment_config.yaml`（+ 可选 grid/launch） |
+| 产物 | `docs/`、`shared/`、`runs/`、`index.json` | 不单独占顶层文件夹 |
+
+**没有** `examples/experiments/` 这一层了。以前那是历史遗留：Artifact 还挂在「实验类型」下，和 Study 抢地盘。
+
+---
+
+## 2. 推荐流程
+
+1. 在 Study 内写好 `experiment_config.yaml`（基底配方）  
+2. 填 **`study.yaml`**（变量轴、tags、描述）  
+3. 展开 → 写各 Run Config 到 `runs/<id>/` → 写 **`index.json`**（launch 前）  
 4. launch Flow：`prepare → execute → collect → summarize → persist → process`  
-5. 读 `artifact/runs/<id>/result.json`；需要时写 `RESULTS.md`
-
-不要跳过第 2 步直接手写一堆 patch。
+5. 读 `runs/<id>/result.json`；写 **`docs/STUDY_REPORT.md`**
 
 ---
 
-## 2. 目录（目标布局）
+## 3. Study 目录（LAYOUT 定死）
 
 ```text
-examples/studies/<study>/
-  study.yaml
-  index.json
-  PLAN.md / RESULTS.md          # 可选人文记录
-  artifact/
-    shared/data/
-    shared/model/
-    runs/<run_id>/{config.yaml,result.json,assets/}
-
-examples/experiments/<experiment>/
-  experiment_config.yaml        # 基底
-  grid/  launch/                # 展开与启动
-  # 不再默认放 artifact/（迁移期内可并存）
+studies/<study>/
+  study.yaml                 # 编排声明
+  index.json                 # launch 前清单
+  experiment_config.yaml     # 基底配方（Experiment 概念的落盘）
+  run.py                     # 本 Study 入口
+  docs/
+    PLAN.md                  # 执行前计划（可选）
+    STUDY_REPORT.md          # 结论 / 对照 / 卡点（给人看）
+  shared/
+    data/                    # 数据集缓存（Study 内各 Run 共用）
+    model/                   # 可复用权重
+  runs/
+    <run_id>/
+      config.yaml
+      result.json
+      assets/
+  grid/  launch/             # 可选：展开与启动脚本（也在 Study 内）
 ```
+
+仓库根下只有 **`studies/`**，不再用 `examples/`。
 
 ---
 
-## 3. `study.yaml` 模版
+## 4. `study.yaml` 模版
 
 ```yaml
 study: mnist_train_size
 description: MNIST train_size sweep → test accuracy
 
+# 配方就在本 Study 目录；不必再写外部 experiments 路径
 experiment:
   name: mnist_linear
-  path: examples/experiments/mnist_linear   # 相对仓库根
 
-# 固定条件（并入每次 Run；不进变量轴）
 fixed:
   seed: 0
   data:
     name: MNIST
-    source: torch                 # stub | torch；unit 测用 stub/Toy
+    source: torch                 # stub | torch
     config:
       batch_size: 64
   model:
@@ -63,26 +79,20 @@ fixed:
   system:
     device: cpu
 
-# 变量轴：笛卡尔积展开为多次 Run
 axes:
   data.config.train_size: [500, 2000, 8000]
 
-# tags 规则（参与 Run id hash）
 tags:
-  # 当轴取值匹配时打上 tag
   - when:
       data.config.train_size: 500
     tags: [baseline]
 
-# 每个 Run 的 description 模板（不进 id hash）
 run_description: "mnist_linear train_size={data.config.train_size}"
 ```
 
-填写顺序建议：`study` / `description` → `experiment` → `fixed` → `axes` → `tags`。
-
 ---
 
-## 4. Config 约束（摘要）
+## 5. Config 约束（摘要）
 
 | 字段 | 进 Run id hash？ | 说明 |
 |------|------------------|------|
@@ -90,38 +100,32 @@ run_description: "mnist_linear train_size={data.config.train_size}"
 | `description` | 否 | 给人看 |
 | `id` | 否（结果字段） | 由内容算出 |
 
-`data.source`：
-
-| 值 | 行为 |
-|----|------|
-| `stub` / 缺省且 name 为 Toy | 不下载、假指标（测 Flow） |
-| `torch` | 真数据 / 真训（如 MNIST） |
+| `data.source` | 行为 |
+|---------------|------|
+| `stub` / Toy | 不下载 |
+| `torch` | 真数据 / 真训 |
 
 ---
 
-## 5. Result 与共享
+## 6. Flow 阶段名（persist / process 白话）
 
-- Result **只**含可 JSON 化快照（见 [structure.md](code_structure/structure.md) §9.1）  
-- 数据集进 `artifact/shared/data/`，各 Run 复用  
-- 浏览本 Study 的 Run：**只信 `index.json` + `artifact/runs/`**，不要扫 Experiment 下历史目录  
+代码里 Flow 最后一步曾经叫 **`index`**，和 Study 的 **`index.json`** 重名，容易混。
 
----
+| 阶段 | 干什么 |
+|------|--------|
+| **persist** | 把 Result **写成** `runs/<id>/result.json`（定稿落盘）。就是改名后的旧 `index` 阶段。 |
+| **process** | Result **已经写好之后**再干的事：相对 baseline 算 Δ、填报告骨架、回填 index 里的 metrics。可先空着 / 跳过。 |
 
-## 6. Flow 阶段名
+Study 的 **`index.json`** =「打算跑哪些 Run」的清单，**不是** Flow 的 persist。
 
-| 阶段 | 含义 |
-|------|------|
-| persist | 原 `index`：定稿并写入 `result.json` |
-| process | persist 之后：Δ baseline、回填摘要等 |
-
-Study 的 **`index.json`** 仍是编排清单，与 Flow `persist` 无关。
+「persist 改名 + 空 process」=：把阶段名改清楚，并挂一个暂时什么都不做的 `process` 钩子，方便以后自动写对照表。
 
 ---
 
 ## 7. 最小检查清单
 
-- [ ] 已写 `study.yaml`  
-- [ ] 已生成 `index.json` 再 launch  
-- [ ] 真数据 Run 的 `source: torch` 已显式写出  
-- [ ] unit 测未误用真 MNIST  
-- [ ] Result 中无 Loader/Module  
+- [ ] Study 树符合 §3（有 `docs/`、`shared/`、`runs/`）  
+- [ ] 已写 `study.yaml` / `index.json` 再 launch  
+- [ ] 真数据 `source: torch`  
+- [ ] Result 可 JSON（无 Loader/Module）  
+- [ ] 结论在 `docs/STUDY_REPORT.md`
