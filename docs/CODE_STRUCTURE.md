@@ -1,40 +1,34 @@
 # 代码结构
 
-前置阅读 [CONCEPT.md](CONCEPT.md)、[LAYOUT.md](LAYOUT.md)、[STUDY_GUIDE.md](STUDY_GUIDE.md)。
+前置：[CONCEPT.md](CONCEPT.md)、[LAYOUT.md](LAYOUT.md)。
 
-本文是**代码结构总览**：依赖规则、三柱文档入口、包外 studies / tests 要点。  
-**每个 folder 内应有哪些模块与叶文件**，按柱拆开写（最细粒度；不列 `__init__.py`）：
+库内两柱：**structure** + **flow**。artifact IO 在 `structure/artifact/`。Study 编排在包外 `studies/`。
 
+| 柱 | 分册 |
+|----|------|
+| structure（api / control / 四层 / artifact） | [code_structure/structure.md](code_structure/structure.md) |
+| flow | [code_structure/flow.md](code_structure/flow.md) |
 
-| 柱         | 细则                                                         |
-| --------- | ---------------------------------------------------------- |
-| Structure | [code_structure/structure.md](code_structure/structure.md) |
-| Flow      | [code_structure/flow.md](code_structure/flow.md)           |
-| Artifact  | [code_structure/artifact.md](code_structure/artifact.md)   |
-
-
-测试目录与标签见 [TESTING.md](TESTING.md)、LAYOUT。
+测试约定见 [TESTING.md](TESTING.md)、LAYOUT。
 
 ---
 
-## 1. 依赖规则
+## 1. 依赖
 
-`rpipe` 库一级：**structure**、**flow**、**artifact**、**study**（编排入口）。不设库顶层 `schema/`、`defaults/`、`provider/`。
+- `studies/` 只 import `rpipe`；库不反向依赖包外
+- `flow` 可 import `structure`（含 `structure.artifact`）
+- structure 跨层只经 `structure.api`；四层实现互不直接 import
+- `structure` 不 import `flow`
+- 第三方运行时适配写在 structure 各层内部
 
-- `studies/` 只 import `rpipe`，不反向被库依赖
-- `flow` 可 import `structure`、`artifact`；Structure 内跨层只经 `structure.api`
-- `study` 可 import `artifact`、`flow`、`structure.control`（展开 Config / launch）
-- `structure` 不 import `flow` / `study`；仅在需要路径约定时可 import `artifact`
-- `artifact` 不 import `structure` 四层业务，不 import `flow` / `study`
-- 第三方运行时适配写在 **Structure 各层实现内部**
-
-**编排：** Study →（配方）→ Run（见 CONCEPT）。  
-
-**Config 链路：** `experiment_config.yaml` ⊕ study 展开补丁 → 完整 Config（含内容 hash 的 `id`）写入 `runs/<id>/` → prepare 读回构造 `Control`。Flow 不修改 Config。  
+**编排：** Study → Experiment → Run。  
+**config：** 基底 ⊕ 展开补丁 → `runs/<id>/` 下的 config → prepare 读回构造 **control**。Flow 不改 config。
 
 ---
 
-## 2. 库内文件树（只到子包）
+## 2. 库内树
+
+与 [LAYOUT.md](LAYOUT.md) 一致。`src/rpipe/` ↔ `tests/rpipe/`。
 
 ```
 src/rpipe/
@@ -45,6 +39,7 @@ src/rpipe/
     model/
     algorithm/
     system/
+    artifact/          # layout / config / result / asset / index IO
   flow/
     context.py
     runner.py
@@ -52,49 +47,52 @@ src/rpipe/
     execute/
     collect/
     summarize/
-    persist/
+    write/
     process/
-    index/                 # 兼容别名 → persist
-  study/
-    expand.py
-    runner.py
-  artifact/
-    layout.py
-    config/
-    result/
-    asset/
   cli.py
   __main__.py
 ```
 
+| 包 | 职责 |
+|----|------|
+| `structure.api` | 四层对外门面 |
+| `structure.control` | control 对象、config 合并、id hash、契约 |
+| `structure.data` / `model` / `algorithm` / `system` | 四层实现 |
+| `structure.artifact` | Study 树路径与 config / result / asset / index 的读写 |
+| `flow.*` | 一次 Run：prepare → execute → collect → summarize → write → process |
+
 ---
 
-## 3. studies（包外）
+## 3. 包外 studies
 
-见 LAYOUT。摘要：
+见 LAYOUT。薄 CLI 或脚本：展开 config、写 index、调用 `FlowRunner`。
 
 ```
 studies/<study>/
   study.yaml
-  experiment_config.yaml   # 配方（原 Experiment 概念）
-  index.json
-  docs/{PLAN,STUDY_REPORT}.md
-  shared/{data,model}/
-  runs/<id>/{config.yaml,result.json,assets/}
+  index
+  experiment_config.yaml
+  docs/
+  shared/{data,model}/     # asset
+  runs/<id>/{config, result, assets}/
 ```
-
-入口：`python -m rpipe study run studies/<study>`。
 
 ---
 
-## 4. tests（摘要）
+## 4. 测试
 
-镜像 `tests/rpipe/` ↔ `src/rpipe/`。e2e 指向 `studies/`。不再镜像已删除的 `examples/`。
+| 树 | 对应 |
+|----|------|
+| `tests/rpipe/structure/` | `src/rpipe/structure/` |
+| `tests/rpipe/flow/` | `src/rpipe/flow/` |
+| `tests/e2e/` | `studies/` |
+
+artifact 单测落在 `tests/rpipe/structure/artifact/`。
 
 ---
 
 ## 5. 读法
 
-1. CONCEPT 定概念 → LAYOUT 定目录 → **本总览**定依赖
-2. 实现某柱时打开对应分册
+1. CONCEPT → LAYOUT → **本总览**
+2. 改某柱打开对应分册
 3. 包外 Study 只依赖库公开入口

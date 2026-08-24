@@ -1,404 +1,251 @@
 # Concept
 
----
+RPipe 是**可重复、可编排、可序列化的研究执行底座**。
 
-## 1. 一句话定位
+研究者用 **Study** 声明要比什么；展开为 **Experiment**（实验变量的一个取值点）与 **Run**（带 seed 的实测）；每次 Run 经 **Flow** 执行，产物落在该 Study 的 **artifact** 下，供人复盘与 autoresearch 消费。
 
-**可重复、可编排、可序列化的研究执行底座** — Study 编排 Experiment 与多次 **Run**，落盘 Config；经 Flow 将 Result、Asset 写入 **Artifact**，供人复盘，供 autoresearch / AI 在下一轮决策时消费。
-
----
-
-## 2. 与相邻系统的边界
-
-本底座不替代训练框架或评测套件，也不替代研究者的 Study 设计。它对外提供稳定的 Flow / Result 契约，供 autoresearch 消费；对内通过适配接入 PyTorch、Hugging Face 等运行时。包外 **`studies/`** 持有各轮研究；库内 **`rpipe study run`** 负责展开与 launch。研究者侧声明 `study.yaml` 与配方 Config，读取 Result，按 Run 对比结论。
-
-
-| 相邻系统 | 提供 |
-|------|------|
-| **autoresearch** | Study / Run 入口、Result schema、可校验的结构化产物 |
-| **PyTorch / HF / 其他运行时** | 通过适配接入，保留其训练 / 评测 / 推理语义 |
-| **包外 Study** | `studies/<name>/`：编排声明、docs、shared、runs |
-| **研究者** | 定义 study.yaml / 配方、读取 Result、写 STUDY_REPORT |
-
+目录见 [LAYOUT.md](LAYOUT.md)；操作见 [STUDY_GUIDE.md](STUDY_GUIDE.md)；structure 细节见 [code_structure/structure.md](code_structure/structure.md)。
 
 ---
 
+## 1. 边界
 
+对照相邻系统，而不是只谈职责。DeepScientist：[ResearAI/DeepScientist](https://github.com/ResearAI/DeepScientist)。
 
-## 3. 核心概念
+| | **RPipe** | **DeepScientist** | **Hugging Face** | **autoresearch** |
+|--|-----------|-------------------|------------------|------------------|
+| **定位** | 研究**执行底座**：可重复、可编排、可序列化 | local-first 研究 OS / 长程工作室 | 模型 / 数据 / 训练与推理**生态与库** | 包外**自动研究环**：选题、改实验、读产物、再决策 |
+| **编排对象** | Study → Experiment → Run | Quest | 无研究编排（repo、pipeline、Trainer） | 调用 RPipe（或同类）的 Study / Run |
+| **库内组成** | 只有 **structure** + **flow** | Agent + Memory + UI + 执行器 | transformers / datasets / hub 等 | 决策与搜索逻辑（不在本库） |
+| **执行** | Flow：prepare → execute → collect → summarize → write → process | `bash_exec` 等通用 shell | Trainer / pipeline / 用户脚本 | 不自己训模型；触发执行底座 |
+| **持久化** | Study 下 **artifact**（docs / config / result / asset / index） | Quest Git、memory、artifact 账本 | Hub 权重与数据集；本地 output_dir | 消费 artifact，自管记忆 / 假设 |
+| **决策 / 下一步** | **不**内置 | Findings / Bayesian / Map | 无 | **负责**下一步实验 |
+| **研究者怎么用** | 写 study 声明与基底配置；读 result；写报告 | 在 OS 里提 Quest、看 Canvas | 选模型 / 数据、写训练或推理代码 | 设目标与约束，审阅自动循环 |
+| **训练 / 模型** | 经 structure 的 `data` / `model` 适配接入；**不**替代 HF / PyTorch | Agent 调外部命令接入 | 提供模型卡、权重、Trainer、推理 API | 不提供模型实现 |
+| **数据** | 运行时是 structure **data**；落盘是 artifact **asset** | 由 Quest / 外部脚本处理 | Hub datasets、本地缓存 | 指定用哪份数据，不负责下载协议 |
+| **产物契约** | 稳定的 Run 入口、config、result | Quest 账本 + 论文/实验产物 | 权重、metrics 日志，无 Study 契约 | 依赖 RPipe 的 result / index |
+| **不做什么** | 不做 OS / UI / 决策器；不用通用 shell 取代 Flow | 不是薄执行库 | 不是研究编排底座 | 不替代 Flow / structure |
 
-概念树以 **Study → Experiment → Run** 为主干。Experiment 下挂 **Structure** 与 **Flow**。**Control** 属于 Structure（与 data / model / algorithm / system 并列），表示本 Run 对各层的取值指派。
+**借力原则**：相对 DeepScientist，学 durable 契约与编排纪律，不学 OS / UI / 决策器。相对 HF，只适配、不替代。相对 autoresearch，只提供可消费的执行契约。
 
-- Structure 含 Control 与四层；Flow 经 prepare **读取** Artifact 内的 Config，再落地 Structure（含构造 Control）
-- Flow 写入 Result、Asset；Config 由 Study 落盘，prepare 只读、不改写
+包外研究根：`studies/<name>/`。
 
-需占存储位置的 Config、Result、Asset 都落在 **Artifact** 下。词表如下，细节见各小节。
+---
 
+## 2. 主干：Study → Experiment → Run
 
-| 概念 | 定义 |
-|------|------|
-| **Study** | 一轮研究：**比什么**（变量轴、对照、结论）；磁盘根 `studies/<name>/`（见 §3.1、§5.7） |
-| **Experiment（配方）** | **怎么跑**这一类任务：Structure + Flow + 基底 config；**住在 Study 内**，不是顶层文件夹（见 §3.4） |
-| **Run** | 某次具体配置的执行；有 **`id`**（见 §3.5） |
-| **Structure** | 静态组成：Control 与 data、model、algorithm、system（见 §3.2、§4） |
-| **Control** | Structure 内的层变量指派（见 §3.2） |
-| **Config** | Artifact 成员；declarative 配置；Study 落盘，prepare 读取（见 §3.3、§6.3） |
-| **Flow** | prepare → execute → collect → summarize → persist → process（见 §5） |
-| **Artifact** | **Study 下**持久化根；共享 data/model + 按 Run 的 Config/Result（见 §6） |
-| **Result** | 结构化摘要与路径索引；Artifact 成员（见 §6.1） |
-| **Asset** | 文件型产物；Artifact 成员（见 §6.2） |
+```text
+Study            一轮研究（编排壳 + artifact 根）
+ └── Experiment  实验变量的一个取值点（不含 seed）
+      └── Run    该点下的一次实测（至少含 seed）
+```
 
+| | **Study** | **Experiment** | **Run** |
+|--|-----------|----------------|---------|
+| **是什么** | 编排 + 落盘根 | 比较轴上的一个格子 | 该格子的一次抽样 |
+| **seed** | 声明 `seeds` | **不含** | **必须有** |
+| **例子** | `mnist_train_size` | `train_size=500` | `train_size=500, seed=0` |
+| **磁盘** | `studies/<name>/` | 逻辑分组（**index**） | `runs/<id>/` |
+
+- `axes` → 多个 Experiment；每个 × `seeds` → 多次 Run
+- 聚合 / 对照：先按 Experiment，再在其 Runs 上统计
+- 基底配置 = Study **默认值**，不是「一个 Experiment 实例」
+
+```mermaid
+flowchart TB
+  Study --> E1[Experiment train_size=500]
+  Study --> E2[Experiment train_size=2000]
+  E1 --> R10[Run seed=0]
+  E1 --> R11[Run seed=1]
+  E2 --> R20[Run seed=0]
+```
+
+---
+
+## 3. 全局概念图
+
+库内实现只有两柱：**structure**（静态）与 **flow**（动态）。structure 含 `api`、`control`、四层、以及 **artifact**（IO / 路径）。config 单独成类故单独画出；Study 下的持久化整体也叫 **artifact**。
 
 ```mermaid
 flowchart TB
   Study --> Experiment
   Experiment --> Run
-  Experiment --> Structure
-  Experiment --> Flow
-  Structure --> Control
+  Study --> Structure
+  Study --> Flow
+  Structure --> api
+  Structure --> control
   Structure --> data
   Structure --> model
   Structure --> algorithm
   Structure --> system
+  Structure --> artifact_mod[artifact]
   Flow --> prepare
   Flow --> execute
   Flow --> collect
   Flow --> summarize
-  Flow --> persist_phase[persist]
-  Flow --> process_phase[process]
-  subgraph Artifact_sub [Artifact under Study]
-    shared[shared data/model]
-    Config
-    Result
-    Asset
+  Flow --> write
+  Flow --> process
+  subgraph art [artifact]
+    config
+    result
+    asset
   end
-  prepare --> Config
-  prepare <--> shared
-  prepare <--> Asset
-  execute <--> Asset
-  collect --> Result
-  summarize --> Result
-  persist_phase --> Result
-  process_phase --> Result
+  prepare --> config
+  prepare <--> art
+  execute <--> art
+  collect --> result
+  summarize --> result
+  write --> result
+  process --> result
 ```
 
+| 概念 | 定义 |
+|------|------|
+| **Study** | 编排壳与 artifact 根 |
+| **Experiment** | 实验变量的一个点（不含 seed） |
+| **Run** | 一次实测；含 seed；有内容导出的 `id` |
+| **structure** | 静态：`api` + `control` + data / model / algorithm / system + **artifact** |
+| **api** | structure 对外门面 |
+| **control** | 本 Run 对四层的取值指派（由 config 构造） |
+| **config** | 一次 Run 的 declarative 配置；prepare 只读 |
+| **flow** | prepare → execute → collect → summarize → write → process |
+| **artifact** | Study 下的持久化整体；库内 IO / 路径在 structure 的 **artifact** |
+| **result** | 可序列化的执行摘要 |
+| **asset** | 文件型产物。structure 的 **data / model 在磁盘上的内容都放在 asset**（数据集、权重、checkpoint 等） |
+| **index** | Study 编排清单（launch 前）；**不是** Flow 阶段 |
 
-
-### 3.1 Study
-
-一类 / 一轮可比较研究的设计：**问的是「比什么」**。Study **编排**多次 Run：在变量轴上展开，为各次 Run 落盘 Config，再对同一配方执行 Flow。
-
-变量轴覆盖有意变化的字段（数据集、模型、学习率、seed、algorithm mode 等）。seed 与其它变量同质，无特殊地位。
-
-磁盘上 Study 是**唯一**的包外研究根（`studies/<name>/`），内含 `docs/`、`shared/`、`runs/`。编排见 **§5.7**；入口见 [STUDY_GUIDE.md](STUDY_GUIDE.md)（`python -m rpipe study run …`）。
-
-### 3.2 Control
-
-**Structure** 的一部分：某次 **Run** 对 data / model / algorithm / system 的取值指派。
-
-概念树上 **Control 挂在 Structure 下**，不与 Experiment 平级直连。Config 由 Study 落盘；prepare 读取 Config 后构造 Control 并落地四层。同树 Result、Asset 由 Flow 写入。
-
-库内对象见 [LAYOUT.md](LAYOUT.md)（`structure/control/`）。字段与编解码等实现细节见 [structure.md](code_structure/structure.md)。summarize 可将 Control 指派写入 Result（内容可源于同树 Config）。
-
-### 3.3 Config
-
-**Artifact** 成员，有实体落盘，通常为 declarative 文件（如 YAML）。承载一次 **Run** 的变量取值与 Structure 相关字段，供 prepare 读取并构造 Control / 落地四层。
-
-由 **Study** 写入 Artifact；**prepare 读取，Flow 不修改**。人手编写或 Study 批量生成均可。Config 如何分层、如何与 Experiment 侧默认合并，属实现细节，见代码结构分册，不在本层展开。
-
-**示例**：同一 Experiment 下两次 Run（Config 不同，因而 `id` 不同）各有一份 Artifact（各含 Config，以及 Flow 写入的 Result、Asset）。
-
-### 3.4 Experiment（配方）
-
-**怎么跑**这一类任务：声明 **Structure**（含 Control 与四层）与 **Flow**，并提供基底 `experiment_config.yaml`。
-
-它是**概念 / 配方**，不是仓库顶层的 `experiments/` 目录。配方文件放在 **Study 目录内**；多个 Study 可各自持有一份（或日后抽到库内复用）。Study 选定配方并为各次 Run 落盘 Config 后执行 Flow。Result 归属该 Run，不由「Experiment 对象树」持有。
-
-### 3.5 Run
-
-某 Experiment 下的**一次具体运行**。
-
-- 有 **`id`**，用来区分不同配置内容的运行（实现上可由配置内容导出，见代码结构分册）
-- 一次 Run 对应一份 Config 与一份 Artifact（Config / Result / Asset）
-- 同一 Experiment 可有很多次 Run；差异主要在各次 Config 的取值（如不同 seed）
-
-### 3.6 Result
-
-结构化摘要与产物路径索引；Artifact 中按 Run 存放的成员。由 collect、summarize、**persist** 写入（失败时可由 Runner 直接落盘）；**process** 可读/可补写派生字段。定稿须含 **`status`**（`succeeded` / `failed`）。**只含可 JSON 化内容**（见 [structure.md](code_structure/structure.md) §9.1）。见 **§6.1**。
-
-### 3.7 Artifact
-
-**挂在 Study 下**的持久化根：本 Study 共享的 data/model 等资源 + 各次 Run 子树（Config / Result / 按 Run 的 Asset）。不再默认挂在 Experiment 下（避免多 Study 共用一个 Experiment 时目录互相污染）。见 **§6**。
-
-### 3.8 Asset
-
-文件型产物。分两类：**Study 共享**（如 MNIST 下载缓存、可复用权重）与 **Run 专有**（日志、本 Run checkpoint）。prepare / execute 读写；collect / summarize / persist 不改写 Asset 文件内容（persist 只登记路径）。见 **§6.2**。
+读写：config 由编排写入、Flow 不改；result 由 Flow 写入；data / model 的文件走 **asset**，经 artifact 由 prepare / execute 使用。
 
 ---
 
+## 4. Study
 
+路径：`studies/<name>/`（包外）。持有声明、index、文档、共享与各次 Run 产物。
 
-## 4. Structure
+| 轴 | 含义 | 结果 |
+|----|------|------|
+| **`axes`** | 有意比较的研究因素 | → Experiment |
+| **`seeds`** | 随机复测 | → 每个 Experiment 下的 Run |
 
-**Experiment** 的静态组成：**Control** 与 data、model、algorithm、system。
-
-- **Control**：本 Run 对各层的取值指派
-- **能力**（能接什么数据、什么模型、哪些 algorithm mode）由 Experiment 声明
-- **取值**写在对应 Run 的 Config 中；prepare 读取后落地 Structure（含 Control）
-- execute 驱动计算；相关快照可写入 Result
-
-同一 Study 内，不同 Run 的差异主要体现在各自 Config 所承载、经 prepare 落到 Control / 四层上的取值。
-
-### 4.1 data
-
-data 层把研究所需输入组织为可消费的数据流：来源与版本、样本字段、迭代接口、进入 model 前的预处理与增强等。
-
-prepare 可检查可达性并缓存数据（写入 Asset）；execute 从 Asset 或外部源按 batch 供给 algorithm。
-
-例子：MNIST / CIFAR 图像批次；GSM8K 问答对；TTS `(text, audio)`；Diffusion `(image, caption)`；推理 prompt 列表。
-
-
-| 字段（例） | 含义 | 例子 |
-|------|------|------|
-| 数据集名称 | 使用哪份数据 | `MNIST`、`CIFAR10`、GSM8K |
-| 划分与用途 | 训练 / 验证 / 评测视图 | 训练集迭代、测试集 eval |
-| 批次与采样 | 数据管线规模 | batch size |
-| 预处理与增强 | 进入 model 前的变换 | 归一化、resize、随机增强 |
-| 加载方式 | 接入与并行读取 | num_workers、pin_memory |
-
-
-### 4.2 model
-
-model 层构建可调用的模型句柄：结构与参数、权重加载、范式相关的 forward 接口。
-
-prepare 构建结构并可从 Asset 读取权重；execute 读写 checkpoint（训练语义下可写回 Asset）。
-
-例子：`linear`、`resnet18`、GPT Transformer、Diffusion U-Net、TTS 声学模型 + vocoder、GGUF 本地权重。
-
-
-| 字段（例） | 含义 | 例子 |
-|------|------|------|
-| 模型名称 / 结构 | 网络形态 | `linear`、`resnet18`、GPT、U-Net |
-| 权重来源 | 初始化或加载位置 | 随机初始化、预训练 checkpoint、GGUF |
-| 结构与变体 | 冻结、adapter、head | LoRA、分类头维度 |
-| 前向相关设定 | 与形态绑定的选项 | 上下文长度、输入分辨率 |
-
-
-### 4.3 algorithm
-
-algorithm 层在任务范式下定义怎么算。一次 Run 的 algorithm 由 **`mode`** 区分：**train** / **eval** / **inference**（一次配置一个 mode；要组合多种 mode 由 Study 安排多次 Run 或多次执行）。相关超参写在 Config 中。
-
-prepare 可做必要校验；execute 组织循环，调用 data、model，经 system 在硬件上执行。
-
-
-| 字段（例） | 含义 | 例子 |
-|------|------|------|
-| mode | 本次 Run 的计算模式 | train、eval、inference |
-| 训练过程参数 | train 相关 | 学习率、优化器、步数 / epoch |
-| 评测设定 | eval 相关 | 评测集、metric、benchmark |
-| 推理设定 | inference 相关 | 解码策略、temperature、采样器 |
-
-
-#### 4.3.1 train
-
-更新模型参数；backward 主导。迭代计算 loss、更新参数，并可触发 checkpoint 与日志写入（经 system）。
-
-例子：分类训练、AR 预训练、Diffusion 去噪训练、TTS 声学模型训练、LoRA 微调。
-
-#### 4.3.2 eval
-
-度量质量；forward 为主。聚合准确率、BLEU、pass rate、FID 等 metric，结果进入 Result。
-
-例子：MNIST 测试集准确率、标准评测任务集、BLEU 评测。
-
-#### 4.3.3 inference
-
-推理 / 生成；forward 为主。生成文本、图像、音频等，可由 execute 写入 Asset。
-
-例子：AR 文本续写、Diffusion 文生图、TTS 文本转语音。
-
-### 4.4 system
-
-system 层管理计算在硬件上的执行：设备、精度、并行、内存与 IO、恢复等。
-
-prepare 可确认设备与输出位置，并读取 resume 相关 Asset；execute 落实执行策略并写入 checkpoint / 日志等 Asset。
-
-例子：单卡 mixed precision；多卡 DDP；CPU 量化推理；周期 checkpoint。
-
-
-| 字段（例） | 含义 | 例子 |
-|------|------|------|
-| 设备 | 执行设备 | CPU、单卡 GPU、多卡 |
-| 精度 | 数值与显存策略 | fp32、fp16、mixed precision |
-| 并行与分布式 | 跨设备执行方式 | 单卡、DDP、张量并行 |
-| 内存与 IO | 执行节奏相关 | checkpoint 周期、日志间隔 |
-| 恢复与调试 | 运行态控制 | resume、profile |
+编排入口在包外 Study / CLI；**库内不设独立 `study` 包**（见 LAYOUT）。
 
 ---
 
+## 5. Experiment 与 Run
 
+**Experiment**：含研究因素（如 `train_size`、`lr`）；不含 seed；无顶层目录。
 
-## 5. Flow
+**Run**：Experiment × seed；一 Run ↔ 一 config ↔ `runs/<id>/`。  
+`id` 由 config 内容导出（含 tags、seed；不含 `description`）。`baseline` 等是 **tags**，不是独立对象。
 
-**Experiment** 的动态过程。Study 为各次 Run 落盘 Config 后，Flow 按  
-**prepare → execute → collect → summarize → persist → process**  
-推进。prepare **读取** 该 Run 的 Config 并落地 Structure（含 Control），同时与共享 / 按 Run 的 Asset 交互；execute 与 Asset 交互；summarize / persist 写入 Result；process 在 Result 定稿后做派生处理。**Flow 不修改 Config。**
+---
 
-> 旧名 **`index`（阶段）** 已更名为 **`persist`**：职责是定稿并**序列化写入** `result.json`，不是「建索引」 alone。Study 目录下的编排清单仍叫 **`index.json`**（§6.4），二者勿混。
+## 6. Structure
 
-Flow 归属 Experiment，作用于一次 **Run**。可跑完整流程或子集；结束后 Result 与按 Run 的 Asset 落在 **该 Study 的 Artifact** 下。
-
-
-| Phase | Config | Asset | Result |
-|------|------|------|------|
-| prepare | 读取 | 读写（共享缓存 + 本 Run） | — |
-| execute | — | 读写 | — |
-| collect | — | — | 过程观测（内存） |
-| summarize | — | — | 可序列化草稿（含 status） |
-| persist | — | 登记路径 | **定稿写入 `result.json`** |
-| process | — | 可选读 | 读定稿；可写派生 / 回填 |
-
-
-```mermaid
-flowchart LR
-  prepare --> execute
-  execute --> collect
-  collect --> summarize
-  summarize --> persist
-  persist --> process
-```
-
-
+Structure 是 Run 的**静态组成**，也是库内静态柱。能力由 Study 基底声明；取值来自该 Run 的 config。
 
 ```mermaid
 flowchart TB
-  prepare --> Config
-  prepare <--> Asset
-  collect --> Result
-  summarize --> Result
-  persist --> Result
-  process --> Result
-  subgraph execute_detail [execute]
+  Structure --> api
+  Structure --> control
+  Structure --> data
+  Structure --> model
+  Structure --> algorithm
+  Structure --> system
+  Structure --> artifact
+```
+
+| 成员 | 职责 |
+|------|------|
+| **api** | 对外门面 |
+| **control** | 本 Run 对四层的指派 |
+| **data** | 运行时：输入怎么组织。落盘：数据集等文件在 artifact 的 **asset** |
+| **model** | 运行时：网络怎么构造。落盘：权重 / checkpoint 在 artifact 的 **asset** |
+| **algorithm** | 怎么算 |
+| **system** | 设备、精度、并行、执行节奏 |
+| **artifact** | IO 与路径：读写 config / result / asset，以及 Study 下的 layout |
+
+同一 Study：不同 Experiment 差在实验变量；同一 Experiment 下不同 Run 差在 seed。  
+字段与 result 快照契约见 [structure.md](code_structure/structure.md)。
+
+---
+
+## 7. Flow
+
+Flow 作用于**一次 Run**：
+
+**prepare → execute → collect → summarize → write → process**
+
+```mermaid
+flowchart LR
+  prepare --> execute --> collect --> summarize --> write --> process
+```
+
+| Phase | 做什么 |
+|-------|--------|
+| **prepare** | 读 **config**，落地 structure（含 `control`）；经 **artifact** 取用/写入所需文件（含 data / model 对应的 **asset**）；不改 config |
+| **execute** | 按 structure 计算；经 **artifact** 读写文件 |
+| **collect** | 收纳观测到内存 |
+| **summarize** | 整理可序列化的 result 草稿（含 `status`） |
+| **write** | 把 result 写入 artifact（序列化 + 落盘） |
+| **process** | 定稿后派生（Δ baseline、按 Experiment 聚合等）；可空 |
+
+```mermaid
+flowchart TB
+  prepare --> config
+  prepare <--> artifact
+  execute <--> artifact
+  collect --> result
+  summarize --> result
+  write --> result
+  process --> result
+  subgraph exec [execute]
     data --> algorithm
     model --> algorithm
     algorithm --> system
   end
-  prepare --> execute_detail
-  execute_detail <--> Asset
-  execute_detail --> collect
+  prepare --> exec
+  exec --> collect
 ```
 
+说明：
 
-
-
-
-### 5.1 prepare
-
-**读取** 该 Run 的 Config，校验并落地 Structure（含构造 Control 与四层）。**不修改** Config。
-
-可读写 **Study 共享 Asset**（如数据集缓存）与 **本 Run Asset**（日志等）。真数据路径应由 Config 显式 `source`（如 `torch`）触发；`stub` / `Toy` 不得默认下载。不写入 Result。
-
-### 5.2 execute
-
-按本 Run 的 Structure 驱动真实计算。可读写 Asset。观测留在内存，由 collect 收纳。
-
-### 5.3 collect
-
-收纳 execute 观测到内存缓冲。不读写 Asset。典型：metric、loss、accuracy。
-
-### 5.4 summarize
-
-整理 **可 JSON 化** Result 草稿（Control、Structure 快照、metrics、`status`）。**禁止**把 DataLoader / Module 等 runtime 写入草稿（见 structure.md §9.1）。
-
-### 5.5 persist（原 index）
-
-登记 Asset 路径，将 Result **序列化定稿**为 `result.json`。成功时 `status: succeeded`。
-
-若某阶段抛错：Runner 应尽量写入 `status: failed` + `error`，再向上抛出。
-
-### 5.6 process
-
-在 **persist 之后**：基于已定稿 Result 做派生处理（例如相对 `tags` 含 `baseline` 的 Δ、写 Study 级摘要片段、回填 index 条目的 metrics）。不替代 persist；不改写 Config。可裁剪跳过。
-
-### 5.7 Study 编排
-
-Study 在变量轴上展开多次 **Run**，为各次 Run 落盘 Config；引用 Experiment。组合关系与 **Artifact 根**由 Study 持有。
-
-**编排顺序**：
-
-1. 填写 **`study.yaml`**（描述、配方名、变量轴、tags）— 见 [STUDY_GUIDE.md](STUDY_GUIDE.md)  
-2. **`rpipe study run`**：展开并落盘各 Run Config 到 `runs/<id>/`  
-3. 写 **`index.json`**（编排清单；launch 之前）  
-4. launch Flow（含 persist → process）  
-5. 人 / 工具读 Result，写 **`docs/STUDY_REPORT.md`**
-
-`index.json` 是编排契约；Result 是执行结局。
+- Flow 只认 **config** 与 **artifact**
+- 真数据须显式 `data.source`；`stub` 不得默认下载
+- 失败时尽量写 `status: failed` + `error`
+- **write** 是 Flow 阶段（写 result）。Study 的 **index** 是编排清单。旧阶段名曾叫 `index`，与清单撞名，故改为 write
 
 ---
 
+## 8. Artifact
 
+**artifact** 是该 Study 的持久化整体。路径见 [LAYOUT.md](LAYOUT.md)。
 
-## 6. Artifact
+| 成员 | 说明 |
+|------|------|
+| **docs** | 计划与报告 |
+| **config** | 每 Run 一份；编排写、prepare 读 |
+| **result** | 每 Run 一份；可序列化；含 `status` |
+| **asset** | 文件。**data 的数据集、model 的权重 / checkpoint，以及日志等，都放在 asset** |
+| **index** | 编排清单（launch 前；按 Experiment 列 Run） |
 
-**Artifact 挂在 Study 下**（不是默认挂在 Experiment 下）。同一 Study 内多次 Run **共享** data / model 等只读资源；用 **Run `id`** 区分各次 Config / Result / 专有 Asset。路径见 [LAYOUT.md](LAYOUT.md)。
+---
 
-```text
-studies/<study>/
-  study.yaml                 # Study 声明（变量轴、tags…）
-  index.json                 # 编排清单（launch 前）
-  experiment_config.yaml     # 配方（Experiment 概念）
-  docs/
-    PLAN.md                  # 执行前计划
-    STUDY_REPORT.md          # 结论 / 对照 / 卡点
-  shared/
-    data/                    # 如 MNIST 下载缓存（Study 内共享）
-    model/                   # 可复用权重等（按需）
-  runs/
-    <run_id>/
-      config.yaml
-      result.json
-      assets/              # 本 Run 日志 / checkpoint 等
-```
+## 9. 编排生命周期
 
-| 成员 | 写入方 | 说明 |
-|------|--------|------|
-| **docs/** | 人 / process | 计划与报告；与 Run 产物分离 |
-| **shared/** | prepare（只读复用优先） | Study 内共享 data/model |
-| **Config** | Study runner；prepare 读取 | 每 Run 一份；Flow 不修改 |
-| **Result** | Flow persist（失败时 Runner） | 每 Run；可 JSON；见 §6.1 |
-| **Run assets** | Flow prepare/execute | 每 Run 专有文件 |
+1. 写基底配置与 study 声明（`axes` + `seeds`）
+2. 展开 Experiment × seed → 写各 Run config → 写 index
+3. 对每个 Run 跑 Flow
+4. 按 Experiment 读 result，写 Study 报告
 
-**没有**独立的 `examples/` 或 `experiments/` 顶层目录。
+---
 
-### 6.1 Result
+## 10. 相关文档
 
-collect → summarize → **persist** 写入；成功路径下 persist 后定稿。**process** 可追加派生字段。只含可 JSON 化内容（structure.md §9.1）。
-
-
-| 块（例） | 来源 Phase | 内容 |
-|------|------|------|
-| **status** | summarize / Runner | `succeeded` 或 `failed` |
-| **error** | Runner（失败时） | 失败原因摘要 |
-| Control | summarize | 本 Run 的变量指派 |
-| Structure 快照 | summarize | **可序列化**投影（无 Loader/Module） |
-| metric | collect、summarize | 聚合结果 |
-| 产物路径 | persist | shared / run assets 路径；Result 自身路径 |
-
-
-### 6.2 Asset
-
-| 类型 | 位置 | 说明 |
-|------|------|------|
-| 数据集缓存 | `shared/data/` | Study 内各 Run 共用 |
-| 可复用权重 | `shared/model/` | 按需 |
-| 本 Run checkpoint / 日志 | `runs/<id>/assets/` | 不共享 |
-
-### 6.3 Config
-
-每 Run 一份，落在 `runs/<id>/config.yaml`。含 `description`（**不**进 id hash）、`tags`（**进** id hash）。由 Study 根据 `study.yaml` 展开写入。
-
-### 6.4 统一 `index.json`（Study 编排清单）
-
-Study 在 **launch 之前** 写出；内含 Study + Experiment + 各计划 Run（id / description / tags / 路径）。**不是** Flow 的 `persist` 阶段。process 之后可回填 metrics / status，但主清单仍以编排时写出为准。
-
-用法与 `study.yaml` 模版见 [STUDY_GUIDE.md](STUDY_GUIDE.md)。
+| 文档 | 内容 |
+|------|------|
+| [LAYOUT.md](LAYOUT.md) | 仓库目录；库内仅 structure + flow |
+| [STUDY_GUIDE.md](STUDY_GUIDE.md) | study 声明与检查清单 |
+| [code_structure/structure.md](code_structure/structure.md) | control / 四层 / artifact IO / id / result |
+| [code_structure/flow.md](code_structure/flow.md) | Flow 阶段模块 |
+| [BRAINSTORM_DEEPSCIENTIST.md](BRAINSTORM_DEEPSCIENTIST.md) | 非权威对照与路线图 |

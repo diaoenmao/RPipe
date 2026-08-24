@@ -1,11 +1,11 @@
 # Code structure · Structure
 
-前置：[CONCEPT.md](../CONCEPT.md) §4、[LAYOUT.md](../LAYOUT.md) §5、[CODE_STRUCTURE.md](../CODE_STRUCTURE.md)。  
-并列分册：[flow.md](flow.md)、[artifact.md](artifact.md)。
+前置：[CONCEPT.md](../CONCEPT.md) §6、[LAYOUT.md](../LAYOUT.md)、[CODE_STRUCTURE.md](../CODE_STRUCTURE.md)。  
+并列分册：[flow.md](flow.md)。
 
-本文按层推进：**模块 → 类 → 叶文件**。当前 **data**、**model**、**algorithm**、**system**、**control** 已定到类（control 见 §8）。
+本文按层推进：**模块 → 类 → 叶文件**。data / model / algorithm / system / control 定到类（control 见 §8）。**artifact** IO 见 §9。
 
-**层间只经** `structure/api/` **交流。** 各层实现不互相直接 import；跨层与外部调用方只依赖对应 `*_api`。**不设** `control_api`：Control 留在 `control/`。
+**层间只经** `structure/api/` **交流。** 各层实现不互相直接 import；跨层与外部调用方只依赖对应 `*_api`。**不设** `control_api`：control 留在 `control/`。
 
 运行时类（`Data`、`Model`、`Algorithm`、`System`）与配置 dataclass 分开：前者供 prepare/execute 消费；后者为 **`DataConfig` / `ModelConfig` / `AlgorithmConfig` / `SystemConfig`**，专责从 JSON / Artifact Config 加载声明字段。
 
@@ -26,15 +26,15 @@
 
 ### 1.1 本柱做什么
 
-- 承载 **Control** 与 data / model / algorithm / system
+- 承载 **control** 与 data / model / algorithm / system，以及 **artifact** IO
 - 在 `api/` 暴露各层对外接口（`data_api`、`model_api`、…）
-- 由 Config mapping 构造 Control，并由 Control 导出 Config mapping
+- 由 config mapping 构造 control，并由 control 导出 config mapping
 - 在 prepare 经各层 api 落地可消费实例；在 execute 期经 api 使用它们
-- 在 Control 侧声明并执行 Config / Result **契约校验**
-- 经 Asset 路径读写缓存、权重、checkpoint、样本、日志
-- 经 api 产出可 JSON 化的观测（loss、metric、路径等），供后续写入 Result
+- 在 control 侧声明并执行 config / result **契约校验**
+- 经 **asset** 路径读写缓存、权重、checkpoint、样本、日志（data / model 落盘都在 asset）
+- 经 api 产出可序列化观测（loss、metric、路径等），供写入 result
 
-### 1.2 能力 vs 取值（对齐 CONCEPT §4）
+### 1.2 能力 vs 取值（对齐 CONCEPT §6）
 
 | 概念 | 谁声明 | 落在哪 |
 |------|--------|--------|
@@ -51,6 +51,7 @@ data/                → Data / DataRegistry / DataFactory / DataConfig
 model/               → Model / ModelRegistry / ModelFactory / ModelConfig
 system/              → System / SystemRegistry / SystemFactory / SystemConfig
 algorithm/           → Algorithm / AlgorithmRegistry / AlgorithmFactory / AlgorithmConfig
+artifact/            → layout / config / result / asset / index IO；不 import 四层实现
 ```
 
 - 四层跨层只走对应 `*_api`
@@ -67,7 +68,8 @@ algorithm/           → Algorithm / AlgorithmRegistry / AlgorithmFactory / Algo
 | **model** | `Model` + `ModelRegistry` + `ModelFactory` + `ModelConfig` |
 | **algorithm** | `Algorithm` + `AlgorithmRegistry` + `AlgorithmFactory` + `AlgorithmConfig` |
 | **system** | `System` + `SystemRegistry` + `SystemFactory` + `SystemConfig` |
-| control | `ExperimentConfig` + `RunConfig` + `Control` + 四层 `*Config` + 合并/编解码/契约（§8） |
+| **control** | `ExperimentConfig` + `RunConfig` + `Control` + 四层 `*Config` + 合并/编解码/契约（§8） |
+| **artifact** | layout / config / result / asset / index（§9） |
 
 ---
 
@@ -81,6 +83,7 @@ structure/
   model/
   algorithm/
   system/
+  artifact/     # §9
 ```
 
 ---
@@ -642,46 +645,136 @@ prepare：`control_from_config` →（可选契约）→ 各 `*_api` Factory.bui
 
 ### 8.6 测试意图
 
-`tests/rpipe/structure/control/`：`ExperimentConfig` / `RunConfig` / `Control` 往返；合并后 **`id` = 除 id 外内容的 hash**（同内容同 id、改字段则变）；契约校验。Experiment 文件与 grid 集成见 `tests/examples/`。
+`tests/rpipe/structure/control/`：`ExperimentConfig` / `RunConfig` / `Control` 往返；合并后 **`id` = 除 id / description 外内容的 hash**（含 tags、seed）；契约校验。Study 展开见 `tests/e2e/` → `studies/`。
 
 ---
 
-## 9. 与 Artifact / Result 的触点
+## 9. `structure/artifact/`
 
-| 触点 | Structure 侧 | 对端 |
-|------|-------------|------|
-| Config | 本 Run 的 `run_config`（`id` = 除 `id`/`description` 外内容的 hash；**`tags` 进 hash**） | `artifact` 下 Run 子树 |
-| Asset（共享） | data 下载缓存、可复用 model 权重等 | Study 级 `artifact/shared/`（见 CONCEPT / LAYOUT） |
-| Asset（按 Run） | checkpoint、logs、本 Run 专有文件 | `artifact/runs/<id>/assets/` |
-| 观测 | algorithm 等产出的 metrics / observations | 写入 Result（须可 JSON 化） |
+持久化 IO 与路径。**不**解析 control 业务语义；**不** import `flow` 或四层实现。形状可做最小检查；字段契约在 `structure.control.contract`。
 
-### 9.1 Runtime state vs Result 快照（必守）
+### 9.1 目录与磁盘
 
-真实验踩过的坑：`state['data']` / `state['model']` 里有 `DataLoader`、`nn.Module` 等 **runtime handle**；若原样塞进 Result，`json.dump` 会炸。
+```
+structure/artifact/
+  layout.py
+  paths.py
+  errors.py
+  index.py
+  config/
+    io.py
+    format.py
+  result/
+    io.py
+    format.py
+  asset/
+    io.py
+    tree.py
+    kinds.py
+```
 
-约定：
+```
+studies/<study>/
+  docs/
+  shared/{data,model}/
+  runs/<id>/
+    config
+    result
+    assets/
+  index
+```
 
-| 层 | 可持有 | 不可直接进 Result |
-|----|--------|-------------------|
-| Flow `ctx.state` | Loader、Module、Optimizer、打开的文件句柄 | — |
-| Result / Structure 快照 | 标量、短字符串、纯 dict/list、路径字符串 | Loader、Module、Tensor、不可序列化对象 |
+叶名由 `paths.py` 集中配置。Run `id` 规则见 §8。
 
-规则：
+### 9.2 `layout.py` / `paths.py` / `errors.py`
 
-1. **prepare / execute** 可在 `state` 里放 runtime 对象（供本 Run 计算）。
-2. **summarize**（及任何写入 Result 的路径）只写入 **可 JSON 化投影**；默认丢弃键如 `train_loader`、`test_loader`、`module`、`optimizer`（实现可集中在 `flow/summarize` 或各层 `to_result_snapshot()`）。
-3. 需要持久化的大对象（权重、缓存）走 **Asset 文件**，Result 只记路径。
-4. Control 契约 / `validate_result` 应假设 Result 已是纯 JSON 友好 mapping。
+| 符号 | 职责 |
+|------|------|
+| `ArtifactLayout` | 一次 Run 的路径句柄（含 `study_dir`） |
+| `artifact_layout(study_dir, run_dir)` | 根为 `study_dir/runs/<run_dir>/` |
+| `ensure_study_layout(study_dir)` | 确保 `docs/`、`shared/`、`runs/` |
 
-推荐演进：各层运行时对象提供 `to_result_snapshot() -> dict`，summarize 只调用快照 API，而不是手工删键。
+| 成员 | 含义 |
+|------|------|
+| `root` | `…/runs/<run_dir>/` |
+| `config_path` / `result_path` / `assets_dir` | 本 Run |
+| `shared_dir` / `shared_data_dir` / `shared_model_dir` | Study 共享 asset |
+| `docs_dir` | 人文文档 |
+| `ensure()` | 创建上述目录 |
 
-`source`（如 `stub` / `torch`）应显式区分玩具路径与真数据路径，避免 `name: MNIST` 在 unit 测里默认触发下载与真训（见 [STUDY_GUIDE.md](../STUDY_GUIDE.md)）。
+index 在 **Study 根**，不在 `runs/<id>/`。`make_run_dir(id, timestamp=None)` → `<id>` 或带时间戳后缀。
+
+错误：`ArtifactError`、`MissingConfigError`、`CorruptArtifactError`。
+
+### 9.3 `config/`
+
+编排写入；Flow 不改。正文含 **`id`**（hash）及四层等字段。
+
+`load_config` / `write_config`；原子写为宜。读入纯 mapping，由 `control_from_config` 解释。业务校验在 `structure.control.contract`。
+
+写入方：包外展开 / 薄 CLI。读取方：`flow.prepare`。
+
+### 9.4 `result/`
+
+collect → summarize → Flow **write** 定稿。失败时 Runner 可直接 `write_result`。
+
+定稿宜含 `status`（`succeeded` \| `failed`）；失败时宜有 `error`。成功路径宜有 control / structure 快照 / metrics / paths。
+
+**Runtime vs 快照（必守）：** `state` 里可有 Loader / Module；result 只接受可序列化投影。summarize 丢弃 `train_loader`、`module` 等。大对象走 **asset**，result 只记路径。各层宜提供 `to_result_snapshot() -> dict`。
+
+`data.source`（`stub` / `torch`）须显式，避免 unit 误下真数据（见 STUDY_GUIDE）。
+
+### 9.5 `index.py`
+
+Study 编排清单。`rpipe.structure.artifact.index`，**不是** Flow 的 write 阶段。
+
+| 符号 | 职责 |
+|------|------|
+| `build_index(...)` | 组装 Study + Experiment 分组 + 计划中的 Run |
+| `write_index` / `load_index` | 读写 Study 根下的 index |
+| `compute_index_id` | 内容 hash（排除 `id`） |
+
+launch **之前**写出；按 Experiment 分组列 Run；可回填 status / metrics；不以扫描 result 建清单。
+
+### 9.6 `asset/`
+
+prepare / execute 读写；collect / summarize / write **不改文件内容**（write 只登记路径）。
+
+**data 的数据集、model 的权重 / checkpoint，以及日志，都走 asset。**
+
+| 位置 | 内容 |
+|------|------|
+| `shared/data/`、`shared/model/` | Study 内共享 |
+| `runs/<id>/assets/` | 本 Run |
+
+`kinds.py` 集中相对路径（cache、weights、checkpoints、logs、samples）。
+
+### 9.7 阶段权限
+
+| Phase | config | asset | result |
+|-------|--------|-------|--------|
+| prepare | 读 | 读写 | — |
+| execute | — | 读写 | — |
+| collect | — | — | 内存 |
+| summarize | — | — | 内存 |
+| write | — | 读路径列表 | 写定稿 |
+| Runner（失败） | — | — | 尽量写 `failed` |
+
+### 9.8 与 control 契约
+
+| 层次 | 位置 | 做什么 |
+|------|------|--------|
+| 字节 / 格式 | `artifact/*/format.py`、`io.py` | 解析 mapping、原子写 |
+| 业务契约 | `structure/control/contract.py` | 字段、result 必选键（含 `status`） |
+| 消费方 | Study / autoresearch | 读 result / index；需要时再读 config |
+
+不在 artifact 下建 `schema/` 包。测试落在 `tests/rpipe/structure/artifact/`。
 
 ---
 
 ## 10. 演进
 
-1. 编排：Study → Experiment → Run；Artifact **挂在 Study 下**（共享 data/model + 按 Run 的 Result）。
-2. 配置：`experiment_config` ←套上— `run_config` → `Control`；Study 侧用 `study.yaml` 声明变量轴（见 STUDY_GUIDE）。
-3. Result 快照契约（§9.1）先文档后单测固化。
-4. Flow 阶段：`index` 更名为 **`persist`**（定稿写 Result）；其后增加 **`process`**（见 CONCEPT / flow 分册）。
+1. 编排：Study → Experiment → Run；artifact 挂在 Study 下（`shared/` + `runs/<id>/`）。
+2. 配置：基底 ⊕ 展开 → run config → control；`study.yaml` 声明 `axes` / `seeds`（见 STUDY_GUIDE）。
+3. result 快照契约（§9.4）先文档后单测固化。
+4. Flow：summarize 之后是 **write**（写 result），再 **process**。

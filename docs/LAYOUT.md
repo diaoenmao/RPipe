@@ -1,72 +1,63 @@
 # Layout
 
-本文定义 **RPipe** 仓库的目录约定（不含最底层文件）。前置阅读 [CONCEPT.md](CONCEPT.md)。模块职责见 [CODE_STRUCTURE.md](CODE_STRUCTURE.md)。
+本文定义 **RPipe** 仓库目录约定（不含最底层叶文件）。前置阅读 [CONCEPT.md](CONCEPT.md)。模块细则见 [CODE_STRUCTURE.md](CODE_STRUCTURE.md)。
 
-可安装库包名为 **`rpipe`**，源码根为 `src/rpipe/`。目录只映射 CONCEPT 概念树，不按现状实现或第三方名单倒推。
+可安装包名 **`rpipe`**，源码根 `src/rpipe/`。目录只映射 CONCEPT。
 
 ---
 
 ## 1. 导读
 
-本文定清目录树：`src/rpipe/` 与 `tests/rpipe/` 同构；`structure/` 只到下一层。不列叶文件；Study 实例见 §4。
-
-与 CONCEPT 对齐的要点：
+库内两柱：`structure/`、`flow/`。artifact 在 **`structure/artifact/`**。Study 在包外 `studies/`。
 
 | 概念 | 目录落点 |
 |------|----------|
-| **Study** | `studies/<name>/` — 一轮研究的编排与产物根 |
-| **Experiment（配方）** | **概念**；磁盘上是 Study 内的 `experiment_config.yaml`（**没有**顶层 `experiments/`） |
-| **Run** | `studies/<name>/runs/<id>/` — Config / Result / 本 Run assets |
-| **Structure** | `src/rpipe/structure/` |
-| **Flow** | `src/rpipe/flow/` — prepare → … → **persist** → **process** |
-| **Artifact（逻辑）** | Study 下的 `shared/` + `runs/`；人文材料在 `docs/` |
-| **Study runner** | `src/rpipe/study/` — `python -m rpipe study run <study_dir>` |
+| **Study** | `studies/<name>/` |
+| **Experiment** | 逻辑分组（**index**）；无顶层文件夹 |
+| **Run** | `studies/<name>/runs/<id>/` |
+| **structure** | `src/rpipe/structure/`：`api`、`control`、四层、**artifact** |
+| **flow** | `src/rpipe/flow/`：每阶段一个子包 |
 
-**Run 目录名：** Config 内 **`id`** = 除 `id`/`description` 外内容的 hash（**含 tags**）；同 `id` 多次存储时用 **`<id>_<timestamp>`**。
+**Run 目录名：** config 的 `id` = 除 `id` / `description` 外内容的 hash（含 tags、seed）。同 id 多次存储可用时间戳后缀。
 
-读写边界：
+读写：
 
-- **Config**：Study runner 写入 `runs/<id>/`；**prepare 只读**
-- **Result**：collect / summarize / **persist**；**process** 可派生
-- **Asset**：`shared/` Study 内复用；`runs/<id>/assets/` 本 Run
+- **config**：编排写入 `runs/<id>/`；prepare 只读
+- **result**：summarize / **write** 写入；process 可派生
+- **asset**：data / model 的磁盘文件（数据集、权重、checkpoint）以及日志等，落在 `shared/` 或 `runs/<id>/assets/`
 
 ---
 
-## 2. 概念与路径总览
+## 2. 概念与路径
 
 ```mermaid
 flowchart TB
-  subgraph workspace [studies/]
-  study[Study tree]
+  subgraph outside [包外]
+    studies[studies/ Study]
   end
   subgraph lib [src/rpipe/]
-  study_pkg[study runner]
-  structure[structure/]
-  flow[flow/]
-  artifact_io[artifact/]
+    structure[structure/]
+    flow[flow/]
   end
-  study -->|study.yaml| study_pkg
-  study_pkg -->|写 Config / index| study
-  study_pkg -->|launch Flow| flow
+  studies -->|展开 config / 调 Flow| flow
   flow --> structure
-  flow --> artifact_io
-  flow -->|读 Config 写 Result| study
+  flow -->|读 config 写 result 等| studies
 ```
 
-| 概念 | 仓库路径 | 说明 |
-|------|----------|------|
-| Study | `studies/<study>/` | 编排 + 产物；入口 `rpipe study run` |
-| 配方文件 | `…/experiment_config.yaml` | Experiment 概念的落盘 |
-| Run | `…/runs/<id>/` | Config / Result / assets |
-| 共享资源 | `…/shared/{data,model}/` | Study 内各 Run 共用 |
-| 人文文档 | `…/docs/` | PLAN / STUDY_REPORT |
-| Flow | `src/rpipe/flow/{prepare,execute,collect,summarize,persist,process}/` | |
-| Study 编排 | `src/rpipe/study/` | 解析 study.yaml、展开、launch |
-| Artifact IO | `src/rpipe/artifact/` | layout / config / result / index.json |
+| 概念 | 路径 | 说明 |
+|------|------|------|
+| Study | `studies/<study>/` | 编排壳 + artifact 根 |
+| 基底配置 | Study 目录下的 experiment 基底文件 | Study 默认值 |
+| Run | `…/runs/<id>/` | config / result / assets |
+| 共享与文档 | `…/shared/`、`…/docs/` | Study 级。`shared/` 里的 data / model 文件属于 **asset** |
+| structure | `src/rpipe/structure/` | api、control、data、model、algorithm、system、artifact |
+| flow | `src/rpipe/flow/<phase>/` | prepare / execute / collect / summarize / write / process |
 
 ---
 
-## 3. 目录树
+## 3. 库内目录树
+
+`src/rpipe/` 与 `tests/rpipe/` 同构。`structure/` 只展到下一层。
 
 ```
 RPipe/
@@ -79,33 +70,39 @@ RPipe/
         model/
         algorithm/
         system/
+        artifact/
       flow/
         prepare/
         execute/
         collect/
         summarize/
-        persist/
+        write/
         process/
-        index/                 # 兼容别名 → persist
-      study/                   # Study runner
-      artifact/
-        config/
-        result/
-        asset/
-  studies/                     # 包外 Study（原 examples/）
+      cli.py
+  studies/
   docs/
   tests/
-    rpipe/                     # 与 src/rpipe/ 同构镜像
+    rpipe/
 ```
 
-### 3.1 每个 Study 的固定 layout（权威）
+| flow 子包 | 阶段 |
+|-----------|------|
+| `prepare/` | 读 config，落地 structure |
+| `execute/` | 计算 |
+| `collect/` | 收观测 |
+| `summarize/` | result 草稿 |
+| `write/` | 把 result 写入 artifact |
+| `process/` | write 后派生（可空） |
+
+---
+
+## 4. Study 目录
 
 ```text
 studies/<study>/
   study.yaml
-  index.json
+  index
   experiment_config.yaml
-  run.py                      # 可选薄包装；推荐 CLI
   docs/
     PLAN.md
     STUDY_REPORT.md
@@ -119,39 +116,40 @@ studies/<study>/
       assets/
 ```
 
-由 `ensure_study_layout` / `artifact_layout` 保证 `docs/`、`shared/`、`runs/` 存在。
-
-| 成员 | 写入方 | 说明 |
-|------|--------|------|
-| `docs/` | 人 / process | 计划与报告；**可入库** |
-| `shared/` | prepare | 数据与可复用模型缓存；默认不入库 |
-| `runs/` | Study runner / Flow | 每次 Run；默认不入库 |
-| `index.json` | Study runner（launch 前） | 编排清单 |
+| 成员 | 说明 |
+|------|------|
+| `docs/` | 计划与报告；可入库 |
+| `shared/` | Study 内共享 asset（data / model 文件）；默认不入库 |
+| `runs/` | 每次 Run；默认不入库 |
+| `index` | launch 前编排清单 |
+| `shared/data/`、`shared/model/` | structure data / model 的落盘 |
+| `runs/<id>/assets/` | 本 Run 的 asset（checkpoint、日志等） |
 
 ---
 
-## 4. 调用关系
+## 5. 调用关系
 
 ```
-python -m rpipe study run studies/mnist_train_size
+studies/<name>/study.yaml
         │
-        ├─► 读 study.yaml + experiment_config.yaml
+        ▼
+  包外编排 / 薄 CLI
+        │
         ├─► 写 runs/<id>/config.yaml
-        ├─► 写 index.json
-        └─► FlowRunner → persist → process
+        ├─► 写 index
+        └─► FlowRunner（structure + flow）
                     │
                     ▼
-            runs/<id>/result.json
-            shared/data/…（如 MNIST 缓存）
+            runs/<id>/ 下的 result 与 assets
+            shared/ 下的 data / model asset
 ```
 
 ---
 
-## 5. 测试镜像
+## 6. 测试镜像
 
 | 测试树 | 对应 |
 |--------|------|
-| `tests/rpipe/` | `src/rpipe/` |
-| Study 入口 e2e | `tests/e2e/`（指向 `studies/…`） |
-
-不再镜像已删除的 `examples/`。
+| `tests/rpipe/structure/` | `src/rpipe/structure/` |
+| `tests/rpipe/flow/` | `src/rpipe/flow/` |
+| e2e | `tests/e2e/` → `studies/…` |
