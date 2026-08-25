@@ -1,4 +1,4 @@
-"""Study mnist_train_size — prefer: python -m rpipe study run studies/mnist_train_size"""
+"""Study mnist_train_size — prefer: python -m rpipe run studies/mnist_train_size"""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ if str(_SRC) not in sys.path:
 
 
 def main() -> int:
-    from rpipe.study import run_study
+    from rpipe.cli import run_study
 
     out = run_study(Path(__file__).resolve().parent)
     for path in out['configs']:

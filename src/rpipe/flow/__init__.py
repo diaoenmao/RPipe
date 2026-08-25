@@ -1,4 +1,4 @@
-"""Flow: prepare → execute → collect → summarize → persist → process."""
+"""Flow: prepare → execute → collect → summarize → write → process."""
 
 from rpipe.flow.context import FlowContext
 from rpipe.flow.runner import FlowRunner, PHASES

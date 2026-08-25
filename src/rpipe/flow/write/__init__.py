@@ -1,9 +1,9 @@
-"""persist: finalize Result and write result.json (formerly flow.index)."""
+"""write: serialize Result and persist result.json."""
 
 from __future__ import annotations
 
-from rpipe.artifact.asset import ensure_assets
-from rpipe.artifact.result import write_result
+from rpipe.structure.artifact.asset import ensure_assets
+from rpipe.structure.artifact.result import write_result
 from rpipe.flow.context import FlowContext
 
 

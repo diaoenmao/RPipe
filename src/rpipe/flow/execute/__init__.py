@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from rpipe.artifact.asset import write_text_asset
+from rpipe.structure.artifact.asset import write_text_asset
 from rpipe.flow.context import FlowContext
 from rpipe.structure.algorithm import eval as eval_algo
 from rpipe.structure.algorithm import inference, train

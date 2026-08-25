@@ -1,6 +1,6 @@
-"""Unified Study ``index.json`` (orchestration plan; before Flow).
+"""Study ``index.json`` — orchestration plan written before Flow.
 
-Module: ``rpipe.artifact.index`` — not the Flow ``index`` phase (see CONCEPT §6.4).
+This is **not** a Flow phase. Flow serializes a Run via ``flow.write``.
 """
 
 from __future__ import annotations
@@ -16,6 +16,42 @@ INDEX_NAME = 'index.json'
 
 def index_path(study_dir: Path | str) -> Path:
     return Path(study_dir) / INDEX_NAME
+
+
+def _get_dotted(mapping: dict[str, Any], dotted: str) -> Any:
+    cur: Any = mapping
+    for key in dotted.split('.'):
+        if not isinstance(cur, dict):
+            return None
+        cur = cur.get(key)
+    return cur
+
+
+def experiment_entries(
+    *,
+    configs: list[tuple[Path, dict[str, Any]]],
+    axis_keys: list[str],
+) -> list[dict[str, Any]]:
+    """Group Run configs by Experiment factors (axes, excluding seed)."""
+    groups: dict[str, dict[str, Any]] = {}
+    order: list[str] = []
+    for path, cfg in configs:
+        factors = {key: _get_dotted(cfg, key) for key in axis_keys}
+        token = json.dumps(factors, sort_keys=True, default=str)
+        if token not in groups:
+            groups[token] = {'factors': factors, 'runs': []}
+            order.append(token)
+        groups[token]['runs'].append(
+            {
+                'id': cfg.get('id'),
+                'seed': cfg.get('seed'),
+                'description': cfg.get('description'),
+                'tags': cfg.get('tags') or [],
+                'run_dir': path.parent.name,
+                'config': str(path),
+            }
+        )
+    return [groups[key] for key in order]
 
 
 def build_index(

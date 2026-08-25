@@ -21,7 +21,7 @@ pip install -e ".[dev]"
 ## 目录（摘要）
 
 ```
-src/rpipe/{structure,flow,artifact,study}
+src/rpipe/{structure,flow}   # artifact 在 structure/artifact/
 studies/<name>/{docs,shared,runs,study.yaml,experiment_config.yaml}
 ```
 
@@ -30,8 +30,8 @@ studies/<name>/{docs,shared,runs,study.yaml,experiment_config.yaml}
 ## 快速运行
 
 ```bash
-# 一条命令跑 Study（读 study.yaml → Config + index → Flow）
-python -m rpipe study run studies/mnist_seeds
+# 薄 CLI：读 study.yaml → Config + index → Flow
+python -m rpipe run studies/mnist_seeds
 
 # 或薄包装
 python studies/mnist_seeds/run.py

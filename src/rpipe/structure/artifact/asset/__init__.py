@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from rpipe.artifact.layout import ArtifactLayout
+from rpipe.structure.artifact.layout import ArtifactLayout
 
 
 def ensure_assets(layout: ArtifactLayout) -> Path:

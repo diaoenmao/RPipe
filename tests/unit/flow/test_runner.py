@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from rpipe.artifact import artifact_layout, load_result, write_config, write_result, validate_result
+from rpipe.structure.artifact import artifact_layout, load_result, write_config, write_result, validate_result
 from rpipe.flow import FlowContext, FlowRunner
 
 

@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from rpipe.study import run_study
+from rpipe.cli import run_study
+from rpipe.structure.artifact import load_index, load_result
 
 
 def test_mnist_seeds_study_runner_smoke(tmp_path: Path):
@@ -19,10 +20,9 @@ def test_mnist_seeds_study_runner_smoke(tmp_path: Path):
         study,
         ignore=shutil.ignore_patterns('runs', 'shared', 'index.json', '__pycache__'),
     )
-    # only seed 0 for smoke speed
     yaml_path = study / 'study.yaml'
     text = yaml_path.read_text(encoding='utf-8')
-    text = text.replace('seed: [0, 1]', 'seed: [0]')
+    text = text.replace('seeds: [0, 1]', 'seeds: [0]')
     yaml_path.write_text(text, encoding='utf-8')
 
     out = run_study(study)
@@ -30,5 +30,11 @@ def test_mnist_seeds_study_runner_smoke(tmp_path: Path):
     assert len(out['configs']) == 1
     assert len(out['results']) == 1
     assert out['results'][0].is_file()
+    result = load_result(out['results'][0])
+    assert result['status'] == 'succeeded'
+    index = load_index(study)
+    assert len(index['experiments']) == 1
+    assert index['experiments'][0]['factors'] == {}
+    assert index['experiments'][0]['runs'][0]['seed'] == 0
     assert (study / 'shared' / 'data').is_dir()
     assert (study / 'docs').is_dir()

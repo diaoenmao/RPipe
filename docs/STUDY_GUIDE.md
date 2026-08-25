@@ -23,7 +23,7 @@
 
 1. 写好 Study 基底 `experiment_config.yaml`  
 2. 填 **`study.yaml`**：`axes`（实验变量）+ **`seeds`**（复测）+ tags  
-3. `python -m rpipe study run studies/<name>` → Config + `index.json` + Flow  
+3. `python -m rpipe run studies/<name>` → Config + `index` + Flow  
 4. 读 `runs/<id>/result.json`；按 Experiment 聚合后写 **`docs/STUDY_REPORT.md`**
 
 ---
@@ -101,14 +101,14 @@ run_description: "train_size={train_size} seed={seed}"
 
 ---
 
-## 6. Flow 阶段名（persist / process）
+## 6. Flow 阶段名（write / process）
 
 | 阶段 | 干什么 |
 |------|--------|
-| **persist** | 写入 `runs/<id>/result.json`（旧名 `index` 阶段） |
+| **write** | 写入 `runs/<id>/result.json` |
 | **process** | 定稿后派生：按 Experiment 聚合、相对 baseline Δ 等（可先空） |
 
-Study 的 **`index.json`** = 编排清单，≠ Flow persist。
+Study 的 **`index`** = 编排清单（按 Experiment 分组列 Run），≠ Flow write。
 
 ---
 

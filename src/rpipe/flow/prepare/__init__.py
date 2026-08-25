@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from rpipe.artifact.asset import ensure_assets, write_text_asset
-from rpipe.artifact.config import load_config
+from rpipe.structure.artifact.asset import ensure_assets, write_text_asset
+from rpipe.structure.artifact.config import load_config
 from rpipe.flow.context import FlowContext
 from rpipe.structure.control import control_from_config
 from rpipe.structure.data import prepare_data

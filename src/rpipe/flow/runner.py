@@ -5,13 +5,13 @@ from __future__ import annotations
 from importlib import import_module
 from pathlib import Path
 
-from rpipe.artifact.result import STATUS_FAILED, write_result
+from rpipe.structure.artifact.result import STATUS_FAILED, write_result
 from rpipe.flow.context import FlowContext
 
-PHASES = ('prepare', 'execute', 'collect', 'summarize', 'persist', 'process')
+PHASES = ('prepare', 'execute', 'collect', 'summarize', 'write', 'process')
 
-# Old CLI / callers may still pass ``index``; map to ``persist``.
-_PHASE_ALIASES = {'index': 'persist'}
+# Old callers may still pass ``index`` / ``persist``; map to ``write``.
+_PHASE_ALIASES = {'index': 'write', 'persist': 'write'}
 
 
 class FlowRunner:

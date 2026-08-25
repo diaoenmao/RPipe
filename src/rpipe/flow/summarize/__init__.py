@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from rpipe.artifact.result import STATUS_SUCCEEDED
+from rpipe.structure.artifact.result import STATUS_SUCCEEDED
 from rpipe.flow.context import FlowContext
 
 # Runtime handles must not enter Result JSON.

@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from rpipe.artifact.layout import ArtifactLayout
+from rpipe.structure.artifact.layout import ArtifactLayout
 from rpipe.structure.control import Control
 
 

@@ -24,6 +24,6 @@ Layout: ../index.json ; ../runs/<id>/result.json ; ../shared/data/
 ## 3. Reproduce
 
 `
-python -m rpipe study run studies/mnist_train_size
+python -m rpipe run studies/mnist_train_size
 `
 

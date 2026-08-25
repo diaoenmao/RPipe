@@ -10,7 +10,7 @@ _SRC = Path(__file__).resolve().parents[3] / 'src'
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
-from rpipe.artifact import artifact_layout, load_config
+from rpipe.structure.artifact import artifact_layout, load_config
 from rpipe.flow import FlowContext, FlowRunner
 
 
