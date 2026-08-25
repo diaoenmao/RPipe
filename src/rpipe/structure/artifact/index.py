@@ -27,10 +27,20 @@ def _get_dotted(mapping: dict[str, Any], dotted: str) -> Any:
     return cur
 
 
+def _config_ref(path: Path, study_dir: Path | None) -> str:
+    if study_dir is None:
+        return str(path)
+    try:
+        return path.resolve().relative_to(Path(study_dir).resolve()).as_posix()
+    except ValueError:
+        return str(path)
+
+
 def experiment_entries(
     *,
     configs: list[tuple[Path, dict[str, Any]]],
     axis_keys: list[str],
+    study_dir: Path | None = None,
 ) -> list[dict[str, Any]]:
     """Group Run configs by Experiment factors (axes, excluding seed)."""
     groups: dict[str, dict[str, Any]] = {}
@@ -48,7 +58,7 @@ def experiment_entries(
                 'description': cfg.get('description'),
                 'tags': cfg.get('tags') or [],
                 'run_dir': path.parent.name,
-                'config': str(path),
+                'config': _config_ref(Path(path), study_dir),
             }
         )
     return [groups[key] for key in order]

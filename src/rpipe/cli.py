@@ -165,6 +165,7 @@ def write_study_index(
     experiments = experiment_entries(
         configs=loaded,
         axis_keys=axis_keys_from_study(study),
+        study_dir=study_dir,
     )
     index = build_index(
         study=str(study.get('study') or study_dir.name),

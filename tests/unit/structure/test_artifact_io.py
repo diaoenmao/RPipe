@@ -53,7 +53,9 @@ def test_index_grouped_by_experiment_factors(tmp_path: Path):
     experiments = experiment_entries(
         configs=cfgs,
         axis_keys=['data.config.train_size'],
+        study_dir=study_dir,
     )
+    assert experiments[0]['runs'][0]['config'] == 'runs/a/config.yaml'
     assert len(experiments) == 2
     assert experiments[0]['factors'] == {'data.config.train_size': 500}
     assert [r['seed'] for r in experiments[0]['runs']] == [0, 1]

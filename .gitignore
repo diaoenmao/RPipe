@@ -120,6 +120,7 @@ res/
 # Study run trees & shared caches — regenerate via Study; do not commit
 studies/**/runs/
 studies/**/shared/
+studies/**/index.json
 # docs/ under Study is human narrative — keep tracked
 
 .idea/

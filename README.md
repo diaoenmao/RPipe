@@ -31,10 +31,7 @@ studies/<name>/{docs,shared,runs,study.yaml,experiment_config.yaml}
 
 ```bash
 # 薄 CLI：读 study.yaml → Config + index → Flow
-python -m rpipe run studies/mnist_seeds
-
-# 或薄包装
-python studies/mnist_seeds/run.py
+python -m rpipe run studies/mnist_train_size
 
 pytest
 ```

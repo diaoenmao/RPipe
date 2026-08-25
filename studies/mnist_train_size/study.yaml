@@ -23,8 +23,8 @@ fixed:
 axes:
   data.config.train_size: [500, 2000, 8000]
 
-# Runs per Experiment
-seeds: [0]
+# Runs per Experiment (3 seeds per control / Experiment cell)
+seeds: [0, 1, 2]
 
 tags:
   - when:

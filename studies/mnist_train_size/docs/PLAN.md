@@ -26,7 +26,7 @@
 
 | 项 | 取值 |
 |----|------|
-| `seed` | `0` |
+| `seeds` | `0, 1, 2`（每个 Experiment 三次 Run） |
 | `data.name` | `MNIST` |
 | `model.name` | `linear`（784→10） |
 | `algorithm.mode` | `train`（同一次 Run 内训完并在 test 上评估） |
@@ -46,20 +46,17 @@
 ## 6. 编排顺序（对齐 CONCEPT §5.6）
 
 1. 写 / 确认 Experiment 基底 `experiment_config.yaml`（真实训练默认）
-2. Study `grid` 按 `train_size` 展开 → 各 Run Artifact `config.yaml`（含 `description` / `tags`）
-3. 写 Study `index.json`（**launch 之前**）
-4. `launch` 跑 Flow：prepare → execute → collect → summarize → index
-5. 汇总 Result → `RESULTS.md`（含卡点）
+2. `python -m rpipe run studies/mnist_train_size` → config + index + Flow
+3. 汇总 Result → `STUDY_REPORT.md`（含卡点）
 
 ## 7. 成功标准
 
-- 三次 Run 均 `status: succeeded`
+- 3 Experiment × 3 seed = 9 次 Run 均 `status: succeeded`
 - 各 Result 含真实 `loss` 与 `accuracy`（非 stub 0.0 占位）
-- Study `index.json` 能指向三次 Config；带 `baseline` 的 Run 可识别
-- 本文流程走通；**卡点记入 RESULTS.md**，用于反哺壳子设计
+- index 按 `train_size` 分组，每组 3 条 Run；`train_size=500` 带 `baseline`
+- 本文流程走通；**卡点记入 STUDY_REPORT.md**
 
 ## 8. 刻意不做什么
 
 - 不引入独立 baseline 对象 / Findings / MCP
-- 不扩成多 seed 方差分析（可后续 Study）
 - 不为「好看」加 UI

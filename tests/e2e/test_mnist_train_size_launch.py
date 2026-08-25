@@ -4,17 +4,13 @@ from rpipe.cli import run_study
 from rpipe.structure.artifact import load_index, load_result
 
 
-def test_mnist_seeds_study_runner_smoke(tmp_path: Path):
-    """Copy minimal study into tmp and run one seed via study.yaml path.
-
-    Uses the real studies/mnist_seeds recipe files but a disposable study_dir
-    so we do not pollute the repo tree during CI.
-    """
+def test_mnist_train_size_study_runner_smoke(tmp_path: Path):
+    """Copy the real study into tmp; run one Experiment so CI stays fast."""
     import shutil
 
     repo = Path(__file__).resolve().parents[2]
-    src = repo / 'studies' / 'mnist_seeds'
-    study = tmp_path / 'mnist_seeds'
+    src = repo / 'studies' / 'mnist_train_size'
+    study = tmp_path / 'mnist_train_size'
     shutil.copytree(
         src,
         study,
@@ -22,7 +18,11 @@ def test_mnist_seeds_study_runner_smoke(tmp_path: Path):
     )
     yaml_path = study / 'study.yaml'
     text = yaml_path.read_text(encoding='utf-8')
-    text = text.replace('seeds: [0, 1]', 'seeds: [0]')
+    text = text.replace(
+        'data.config.train_size: [500, 2000, 8000]',
+        'data.config.train_size: [500]',
+    )
+    text = text.replace('seeds: [0, 1, 2]', 'seeds: [0]')
     yaml_path.write_text(text, encoding='utf-8')
 
     out = run_study(study)
@@ -34,7 +34,8 @@ def test_mnist_seeds_study_runner_smoke(tmp_path: Path):
     assert result['status'] == 'succeeded'
     index = load_index(study)
     assert len(index['experiments']) == 1
-    assert index['experiments'][0]['factors'] == {}
+    assert index['experiments'][0]['factors'] == {'data.config.train_size': 500}
     assert index['experiments'][0]['runs'][0]['seed'] == 0
+    assert index['experiments'][0]['runs'][0]['tags'] == ['baseline']
     assert (study / 'shared' / 'data').is_dir()
     assert (study / 'docs').is_dir()
