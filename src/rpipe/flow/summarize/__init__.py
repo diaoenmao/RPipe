@@ -1,34 +1,31 @@
-"""summarize: assemble Result body from Control + collected metrics."""
+"""summarize: serializable result_draft only."""
 
 from __future__ import annotations
 
 from typing import Any
 
-from rpipe.structure.artifact.result import STATUS_SUCCEEDED
 from rpipe.flow.context import FlowContext
-
-# Runtime handles must not enter Result JSON.
-_DROP_KEYS = frozenset({'train_loader', 'test_loader', 'module', 'optimizer'})
+from rpipe.structure.artifact.result import STATUS_SUCCEEDED
 
 
-def _safe_structure_snapshot(mapping: Any) -> dict[str, Any]:
-    if not isinstance(mapping, dict):
+def _snapshot(obj: Any) -> dict[str, Any]:
+    if obj is None:
         return {}
-    out: dict[str, Any] = {}
-    for key, value in mapping.items():
-        if key in _DROP_KEYS:
-            continue
-        if isinstance(value, (bool, int, float, str)) or value is None:
-            out[key] = value
-        elif isinstance(value, dict):
-            out[key] = _safe_structure_snapshot(value)
-        elif isinstance(value, (list, tuple)) and all(
-            isinstance(x, (bool, int, float, str)) or x is None for x in value
-        ):
-            out[key] = list(value)
-        else:
-            out[key] = f'<{type(value).__name__}>'
-    return out
+    method = getattr(obj, 'to_result_snapshot', None)
+    if callable(method):
+        return method()
+    if isinstance(obj, dict):
+        drop = {'train_loader', 'test_loader', 'module', 'optimizer', 'logger', 'tracker'}
+        out: dict[str, Any] = {}
+        for key, value in obj.items():
+            if key in drop:
+                continue
+            if isinstance(value, (bool, int, float, str)) or value is None:
+                out[key] = value
+            else:
+                out[key] = f'<{type(value).__name__}>'
+        return out
+    return {'type': type(obj).__name__}
 
 
 def run(ctx: FlowContext) -> None:
@@ -39,15 +36,17 @@ def run(ctx: FlowContext) -> None:
         'status': STATUS_SUCCEEDED,
         'control': ctx.control.to_dict(),
         'structure': {
-            'data': _safe_structure_snapshot(ctx.state.get('data')),
-            'model': _safe_structure_snapshot(ctx.state.get('model')),
-            'system': _safe_structure_snapshot(ctx.state.get('system')),
+            'data': _snapshot(ctx.state.get('data')),
+            'model': _snapshot(ctx.state.get('model')),
+            'system': _snapshot(ctx.state.get('system')),
         },
         'metrics': collected.get('metrics') or {},
         'paths': {
             'artifact': str(ctx.layout.root),
             'config': str(ctx.layout.config_path),
             'assets': str(ctx.layout.assets_dir),
+            'tracker': str(ctx.layout.assets_dir / 'tracker'),
+            'logs': str(ctx.layout.assets_dir / 'logs'),
         },
         'study': str(ctx.study_dir),
     }

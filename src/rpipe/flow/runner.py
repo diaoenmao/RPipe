@@ -5,7 +5,7 @@ from __future__ import annotations
 from importlib import import_module
 from pathlib import Path
 
-from rpipe.structure.artifact.result import STATUS_FAILED, write_result
+from rpipe.structure.artifact.result import STATUS_FAILED, STATUS_SUCCEEDED, write_result
 from rpipe.flow.context import FlowContext
 
 PHASES = ('prepare', 'execute', 'collect', 'summarize', 'write', 'process')
@@ -33,7 +33,19 @@ class FlowRunner:
         return ctx.layout.result_path
 
     def _write_failed_result(self, ctx: FlowContext, exc: BaseException) -> None:
-        """Best-effort failed Result; must not hide the original error."""
+        """Best-effort failed Result; must not hide the original error.
+
+        process failure must not overwrite an already-written succeeded result.
+        """
+        try:
+            from rpipe.structure.artifact.result import load_result
+
+            if ctx.layout.result_path.is_file():
+                existing = load_result(ctx.layout.result_path)
+                if existing.get('status') == STATUS_SUCCEEDED:
+                    return
+        except Exception:
+            pass
         try:
             draft = dict(ctx.state.get('result_draft') or {})
             draft['status'] = STATUS_FAILED

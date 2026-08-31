@@ -57,7 +57,7 @@ src/rpipe/
 |----|------|
 | `structure.api` | 四层对外门面 |
 | `structure.control` | control 对象、config 合并、id hash、契约 |
-| `structure.data` / `model` / `algorithm` / `system` | 四层实现 |
+| `structure.data` / `model` / `algorithm` / `system` | 四层实现。algorithm 含 **AlgorithmTracker**（数字）；system 含 **Logger**（文本） |
 | `structure.artifact` | Study 树路径与 config / result / asset / index 的读写 |
 | `flow.*` | 一次 Run：prepare → execute → collect → summarize → write → process |
 
@@ -93,6 +93,7 @@ artifact 单测落在 `tests/rpipe/structure/artifact/`。
 
 ## 5. 读法
 
-1. CONCEPT → LAYOUT → **本总览**
-2. 改某柱打开对应分册
-3. 包外 Study 只依赖库公开入口
+1. [CONCEPT.md](CONCEPT.md) → [LAYOUT.md](LAYOUT.md) → **本总览**
+2. 改某柱打开对应分册（structure / flow）
+3. 开实验看 [STUDY_GUIDE.md](STUDY_GUIDE.md)
+4. 包外 Study 只依赖库公开入口（`python -m rpipe`、`rpipe.structure.artifact`）

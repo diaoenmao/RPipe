@@ -27,7 +27,7 @@ def test_full_flow_writes_succeeded_status(tmp_path: Path):
     assert ctx.control is not None
     assert ctx.control.id
     assert ctx.control.seed == 0
-    assert 'accuracy' in result.get('metrics', {}) or 'loss' in result.get('metrics', {})
+    assert 'train_loss' in result.get('metrics', {}) or 'accuracy' in result.get('metrics', {})
 
 
 def test_failed_flow_writes_failed_result(tmp_path: Path):

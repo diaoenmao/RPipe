@@ -41,8 +41,10 @@ studies/<name>/
   shared/{data,model}/       # Study 级 asset，多次 Run 共用
   runs/<id>/
     config.yaml              # 这一次 Run 的完整 config
-    result.json              # Flow write 落盘
-    assets/                  # 本 Run 日志等
+    result.json              # Flow write：摘要（status / metrics / paths）
+    assets/
+      tracker/               # AlgorithmTracker 数字曲线
+      logs/                  # Logger 文本（与终端同款，必写）
 ```
 
 现成例子：
@@ -192,7 +194,9 @@ run_description: "train_size={train_size} seed={seed}"
 }
 ```
 
-**result**（`runs/<id>/result.json`）：`status`、`metrics`（如 `accuracy` / `loss`）、`control`、`paths`。成功则 `status: succeeded`。
+**result**（`runs/<id>/result.json`）：`status`、`metrics`（如 `train_loss` / `accuracy`）、`control`、`paths`。成功则 `status: succeeded`。
+
+`metrics.train_loss` 应是 AlgorithmTracker **最后一段 train mean**，不是最后一个 batch 的 CE。完整曲线在 `runs/<id>/assets/tracker/`；终端同款文本**必写** `assets/logs/`。`process` 若聚合 Experiment，只吃各 Run **摘要**。
 
 结论按 **Experiment** 聚合后写进 `docs/STUDY_REPORT.md`（现在不会自动生成）。`process` 阶段是预留钩子（相对 baseline 的 Δ 等），目前是空操作。
 
@@ -224,6 +228,8 @@ run_description: "train_size={train_size} seed={seed}"
 | 换 MNIST 子集大小 / epoch | yaml 即可 |
 | 新数据集、新模型、新训练循环 | 改 `structure.data` / `model` / `algorithm`，再在 yaml 里点名 |
 | 改一次 Run 的阶段顺序 | 不要改；最多 `--phases` 裁剪，相对顺序不变 |
-| 自动出报告 / 跨 Run 对比表 | 尚未做；人写 `STUDY_REPORT.md`，或以后填 `flow.process` |
+| 自动出报告 / 跨 Run 对比表 | 尚未做；人写 `STUDY_REPORT.md`，或以后填 `flow.process`（只聚合 result 摘要） |
+| 训练曲线 | `assets/tracker/scalars.jsonl`（report 间隔）+ `history`（epoch 点）；不靠 TensorBoard |
+| 终端 + 硬盘日志 | **Logger**（system）必写 `assets/logs/`，每次 report **flush** |
 
 脚本里若要编程调用：`from rpipe.cli import run_study`（这是 CLI 辅助，不是第三柱）。读写路径用 `rpipe.structure.artifact`。

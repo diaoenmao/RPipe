@@ -9,9 +9,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from rpipe.structure.artifact.paths import INDEX_NAME
 from rpipe.structure.control.hashing import compute_index_id
-
-INDEX_NAME = 'index.json'
 
 
 def index_path(study_dir: Path | str) -> Path:

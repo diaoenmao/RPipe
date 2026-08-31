@@ -7,27 +7,26 @@
 
 ## 1. 拍板：Study / Experiment / Run
 
-| | Study | Experiment | Run |
-|--|-------|------------|-----|
-| 是什么 | 编排壳（index、docs、grid、shared） | **同一组实验变量**的一个点 | 该点下一次实测 |
-| seed | 声明 `seeds` | **不含** | **至少**一个 random seed |
-| 磁盘 | `studies/<name>/` | 逻辑分组（index） | `runs/<id>/` |
+与 CONCEPT 一致：Study = 编排壳 + artifact 根；Experiment = 研究因素的一个点（不含 seed，无顶层目录）；Run = 该点 × seed。`experiment_config.yaml` = Study **基底默认值**。展开：`axes` → Experiments；× `seeds` → Runs。
 
-`experiment_config.yaml` = Study **基底默认值**，不是「一个 Experiment 实例」。
-
-展开：`axes` → Experiments；× `seeds` → Runs。
+相对 DeepScientist：学 durable 契约与编排纪律，不学 OS / UI / 决策器。
 
 ---
 
-## 2. 已落地
+## 2. 已落地（相对本笔记起草时）
 
-顶层 `studies/`；layout `docs/shared/runs`；persist + 空 process；`rpipe study run`；根 `data/`/`output/` 已删；expand 支持独立 `seeds`。
+- 库内两柱 `structure` + `flow`；artifact IO 在 `structure.artifact`
+- 顶层 `studies/`：`docs/` + `shared/` + `runs/<id>/`
+- CLI：`python -m rpipe run`（`study run` 为别名）
+- Flow 阶段：prepare → execute → collect → summarize → **write** → process（process 仍可空）
+- `index.json` 按 Experiment 的 factors 分组列 Run
+- 真数据须显式 `data.source`（如 `torch`）
+- 数字 / 文本拆分已写入结构文档：**AlgorithmTracker**（algorithm）+ **Logger**（system）；实现按文档跟进
 
 ---
 
-## 3. 下一步
+## 3. 下一步（仍非权威）
 
-1. `index.json` 按 Experiment 显式分组（含 factors，下列 runs）  
-2. process：按 Experiment 聚合 Runs（均值/Δ baseline）→ `docs/`  
-3. 强制 `data.source`  
-4. 暂缓 daemon / Web
+1. 实现 AlgorithmTracker 与 system.Logger；`metrics.train_loss` 用段均值，曲线进 `assets/tracker/`，日志进 `assets/logs/`
+2. `flow.process`：按 Experiment 聚合 Runs（均值 / Δ baseline），不覆盖各 Run 的 `result.json` 正文
+3. 暂缓 daemon / Web / 决策器

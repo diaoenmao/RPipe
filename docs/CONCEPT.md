@@ -64,7 +64,7 @@ flowchart TB
 
 ## 3. 全局概念图
 
-库内实现只有两柱：**structure**（静态）与 **flow**（动态）。structure 含 `api`、`control`、四层、以及 **artifact**（IO / 路径）。config 单独成类故单独画出；Study 下的持久化整体也叫 **artifact**。
+库内实现只有两柱：**structure**（静态）与 **flow**（动态）。structure 含 `api`、`control`、四层（data / model / algorithm / system）、以及 **artifact**（IO / 路径）。Study 下的持久化整体也叫 **artifact**；其中的 **config / result / asset / index / docs** 是落盘成员，不是第三柱。
 
 ```mermaid
 flowchart TB
@@ -86,9 +86,11 @@ flowchart TB
   Flow --> write
   Flow --> process
   subgraph art [artifact]
+    docs
     config
     result
     asset
+    index
   end
   prepare --> config
   prepare <--> art
@@ -110,11 +112,13 @@ flowchart TB
 | **config** | 一次 Run 的 declarative 配置；prepare 只读 |
 | **flow** | prepare → execute → collect → summarize → write → process |
 | **artifact** | Study 下的持久化整体；库内 IO / 路径在 structure 的 **artifact** |
-| **result** | 可序列化的执行摘要 |
-| **asset** | 文件型产物。structure 的 **data / model 在磁盘上的内容都放在 asset**（数据集、权重、checkpoint 等） |
+| **result** | 可序列化的执行**摘要**（`status`、最终 metrics、路径）。逐步曲线不进 result |
+| **asset** | **文件通道**（相对 result 正文）。数据集、权重、checkpoint、AlgorithmTracker 曲线、Logger 文本都是文件，因此走 asset |
+| **AlgorithmTracker** | algorithm 层：只记数（batch mean / history / jsonl） |
+| **Logger** | system 层：只打字（stdout 与 `assets/logs/` 同一套，必写） |
 | **index** | Study 编排清单（launch 前）；**不是** Flow 阶段 |
 
-读写：config 由编排写入、Flow 不改；result 由 Flow 写入；data / model 的文件走 **asset**，经 artifact 由 prepare / execute 使用。
+读写：config 由编排写入、Flow 不改；result 由 Flow 的 **write** 写入；文件走 **asset**，经 artifact 由 prepare / execute 使用。index 由包外编排写入。
 
 ---
 
@@ -136,7 +140,7 @@ flowchart TB
 **Experiment**：含研究因素（如 `train_size`、`lr`）；不含 seed；无顶层目录。
 
 **Run**：Experiment × seed；一 Run ↔ 一 config ↔ `runs/<id>/`。  
-`id` 由 config 内容导出（含 tags、seed；不含 `description`）。`baseline` 等是 **tags**，不是独立对象。
+`id` 由 config 内容导出（含 tags、seed；**不含** `id` 与 `description`）。`baseline` 等是 **tags**，不是独立对象。
 
 ---
 
@@ -161,8 +165,8 @@ flowchart TB
 | **control** | 本 Run 对四层的指派 |
 | **data** | 运行时：输入怎么组织。落盘：数据集等文件在 artifact 的 **asset** |
 | **model** | 运行时：网络怎么构造。落盘：权重 / checkpoint 在 artifact 的 **asset** |
-| **algorithm** | 怎么算 |
-| **system** | 设备、精度、并行、执行节奏 |
+| **algorithm** | 怎么算。数字账本是本层的 **AlgorithmTracker**（曲线进 `assets/tracker/`）。周期性 test 是 train 上的 evaluator hook，不是新的 Flow 阶段 |
+| **system** | 设备、精度、并行、执行节奏；文本日志是本层的 **Logger**（终端 + 必写 `assets/logs/`）。Logger 读 AlgorithmTracker 才能打出 Loss |
 | **artifact** | IO 与路径：读写 config / result / asset，以及 Study 下的 layout |
 
 同一 Study：不同 Experiment 差在实验变量；同一 Experiment 下不同 Run 差在 seed。  
@@ -184,8 +188,8 @@ flowchart LR
 | Phase | 做什么 |
 |-------|--------|
 | **prepare** | 读 **config**，落地 structure（含 `control`）；经 **artifact** 取用/写入所需文件（含 data / model 对应的 **asset**）；不改 config |
-| **execute** | 按 structure 计算；经 **artifact** 读写文件 |
-| **collect** | 收纳观测到内存 |
+| **execute** | 按 structure 计算；每个 batch 更新 AlgorithmTracker；间隔由 system **Logger** 根据 tracker 打终端并 flush 日志文件 |
+| **collect** | 从 AlgorithmTracker（及零星 observations）收出口径稳定的最终 metrics 摘要 |
 | **summarize** | 整理可序列化的 result 草稿（含 `status`） |
 | **write** | 把 result 写入 artifact（序列化 + 落盘） |
 | **process** | 定稿后派生（Δ baseline、按 Experiment 聚合等）；可空 |
@@ -202,7 +206,7 @@ flowchart TB
   subgraph exec [execute]
     data --> algorithm
     model --> algorithm
-    algorithm --> system
+    system --> algorithm
   end
   prepare --> exec
   exec --> collect
@@ -226,7 +230,7 @@ flowchart TB
 | **docs** | 计划与报告 |
 | **config** | 每 Run 一份；编排写、prepare 读 |
 | **result** | 每 Run 一份；可序列化；含 `status` |
-| **asset** | 文件。**data 的数据集、model 的权重 / checkpoint，以及日志等，都放在 asset** |
+| **asset** | 文件通道。共享数据 / 权重在 `shared/`；本 Run 的 tracker、logs、checkpoint、样本在 `runs/<id>/assets/` |
 | **index** | 编排清单（launch 前；按 Experiment 列 Run） |
 
 ---
@@ -245,7 +249,9 @@ flowchart TB
 | 文档 | 内容 |
 |------|------|
 | [LAYOUT.md](LAYOUT.md) | 仓库目录；库内仅 structure + flow |
-| [STUDY_GUIDE.md](STUDY_GUIDE.md) | study 声明与检查清单 |
-| [code_structure/structure.md](code_structure/structure.md) | control / 四层 / artifact IO / id / result |
-| [code_structure/flow.md](code_structure/flow.md) | Flow 阶段模块 |
+| [CODE_STRUCTURE.md](CODE_STRUCTURE.md) | 库内树与依赖 |
+| [STUDY_GUIDE.md](STUDY_GUIDE.md) | 怎么开一轮 Study |
+| [code_structure/structure.md](code_structure/structure.md) | 四层 / control / AlgorithmTracker / Logger / artifact |
+| [code_structure/flow.md](code_structure/flow.md) | Flow 阶段 |
+| [TESTING.md](TESTING.md) | 测试目录与标签 |
 | [BRAINSTORM_DEEPSCIENTIST.md](BRAINSTORM_DEEPSCIENTIST.md) | 非权威对照与路线图 |

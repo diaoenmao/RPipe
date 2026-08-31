@@ -32,6 +32,14 @@ def test_mnist_train_size_study_runner_smoke(tmp_path: Path):
     assert out['results'][0].is_file()
     result = load_result(out['results'][0])
     assert result['status'] == 'succeeded'
+    assert 'accuracy' in result['metrics']
+    assert 'train_loss' in result['metrics']
+    log_path = out['results'][0].parent / 'assets' / 'logs' / 'run.log'
+    assert log_path.is_file()
+    log_text = log_path.read_text(encoding='utf-8')
+    assert 'Loss' in log_text
+    tracker_state = out['results'][0].parent / 'assets' / 'tracker' / 'tracker_state.json'
+    assert tracker_state.is_file()
     index = load_index(study)
     assert len(index['experiments']) == 1
     assert index['experiments'][0]['factors'] == {'data.config.train_size': 500}

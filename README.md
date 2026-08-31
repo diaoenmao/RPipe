@@ -4,9 +4,10 @@ Research Pipeline — **可重复、可编排、可序列化的研究执行底�
 
 设计文档：
 
-- [docs/CONCEPT.md](docs/CONCEPT.md)
-- [docs/LAYOUT.md](docs/LAYOUT.md)
-- [docs/STUDY_GUIDE.md](docs/STUDY_GUIDE.md)
+- [docs/CONCEPT.md](docs/CONCEPT.md) — 概念与边界
+- [docs/LAYOUT.md](docs/LAYOUT.md) — 目录
+- [docs/CODE_STRUCTURE.md](docs/CODE_STRUCTURE.md) — 库内两柱
+- [docs/STUDY_GUIDE.md](docs/STUDY_GUIDE.md) — 怎么开一轮 Study
 
 ---
 

@@ -1,10 +1,7 @@
-"""Structure system layer — device / IO stubs."""
+"""Structure system layer."""
 
-from __future__ import annotations
+from rpipe.structure.system.config import SystemConfig
+from rpipe.structure.system.factory import System, SystemFactory, SystemRegistry
+from rpipe.structure.system.logger import Logger
 
-from typing import Any
-
-
-def prepare_system(control_system: dict[str, Any], assets_dir) -> dict[str, Any]:
-    device = control_system.get('device', 'cpu')
-    return {'device': device, 'assets_dir': str(assets_dir), 'ready': True}
+__all__ = ['Logger', 'System', 'SystemConfig', 'SystemFactory', 'SystemRegistry']

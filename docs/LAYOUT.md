@@ -24,7 +24,7 @@
 
 - **config**：编排写入 `runs/<id>/`；prepare 只读
 - **result**：summarize / **write** 写入；process 可派生
-- **asset**：data / model 的磁盘文件（数据集、权重、checkpoint）以及日志等，落在 `shared/` 或 `runs/<id>/assets/`
+- **asset**：文件通道。data / model 文件、checkpoint、AlgorithmTracker 曲线、Logger 文本，落在 `shared/` 或 `runs/<id>/assets/`
 
 ---
 
@@ -112,8 +112,11 @@ studies/<study>/
   runs/
     <run_id>/
       config.yaml
-      result.json
+      result.json              # 摘要；曲线不在这里
       assets/
+        tracker/               # AlgorithmTracker：state / scalars.jsonl
+        logs/                  # Logger（system）：与终端同款，必写
+        checkpoints/           # 训练 checkpoint（有则写）
 ```
 
 | 成员 | 说明 |
@@ -123,7 +126,7 @@ studies/<study>/
 | `runs/` | 每次 Run；默认不入库 |
 | `index` | launch 前编排清单 |
 | `shared/data/`、`shared/model/` | structure data / model 的落盘 |
-| `runs/<id>/assets/` | 本 Run 的 asset（checkpoint、日志等） |
+| `runs/<id>/assets/` | 本 Run 的 asset：`tracker/`（数字曲线）、`logs/`（文本）、checkpoint、样本等 |
 
 ---
 

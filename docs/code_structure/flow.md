@@ -57,7 +57,9 @@ flow/
 |----|----------|----------|------|
 | `seed` | prepare | execute 等 | 已落地的 seed |
 | `data` / `model` / `system` | prepare | execute、summarize | 运行时对象（可含 Loader / Module） |
-| `observations` | prepare 初始化；execute 追加 | collect | 原始观测列表 |
+| `tracker` | prepare 构造 AlgorithmTracker；execute 每个 batch 更新 | execute、collect、Logger.report | 数字；**不**整棵进 result |
+| `logger` | prepare 经 **System** 构造 | execute | 文本；`report(tracker, split, extra)` 打终端并写 `assets/logs/` |
+| `observations` | prepare 初始化；execute 可追加短备注 | collect | 非 AlgorithmTracker 的零星观测 |
 | `execute` | execute | collect（可选） | 本阶段返回值 |
 | `collected` | collect | summarize | `{metrics, observations}` |
 | `result_draft` | summarize | write；失败回写 | 可序列化草稿 |
@@ -109,9 +111,9 @@ flowchart TD
 2. `control_from_config`；可选 `validate` 契约。
 3. `layout.ensure()` / `ensure_assets`。
 4. 若有 `seed`：固定 python / numpy / torch 等 RNG。
-5. 按 control 经 `structure.api` 建构：建议 **system → data → model**（设备与输出根先就绪）。data 缓存进 `shared/data/`，可复用权重进 `shared/model/`，本 Run 日志进 `assets/`。
+5. 按 control 经 `structure.api` 建构：建议 **system → data → model**（设备与输出根先就绪）。data 缓存进 `shared/data/`，可复用权重进 `shared/model/`。
 6. `data.source`：`stub` 不得下载；真数据必须显式（如 `torch`）。
-7. 把运行时对象放进 `state['data'|'model'|'system']`；初始化 `observations`。
+7. 把运行时对象放进 `state['data'|'model'|'system']`；构造 **AlgorithmTracker**（写 `assets/tracker/`）与 **Logger**（挂在 System 上：stdout **且** `assets/logs/`）；初始化 `observations`。
 
 **不做：** 改 config；跑训练循环；写 result。
 
@@ -121,34 +123,35 @@ flowchart TD
 
 ## 6. execute
 
-**目的：** 按本 Run 的 algorithm **做计算**。一次 Run 一个 mode（train / eval / inference）；组合多种 mode 是多次 Run，不是一次 execute 里串三个。
+**目的：** 按本 Run 的 algorithm **做计算**。一次 Run 一个 mode（train / eval / inference）。周期性 test / early stop **不是**在一次 execute 里再跑一个 Flow mode，而是 train 算法的 evaluator hook（structure.md §6.9.3），现在可空。
 
 **做：**
 
 1. 要求 `ctx.control` 已在（否则视为未 prepare）。
-2. 读 `control.algorithm` 的 mode，经 `algorithm_api` 调用对应实现，传入已落地的 data / model / system。
-3. 计算过程可写 **asset**：checkpoint、logs、inference 样本等（本 Run `assets/`；共享权重仍走 `shared/model/`）。
-4. 把逐步观测 append 到 `state['observations']`（标量、短 dict）。不要把 Module / Tensor 整棵丢进去还指望进 result。
+2. 经 `algorithm_api` 调用实现，传入 data / model / system 与 **`state['tracker']`**（AlgorithmTracker）。Logger 在 `system` 上。
+3. **每个 batch**：`tracker.evaluate` + `append(split, n=batch_size)`。
+4. **按 report 间隔**：`system.logger.report(tracker, …)`（stdout + `run.log` **立即 flush**）；AlgorithmTracker 往 jsonl 追加并 flush；写出 `tracker_state.json` 并 flush。
+5. **epoch 末**：`tracker.save()` + `reset()`，再 flush state。
+6. **execute 结束（含失败路径尽量）**：再 flush 一遍。
+7. 短备注可进 `state['observations']`。不要把 Module / Tensor / AlgorithmTracker / Logger 整棵丢进 result。
 
-**不做：** 读改 config；聚合最终表格（那是 collect / summarize）；写 result。
-
-execute 可以很长、可以流式打 log；**观测形态不稳定**，所以单独留 collect 做收口。
+**不做：** 读改 config；跨 Run 聚合；写 `result.json`。
 
 ---
 
 ## 7. collect
 
-**目的：** 把 execute（及 prepare 留下的）观测收成**一张 metrics 表 + 原始 observations 副本**，仍只在内存。
+**目的：** 收出口径稳定的最终 **metrics 摘要**，仍只在内存。逐步曲线已在 execute 写入 tracker asset；终端文本由 Logger 写出。
 
 **做：**
 
-1. 遍历 `state['observations']`。
-2. 抽出可合并的标量：`metrics` 里常见 `loss`、`accuracy` 以及 `metric` dict 的展开。后写覆盖先写，同一键以最后一次为准（除非实现改成 list；若改须在 result 契约里写明）。
-3. 写入 `state['collected'] = {metrics, observations}`。
+1. 若有 `state['tracker']`（AlgorithmTracker）：从 `mean` 抽出 `train_loss` 等；若本 Run 实际跑过 test/eval，再抽对应键（如 `accuracy`）。
+2. 仍可扫 `state['observations']` 补零星键；同一键后写覆盖先写。
+3. 写入 `state['collected'] = {metrics, observations}`。`paths.tracker` / `paths.logs` 留给 summarize/write 登记。
 
-**不做：** 碰 asset；做 JSON 友好投影（summarize 的事）；读其他 Run。
+**不做：** 改 tracker/log 文件；把 `history` 整棵拷进 metrics；读其他 Run。
 
-没有观测时 `metrics` 为空 dict，不要假装成功指标。
+没有观测且 tracker 为空时 `metrics` 为空 dict，不要假装成功指标。
 
 ---
 
@@ -218,8 +221,8 @@ flowchart TB
   wr[write]
   proc[process]
   cfg --> prep
-  prep -->|state: data model system| exe
-  exe -->|observations| col
+  prep -->|state: data model system tracker logger| exe
+  exe -->|tracker mean + observations| col
   col -->|collected| sum
   sum -->|result_draft| wr
   wr -->|result 磁盘| proc
@@ -237,10 +240,10 @@ flowchart TB
 |------|------|
 | 全链 | stub data，跑满 PHASES，磁盘上有可加载 result |
 | 失败落盘 | execute 抛错 → result `failed` + `error`，异常仍抛出 |
-| 快照 | result 无 Loader / Module |
+| 快照 | result 无 Loader / Module / AlgorithmTracker / Logger 对象 |
 | 不改 config | prepare 前后 config 字节一致 |
 | write vs index | index 在 Study 根；result 在 `runs/<id>/` |
 | process 可空 | 默认 no-op 仍退出 0 |
-| 真数据 | e2e + 显式 `data.source`；unit 用 stub |
+| AlgorithmTracker + Logger | 短训：`assets/tracker/` 有 train mean；终端与 `run.log` 有含 Loss 的行；result 的 `train_loss` 为段均值而非 last-batch |
 
 测试树：`tests/rpipe/flow/` 镜像各阶段包。

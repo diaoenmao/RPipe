@@ -1,6 +1,6 @@
 # Tests
 
-测试目录与标签遵循 [TESTING.md](../docs/TESTING.md)，并与 [LAYOUT.md](../docs/LAYOUT.md) §6、[CODE_STRUCTURE.md](../docs/CODE_STRUCTURE.md) §8 一致。
+测试目录与标签遵循 [TESTING.md](../docs/TESTING.md)，并与 [LAYOUT.md](../docs/LAYOUT.md) §6、[CODE_STRUCTURE.md](../docs/CODE_STRUCTURE.md) §4 一致。
 
 ## 原则
 
@@ -12,7 +12,7 @@
 
 ## 排除不镜像项
 
-`__pycache__/`、`.pytest_cache/`、`.egg-info/`、`output/`、`.test-results/`、虚拟环境、大数据 Asset。
+`__pycache__/`、`.pytest_cache/`、`.egg-info/`、`output/`、`.test-results/`、虚拟环境、大数据 asset。
 
 ## Markers（须在 pyproject 注册）
 

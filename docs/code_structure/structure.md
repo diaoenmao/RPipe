@@ -39,7 +39,7 @@
 | 概念 | 谁声明 | 落在哪 |
 |------|--------|--------|
 | **能力** | Experiment + 各层 Registry（经 api 可查询） | 注册名解析到第三方实现 |
-| **取值** | Study / grid 展开写入 | Artifact Config → prepare → `Control` |
+| **取值** | 包外编排（`axes` × `seeds`）写入 | Artifact Config → prepare → `Control` |
 | **层间调用** | Structure 柱内 / 外部调用方 | 四层经 `structure.api.*`；Control 经 `control/` |
 
 ### 1.3 柱内依赖方向
@@ -49,15 +49,15 @@ api/                 → data_api / model_api / system_api / algorithm_api
 control/             → Control 与编解码/契约；无 control_api
 data/                → Data / DataRegistry / DataFactory / DataConfig
 model/               → Model / ModelRegistry / ModelFactory / ModelConfig
-system/              → System / SystemRegistry / SystemFactory / SystemConfig
-algorithm/           → Algorithm / AlgorithmRegistry / AlgorithmFactory / AlgorithmConfig
+system/              → System / Logger / SystemRegistry / SystemFactory / SystemConfig
+algorithm/           → Algorithm / AlgorithmTracker / AlgorithmRegistry / AlgorithmFactory / AlgorithmConfig
 artifact/            → layout / config / result / asset / index IO；不 import 四层实现
 ```
 
 - 四层跨层只走对应 `*_api`
 - 层实现目录之间不直连
 - 第三方建构在各层实现内完成；经 Factory 得到运行时对象再经 api 交出
-- algorithm 经 `data_api` / `model_api` / `system_api` 使用 `Data` / `Model` / `System`；产出观测供后续写入 Result
+- algorithm 经 `data_api` / `model_api` / `system_api` 使用 `Data` / `Model` / `System`（含 System 上的 Logger）；数字观测走 **AlgorithmTracker**
 
 ### 1.4 分册推进状态
 
@@ -66,8 +66,8 @@ artifact/            → layout / config / result / asset / index IO；不 impor
 | **api** | 门面已定 |
 | **data** | `Data` + `DataRegistry` + `DataFactory` + `DataConfig` |
 | **model** | `Model` + `ModelRegistry` + `ModelFactory` + `ModelConfig` |
-| **algorithm** | `Algorithm` + `AlgorithmRegistry` + `AlgorithmFactory` + `AlgorithmConfig` |
-| **system** | `System` + `SystemRegistry` + `SystemFactory` + `SystemConfig` |
+| **algorithm** | `Algorithm` + **AlgorithmTracker** + Registry / Factory / `AlgorithmConfig` |
+| **system** | `System` + **Logger** + Registry / Factory / `SystemConfig` |
 | **control** | `ExperimentConfig` + `RunConfig` + `Control` + 四层 `*Config` + 合并/编解码/契约（§8） |
 | **artifact** | layout / config / result / asset / index（§9） |
 
@@ -94,14 +94,14 @@ structure/
 |------|------|
 | `data_api` | 暴露 `Data`、`DataFactory.build`、`DataConfig` |
 | `model_api` | 暴露 `Model`、`ModelFactory.build`、`ModelConfig` |
-| `system_api` | 暴露 `System`、`SystemFactory.build`、`SystemConfig` |
-| `algorithm_api` | 暴露 `Algorithm`、`AlgorithmFactory.build`、`AlgorithmConfig` |
+| `system_api` | 暴露 `System`、`Logger`、`SystemFactory.build`、`SystemConfig` |
+| `algorithm_api` | 暴露 `Algorithm`、`AlgorithmTracker`、`AlgorithmFactory.build`、`AlgorithmConfig` |
 
 ---
 
 ## 4. `structure/data/`（实现 + 类）
 
-把研究所需输入组织为可消费数据流（CONCEPT §4.1）。数据集本体由第三方提供；本层负责注册、建构与对外可消费的 **`Data`**。声明字段由 **`DataConfig`** 从 JSON / Config 加载。
+把研究所需输入组织为可消费数据流（CONCEPT §6 **data**）。数据集本体由第三方提供；本层负责注册、建构与对外可消费的 **`Data`**。声明字段由 **`DataConfig`** 从 JSON / Config 加载。
 
 ### 4.1 本层自有类型
 
@@ -175,19 +175,15 @@ flowchart LR
   api --> algo
 ```
 
-### 4.7 Asset / 测试
+### 4.7 落盘与测试
 
-| 操作 | 谁 | 路径意图 |
-|------|-----|----------|
-| 数据缓存 | `DataFactory` | `assets/cache/…` |
-
-测试：`tests/rpipe/structure/data/`（`DataConfig` 往返、Registry、Factory→`Data`）；`tests/rpipe/structure/api/`（`data_api`）。
+本层会把数据集等文件写到 Study 的 **asset**（通常 `shared/data/` 下的缓存），不把整份数据塞进 result。单测在 `tests/rpipe/structure/data/` 与 `tests/rpipe/structure/api/`（`data_api`）：Config 往返、Registry、Factory→`Data`。
 
 ---
 
 ## 5. `structure/model/`（实现 + 类）
 
-构建可调用模型能力（CONCEPT §4.2）。网络本体由第三方提供；本层负责注册、建构与对外可消费的 **`Model`**。声明字段由 **`ModelConfig`** 从 JSON / Config 加载。
+构建可调用模型能力（CONCEPT §6 **model**）。网络本体由第三方提供；本层负责注册、建构与对外可消费的 **`Model`**。声明字段由 **`ModelConfig`** 从 JSON / Config 加载。
 
 ### 5.1 本层自有类型
 
@@ -204,7 +200,7 @@ flowchart LR
 
 - 前向调用；train / eval 模式
 - 可训练参数（供优化器）
-- 权重加载 / 导出（与 Asset、checkpoint 协作）
+- 权重加载 / 导出（与 asset、checkpoint 协作）
 - 需要时取出底层第三方对象
 - 设备等精细放置经 `system_api` 的 `System` 协作
 - 不承载配置字段表本身（那是 `ModelConfig`）
@@ -269,20 +265,15 @@ flowchart LR
   api --> algo
 ```
 
-### 5.7 Asset / 测试
+### 5.7 落盘与测试
 
-| 操作 | 谁 | 路径意图 |
-|------|-----|----------|
-| 读 `path` 资源（权重 / 超参配置等） | `ModelFactory` | `ModelConfig.path` 及 Asset 约定 |
-| checkpoint | `Model` / `System` | `assets/checkpoints/…` |
-
-测试：`tests/rpipe/structure/model/`（`ModelConfig` 往返、Registry、Factory→`Model`）；`tests/rpipe/structure/api/`（`model_api`）。
+读权重 / 超参走 `ModelConfig.path` 及约定的 asset 位置；训练中的 checkpoint 由 algorithm 触发、**system** 协助写到本 Run `assets/checkpoints/`。result 只记路径。单测在 `tests/rpipe/structure/model/` 与 `model_api`。
 
 ---
 
 ## 6. `structure/algorithm/`（实现 + 类）
 
-在任务范式下定义怎么算（CONCEPT §4.3）。本层用 **`mode`** 区分 **train / eval / inference**（一次配置一个 mode；要组合多种 mode 由 Study / 多次运行或 Control 切换）。经 `data_api` / `model_api` / `system_api` 使用已落地的 `Data` / `Model` / `System`。声明字段由 **`AlgorithmConfig`** 加载。
+在任务范式下定义怎么算（CONCEPT §6 **algorithm**）。本层用 **`mode`** 区分 **train / eval / inference**（一次配置一个 mode；要组合多种 mode 由 Study / 多次运行或 Control 切换）。经 `data_api` / `model_api` / `system_api` 使用已落地的 `Data` / `Model` / `System`。声明字段由 **`AlgorithmConfig`** 加载。
 
 更下层目录（若实现时按 mode 拆分）由本分册后续补，**不在 LAYOUT 展开**。
 
@@ -290,25 +281,26 @@ flowchart LR
 
 | 类型 | 职责 |
 |------|------|
-| **`Algorithm`** | 按当前 `mode` 执行计算；使用 `Data` / `Model` / `System`；产出观测 / metrics |
+| **`Algorithm`** | 按当前 `mode` 执行计算；使用 `Data` / `Model` / `System`；用 **AlgorithmTracker** 记数字 |
+| **`AlgorithmTracker`** | 本层数字观测（勿与 **Logger** 混淆）：每 batch `append`，周期 `save`/`reset`，曲线 jsonl / state 落盘 |
 | **`AlgorithmRegistry`** | `mode` + `source` → 具体执行能力；`register` / `get` / `list` |
 | **`AlgorithmFactory`** | 读 `AlgorithmConfig` → 经 registry 装配 → 得到 **`Algorithm`** |
 | **`AlgorithmConfig`** | dataclass；从 JSON / Config / Control 加载 |
 
 对外：`AlgorithmFactory.build(algorithm_config, …) → Algorithm`。  
-execute 典型调用：`algorithm.run(data, model, system) → observations`（经 `algorithm_api` 导出）。
+execute 典型调用：`algorithm.run(data, model, system, tracker=…) → observations`。数字走 **AlgorithmTracker**；终端与 `run.log` 走 **`system.Logger.report(tracker, …)`**（§7.8）。
 
 ### 6.2 `Algorithm` 职责要点
 
 - 按 `mode` 执行 train **或** eval **或** inference（三者行为不同）
 - 从 `Data` 取 batch；调用 `Model`；经 `System` 做设备 / IO 协作
-- 汇总观测（供后续写入 Result）
-- train：更新参数；可触发 checkpoint / 日志
-- eval：聚合质量指标
-- inference：生成；可写样本 Asset
+- **每个计算 batch** 更新 AlgorithmTracker（§6.9）；按间隔把 tracker 交给 `system.Logger` 打终端并写 `assets/logs/`
+- train：更新参数；tracker 曲线进 `assets/tracker/`；checkpoint 经 system 写 asset；**可挂 evaluator hook**（§6.9.3），不另开 Flow 阶段
+- eval：聚合质量指标（独立 `mode=eval` 的 Run，或 train hook 调同一套 evaluate）
+- inference：生成；可写样本到 asset
 - 不承载配置字段表本身（那是 `AlgorithmConfig`）；超参主要进 `path` / `config`
 
-### 6.3 `mode`（取代原先的 semantics 列表 / paradigm）
+### 6.3 `mode`
 
 | 取值 | 含义 |
 |------|------|
@@ -370,7 +362,8 @@ flowchart LR
   algo["Algorithm"]
   dataObj["Data"]
   modelObj["Model"]
-  systemObj["System"]
+  systemObj["System + Logger"]
+  tracker["AlgorithmTracker"]
   caller["调用方"]
 
   json --> cfg
@@ -381,30 +374,61 @@ flowchart LR
   dataObj --> algo
   modelObj --> algo
   systemObj --> algo
+  tracker --> algo
   caller --> api
   api --> algo
 ```
 
-### 6.8 Asset / 测试
+### 6.8 落盘与测试
 
-| 操作 | 谁 | 路径意图 |
-|------|-----|----------|
-| checkpoint / 日志 | `Algorithm` + `System`（train） | `assets/checkpoints/`、`assets/logs/` |
-| 生成样本 | `Algorithm`（inference） | `assets/samples/` |
+本层会往本 Run 的 **asset** 里写算法相关文件：AlgorithmTracker 的 `assets/tracker/`（state、jsonl）；inference 的样本。train 触发的 checkpoint 经 **system** 落到 `assets/checkpoints/`。这些都是文件，所以走 artifact 的 asset 路径，不进 `result.json` 正文。单测在 `tests/rpipe/structure/algorithm/`（Config / Registry / Factory、AlgorithmTracker append/save、与 `system.Logger` 联调打出行）。
 
-测试：`tests/rpipe/structure/algorithm/`（`AlgorithmConfig`、Registry、Factory→`Algorithm`、单 mode run）；`tests/rpipe/structure/api/`（`algorithm_api`）。跨 `Data`+`Model`+`System`+`Algorithm` 的路径标 integration，落在调用起点。
+### 6.9 `AlgorithmTracker`
+
+算法层的数字账本。历史训练循环把「记数」和「print」写在同一个 Logger 里；这里拆开：**只记数**。终端与 `run.log` 是 **system.Logger**（§7.8）。必须把本对象交给 Logger 的 `report`，否则终端看不到 Loss。
+
+内存里按 split（至少 `train` / `test`）维护：最近一次 batch 值、按样本数 `n` 加权的 running mean、累计 counter、`save()` 时追加的 history、以及给 jsonl 用的步数。
+
+`evaluate(split, mode='batch', input, output)` 先只做 batch 的 Loss / Accuracy。`add` / `mode='full'` 与 `compare()` 后做。默认 MNIST train 每个 batch 都 `append('train', n=batch_size)`；test 见 §6.9.3。
+
+**进 `result.json` 的只有摘要**（如 `metrics.train_loss` = 最后一段 train mean，不是 last-batch CE）。曲线在 asset。
+
+#### 6.9.1 每个 batch 与每个周期
+
+每个 batch：`evaluate` → `append`（只更新内存 mean，不重写整份 state 文件）。
+每个 epoch 末（以后可改成 `eval_period`）：`save()` 把当前 mean 推进 history，再 `reset()` tracker/mean/counter（history 与步数保留）。
+
+#### 6.9.2 画图、TensorBoard、flush
+
+不靠 TensorBoard 也能画：密曲线读 `assets/tracker/scalars.jsonl`（每次 **report 间隔** 一行：step、split、name、mean）；稀曲线读 `tracker_state.json` 的 `history`（每个 epoch 一个点）。jsonl 是主画图源。
+
+TensorBoard 后做、默认关；若开只 `add_scalar`，且与 jsonl 同一间隔。不要把 Logger 的 printout `add_text` 进 TB。
+
+flush **必须有**，与 print 同一套间隔，不能攒到 Run 结束：
+
+- **batch**：只内存 `append`
+- **report 间隔**（默认每 epoch 至少一次；长训用 `algorithm.config.log_interval`）：`system.Logger.report` 并立刻 flush `run.log`；tracker 往 jsonl 追加并 flush；写出 `tracker_state.json` 并 flush
+- **epoch 末**：`save`+`reset`，再 flush state
+- **execute 结束 / 尽量在失败时**：再 flush 一遍
+
+不允许：log 只打终端不写文件；jsonl / state 只在 Run 结束写一次。不必每个 batch 都 rewrite 整份 state。
+
+#### 6.9.3 train 内嵌 evaluator（hook，后做）
+
+周期性 test / early stop **不是**新的 Flow 阶段，而是 train **算法**里挂的 evaluator：同一套 `evaluate` / `append(..., split='test')`，再 `system.logger.report(tracker, 'test', extra=…)`。预留 `on_eval_period(tracker, logger, data, model, system)`，默认 no-op。不要在一次 execute 里串两个 Flow mode。
 
 ---
 
 ## 7. `structure/system/`（实现 + 类）
 
-管理计算在硬件上的执行（CONCEPT §4.4）：设备、精度、并行、内存与 IO、恢复等。prepare 确认设备与输出位置、可读 resume Asset；execute 落实执行策略并与 checkpoint / 日志等 Asset 协作。声明字段由 **`SystemConfig`** 从 JSON / Config 加载。
+管理计算在硬件上的执行（CONCEPT §6 **system**）：设备、精度、并行、内存与 IO、恢复等。prepare 确认设备与输出位置、可读 resume 文件；execute 落实执行策略并与 checkpoint / 日志等 asset 协作。声明字段由 **`SystemConfig`** 从 JSON / Config 加载。
 
 ### 7.1 本层自有类型
 
 | 类型 | 职责 |
 |------|------|
-| **`System`** | 对上提供设备放置、精度上下文、并行策略、输出路径、checkpoint / resume 等执行环境能力 |
+| **`System`** | 设备、精度、并行、输出路径、checkpoint / resume；持有 **Logger** |
+| **`Logger`** | 本 Run 的文本日志：stdout + `assets/logs/`（必写）；`report(algorithm_tracker, split, extra)` 才能打出带 Loss 的行 |
 | **`SystemRegistry`** | source（及能力名）→ 如何建构执行环境；`register` / `get` / `list` |
 | **`SystemFactory`** | 读 `SystemConfig` + `assets_dir` → 经 registry 建构 → 得到 **`System`** |
 | **`SystemConfig`** | dataclass；从 JSON / Config / Control.system 加载声明字段 |
@@ -416,8 +440,8 @@ flowchart LR
 - 解析并暴露当前 device；放置 module / batch
 - 精度策略（fp32 / fp16 / bf16 / mixed）与 autocast 类上下文
 - 并行策略（单卡 / DDP 等）钩子
-- 输出路径约定（checkpoints、logs）与写节奏相关能力
-- resume：从 Asset 恢复运行态
+- 输出路径：checkpoints、**logs**；**Logger** 挂在本层（§7.8），不是 algorithm
+- resume：从 asset 恢复运行态
 - 可选 profile / 调试钩子
 - 不承载配置字段表本身（那是 `SystemConfig`）
 
@@ -481,38 +505,41 @@ flowchart LR
 
 prepare 顺序建议：先 `SystemFactory.build`，再 data / model（设备与输出根就绪后再放置模型）。
 
-### 7.7 Asset / 测试
+### 7.7 落盘与测试
 
-| 操作 | 谁 | 路径意图 |
-|------|-----|----------|
-| resume 读 | `SystemFactory` / `System` | `assets/checkpoints/…` 等 |
-| checkpoint / 日志写 | `System`（受 algorithm 触发） | `assets/checkpoints/`、`assets/logs/` |
+本层管执行环境，因此也管**往本 Run asset 写环境侧文件**：resume / checkpoint 读 `assets/checkpoints/`；Logger 必写 `assets/logs/`（与终端同一套字）。algorithm 算出的数字曲线仍由 AlgorithmTracker 写到 `assets/tracker/`。单测在 `tests/rpipe/structure/system/` 与 `system_api`（含 Logger 根据 AlgorithmTracker 打出行）。多设备 / 外网推理标 `external` 或 `slow`。
 
-测试：`tests/rpipe/structure/system/`（`SystemConfig`、Registry、Factory→`System`、device 解析）；`tests/rpipe/structure/api/`（`system_api`）。多设备 / 外网推理运行时标 `external` 或 `slow`。
+### 7.8 `Logger`
+
+Logger 是 **system** 的运行时对象：打到 **terminal**，并且 **同一行写入** `assets/logs/run.log` 后立刻 flush。这是执行环境的 IO，不是算法语义。不要把这段 printout 再 `add_text` 进 TensorBoard。
+
+`report(tracker, split, extra=None)` **必须能接收 AlgorithmTracker**：读其 mean（及最近 batch 值），拼 epoch / lr / ETA 等 `extra`，否则终端看不到 Loss/Accuracy。`info` / `warning` / `error` 不依赖 tracker，同样进终端和文件。
+
+Logger **不**改 AlgorithmTracker 的 mean/history；**不**写 TensorBoard。
 
 ---
 
 ## 8. `structure/control/`（实验侧控制器）
 
-编排层级（对齐 CONCEPT）：
+编排层级与 CONCEPT §2 / §5 一致：
 
 | 层级 | 含义 |
 |------|------|
-| **Study** | 一类 / 一轮研究（编排多种 Experiment、多次 Run） |
-| **Experiment** | 一种实验类型（一套 Structure + Flow 实现） |
-| **Run** | 该 Experiment 下的一次具体运行；有 **`id`**（由配置内容 hash 得到，见 §8.3） |
+| **Study** | 一轮研究：编排壳 + artifact 根（`studies/<name>/`） |
+| **Experiment** | 研究因素的一个取值点（不含 seed；无顶层目录；在 **index** 里分组） |
+| **Run** | 该点 × 一个 seed 的实测；有 **`id`**（内容 hash，见 §8.3）；目录 `runs/<id>/` |
 
-配置分两级（本分册细节；CONCEPT 只谈统一的 Config）：**`experiment_config` 为 Experiment 基底**；**`run_config` 套在其上**，作为本 Run 写入 Artifact 的完整 Config。
+配置分两级：**Study 根上的 `experiment_config`** 是基底默认（类型 `ExperimentConfig`，名字沿用历史，不是「某一个 Experiment 实例」）；**`run_config`** 套在其上，作为本 Run 写入 artifact 的完整 Config。
 
 **Control** 是 Structure 内对象：持有本 Run 的 **`RunConfig`**（四层 + `seed` + `id` 等）。**不设 `control_api`**。  
-库内不设顶层 `defaults/`；`experiment_config` 文件放在各 Experiment 侧。
+库内不设顶层 `defaults/`；`experiment_config.yaml` 放在 **Study 根**（与 `study.yaml` 同级）。
 
 ### 8.1 本层类型
 
 | 类型 / 单元 | 职责 |
 |-------------|------|
 | **`DataConfig` / `ModelConfig` / `AlgorithmConfig` / `SystemConfig`** | 各层 dataclass（§4–§7） |
-| **`ExperimentConfig`** | dataclass；Experiment 级基底（`experiment_config` 的类型化） |
+| **`ExperimentConfig`** | dataclass；Study 基底（`experiment_config.yaml` 的类型化） |
 | **`RunConfig`** | dataclass；Run 级配置：四层 + `seed` + **`id`** 等；由 `experiment_config` 与 Run 侧补丁合并得到 |
 | **`Control`** | 持有本 Run 的 `RunConfig`（或与之同构）；prepare / 契约 / 导出四层的入口 |
 | **编解码 / 合并** | JSON/YAML ↔ `ExperimentConfig` / `RunConfig`；deep-merge |
@@ -522,16 +549,16 @@ prepare 顺序建议：先 `SystemFactory.build`，再 data / model（设备与�
 
 ```mermaid
 flowchart TB
-  study["Study 一类研究"]
-  exp["Experiment 一种实验"]
-  run["Run 一次运行"]
-  expCfg["experiment_config"]
+  study["Study"]
+  exp["Experiment 取值点"]
+  run["Run"]
+  expCfg["experiment_config 基底"]
   runCfg["run_config"]
   control["Control"]
 
   study --> exp
+  study --> expCfg
   exp --> run
-  exp --> expCfg
   expCfg --> runCfg
   run --> runCfg
   runCfg --> control
@@ -539,36 +566,38 @@ flowchart TB
 
 | 形态 | 落盘 / 位置 | 说明 |
 |------|-------------|------|
-| **`experiment_config`** | Experiment 目录内（如 `experiment_config.json`；文件名可约定） | 该实验类型的基底默认；类型 → `ExperimentConfig` |
-| **`run_config`** | Artifact 内 Config（路径可用 `id`，或 `id` + timestamp，见 §8.3） | **套在** `experiment_config` 之上的本 Run 完整配置；类型 → `RunConfig`；含四层 + `seed` 等；**`id` 由其余字段 hash 得出** |
+| **`experiment_config`** | Study 根 `experiment_config.yaml` | 该 Study 的基底默认；类型 → `ExperimentConfig` |
+| **`run_config`** | `runs/<id>/config.yaml` | **套在**基底之上的本 Run 完整配置；类型 → `RunConfig`；含四层 + `seed` + tags 等；**`id` 由除 `id` / `description` 外的内容 hash 得出** |
 | **`Control`** | 内存对象 | 由本 Run 的 `run_config` 构造；供 prepare 落地四层 |
 
 **合并原则：**
 
-1. 读 `experiment_config` → `ExperimentConfig`。
-2. grid / Study 为每次 Run 提供补丁（改 `seed`、部分层字段等；**不必手写 `id`**）。
-3. `merge(experiment_config, patch) →` 得到除 `id` 外的完整内容 → **对除 `id` 外的内容做稳定序列化并 hash → 写入 `id`** → `RunConfig`。
-4. 落盘完整 `run_config`（不写 diff）。同配置内容 → 同一 `id`；若需区分多次落盘 / 执行，目录或文件名用 **`id` + timestamp**（见 §8.3）。
+1. 读 Study 根 `experiment_config` → `ExperimentConfig`。
+2. 包外编排为每次 Run 提供补丁（`axes` 取值、`seed`、tags 等；**不必手写 `id`**）。
+3. `merge(experiment_config, patch) →` 完整内容 → **对除 `id` / `description` 外做稳定序列化并 hash → 写入 `id`** → `RunConfig`。
+4. 落盘完整 `run_config`（不写 diff）。同配置内容 → 同一 `id`；若需区分多次落盘，目录名用 **`id` + timestamp**（`make_run_dir`）。
 5. prepare：只读该次落盘的 `run_config` → `Control`（一般不再回读 `experiment_config`）。
 
 ### 8.3 `RunConfig` 字段与 `id`（hash）
 
 | 字段 | 说明 |
 |------|------|
-| `id` | **由除自身以外的配置内容 hash 得到**（见下）；标识「这份配置内容」 |
+| `id` | **由除 `id` / `description` 以外的配置内容 hash 得到**；标识「这份配置内容」 |
 | `seed` | 本 Run 的 seed（参与 hash） |
 | `experiment` | 所属 Experiment 标识（如 `mnist_linear`；参与 hash） |
+| `tags` | 如 `baseline`（参与 hash） |
+| `description` | 给人看的说明；**不参与** hash |
 | `data` / `model` / `algorithm` / `system` | 四层 `*Config`（参与 hash） |
 
 **`id` 怎么来：**
 
-1. 合并得到完整 `run_config` 内容后，取出**除 `id` 外**的全部字段。
-2. 做**稳定序列化**（键排序、约定好的 JSON/YAML 规范；算法名可后定，如 sha256 截断）。
+1. 合并得到完整 `run_config` 内容后，取出**除 `id` / `description` 外**的全部字段。
+2. 做**稳定序列化**（键排序、约定好的 JSON 规范；实现为 sha256 截断）。
 3. hash → 得到 `id`，再写回 `RunConfig` / 落盘 Config。
 
-因此：配置内容相同 → `id` 相同；内容一变 → `id` 变。grid **不**人工指定 `id`。
+因此：配置内容相同 → `id` 相同；内容一变 → `id` 变。编排侧 **不**人工指定 `id`。
 
-**落盘路径：** `id` 标识配置内容，不单独保证「每次执行一个新目录」。若同一 `id` 要存多次产物（重跑、续跑），用 **`id` + timestamp** 区分，例如 `artifact/<id>_<timestamp>/`，或在 `id` 目录下再按 timestamp 分子目录——具体布局下游再定。
+**落盘路径：** `studies/<name>/runs/<id>/`（见 LAYOUT）。同一 `id` 要存多次产物时，用 **`id` + timestamp** 后缀，不要再用已废弃的 `artifact/<id>/` 根目录。
 
 **`ExperimentConfig`** 与 `RunConfig` 在四层上同构，便于合并；基底里不带 `id`；`id` 只在合并成 `run_config` 后计算。
 
@@ -578,6 +607,8 @@ flowchart TB
 id: a1b2c3d4e5f6...
 seed: 0
 experiment: mnist_linear
+description: train_size=500 seed=0
+tags: [baseline]
 data:
   name: ...
   source: ...
@@ -720,7 +751,9 @@ collect → summarize → Flow **write** 定稿。失败时 Runner 可直接 `wr
 
 定稿宜含 `status`（`succeeded` \| `failed`）；失败时宜有 `error`。成功路径宜有 control / structure 快照 / metrics / paths。
 
-**Runtime vs 快照（必守）：** `state` 里可有 Loader / Module；result 只接受可序列化投影。summarize 丢弃 `train_loader`、`module` 等。大对象走 **asset**，result 只记路径。各层宜提供 `to_result_snapshot() -> dict`。
+**metrics（摘要）：** 键用稳定名，如 `train_loss`、`accuracy`。`train_loss` 来自 AlgorithmTracker 最后一段 train mean，**不是** last-batch CE。完整曲线在 `assets/tracker/`（§6.9），不在 result。
+
+**Runtime vs 快照（必守）：** `state` 里可有 Loader / Module / AlgorithmTracker / Logger 句柄；result 只接受可序列化投影。summarize 丢弃这些 runtime 对象。大对象走 **asset**，result 只记路径。
 
 `data.source`（`stub` / `torch`）须显式，避免 unit 误下真数据（见 STUDY_GUIDE）。
 
@@ -740,14 +773,16 @@ launch **之前**写出；按 Experiment 分组列 Run；可回填 status / metr
 
 prepare / execute 读写；collect / summarize / write **不改文件内容**（write 只登记路径）。
 
-**data 的数据集、model 的权重 / checkpoint，以及日志，都走 asset。**
+数据集、权重 / checkpoint、AlgorithmTracker 曲线、Logger 文本都是**文件**，所以走 asset，不进 result 正文。
 
 | 位置 | 内容 |
 |------|------|
 | `shared/data/`、`shared/model/` | Study 内共享 |
 | `runs/<id>/assets/` | 本 Run |
+| `runs/<id>/assets/tracker/` | AlgorithmTracker 数字（`tracker_state.json` / `scalars.jsonl`；TB 默认关） |
+| `runs/<id>/assets/logs/` | `system.Logger` 文本，**必写**，与终端同一套内容 |
 
-`kinds.py` 集中相对路径（cache、weights、checkpoints、logs、samples）。
+`kinds.py` 集中相对路径（cache、weights、checkpoints、tracker、logs、samples）。
 
 ### 9.7 阶段权限
 

@@ -4,6 +4,8 @@
 > Date: 2026-08-25
 > Recipe: MNIST + linear，2 epoch，SGD lr=0.1
 > Location: Study `docs/`（人写）。产物在 `../index.json`、`../runs/<id>/result.json`、`../shared/data/`。
+>
+> 口径说明：本报告记录的是这次已跑完的磁盘结果。当时 `metrics.loss` 仍是 **last-batch CE**。权威设计现要求 AlgorithmTracker 的段均值进 `metrics.train_loss`，曲线进 `assets/tracker/`（见 CONCEPT / structure.md）；下一次重跑后再改表。
 
 ## 1. Conclusion
 
