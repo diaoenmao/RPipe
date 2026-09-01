@@ -15,15 +15,15 @@ fixed:
   algorithm:
     mode: train
     num_epochs: 2
+    eval_period: 1
     lr: 0.1
   system:
     device: cpu
 
-# Experiment factors (no seed)
+# 3 Experiments × 3 seeds = 9 Runs. train_size 子集是前 N 条，seed 不重抽样。
 axes:
   data.config.train_size: [500, 2000, 8000]
 
-# Runs per Experiment (3 seeds per control / Experiment cell)
 seeds: [0, 1, 2]
 
 tags:

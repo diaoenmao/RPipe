@@ -59,6 +59,7 @@ class AlgorithmTracker:
         self.root.mkdir(parents=True, exist_ok=True)
         self.state_path = self.assets_dir / kinds.TRACKER_STATE
         self.jsonl_path = self.assets_dir / kinds.TRACKER_JSONL
+        self.jsonl_path.write_text('', encoding='utf-8')
         self.step = 0
         self._meters: dict[str, dict[str, _Meter]] = defaultdict(dict)
         self._last_segment: dict[str, dict[str, float]] = {}

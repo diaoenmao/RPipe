@@ -20,15 +20,19 @@
 
 其余固定（见下）。样本量进入 Config → **参与 Run `id` hash**。
 
+**子集口径（嵌套前 N 条）：** `train_size` 取训练集编号 `0 .. N-1`，因此 **500 ⊂ 2000 ⊂ 8000**。加大样本量是「多给前面那些图」，不是每个格子重新抽一袋。`seed` 只影响初始化与 DataLoader shuffle，不换图。格子之间比的是「同一批图变多了」加上随机性，不是独立抽样方差。
+
 ## 4. 固定条件
 
 | 项 | 取值 |
 |----|------|
 | `seeds` | `0, 1, 2`（每个 Experiment 三次 Run） |
 | `data.name` | `MNIST` |
+| `data.source` | `torch`（缓存到 `shared/data/`） |
 | `model.name` | `linear`（784→10） |
-| `algorithm.mode` | `train`（同一次 Run 内训完并在 test 上评估） |
+| `algorithm.mode` | `train`（循环内 algorithm hook，不是第二个 Flow mode） |
 | `algorithm.num_epochs` | `2` |
+| `algorithm.eval_period` | `1`（每个 epoch 末 `on_eval_period` 评完整 test；`0` = 只在训完评一次） |
 | `data.config.batch_size` | `64` |
 | `algorithm.lr` | `0.1` |
 | `system.device` | `cpu` |
@@ -45,14 +49,15 @@
 
 1. 写 / 确认 Study 根 `experiment_config.yaml`（真实训练默认）
 2. `python -m rpipe run studies/mnist_train_size` → config + index + Flow
-3. 汇总 Result → `STUDY_REPORT.md`（含卡点）
+3. 读 `process.json`（及各 Run `result.json`）写 `STUDY_REPORT.md`（人 / agent；Flow 不改 markdown）
 
 ## 7. 成功标准
 
 - 3 Experiment × 3 seed = 9 次 Run 均 `status: succeeded`
-- 各 Result 含真实 `train_loss`（段均值）与 `accuracy`（非 stub 占位）。实现尚未拆 AlgorithmTracker 时，loss 可能仍是 last-batch，须在报告里写明
+- 各 Result 含 `metrics.train_loss`（AlgorithmTracker 最后一段 train mean）与 `accuracy`（全 test）
+- 每条 Run 有 `assets/logs/run.log`（含 Loss）和 `assets/tracker/`（state / jsonl）
 - index 按 `train_size` 分组，每组 3 条 Run；`train_size=500` 带 `baseline`
-- 本文流程走通；**卡点记入 STUDY_REPORT.md**
+- 卡点记入 `STUDY_REPORT.md`
 
 ## 8. 刻意不做什么
 

@@ -281,7 +281,7 @@ flowchart LR
 
 | 类型 | 职责 |
 |------|------|
-| **`Algorithm`** | 按当前 `mode` 执行计算；使用 `Data` / `Model` / `System`；用 **AlgorithmTracker** 记数字 |
+| **`Algorithm`** | 按当前 `mode` 执行计算；使用 `Data` / `Model` / `System`；用 **AlgorithmTracker** 记数字；循环内 **hook**（§6.10） |
 | **`AlgorithmTracker`** | 本层数字观测（勿与 **Logger** 混淆）：每 batch `append`，周期 `save`/`reset`，曲线 jsonl / state 落盘 |
 | **`AlgorithmRegistry`** | `mode` + `source` → 具体执行能力；`register` / `get` / `list` |
 | **`AlgorithmFactory`** | 读 `AlgorithmConfig` → 经 registry 装配 → 得到 **`Algorithm`** |
@@ -295,8 +295,8 @@ execute 典型调用：`algorithm.run(data, model, system, tracker=…) → obse
 - 按 `mode` 执行 train **或** eval **或** inference（三者行为不同）
 - 从 `Data` 取 batch；调用 `Model`；经 `System` 做设备 / IO 协作
 - **每个计算 batch** 更新 AlgorithmTracker（§6.9）；按间隔把 tracker 交给 `system.Logger` 打终端并写 `assets/logs/`
-- train：更新参数；tracker 曲线进 `assets/tracker/`；checkpoint 经 system 写 asset；**可挂 evaluator hook**（§6.9.3），不另开 Flow 阶段
-- eval：聚合质量指标（独立 `mode=eval` 的 Run，或 train hook 调同一套 evaluate）
+- train：更新参数；tracker 曲线进 `assets/tracker/`；checkpoint 经 system 写 asset；循环点上调 **hook**（§6.10），不另开 Flow 阶段
+- eval：聚合质量指标（独立 `mode=eval` 的 Run，或 train 的 `on_eval_period` 调同一套 evaluate）
 - inference：生成；可写样本到 asset
 - 不承载配置字段表本身（那是 `AlgorithmConfig`）；超参主要进 `path` / `config`
 
@@ -389,14 +389,14 @@ flowchart LR
 
 内存里按 split（至少 `train` / `test`）维护：最近一次 batch 值、按样本数 `n` 加权的 running mean、累计 counter、`save()` 时追加的 history、以及给 jsonl 用的步数。
 
-`evaluate(split, mode='batch', input, output)` 先只做 batch 的 Loss / Accuracy。`add` / `mode='full'` 与 `compare()` 后做。默认 MNIST train 每个 batch 都 `append('train', n=batch_size)`；test 见 §6.9.3。
+`evaluate(split, mode='batch', input, output)` 先只做 batch 的 Loss / Accuracy。`add` / `mode='full'` 与 `compare()` 后做。默认 MNIST train 每个 batch 都 `append('train', n=batch_size)`；test 由 §6.10 的 `on_eval_period` 走同一套 `evaluate` / `append(..., split='test')`。
 
 **进 `result.json` 的只有摘要**（如 `metrics.train_loss` = 最后一段 train mean，不是 last-batch CE）。曲线在 asset。
 
 #### 6.9.1 每个 batch 与每个周期
 
 每个 batch：`evaluate` → `append`（只更新内存 mean，不重写整份 state 文件）。
-每个 epoch 末（以后可改成 `eval_period`）：`save()` 把当前 mean 推进 history，再 `reset()` tracker/mean/counter（history 与步数保留）。
+每个 epoch 末：`save()` 把当前 mean 推进 history，再 `reset()` tracker/mean/counter（history 与步数保留）。test 评测节奏见 `eval_period`（§6.10）。
 
 #### 6.9.2 画图、TensorBoard、flush
 
@@ -413,9 +413,36 @@ flush **必须有**，与 print 同一套间隔，不能攒到 Run 结束：
 
 不允许：log 只打终端不写文件；jsonl / state 只在 Run 结束写一次。不必每个 batch 都 rewrite 整份 state。
 
-#### 6.9.3 train 内嵌 evaluator（hook，后做）
+### 6.10 算法循环 hook
 
-周期性 test / early stop **不是**新的 Flow 阶段，而是 train **算法**里挂的 evaluator：同一套 `evaluate` / `append(..., split='test')`，再 `system.logger.report(tracker, 'test', extra=…)`。预留 `on_eval_period(tracker, logger, data, model, system)`，默认 no-op。不要在一次 execute 里串两个 Flow mode。
+算法**运行过程中**要插入的动作（周期 test、early stop、以后的 checkpoint / 自定义逻辑）都挂在 **`Algorithm` 上**，由 `run()` 里的循环调用。这是 algorithm 层机制，**不是**新的 Flow 阶段，也**不是**第三柱。
+
+**为什么在这边：** Flow 只认 prepare → execute → collect → …；execute 一次一个 `mode`。train 中途评 test，仍是同一个 train 循环在说话，用的还是已落地的 `Data` / `Model` / `System` / `AlgorithmTracker` / `Logger`。不要为此再跑一个 `mode=eval` 的 Flow。
+
+**约定：**
+
+- 基类方法默认 no-op / 返回「不停止」。具体 `mode`（如 `TrainAlgorithm`）覆盖自己需要的点。
+- 签名共用：`(tracker, logger, data, model, system, extra=None)`。`extra` 带 epoch / lr / step 等，不另开对象图。
+- train hook 返回 `True` 表示结束本轮 `run()`（early stop）；其它 hook 无返回值。
+- hook **只**改 tracker / 触发 system 写 asset / 打 Logger；**不**改 config，**不**自己 write `result.json`。
+- 新需求先加 **命名方法**，需要时再在循环里点名调用。不要做通用插件总线或把 hook 放到 data / system。
+
+**已接线（train）：**
+
+| 方法 | 何时 | 做什么 |
+|------|------|--------|
+| `on_eval_period(...)` | `eval_period` 个 epoch（默认 1；`0` = 只在训完评一次） | test：同一套 `evaluate` / `append(split='test')` / `Logger.report`；可选 `early_stop_patience` / `early_stop_min_delta`（看 test Accuracy） |
+
+**预留（有需要再接线，基类先留空）：**
+
+| 方法 | 典型何时 |
+|------|----------|
+| `on_epoch_start` | 每个 epoch 训练 batch 之前 |
+| `on_batch_end` | 每个 train batch 的 append 之后（慎用：太密） |
+| `on_checkpoint` | 要落盘权重时（经 system 写 `assets/checkpoints/`） |
+| `on_run_end` | `run()` 返回前（失败路径尽量也走） |
+
+eval / inference 以后按同样方式加自己的点（例如 `on_generate_batch`），不新开 Flow。
 
 ---
 

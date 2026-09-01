@@ -123,7 +123,7 @@ flowchart TD
 
 ## 6. execute
 
-**目的：** 按本 Run 的 algorithm **做计算**。一次 Run 一个 mode（train / eval / inference）。周期性 test / early stop **不是**在一次 execute 里再跑一个 Flow mode，而是 train 算法的 evaluator hook（structure.md §6.9.3），现在可空。
+**目的：** 按本 Run 的 algorithm **做计算**。一次 Run 一个 mode（train / eval / inference）。周期 test / early stop / 以后其它插入点都是 **algorithm hook**（structure.md §6.10），不是再跑一个 Flow mode。
 
 **做：**
 

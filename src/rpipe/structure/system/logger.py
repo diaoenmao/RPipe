@@ -13,7 +13,7 @@ class Logger:
         self.assets_dir = Path(assets_dir)
         self.path = self.assets_dir / kinds.RUN_LOG
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.touch(exist_ok=True)
+        self.path.write_text('', encoding='utf-8')
 
     def _emit(self, line: str) -> None:
         text = line.rstrip('\n')

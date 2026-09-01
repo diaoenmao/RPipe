@@ -121,6 +121,7 @@ res/
 studies/**/runs/
 studies/**/shared/
 studies/**/index.json
+studies/**/process.json
 # docs/ under Study is human narrative — keep tracked
 
 .idea/

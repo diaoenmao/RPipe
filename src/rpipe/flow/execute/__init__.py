@@ -24,13 +24,18 @@ def run(ctx: FlowContext) -> None:
         ctx.state.setdefault('observations', []).append(
             {'phase': 'execute', 'mode': algorithm.mode}
         )
-    finally:
-        try:
-            tracker.flush_state()
-        except Exception:
-            pass
+        if logger is not None:
+            logger.info('execute finished')
+    except Exception:
         if logger is not None:
             try:
-                logger.info('execute finished')
+                logger.error('execute failed')
+            except Exception:
+                pass
+        raise
+    finally:
+        if tracker is not None:
+            try:
+                tracker.flush_state()
             except Exception:
                 pass
