@@ -16,17 +16,19 @@ def run(ctx: FlowContext) -> None:
     ctx.control = control_from_config(cfg)
     validate_control(ctx.control)
     ensure_assets(ctx.layout)
-    if ctx.control.seed is not None:
-        _seed_everything(ctx.control.seed)
+    system_config = SystemConfig.from_mapping(ctx.control.system)
+    ctx.state['runtime'] = system_api.apply_runtime(ctx.control.seed, system_config)
     ctx.state['seed'] = ctx.control.seed
 
     system = system_api.build(
-        SystemConfig.from_mapping(ctx.control.system),
+        system_config,
         ctx.layout.assets_dir,
     )
+    system.meta.update(ctx.state['runtime'])
     data = data_api.build(
         DataConfig.from_mapping(ctx.control.data),
         ctx.layout.shared_data_dir,
+        seed=ctx.control.seed,
     )
     model = model_api.build(
         ModelConfig.from_mapping(ctx.control.model),
@@ -45,14 +47,3 @@ def run(ctx: FlowContext) -> None:
     ctx.state['logger'] = system.logger
     ctx.state.setdefault('observations', [])
     system.logger.info(f'prepared control={ctx.control.id}')
-
-
-def _seed_everything(seed: int) -> None:
-    import random
-
-    import numpy as np
-    import torch
-
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)

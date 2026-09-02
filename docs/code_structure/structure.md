@@ -281,8 +281,9 @@ flowchart LR
 
 | 类型 | 职责 |
 |------|------|
-| **`Algorithm`** | 按当前 `mode` 执行计算；使用 `Data` / `Model` / `System`；用 **AlgorithmTracker** 记数字；循环内 **hook**（§6.10） |
+| **`Algorithm`** | 按当前 `mode` 执行计算；使用 `Data` / `Model` / `System`；用 **AlgorithmTracker** 记数字；循环点上调 **AlgorithmHook**（§6.10） |
 | **`AlgorithmTracker`** | 本层数字观测（勿与 **Logger** 混淆）：每 batch `append`，周期 `save`/`reset`，曲线 jsonl / state 落盘 |
+| **`AlgorithmHook`** | 循环插入点合同：命名方法、共用签名；挂在 `Algorithm` 上，不是插件总线，也不是 Flow 阶段 |
 | **`AlgorithmRegistry`** | `mode` + `source` → 具体执行能力；`register` / `get` / `list` |
 | **`AlgorithmFactory`** | 读 `AlgorithmConfig` → 经 registry 装配 → 得到 **`Algorithm`** |
 | **`AlgorithmConfig`** | dataclass；从 JSON / Config / Control 加载 |
@@ -295,7 +296,7 @@ execute 典型调用：`algorithm.run(data, model, system, tracker=…) → obse
 - 按 `mode` 执行 train **或** eval **或** inference（三者行为不同）
 - 从 `Data` 取 batch；调用 `Model`；经 `System` 做设备 / IO 协作
 - **每个计算 batch** 更新 AlgorithmTracker（§6.9）；按间隔把 tracker 交给 `system.Logger` 打终端并写 `assets/logs/`
-- train：更新参数；tracker 曲线进 `assets/tracker/`；checkpoint 经 system 写 asset；循环点上调 **hook**（§6.10），不另开 Flow 阶段
+- train：更新参数；tracker 曲线进 `assets/tracker/`；checkpoint 经 system 写 asset；循环点上调 **AlgorithmHook**（§6.10），不另开 Flow 阶段
 - eval：聚合质量指标（独立 `mode=eval` 的 Run，或 train 的 `on_eval_period` 调同一套 evaluate）
 - inference：生成；可写样本到 asset
 - 不承载配置字段表本身（那是 `AlgorithmConfig`）；超参主要进 `path` / `config`
@@ -360,6 +361,7 @@ flowchart LR
   factory["AlgorithmFactory"]
   registry["AlgorithmRegistry"]
   algo["Algorithm"]
+  hook["AlgorithmHook"]
   dataObj["Data"]
   modelObj["Model"]
   systemObj["System + Logger"]
@@ -371,6 +373,7 @@ flowchart LR
   api --> factory
   factory --> registry
   factory --> algo
+  hook --> algo
   dataObj --> algo
   modelObj --> algo
   systemObj --> algo
@@ -381,7 +384,7 @@ flowchart LR
 
 ### 6.8 落盘与测试
 
-本层会往本 Run 的 **asset** 里写算法相关文件：AlgorithmTracker 的 `assets/tracker/`（state、jsonl）；inference 的样本。train 触发的 checkpoint 经 **system** 落到 `assets/checkpoints/`。这些都是文件，所以走 artifact 的 asset 路径，不进 `result.json` 正文。单测在 `tests/rpipe/structure/algorithm/`（Config / Registry / Factory、AlgorithmTracker append/save、与 `system.Logger` 联调打出行）。
+本层会往本 Run 的 **asset** 里写算法相关文件：AlgorithmTracker 的 `assets/tracker/`（state、jsonl）；inference 的样本。train 触发的 checkpoint 经 **system** 落到 `assets/checkpoints/`。这些都是文件，所以走 artifact 的 asset 路径，不进 `result.json` 正文。单测在 `tests/rpipe/structure/algorithm/`（Config / Registry / Factory、AlgorithmTracker、**AlgorithmHook**、与 `system.Logger` 联调打出行）。
 
 ### 6.9 `AlgorithmTracker`
 
@@ -413,9 +416,9 @@ flush **必须有**，与 print 同一套间隔，不能攒到 Run 结束：
 
 不允许：log 只打终端不写文件；jsonl / state 只在 Run 结束写一次。不必每个 batch 都 rewrite 整份 state。
 
-### 6.10 算法循环 hook
+### 6.10 `AlgorithmHook`
 
-算法**运行过程中**要插入的动作（周期 test、early stop、以后的 checkpoint / 自定义逻辑）都挂在 **`Algorithm` 上**，由 `run()` 里的循环调用。这是 algorithm 层机制，**不是**新的 Flow 阶段，也**不是**第三柱。
+本层第三类运行时对象（与 `Algorithm` / `AlgorithmTracker` 并列）：算法**循环里**要插入的动作。方法写在 **`Algorithm` 上**（`Algorithm` 继承 `AlgorithmHook`），由 `run()` 点名调用。**不是**新的 Flow 阶段，也**不是**第三柱，不要做成通用插件总线。
 
 **为什么在这边：** Flow 只认 prepare → execute → collect → …；execute 一次一个 `mode`。train 中途评 test，仍是同一个 train 循环在说话，用的还是已落地的 `Data` / `Model` / `System` / `AlgorithmTracker` / `Logger`。不要为此再跑一个 `mode=eval` 的 Flow。
 
@@ -465,6 +468,7 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 ### 7.2 `System` 职责要点
 
 - 解析并暴露当前 device；放置 module / batch
+- **运行时随机与确定性**（§7.9）：prepare **最先**按 `Control.seed` + 本层开关落地，再建构 data / model
 - 精度策略（fp32 / fp16 / bf16 / mixed）与 autocast 类上下文
 - 并行策略（单卡 / DDP 等）钩子
 - 输出路径：checkpoints、**logs**；**Logger** 挂在本层（§7.8），不是 algorithm
@@ -497,7 +501,7 @@ dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必
 | `config` | **内容配置**：可装入 `path` 内读出的配置，或由上层覆写；合并规则下游再定 |
 | `compat_algorithm` | **兼容的 Algorithm**（如允许的 `mode` / `source` 集合；空表示不限制——形状下游再定） |
 
-`device` **不是**必须字段；需要时进 `path` / `config` 或作扩展键。
+`device` **不是**必须字段；需要时进 `path` / `config` 或作扩展键。运行时开关同样进 `path` / `config`（见 §7.9），不进必须表。
 
 ### 7.5 Registry / Factory
 
@@ -543,6 +547,20 @@ Logger 是 **system** 的运行时对象：打到 **terminal**，并且 **同一
 `report(tracker, split, extra=None)` **必须能接收 AlgorithmTracker**：读其 mean（及最近 batch 值），拼 epoch / lr / ETA 等 `extra`，否则终端看不到 Loss/Accuracy。`info` / `warning` / `error` 不依赖 tracker，同样进终端和文件。
 
 Logger **不**改 AlgorithmTracker 的 mean/history；**不**写 TensorBoard。
+
+### 7.9 运行时 seed 与确定性
+
+`Control.seed` 是 Run 的随机源（`study.yaml` 的 `seeds`，不写进 system）。确定性 / cudnn 写在 **Study 的 `experiment_config.yaml` → `system`**（`study.yaml` 的 `fixed.system` 可覆写），进 Run `id` hash。**prepare 在建构 Data / Model 之前**调用 `system.apply_runtime(seed, system_config)`，一次落地：
+
+| 做的事 | 默认 | 配置（`system.config` / 扩展键） |
+|--------|------|----------------------------------|
+| `random` / `numpy` / `torch.manual_seed` / `torch.cuda.manual_seed(_all)` | 有 seed 就设 | `Control.seed`（不在 system 必须表） |
+| `torch.use_deterministic_algorithms` | 关（`warn_only=True`，避免个别算子直接炸） | `deterministic` |
+| `cudnn.deterministic` | 跟 `deterministic` | `cudnn_deterministic`（可单开） |
+| `cudnn.benchmark` | `not cudnn.deterministic`（对齐 main：默认 benchmark 开） | `cudnn_benchmark` |
+| DataLoader shuffle | train：`Generator().manual_seed(seed)` + `worker_init_fn`（对齐 main `make_data_loader`） | 经 `data_api.build(..., seed=)` 传入；test 不 shuffle |
+
+不要把 seed 再抄一份进 algorithm / data 必须字段。DataLoader 的 generator **单独绑 seed**，不能只靠全局 `manual_seed`（shuffle 另有 RNG）。`num_workers>0` 时 worker 用 `torch.initial_seed()` 再种 numpy / python。
 
 ---
 

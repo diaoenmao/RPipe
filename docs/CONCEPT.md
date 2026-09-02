@@ -165,8 +165,8 @@ flowchart TB
 | **control** | 本 Run 对四层的指派 |
 | **data** | 运行时：输入怎么组织。落盘：数据集等文件在 artifact 的 **asset** |
 | **model** | 运行时：网络怎么构造。落盘：权重 / checkpoint 在 artifact 的 **asset** |
-| **algorithm** | 怎么算。数字账本是本层的 **AlgorithmTracker**。循环插入点是本层 **hook**（如 train 的周期 test），不是新的 Flow 阶段 |
-| **system** | 设备、精度、并行、执行节奏；文本日志是本层的 **Logger**（终端 + 必写 `assets/logs/`）。Logger 读 AlgorithmTracker 才能打出 Loss |
+| **algorithm** | 怎么算。数字账本是 **AlgorithmTracker**；循环插入点是 **AlgorithmHook**（如 train 的周期 test），不是新的 Flow 阶段 |
+| **system** | 设备、精度、并行、执行节奏；**prepare 最先**落地 seed / deterministic / cudnn；文本日志是 **Logger**（终端 + 必写 `assets/logs/`）。Logger 读 AlgorithmTracker 才能打出 Loss |
 | **artifact** | IO 与路径：读写 config / result / asset，以及 Study 下的 layout |
 
 同一 Study：不同 Experiment 差在实验变量；同一 Experiment 下不同 Run 差在 seed。  
@@ -240,7 +240,7 @@ flowchart TB
 1. 写基底配置与 study 声明（`axes` + `seeds`）
 2. 展开 Experiment × seed → 写各 Run config → 写 index
 3. 对每个 Run 跑 Flow
-4. 按 Experiment 读 result，写 Study 报告
+4. 按 Experiment 读 result / 曲线，写 Study 报告（**必须有图**，不能只有表）
 
 ---
 

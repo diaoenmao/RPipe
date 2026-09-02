@@ -69,6 +69,30 @@ def due_eval_period(period: int, epoch: int) -> bool:
     return period > 0 and epoch % period == 0
 
 
+def make_scheduler(optimizer: Any, config: AlgorithmConfig, epochs: int) -> Any:
+    """Build an LR scheduler from ``algorithm.scheduler``. ``None`` / ``constant`` = fixed lr."""
+    name = config.setting('scheduler')
+    if name is None or str(name).lower() in ('', 'none', 'constant'):
+        return None
+    key = str(name).lower().replace('-', '_')
+    if key in ('cosine', 'cosine_annealing', 'cosineannealinglr'):
+        import torch
+
+        eta_min = float(config.setting('eta_min', 0.0) or 0.0)
+        t_max = int(config.setting('T_max', epochs) or epochs)
+        return torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer, T_max=max(t_max, 1), eta_min=eta_min
+        )
+    raise ValueError(f'unknown scheduler: {name}')
+
+
+def _current_lr(optimizer: Any, fallback: float) -> float:
+    groups = getattr(optimizer, 'param_groups', None)
+    if not groups:
+        return fallback
+    return float(groups[0].get('lr', fallback))
+
+
 def _hook_extra(*, epoch: int, lr: float, step: int | None = None) -> dict[str, Any]:
     extra: dict[str, Any] = {'epoch': epoch, 'lr': lr}
     if step is not None:
@@ -107,10 +131,12 @@ def _run_mnist_linear(
     eval_period = algo.eval_period()
 
     optimizer = torch.optim.SGD(module.parameters(), lr=lr)
+    scheduler = make_scheduler(optimizer, config, epochs)
     module.train()
     steps = 0
     try:
         for epoch in range(1, epochs + 1):
+            epoch_lr = _current_lr(optimizer, lr)
             for images, targets in data.iter_batches('train'):
                 images = images.view(images.size(0), -1).to(device)
                 targets = targets.to(device)
@@ -123,17 +149,21 @@ def _run_mnist_linear(
                 tracker.append('train', n=int(images.size(0)), values=values)
                 steps += 1
                 if log_interval and steps % log_interval == 0:
-                    logger.report(tracker, 'train', extra={'epoch': epoch, 'lr': lr, 'step': steps})
+                    logger.report(
+                        tracker, 'train', extra={'epoch': epoch, 'lr': epoch_lr, 'step': steps}
+                    )
                     tracker.flush('train')
-            logger.report(tracker, 'train', extra={'epoch': epoch, 'lr': lr})
+            logger.report(tracker, 'train', extra={'epoch': epoch, 'lr': epoch_lr})
             tracker.flush('train')
             tracker.save('train')
             tracker.reset('train')
             tracker.flush_state()
-            extra = _hook_extra(epoch=epoch, lr=lr)
+            extra = _hook_extra(epoch=epoch, lr=epoch_lr)
             if due_eval_period(eval_period, epoch):
                 if algo.on_eval_period(tracker, logger, data, model, system, extra):
                     break
+            if scheduler is not None:
+                scheduler.step()
         if eval_period <= 0:
             algo.on_eval_period(
                 tracker,
@@ -141,7 +171,7 @@ def _run_mnist_linear(
                 data,
                 model,
                 system,
-                _hook_extra(epoch=epochs, lr=lr),
+                _hook_extra(epoch=epochs, lr=_current_lr(optimizer, lr)),
             )
     finally:
         tracker.flush_state()

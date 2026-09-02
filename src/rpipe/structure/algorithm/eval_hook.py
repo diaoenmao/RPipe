@@ -1,4 +1,4 @@
-"""Test-split body for train ``on_eval_period`` (algorithm hook, not a Flow mode)."""
+"""Test-split body for train ``AlgorithmHook.on_eval_period`` (not a Flow mode)."""
 
 from __future__ import annotations
 

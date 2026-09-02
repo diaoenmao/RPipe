@@ -1,7 +1,9 @@
+import json
 from pathlib import Path
 
 from rpipe.flow import FlowContext, FlowRunner
 from rpipe.flow.process.aggregate import process_path
+from rpipe.flow.process.curves import learning_curves_path
 from rpipe.structure.artifact import (
     artifact_layout,
     build_index,
@@ -9,6 +11,7 @@ from rpipe.structure.artifact import (
     write_index,
     write_result,
 )
+from rpipe.structure.artifact.asset import kinds
 from rpipe.structure.artifact.paths import DERIVED_NAME
 
 
@@ -108,3 +111,45 @@ def test_process_does_not_rewrite_result(tmp_path: Path):
     FlowRunner(phases=['process']).run(ctx)
     assert layout.result_path.read_text(encoding='utf-8') == before
     assert 'accuracy' in ctx.state['process']['experiments'][0]['metrics']
+
+
+def test_process_writes_learning_curves_from_tracker_history(tmp_path: Path):
+    study = tmp_path / 'curves'
+    layout = _write_succeeded(study, 'r0', 0, 500, {'accuracy': 0.8}, ['baseline'])
+    state = {
+        'step': 2,
+        'splits': {
+            'train': {
+                'Loss': {'history': [1.0, 0.5], 'last': 0.5, 'mean': 0.0, 'n': 0},
+                'Accuracy': {'history': [0.4, 0.8], 'last': 0.8, 'mean': 0.0, 'n': 0},
+            },
+            'test': {
+                'Loss': {'history': [0.9, 0.4], 'last': 0.4, 'mean': 0.0, 'n': 0},
+                'Accuracy': {'history': [0.5, 0.7], 'last': 0.7, 'mean': 0.0, 'n': 0},
+            },
+        },
+        'last_segment': {},
+    }
+    path = layout.assets_dir / kinds.TRACKER_STATE
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(state), encoding='utf-8')
+    write_index(
+        study,
+        build_index(
+            study='curves',
+            description='',
+            experiments=[
+                {
+                    'factors': {'data.config.train_size': 500},
+                    'runs': [{'id': 'r0', 'seed': 0, 'run_dir': 'r0'}],
+                }
+            ],
+        ),
+    )
+    ctx = FlowContext(study_dir=study, layout=layout, config={})
+    ctx.control = type('C', (), {'id': 'r0'})()
+    FlowRunner(phases=['process']).run(ctx)
+    figure = learning_curves_path(study)
+    assert figure.is_file()
+    assert ctx.state['process']['figures']['learning_curves'] == 'docs/figures/learning_curves.png'
+    assert figure.stat().st_size > 0

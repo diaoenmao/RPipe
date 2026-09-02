@@ -31,11 +31,15 @@
 | `data.source` | `torch`（缓存到 `shared/data/`） |
 | `model.name` | `linear`（784→10） |
 | `algorithm.mode` | `train`（循环内 algorithm hook，不是第二个 Flow mode） |
-| `algorithm.num_epochs` | `2` |
+| `algorithm.num_epochs` | `20` |
 | `algorithm.eval_period` | `1`（每个 epoch 末 `on_eval_period` 评完整 test；`0` = 只在训完评一次） |
 | `data.config.batch_size` | `64` |
-| `algorithm.lr` | `0.1` |
+| `algorithm.lr` | `0.1`（SGD 初始 lr） |
+| `algorithm.scheduler` | `cosine`（`CosineAnnealingLR`，`T_max=num_epochs`） |
+| `algorithm.eta_min` | `0.0` |
 | `system.device` | `cpu` |
+| `system.deterministic` | `false`（写在 `experiment_config` / `study.yaml` 的 `system`；prepare 最先落地） |
+| `system.cudnn_benchmark` | `true`（跟 main；`deterministic: true` 时会关掉） |
 | 测试集 | 完整 MNIST test（或固定子集，实现里写明） |
 
 ## 5. Tags
@@ -49,7 +53,7 @@
 
 1. 写 / 确认 Study 根 `experiment_config.yaml`（真实训练默认）
 2. `python -m rpipe run studies/mnist_train_size` → config + index + Flow
-3. 读 `process.json`（及各 Run `result.json`）写 `STUDY_REPORT.md`（人 / agent；Flow 不改 markdown）
+3. 读 `process.json`、`docs/figures/learning_curves.png`（及各 Run `result.json`）写 `STUDY_REPORT.md`（人 / agent；必须嵌图；Flow 不改 markdown）
 
 ## 7. 成功标准
 
@@ -57,7 +61,7 @@
 - 各 Result 含 `metrics.train_loss`（AlgorithmTracker 最后一段 train mean）与 `accuracy`（全 test）
 - 每条 Run 有 `assets/logs/run.log`（含 Loss）和 `assets/tracker/`（state / jsonl）
 - index 按 `train_size` 分组，每组 3 条 Run；`train_size=500` 带 `baseline`
-- 卡点记入 `STUDY_REPORT.md`
+- `STUDY_REPORT.md` 嵌 learning curve（`docs/figures/`），不能只有表格
 
 ## 8. 刻意不做什么
 

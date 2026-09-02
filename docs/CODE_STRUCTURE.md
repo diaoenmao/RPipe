@@ -57,7 +57,7 @@ src/rpipe/
 |----|------|
 | `structure.api` | 四层对外门面 |
 | `structure.control` | control 对象、config 合并、id hash、契约 |
-| `structure.data` / `model` / `algorithm` / `system` | 四层实现。algorithm 含 **AlgorithmTracker**（数字）与循环 **hook**；system 含 **Logger**（文本） |
+| `structure.data` / `model` / `algorithm` / `system` | 四层实现。algorithm 含 **AlgorithmTracker** 与 **AlgorithmHook**；system 含 **Logger** 与 prepare 时的 seed / deterministic |
 | `structure.artifact` | Study 树路径与 config / result / asset / index 的读写 |
 | `flow.*` | 一次 Run：prepare → execute → collect → summarize → write → process |
 

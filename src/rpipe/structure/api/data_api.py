@@ -3,5 +3,5 @@
 from rpipe.structure.data import Data, DataConfig, DataFactory, DataRegistry
 
 
-def build(data_config: DataConfig, assets_dir):
-    return DataFactory.build(data_config, assets_dir)
+def build(data_config: DataConfig, assets_dir, seed=None):
+    return DataFactory.build(data_config, assets_dir, seed=seed)

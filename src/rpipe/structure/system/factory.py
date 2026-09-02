@@ -61,11 +61,18 @@ class SystemFactory:
 def _build_native(system_config: SystemConfig, assets_dir: Path) -> System:
     device = str(system_config.setting('device', 'cpu'))
     logger = Logger(assets_dir)
+    deterministic = bool(system_config.setting('deterministic', False))
     return System(
         device=device,
         logger=logger,
         assets_dir=assets_dir,
-        meta={'ready': True, 'source': system_config.source or 'native'},
+        meta={
+            'ready': True,
+            'source': system_config.source or 'native',
+            'deterministic': deterministic,
+            'cudnn_benchmark': system_config.setting('cudnn_benchmark'),
+            'cudnn_deterministic': system_config.setting('cudnn_deterministic'),
+        },
     )
 
 

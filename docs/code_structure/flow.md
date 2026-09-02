@@ -110,8 +110,8 @@ flowchart TD
 1. `load_config(layout.config_path)` → `ctx.config`。文件不存在则失败（`MissingConfigError`）。
 2. `control_from_config`；可选 `validate` 契约。
 3. `layout.ensure()` / `ensure_assets`。
-4. 若有 `seed`：固定 python / numpy / torch 等 RNG。
-5. 按 control 经 `structure.api` 建构：建议 **system → data → model**（设备与输出根先就绪）。data 缓存进 `shared/data/`，可复用权重进 `shared/model/`。
+4. **先** `system.apply_runtime(seed, system_config)`：python / numpy / torch seed，以及 `deterministic` / cudnn 开关（structure.md §7.9）。必须在建构 Data / Model **之前**。
+5. 按 control 经 `structure.api` 建构：建议 **system → data → model**（设备与输出根先就绪）。`data_api.build(..., seed=)`，train DataLoader 的 shuffle generator 绑同一 seed。data 缓存进 `shared/data/`，可复用权重进 `shared/model/`。
 6. `data.source`：`stub` 不得下载；真数据必须显式（如 `torch`）。
 7. 把运行时对象放进 `state['data'|'model'|'system']`；构造 **AlgorithmTracker**（写 `assets/tracker/`）与 **Logger**（挂在 System 上：stdout **且** `assets/logs/`）；初始化 `observations`。
 
@@ -123,7 +123,7 @@ flowchart TD
 
 ## 6. execute
 
-**目的：** 按本 Run 的 algorithm **做计算**。一次 Run 一个 mode（train / eval / inference）。周期 test / early stop / 以后其它插入点都是 **algorithm hook**（structure.md §6.10），不是再跑一个 Flow mode。
+**目的：** 按本 Run 的 algorithm **做计算**。一次 Run 一个 mode（train / eval / inference）。周期 test / early stop / 以后其它插入点都是 **AlgorithmHook**（structure.md §6.10），不是再跑一个 Flow mode。
 
 **做：**
 
@@ -197,13 +197,13 @@ flowchart TD
 
 **目的：** 在 **已经 write 的 result** 上做派生。可空。
 
-**典型工作（实现可逐步加，未做则为 no-op）：**
+**做：**
 
-- 按 tags 找同 Study 下 baseline Run，算 metrics Δ，写回 result 派生键或旁路文件
-- 按 Experiment 聚合多次 seed（均值 / 方差）——注意：一次 Flow 只有一个 Run，聚合要 **读 sibling result**，不要假设 `state` 里有全 Study
-- 生成报告片段（给人看的表）；**不**替代 `docs` 里人工结论
+- 按 Experiment 读 sibling result，写 Study 根 `process.json`（mean / std / Δ baseline）
+- 读各 Run `assets/tracker/tracker_state.json` 的 epoch `history`，画 **`docs/figures/learning_curves.png`**（mean±std）。Study 报告必须嵌这张图，不能只有表
+- 本 Run `derived.json`（相对 baseline 的 Δ）
 
-**不做：** 改 config；重跑 execute；覆盖 write 已成功的 `status: succeeded` 正文（派生用明确字段或旁路文件）。
+**不做：** 改 config；重跑 execute；覆盖 write 已成功的 `status: succeeded` 正文；**不**改写 `STUDY_REPORT.md`。
 
 process 依赖「result 已在磁盘」，因此必须排在 write 之后。
 

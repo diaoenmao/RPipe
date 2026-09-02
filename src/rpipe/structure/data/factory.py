@@ -53,7 +53,7 @@ class DataRegistry:
 
 class DataFactory:
     @staticmethod
-    def build(data_config: DataConfig, assets_dir: Path | str) -> Data:
+    def build(data_config: DataConfig, assets_dir: Path | str, seed: int | None = None) -> Data:
         name = data_config.name or 'unknown'
         source = data_config.source
         if source is None and name == 'MNIST':
@@ -65,10 +65,10 @@ class DataFactory:
             builder = DataRegistry.get(name, 'stub')
         if builder is None:
             return _build_stub(data_config, Path(assets_dir))
-        return builder(data_config, Path(assets_dir))
+        return builder(data_config, Path(assets_dir), seed=seed)
 
 
-def _build_stub(data_config: DataConfig, assets_dir: Path) -> Data:
+def _build_stub(data_config: DataConfig, assets_dir: Path, seed: int | None = None) -> Data:
     name = data_config.name or 'unknown'
     source = data_config.source or 'stub'
     cfg = dict(data_config.config)
@@ -76,14 +76,22 @@ def _build_stub(data_config: DataConfig, assets_dir: Path) -> Data:
         name=name,
         source=source,
         loaders={},
-        meta={'ready': True, 'assets_dir': str(assets_dir), 'config': cfg, 'stub': True},
+        meta={
+            'ready': True,
+            'assets_dir': str(assets_dir),
+            'config': cfg,
+            'stub': True,
+            'seed': seed,
+        },
     )
 
 
-def _build_mnist(data_config: DataConfig, assets_dir: Path) -> Data:
+def _build_mnist(data_config: DataConfig, assets_dir: Path, seed: int | None = None) -> Data:
     import torch
     from torch.utils.data import DataLoader, Subset
     from torchvision import datasets, transforms
+
+    from rpipe.structure.system.runtime import make_generator, worker_init_fn
 
     cfg = dict(data_config.config)
     root = assets_dir / 'mnist'
@@ -104,7 +112,14 @@ def _build_mnist(data_config: DataConfig, assets_dir: Path) -> Data:
         n = len(train_full)
         train_ds = train_full
     batch_size = int(cfg.get('batch_size', 64))
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+    generator = make_generator(seed)
+    train_loader = DataLoader(
+        train_ds,
+        batch_size=batch_size,
+        shuffle=True,
+        generator=generator,
+        worker_init_fn=worker_init_fn if seed is not None else None,
+    )
     test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False)
     return Data(
         name='MNIST',
@@ -118,6 +133,7 @@ def _build_mnist(data_config: DataConfig, assets_dir: Path) -> Data:
             'test_size': len(test_ds),
             'batch_size': batch_size,
             'dtype': str(torch.float32),
+            'seed': seed,
         },
     )
 

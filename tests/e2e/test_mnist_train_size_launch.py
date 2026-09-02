@@ -23,6 +23,7 @@ def test_mnist_train_size_study_runner_smoke(tmp_path: Path):
         'data.config.train_size: [500]',
     )
     text = text.replace('seeds: [0, 1, 2]', 'seeds: [0]')
+    text = text.replace('num_epochs: 20', 'num_epochs: 2')
     yaml_path.write_text(text, encoding='utf-8')
 
     out = run_study(study)

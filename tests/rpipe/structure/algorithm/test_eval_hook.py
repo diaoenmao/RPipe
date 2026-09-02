@@ -1,5 +1,6 @@
 from rpipe.structure.algorithm.base import Algorithm
 from rpipe.structure.algorithm.config import AlgorithmConfig
+from rpipe.structure.algorithm.hook import AlgorithmHook
 from rpipe.structure.algorithm.eval_hook import should_early_stop
 from rpipe.structure.algorithm.tracker import AlgorithmTracker
 from rpipe.structure.algorithm.train import TrainAlgorithm, due_eval_period
@@ -7,6 +8,12 @@ from rpipe.structure.algorithm.train import TrainAlgorithm, due_eval_period
 
 class _Model:
     module = object()
+
+
+def test_algorithm_is_algorithm_hook():
+    assert issubclass(Algorithm, AlgorithmHook)
+    algo = Algorithm(AlgorithmConfig.from_mapping({'mode': 'train'}))
+    assert isinstance(algo, AlgorithmHook)
 
 
 def test_eval_period_default_every_epoch():

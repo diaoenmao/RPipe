@@ -11,6 +11,7 @@ requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Enmao Diao" }]
 dependencies = [
+  "matplotlib",
   "numpy",
   "PyYAML",
   "torch",

@@ -10,8 +10,12 @@ model:
   name: linear
 algorithm:
   mode: train
-  num_epochs: 2
+  num_epochs: 20
   eval_period: 1
   lr: 0.1
+  scheduler: cosine
+  eta_min: 0.0
 system:
   device: cpu
+  deterministic: false
+  cudnn_benchmark: true

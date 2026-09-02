@@ -105,10 +105,15 @@ model:
   name: linear                    # 784→10；可在 model.config 里改 in/out
 algorithm:
   mode: train
-  num_epochs: 1
+  num_epochs: 20
+  eval_period: 1
   lr: 0.1
+  scheduler: cosine            # 无 / constant = 固定 lr；cosine = CosineAnnealingLR
+  eta_min: 0.0
 system:
   device: cpu
+  deterministic: false          # prepare 最先落地；true 则 cudnn.deterministic + use_deterministic_algorithms
+  cudnn_benchmark: true         # 跟旧 main；deterministic 开时默认关
 ```
 
 合并规则：`study.yaml` 的 `fixed` 与 `axes` 补丁 **覆盖** 基底同名字段（深层 dict 合并，list 整段替换）。
@@ -136,10 +141,15 @@ fixed:
     name: linear
   algorithm:
     mode: train
-    num_epochs: 2
+    num_epochs: 20
+    eval_period: 1
     lr: 0.1
+    scheduler: cosine
+    eta_min: 0.0
   system:
     device: cpu
+    deterministic: false
+    cudnn_benchmark: true
 
 axes:
   data.config.train_size: [500, 2000, 8000]
@@ -196,9 +206,11 @@ run_description: "train_size={train_size} seed={seed}"
 
 **result**（`runs/<id>/result.json`）：`status`、`metrics`（如 `train_loss` / `accuracy`）、`control`、`paths`。成功则 `status: succeeded`。
 
-`metrics.train_loss` 应是 AlgorithmTracker **最后一段 train mean**，不是最后一个 batch 的 CE。完整曲线在 `runs/<id>/assets/tracker/`；终端同款文本**必写** `assets/logs/`。`process` 若聚合 Experiment，只吃各 Run **摘要**。
+`metrics.train_loss` 应是 AlgorithmTracker **最后一段 train mean**，不是最后一个 batch 的 CE。完整曲线在 `runs/<id>/assets/tracker/`；终端同款文本**必写** `assets/logs/`。
 
-结论按 **Experiment** 聚合后写进 `docs/STUDY_REPORT.md`（现在不会自动生成）。`process` 阶段是预留钩子（相对 baseline 的 Δ 等），目前是空操作。
+`process` 读 sibling result 写 `process.json`（mean / std / Δ），并据各 Run `tracker_state.json` 的 `history` 画出 **`docs/figures/learning_curves.png`**。**不**改 `STUDY_REPORT.md`。
+
+`docs/STUDY_REPORT.md` **必须有图**（至少嵌上 learning curve），不能只有表格和文字。图从 `docs/figures/` 引用；数字读 `process.json`。
 
 ---
 
@@ -209,7 +221,7 @@ run_description: "train_size={train_size} seed={seed}"
 3. 在 `docs/PLAN.md` 写清：比什么、什么固定、成功标准。  
 4. `--skip-launch`，核对 index 里 Experiment 个数、factors、seed、baseline tag。  
 5. `python -m rpipe run studies/<name>`。  
-6. 读各 `result.json`，按 Experiment 写 `docs/STUDY_REPORT.md`。
+6. 读 `process.json` + `docs/figures/learning_curves.png`，按 Experiment 写 `docs/STUDY_REPORT.md`（嵌图，不要只贴表）。
 
 检查清单：
 
@@ -217,6 +229,7 @@ run_description: "train_size={train_size} seed={seed}"
 - [ ] `axes` 与 `seeds` 分开  
 - [ ] 每个 Run 的 config 含 `seed`  
 - [ ] 结论按 Experiment 聚合，而不是按扁平 run 列表  
+- [ ] `STUDY_REPORT.md` 有 learning curve（或同等图），不是只有表格  
 
 ---
 
@@ -228,8 +241,8 @@ run_description: "train_size={train_size} seed={seed}"
 | 换 MNIST 子集大小 / epoch | yaml 即可 |
 | 新数据集、新模型、新训练循环 | 改 `structure.data` / `model` / `algorithm`，再在 yaml 里点名 |
 | 改一次 Run 的阶段顺序 | 不要改；最多 `--phases` 裁剪，相对顺序不变 |
-| 自动出报告 / 跨 Run 对比表 | 尚未做；人写 `STUDY_REPORT.md`，或以后填 `flow.process`（只聚合 result 摘要） |
-| 训练曲线 | `assets/tracker/scalars.jsonl`（report 间隔）+ `history`（epoch 点）；不靠 TensorBoard |
+| 自动出报告 / 跨 Run 对比表 | 人写 `STUDY_REPORT.md`（必须嵌图）；`process` 出 mean/std/Δ 和 `docs/figures/learning_curves.png` |
+| 训练曲线 | process 画 epoch `history` → `docs/figures/`；密点仍在 `scalars.jsonl`；不靠 TensorBoard |
 | 终端 + 硬盘日志 | **Logger**（system）必写 `assets/logs/`，每次 report **flush** |
 
 脚本里若要编程调用：`from rpipe.cli import run_study`（这是 CLI 辅助，不是第三柱）。读写路径用 `rpipe.structure.artifact`。
