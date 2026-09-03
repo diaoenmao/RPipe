@@ -31,11 +31,17 @@
 | `data.source` | `torch`（缓存到 `shared/data/`） |
 | `model.name` | `linear`（784→10） |
 | `algorithm.mode` | `train`（循环内 algorithm hook，不是第二个 Flow mode） |
-| `algorithm.num_epochs` | `20` |
+| `algorithm.num_epochs` | `20`（有 epoch 概念：推导 `num_steps = 20 * ceil(train_size / batch_size)` 并覆盖） |
+| `algorithm.progress_unit` | `epoch`（本 Study 每个 epoch 评 test / 更新 latest；库默认是 `step`） |
 | `algorithm.eval_period` | `1`（每个 epoch 末 `on_eval_period` 评完整 test；`0` = 只在训完评一次） |
+| `algorithm.checkpoint` | `latest`（只覆盖 `latest.pt`） |
+| `algorithm.checkpoint_period` | `1`（每个 epoch 更新 latest） |
+| `algorithm.save_best` | `true`（test Accuracy 最好时另写 `best.pt`） |
+| `algorithm.resume` | `latest`（没有 `latest.pt` 则从头训；续跑同一 hash 会跳过已完成预算） |
+| `algorithm.optimizer` | `SGD` |
 | `data.config.batch_size` | `64` |
 | `algorithm.lr` | `0.1`（SGD 初始 lr） |
-| `algorithm.scheduler` | `cosine`（`CosineAnnealingLR`，`T_max=num_epochs`） |
+| `algorithm.scheduler` | `cosine`（`CosineAnnealingLR`，本 Study `T_max=num_epochs`） |
 | `algorithm.eta_min` | `0.0` |
 | `system.device` | `cpu` |
 | `system.deterministic` | `false`（写在 `experiment_config` / `study.yaml` 的 `system`；prepare 最先落地） |
@@ -59,9 +65,11 @@
 
 - 3 Experiment × 3 seed = 9 次 Run 均 `status: succeeded`
 - 各 Result 含 `metrics.train_loss`（AlgorithmTracker 最后一段 train mean）与 `accuracy`（全 test）
-- 每条 Run 有 `assets/logs/run.log`（含 Loss）和 `assets/tracker/`（state / jsonl）
+- 每条 Run 有 `assets/logs/run.log`（含 Loss）、`assets/tracker/`（state / jsonl）、`assets/checkpoints/latest.pt` 与 `best.pt`
+- Result 含 `metrics.accuracy`（最后一段 test）与 `metrics.best_accuracy`（过往最好 test）
 - index 按 `train_size` 分组，每组 3 条 Run；`train_size=500` 带 `baseline`
 - `STUDY_REPORT.md` 嵌 learning curve（`docs/figures/`），不能只有表格
+- config 含 `resume: latest`、`optimizer: SGD`（进 Run `id` hash；避免旧 latest 把新代码当「已训完」跳过）
 
 ## 8. 刻意不做什么
 

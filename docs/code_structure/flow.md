@@ -123,15 +123,15 @@ flowchart TD
 
 ## 6. execute
 
-**目的：** 按本 Run 的 algorithm **做计算**。一次 Run 一个 mode（train / eval / inference）。周期 test / early stop / 以后其它插入点都是 **AlgorithmHook**（structure.md §6.10），不是再跑一个 Flow mode。
+**目的：** 按本 Run 的 algorithm **做计算**。一次 Run 一个 mode（train / eval / inference）。`run()` **开头**走算法层 **resume**（structure.md §6.11.3）。周期 test / early stop 是 train 的 **AlgorithmHook**（§6.10），不是再跑一个 Flow mode。独立评测是另一次 `mode=eval` 的 Run。
 
 **做：**
 
 1. 要求 `ctx.control` 已在（否则视为未 prepare）。
-2. 经 `algorithm_api` 调用实现，传入 data / model / system 与 **`state['tracker']`**（AlgorithmTracker）。Logger 在 `system` 上。
+2. 经 `algorithm_api` 调用实现，传入 data / model / system 与 **`state['tracker']`**。Logger 在 `system` 上。算法内部：`resume` →（train 则）`make_optimizer` / `make_scheduler` → 循环。checkpoint **文件**经 system 读写；**策略**在 algorithm。
 3. **每个 batch**：`tracker.evaluate` + `append(split, n=batch_size)`。
 4. **按 report 间隔**：`system.logger.report(tracker, …)`（stdout + `run.log` **立即 flush**）；AlgorithmTracker 往 jsonl 追加并 flush；写出 `tracker_state.json` 并 flush。
-5. **epoch 末**：`tracker.save()` + `reset()`，再 flush state。
+5. **epoch 末**：`tracker.save()` + `reset()`，再 flush state。预算主口径是 `num_steps`；若配置 `num_epochs` 且可推导 steps/epoch，会先换算成步数。周期 test / checkpoint 按 `progress_unit`（默认 step）。checkpoint 经 `on_checkpoint` → system 写 `assets/checkpoints/`（默认只覆盖 `latest.pt`）。
 6. **execute 结束（含失败路径尽量）**：再 flush 一遍。
 7. 短备注可进 `state['observations']`。不要把 Module / Tensor / AlgorithmTracker / Logger 整棵丢进 result。
 
@@ -145,7 +145,7 @@ flowchart TD
 
 **做：**
 
-1. 若有 `state['tracker']`（AlgorithmTracker）：从 `mean` 抽出 `train_loss` 等；若本 Run 实际跑过 test/eval，再抽对应键（如 `accuracy`）。
+1. 若有 `state['tracker']`（AlgorithmTracker）：从 `mean` 抽出 `train_loss` 等；若本 Run 实际跑过 test/eval，再抽对应键（如 `accuracy` = 最后一段 test）。`state['execute'].best_accuracy` 有则写入 `metrics.best_accuracy`（过往最好 test，与 last-segment 不是同一个数）。
 2. 仍可扫 `state['observations']` 补零星键；同一键后写覆盖先写。
 3. 写入 `state['collected'] = {metrics, observations}`。`paths.tracker` / `paths.logs` 留给 summarize/write 登记。
 
@@ -167,7 +167,7 @@ flowchart TD
 | `control` | `control.to_dict()` 或等价投影 |
 | `structure` | data / model / system 的 **快照**，不是 runtime |
 | `metrics` | `collected.metrics` |
-| `paths` | run 根、config、assets；result 路径可留给 write 补 |
+| `paths` | run 根、config、assets、tracker、logs、checkpoints；result 路径可留给 write 补 |
 | `study` | `study_dir` |
 
 **必守：** 丢弃 `train_loader`、`module`、`optimizer`、Tensor 等。实现可集中 `_safe_snapshot` 或调用各层 `to_result_snapshot()`（structure.md §9.4）。无法投影的值写成类型占位，或直接省略，禁止塞进草稿等 write 时崩。

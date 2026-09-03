@@ -30,6 +30,35 @@ class System:
 
         return module.to(torch.device(self.device))
 
+    def checkpoint_dir(self) -> Path:
+        from rpipe.structure.artifact.asset import kinds
+
+        directory = Path(self.assets_dir) / kinds.CHECKPOINTS
+        directory.mkdir(parents=True, exist_ok=True)
+        return directory
+
+    def save_checkpoint(self, payload: dict[str, Any], name: str) -> Path:
+        """Write ``assets/checkpoints/<name>.pt``. Algorithm decides when; this layer does IO."""
+        import torch
+
+        stem = str(name).replace('/', '_').replace('\\', '_')
+        path = self.checkpoint_dir() / f'{stem}.pt'
+        torch.save(payload, path)
+        return path
+
+    def load_checkpoint(self, name: str) -> dict[str, Any] | None:
+        """Read ``assets/checkpoints/<name>.pt``. None if missing. Algorithm decides restore."""
+        import torch
+
+        stem = str(name).replace('/', '_').replace('\\', '_')
+        path = self.checkpoint_dir() / f'{stem}.pt'
+        if not path.is_file():
+            return None
+        loaded = torch.load(path, map_location=self.device, weights_only=False)
+        if isinstance(loaded, dict):
+            return loaded
+        return {'model': loaded}
+
     def to_result_snapshot(self) -> dict[str, Any]:
         return {'device': self.device, **self.meta}
 

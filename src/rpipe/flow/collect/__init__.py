@@ -18,6 +18,9 @@ def run(ctx: FlowContext) -> None:
             metrics['accuracy'] = test['Accuracy']
         elif 'Accuracy' in train:
             metrics['accuracy'] = train['Accuracy']
+    execute = ctx.state.get('execute') or {}
+    if execute.get('best_accuracy') is not None:
+        metrics['best_accuracy'] = float(execute['best_accuracy'])
     ctx.state['collected'] = {
         'metrics': metrics,
         'observations': observations,

@@ -3,35 +3,104 @@
   "study": "mnist_train_size",
   "experiments": [
     {
-      "name": "mnist_linear",
-      "description": "MNIST linear classifier (real train + test accuracy)",
-      "path": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear",
+      "factors": {
+        "data.config.train_size": 500
+      },
       "runs": [
         {
-          "id": "03d885fff93ebdb8",
-          "description": "mnist_linear train_size=500",
+          "id": "f61860256fcaaaab",
+          "seed": 0,
+          "description": "train_size=500 seed=0",
           "tags": [
             "baseline"
           ],
-          "run_dir": "03d885fff93ebdb8",
-          "config": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear\\artifact\\03d885fff93ebdb8\\config.yaml"
+          "run_dir": "f61860256fcaaaab",
+          "config": "runs/f61860256fcaaaab/config.yaml"
         },
         {
-          "id": "05d8fd2bd9e28389",
-          "description": "mnist_linear train_size=2000",
-          "tags": [],
-          "run_dir": "05d8fd2bd9e28389",
-          "config": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear\\artifact\\05d8fd2bd9e28389\\config.yaml"
+          "id": "12b6927f005ec604",
+          "seed": 1,
+          "description": "train_size=500 seed=1",
+          "tags": [
+            "baseline"
+          ],
+          "run_dir": "12b6927f005ec604",
+          "config": "runs/12b6927f005ec604/config.yaml"
         },
         {
-          "id": "219dd92975be42ed",
-          "description": "mnist_linear train_size=8000",
+          "id": "465a8f85039fb6c4",
+          "seed": 2,
+          "description": "train_size=500 seed=2",
+          "tags": [
+            "baseline"
+          ],
+          "run_dir": "465a8f85039fb6c4",
+          "config": "runs/465a8f85039fb6c4/config.yaml"
+        }
+      ]
+    },
+    {
+      "factors": {
+        "data.config.train_size": 2000
+      },
+      "runs": [
+        {
+          "id": "aa38cd8edc39ff8e",
+          "seed": 0,
+          "description": "train_size=2000 seed=0",
           "tags": [],
-          "run_dir": "219dd92975be42ed",
-          "config": "D:\\GitHub\\diaoenmao\\RPipe\\examples\\experiments\\mnist_linear\\artifact\\219dd92975be42ed\\config.yaml"
+          "run_dir": "aa38cd8edc39ff8e",
+          "config": "runs/aa38cd8edc39ff8e/config.yaml"
+        },
+        {
+          "id": "ac6ebe86536786ae",
+          "seed": 1,
+          "description": "train_size=2000 seed=1",
+          "tags": [],
+          "run_dir": "ac6ebe86536786ae",
+          "config": "runs/ac6ebe86536786ae/config.yaml"
+        },
+        {
+          "id": "9be3d4b1f8a66ef6",
+          "seed": 2,
+          "description": "train_size=2000 seed=2",
+          "tags": [],
+          "run_dir": "9be3d4b1f8a66ef6",
+          "config": "runs/9be3d4b1f8a66ef6/config.yaml"
+        }
+      ]
+    },
+    {
+      "factors": {
+        "data.config.train_size": 8000
+      },
+      "runs": [
+        {
+          "id": "aa46a8f2daf0311f",
+          "seed": 0,
+          "description": "train_size=8000 seed=0",
+          "tags": [],
+          "run_dir": "aa46a8f2daf0311f",
+          "config": "runs/aa46a8f2daf0311f/config.yaml"
+        },
+        {
+          "id": "dc28d50579b31bce",
+          "seed": 1,
+          "description": "train_size=8000 seed=1",
+          "tags": [],
+          "run_dir": "dc28d50579b31bce",
+          "config": "runs/dc28d50579b31bce/config.yaml"
+        },
+        {
+          "id": "071c2da9901c5513",
+          "seed": 2,
+          "description": "train_size=8000 seed=2",
+          "tags": [],
+          "run_dir": "071c2da9901c5513",
+          "config": "runs/071c2da9901c5513/config.yaml"
         }
       ]
     }
   ],
-  "id": "d66c71ca2eccec3f"
+  "id": "81419bafae1a9685"
 }

@@ -41,6 +41,10 @@ def test_mnist_train_size_study_runner_smoke(tmp_path: Path):
     assert 'Loss' in log_text
     tracker_state = out['results'][0].parent / 'assets' / 'tracker' / 'tracker_state.json'
     assert tracker_state.is_file()
+    ckpt = out['results'][0].parent / 'assets' / 'checkpoints'
+    assert (ckpt / 'latest.pt').is_file()
+    assert (ckpt / 'best.pt').is_file()
+    assert 'best_accuracy' in result['metrics']
     index = load_index(study)
     assert len(index['experiments']) == 1
     assert index['experiments'][0]['factors'] == {'data.config.train_size': 500}

@@ -38,7 +38,7 @@ def test_cosine_scheduler_decays_to_eta_min():
     cfg = AlgorithmConfig.from_mapping(
         {'mode': 'train', 'scheduler': 'cosine', 'eta_min': 0.0}
     )
-    sched = make_scheduler(opt, cfg, epochs=20)
+    sched = make_scheduler(opt, cfg, 20)
     assert sched is not None
     first = opt.param_groups[0]['lr']
     for _ in range(20):

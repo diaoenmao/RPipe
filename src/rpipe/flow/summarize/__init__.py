@@ -47,6 +47,7 @@ def run(ctx: FlowContext) -> None:
             'assets': str(ctx.layout.assets_dir),
             'tracker': str(ctx.layout.assets_dir / 'tracker'),
             'logs': str(ctx.layout.assets_dir / 'logs'),
+            'checkpoints': str(ctx.layout.assets_dir / 'checkpoints'),
         },
         'study': str(ctx.study_dir),
     }

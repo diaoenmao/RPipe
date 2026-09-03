@@ -11,7 +11,13 @@ model:
 algorithm:
   mode: train
   num_epochs: 20
+  progress_unit: epoch
   eval_period: 1
+  checkpoint: latest
+  checkpoint_period: 1
+  save_best: true
+  resume: latest
+  optimizer: SGD
   lr: 0.1
   scheduler: cosine
   eta_min: 0.0

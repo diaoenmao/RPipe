@@ -28,6 +28,25 @@ class Data:
             return iter(())
         return iter(loader)
 
+    def steps_per_epoch(self, split: str = 'train') -> int | None:
+        loader = self._loaders.get(split)
+        if loader is not None:
+            try:
+                value = int(len(loader))
+                if value > 0:
+                    return value
+            except (TypeError, ValueError):
+                pass
+        if split != 'train':
+            return None
+        train_size = self.meta.get('train_size')
+        batch_size = self.meta.get('batch_size')
+        if train_size and batch_size:
+            import math
+
+            return max(int(math.ceil(int(train_size) / int(batch_size))), 1)
+        return None
+
     def to_result_snapshot(self) -> dict[str, Any]:
         out = {'name': self.name, 'source': self.source, **self.meta}
         out.pop('train_loader', None)

@@ -49,9 +49,13 @@ def should_early_stop(
     min_delta: float,
 ) -> tuple[bool, float | None, int]:
     """Maximize test Accuracy. ``patience`` is consecutive non-improving evals."""
-    if patience is None or accuracy is None:
-        return False, best if best is not None else accuracy, stall
+    if accuracy is None:
+        return False, best, stall
     if best is None or accuracy > best + min_delta:
-        return False, accuracy, 0
-    stall += 1
-    return stall >= int(patience), best, stall
+        new_best, new_stall = accuracy, 0
+    else:
+        new_best = best
+        new_stall = stall + 1 if patience is not None else stall
+    if patience is None:
+        return False, new_best, new_stall
+    return new_stall >= int(patience), new_best, new_stall

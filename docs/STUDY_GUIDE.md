@@ -45,6 +45,7 @@ studies/<name>/
     assets/
       tracker/               # AlgorithmTracker 数字曲线
       logs/                  # Logger 文本（与终端同款，必写）
+      checkpoints/           # latest.pt；save_best 时另有 best.pt
 ```
 
 现成例子：
@@ -105,10 +106,16 @@ model:
   name: linear                    # 784→10；可在 model.config 里改 in/out
 algorithm:
   mode: train
-  num_epochs: 20
-  eval_period: 1
+  num_epochs: 20              # 有 epoch 概念时：推导并覆盖 num_steps
+  progress_unit: epoch        # 本例按 epoch 评 test / 存 latest；默认 step（LLM 只写 num_steps）
+  eval_period: 1              # 每 N 个进度单位评 test；0 = 只在训完评一次
+  checkpoint: latest          # latest = 只覆盖 latest.pt；percent = 再按总预算百分比留快照
+  checkpoint_period: 1        # 每 N 个单位更新 latest；0 = 只在训完写一次
+  save_best: true             # test Accuracy 最好时另写 best.pt
+  resume: latest              # train 的 resume 接口；没有 latest 则从头。eval Run 用 resume: best
+  optimizer: SGD              # 算法层接口（momentum 等进同层 extras）；HF Trainer 映射到 TrainingArguments.optim
   lr: 0.1
-  scheduler: cosine            # 无 / constant = 固定 lr；cosine = CosineAnnealingLR
+  scheduler: cosine            # 算法层接口；无 / constant = 固定 lr；HF 映射 lr_scheduler_type
   eta_min: 0.0
 system:
   device: cpu
@@ -142,7 +149,11 @@ fixed:
   algorithm:
     mode: train
     num_epochs: 20
+    progress_unit: epoch      # 每个 epoch 评一次 / 更新 latest；不写则默认 step（eval_period: 1 会每步评 test）
     eval_period: 1
+    checkpoint: latest
+    checkpoint_period: 1
+    save_best: true
     lr: 0.1
     scheduler: cosine
     eta_min: 0.0
@@ -240,9 +251,12 @@ run_description: "train_size={train_size} seed={seed}"
 | 扫已有字段（样本量、lr、seed…） | 只改 Study 的 yaml |
 | 换 MNIST 子集大小 / epoch | yaml 即可 |
 | 新数据集、新模型、新训练循环 | 改 `structure.data` / `model` / `algorithm`，再在 yaml 里点名 |
+| 换 HF Trainer / Accelerate | 改 `algorithm.source`；`optimizer` / `scheduler` / `resume` 键不变（structure.md §6.11） |
+| 独立评测（加载 best） | 另一次 Run：`algorithm.mode: eval`，`resume: best`；不是 Flow 多一个阶段 |
+| 断点续训 | train 的 `resume: latest`（算法接口；system 只读文件） |
 | 改一次 Run 的阶段顺序 | 不要改；最多 `--phases` 裁剪，相对顺序不变 |
 | 自动出报告 / 跨 Run 对比表 | 人写 `STUDY_REPORT.md`（必须嵌图）；`process` 出 mean/std/Δ 和 `docs/figures/learning_curves.png` |
-| 训练曲线 | process 画 epoch `history` → `docs/figures/`；密点仍在 `scalars.jsonl`；不靠 TensorBoard |
+| 训练曲线 | process 画 epoch `history` → `docs/figures/`；密点仍在 `scalars.jsonl`。不做 TensorBoard |
 | 终端 + 硬盘日志 | **Logger**（system）必写 `assets/logs/`，每次 report **flush** |
 
 脚本里若要编程调用：`from rpipe.cli import run_study`（这是 CLI 辅助，不是第三柱）。读写路径用 `rpipe.structure.artifact`。

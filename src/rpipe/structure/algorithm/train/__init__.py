@@ -7,7 +7,20 @@ from typing import Any
 from rpipe.structure.algorithm.base import Algorithm
 from rpipe.structure.algorithm.config import AlgorithmConfig
 from rpipe.structure.algorithm.eval_hook import eval_test_split, should_early_stop
+from rpipe.structure.algorithm.optim import make_scheduler
+from rpipe.structure.algorithm.progress import (
+    UNIT_EPOCH,
+    UNIT_STEP,
+    ProgressBudget,
+    checkpoint_names,
+    crossed_percents,
+    due_period,
+    infer_steps_per_epoch,
+    resolve_budget,
+)
 from rpipe.structure.algorithm.tracker import AlgorithmTracker
+
+due_eval_period = due_period
 
 
 class TrainAlgorithm(Algorithm):
@@ -15,6 +28,7 @@ class TrainAlgorithm(Algorithm):
         super().__init__(config)
         self._best_test: float | None = None
         self._stall = 0
+        self.last_improved = False
 
     def on_eval_period(
         self,
@@ -25,7 +39,8 @@ class TrainAlgorithm(Algorithm):
         system: Any,
         extra: dict[str, Any] | None = None,
     ) -> bool:
-        extra = extra or {}
+        extra = extra if extra is not None else {}
+        self.last_improved = False
         if getattr(model, 'module', None) is None:
             return False
         metrics = eval_test_split(tracker, logger, data, model, system, extra)
@@ -33,19 +48,48 @@ class TrainAlgorithm(Algorithm):
         if patience is not None:
             patience = int(patience)
         min_delta = float(self.config.setting('early_stop_min_delta', 0.0) or 0.0)
+        accuracy = metrics.get('Accuracy')
+        previous = self._best_test
         stop, self._best_test, self._stall = should_early_stop(
-            accuracy=metrics.get('Accuracy'),
+            accuracy=accuracy,
             best=self._best_test,
             stall=self._stall,
             patience=patience,
             min_delta=min_delta,
         )
+        self.last_improved = accuracy is not None and (
+            previous is None or accuracy > previous + min_delta
+        )
+        extra['test_accuracy'] = accuracy
+        extra['best_accuracy'] = self._best_test
+        extra['improved'] = self.last_improved
         if stop and logger is not None:
             logger.info(
-                f"early stop epoch={extra.get('epoch')} "
+                f"early stop epoch={extra.get('epoch')} step={extra.get('step')} "
                 f'best_test_acc={self._best_test} stall={self._stall}'
             )
         return stop
+
+    def on_checkpoint(
+        self,
+        tracker: AlgorithmTracker,
+        logger: Any,
+        data: Any,
+        model: Any,
+        system: Any,
+        extra: dict[str, Any] | None = None,
+    ) -> None:
+        del tracker, data
+        extra = extra or {}
+        names = list(extra.get('checkpoint_names') or [])
+        payload = extra.get('payload')
+        writer = getattr(system, 'save_checkpoint', None)
+        if not names or payload is None or not callable(writer):
+            return
+        for name in names:
+            path = writer(payload, name)
+            if logger is not None:
+                logger.info(f'checkpoint {name} -> {path}')
 
     def run(self, data: Any, model: Any, system: Any, tracker: AlgorithmTracker) -> dict[str, Any]:
         if getattr(data, 'name', None) == 'MNIST' and getattr(model, 'module', None) is not None:
@@ -64,28 +108,6 @@ def run(control_algorithm: dict[str, Any], state: dict[str, Any]) -> dict[str, A
     )
 
 
-def due_eval_period(period: int, epoch: int) -> bool:
-    """Call ``on_eval_period`` this epoch. ``period <= 0`` means only after the loop."""
-    return period > 0 and epoch % period == 0
-
-
-def make_scheduler(optimizer: Any, config: AlgorithmConfig, epochs: int) -> Any:
-    """Build an LR scheduler from ``algorithm.scheduler``. ``None`` / ``constant`` = fixed lr."""
-    name = config.setting('scheduler')
-    if name is None or str(name).lower() in ('', 'none', 'constant'):
-        return None
-    key = str(name).lower().replace('-', '_')
-    if key in ('cosine', 'cosine_annealing', 'cosineannealinglr'):
-        import torch
-
-        eta_min = float(config.setting('eta_min', 0.0) or 0.0)
-        t_max = int(config.setting('T_max', epochs) or epochs)
-        return torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer, T_max=max(t_max, 1), eta_min=eta_min
-        )
-    raise ValueError(f'unknown scheduler: {name}')
-
-
 def _current_lr(optimizer: Any, fallback: float) -> float:
     groups = getattr(optimizer, 'param_groups', None)
     if not groups:
@@ -100,13 +122,38 @@ def _hook_extra(*, epoch: int, lr: float, step: int | None = None) -> dict[str, 
     return extra
 
 
+def _build_payload(
+    module: Any,
+    optimizer: Any,
+    scheduler: Any,
+    extra: dict[str, Any],
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        'epoch': extra.get('epoch'),
+        'step': extra.get('step'),
+        'model': module.state_dict(),
+        'optimizer': optimizer.state_dict() if optimizer is not None else None,
+        'scheduler': scheduler.state_dict() if scheduler is not None else None,
+    }
+    if extra.get('test_accuracy') is not None:
+        payload['test_accuracy'] = extra['test_accuracy']
+    if extra.get('best_accuracy') is not None:
+        payload['best_accuracy'] = extra['best_accuracy']
+    return payload
+
+
 def _run_stub(config: AlgorithmConfig, tracker: AlgorithmTracker) -> dict[str, Any]:
-    steps = int(config.setting('num_steps', 1))
+    budget = resolve_budget(config, steps_per_epoch=1)
     tracker.append('train', n=1, values={'Loss': 0.0})
     tracker.save('train')
     tracker.reset('train')
     tracker.flush('train')
-    return {'mode': 'train', 'steps': steps, 'stub': True}
+    return {
+        'mode': 'train',
+        'steps': budget.num_steps,
+        'epochs': budget.num_epochs or 1,
+        'stub': True,
+    }
 
 
 def _run_mnist_linear(
@@ -123,56 +170,142 @@ def _run_mnist_linear(
     device = torch.device(getattr(system, 'device', 'cpu'))
     module = system.place_module(model.module)
     model.module = module
-    logger = system.logger
-    epochs = int(config.setting('num_epochs', config.setting('num_steps', 1)))
+    logger = getattr(system, 'logger', None)
+    budget = resolve_budget(config, steps_per_epoch=infer_steps_per_epoch(data))
     lr = float(config.setting('lr', 0.1))
     log_interval = config.setting('log_interval')
     log_interval = int(log_interval) if log_interval is not None else None
     eval_period = algo.eval_period()
+    ckpt_period = algo.checkpoint_period()
+    ckpt_mode = algo.checkpoint_mode()
+    percents = algo.checkpoint_percents()
+    keep_best = algo.save_best()
+    already_percent: set[float] = set()
 
-    optimizer = torch.optim.SGD(module.parameters(), lr=lr)
-    scheduler = make_scheduler(optimizer, config, epochs)
+    resume_extra: dict[str, Any] = {}
+    restored = algo.resume(data, model, system, tracker, resume_extra)
+    optimizer = algo.make_optimizer(module)
+    scheduler = algo.make_scheduler(optimizer, budget.scheduler_t_max())
+    if restored:
+        opt_state = restored.get('optimizer')
+        if opt_state is not None:
+            optimizer.load_state_dict(opt_state)
+        sched_state = restored.get('scheduler')
+        if scheduler is not None and sched_state is not None:
+            scheduler.load_state_dict(sched_state)
+        if restored.get('best_accuracy') is not None:
+            algo._best_test = restored['best_accuracy']
     module.train()
-    steps = 0
+    epoch = int(restored.get('epoch') or 0) if restored else 0
+    steps = int(restored.get('step') or 0) if restored else 0
+    stop = False
+
+    def fire_eval(extra: dict[str, Any]) -> bool:
+        return bool(algo.on_eval_period(tracker, logger, data, model, system, extra))
+
+    def fire_ckpt(*, extra: dict[str, Any], improved: bool, is_last: bool) -> None:
+        nonlocal already_percent
+        current = budget.progress(epoch=epoch, step=steps)
+        names = checkpoint_names(
+            mode=ckpt_mode,
+            save_best=keep_best,
+            period=ckpt_period,
+            percents=percents,
+            current=current,
+            total=budget.total,
+            unit=budget.unit,
+            improved=improved,
+            is_last=is_last,
+            already_percent=already_percent,
+        )
+        if not names:
+            return
+        extra = dict(extra)
+        extra['best_accuracy'] = algo._best_test
+        extra['checkpoint_names'] = names
+        extra['payload'] = _build_payload(module, optimizer, scheduler, extra)
+        algo.on_checkpoint(tracker, logger, data, model, system, extra)
+        if ckpt_mode == 'percent':
+            for hit in crossed_percents(current, budget.total, percents, already_percent):
+                already_percent.add(hit)
+
+    already_done = steps >= budget.num_steps
     try:
-        for epoch in range(1, epochs + 1):
-            epoch_lr = _current_lr(optimizer, lr)
-            for images, targets in data.iter_batches('train'):
-                images = images.view(images.size(0), -1).to(device)
-                targets = targets.to(device)
-                optimizer.zero_grad()
-                logits = module(images)
-                loss = F.cross_entropy(logits, targets)
-                loss.backward()
-                optimizer.step()
-                values = tracker.evaluate('train', 'batch', (images, targets), logits)
-                tracker.append('train', n=int(images.size(0)), values=values)
-                steps += 1
-                if log_interval and steps % log_interval == 0:
+        if already_done:
+            extra = _hook_extra(epoch=epoch, lr=_current_lr(optimizer, lr), step=steps)
+            extra['best_accuracy'] = algo._best_test
+            fire_eval(extra)
+        else:
+            while True:
+                if stop:
+                    break
+                epoch += 1
+                epoch_lr = _current_lr(optimizer, lr)
+                batches_this_epoch = 0
+                for images, targets in data.iter_batches('train'):
+                    batches_this_epoch += 1
+                    images = images.view(images.size(0), -1).to(device)
+                    targets = targets.to(device)
+                    optimizer.zero_grad()
+                    logits = module(images)
+                    loss = F.cross_entropy(logits, targets)
+                    loss.backward()
+                    optimizer.step()
+                    values = tracker.evaluate('train', 'batch', (images, targets), logits)
+                    tracker.append('train', n=int(images.size(0)), values=values)
+                    steps += 1
+                    if log_interval and steps % log_interval == 0:
+                        logger.report(
+                            tracker, 'train', extra={'epoch': epoch, 'lr': epoch_lr, 'step': steps}
+                        )
+                        tracker.flush('train')
+                    if budget.unit == UNIT_STEP:
+                        extra = _hook_extra(epoch=epoch, lr=epoch_lr, step=steps)
+                        improved = False
+                        if due_period(eval_period, steps):
+                            if fire_eval(extra):
+                                stop = True
+                            improved = algo.last_improved
+                        fire_ckpt(extra=extra, improved=improved, is_last=False)
+                        if scheduler is not None:
+                            scheduler.step()
+                        if stop:
+                            break
+                    if steps >= budget.num_steps:
+                        stop = True
+                        break
+                if batches_this_epoch == 0:
+                    break
+                if logger is not None:
                     logger.report(
                         tracker, 'train', extra={'epoch': epoch, 'lr': epoch_lr, 'step': steps}
                     )
-                    tracker.flush('train')
-            logger.report(tracker, 'train', extra={'epoch': epoch, 'lr': epoch_lr})
-            tracker.flush('train')
-            tracker.save('train')
-            tracker.reset('train')
-            tracker.flush_state()
-            extra = _hook_extra(epoch=epoch, lr=epoch_lr)
-            if due_eval_period(eval_period, epoch):
-                if algo.on_eval_period(tracker, logger, data, model, system, extra):
-                    break
-            if scheduler is not None:
-                scheduler.step()
-        if eval_period <= 0:
-            algo.on_eval_period(
-                tracker,
-                logger,
-                data,
-                model,
-                system,
-                _hook_extra(epoch=epochs, lr=_current_lr(optimizer, lr)),
-            )
+                tracker.flush('train')
+                tracker.save('train')
+                tracker.reset('train')
+                tracker.flush_state()
+                extra = _hook_extra(epoch=epoch, lr=_current_lr(optimizer, lr), step=steps)
+                if budget.unit == UNIT_EPOCH:
+                    improved = False
+                    if due_period(eval_period, epoch):
+                        if fire_eval(extra):
+                            stop = True
+                        improved = algo.last_improved
+                    last_epoch = budget.num_epochs is not None and epoch >= budget.num_epochs
+                    last_steps = steps >= budget.num_steps
+                    fire_ckpt(extra=extra, improved=improved, is_last=last_epoch or last_steps)
+                    if scheduler is not None:
+                        scheduler.step()
+                if steps >= budget.num_steps:
+                    stop = True
+        extra = _hook_extra(epoch=epoch, lr=_current_lr(optimizer, lr), step=steps)
+        extra['best_accuracy'] = algo._best_test
+        if eval_period <= 0 and not already_done:
+            fire_eval(extra)
+            if keep_best and algo.last_improved:
+                fire_ckpt(extra=extra, improved=True, is_last=True)
+        if not already_done:
+            fire_ckpt(extra=extra, improved=False, is_last=True)
     finally:
         tracker.flush_state()
 
@@ -181,8 +314,14 @@ def _run_mnist_linear(
     return {
         'mode': 'train',
         'steps': steps,
-        'epochs': epochs,
+        'epochs': epoch,
+        'progress_unit': budget.unit,
         'train_size': data.meta.get('train_size') if getattr(data, 'meta', None) else None,
         'train_loss': train_loss,
         'accuracy': accuracy,
+        'best_accuracy': algo._best_test,
     }
+
+
+def budget_for(config: AlgorithmConfig) -> ProgressBudget:
+    return resolve_budget(config)

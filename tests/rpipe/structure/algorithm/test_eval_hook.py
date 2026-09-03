@@ -19,6 +19,9 @@ def test_algorithm_is_algorithm_hook():
 def test_eval_period_default_every_epoch():
     algo = Algorithm(AlgorithmConfig.from_mapping({'mode': 'train'}))
     assert algo.eval_period() == 1
+    assert algo.progress_unit() == 'step'
+    assert algo.checkpoint_mode() == 'latest'
+    assert algo.save_best() is False
     algo = Algorithm(AlgorithmConfig.from_mapping({'mode': 'train', 'eval_period': 0}))
     assert algo.eval_period() == 0
 
@@ -43,6 +46,15 @@ def test_train_hook_early_stop_patience():
     assert stop is True
     assert best == 0.8
     assert stall == 2
+
+
+def test_best_updates_without_patience():
+    stop, best, stall = should_early_stop(
+        accuracy=0.9, best=0.8, stall=0, patience=None, min_delta=0.0
+    )
+    assert stop is False
+    assert best == 0.9
+    assert stall == 0
 
 
 def test_on_eval_period_runs_eval_and_can_stop(tmp_path, monkeypatch):
