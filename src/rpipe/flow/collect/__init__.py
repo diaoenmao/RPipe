@@ -21,6 +21,12 @@ def run(ctx: FlowContext) -> None:
     execute = ctx.state.get('execute') or {}
     if execute.get('best_accuracy') is not None:
         metrics['best_accuracy'] = float(execute['best_accuracy'])
+    elif execute.get('best_value') is not None:
+        metrics['best_value'] = float(execute['best_value'])
+        if execute.get('best_metric'):
+            metrics['best_metric'] = execute['best_metric']
+    if execute.get('mode') == 'eval' and 'accuracy' in metrics:
+        metrics['eval_accuracy'] = float(metrics['accuracy'])
     ctx.state['collected'] = {
         'metrics': metrics,
         'observations': observations,

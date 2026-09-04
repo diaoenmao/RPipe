@@ -3,16 +3,15 @@ from pathlib import Path
 from rpipe.structure.algorithm.tracker import AlgorithmTracker
 
 
-def test_tracker_truncates_jsonl_on_init(tmp_path: Path):
+def test_tracker_keeps_jsonl_on_init(tmp_path: Path):
     leftover = tmp_path / 'tracker' / 'scalars.jsonl'
     leftover.parent.mkdir(parents=True, exist_ok=True)
     leftover.write_text('{"stale": true}\n', encoding='utf-8')
     tracker = AlgorithmTracker(tmp_path)
-    assert tracker.jsonl_path.read_text(encoding='utf-8') == ''
+    assert 'stale' in tracker.jsonl_path.read_text(encoding='utf-8')
     tracker.append('train', n=1, values={'Loss': 1.0})
     tracker.flush('train')
     text = tracker.jsonl_path.read_text(encoding='utf-8')
-    assert 'stale' not in text
     assert 'Loss' in text
 
 

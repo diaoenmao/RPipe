@@ -77,6 +77,8 @@ def collect_curve_groups(study_dir: Path, index: dict[str, Any] | None) -> list[
     groups: list[dict[str, Any]] = []
     for exp in index.get('experiments') or []:
         factors = dict(exp.get('factors') or {})
+        if str(factors.get('algorithm.mode') or '').lower() == 'eval':
+            continue
         run_dirs = [
             str(run.get('run_dir') or run.get('id') or '')
             for run in (exp.get('runs') or [])

@@ -142,7 +142,7 @@ dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必
 | `path` | 数据相关路径（资源或该侧超参/清单所在位置） |
 | `config` | **内容配置**：可装入 `path` 内读出的配置，或由上层覆写；合并规则下游再定 |
 
-Data 是兼容链最上游，**不设**对更上层的兼容字段。`batch_size`、`split`、`transforms` 等不进必须表；优先进 `path` / `config`。
+Data 是兼容链最上游，**不设**对更上层的兼容字段。`batch_size`、`test_batch_ratio`、`split`、`transforms` 等不进必须表；优先进 `path` / `config`。
 
 ### 4.5 Registry / Factory
 
@@ -294,7 +294,7 @@ execute 典型调用：`algorithm.run(data, model, system, tracker=…) → obse
 ### 6.2 `Algorithm` 职责要点
 
 - 按 `mode` 执行 train **或** eval **或** inference（三者行为不同；一次 Run 一个 mode）
-- 从 `Data` 取 batch；调用 `Model`；经 `System` 做设备 / IO 协作
+- 从 `Data` 取 batch；调用 `Model`；经 `System` 做设备 / IO 协作。native 监督循环：有 `module` + `iter_batches` 即训，不按 `data.name` 特判 MNIST
 - **每个计算 batch** 更新 AlgorithmTracker（§6.9）；按间隔把 tracker 交给 `system.Logger` 打终端并写 `assets/logs/`
 - train：更新参数；tracker 曲线进 `assets/tracker/`；checkpoint 经 system 写 asset；循环点上调 **AlgorithmHook**（§6.10），不另开 Flow 阶段
 - **优化器 / 调度器 / resume**：本层接口（§6.11），各 `source` 自己落实；native 手写 loop 与 HF Trainer 走同一套名字
@@ -319,7 +319,7 @@ execute 典型调用：`algorithm.run(data, model, system, tracker=…) → obse
 | 来源 | 典型用于 | 复用什么 |
 |------|----------|----------|
 | Custom PyTorch（native） | train / eval / inference | 手写 loop；本层 `make_optimizer` / `make_scheduler` / `resume`；手写 metric |
-| **Transformers Trainer** | train / eval | `Trainer` + `TrainingArguments`：`optim` / `lr_scheduler_type` / `resume_from_checkpoint` 映射到 §6.11 |
+| Transformers Trainer | train / eval | 真跑 `Trainer` + `TrainingArguments`：`optim` / `lr_scheduler_type` 映射到 §6.11；优化器 / cosine 仍可由算法接口给出（本实现如此，便于与 native 对齐 epoch 调度） |
 | Accelerate | train（及需其封装的执行） | 在 PyTorch 之上的分布式 / 混合精度等编排；底层仍是 PyTorch；优化器仍由算法接口给出 |
 | Diffusers | train / inference（扩散） | diffusers 训练与 pipeline 推理；optimizer / scheduler 仍走算法接口 |
 | DiffSynth | train / inference（扩散合成） | DiffSynth 相关 API |
@@ -466,12 +466,14 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 
 | 超参 | 默认 | 说明 |
 |------|------|------|
-| `checkpoint` | `latest` | 存法：`latest` = 只覆盖 `latest.pt`；`percent` = 另按总预算百分比留命名快照 |
-| `checkpoint_period` | `1` | 每 N 个进度单位更新 `latest.pt`；`0` = 只在训完写一次 latest |
+| `checkpoint` | `latest` | 存法：`latest` = 只覆盖 `latest` 这一份；`percent` = 另按总预算百分比留命名快照 |
+| `checkpoint_period` | `1` | 每 N 个进度单位更新 `latest`；`0` = 只在训完写一次 latest |
 | `checkpoint_percents` | `[0.25, 0.5, 0.75, 1.0]` | `checkpoint: percent` 时生效；相对 **该单位的总预算**（epoch 训 = 总 epoch，step 训 = 总 step） |
-| `save_best` | `false` | `true` 时 test Accuracy 创新高则写 `best.pt`（跟 eval 走，不跟 period 绑死） |
+| `save_best` | `false` | `true` 时 best 口径创新高则写 `best`（跟 eval 走，不跟 period 绑死；口径见下） |
 
-文件都在 `assets/checkpoints/`：`latest.pt`、可选 `best.pt`、百分比时 `epoch_0005.pt` / `step_000100.pt`。payload 含 model / optimizer / scheduler 的 `state_dict` 以及 epoch、step、当时 test / best。result **不**塞权重；`metrics.best_accuracy` 可由 collect 从 execute 摘要带出。hook **不**自己 write `result.json`。
+文件都在 `assets/checkpoints/`：每个 stem 一份 **`<name>.pt` 整包**（兼容）外加 **`<name>/` 目录**（`model.pt` / `optimizer.pt` / `scheduler.pt` / `tracker.json` / `logger.json` / `meta.json`）。`save_best: true` 时另写 `best`。百分比时 `epoch_0005` / `step_000100`。result **不**塞权重。
+
+`best_split` / `best_metric`（或 `best_metric_name`）/ `best_mode`（`max`/`min`；Loss 默认 min）决定何时算 improved。缺省仍是 test Accuracy 越大越好。
 
 **读回来**不是 system 的职责：system 只提供 `load_checkpoint(name)`（与 `save_checkpoint` 对称）。**何时读、读哪份、恢复哪些对象**由算法的 **resume 接口**决定（§6.11.3）。
 
@@ -487,14 +489,16 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 |----------------------------------------|------|
 | `optimizer` | 名字：`SGD` / `Adam` / `AdamW` / …；缺省由该 source 自定（native 可先 SGD） |
 | `lr` | 学习率 |
-| `momentum` / `betas` / `weight_decay` / `nesterov` 等 | 按该优化器解释；未知键忽略或报错，由 source 定 |
+| `momentum` / `betas` / `weight_decay` / `nesterov` 等 | **不枚举死**。yaml extras 整包 overlay；native 用 `inspect.signature` 只把该 `torch.optim` 构造函数认的键传进去（main 的 `filter_args`）。HF 对 `TrainingArguments` 同样过滤 |
+| `step_period` | 梯度累积：每 N 个 batch 才 `optimizer.step()` 一次（计一步）。缺省 `1` |
+| `max_grad_norm` | 梯度裁剪上限；缺省 / `0` = **不裁**（native 默认）。HF Trainer 自带默认 1.0，必须显式映射此键，否则会对不齐 |
 
 映射（同一键，不同落实）：
 
 | source | 落到哪 |
 |--------|--------|
-| `custom_torch` | `torch.optim.<optimizer>(model.parameters(), …)` |
-| Transformers Trainer | `TrainingArguments.optim` + `learning_rate` + `weight_decay` / adam 相关 |
+| `custom_torch` | `getattr(torch.optim, name)` + `filter_args`；`clip_grad_norm_` 在累积结束、`step` 之前 |
+| Transformers Trainer | 优化器仍由算法接口给出；`TrainingArguments` 同样 `filter_args`（`lr`→`learning_rate`，`step_period`→`gradient_accumulation_steps`，`max_grad_norm`） |
 | Accelerate | 仍由本接口给出 `torch.optim`，再交给 Accelerator 包装 |
 
 不要把优化器建在 model 层。
@@ -505,9 +509,9 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 
 | 超参 | 说明 |
 |------|------|
-| `scheduler` | `constant` / `cosine` / `linear`（含 warmup）等；缺省 = 固定 lr |
-| `warmup_ratio` / `warmup_steps` | 线性预热；与 `num_steps` 一起算 |
-| `eta_min` / `T_max` | cosine 用；`T_max` 默认同进度单位的总预算 |
+| `scheduler` | 名字：`cosine` → `CosineAnnealingLR` 等别名；也可直接写 torch 类名。`constant` / 缺省 = 不建调度器。其余键 `filter_args` 进该类构造函数 |
+| `warmup_ratio` / `warmup_steps` | `linear` 预热特例仍手写；与 `num_steps` / `T_max` 一起算 |
+| `eta_min` / `T_max` | cosine 用；`T_max` 缺省则注入进度单位总预算 |
 
 映射：
 
@@ -524,11 +528,11 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 | 超参 | 默认 | 说明 |
 |------|------|------|
 | `resume` | train：`latest`（没有文件则从头）；eval：`best` | `false` / `latest` / `best` / 命名快照（如 `step_000100`） |
-| `resume_from` | 无 | 显式覆盖：本 Run 内 stem，或指向其它 Run / 共享 asset 的路径（形状下游再定） |
+| `resume_from` | 无 | 显式覆盖：本 Run 内 stem，其它 Run 的 `.pt` 路径，或 `sibling`（eval 按 index 找同 seed、同因素且 `mode=train` 的 checkpoint） |
 
-**train 恢复（native 对齐 main）：** 有文件则恢复 `step` / epoch、model、optimizer、scheduler；tracker 是否恢复由实现定（先可以不恢复曲线，只续步数）。没有文件 = 从 step 0 开始，不算失败。
+**train 恢复（native 对齐 main）：** 有文件则恢复 `step` / epoch、model、optimizer、scheduler、**tracker**、**logger 文本不截断**。没有文件 = 从 step 0 开始，不算失败。
 
-**eval 恢复：** 通常只要 **权重**（`best` 优先）；不建或不加载 optimizer。没有目标 checkpoint 则失败（对齐 main `test_model.py`：先训出 best）。
+**eval 恢复：** 通常只要 **权重**（`best` 优先）；不建或不加载 optimizer。本 Run 没有目标文件时，eval 按 Study index 找 **sibling train** 的同名 checkpoint（默认 `best`）。两边都没有则失败（对齐 main `test_model.py`：先训出 best）。
 
 映射：
 
@@ -547,7 +551,7 @@ resume **不**改 config，**不**自己 write `result.json`。
 | 是什么 | 同一 train **Algorithm** 的 hook | **另一个** Algorithm（另一次 Run） |
 | Flow | 仍是 `mode=train` 的 execute | 另一次 execute，`mode=eval` |
 | 权重 | 内存里正在训的 module | resume 加载 `best` / `latest` / 指定快照 |
-| 用途 | 学习曲线、early stop、写 `best.pt` | 最终口径、与 train 解耦的评测（harness / HF evaluate 也走这里） |
+| 用途 | 学习曲线、early stop、写 `best` | 最终口径、与 train 解耦的评测（harness / HF evaluate 也走这里） |
 
 两者应尽量共用 tracker 的 `evaluate` / metric 名字，避免两套数字。eval 的 `source` 可以是 `custom_torch`，也可以是 HF Evaluate / lm-eval；resume 接口仍然适用（先加载再评）。
 
@@ -576,7 +580,7 @@ resume **不**改 config，**不**自己 write `result.json`。
 - 精度策略（fp32 / fp16 / bf16 / mixed）与 autocast 类上下文
 - 并行策略（单卡 / DDP 等）钩子
 - 输出路径：checkpoints、**logs**；**Logger** 挂在本层（§7.8），不是 algorithm
-- **`save_checkpoint(payload, name)`** / **`load_checkpoint(name)`**：读写 `assets/checkpoints/<name>.pt`。algorithm 的 `on_checkpoint` / `resume` 调用；本层**不管**恢复哪些对象
+- **`save_checkpoint(payload, name)`** / **`load_checkpoint(name)`**：写 `assets/checkpoints/<name>.pt` 整包，并写 `<name>/` 分件；读时 `.pt` 或目录都行。algorithm 的 `on_checkpoint` / `resume` 调用；本层**不管**恢复哪些对象
 - 可选 profile / 调试钩子
 - 不承载配置字段表本身（那是 `SystemConfig`）
 - **不**实现优化器、调度器、resume 策略（那是 algorithm §6.11）

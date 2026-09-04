@@ -24,7 +24,13 @@ class EvalAlgorithm(Algorithm):
         if getattr(system, 'place_module', None):
             model.module = system.place_module(model.module)
         restored = self.resume(data, model, system, tracker, extra)
-        metrics = eval_test_split(tracker, logger, data, model, system, extra)
+        report_extra = {
+            'resume_stem': extra.get('resume_stem'),
+            'resume_path': extra.get('resume_path'),
+            'epoch': (restored or {}).get('epoch'),
+            'step': (restored or {}).get('step'),
+        }
+        metrics = eval_test_split(tracker, logger, data, model, system, report_extra)
         accuracy = metrics.get('Accuracy', 0.0)
         return {
             'mode': 'eval',

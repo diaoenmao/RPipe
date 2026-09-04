@@ -45,14 +45,15 @@ studies/<name>/
     assets/
       tracker/               # AlgorithmTracker 数字曲线
       logs/                  # Logger 文本（与终端同款，必写）
-      checkpoints/           # latest.pt；save_best 时另有 best.pt
+      checkpoints/           # latest.pt + latest/（分件）；save_best 时另有 best
 ```
 
 现成例子：
 
 | Study | 用来学什么 |
 |-------|------------|
-| `studies/mnist_train_size/` | 扫研究因素（三个 `train_size`，每个 3 个 seed） |
+| `studies/mnist_train_size/` | 扫研究因素（三个 `train_size`，train + 独立 eval） |
+| `studies/mnist_native_vs_hf/` | 同一超参：`custom_torch` vs `transformers_trainer` |
 | `studies/_template/study.yaml` | 字段模版 |
 
 仓库里若还有 `grid/`、`launch/`、`run.py`，那是历史薄包装。**新 Study 不必抄**，用下一节的 CLI 即可。
@@ -91,7 +92,7 @@ CLI 内部顺序（`src/rpipe/cli.py`）：
 
 ## 4. 写 `experiment_config.yaml`
 
-基底字段对应 structure 四层。当前代码里**真训通路**是：`data.name: MNIST` + `model.name: linear` + `algorithm.mode: train`。其它组合会走 stub（能跑通 Flow，指标可能是占位）。
+基底字段对应 structure 四层。native 真训通路：有 `model.module` 且 `Data.iter_batches`（不再要求 `data.name: MNIST`）。`algorithm.source` 默认 `custom_torch`；`transformers_trainer` 用同一套 `optimizer` / `scheduler` / `resume` 键映射到 `TrainingArguments`。
 
 ```yaml
 experiment: mnist_linear          # 给人看的名字，不是磁盘路径
@@ -105,15 +106,17 @@ data:
 model:
   name: linear                    # 784→10；可在 model.config 里改 in/out
 algorithm:
+  source: custom_torch            # 或 transformers_trainer（同一套键 → TrainingArguments）
   mode: train
   num_epochs: 20              # 有 epoch 概念时：推导并覆盖 num_steps
   progress_unit: epoch        # 本例按 epoch 评 test / 存 latest；默认 step（LLM 只写 num_steps）
   eval_period: 1              # 每 N 个进度单位评 test；0 = 只在训完评一次
-  checkpoint: latest          # latest = 只覆盖 latest.pt；percent = 再按总预算百分比留快照
+  checkpoint: latest          # latest = 覆盖 latest 这一份（.pt 整包 + 目录分件）；percent = 再按总预算百分比留快照
   checkpoint_period: 1        # 每 N 个单位更新 latest；0 = 只在训完写一次
-  save_best: true             # test Accuracy 最好时另写 best.pt
+  save_best: true             # 默认：test Accuracy 最好时另写 best；可用 best_metric / best_mode 改口径
   resume: latest              # train 的 resume 接口；没有 latest 则从头。eval Run 用 resume: best
-  optimizer: SGD              # 算法层接口（momentum 等进同层 extras）；HF Trainer 映射到 TrainingArguments.optim
+  optimizer: SGD              # 名字；momentum / nesterov / weight_decay 等同层 extras，按构造函数 signature 过滤
+  max_grad_norm: 0            # 缺省 / 0 = 不裁。HF Trainer 自带 1.0，必须映射此键
   lr: 0.1
   scheduler: cosine            # 算法层接口；无 / constant = 固定 lr；HF 映射 lr_scheduler_type
   eta_min: 0.0
@@ -147,13 +150,15 @@ fixed:
   model:
     name: linear
   algorithm:
-    mode: train
+    source: custom_torch
     num_epochs: 20
     progress_unit: epoch      # 每个 epoch 评一次 / 更新 latest；不写则默认 step（eval_period: 1 会每步评 test）
     eval_period: 1
     checkpoint: latest
     checkpoint_period: 1
     save_best: true
+    optimizer: SGD
+    max_grad_norm: 0
     lr: 0.1
     scheduler: cosine
     eta_min: 0.0
@@ -164,18 +169,20 @@ fixed:
 
 axes:
   data.config.train_size: [500, 2000, 8000]
+  algorithm.mode: [train, eval]
 
 seeds: [0, 1, 2]
 
 tags:
   - when:
       data.config.train_size: 500
+      algorithm.mode: train
     tags: [baseline]
 
-run_description: "train_size={train_size} seed={seed}"
+run_description: "train_size={train_size} mode={mode} seed={seed}"
 ```
 
-这会得到 **3 个 Experiment**，每个下面 **3 个 Run**。九次训练共用 `shared/data` 里的 MNIST。
+这会得到 **6 个 Experiment**（size × mode），每个下面 **3 个 Run**。同一 `train_size` 先 train 再 eval；eval 默认 resume `best`，从 sibling train Run 读 `best`。`process.paired` 把 train/eval 拼成报告表。九次训练共用 `shared/data` 里的 MNIST。
 
 ### 只扫 seed（一个 Experiment，多次 Run）
 

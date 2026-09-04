@@ -73,6 +73,12 @@ def resolve_budget(config: Any, *, steps_per_epoch: int | None = None) -> Progre
     steps = int(raw_steps) if raw_steps is not None else None
     from_epochs = False
     inferred_spe = int(steps_per_epoch) if steps_per_epoch is not None else None
+    period = int(config.setting('step_period', 1) or 1)
+    period = max(period, 1)
+    if inferred_spe is not None and inferred_spe > 0 and period > 1:
+        import math
+
+        inferred_spe = max(int(math.ceil(inferred_spe / period)), 1)
     if epochs is not None:
         if inferred_spe is not None and inferred_spe > 0:
             steps = epochs * inferred_spe

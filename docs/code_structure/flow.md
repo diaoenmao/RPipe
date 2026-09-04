@@ -131,7 +131,7 @@ flowchart TD
 2. 经 `algorithm_api` 调用实现，传入 data / model / system 与 **`state['tracker']`**。Logger 在 `system` 上。算法内部：`resume` →（train 则）`make_optimizer` / `make_scheduler` → 循环。checkpoint **文件**经 system 读写；**策略**在 algorithm。
 3. **每个 batch**：`tracker.evaluate` + `append(split, n=batch_size)`。
 4. **按 report 间隔**：`system.logger.report(tracker, …)`（stdout + `run.log` **立即 flush**）；AlgorithmTracker 往 jsonl 追加并 flush；写出 `tracker_state.json` 并 flush。
-5. **epoch 末**：`tracker.save()` + `reset()`，再 flush state。预算主口径是 `num_steps`；若配置 `num_epochs` 且可推导 steps/epoch，会先换算成步数。周期 test / checkpoint 按 `progress_unit`（默认 step）。checkpoint 经 `on_checkpoint` → system 写 `assets/checkpoints/`（默认只覆盖 `latest.pt`）。
+5. **epoch 末**：`tracker.save()` + `reset()`，再 flush state。预算主口径是 `num_steps`（`step_period>1` 时按 optimizer step 计）；若配置 `num_epochs` 且可推导 steps/epoch，会先换算成步数。周期 test / checkpoint 按 `progress_unit`（默认 step）。checkpoint 经 `on_checkpoint` → system 写 `assets/checkpoints/`（默认覆盖 `latest`）。
 6. **execute 结束（含失败路径尽量）**：再 flush 一遍。
 7. 短备注可进 `state['observations']`。不要把 Module / Tensor / AlgorithmTracker / Logger 整棵丢进 result。
 

@@ -11,7 +11,7 @@ def _run(tmp_path: Path, mapping: dict) -> tuple[dict, Path]:
     import torch
 
     class _Data:
-        name = 'MNIST'
+        name = 'CIFAR'
         meta = {'train_size': 8, 'batch_size': 4}
 
         def iter_batches(self, split: str):
@@ -38,6 +38,9 @@ def test_epoch_train_writes_latest_only_by_default(tmp_path: Path):
     assert out['progress_unit'] == 'step'
     assert out['steps'] == 4
     assert (ckpt / 'latest.pt').is_file()
+    assert (ckpt / 'latest' / 'model.pt').is_file()
+    assert (ckpt / 'latest' / 'optimizer.pt').is_file()
+    assert (ckpt / 'latest' / 'tracker.json').is_file()
     assert not (ckpt / 'best.pt').is_file()
     assert list(ckpt.glob('epoch_*.pt')) == []
 
@@ -87,6 +90,37 @@ def test_num_steps_stops_and_names_step_snapshots(tmp_path: Path):
     assert (ckpt / 'step_000003.pt').is_file()
 
 
+def test_resume_restores_tracker_history(tmp_path: Path):
+    mapping = {
+        'mode': 'train',
+        'num_epochs': 1,
+        'progress_unit': 'epoch',
+        'eval_period': 1,
+        'checkpoint_period': 1,
+    }
+    _run(tmp_path, mapping)
+    import json
+
+    body = json.loads((tmp_path / 'checkpoints' / 'latest' / 'tracker.json').read_text(encoding='utf-8'))
+    assert 'splits' in body
+    second, _ = _run(tmp_path, mapping)
+    assert second['epochs'] == 1
+
+
+def test_step_period_accumulates_before_optimizer_step(tmp_path: Path):
+    out, _ = _run(
+        tmp_path,
+        {
+            'mode': 'train',
+            'num_epochs': 1,
+            'progress_unit': 'epoch',
+            'eval_period': 1,
+            'step_period': 2,
+        },
+    )
+    assert out['steps'] == 1
+
+
 def test_resume_latest_skips_when_budget_already_done(tmp_path: Path):
     mapping = {
         'mode': 'train',
@@ -118,7 +152,7 @@ def test_eval_algorithm_loads_best(tmp_path: Path):
     import torch
 
     class _Data:
-        name = 'MNIST'
+        name = 'CIFAR'
         meta = {'train_size': 8, 'batch_size': 4}
 
         def iter_batches(self, split: str):
@@ -147,7 +181,7 @@ def test_eval_algorithm_missing_checkpoint_fails(tmp_path: Path):
     import torch
 
     class _Data:
-        name = 'MNIST'
+        name = 'CIFAR'
         meta = {}
 
         def iter_batches(self, split: str):

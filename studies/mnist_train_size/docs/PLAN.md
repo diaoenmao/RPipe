@@ -4,74 +4,77 @@
 
 ## 1. 研究问题
 
-在固定模型与训练预算下，**MNIST 训练集样本量**如何影响 **测试集准确率**（及训练 loss）？
+在固定模型与训练预算下，**MNIST 训练集样本量**如何影响 **测试集准确率**（及训练 loss）？独立 `mode=eval` Run 用 train 的 `best.pt` 再评一次，作为最终口径。
 
 ## 2. Study / Experiment
 
 本 Study 名叫 `mnist_train_size`。`experiment_config` 里的 `experiment: mnist_linear` 只是基底名字（给人看、进 config），**不是**磁盘上的 Experiment 目录。
 
-真正的 Experiment 由 `axes` 展开：三个 `train_size` 取值 = **三个 Experiment**；每个再 × 3 个 seed = 9 次 Run。index 按 `factors` 分组。
+真正的 Experiment 由 `axes` 展开：三个 `train_size` × `{train, eval}` = **六个 Experiment**；每个再 × 3 个 seed = 18 次 Run。index 按 `factors` 分组。`process.paired` 把同一 `train_size` 的 train / eval 拼回一行，供报告表格。
 
 ## 3. 变量轴（有意变化）
 
 | 轴 | 字段 | 取值 |
 |----|------|------|
 | 训练样本量 | `data.config.train_size` | `500`, `2000`, `8000` |
+| 算法 mode | `algorithm.mode` | `train`, `eval` |
 
-其余固定（见下）。样本量进入 Config → **参与 Run `id` hash**。
+其余固定（见下）。两轴都进入 Config → **参与 Run `id` hash**。yaml 里 `train_size` 在前、`mode` 在后，因此每个 size 先跑完 3 个 train，再跑 3 个 eval（eval 才能找到 sibling `best.pt`）。
 
-**子集口径（嵌套前 N 条）：** `train_size` 取训练集编号 `0 .. N-1`，因此 **500 ⊂ 2000 ⊂ 8000**。加大样本量是「多给前面那些图」，不是每个格子重新抽一袋。`seed` 只影响初始化与 DataLoader shuffle，不换图。格子之间比的是「同一批图变多了」加上随机性，不是独立抽样方差。
+**子集口径（嵌套前 N 条）：** `train_size` 取训练集编号 `0 .. N-1`，因此 **500 ⊂ 2000 ⊂ 8000**。加大样本量是「多给前面那些图」，不是每个格子重新抽一袋。`seed` 只影响初始化与 DataLoader shuffle，不换图。
 
 ## 4. 固定条件
 
 | 项 | 取值 |
 |----|------|
-| `seeds` | `0, 1, 2`（每个 Experiment 三次 Run） |
+| `seeds` | `0, 1, 2` |
 | `data.name` | `MNIST` |
 | `data.source` | `torch`（缓存到 `shared/data/`） |
 | `model.name` | `linear`（784→10） |
-| `algorithm.mode` | `train`（循环内 algorithm hook，不是第二个 Flow mode） |
-| `algorithm.num_epochs` | `20`（有 epoch 概念：推导 `num_steps = 20 * ceil(train_size / batch_size)` 并覆盖） |
-| `algorithm.progress_unit` | `epoch`（本 Study 每个 epoch 评 test / 更新 latest；库默认是 `step`） |
-| `algorithm.eval_period` | `1`（每个 epoch 末 `on_eval_period` 评完整 test；`0` = 只在训完评一次） |
-| `algorithm.checkpoint` | `latest`（只覆盖 `latest.pt`） |
-| `algorithm.checkpoint_period` | `1`（每个 epoch 更新 latest） |
-| `algorithm.save_best` | `true`（test Accuracy 最好时另写 `best.pt`） |
-| `algorithm.resume` | `latest`（没有 `latest.pt` 则从头训；续跑同一 hash 会跳过已完成预算） |
+| `algorithm.source` | `custom_torch`（HF Trainer 走同一套键，本 Study 不切 source） |
+| `algorithm.num_epochs` | `20`（eval Run 忽略预算，只 resume + 评 test） |
+| `algorithm.progress_unit` | `epoch` |
+| `algorithm.eval_period` | `1`（仅 train 循环内 hook） |
+| `algorithm.checkpoint` | `latest` |
+| `algorithm.checkpoint_period` | `1` |
+| `algorithm.save_best` | `true` |
+| `algorithm.resume` | 不写：train 默认 `latest`（无文件从头）；eval 默认 `best`（从 sibling train Run 读） |
 | `algorithm.optimizer` | `SGD` |
+| `algorithm.max_grad_norm` | `0`（不裁；算法层超参，HF 必须写 0 才能关默认 1.0） |
 | `data.config.batch_size` | `64` |
-| `algorithm.lr` | `0.1`（SGD 初始 lr） |
-| `algorithm.scheduler` | `cosine`（`CosineAnnealingLR`，本 Study `T_max=num_epochs`） |
+| `algorithm.lr` | `0.1` |
+| `algorithm.scheduler` | `cosine` |
 | `algorithm.eta_min` | `0.0` |
 | `system.device` | `cpu` |
-| `system.deterministic` | `false`（写在 `experiment_config` / `study.yaml` 的 `system`；prepare 最先落地） |
-| `system.cudnn_benchmark` | `true`（跟 main；`deterministic: true` 时会关掉） |
-| 测试集 | 完整 MNIST test（或固定子集，实现里写明） |
+| `system.deterministic` | `false` |
+| `system.cudnn_benchmark` | `true` |
+| 测试集 | 完整 MNIST test |
 
 ## 5. Tags
 
 | Run | tags |
 |-----|------|
-| `train_size=500` | `baseline`（最小数据量作为对照） |
-| 其余 | （无，或后续可加 `sweep`） |
+| `train_size=500` 且 `mode=train` | `baseline` |
+| 其余 | （无） |
 
 ## 6. 编排顺序（对齐 CONCEPT §9）
 
-1. 写 / 确认 Study 根 `experiment_config.yaml`（真实训练默认）
+1. 写 / 确认 Study 根 `experiment_config.yaml`
 2. `python -m rpipe run studies/mnist_train_size` → config + index + Flow
-3. 读 `process.json`、`docs/figures/learning_curves.png`（及各 Run `result.json`）写 `STUDY_REPORT.md`（人 / agent；必须嵌图；Flow 不改 markdown）
+3. 读 `process.json`（含 `paired`）、`docs/figures/learning_curves.png` 写 `STUDY_REPORT.md`（必须有 train 表 + eval 表；Flow 不改 markdown）
 
 ## 7. 成功标准
 
-- 3 Experiment × 3 seed = 9 次 Run 均 `status: succeeded`
-- 各 Result 含 `metrics.train_loss`（AlgorithmTracker 最后一段 train mean）与 `accuracy`（全 test）
-- 每条 Run 有 `assets/logs/run.log`（含 Loss）、`assets/tracker/`（state / jsonl）、`assets/checkpoints/latest.pt` 与 `best.pt`
-- Result 含 `metrics.accuracy`（最后一段 test）与 `metrics.best_accuracy`（过往最好 test）
-- index 按 `train_size` 分组，每组 3 条 Run；`train_size=500` 带 `baseline`
-- `STUDY_REPORT.md` 嵌 learning curve（`docs/figures/`），不能只有表格
-- config 含 `resume: latest`、`optimizer: SGD`（进 Run `id` hash；避免旧 latest 把新代码当「已训完」跳过）
+- 6 Experiment × 3 seed = 18 次 Run 均 `status: succeeded`
+- train Result：`train_loss`、`accuracy`、`best_accuracy`；`latest.pt` 与 `best.pt`
+- eval Result：`accuracy` 与 `eval_accuracy`（独立评测，加载 sibling `best.pt`）
+- index 按 `train_size` + `mode` 分组；仅 500×train 带 `baseline`
+- `STUDY_REPORT.md` 嵌 learning curve，并列出独立 eval 表
+- learning curve 只画 train Run（eval 没有 epoch 曲线）
 
 ## 8. 刻意不做什么
 
+- 不把独立 eval 做成 Flow 第二阶段
+- 本 Study 不切换 `algorithm.source: transformers_trainer`
+- 不做 TensorBoard
 - 不引入独立 baseline 对象 / Findings / MCP
-- 不为「好看」加 UI

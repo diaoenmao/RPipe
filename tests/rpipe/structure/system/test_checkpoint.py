@@ -9,6 +9,7 @@ def test_system_save_checkpoint_writes_pt(tmp_path: Path):
     path = system.save_checkpoint({'step': 3, 'model': {'w': 1}}, 'latest')
     assert path == tmp_path / 'checkpoints' / 'latest.pt'
     assert path.is_file()
+    assert (tmp_path / 'checkpoints' / 'latest' / 'meta.json').is_file()
     import torch
 
     loaded = torch.load(path, weights_only=False)

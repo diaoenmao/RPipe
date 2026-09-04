@@ -28,13 +28,17 @@ def test_mnist_train_size_study_runner_smoke(tmp_path: Path):
 
     out = run_study(study)
     assert out['index'].is_file()
-    assert len(out['configs']) == 1
-    assert len(out['results']) == 1
-    assert out['results'][0].is_file()
-    result = load_result(out['results'][0])
-    assert result['status'] == 'succeeded'
-    assert 'accuracy' in result['metrics']
-    assert 'train_loss' in result['metrics']
+    assert len(out['configs']) == 2
+    assert len(out['results']) == 2
+    train_result = load_result(out['results'][0])
+    eval_result = load_result(out['results'][1])
+    assert train_result['status'] == 'succeeded'
+    assert eval_result['status'] == 'succeeded'
+    assert train_result['control']['algorithm']['mode'] == 'train'
+    assert eval_result['control']['algorithm']['mode'] == 'eval'
+    assert 'accuracy' in train_result['metrics']
+    assert 'train_loss' in train_result['metrics']
+    assert 'eval_accuracy' in eval_result['metrics']
     log_path = out['results'][0].parent / 'assets' / 'logs' / 'run.log'
     assert log_path.is_file()
     log_text = log_path.read_text(encoding='utf-8')
@@ -44,11 +48,19 @@ def test_mnist_train_size_study_runner_smoke(tmp_path: Path):
     ckpt = out['results'][0].parent / 'assets' / 'checkpoints'
     assert (ckpt / 'latest.pt').is_file()
     assert (ckpt / 'best.pt').is_file()
-    assert 'best_accuracy' in result['metrics']
+    assert 'best_accuracy' in train_result['metrics']
     index = load_index(study)
-    assert len(index['experiments']) == 1
-    assert index['experiments'][0]['factors'] == {'data.config.train_size': 500}
+    assert len(index['experiments']) == 2
+    assert index['experiments'][0]['factors'] == {
+        'data.config.train_size': 500,
+        'algorithm.mode': 'train',
+    }
+    assert index['experiments'][1]['factors'] == {
+        'data.config.train_size': 500,
+        'algorithm.mode': 'eval',
+    }
     assert index['experiments'][0]['runs'][0]['seed'] == 0
     assert index['experiments'][0]['runs'][0]['tags'] == ['baseline']
+    assert index['experiments'][1]['runs'][0]['tags'] == []
     assert (study / 'shared' / 'data').is_dir()
     assert (study / 'docs').is_dir()

@@ -48,6 +48,15 @@ def test_train_hook_early_stop_patience():
     assert stall == 2
 
 
+def test_min_mode_improves_on_lower_loss():
+    stop, best, stall = should_early_stop(
+        value=0.4, best=0.8, stall=0, patience=None, min_delta=0.0, mode='min'
+    )
+    assert stop is False
+    assert best == 0.4
+    assert stall == 0
+
+
 def test_best_updates_without_patience():
     stop, best, stall = should_early_stop(
         accuracy=0.9, best=0.8, stall=0, patience=None, min_delta=0.0

@@ -182,7 +182,55 @@ def summarize(
         'source_run': source_run,
         'complete': complete,
         'experiments': experiments,
+        'paired': pair_train_eval(experiments),
     }
+
+
+def _mode_from_factors(factors: dict[str, Any]) -> str:
+    raw = factors.get('algorithm.mode')
+    if raw is None:
+        return 'train'
+    return str(raw)
+
+
+def pair_train_eval(experiments: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Join train/eval Experiment cells that differ only by ``algorithm.mode``."""
+    buckets: dict[str, dict[str, Any]] = {}
+    order: list[str] = []
+    for exp in experiments:
+        factors = dict(exp.get('factors') or {})
+        shared = {k: v for k, v in factors.items() if k != 'algorithm.mode'}
+        token = json.dumps(shared, sort_keys=True, default=str)
+        if token not in buckets:
+            buckets[token] = {'factors': shared, 'train': None, 'eval': None}
+            order.append(token)
+        mode = _mode_from_factors(factors)
+        if mode == 'eval':
+            buckets[token]['eval'] = exp
+        else:
+            buckets[token]['train'] = exp
+    out: list[dict[str, Any]] = []
+    for token in order:
+        item = buckets[token]
+        train = item['train']
+        ev = item['eval']
+        if train is None and ev is None:
+            continue
+        row: dict[str, Any] = {'factors': item['factors']}
+        if train is not None:
+            row['train'] = {
+                'metrics': train.get('metrics') or {},
+                'n': train.get('n'),
+                'runs': train.get('runs') or [],
+            }
+        if ev is not None:
+            row['eval'] = {
+                'metrics': ev.get('metrics') or {},
+                'n': ev.get('n'),
+                'runs': ev.get('runs') or [],
+            }
+        out.append(row)
+    return out
 
 
 def run_delta(metrics: dict[str, float], baseline_means: dict[str, float] | None) -> dict[str, float] | None:

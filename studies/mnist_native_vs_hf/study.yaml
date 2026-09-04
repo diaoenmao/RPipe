@@ -1,5 +1,5 @@
-study: mnist_train_size
-description: MNIST train_size sweep → test accuracy; independent eval Run loads train best
+study: mnist_native_vs_hf
+description: Same MNIST linear recipe — custom_torch vs transformers_trainer
 
 experiment:
   name: mnist_linear
@@ -13,7 +13,7 @@ fixed:
   model:
     name: linear
   algorithm:
-    source: custom_torch
+    mode: train
     num_epochs: 20
     progress_unit: epoch
     eval_period: 1
@@ -30,17 +30,17 @@ fixed:
     deterministic: false
     cudnn_benchmark: true
 
-# 3 train_size × {train, eval} × 3 seeds = 18 Runs. eval 在同 size 的 3 次 train 之后启动，resume 默认 best。
+# 2 sources × 3 train_size × 3 seeds = 18 Runs. custom_torch 在前，便于对照。
 axes:
+  algorithm.source: [custom_torch, transformers_trainer]
   data.config.train_size: [500, 2000, 8000]
-  algorithm.mode: [train, eval]
 
 seeds: [0, 1, 2]
 
 tags:
   - when:
+      algorithm.source: custom_torch
       data.config.train_size: 500
-      algorithm.mode: train
     tags: [baseline]
 
-run_description: "train_size={train_size} mode={mode} seed={seed}"
+run_description: "source={source} train_size={train_size} seed={seed}"

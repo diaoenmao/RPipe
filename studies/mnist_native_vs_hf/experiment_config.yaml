@@ -1,5 +1,5 @@
 experiment: mnist_linear
-description: MNIST linear classifier (train + independent eval)
+description: MNIST linear — native loop vs HuggingFace Trainer (same algorithm keys)
 data:
   name: MNIST
   source: torch

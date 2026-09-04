@@ -30,6 +30,13 @@ class AlgorithmFactory:
         from rpipe.structure.algorithm.eval import EvalAlgorithm
         from rpipe.structure.algorithm.inference import InferenceAlgorithm
         from rpipe.structure.algorithm.train import TrainAlgorithm
+        from rpipe.structure.algorithm.transformers_trainer import HfEvalAlgorithm, HfTrainAlgorithm
+
+        AlgorithmRegistry.register('train', 'custom_torch', TrainAlgorithm)
+        AlgorithmRegistry.register('eval', 'custom_torch', EvalAlgorithm)
+        AlgorithmRegistry.register('inference', 'custom_torch', InferenceAlgorithm)
+        AlgorithmRegistry.register('train', 'transformers_trainer', HfTrainAlgorithm)
+        AlgorithmRegistry.register('eval', 'transformers_trainer', HfEvalAlgorithm)
 
         mode = algorithm_config.mode or 'train'
         source = algorithm_config.source or 'custom_torch'

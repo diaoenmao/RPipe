@@ -6,8 +6,14 @@ from typing import Any
 
 from rpipe.structure.algorithm.base import Algorithm
 from rpipe.structure.algorithm.config import AlgorithmConfig
-from rpipe.structure.algorithm.eval_hook import eval_test_split, should_early_stop
-from rpipe.structure.algorithm.optim import make_scheduler
+from rpipe.structure.algorithm.batch import prepare_tensors
+from rpipe.structure.algorithm.eval_hook import (
+    _is_better,
+    best_spec,
+    eval_test_split,
+    should_early_stop,
+)
+from rpipe.structure.algorithm.optim import clip_gradients, make_scheduler
 from rpipe.structure.algorithm.progress import (
     UNIT_EPOCH,
     UNIT_STEP,
@@ -27,6 +33,7 @@ class TrainAlgorithm(Algorithm):
     def __init__(self, config: AlgorithmConfig) -> None:
         super().__init__(config)
         self._best_test: float | None = None
+        self._best_metric = 'Accuracy'
         self._stall = 0
         self.last_improved = False
 
@@ -44,24 +51,30 @@ class TrainAlgorithm(Algorithm):
         if getattr(model, 'module', None) is None:
             return False
         metrics = eval_test_split(tracker, logger, data, model, system, extra)
+        split, metric, mode = best_spec(self.config)
+        self._best_metric = metric
         patience = self.config.setting('early_stop_patience')
         if patience is not None:
             patience = int(patience)
         min_delta = float(self.config.setting('early_stop_min_delta', 0.0) or 0.0)
-        accuracy = metrics.get('Accuracy')
+        pool = metrics if split == 'test' else tracker.segment_mean(split)
+        score = pool.get(metric)
         previous = self._best_test
         stop, self._best_test, self._stall = should_early_stop(
-            accuracy=accuracy,
+            value=score,
             best=self._best_test,
             stall=self._stall,
             patience=patience,
             min_delta=min_delta,
+            mode=mode,
         )
-        self.last_improved = accuracy is not None and (
-            previous is None or accuracy > previous + min_delta
+        self.last_improved = score is not None and _is_better(
+            score, previous, min_delta=min_delta, mode=mode
         )
-        extra['test_accuracy'] = accuracy
-        extra['best_accuracy'] = self._best_test
+        extra['test_accuracy'] = metrics.get('Accuracy')
+        extra['best_metric'] = metric
+        extra['best_value'] = self._best_test
+        extra['best_accuracy'] = self._best_test if metric == 'Accuracy' else extra.get('best_accuracy')
         extra['improved'] = self.last_improved
         if stop and logger is not None:
             logger.info(
@@ -79,7 +92,7 @@ class TrainAlgorithm(Algorithm):
         system: Any,
         extra: dict[str, Any] | None = None,
     ) -> None:
-        del tracker, data
+        del data
         extra = extra or {}
         names = list(extra.get('checkpoint_names') or [])
         payload = extra.get('payload')
@@ -92,8 +105,8 @@ class TrainAlgorithm(Algorithm):
                 logger.info(f'checkpoint {name} -> {path}')
 
     def run(self, data: Any, model: Any, system: Any, tracker: AlgorithmTracker) -> dict[str, Any]:
-        if getattr(data, 'name', None) == 'MNIST' and getattr(model, 'module', None) is not None:
-            return _run_mnist_linear(self, data, model, system, tracker)
+        if getattr(model, 'module', None) is not None and hasattr(data, 'iter_batches'):
+            return _run_supervised(self, data, model, system, tracker)
         return _run_stub(self.config, tracker)
 
 
@@ -127,6 +140,8 @@ def _build_payload(
     optimizer: Any,
     scheduler: Any,
     extra: dict[str, Any],
+    tracker: AlgorithmTracker | None = None,
+    logger: Any | None = None,
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {
         'epoch': extra.get('epoch'),
@@ -139,6 +154,13 @@ def _build_payload(
         payload['test_accuracy'] = extra['test_accuracy']
     if extra.get('best_accuracy') is not None:
         payload['best_accuracy'] = extra['best_accuracy']
+    if extra.get('best_value') is not None:
+        payload['best_value'] = extra['best_value']
+        payload['best_metric'] = extra.get('best_metric')
+    if tracker is not None:
+        payload['tracker'] = tracker.state_dict()
+    if logger is not None and hasattr(logger, 'state_dict'):
+        payload['logger'] = logger.state_dict()
     return payload
 
 
@@ -156,7 +178,7 @@ def _run_stub(config: AlgorithmConfig, tracker: AlgorithmTracker) -> dict[str, A
     }
 
 
-def _run_mnist_linear(
+def _run_supervised(
     algo: TrainAlgorithm,
     data: Any,
     model: Any,
@@ -193,7 +215,9 @@ def _run_mnist_linear(
         sched_state = restored.get('scheduler')
         if scheduler is not None and sched_state is not None:
             scheduler.load_state_dict(sched_state)
-        if restored.get('best_accuracy') is not None:
+        if restored.get('best_value') is not None:
+            algo._best_test = restored['best_value']
+        elif restored.get('best_accuracy') is not None:
             algo._best_test = restored['best_accuracy']
     module.train()
     epoch = int(restored.get('epoch') or 0) if restored else 0
@@ -221,9 +245,12 @@ def _run_mnist_linear(
         if not names:
             return
         extra = dict(extra)
-        extra['best_accuracy'] = algo._best_test
+        extra['best_value'] = algo._best_test
+        extra['best_metric'] = algo._best_metric
+        if algo._best_metric == 'Accuracy':
+            extra['best_accuracy'] = algo._best_test
         extra['checkpoint_names'] = names
-        extra['payload'] = _build_payload(module, optimizer, scheduler, extra)
+        extra['payload'] = _build_payload(module, optimizer, scheduler, extra, tracker, logger)
         algo.on_checkpoint(tracker, logger, data, model, system, extra)
         if ckpt_mode == 'percent':
             for hit in crossed_percents(current, budget.total, percents, already_percent):
@@ -242,17 +269,23 @@ def _run_mnist_linear(
                 epoch += 1
                 epoch_lr = _current_lr(optimizer, lr)
                 batches_this_epoch = 0
-                for images, targets in data.iter_batches('train'):
+                accum = 0
+                step_period = max(int(config.setting('step_period', 1) or 1), 1)
+                optimizer.zero_grad()
+                for batch in data.iter_batches('train'):
                     batches_this_epoch += 1
-                    images = images.view(images.size(0), -1).to(device)
-                    targets = targets.to(device)
-                    optimizer.zero_grad()
+                    images, targets = prepare_tensors(batch, module, device)
                     logits = module(images)
-                    loss = F.cross_entropy(logits, targets)
+                    loss = F.cross_entropy(logits, targets) / step_period
                     loss.backward()
-                    optimizer.step()
+                    accum += 1
                     values = tracker.evaluate('train', 'batch', (images, targets), logits)
                     tracker.append('train', n=int(images.size(0)), values=values)
+                    if accum % step_period != 0:
+                        continue
+                    clip_gradients(module, config)
+                    optimizer.step()
+                    optimizer.zero_grad()
                     steps += 1
                     if log_interval and steps % log_interval == 0:
                         logger.report(
@@ -274,6 +307,7 @@ def _run_mnist_linear(
                     if steps >= budget.num_steps:
                         stop = True
                         break
+                optimizer.zero_grad()
                 if batches_this_epoch == 0:
                     break
                 if logger is not None:
@@ -311,7 +345,7 @@ def _run_mnist_linear(
 
     train_loss = tracker.segment_mean('train').get('Loss', 0.0)
     accuracy = tracker.segment_mean('test').get('Accuracy', 0.0)
-    return {
+    summary: dict[str, Any] = {
         'mode': 'train',
         'steps': steps,
         'epochs': epoch,
@@ -319,8 +353,12 @@ def _run_mnist_linear(
         'train_size': data.meta.get('train_size') if getattr(data, 'meta', None) else None,
         'train_loss': train_loss,
         'accuracy': accuracy,
-        'best_accuracy': algo._best_test,
+        'best_value': algo._best_test,
+        'best_metric': algo._best_metric,
     }
+    if algo._best_metric == 'Accuracy':
+        summary['best_accuracy'] = algo._best_test
+    return summary
 
 
 def budget_for(config: AlgorithmConfig) -> ProgressBudget:

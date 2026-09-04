@@ -139,7 +139,9 @@ def _build_mnist(data_config: DataConfig, assets_dir: Path, seed: int | None = N
         generator=generator,
         worker_init_fn=worker_init_fn if seed is not None else None,
     )
-    test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False)
+    test_ratio = float(cfg.get('test_batch_ratio', 1) or 1)
+    test_batch_size = max(int(batch_size * test_ratio), 1)
+    test_loader = DataLoader(test_ds, batch_size=test_batch_size, shuffle=False)
     return Data(
         name='MNIST',
         source='torch',
@@ -151,6 +153,7 @@ def _build_mnist(data_config: DataConfig, assets_dir: Path, seed: int | None = N
             'train_size': n,
             'test_size': len(test_ds),
             'batch_size': batch_size,
+            'test_batch_size': test_batch_size,
             'dtype': str(torch.float32),
             'seed': seed,
         },

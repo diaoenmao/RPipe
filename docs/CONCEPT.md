@@ -165,7 +165,7 @@ flowchart TB
 | **control** | 本 Run 对四层的指派 |
 | **data** | 运行时：输入怎么组织。落盘：数据集等文件在 artifact 的 **asset** |
 | **model** | 运行时：网络怎么构造。落盘：权重 / checkpoint 在 artifact 的 **asset** |
-| **algorithm** | 怎么算。数字账本是 **AlgorithmTracker**；循环插入点是 **AlgorithmHook**。优化器 / 调度器 / **resume** 是本层接口（native loop 与 HF Trainer 等 `source` 都要实现），不是 Flow 阶段，也不是 system |
+| **algorithm** | 怎么算。数字账本是 **AlgorithmTracker**；循环插入点是 **AlgorithmHook**。优化器 / 调度器 / **梯度裁剪** / **resume** 是本层接口（native loop 与 HF Trainer 等 `source` 都要实现；`max_grad_norm` 进 extras，缺省不裁），不是 Flow 阶段，也不是 system |
 | **system** | 设备、精度、并行、执行节奏；**prepare 最先**落地 seed / deterministic / cudnn；文本日志是 **Logger**（终端 + 必写 `assets/logs/`）。Logger 读 AlgorithmTracker 才能打出 Loss |
 | **artifact** | IO 与路径：读写 config / result / asset，以及 Study 下的 layout |
 

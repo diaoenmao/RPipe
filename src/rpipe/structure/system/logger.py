@@ -13,7 +13,8 @@ class Logger:
         self.assets_dir = Path(assets_dir)
         self.path = self.assets_dir / kinds.RUN_LOG
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text('', encoding='utf-8')
+        if not self.path.is_file():
+            self.path.write_text('', encoding='utf-8')
 
     def _emit(self, line: str) -> None:
         text = line.rstrip('\n')
@@ -54,3 +55,9 @@ class Logger:
                 continue
             parts.append(f'{key}={value}')
         self._emit(' '.join(parts))
+
+    def state_dict(self) -> dict[str, Any]:
+        return {'path': str(self.path)}
+
+    def load_state_dict(self, state: dict[str, Any] | None) -> None:
+        del state

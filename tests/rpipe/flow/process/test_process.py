@@ -88,6 +88,9 @@ def test_process_aggregates_siblings_and_baseline_delta(tmp_path: Path):
     assert by_size[2000]['n'] == 1
     assert by_size[2000]['n_planned'] == 2
     assert abs(by_size[2000]['delta_vs_baseline']['accuracy'] - 0.15) < 1e-9
+    assert 'paired' in body
+    assert body['paired'][0]['factors']['data.config.train_size'] == 500
+    assert 'train' in body['paired'][0]
 
 
 def test_process_does_not_rewrite_result(tmp_path: Path):

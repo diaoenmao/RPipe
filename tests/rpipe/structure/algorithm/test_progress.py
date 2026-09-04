@@ -29,6 +29,15 @@ def test_budget_infers_step_when_only_num_steps():
     assert budget.scheduler_t_max() == 100
 
 
+def test_budget_step_period_counts_optimizer_steps():
+    budget = resolve_budget(
+        AlgorithmConfig.from_mapping({'mode': 'train', 'num_epochs': 2, 'step_period': 2}),
+        steps_per_epoch=5,
+    )
+    assert budget.num_steps == 6
+    assert budget.steps_per_epoch == 3
+
+
 def test_budget_epochs_overwrite_steps_when_inferred():
     budget = resolve_budget(
         AlgorithmConfig.from_mapping({'mode': 'train', 'num_epochs': 20, 'num_steps': 1000}),

@@ -59,7 +59,9 @@ class AlgorithmTracker:
         self.root.mkdir(parents=True, exist_ok=True)
         self.state_path = self.assets_dir / kinds.TRACKER_STATE
         self.jsonl_path = self.assets_dir / kinds.TRACKER_JSONL
-        self.jsonl_path.write_text('', encoding='utf-8')
+        self.jsonl_path.parent.mkdir(parents=True, exist_ok=True)
+        if not self.jsonl_path.is_file():
+            self.jsonl_path.write_text('', encoding='utf-8')
         self.step = 0
         self._meters: dict[str, dict[str, _Meter]] = defaultdict(dict)
         self._last_segment: dict[str, dict[str, float]] = {}
@@ -167,3 +169,19 @@ class AlgorithmTracker:
             },
             'last_segment': self._last_segment,
         }
+
+    def load_state_dict(self, state: dict[str, Any] | None) -> None:
+        if not state:
+            return
+        self.step = int(state.get('step') or 0)
+        self._last_segment = dict(state.get('last_segment') or {})
+        self._meters = defaultdict(dict)
+        for split, metrics in (state.get('splits') or {}).items():
+            for name, body in (metrics or {}).items():
+                meter = _Meter()
+                meter.last = float(body.get('last') or 0.0)
+                meter.n = int(body.get('n') or 0)
+                mean = float(body.get('mean') or 0.0)
+                meter.weighted_sum = mean * meter.n
+                meter.history = list(body.get('history') or [])
+                self._meters[split][name] = meter

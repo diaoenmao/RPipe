@@ -25,6 +25,19 @@ def test_collect_adds_best_accuracy_from_execute(tmp_path):
     assert ctx.state['collected']['metrics']['best_accuracy'] == 0.91
 
 
+def test_collect_eval_mode_aliases_eval_accuracy(tmp_path):
+    ctx = FlowContext(
+        study_dir=tmp_path,
+        layout=ArtifactLayout(root=tmp_path / 'runs' / 'e', study_dir=tmp_path),
+        config={},
+    )
+    ctx.state['tracker'] = _Tracker()
+    ctx.state['execute'] = {'mode': 'eval', 'accuracy': 0.8}
+    collect_run(ctx)
+    assert ctx.state['collected']['metrics']['accuracy'] == 0.8
+    assert ctx.state['collected']['metrics']['eval_accuracy'] == 0.8
+
+
 def test_collect_without_best_leaves_metric_out(tmp_path):
     ctx = FlowContext(
         study_dir=tmp_path,
