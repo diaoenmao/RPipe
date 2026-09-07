@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 from typing import Any, Callable
 
 from rpipe.structure.model.config import ModelConfig
+from rpipe.structure.model.init_param import init_param
+from rpipe.structure.model.shape import resolve_shape
 
 
 class Model:
@@ -49,7 +52,11 @@ class ModelRegistry:
 
 class ModelFactory:
     @staticmethod
-    def build(model_config: ModelConfig, assets_dir: Path | str) -> Model:
+    def build(
+        model_config: ModelConfig,
+        assets_dir: Path | str,
+        data_meta: dict[str, Any] | None = None,
+    ) -> Model:
         name = model_config.name or 'unknown'
         source = model_config.source or 'custom_torch'
         builder = ModelRegistry.get(name, source) or ModelRegistry.get(name, 'custom_torch')
@@ -60,28 +67,111 @@ class ModelFactory:
                 module=None,
                 meta={'ready': True, 'assets_dir': str(assets_dir), 'config': dict(model_config.config)},
             )
-        return builder(model_config, Path(assets_dir))
+        return builder(model_config, Path(assets_dir), data_meta=data_meta)
 
 
-def _build_linear(model_config: ModelConfig, assets_dir: Path) -> Model:
-    import torch.nn as nn
-
-    cfg = dict(model_config.config)
-    in_features = int(cfg.get('in_features', 784))
-    out_features = int(cfg.get('out_features', 10))
-    module = nn.Linear(in_features, out_features)
+def _wrap(name: str, model_config: ModelConfig, assets_dir: Path, module: Any, extra: dict[str, Any]) -> Model:
+    module.apply(init_param)
     return Model(
-        name='linear',
+        name=name,
         source=model_config.source or 'custom_torch',
         module=module,
         meta={
             'ready': True,
             'assets_dir': str(assets_dir),
-            'config': cfg,
-            'in_features': in_features,
-            'out_features': out_features,
+            'config': dict(model_config.config),
+            **extra,
         },
     )
 
 
+def _build_linear(model_config: ModelConfig, assets_dir: Path, data_meta: dict[str, Any] | None = None) -> Model:
+    from rpipe.structure.model.custom_torch import Linear
+
+    cfg = dict(model_config.config)
+    data_size, target_size = resolve_shape(cfg, data_meta)
+    module = Linear(data_size, target_size)
+    return _wrap(
+        'linear',
+        model_config,
+        assets_dir,
+        module,
+        {'data_size': list(data_size), 'target_size': target_size, 'in_features': int(math.prod(data_size))},
+    )
+
+
+def _build_mlp(model_config: ModelConfig, assets_dir: Path, data_meta: dict[str, Any] | None = None) -> Model:
+    from rpipe.structure.model.custom_torch import MLP
+
+    cfg = dict(model_config.config)
+    data_size, target_size = resolve_shape(cfg, data_meta)
+    module = MLP(
+        data_size,
+        hidden_size=int(cfg.get('hidden_size', 128)),
+        scale_factor=float(cfg.get('scale_factor', 2)),
+        num_layers=int(cfg.get('num_layers', 2)),
+        activation=str(cfg.get('activation', 'relu')),
+        target_size=target_size,
+    )
+    return _wrap(
+        'mlp',
+        model_config,
+        assets_dir,
+        module,
+        {'data_size': list(data_size), 'target_size': target_size},
+    )
+
+
+def _build_cnn(model_config: ModelConfig, assets_dir: Path, data_meta: dict[str, Any] | None = None) -> Model:
+    from rpipe.structure.model.custom_torch import CNN
+
+    cfg = dict(model_config.config)
+    data_size, target_size = resolve_shape(cfg, data_meta)
+    hidden = [int(x) for x in (cfg.get('hidden_size') or [64, 128, 256, 512])]
+    module = CNN(data_size, hidden, target_size)
+    return _wrap(
+        'cnn',
+        model_config,
+        assets_dir,
+        module,
+        {'data_size': list(data_size), 'target_size': target_size, 'hidden_size': hidden},
+    )
+
+
+def _build_resnet(
+    model_config: ModelConfig,
+    assets_dir: Path,
+    data_meta: dict[str, Any] | None = None,
+    *,
+    name: str,
+    num_blocks: list[int],
+) -> Model:
+    from rpipe.structure.model.custom_torch import ResNet
+
+    cfg = dict(model_config.config)
+    data_size, target_size = resolve_shape(cfg, data_meta)
+    hidden = [int(x) for x in (cfg.get('hidden_size') or [64, 128, 256, 512])]
+    module = ResNet(data_size, hidden, num_blocks, target_size)
+    return _wrap(
+        name,
+        model_config,
+        assets_dir,
+        module,
+        {'data_size': list(data_size), 'target_size': target_size, 'hidden_size': hidden},
+    )
+
+
+def _build_resnet18(model_config: ModelConfig, assets_dir: Path, data_meta: dict[str, Any] | None = None) -> Model:
+    return _build_resnet(model_config, assets_dir, data_meta, name='resnet18', num_blocks=[2, 2, 2, 2])
+
+
+def _build_resnet10(model_config: ModelConfig, assets_dir: Path, data_meta: dict[str, Any] | None = None) -> Model:
+    return _build_resnet(model_config, assets_dir, data_meta, name='resnet10', num_blocks=[1, 1, 1, 1])
+
+
 ModelRegistry.register('linear', 'custom_torch', _build_linear)
+ModelRegistry.register('mlp', 'custom_torch', _build_mlp)
+ModelRegistry.register('cnn', 'custom_torch', _build_cnn)
+ModelRegistry.register('resnet18', 'custom_torch', _build_resnet18)
+ModelRegistry.register('resnet', 'custom_torch', _build_resnet18)
+ModelRegistry.register('resnet10', 'custom_torch', _build_resnet10)

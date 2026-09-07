@@ -121,6 +121,56 @@ def test_step_period_accumulates_before_optimizer_step(tmp_path: Path):
     assert out['steps'] == 1
 
 
+def test_resume_rebinds_remaining_train_loader(tmp_path: Path):
+    import torch
+    from torch.utils.data import TensorDataset
+
+    from rpipe.structure.data.factory import Data
+
+    images = torch.arange(32, dtype=torch.float32).view(32, 1).expand(32, 784).reshape(32, 1, 28, 28)
+    labels = torch.zeros(32, dtype=torch.long)
+    dataset = TensorDataset(images, labels)
+
+    def _data() -> Data:
+        data = Data(
+            name='toy',
+            source='x',
+            loaders={},
+            meta={'train_size': 32, 'batch_size': 4, 'seed': 0},
+        )
+        data._train_set = dataset
+        return data
+
+    class _Model:
+        def __init__(self) -> None:
+            self.module = torch.nn.Linear(784, 10)
+
+    mapping_partial = {
+        'mode': 'train',
+        'num_steps': 2,
+        'eval_period': 0,
+        'checkpoint_period': 1,
+        'init_seed': 0,
+    }
+    algo = TrainAlgorithm(AlgorithmConfig.from_mapping(mapping_partial))
+    tracker = AlgorithmTracker(tmp_path)
+    system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
+    first = algo.run(_data(), _Model(), system, tracker)
+    assert first['steps'] == 2
+    remaining = _data()
+    remaining.rebind_train_steps(step=2, num_steps=4, step_period=1)
+    assert len(remaining._loaders['train']) == 2
+
+    mapping_full = dict(mapping_partial)
+    mapping_full['num_steps'] = 4
+    algo2 = TrainAlgorithm(AlgorithmConfig.from_mapping(mapping_full))
+    tracker2 = AlgorithmTracker(tmp_path)
+    system2 = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
+    second = algo2.run(_data(), _Model(), system2, tracker2)
+    assert second['steps'] == 4
+    assert second['epochs'] == 2
+
+
 def test_resume_latest_skips_when_budget_already_done(tmp_path: Path):
     mapping = {
         'mode': 'train',
@@ -197,3 +247,31 @@ def test_eval_algorithm_missing_checkpoint_fails(tmp_path: Path):
         EvalAlgorithm(AlgorithmConfig.from_mapping({'mode': 'eval'})).run(
             _Data(), _Model(), system, tracker
         )
+
+
+def test_cnn_trains_on_cifar_shaped_batches(tmp_path: Path):
+    import torch
+
+    from rpipe.structure.api import model_api
+    from rpipe.structure.model import ModelConfig
+
+    class _Data:
+        name = 'CIFAR10'
+        meta = {'train_size': 8, 'batch_size': 4, 'data_size': [3, 32, 32], 'target_size': 10}
+
+        def iter_batches(self, split: str):
+            del split
+            images = torch.randn(4, 3, 32, 32)
+            targets = torch.zeros(4, dtype=torch.long)
+            yield images, targets
+            yield images, targets
+
+    model = model_api.build(
+        ModelConfig.from_mapping({'name': 'cnn'}),
+        tmp_path,
+        data_meta={'data_size': [3, 32, 32], 'target_size': 10},
+    )
+    algo = TrainAlgorithm(AlgorithmConfig.from_mapping({'mode': 'train', 'num_steps': 2, 'eval_period': 0}))
+    system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
+    out = algo.run(_Data(), model, system, AlgorithmTracker(tmp_path))
+    assert out['steps'] == 2

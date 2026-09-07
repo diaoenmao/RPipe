@@ -7,6 +7,7 @@ from typing import Any
 import torch.nn as nn
 import torch.nn.functional as F
 
+from rpipe.structure.algorithm.batch import maybe_flatten_images
 from rpipe.structure.algorithm.config import AlgorithmConfig
 from rpipe.structure.algorithm.hf_map import training_arguments_kwargs
 from rpipe.structure.algorithm.progress import (
@@ -20,6 +21,7 @@ from rpipe.structure.algorithm.progress import (
 from rpipe.structure.algorithm.tracker import AlgorithmTracker
 from rpipe.structure.algorithm.train import (
     TrainAlgorithm,
+    bind_step_train_loader,
     _build_payload,
     _current_lr,
     _hook_extra,
@@ -119,9 +121,7 @@ class _ClassificationWrap(nn.Module):
 
     def forward(self, pixel_values, labels=None, **kwargs):  # noqa: ANN001
         del kwargs
-        images = pixel_values
-        if images.dim() > 2:
-            images = images.reshape(images.size(0), -1)
+        images = maybe_flatten_images(pixel_values, self.inner)
         logits = self.inner(images)
         loss = F.cross_entropy(logits, labels) if labels is not None else None
         return {'loss': loss, 'logits': logits}
@@ -209,6 +209,7 @@ def _run_hf_trainer(
             algo._best_test = restored['best_accuracy']
     epoch = int(restored.get('epoch') or 0) if restored else 0
     steps = int(restored.get('step') or 0) if restored else 0
+    bind_step_train_loader(data, config, step=steps, budget=budget)
     seed = None
     meta = getattr(data, 'meta', None)
     if isinstance(meta, dict) and meta.get('seed') is not None:

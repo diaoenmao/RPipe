@@ -54,6 +54,8 @@ studies/<name>/
 |-------|------------|
 | `studies/mnist_train_size/` | 扫研究因素（三个 `train_size`，train + 独立 eval） |
 | `studies/mnist_native_vs_hf/` | 同一超参：`custom_torch` vs `transformers_trainer` |
+| `studies/mnist_main_recipe/` | 复现 git `main` 的 MNIST_linear（60 step + SGD extras） |
+| `studies/vision_main_recipe/` | 复现 main 的 CIFAR10/SVHN × linear/mlp/cnn/resnet18（同一 60-step recipe） |
 | `studies/_template/study.yaml` | 字段模版 |
 
 仓库里若还有 `grid/`、`launch/`、`run.py`，那是历史薄包装。**新 Study 不必抄**，用下一节的 CLI 即可。
@@ -104,7 +106,7 @@ data:
     train_size: 1000              # 可被 study.yaml 的 axes 覆盖
     batch_size: 64
 model:
-  name: linear                    # 784→10；可在 model.config 里改 in/out
+  name: linear                    # 默认 MNIST 784→10；CIFAR/SVHN 由 Data.meta.data_size 对齐
 algorithm:
   source: custom_torch            # 或 transformers_trainer（同一套键 → TrainingArguments）
   mode: train

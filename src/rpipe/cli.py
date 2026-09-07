@@ -58,6 +58,7 @@ def format_description(template: str, patch: dict[str, Any], experiment: str) ->
             continue
         flat[dotted] = value
         flat[str(dotted).split('.')[-1]] = value
+        flat[str(dotted).replace('.', '_')] = value
     try:
         return template.format_map(_Safe(flat))
     except Exception:

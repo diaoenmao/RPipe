@@ -1,0 +1,23 @@
+def test_prepare_tensors_keeps_spatial_for_cnn():
+    import torch
+
+    from rpipe.structure.algorithm.batch import prepare_tensors
+    from rpipe.structure.model.custom_torch import CNN
+
+    module = CNN((3, 32, 32), [64, 128, 256, 512], 10)
+    images = torch.randn(2, 3, 32, 32)
+    targets = torch.zeros(2, dtype=torch.long)
+    got, _ = prepare_tensors((images, targets), module, torch.device('cpu'))
+    assert tuple(got.shape) == (2, 3, 32, 32)
+
+
+def test_prepare_tensors_flattens_nn_linear():
+    import torch
+
+    from rpipe.structure.algorithm.batch import prepare_tensors
+
+    module = torch.nn.Linear(3072, 10)
+    images = torch.randn(2, 3, 32, 32)
+    targets = torch.zeros(2, dtype=torch.long)
+    got, _ = prepare_tensors((images, targets), module, torch.device('cpu'))
+    assert tuple(got.shape) == (2, 3072)

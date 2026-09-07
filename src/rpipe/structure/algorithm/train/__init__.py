@@ -178,6 +178,23 @@ def _run_stub(config: AlgorithmConfig, tracker: AlgorithmTracker) -> dict[str, A
     }
 
 
+def bind_step_train_loader(
+    data: Any,
+    config: AlgorithmConfig,
+    *,
+    step: int,
+    budget: ProgressBudget,
+) -> None:
+    """When progress is step-budget, rebuild train loader like main ``make_data_loader``."""
+    if budget.unit != UNIT_STEP:
+        return
+    rebind = getattr(data, 'rebind_train_steps', None)
+    if not callable(rebind):
+        return
+    period = max(int(config.setting('step_period', 1) or 1), 1)
+    rebind(step=int(step), num_steps=int(budget.num_steps), step_period=period)
+
+
 def _run_supervised(
     algo: TrainAlgorithm,
     data: Any,
@@ -222,6 +239,7 @@ def _run_supervised(
     module.train()
     epoch = int(restored.get('epoch') or 0) if restored else 0
     steps = int(restored.get('step') or 0) if restored else 0
+    bind_step_train_loader(data, config, step=steps, budget=budget)
     stop = False
 
     def fire_eval(extra: dict[str, Any]) -> bool:

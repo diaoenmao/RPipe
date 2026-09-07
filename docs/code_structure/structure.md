@@ -119,6 +119,7 @@ structure/
 - 按 split 提供可迭代 batch（供 algorithm）
 - 暴露来源、划分规模等只读元信息
 - 需要时取出底层第三方对象（调试 / 进阶）
+- **step 预算续训**：`rebind_train_steps(step, num_steps, step_period)` 按 main 的 `make_data_loader` 重建 train sampler（剩余 sample 数；generator 重新绑同一 seed）
 - 不承载「配置字段表」本身（那是 `DataConfig`）
 
 ### 4.3 下游来源（至少）
@@ -128,6 +129,8 @@ structure/
 | PyTorch Dataset | `torch.utils.data.Dataset`、`DataLoader`；transform 可用 torchvision 等 |
 | Hugging Face | `datasets.Dataset` / `DatasetDict` 及加载、格式化 API |
 | ModelScope | ModelScope 数据集加载 API |
+
+已注册 `source: torch`：`MNIST`、`CIFAR10`、`SVHN`（ToTensor + Normalize；CIFAR10/SVHN 默认 train 增强对齐 main `Base`：CIFAR flip+pad-4 crop，SVHN 仅 pad-4 crop）。`Data.meta` 带 `data_size` / `target_size`，供 prepare 传给 model factory。`config.augment: false` 可关掉随机增强。
 
 其它来源经 Registry 注册即可。
 
@@ -194,7 +197,9 @@ flowchart LR
 | **`ModelFactory`** | 读 `ModelConfig` + `assets_dir` → 建构/加载 → 得到 **`Model`** |
 | **`ModelConfig`** | dataclass；从 JSON / Config / Control.model 加载声明字段 |
 
-对外：`ModelFactory.build(model_config, assets_dir) → Model`。
+对外：`ModelFactory.build(model_config, assets_dir, data_meta=None) → Model`。`data_meta` 是 dict（通常 `Data.meta`），**不是** Data 对象；prepare 经 `model_api` 传入。`model.config.data_size` / `target_size` 优先于 meta。
+
+已注册 `source: custom_torch`：`linear`、`mlp`、`cnn`、`resnet18`（别名 `resnet`）、`resnet10`，结构对齐 git main `src/model/`（含 `init_param`）。linear/mlp 在模块内 flatten；cnn/resnet 吃 NCHW。默认超参对齐 `hyper.py`（mlp 128×2 层；cnn/resnet hidden `[64,128,256,512]`）。
 
 ### 5.2 `Model` 职责要点
 
@@ -239,7 +244,7 @@ dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必
 | 类 | 能力 |
 |----|------|
 | `ModelRegistry` | `register` / `get` / `list` |
-| `ModelFactory` | `build(model_config: ModelConfig, assets_dir) → Model` |
+| `ModelFactory` | `build(model_config: ModelConfig, assets_dir, data_meta=None) → Model` |
 
 ### 5.6 协作
 
@@ -667,7 +672,7 @@ Logger **不**改 AlgorithmTracker 的 mean/history；**不**写 TensorBoard。
 | `torch.use_deterministic_algorithms` | 关（`warn_only=True`，避免个别算子直接炸） | `deterministic` |
 | `cudnn.deterministic` | 跟 `deterministic` | `cudnn_deterministic`（可单开） |
 | `cudnn.benchmark` | `not cudnn.deterministic`（对齐 main：默认 benchmark 开） | `cudnn_benchmark` |
-| DataLoader shuffle | train：`Generator().manual_seed(seed)` + `worker_init_fn`（对齐 main `make_data_loader`） | 经 `data_api.build(..., seed=)` 传入；test 不 shuffle |
+| DataLoader shuffle | train：`Generator().manual_seed(seed)` + `worker_init_fn`（对齐 main `make_data_loader`）。`progress_unit=step` 时按剩余 `num_steps` 重建 `RandomSampler`（`num_samples = batch * (num_steps-step) * step_period`）；epoch 训仍按整 epoch shuffle | 经 `data_api.build(..., seed=)`；resume 后 algorithm 调 `rebind_train_steps` |
 
 不要把 seed 再抄一份进 algorithm / data 必须字段。DataLoader 的 generator **单独绑 seed**，不能只靠全局 `manual_seed`（shuffle 另有 RNG）。`num_workers>0` 时 worker 用 `torch.initial_seed()` 再种 numpy / python。
 

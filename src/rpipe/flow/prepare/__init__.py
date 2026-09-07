@@ -33,6 +33,7 @@ def run(ctx: FlowContext) -> None:
     model = model_api.build(
         ModelConfig.from_mapping(ctx.control.model),
         ctx.layout.shared_model_dir,
+        data_meta=getattr(data, 'meta', None),
     )
     if model.module is not None:
         model.module = system.place_module(model.module)
