@@ -2,15 +2,17 @@
 
 前置：[CONCEPT.md](../CONCEPT.md) §7、[LAYOUT.md](../LAYOUT.md)、[CODE_STRUCTURE.md](../CODE_STRUCTURE.md)。
 
-并列：[structure.md](structure.md)（含 artifact）。
+并列：[structure.md](structure.md)（含 artifact、make）。
 
-Flow **只服务一次 Run**。编排（展开 Experiment × seed、写 config、写 **index**）在包外。库内顺序：
+Flow 服务 Study。同一套执行，用参数选择阶段子集、是否先 make、顺序或按 `round` 并行。cli 在 `flow/cli.py`。
+
+make 写出 config、index 与调度脚本，见 `structure.make`。每个 Run 的阶段链：
 
 **prepare → execute → collect → summarize → write → process**
 
-可 import `structure`（含 `structure.artifact`）。**禁止改 config。** 四层业务在 structure，Flow 只编排调用。
+flow 可 import `structure`。阶段保持 config 不变。四层业务在 structure。
 
-**write** = 把 result 写入 artifact。Study 的 **index** = 编排清单。二者不要混。
+**write** 写该 Run 的 result。**index** 由 make 写在 Study 根。
 
 ---
 
@@ -18,6 +20,7 @@ Flow **只服务一次 Run**。编排（展开 Experiment × seed、写 config�
 
 ```
 flow/
+  cli.py
   context.py
   runner.py
   prepare/
@@ -28,12 +31,13 @@ flow/
   process/
 ```
 
-每阶段一个包，约定 `run(ctx: FlowContext) -> None`。`FlowRunner` 按 `PHASES` 动态 import 并调用。
+每阶段一个包，约定 `run(ctx: FlowContext) -> None`。`FlowRunner` 按 `PHASES` 动态 import 并调用。cli 解析参数后调用 `structure.make`，再对选定 Run 调 `FlowRunner`。
 
 | 符号 | 位置 | 职责 |
 |------|------|------|
 | `FlowContext` | `context.py` | 贯穿各阶段的上下文 |
-| `FlowRunner` / `PHASES` | `runner.py` | 按序执行；可裁剪阶段；失败时尽量落盘 failed result |
+| `FlowRunner` / `PHASES` | `runner.py` | 对一个 Run 按序执行阶段；可裁剪阶段；失败时写 failed result |
+| cli | `cli.py` | argv → 同一套 Flow；参数选择 make、阶段子集、`round` 与 GPU |
 
 `PHASES = ('prepare', 'execute', 'collect', 'summarize', 'write', 'process')`。允许传入子集（例如只跑 prepare 做干检查），但不得打乱相对顺序。
 
@@ -189,7 +193,7 @@ flowchart TD
 
 **不做：** 改 config；改 asset 文件内容；读其他 Run 做对比（那是 process）。
 
-与 **index** 的区别：index 在 launch **前**由编排写在 Study 根；write 在 Run **后**写 `runs/<id>/` 下的 result。
+与 **index** 的区别：index 由 **make** 写在 Study 根；write 在 Run **后**写 `runs/<id>/` 下的 result。
 
 ---
 
@@ -230,7 +234,7 @@ flowchart TB
   exe <--> runA[run assets]
 ```
 
-包外生命周期（对照 CONCEPT §9）：写 config + index → 对每个 Run 调 `FlowRunner` → 按 Experiment 读 result。
+生命周期：cli → `structure.make` → 对每个 Run 调 `FlowRunner` → 按 Experiment 读 result。
 
 ---
 

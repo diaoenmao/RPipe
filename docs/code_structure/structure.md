@@ -3,7 +3,7 @@
 前置：[CONCEPT.md](../CONCEPT.md) §6、[LAYOUT.md](../LAYOUT.md)、[CODE_STRUCTURE.md](../CODE_STRUCTURE.md)。  
 并列分册：[flow.md](flow.md)。
 
-本文按层推进：**模块 → 类 → 叶文件**。data / model / algorithm / system / control 定到类（control 见 §8）。**artifact** IO 见 §9。
+本文按层推进：**模块 → 类 → 叶文件**。data / model / algorithm / system / control 定到类（control 见 §8）。**artifact** IO 见 §9。**make** 见 §10。
 
 **层间只经** `structure/api/` **交流。** 各层实现不互相直接 import；跨层与外部调用方只依赖对应 `*_api`。**不设** `control_api`：control 留在 `control/`。
 
@@ -26,7 +26,7 @@
 
 ### 1.1 本柱做什么
 
-- 承载 **control** 与 data / model / algorithm / system，以及 **artifact** IO
+- 承载 **control** 与 data / model / algorithm / system，以及 **artifact** IO 与 **make**
 - 在 `api/` 暴露各层对外接口（`data_api`、`model_api`、…）
 - 由 config mapping 构造 control，并由 control 导出 config mapping
 - 在 prepare 经各层 api 落地可消费实例；在 execute 期经 api 使用它们
@@ -39,7 +39,7 @@
 | 概念 | 谁声明 | 落在哪 |
 |------|--------|--------|
 | **能力** | Experiment + 各层 Registry（经 api 可查询） | 注册名解析到第三方实现 |
-| **取值** | 包外编排（`axes` × `seeds`）写入 | Artifact Config → prepare → `Control` |
+| **取值** | **make**（`axes` × `seeds`）写入 | Artifact Config → prepare → `Control` |
 | **层间调用** | Structure 柱内 / 外部调用方 | 四层经 `structure.api.*`；Control 经 `control/` |
 
 ### 1.3 柱内依赖方向
@@ -52,6 +52,7 @@ model/               → Model / ModelRegistry / ModelFactory / ModelConfig
 system/              → System / Logger / SystemRegistry / SystemFactory / SystemConfig
 algorithm/           → Algorithm / AlgorithmTracker / AlgorithmRegistry / AlgorithmFactory / AlgorithmConfig
 artifact/            → layout / config / result / asset / index IO；不 import 四层实现
+make/                → 多实验：展开、写 config/index、调度脚本；调 control + artifact；不 import 四层、不 import flow
 ```
 
 - 四层跨层只走对应 `*_api`
@@ -70,6 +71,7 @@ artifact/            → layout / config / result / asset / index IO；不 impor
 | **system** | `System` + **Logger** + Registry / Factory / `SystemConfig` |
 | **control** | `ExperimentConfig` + `RunConfig` + `Control` + 四层 `*Config` + 合并/编解码/契约（§8） |
 | **artifact** | layout / config / result / asset / index（§9） |
+| **make** | 多实验 config 网格 + 调度脚本（§10） |
 
 ---
 
@@ -84,6 +86,7 @@ structure/
   algorithm/
   system/
   artifact/     # §9
+  make/         # §10
 ```
 
 ---
@@ -732,7 +735,7 @@ flowchart TB
 **合并原则：**
 
 1. 读 Study 根 `experiment_config` → `ExperimentConfig`。
-2. 包外编排为每次 Run 提供补丁（`axes` 取值、`seed`、tags 等；**不必手写 `id`**）。
+2. **make** 为每次 Run 提供补丁（`axes` 取值、`seed`、tags 等；**不必手写 `id`**）。
 3. `merge(experiment_config, patch) →` 完整内容 → **对除 `id` / `description` 外做稳定序列化并 hash → 写入 `id`** → `RunConfig`。
 4. 落盘完整 `run_config`（不写 diff）。同配置内容 → 同一 `id`；若需区分多次落盘，目录名用 **`id` + timestamp**（`make_run_dir`）。
 5. prepare：只读该次落盘的 `run_config` → `Control`（一般不再回读 `experiment_config`）。
@@ -902,7 +905,7 @@ index 在 **Study 根**，不在 `runs/<id>/`。`make_run_dir(id, timestamp=None
 
 `load_config` / `write_config`；原子写为宜。读入纯 mapping，由 `control_from_config` 解释。业务校验在 `structure.control.contract`。
 
-写入方：包外展开 / 薄 CLI。读取方：`flow.prepare`。
+写入方：`structure.make`。读取方：`flow.prepare`。
 
 ### 9.4 `result/`
 
@@ -926,7 +929,7 @@ Study 编排清单。`rpipe.structure.artifact.index`，**不是** Flow 的 writ
 | `write_index` / `load_index` | 读写 Study 根下的 index |
 | `compute_index_id` | 内容 hash（排除 `id`） |
 
-launch **之前**写出；按 Experiment 分组列 Run；可回填 status / metrics；不以扫描 result 建清单。
+**make** 写入；按 Experiment 分组列 Run；可回填 status / metrics；不以扫描 result 建清单。
 
 ### 9.6 `asset/`
 
@@ -966,9 +969,25 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 
 ---
 
-## 10. 演进
+## 10. `make/`
+
+多实验管理与调度脚本化。与 **control** 并列：control 做**一次**合并；make **循环**调用 control 与 artifact。不 import 四层，不 import flow。
+
+| 职责 | 说明 |
+|------|------|
+| 展开 | 读 Study 声明（`axes` × `seeds`）→ patch 列表 |
+| 写格子 | 每个 patch → `run_config_from_merge` → `runs/<id>/config.yaml`；写 **index** |
+| 写脚本 | `CUDA_VISIBLE_DEVICES` 轮转；每 `--round` 个后台任务（`&`）后 `wait`；可选 `--split-round` 拆文件 |
+
+产物：N 份 config + index，以及 `studies/<name>/scripts/`（默认不入库）。打满 GPU 靠进程级并行，不靠一次 `FlowRunner` 内部并行。
+
+测试：`tests/rpipe/structure/make/`。
+
+---
+
+## 11. 演进
 
 1. 编排：Study → Experiment → Run；artifact 挂在 Study 下（`shared/` + `runs/<id>/`）。
-2. 配置：基底 ⊕ 展开 → run config → control；`study.yaml` 声明 `axes` / `seeds`（见 STUDY_GUIDE）。
+2. 配置：基底 ⊕ **make** → run config → control；`study.yaml` 声明 `axes` / `seeds`（见 STUDY_GUIDE）。
 3. result 快照契约（§9.4）先文档后单测固化。
 4. Flow：summarize 之后是 **write**（写 result），再 **process**。

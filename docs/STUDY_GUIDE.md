@@ -2,7 +2,7 @@
 
 怎么用**现在的代码**开一轮可复现实验。概念以 [CONCEPT.md](CONCEPT.md) 为准，目录以 [LAYOUT.md](LAYOUT.md) 为准。
 
-库内两柱：`structure`（含 artifact）+ `flow`。你要写的是包外的 **Study 目录**；展开 config、写 index、调 Flow 由薄 CLI 完成，不必自己调 `FlowRunner`。
+库内两柱：`structure` 与 `flow`。你要写的是包外的 **Study 目录**。入口是 `python -m rpipe`，即 flow 的 cli。
 
 ---
 
@@ -34,10 +34,10 @@ studies/<name>/
     STUDY_REPORT.md          # 跑完后写结论（人写）
 ```
 
-跑完后 CLI 会补上（默认不入库）：
+跑完后会补上，默认不入库：
 
 ```text
-  index.json                 # 按 Experiment 列 Run（launch 前就写好）
+  index.json                 # 按 Experiment 列 Run（make 写出）
   shared/{data,model}/       # Study 级 asset，多次 Run 共用
   runs/<id>/
     config.yaml              # 这一次 Run 的完整 config
@@ -58,7 +58,7 @@ studies/<name>/
 | `studies/vision_main_recipe/` | 复现 main 的 CIFAR10/SVHN × linear/mlp/cnn/resnet18（同一 60-step recipe） |
 | `studies/_template/study.yaml` | 字段模版 |
 
-仓库里若还有 `grid/`、`launch/`、`run.py`，那是历史薄包装。**新 Study 不必抄**，用下一节的 CLI 即可。
+仓库里若还有 `grid/`、`launch/`、`run.py`，那是历史包装。格子与脚本由 **structure.make** 生成，入口用 `python -m rpipe`。
 
 ---
 
@@ -67,26 +67,37 @@ studies/<name>/
 ```bash
 pip install -e ".[dev]"
 
-# 只展开：写 config + index，不跑训练（先看格子对不对）
+# 只写出格子：config + index
 python -m rpipe run studies/<name> --skip-launch
 
-# 展开并跑完全部 Flow
+# 写出格子并按顺序跑每个 Run
 python -m rpipe run studies/<name>
+
+# 写出格子与调度脚本，再按 GPU 与 round 并行
+python -m rpipe make studies/<name> --num-gpus 1 --init-gpu 0 --round 4
+python -m rpipe launch studies/<name> --num-gpus 1 --round 4
+# 也可在独立终端跑：
+#   studies/<name>/scripts/launch.ps1
+#   bash studies/<name>/scripts/launch.sh
 ```
 
-CLI 内部顺序（`src/rpipe/cli.py`）：
+同一套 Flow，用参数选择：只 make、阶段子集、顺序或按 `round` 并行。长训放在独立终端。`make` 默认跳过已经 succeeded 的 Run。脚本里每条是一次 `run-one`。
 
-1. 读 `study.yaml`，按 `axes` × `seeds` 展开补丁  
-2. 每个补丁 ⊕ `experiment_config.yaml` → 写出 `runs/<id>/config.yaml`（`id` 是内容 hash）  
-3. 写 `index.json`：按 Experiment 的 **factors** 分组，下面列各 seed 的 Run  
-4. 对每个 Run 调 `FlowRunner`：prepare → execute → collect → summarize → **write** → process  
+1. **make** 读 `study.yaml`，按 `axes` × `seeds` 展开  
+2. 每个补丁 ⊕ `experiment_config.yaml` → `runs/<id>/config.yaml`  
+3. 写 `index.json`  
+4. 按参数对每个 Run 跑：prepare → execute → collect → summarize → **write** → process  
 
-常用开关：
+常用参数：
 
 | 开关 | 作用 |
 |------|------|
-| `--skip-launch` | 停在 config + index |
-| `--phases prepare,execute,...` | 只跑列出的阶段（默认全链） |
+| `--skip-launch` | 只写出 config 与 index |
+| `--phases prepare,execute,...` | 只跑列出的阶段；相对顺序不变 |
+| `rpipe make` | 写出 config、index 与 `scripts/` |
+| `rpipe launch` | make 之后按 round 与 GPU 跑未完成 Run |
+| `--round` / `--num-gpus` / `--init-gpu` | 并行批次与卡号 |
+| `--include-done` | 脚本里包含已经 succeeded 的 Run |
 
 `python -m rpipe study run …` 与上面等价，只是旧别名。
 
@@ -268,4 +279,4 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 | 训练曲线 | process 画 epoch `history` → `docs/figures/`；密点仍在 `scalars.jsonl`。不做 TensorBoard |
 | 终端 + 硬盘日志 | **Logger**（system）必写 `assets/logs/`，每次 report **flush** |
 
-脚本里若要编程调用：`from rpipe.cli import run_study`（这是 CLI 辅助，不是第三柱）。读写路径用 `rpipe.structure.artifact`。
+脚本里若要编程调用：`from rpipe.flow.cli import run_study`。读写路径用 `rpipe.structure.artifact`；造格子用 `rpipe.structure.make`。

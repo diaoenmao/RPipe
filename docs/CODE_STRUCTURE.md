@@ -2,11 +2,11 @@
 
 前置：[CONCEPT.md](CONCEPT.md)、[LAYOUT.md](LAYOUT.md)。
 
-库内两柱：**structure** + **flow**。artifact IO 在 `structure/artifact/`。Study 编排在包外 `studies/`。
+库内两柱：**structure** + **flow**。artifact 在 `structure/artifact/`，make 在 `structure/make/`，cli 在 `flow/cli.py`。Study 声明在包外 `studies/`。
 
 | 柱 | 分册 |
 |----|------|
-| structure（api / control / 四层 / artifact） | [code_structure/structure.md](code_structure/structure.md) |
+| structure（api / control / 四层 / artifact / **make**） | [code_structure/structure.md](code_structure/structure.md) |
 | flow | [code_structure/flow.md](code_structure/flow.md) |
 
 测试约定见 [TESTING.md](TESTING.md)、LAYOUT。
@@ -16,13 +16,13 @@
 ## 1. 依赖
 
 - `studies/` 只 import `rpipe`；库不反向依赖包外
-- `flow` 可 import `structure`（含 `structure.artifact`）
+- `flow` 可 import `structure`（含 `artifact`、`make`、`control`）
 - structure 跨层只经 `structure.api`；四层实现互不直接 import
-- `structure` 不 import `flow`
+- `structure` 只被 flow 调用；**make** 调用 control 与 artifact
 - 第三方运行时适配写在 structure 各层内部
 
 **编排：** Study → Experiment → Run。  
-**config：** 基底 ⊕ 展开补丁 → `runs/<id>/` 下的 config → prepare 读回构造 **control**。Flow 不改 config。
+**config：** 基底 ⊕ make 展开的补丁 → `runs/<id>/` 下的 config → prepare 读回构造 **control**。Flow 不改 config。
 
 ---
 
@@ -39,8 +39,10 @@ src/rpipe/
     model/
     algorithm/
     system/
-    artifact/          # layout / config / result / asset / index IO
+    artifact/
+    make/
   flow/
+    cli.py
     context.py
     runner.py
     prepare/
@@ -49,7 +51,6 @@ src/rpipe/
     summarize/
     write/
     process/
-  cli.py
   __main__.py
 ```
 
@@ -59,13 +60,14 @@ src/rpipe/
 | `structure.control` | control 对象、config 合并、id hash、契约 |
 | `structure.data` / `model` / `algorithm` / `system` | 四层实现。algorithm 含 **AlgorithmTracker** 与 **AlgorithmHook**；system 含 **Logger** 与 prepare 时的 seed / deterministic |
 | `structure.artifact` | Study 树路径与 config / result / asset / index 的读写 |
-| `flow.*` | 一次 Run：prepare → execute → collect → summarize → write → process |
+| `structure.make` | 展开声明，写 config 与 index，生成调度脚本 |
+| `flow.*` | 服务 Study：cli；每个 Run 的 prepare → … → process |
 
 ---
 
 ## 3. 包外 studies
 
-见 LAYOUT。薄 CLI 或脚本：展开 config、写 index、调用 `FlowRunner`。
+见 LAYOUT。写 `study.yaml` 与基底；经 `python -m rpipe` 调用 make 与阶段链。
 
 ```
 studies/<study>/
@@ -75,6 +77,7 @@ studies/<study>/
   docs/
   shared/{data,model}/     # asset
   runs/<id>/{config, result, assets}/
+  scripts/
 ```
 
 ---
@@ -87,7 +90,7 @@ studies/<study>/
 | `tests/rpipe/flow/` | `src/rpipe/flow/` |
 | `tests/e2e/` | `studies/` |
 
-artifact 单测落在 `tests/rpipe/structure/artifact/`。
+artifact 单测在 `tests/rpipe/structure/artifact/`。make 单测在 `tests/rpipe/structure/make/`。
 
 ---
 
@@ -96,4 +99,4 @@ artifact 单测落在 `tests/rpipe/structure/artifact/`。
 1. [CONCEPT.md](CONCEPT.md) → [LAYOUT.md](LAYOUT.md) → **本总览**
 2. 改某柱打开对应分册（structure / flow）
 3. 开实验看 [STUDY_GUIDE.md](STUDY_GUIDE.md)
-4. 包外 Study 只依赖库公开入口（`python -m rpipe`、`rpipe.structure.artifact`）
+4. 开实验看 [STUDY_GUIDE.md](STUDY_GUIDE.md)；入口是 `python -m rpipe`

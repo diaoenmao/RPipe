@@ -1,5 +1,5 @@
-"""``python -m rpipe`` → CLI."""
+"""``python -m rpipe`` → flow cli."""
 
-from rpipe.cli import main
+from rpipe.flow.cli import main
 
 raise SystemExit(main())

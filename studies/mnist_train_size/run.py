@@ -12,7 +12,7 @@ if str(_SRC) not in sys.path:
 
 
 def main() -> int:
-    from rpipe.cli import run_study
+    from rpipe.flow.cli import run_study
 
     out = run_study(Path(__file__).resolve().parent)
     for path in out['configs']:

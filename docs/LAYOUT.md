@@ -8,21 +8,21 @@
 
 ## 1. 导读
 
-库内两柱：`structure/`、`flow/`。artifact 在 **`structure/artifact/`**。Study 在包外 `studies/`。
+库内两柱：`structure/`、`flow/`。artifact 在 `structure/artifact/`，make 在 `structure/make/`。cli 在 `flow/cli.py`。Study 在包外 `studies/`。
 
 | 概念 | 目录落点 |
 |------|----------|
 | **Study** | `studies/<name>/` |
 | **Experiment** | 逻辑分组（**index**）；无顶层文件夹 |
 | **Run** | `studies/<name>/runs/<id>/` |
-| **structure** | `src/rpipe/structure/`：`api`、`control`、四层、**artifact** |
-| **flow** | `src/rpipe/flow/`：每阶段一个子包 |
+| **structure** | `src/rpipe/structure/`：`api`、`control`、四层、**artifact**、**make** |
+| **flow** | `src/rpipe/flow/`：阶段子包与 cli |
 
 **Run 目录名：** config 的 `id` = 除 `id` / `description` 外内容的 hash（含 tags、seed）。同 id 多次存储可用时间戳后缀。
 
 读写：
 
-- **config**：编排写入 `runs/<id>/`；prepare 只读
+- **config**：**make** 写入 `runs/<id>/`；prepare 只读
 - **result**：summarize / **write** 写入；process 可派生
 - **asset**：文件通道。data / model 文件、checkpoint、AlgorithmTracker 曲线、Logger 文本，落在 `shared/` 或 `runs/<id>/assets/`
 
@@ -39,9 +39,10 @@ flowchart TB
     structure[structure/]
     flow[flow/]
   end
-  studies -->|展开 config / 调 Flow| flow
+  studies -->|声明 yaml| flow
   flow --> structure
-  flow -->|读 config 写 result 等| studies
+  structure -->|make 写 config / index / 脚本| studies
+  flow -->|阶段链读写 result 等| studies
 ```
 
 | 概念 | 路径 | 说明 |
@@ -50,8 +51,8 @@ flowchart TB
 | 基底配置 | Study 目录下的 experiment 基底文件 | Study 默认值 |
 | Run | `…/runs/<id>/` | config / result / assets |
 | 共享与文档 | `…/shared/`、`…/docs/` | Study 级。`shared/` 里的 data / model 文件属于 **asset** |
-| structure | `src/rpipe/structure/` | api、control、data、model、algorithm、system、artifact |
-| flow | `src/rpipe/flow/<phase>/` | prepare / execute / collect / summarize / write / process |
+| structure | `src/rpipe/structure/` | api、control、data、model、algorithm、system、artifact、**make** |
+| flow | `src/rpipe/flow/` | cli；prepare / execute / collect / summarize / write / process |
 
 ---
 
@@ -71,14 +72,15 @@ RPipe/
         algorithm/
         system/
         artifact/
+        make/
       flow/
+        cli.py
         prepare/
         execute/
         collect/
         summarize/
         write/
         process/
-      cli.py
   studies/
   docs/
   tests/
@@ -109,6 +111,7 @@ studies/<study>/
   shared/
     data/
     model/
+  scripts/
   runs/
     <run_id>/
       config.yaml
@@ -124,7 +127,8 @@ studies/<study>/
 | `docs/` | 计划与报告；可入库 |
 | `shared/` | Study 内共享 asset（data / model 文件）；默认不入库 |
 | `runs/` | 每次 Run；默认不入库 |
-| `index` | launch 前编排清单 |
+| `scripts/` | make 生成的调度脚本；默认不入库 |
+| `index` | make 写入的编排清单 |
 | `shared/data/`、`shared/model/` | structure data / model 的落盘 |
 | `runs/<id>/assets/` | 本 Run 的 asset：`tracker/`（数字曲线）、`logs/`（文本）、checkpoint、样本等 |
 
@@ -136,11 +140,10 @@ studies/<study>/
 studies/<name>/study.yaml
         │
         ▼
-  包外编排 / 薄 CLI
+  flow cli
         │
-        ├─► 写 runs/<id>/config.yaml
-        ├─► 写 index
-        └─► FlowRunner（structure + flow）
+        ├─► structure.make → runs/<id>/config.yaml、index、scripts/
+        └─► FlowRunner
                     │
                     ▼
             runs/<id>/ 下的 result 与 assets

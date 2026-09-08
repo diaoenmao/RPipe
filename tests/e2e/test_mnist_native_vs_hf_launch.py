@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from rpipe.cli import run_study
+from rpipe.flow.cli import run_study
 from rpipe.structure.artifact import load_index, load_result
 
 pytest.importorskip('transformers')

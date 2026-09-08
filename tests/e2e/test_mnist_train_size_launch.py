@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from rpipe.cli import run_study
+from rpipe.flow.cli import run_study
 from rpipe.structure.artifact import load_index, load_result
 
 

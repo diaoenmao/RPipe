@@ -17,7 +17,7 @@
 
 - 库内两柱 `structure` + `flow`；artifact IO 在 `structure.artifact`
 - 顶层 `studies/`：`docs/` + `shared/` + `runs/<id>/`
-- CLI：`python -m rpipe run`（`study run` 为别名）
+- cli：`python -m rpipe`，`study run` 为别名
 - Flow 阶段：prepare → execute → collect → summarize → **write** → process（process 仍可空）
 - `index.json` 按 Experiment 的 factors 分组列 Run
 - 真数据须显式 `data.source`（如 `torch`）

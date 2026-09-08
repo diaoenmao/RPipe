@@ -22,7 +22,7 @@ pip install -e ".[dev]"
 ## 目录（摘要）
 
 ```
-src/rpipe/{structure,flow}   # artifact 在 structure/artifact/
+src/rpipe/{structure,flow}   # make 在 structure；cli 在 flow
 studies/<name>/{docs,shared,runs,study.yaml,experiment_config.yaml}
 ```
 
@@ -31,8 +31,12 @@ studies/<name>/{docs,shared,runs,study.yaml,experiment_config.yaml}
 ## 快速运行
 
 ```bash
-# 薄 CLI：读 study.yaml → Config + index → Flow
+# 入口：study.yaml → make → 阶段链
 python -m rpipe run studies/mnist_train_size
+
+# 同一套 flow：写出调度脚本后按 GPU 与 round 并行
+python -m rpipe make studies/<name> --num-gpus 1 --round 4
+python -m rpipe launch studies/<name> --num-gpus 1 --round 4
 
 pytest
 ```

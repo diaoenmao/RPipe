@@ -1,4 +1,4 @@
-"""Structure: control, four layers, and artifact IO."""
+"""Structure: control, four layers, artifact, and make."""
 
 from rpipe.structure.control import (
     Control,
