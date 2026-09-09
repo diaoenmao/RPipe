@@ -19,7 +19,7 @@
 | 训练样本量 | `data.config.train_size` | `500`, `2000`, `8000` |
 | 算法 mode | `algorithm.mode` | `train`, `eval` |
 
-其余固定（见下）。两轴都进入 Config → **参与 Run `id` hash**。yaml 里 `train_size` 在前、`mode` 在后，因此每个 size 先跑完 3 个 train，再跑 3 个 eval（eval 才能找到 sibling `best.pt`）。
+其余固定（见下）。两轴都进入 Config，参与 Run `id` hash。`rpipe run` 按 axes 顺序每个 size 先 train 再 eval。`rpipe make` / `launch` 把全部 train 放进第一波，用 `&` 与 `--round` 并行，`wait` 完再跑 eval，eval 才能读到 sibling `best.pt`。
 
 **子集口径（嵌套前 N 条）：** `train_size` 取训练集编号 `0 .. N-1`，因此 **500 ⊂ 2000 ⊂ 8000**。加大样本量是「多给前面那些图」，不是每个格子重新抽一袋。`seed` 只影响初始化与 DataLoader shuffle，不换图。
 
@@ -45,7 +45,7 @@
 | `algorithm.lr` | `0.1` |
 | `algorithm.scheduler` | `cosine` |
 | `algorithm.eta_min` | `0.0` |
-| `system.device` | `cpu` |
+| `system.device` | `cuda` |
 | `system.deterministic` | `false` |
 | `system.cudnn_benchmark` | `true` |
 | 测试集 | 完整 MNIST test |
@@ -60,7 +60,9 @@
 ## 6. 编排顺序（对齐 CONCEPT §9）
 
 1. 写 / 确认 Study 根 `experiment_config.yaml`
-2. `python -m rpipe run studies/mnist_train_size` → config + index + Flow
+2. `python -m rpipe make studies/mnist_train_size --num-gpus 1 --round 4`  
+   再 `python -m rpipe launch studies/mnist_train_size --num-gpus 1 --round 4`  
+   第一波 9 次 train 按 round 后台并行；全部 `wait` 后再跑 eval。
 3. 读 `process.json`（含 `paired`）、`docs/figures/learning_curves.png` 写 `STUDY_REPORT.md`（必须有 train 表 + eval 表；Flow 不改 markdown）
 
 ## 7. 成功标准

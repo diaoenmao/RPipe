@@ -35,7 +35,39 @@ def test_expand_patches_train_size_baseline():
     assert patches[0]['description'] == 'size=500'
 
 
-def test_gpu_ids_round_robin_range():
+def test_plan_jobs_trains_before_eval(tmp_path: Path):
+    study = tmp_path / 'study'
+    eval_path = artifact_layout(study, 'e1').config_path
+    eval_path.write_text('algorithm:\n  mode: eval\n', encoding='utf-8')
+    train_path = artifact_layout(study, 't1').config_path
+    train_path.write_text('algorithm:\n  mode: train\n', encoding='utf-8')
+    jobs = plan_jobs(study, [eval_path, train_path], init_gpu=0, num_gpus=1)
+    assert [j['run_id'] for j in jobs] == ['t1', 'e1']
+    assert [j['mode'] for j in jobs] == ['train', 'eval']
+
+
+def test_render_bash_waits_after_train_wave(tmp_path: Path):
+    study = tmp_path / 'study'
+    (tmp_path / 'pyproject.toml').write_text('[project]\nname = "rpipe"\n', encoding='utf-8')
+    jobs = [
+        {'run_id': 't0', 'gpu': '0', 'mode': 'train'},
+        {'run_id': 't1', 'gpu': '0', 'mode': 'train'},
+        {'run_id': 'e0', 'gpu': '0', 'mode': 'eval'},
+        {'run_id': 'e1', 'gpu': '0', 'mode': 'eval'},
+    ]
+    text = render_bash(
+        study,
+        jobs,
+        python_exe='/opt/python',
+        round_size=4,
+        split_round=65535,
+    )[0]
+    train_pos = text.rfind('"t1"')
+    eval_pos = text.find('"e0"')
+    wait_between = text.find('\nwait\n', train_pos, eval_pos)
+    assert train_pos != -1 and eval_pos != -1
+    assert wait_between != -1
+
     assert gpu_ids(2, 3) == ['2', '3', '4']
     assert gpu_ids(0, 0) == []
 

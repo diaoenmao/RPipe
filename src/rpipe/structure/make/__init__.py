@@ -7,6 +7,7 @@ from rpipe.structure.artifact.layout import ensure_study_layout
 from rpipe.structure.make.expand import expand_patches, load_study_yaml
 from rpipe.structure.make.schedule import (
     gpu_ids,
+    job_waves,
     launch_jobs,
     plan_jobs,
     render_bash,
@@ -19,6 +20,7 @@ __all__ = [
     'expand_patches',
     'expand_study',
     'gpu_ids',
+    'job_waves',
     'launch_jobs',
     'load_study_yaml',
     'plan_jobs',

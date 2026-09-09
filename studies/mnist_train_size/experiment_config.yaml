@@ -23,6 +23,6 @@ algorithm:
   scheduler: cosine
   eta_min: 0.0
 system:
-  device: cpu
+  device: cuda
   deterministic: false
   cudnn_benchmark: true

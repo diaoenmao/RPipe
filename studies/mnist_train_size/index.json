@@ -1,106 +1,205 @@
 {
-  "description": "MNIST train_size sweep → test accuracy",
+  "description": "MNIST train_size sweep → test accuracy; independent eval Run loads train best",
   "study": "mnist_train_size",
   "experiments": [
     {
       "factors": {
-        "data.config.train_size": 500
+        "data.config.train_size": 500,
+        "algorithm.mode": "train"
       },
       "runs": [
         {
-          "id": "f61860256fcaaaab",
+          "id": "8176170127f91cf0",
           "seed": 0,
-          "description": "train_size=500 seed=0",
+          "description": "train_size=500 mode=train seed=0",
           "tags": [
             "baseline"
           ],
-          "run_dir": "f61860256fcaaaab",
-          "config": "runs/f61860256fcaaaab/config.yaml"
+          "run_dir": "8176170127f91cf0",
+          "config": "runs/8176170127f91cf0/config.yaml"
         },
         {
-          "id": "12b6927f005ec604",
+          "id": "fc81e18a5207a45d",
           "seed": 1,
-          "description": "train_size=500 seed=1",
+          "description": "train_size=500 mode=train seed=1",
           "tags": [
             "baseline"
           ],
-          "run_dir": "12b6927f005ec604",
-          "config": "runs/12b6927f005ec604/config.yaml"
+          "run_dir": "fc81e18a5207a45d",
+          "config": "runs/fc81e18a5207a45d/config.yaml"
         },
         {
-          "id": "465a8f85039fb6c4",
+          "id": "442977f37212ef68",
           "seed": 2,
-          "description": "train_size=500 seed=2",
+          "description": "train_size=500 mode=train seed=2",
           "tags": [
             "baseline"
           ],
-          "run_dir": "465a8f85039fb6c4",
-          "config": "runs/465a8f85039fb6c4/config.yaml"
+          "run_dir": "442977f37212ef68",
+          "config": "runs/442977f37212ef68/config.yaml"
         }
       ]
     },
     {
       "factors": {
-        "data.config.train_size": 2000
+        "data.config.train_size": 500,
+        "algorithm.mode": "eval"
       },
       "runs": [
         {
-          "id": "aa38cd8edc39ff8e",
+          "id": "e957d8a364952d1f",
           "seed": 0,
-          "description": "train_size=2000 seed=0",
+          "description": "train_size=500 mode=eval seed=0",
           "tags": [],
-          "run_dir": "aa38cd8edc39ff8e",
-          "config": "runs/aa38cd8edc39ff8e/config.yaml"
+          "run_dir": "e957d8a364952d1f",
+          "config": "runs/e957d8a364952d1f/config.yaml"
         },
         {
-          "id": "ac6ebe86536786ae",
+          "id": "dff1613a7bc1fd5f",
           "seed": 1,
-          "description": "train_size=2000 seed=1",
+          "description": "train_size=500 mode=eval seed=1",
           "tags": [],
-          "run_dir": "ac6ebe86536786ae",
-          "config": "runs/ac6ebe86536786ae/config.yaml"
+          "run_dir": "dff1613a7bc1fd5f",
+          "config": "runs/dff1613a7bc1fd5f/config.yaml"
         },
         {
-          "id": "9be3d4b1f8a66ef6",
+          "id": "56bc9bd79216fbba",
           "seed": 2,
-          "description": "train_size=2000 seed=2",
+          "description": "train_size=500 mode=eval seed=2",
           "tags": [],
-          "run_dir": "9be3d4b1f8a66ef6",
-          "config": "runs/9be3d4b1f8a66ef6/config.yaml"
+          "run_dir": "56bc9bd79216fbba",
+          "config": "runs/56bc9bd79216fbba/config.yaml"
         }
       ]
     },
     {
       "factors": {
-        "data.config.train_size": 8000
+        "data.config.train_size": 2000,
+        "algorithm.mode": "train"
       },
       "runs": [
         {
-          "id": "aa46a8f2daf0311f",
+          "id": "d48fd72e60c7f6ac",
           "seed": 0,
-          "description": "train_size=8000 seed=0",
+          "description": "train_size=2000 mode=train seed=0",
           "tags": [],
-          "run_dir": "aa46a8f2daf0311f",
-          "config": "runs/aa46a8f2daf0311f/config.yaml"
+          "run_dir": "d48fd72e60c7f6ac",
+          "config": "runs/d48fd72e60c7f6ac/config.yaml"
         },
         {
-          "id": "dc28d50579b31bce",
+          "id": "bb1c4bab027af782",
           "seed": 1,
-          "description": "train_size=8000 seed=1",
+          "description": "train_size=2000 mode=train seed=1",
           "tags": [],
-          "run_dir": "dc28d50579b31bce",
-          "config": "runs/dc28d50579b31bce/config.yaml"
+          "run_dir": "bb1c4bab027af782",
+          "config": "runs/bb1c4bab027af782/config.yaml"
         },
         {
-          "id": "071c2da9901c5513",
+          "id": "31c40cec0f6d9cd5",
           "seed": 2,
-          "description": "train_size=8000 seed=2",
+          "description": "train_size=2000 mode=train seed=2",
           "tags": [],
-          "run_dir": "071c2da9901c5513",
-          "config": "runs/071c2da9901c5513/config.yaml"
+          "run_dir": "31c40cec0f6d9cd5",
+          "config": "runs/31c40cec0f6d9cd5/config.yaml"
+        }
+      ]
+    },
+    {
+      "factors": {
+        "data.config.train_size": 2000,
+        "algorithm.mode": "eval"
+      },
+      "runs": [
+        {
+          "id": "478225eadad22061",
+          "seed": 0,
+          "description": "train_size=2000 mode=eval seed=0",
+          "tags": [],
+          "run_dir": "478225eadad22061",
+          "config": "runs/478225eadad22061/config.yaml"
+        },
+        {
+          "id": "b42b4fd9d969a3d6",
+          "seed": 1,
+          "description": "train_size=2000 mode=eval seed=1",
+          "tags": [],
+          "run_dir": "b42b4fd9d969a3d6",
+          "config": "runs/b42b4fd9d969a3d6/config.yaml"
+        },
+        {
+          "id": "02214314ba92307e",
+          "seed": 2,
+          "description": "train_size=2000 mode=eval seed=2",
+          "tags": [],
+          "run_dir": "02214314ba92307e",
+          "config": "runs/02214314ba92307e/config.yaml"
+        }
+      ]
+    },
+    {
+      "factors": {
+        "data.config.train_size": 8000,
+        "algorithm.mode": "train"
+      },
+      "runs": [
+        {
+          "id": "ae8cf11290ed6b54",
+          "seed": 0,
+          "description": "train_size=8000 mode=train seed=0",
+          "tags": [],
+          "run_dir": "ae8cf11290ed6b54",
+          "config": "runs/ae8cf11290ed6b54/config.yaml"
+        },
+        {
+          "id": "8217ff232db48b12",
+          "seed": 1,
+          "description": "train_size=8000 mode=train seed=1",
+          "tags": [],
+          "run_dir": "8217ff232db48b12",
+          "config": "runs/8217ff232db48b12/config.yaml"
+        },
+        {
+          "id": "778bd5b434d18762",
+          "seed": 2,
+          "description": "train_size=8000 mode=train seed=2",
+          "tags": [],
+          "run_dir": "778bd5b434d18762",
+          "config": "runs/778bd5b434d18762/config.yaml"
+        }
+      ]
+    },
+    {
+      "factors": {
+        "data.config.train_size": 8000,
+        "algorithm.mode": "eval"
+      },
+      "runs": [
+        {
+          "id": "92abeedb98737917",
+          "seed": 0,
+          "description": "train_size=8000 mode=eval seed=0",
+          "tags": [],
+          "run_dir": "92abeedb98737917",
+          "config": "runs/92abeedb98737917/config.yaml"
+        },
+        {
+          "id": "9d9e6347dee60c86",
+          "seed": 1,
+          "description": "train_size=8000 mode=eval seed=1",
+          "tags": [],
+          "run_dir": "9d9e6347dee60c86",
+          "config": "runs/9d9e6347dee60c86/config.yaml"
+        },
+        {
+          "id": "a83a100692ba2930",
+          "seed": 2,
+          "description": "train_size=8000 mode=eval seed=2",
+          "tags": [],
+          "run_dir": "a83a100692ba2930",
+          "config": "runs/a83a100692ba2930/config.yaml"
         }
       ]
     }
   ],
-  "id": "81419bafae1a9685"
+  "id": "29f72393b21cd4ab"
 }

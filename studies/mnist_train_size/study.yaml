@@ -26,11 +26,12 @@ fixed:
     scheduler: cosine
     eta_min: 0.0
   system:
-    device: cpu
+    device: cuda
     deterministic: false
     cudnn_benchmark: true
 
-# 3 train_size × {train, eval} × 3 seeds = 18 Runs. eval 在同 size 的 3 次 train 之后启动，resume 默认 best。
+# 3 train_size × {train, eval} × 3 seeds = 18 Runs。
+# make 先并行所有 train（& / wait），全部结束后再跑 eval；resume 默认 best。
 axes:
   data.config.train_size: [500, 2000, 8000]
   algorithm.mode: [train, eval]

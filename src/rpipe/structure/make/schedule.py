@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from rpipe.structure.artifact import artifact_layout
+from rpipe.structure.artifact import artifact_layout, load_config
 from rpipe.structure.artifact.result.format import STATUS_SUCCEEDED, decode_result
 
 SCRIPTS_DIRNAME = 'scripts'
@@ -49,6 +49,36 @@ def run_succeeded(study_dir: Path, run_id: str) -> bool:
     return data.get('status') == STATUS_SUCCEEDED
 
 
+def job_mode(config_path: Path) -> str:
+    try:
+        cfg = load_config(config_path)
+    except (OSError, ValueError):
+        return 'train'
+    algo = cfg.get('algorithm')
+    if isinstance(algo, dict):
+        return str(algo.get('mode') or 'train')
+    return 'train'
+
+
+def job_waves(jobs: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
+    """Train jobs first, then eval. Eval waits until the train wave finishes."""
+    trains = [job for job in jobs if job.get('mode') != 'eval']
+    evals = [job for job in jobs if job.get('mode') == 'eval']
+    if trains and evals:
+        return [trains, evals]
+    return [jobs] if jobs else []
+
+
+def _assign_gpus(jobs: list[dict[str, Any]], init_gpu: int, num_gpus: int) -> None:
+    gpus = gpu_ids(init_gpu, num_gpus)
+    if not gpus:
+        for job in jobs:
+            job.pop('gpu', None)
+        return
+    for i, job in enumerate(jobs):
+        job['gpu'] = gpus[i % len(gpus)]
+
+
 def plan_jobs(
     study_dir: Path,
     config_paths: list[Path],
@@ -57,22 +87,23 @@ def plan_jobs(
     num_gpus: int = 1,
     include_done: bool = False,
 ) -> list[dict[str, Any]]:
-    gpus = gpu_ids(init_gpu, num_gpus)
-    jobs: list[dict[str, Any]] = []
-    slot = 0
+    pending: list[dict[str, Any]] = []
     for path in config_paths:
         run_id = path.parent.name
         if not include_done and run_succeeded(study_dir, run_id):
             continue
-        job: dict[str, Any] = {
-            'run_id': run_id,
-            'config': str(path.as_posix()),
-        }
-        if gpus:
-            job['gpu'] = gpus[slot % len(gpus)]
-            slot += 1
-        jobs.append(job)
-    return jobs
+        pending.append(
+            {
+                'run_id': run_id,
+                'config': str(path.as_posix()),
+                'mode': job_mode(path),
+            }
+        )
+    ordered: list[dict[str, Any]] = []
+    for wave in job_waves(pending):
+        ordered.extend(wave)
+    _assign_gpus(ordered, init_gpu, num_gpus)
+    return ordered
 
 
 def scripts_dir(study_dir: Path) -> Path:
@@ -120,6 +151,7 @@ def render_bash(
     chunks: list[str] = []
     buf = ['#!/bin/bash', f'cd "{repo_b}"', 'export KMP_DUPLICATE_LIB_OK=TRUE']
     wait_groups = 0
+    waves = job_waves(jobs)
 
     def _flush() -> None:
         chunks.append('\n'.join(buf) + '\n')
@@ -127,32 +159,34 @@ def render_bash(
     def _reset() -> list[str]:
         return ['#!/bin/bash', f'cd "{repo_b}"', 'export KMP_DUPLICATE_LIB_OK=TRUE']
 
-    for i, job in enumerate(jobs):
-        run_id = job['run_id']
-        gpu = job.get('gpu')
-        cmd = f'"{py_b}" -m rpipe run-one "{study_b}" "{run_id}"'
-        if gpu is not None:
-            bg = f'CUDA_VISIBLE_DEVICES="{gpu}" {cmd} &'
-            fg = f'CUDA_VISIBLE_DEVICES="{gpu}" {cmd}'
-        else:
-            bg = f'{cmd} &'
-            fg = cmd
-        round_end = i % round_size == round_size - 1
-        last = i == len(jobs) - 1
-        if round_end:
-            buf.append(fg)
-            buf.append('wait')
-            wait_groups += 1
-            if wait_groups % split_round == 0 or last:
-                _flush()
-                buf = _reset()
-        elif last:
-            buf.append(bg)
-            buf.append('wait')
-            _flush()
-            buf = _reset()
-        else:
-            buf.append(bg)
+    for wave in waves:
+        for i, job in enumerate(wave):
+            run_id = job['run_id']
+            gpu = job.get('gpu')
+            cmd = f'"{py_b}" -m rpipe run-one "{study_b}" "{run_id}"'
+            if gpu is not None:
+                bg = f'CUDA_VISIBLE_DEVICES="{gpu}" {cmd} &'
+                fg = f'CUDA_VISIBLE_DEVICES="{gpu}" {cmd}'
+            else:
+                bg = f'{cmd} &'
+                fg = cmd
+            round_end = i % round_size == round_size - 1
+            last = i == len(wave) - 1
+            if round_end:
+                buf.append(fg)
+                buf.append('wait')
+                wait_groups += 1
+                if wait_groups % split_round == 0 or (last and wave is waves[-1]):
+                    _flush()
+                    buf = _reset()
+            elif last:
+                buf.append(bg)
+                buf.append('wait')
+                if wave is waves[-1]:
+                    _flush()
+                    buf = _reset()
+            else:
+                buf.append(bg)
     return chunks or ['#!/bin/bash\nwait\n']
 
 
@@ -243,12 +277,16 @@ def launch_jobs(
             codes.append(int(proc.wait()))
         batch.clear()
 
-    for i, job in enumerate(jobs):
-        cmd = [py, '-m', 'rpipe', 'run-one', str(study_dir), str(job['run_id'])]
-        print(f'+ gpu={job.get("gpu", "-")} {job["run_id"]}', flush=True)
-        batch.append(
-            subprocess.Popen(cmd, cwd=str(root), env=launch_job_env(job))
-        )
-        if len(batch) >= round_size or i == len(jobs) - 1:
-            _wait_batch()
+    def _run_wave(wave: list[dict[str, Any]]) -> None:
+        for i, job in enumerate(wave):
+            cmd = [py, '-m', 'rpipe', 'run-one', str(study_dir), str(job['run_id'])]
+            print(f'+ gpu={job.get("gpu", "-")} {job["run_id"]}', flush=True)
+            batch.append(
+                subprocess.Popen(cmd, cwd=str(root), env=launch_job_env(job))
+            )
+            if len(batch) >= round_size or i == len(wave) - 1:
+                _wait_batch()
+
+    for wave in job_waves(jobs):
+        _run_wave(wave)
     return codes

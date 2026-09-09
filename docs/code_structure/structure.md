@@ -977,9 +977,17 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 |------|------|
 | 展开 | 读 Study 声明（`axes` × `seeds`）→ patch 列表 |
 | 写格子 | 每个 patch → `run_config_from_merge` → `runs/<id>/config.yaml`；写 **index** |
-| 写脚本 | `CUDA_VISIBLE_DEVICES` 轮转；每 `--round` 个后台任务（`&`）后 `wait`；可选 `--split-round` 拆文件 |
+| 写脚本 | `CUDA_VISIBLE_DEVICES` 轮转；每 `--round` 个任务一组（组内 `&`，组末前台，然后 `wait`）；可选 `--split-round` 拆文件 |
 
-产物：N 份 config + index，以及 `studies/<name>/scripts/`（默认不入库）。打满 GPU 靠进程级并行，不靠一次 `FlowRunner` 内部并行。
+产物：N 份 config + index，以及 `studies/<name>/scripts/`（默认 gitignore）。`launch.sh` 形状：
+
+```bash
+CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<id>" &
+CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<id>"
+wait
+```
+
+`algorithm.mode: eval` 单独第二波：train 全部 `wait` 完再启动。`rpipe launch` 用同一波次与 round，不依赖 bash。形状见 [STUDY_GUIDE.md](../STUDY_GUIDE.md) §3。
 
 测试：`tests/rpipe/structure/make/`。
 

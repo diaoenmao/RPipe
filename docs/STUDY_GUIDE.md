@@ -58,7 +58,7 @@ studies/<name>/
 | `studies/vision_main_recipe/` | 复现 main 的 CIFAR10/SVHN × linear/mlp/cnn/resnet18（同一 60-step recipe） |
 | `studies/_template/study.yaml` | 字段模版 |
 
-仓库里若还有 `grid/`、`launch/`、`run.py`，那是历史包装。格子与脚本由 **structure.make** 生成，入口用 `python -m rpipe`。
+新 Study 只要 `study.yaml`、`experiment_config.yaml` 和 `docs/`；格子与脚本由 **structure.make** 生成，入口是 `python -m rpipe`。
 
 ---
 
@@ -81,7 +81,43 @@ python -m rpipe launch studies/<name> --num-gpus 1 --round 4
 #   bash studies/<name>/scripts/launch.sh
 ```
 
-同一套 Flow，用参数选择：只 make、阶段子集、顺序或按 `round` 并行。长训放在独立终端。`make` 默认跳过已经 succeeded 的 Run。脚本里每条是一次 `run-one`。
+同一套 Flow，用参数选择：只 make、阶段子集、顺序或按 `round` 并行。长训放在独立终端。`make` 默认跳过已经 succeeded 的 Run。脚本里每条是一次 `run-one`。`scripts/` 默认 gitignore，看并行就看刚生成的 `launch.sh`，或下面这份形状。
+
+### 脚本怎么并行（跟 git `main` 一样：`&` + `wait`）
+
+进程级并行，一次 `FlowRunner` 只跑一个 Run。`--round` 是**同时在跑的进程数**；`--num-gpus` 把 `CUDA_VISIBLE_DEVICES` 轮转给这些进程。
+
+有 `algorithm.mode: eval` 时拆成两波：全部 train 先按 round 打满并 `wait` 干净，再启动 eval（eval 要读 sibling 的 `best.pt`）。同一波里每 `round` 条一组：组内前面的命令带 `&`，组末一条前台跑，然后 `wait`。
+
+`mnist_train_size`：18 次 Run、`--round 4`、`--num-gpus 1` 时，`studies/mnist_train_size/scripts/launch.sh` 形状如下（路径已缩短）：
+
+```bash
+#!/bin/bash
+cd "<repo>"
+export KMP_DUPLICATE_LIB_OK=TRUE
+# 第一波：9 次 train
+CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>" &
+CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>" &
+CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>" &
+CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>"
+wait
+CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>" &
+CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>" &
+CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>" &
+CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>"
+wait
+CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>" &
+wait
+# 第二波：9 次 eval（上一波全部 wait 完才到这里）
+CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<eval>" &
+CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<eval>" &
+CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<eval>" &
+CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<eval>"
+wait
+# …再两组 eval，最后一条同样是 cmd & + wait
+```
+
+Windows 上 `launch.ps1` 只转调 `python -m rpipe launch`，波次与 round 在 Python 里用 `Popen` 复现同一套，不是 bash `&&`。多卡时同一组里会看到 `CUDA_VISIBLE_DEVICES="0"`、`"1"`、… 轮转。
 
 1. **make** 读 `study.yaml`，按 `axes` × `seeds` 展开  
 2. 每个补丁 ⊕ `experiment_config.yaml` → `runs/<id>/config.yaml`  
@@ -247,12 +283,12 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 
 ## 7. 新 Study 最小步骤
 
-1. 复制 `studies/mnist_train_size/` 或对照 `_template/study.yaml`，改目录名。  
+1. 对照 `_template/study.yaml` 或 `studies/mnist_train_size/` 的 yaml 与 `docs/`，改目录名。  
 2. 改 `experiment_config.yaml` 的基底；改 `study.yaml` 的 `axes` / `seeds` / `tags`。  
 3. 在 `docs/PLAN.md` 写清：比什么、什么固定、成功标准。  
-4. `--skip-launch`，核对 index 里 Experiment 个数、factors、seed、baseline tag。  
-5. `python -m rpipe run studies/<name>`。  
-6. 读 `process.json` + `docs/figures/learning_curves.png`，按 Experiment 写 `docs/STUDY_REPORT.md`（嵌图，不要只贴表）。
+4. `python -m rpipe run studies/<name> --skip-launch`，核对 index。  
+5. `python -m rpipe make studies/<name>`，再 `python -m rpipe launch studies/<name>`。有独立 eval 时 make 会先并行 train，再跑 eval。  
+6. 读 `process.json` + `docs/figures/learning_curves.png`，按 Experiment 写 `docs/STUDY_REPORT.md`。
 
 检查清单：
 

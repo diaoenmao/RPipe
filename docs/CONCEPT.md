@@ -247,7 +247,7 @@ flowchart TB
 ## 9. 编排生命周期
 
 1. 写基底配置与 study 声明：`axes` 与 `seeds`
-2. **make**：展开 Experiment × seed → 各 Run config 与 index；打满 GPU 时写出调度脚本：`CUDA_VISIBLE_DEVICES`、后台 `&`、每 `round` 一次 `wait`
+2. **make**：展开 Experiment × seed → 各 Run config 与 index；写出调度脚本：`CUDA_VISIBLE_DEVICES` 轮转、组内 `&`、每 `round` 一次 `wait`。有独立 eval 时先并行全部 train，再跑 eval。脚本形状见 STUDY_GUIDE。
 3. **Flow**：经 cli，按参数对 Study 下各 Run 跑阶段链；`process` 按 Experiment 收口
 4. 按 Experiment 读 result 与曲线，写 Study 报告，报告里要有图
 
