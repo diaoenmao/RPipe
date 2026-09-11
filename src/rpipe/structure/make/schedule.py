@@ -119,6 +119,7 @@ def write_jobs_json(
     round_size: int,
     init_gpu: int,
     num_gpus: int,
+    extra: dict[str, Any] | None = None,
 ) -> Path:
     payload = {
         'study_dir': str(study_dir.resolve()),
@@ -127,9 +128,25 @@ def write_jobs_json(
         'num_gpus': int(num_gpus),
         'jobs': jobs,
     }
+    if extra:
+        payload.update(extra)
     dest = scripts_dir(study_dir) / JOBS_NAME
     dest.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
     return dest
+
+
+def wait_groups(
+    jobs: list[dict[str, Any]],
+    round_size: int,
+    batches: list[list[dict[str, Any]]] | None = None,
+) -> list[list[dict[str, Any]]]:
+    if batches:
+        return [group for group in batches if group]
+    groups: list[list[dict[str, Any]]] = []
+    for wave in job_waves(jobs):
+        for start in range(0, len(wave), round_size):
+            groups.append(wave[start : start + round_size])
+    return groups
 
 
 def render_bash(
@@ -139,6 +156,7 @@ def render_bash(
     python_exe: str,
     round_size: int,
     split_round: int,
+    batches: list[list[dict[str, Any]]] | None = None,
 ) -> list[str]:
     if round_size < 1:
         raise ValueError('round must be >= 1')
@@ -150,8 +168,8 @@ def render_bash(
     repo_b = bash_path(repo)
     chunks: list[str] = []
     buf = ['#!/bin/bash', f'cd "{repo_b}"', 'export KMP_DUPLICATE_LIB_OK=TRUE']
-    wait_groups = 0
-    waves = job_waves(jobs)
+    wait_groups_n = 0
+    groups = wait_groups(jobs, round_size, batches)
 
     def _flush() -> None:
         chunks.append('\n'.join(buf) + '\n')
@@ -159,8 +177,9 @@ def render_bash(
     def _reset() -> list[str]:
         return ['#!/bin/bash', f'cd "{repo_b}"', 'export KMP_DUPLICATE_LIB_OK=TRUE']
 
-    for wave in waves:
-        for i, job in enumerate(wave):
+    for gi, group in enumerate(groups):
+        last_group = gi == len(groups) - 1
+        for i, job in enumerate(group):
             run_id = job['run_id']
             gpu = job.get('gpu')
             cmd = f'"{py_b}" -m rpipe run-one "{study_b}" "{run_id}"'
@@ -170,19 +189,12 @@ def render_bash(
             else:
                 bg = f'{cmd} &'
                 fg = cmd
-            round_end = i % round_size == round_size - 1
-            last = i == len(wave) - 1
-            if round_end:
+            last = i == len(group) - 1
+            if last:
                 buf.append(fg)
                 buf.append('wait')
-                wait_groups += 1
-                if wait_groups % split_round == 0 or (last and wave is waves[-1]):
-                    _flush()
-                    buf = _reset()
-            elif last:
-                buf.append(bg)
-                buf.append('wait')
-                if wave is waves[-1]:
+                wait_groups_n += 1
+                if wait_groups_n % split_round == 0 or last_group:
                     _flush()
                     buf = _reset()
             else:
@@ -199,6 +211,8 @@ def write_launch_scripts(
     python_exe: str | None = None,
     init_gpu: int = 0,
     num_gpus: int = 1,
+    extra: dict[str, Any] | None = None,
+    batches: list[list[dict[str, Any]]] | None = None,
 ) -> dict[str, Any]:
     py = python_exe or sys.executable
     dest = scripts_dir(study_dir)
@@ -208,6 +222,7 @@ def write_launch_scripts(
         round_size=round_size,
         init_gpu=init_gpu,
         num_gpus=num_gpus,
+        extra=extra,
     )
     chunks = render_bash(
         study_dir,
@@ -215,6 +230,7 @@ def write_launch_scripts(
         python_exe=py,
         round_size=round_size,
         split_round=split_round,
+        batches=batches,
     )
     sh_paths: list[Path] = []
     stem = 'launch'
@@ -264,29 +280,44 @@ def launch_jobs(
     round_size: int = 4,
     python_exe: str | None = None,
     cwd: Path | None = None,
+    batches: list[list[dict[str, Any]]] | None = None,
+    retry_failed: bool = True,
 ) -> list[int]:
     if round_size < 1:
         raise ValueError('round must be >= 1')
     py = python_exe or sys.executable
     root = cwd or repo_root_from(study_dir)
     codes: list[int] = []
-    batch: list[subprocess.Popen[str]] = []
 
-    def _wait_batch() -> None:
-        for proc in batch:
-            codes.append(int(proc.wait()))
-        batch.clear()
+    def _run_groups(groups: list[list[dict[str, Any]]]) -> list[tuple[dict[str, Any], int]]:
+        pairs: list[tuple[dict[str, Any], int]] = []
+        for group in groups:
+            procs: list[tuple[dict[str, Any], subprocess.Popen[str]]] = []
+            for job in group:
+                cmd = [py, '-m', 'rpipe', 'run-one', str(study_dir), str(job['run_id'])]
+                print(f'+ gpu={job.get("gpu", "-")} {job["run_id"]}', flush=True)
+                procs.append(
+                    (job, subprocess.Popen(cmd, cwd=str(root), env=launch_job_env(job)))
+                )
+            for job, proc in procs:
+                code = int(proc.wait())
+                pairs.append((job, code))
+                if code != 0:
+                    print(f'error {job["run_id"]} exit={code}', flush=True)
+        return pairs
 
-    def _run_wave(wave: list[dict[str, Any]]) -> None:
-        for i, job in enumerate(wave):
-            cmd = [py, '-m', 'rpipe', 'run-one', str(study_dir), str(job['run_id'])]
-            print(f'+ gpu={job.get("gpu", "-")} {job["run_id"]}', flush=True)
-            batch.append(
-                subprocess.Popen(cmd, cwd=str(root), env=launch_job_env(job))
-            )
-            if len(batch) >= round_size or i == len(wave) - 1:
-                _wait_batch()
-
-    for wave in job_waves(jobs):
-        _run_wave(wave)
+    pairs = _run_groups(wait_groups(jobs, round_size, batches))
+    codes.extend(code for _, code in pairs)
+    if not retry_failed:
+        return codes
+    failed = [
+        job
+        for job, code in pairs
+        if code != 0 or not run_succeeded(study_dir, str(job['run_id']))
+    ]
+    if not failed:
+        return codes
+    print(f'retry {len(failed)} failed jobs (resume latest)', flush=True)
+    retry_pairs = _run_groups([[job] for job in failed])
+    codes.extend(code for _, code in retry_pairs)
     return codes

@@ -28,6 +28,6 @@
 
 ## 3. 下一步
 
-1. 用 make / launch 跑长训 Study（如 `vision_main_recipe`），`--round` 按卡数与显存来。
+1. 跑 `vision_main_recipe` 400 epoch：`make` / `launch` 按同类装箱（linear 与 resnet 不同组）。
 2. 对照 git `main` 的长训图：Normalize 统计量、多种子、CIFAR100 / wresnet。
 3. daemon / Web / 决策器仍放在本库之外。

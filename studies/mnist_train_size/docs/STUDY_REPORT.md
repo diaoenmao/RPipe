@@ -25,7 +25,7 @@ python -m rpipe launch studies/mnist_train_size --num-gpus 1 --init-gpu 0 --roun
 
 2026-09-10 这次 launch 日志：先同时出现 4 个 train `+ gpu=0 …`，该组全部写出 `result.json` 后再打下一组；第 9 个 train 单独跑完后才出现 eval。eval 日志里 `resume_path` 指向对应 train 的 `best.pt`。墙钟约 **30 s**（格子里已有 `latest` 在 epoch 20，train 是续跑收口；数字与下面表格一致）。`process.complete: true`。
 
-脚本形状见 [STUDY_GUIDE.md](../../../docs/STUDY_GUIDE.md) §3；本 Study 的 `scripts/launch.sh` 默认不入库。
+脚本形状见 [STUDY_GUIDE.md](../../../docs/STUDY_GUIDE.md) §4；排班标准见同文件 §3。本 Study 的 `scripts/launch.sh` 默认不入库。
 
 ## 2. Conclusion
 

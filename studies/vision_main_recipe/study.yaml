@@ -36,9 +36,12 @@ fixed:
     deterministic: false
     cudnn_benchmark: true
 
+# 8 Run。axes 顺序 = make 展开顺序 = --round 切组顺序。
+# model 在前：同一 round 里是「同模型 × 两个数据集」，墙钟接近，避免 linear 和 resnet 绑在一组 wait。
+# 1 卡：make 默认 --round auto（按最重格子与显存估）。多卡：--num-gpus N。
 axes:
-  data.name: [CIFAR10, SVHN]
   model.name: [linear, mlp, cnn, resnet18]
+  data.name: [CIFAR10, SVHN]
 
 seeds: [0]
 

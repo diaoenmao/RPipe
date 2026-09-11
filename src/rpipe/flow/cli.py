@@ -13,7 +13,16 @@ from rpipe.structure.make import (
     expand_study,
     launch_jobs,
     plan_jobs,
+    run_succeeded,
     write_launch_scripts,
+)
+from rpipe.structure.make.capacity import (
+    attach_estimates,
+    batch_summaries,
+    capacity_report,
+    pack_jobs,
+    probe_gpus,
+    summarize_capacity,
 )
 
 
@@ -54,6 +63,19 @@ def run_study(
     }
 
 
+def _parse_round(text: str) -> int:
+    raw = str(text).strip().lower()
+    if raw in ('auto', '0'):
+        return 0
+    try:
+        value = int(raw)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError('round must be an int or auto') from exc
+    if value < 0:
+        raise argparse.ArgumentTypeError('round must be >= 0 (0=auto)')
+    return value
+
+
 def _parse_phases(raw: str) -> list[str] | None:
     return [s.strip() for s in raw.split(',') if s.strip()] or None
 
@@ -78,9 +100,10 @@ def _add_make_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--num-gpus', default=1, type=int)
     parser.add_argument(
         '--round',
-        default=4,
-        type=int,
-        help='concurrent jobs before wait',
+        default=0,
+        type=_parse_round,
+        metavar='N|auto',
+        help='0/auto = same-type wait groups packed by VRAM; N = fixed chunk size',
     )
     parser.add_argument('--split-round', default=65535, type=int)
     parser.add_argument(
@@ -100,14 +123,40 @@ def _make_from_args(args: argparse.Namespace) -> dict[str, Any]:
         num_gpus=args.num_gpus,
         include_done=bool(getattr(args, 'include_done', False)),
     )
+    attach_estimates(jobs)
+    gpus = probe_gpus(int(args.init_gpu), int(args.num_gpus))
+    requested = int(args.round)
+    batches: list | None
+    if requested <= 0:
+        batches = pack_jobs(jobs, gpus)
+        jobs = [job for group in batches for job in group]
+        round_size = max((len(group) for group in batches), default=1)
+        round_source = 'pack'
+    else:
+        batches = None
+        round_size = requested
+        round_source = 'cli'
+    report = capacity_report(
+        jobs,
+        gpus,
+        round_size=round_size,
+        round_source=round_source,
+    )
+    if batches is not None:
+        report['batches'] = batch_summaries(batches)
     written = write_launch_scripts(
         study_dir,
         jobs,
-        round_size=args.round,
+        round_size=round_size,
         split_round=args.split_round,
         init_gpu=args.init_gpu,
         num_gpus=args.num_gpus,
+        extra={'capacity': report},
+        batches=batches,
     )
+    written['round'] = round_size
+    written['capacity'] = report
+    written['batches'] = batches
     return {'expand': out, 'job_list': jobs, **written}
 
 
@@ -129,6 +178,9 @@ def _print_make_paths(written: dict[str, Any]) -> None:
     for path in written['bash']:
         print(path)
     print(f'{written["n_jobs"]} jobs')
+    cap = written.get('capacity')
+    if isinstance(cap, dict):
+        print(summarize_capacity(cap))
 
 
 def _execute_make(args: argparse.Namespace) -> int:
@@ -146,9 +198,18 @@ def _execute_launch(args: argparse.Namespace) -> int:
     codes = launch_jobs(
         Path(written['expand']['study_dir']),
         jobs,
-        round_size=args.round,
+        round_size=int(written.get('round') or 1),
+        batches=written.get('batches'),
     )
-    return 1 if any(code != 0 for code in codes) else 0
+    study_dir = Path(written['expand']['study_dir'])
+    still = [
+        job['run_id']
+        for job in jobs
+        if not run_succeeded(study_dir, str(job['run_id']))
+    ]
+    if still:
+        print('still failed: ' + ' '.join(still), flush=True)
+    return 1 if still else 0
 
 
 def _execute_run_one(args: argparse.Namespace) -> int:

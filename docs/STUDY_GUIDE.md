@@ -1,6 +1,6 @@
 # Study 使用指南
 
-怎么用**现在的代码**开一轮可复现实验。概念以 [CONCEPT.md](CONCEPT.md) 为准，目录以 [LAYOUT.md](LAYOUT.md) 为准。
+怎么用**现在的代码**开一轮可复现实验。概念以 [CONCEPT.md](CONCEPT.md) 为准，目录以 [LAYOUT.md](LAYOUT.md) 为准。高效率排班见 **§3**，命令与脚本见 **§4**。
 
 库内两柱：`structure` 与 `flow`。你要写的是包外的 **Study 目录**。入口是 `python -m rpipe`，即 flow 的 cli。
 
@@ -62,7 +62,31 @@ studies/<name>/
 
 ---
 
-## 3. 一条命令怎么跑
+## 3. 高效率实验设计
+
+追求的是**这一轮 Study 的实验效率**：把 GPU **算力和显存都吃满**，墙钟更短，同时尽量不把进程打爆。并行是排班手段，写进 `docs/PLAN.md`，和「比什么、几个 seed」一起定。
+
+| 先分清 | 是什么 | 不是什么 |
+|--------|--------|----------|
+| `axes` | 研究因素，决定有几个 Experiment | 并发数 |
+| `seeds` | 每个点要复测几次 | 同时开几个进程 |
+| 并行 / `--round` | 同一时刻叠几个 `run-one` | seed 个数、模型个数 |
+
+一组 `wait` 的墙钟等于组里**最慢**的那条。linear 和 resnet 放一起，linear 早就结束，整组还在等 resnet，卡上还互相抢；这是在浪费算力。
+
+**标准（按优先级）：**
+
+1. **正确性先于速度。** 有依赖就分波：全部 train `wait` 完再 eval。已 `succeeded` 的默认跳过；中断后续 `latest`。一次 `FlowRunner` 只跑一个 Run。
+2. **吃满 GPU：显存用好、计算跑满、尽量不 error。** 同类、相近耗时的格子一起并行（CIFAR linear 和 SVHN linear 一组；resnet 和 linear 分开）。组内按当前空闲显存（约 50% 安全系数）能叠几个就叠几个，把 SM / 显存占住。估得太满会 OOM，所以保守叠，而不是按空卡理想值打穿。
+3. **error 不中断整轮。** 某条 `run-one` 失败：记下 `run_id` 和退出码（日志在该 Run 的 `assets/logs/`），**同组其余进程和后面的组继续跑完**。全部命令结束后，对未 `succeeded` 的格子再排一次，用 `resume: latest` 续跑。不要一组一挂就停掉整张卡。
+4. **按本轮格子排班。** 轻的同类型可以叠很多；重的 resnet 可能一组 1～2 个。不要用一个全局 `--round` 把轻重砍齐。默认 `auto` 按类型装箱；`--round N` 是均匀切块。长训丢独立终端。
+5. **PLAN 里写清排班。** 几个 seed、哪类一组、error 后怎么续。报告里复述实际怎么跑的。
+
+机制（`&` / `wait`、脚本形状）见下一节。
+
+---
+
+## 4. 一条命令怎么跑
 
 ```bash
 pip install -e ".[dev]"
@@ -73,21 +97,20 @@ python -m rpipe run studies/<name> --skip-launch
 # 写出格子并按顺序跑每个 Run
 python -m rpipe run studies/<name>
 
-# 写出格子与调度脚本，再按 GPU 与 round 并行
-python -m rpipe make studies/<name> --num-gpus 1 --init-gpu 0 --round 4
-python -m rpipe launch studies/<name> --num-gpus 1 --round 4
+# 写出格子与调度脚本，再按 §3 同类装箱并行
+python -m rpipe make studies/<name> --num-gpus 1 --init-gpu 0
+python -m rpipe launch studies/<name> --num-gpus 1 --init-gpu 0
+# 默认 --round auto（装箱）。手写均匀切块：--round 4
 # 也可在独立终端跑：
 #   studies/<name>/scripts/launch.ps1
 #   bash studies/<name>/scripts/launch.sh
 ```
 
-同一套 Flow，用参数选择：只 make、阶段子集、顺序或按 `round` 并行。长训放在独立终端。`make` 默认跳过已经 succeeded 的 Run。脚本里每条是一次 `run-one`。`scripts/` 默认 gitignore，看并行就看刚生成的 `launch.sh`，或下面这份形状。
+排班标准见 §3。下面是脚本形状（跟 git `main` 一样：`&` + `wait`）。
 
-### 脚本怎么并行（跟 git `main` 一样：`&` + `wait`）
+进程级并行。默认 `auto`：同类一组、显存吃满但留安全系数。某条失败只打印 `error <id>`，整轮 `wait` 完再对失败格子 `resume` 重跑一次。手写 `--round N` 仍是均匀切块。
 
-进程级并行，一次 `FlowRunner` 只跑一个 Run。`--round` 是**同时在跑的进程数**；`--num-gpus` 把 `CUDA_VISIBLE_DEVICES` 轮转给这些进程。
-
-有 `algorithm.mode: eval` 时拆成两波：全部 train 先按 round 打满并 `wait` 干净，再启动 eval（eval 要读 sibling 的 `best.pt`）。同一波里每 `round` 条一组：组内前面的命令带 `&`，组末一条前台跑，然后 `wait`。
+有 `algorithm.mode: eval` 时拆成两波：全部 train `wait` 完再启动 eval。
 
 `mnist_train_size`：18 次 Run、`--round 4`、`--num-gpus 1` 时，`studies/mnist_train_size/scripts/launch.sh` 形状如下（路径已缩短）：
 
@@ -117,7 +140,7 @@ wait
 # …再两组 eval，最后一条同样是 cmd & + wait
 ```
 
-Windows 上 `launch.ps1` 只转调 `python -m rpipe launch`，波次与 round 在 Python 里用 `Popen` 复现同一套，不是 bash `&&`。多卡时同一组里会看到 `CUDA_VISIBLE_DEVICES="0"`、`"1"`、… 轮转。
+Windows 上 `launch.ps1` 只转调 `python -m rpipe launch`，波次在 Python 里用 `Popen` 复现。多卡时同一组里会看到 `CUDA_VISIBLE_DEVICES="0"`、`"1"`、… 轮转。`scripts/` 默认 gitignore。
 
 1. **make** 读 `study.yaml`，按 `axes` × `seeds` 展开  
 2. 每个补丁 ⊕ `experiment_config.yaml` → `runs/<id>/config.yaml`  
@@ -131,15 +154,15 @@ Windows 上 `launch.ps1` 只转调 `python -m rpipe launch`，波次与 round �
 | `--skip-launch` | 只写出 config 与 index |
 | `--phases prepare,execute,...` | 只跑列出的阶段；相对顺序不变 |
 | `rpipe make` | 写出 config、index 与 `scripts/` |
-| `rpipe launch` | make 之后按 round 与 GPU 跑未完成 Run |
-| `--round` / `--num-gpus` / `--init-gpu` | 并行批次与卡号 |
+| `rpipe launch` | make 之后按装箱（或 `--round N`）跑未完成 Run |
+| `--round` / `--num-gpus` / `--init-gpu` | `auto` = §3 装箱；`N` = 均匀切块；卡号轮转 |
 | `--include-done` | 脚本里包含已经 succeeded 的 Run |
 
 `python -m rpipe study run …` 与上面等价，只是旧别名。
 
 ---
 
-## 4. 写 `experiment_config.yaml`
+## 5. 写 `experiment_config.yaml`
 
 基底字段对应 structure 四层。native 真训通路：有 `model.module` 且 `Data.iter_batches`（不再要求 `data.name: MNIST`）。`algorithm.source` 默认 `custom_torch`；`transformers_trainer` 用同一套 `optimizer` / `scheduler` / `resume` 键映射到 `TrainingArguments`。
 
@@ -179,7 +202,7 @@ system:
 
 ---
 
-## 5. 写 `study.yaml`
+## 6. 写 `study.yaml`
 
 ### 扫研究因素（一个因素一个 Experiment）
 
@@ -251,7 +274,7 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 
 ---
 
-## 6. 跑完看什么
+## 7. 跑完看什么
 
 **index**（按 Experiment 分组，不是扁平 run 列表）：
 
@@ -281,13 +304,13 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 
 ---
 
-## 7. 新 Study 最小步骤
+## 8. 新 Study 最小步骤
 
 1. 对照 `_template/study.yaml` 或 `studies/mnist_train_size/` 的 yaml 与 `docs/`，改目录名。  
 2. 改 `experiment_config.yaml` 的基底；改 `study.yaml` 的 `axes` / `seeds` / `tags`。  
-3. 在 `docs/PLAN.md` 写清：比什么、什么固定、成功标准。  
+3. 在 `docs/PLAN.md` 写清：比什么、什么固定、成功标准，以及 **§3 高效率排班**（同类一组、吃满 GPU、error 记下来整轮后再 resume）。  
 4. `python -m rpipe run studies/<name> --skip-launch`，核对 index。  
-5. `python -m rpipe make studies/<name>`，再 `python -m rpipe launch studies/<name>`。有独立 eval 时 make 会先并行 train，再跑 eval。  
+5. `python -m rpipe make studies/<name>`，看打印的 `pack N waits`，再 `python -m rpipe launch studies/<name>`。  
 6. 读 `process.json` + `docs/figures/learning_curves.png`，按 Experiment 写 `docs/STUDY_REPORT.md`。
 
 检查清单：
@@ -296,11 +319,12 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 - [ ] `axes` 与 `seeds` 分开  
 - [ ] 每个 Run 的 config 含 `seed`  
 - [ ] 结论按 Experiment 聚合，而不是按扁平 run 列表  
+- [ ] `PLAN.md` / `STUDY_REPORT.md` 写清本轮怎么并行（同类一组、error 后续跑）  
 - [ ] `STUDY_REPORT.md` 有 learning curve（或同等图），不是只有表格  
 
 ---
 
-## 8. 现成能力 vs 要改库
+## 9. 现成能力 vs 要改库
 
 | 你想做的 | 怎么做 |
 |----------|--------|

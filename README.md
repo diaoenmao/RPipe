@@ -35,8 +35,8 @@ studies/<name>/{docs,shared,runs,study.yaml,experiment_config.yaml}
 python -m rpipe run studies/mnist_train_size
 
 # 同一套 flow：写出调度脚本后按 GPU 与 round 并行
-python -m rpipe make studies/<name> --num-gpus 1 --round 4
-python -m rpipe launch studies/<name> --num-gpus 1 --round 4
+python -m rpipe make studies/<name> --num-gpus 1
+python -m rpipe launch studies/<name> --num-gpus 1
 
 pytest
 ```

@@ -1,8 +1,8 @@
 # Study Report: vision_main_recipe
 
 > Plan: [PLAN.md](PLAN.md)
-> Date: 2026-09-07
-> Recipe: git `main` 的 `hyper.py` 默认（60 step SGD+cosine），CIFAR10/SVHN × linear/mlp/cnn/resnet18，seed 0。
+> Date: 2026-09-07（60-step 短跑）。**400 epoch + CUDA 长训尚未收口**，调度见 PLAN §4：`--round auto`（按 resnet18 显存估并发）。
+> Recipe（已跑完的表）：git `main` 的 `hyper.py` 默认 **60 step** SGD+cosine，CIFAR10/SVHN × linear/mlp/cnn/resnet18，seed 0。
 
 ## 1. Conclusion
 
@@ -44,6 +44,9 @@ Last test Accuracy（seed 0，step 60）：
 
 ## 5. Reproduce
 
+60-step 旧表当时用的是 `python -m rpipe run`（顺序）。400 epoch 长训用：
+
 ```bash
-python -m rpipe run studies/vision_main_recipe
+python -m rpipe make studies/vision_main_recipe --num-gpus 1 --init-gpu 0
+python -m rpipe launch studies/vision_main_recipe --num-gpus 1 --init-gpu 0
 ```
