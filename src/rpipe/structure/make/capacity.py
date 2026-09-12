@@ -30,24 +30,14 @@ DATA_SHAPE: dict[str, tuple[int, int, int]] = {
     'SVHN': (3, 32, 32),
 }
 
-# Activation volume relative to one input tensor (fp32 train).
-MODEL_ACT: dict[str, int] = {
-    'linear': 80,
-    'mlp': 200,
-    'cnn': 600,
-    'resnet10': 1200,
-    'resnet18': 1800,
-    'wresnet': 2800,
-}
-
-# Params + grads + SGD momentum, rough.
-MODEL_PARAM_BYTES: dict[str, int] = {
-    'linear': 32 * 1024 * 1024,
-    'mlp': 64 * 1024 * 1024,
-    'cnn': 128 * 1024 * 1024,
-    'resnet10': 256 * 1024 * 1024,
-    'resnet18': 512 * 1024 * 1024,
-    'wresnet': 1024 * 1024 * 1024,
+# act multiplier, param MiB, conservative ms/step
+_MODEL = {
+    'linear': (80, 32, 15),
+    'mlp': (200, 64, 25),
+    'cnn': (600, 128, 40),
+    'resnet10': (1200, 256, 80),
+    'resnet18': (1800, 512, 120),
+    'wresnet': (2800, 1024, 180),
 }
 
 
@@ -69,7 +59,7 @@ def _as_int(value: Any, default: int) -> int:
 def estimate_job_bytes(cfg: dict[str, Any] | None) -> int:
     """Peak VRAM guess for one ``run-one`` process."""
     if not isinstance(cfg, dict):
-        return OVERHEAD_BYTES + MODEL_PARAM_BYTES['resnet18']
+        return OVERHEAD_BYTES + _MODEL['resnet18'][1] * 1024 * 1024
     data = cfg.get('data') if isinstance(cfg.get('data'), dict) else {}
     model = cfg.get('model') if isinstance(cfg.get('model'), dict) else {}
     algo = cfg.get('algorithm') if isinstance(cfg.get('algorithm'), dict) else {}
@@ -79,24 +69,13 @@ def estimate_job_bytes(cfg: dict[str, Any] | None) -> int:
     batch = max(1, _as_int(dcfg.get('batch_size'), 64))
     channels, height, width = DATA_SHAPE.get(name, (3, 224, 224))
     spatial = channels * height * width
-    act = MODEL_ACT.get(model_name, 1800)
-    params = MODEL_PARAM_BYTES.get(model_name, 512 * 1024 * 1024)
+    act, param_mib, _ = _MODEL.get(model_name, _MODEL['resnet18'])
+    params = param_mib * 1024 * 1024
     activations = batch * spatial * 4 * act
     total = OVERHEAD_BYTES + params + activations
     if str(algo.get('mode') or 'train') == 'eval':
         total = int(total * 0.4)
     return max(OVERHEAD_BYTES, int(total))
-
-
-# Conservative ms / optimizer step (slow card). Overestimate, not a benchmark.
-MODEL_STEP_MS: dict[str, int] = {
-    'linear': 15,
-    'mlp': 25,
-    'cnn': 40,
-    'resnet10': 80,
-    'resnet18': 120,
-    'wresnet': 180,
-}
 
 
 def estimate_job_seconds(cfg: dict[str, Any] | None) -> int:
@@ -116,7 +95,7 @@ def estimate_job_seconds(cfg: dict[str, Any] | None) -> int:
         steps = epochs * max(1, int(math.ceil(train_size / batch)))
     if steps <= 0:
         steps = 1
-    ms = MODEL_STEP_MS.get(model_name, 80)
+    ms = _MODEL.get(model_name, (80, 512, 80))[2]
     seconds = steps * ms / 1000.0
     if str(algo.get('mode') or 'train') == 'eval':
         seconds *= 0.25

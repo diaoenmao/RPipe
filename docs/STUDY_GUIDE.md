@@ -129,35 +129,23 @@ python -m rpipe process studies/<name>
 
 有 `algorithm.mode: eval` 时拆成两波：全部 train `wait` 完再启动 eval。
 
-`mnist_train_size`：18 次 Run、`--round 4`、`--num-gpus 1` 时，`studies/mnist_train_size/scripts/launch.sh` 形状如下（路径已缩短）：
+`mnist_train_size`：18 次 Run、`--round auto`、1 张卡时，linear 很轻，通常 **2 个 wait 组**（9 train，再 9 eval）。脚本形状（路径已缩短）：
 
 ```bash
 #!/bin/bash
 cd "<repo>"
 export KMP_DUPLICATE_LIB_OK=TRUE
-# 第一波：9 次 train
+# wait 组 1：9 次 train（打印 pack 2 waits: 9[linear×9], 9[linear×9]）
 CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>" &
-CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>" &
-CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>" &
-CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>"
+# …共 9 条，最后一条同样 &
 wait
-CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>" &
-CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>" &
-CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>" &
-CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>"
-wait
-CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>" &
-wait
-# 第二波：9 次 eval（上一波全部 wait 完才到这里）
+# wait 组 2：9 次 eval（上一组全部退出、显存释放完才到这里）
 CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<eval>" &
-CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<eval>" &
-CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<eval>" &
-CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<eval>"
+# …共 9 条
 wait
-# …再两组 eval，最后一条同样是 cmd & + wait
 ```
 
-上面每一段 `cmd &` … `wait` 是一个并发批次：`wait` 返回后显存才空出来，下一 `wait` 组才能启动。
+每一段 `cmd &` … `wait` 是一个并发批次：`wait` 返回后显存才空出来，下一组才能启动。
 
 训练 Logger 行带 **`elapsed` / `eta`**（本进程已用时间与剩余估计），写入 `run.log`。Windows 上 `python -m rpipe launch` 默认 **每个 run-one 一个新控制台窗口**（`CREATE_NEW_CONSOLE`，和 PowerShell 的 `Start-Process` 一样）：组内仍并行、组间仍 `wait`，printout 分开。`--console shared` 才混在当前窗口。`launch.ps1` 只转调这条 Python launch。多卡时仍设 `CUDA_VISIBLE_DEVICES`。`scripts/` 默认 gitignore。
 

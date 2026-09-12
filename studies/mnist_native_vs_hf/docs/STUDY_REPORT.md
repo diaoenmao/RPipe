@@ -21,7 +21,7 @@
 
 ## 2. Learning curves
 
-process 按 Experiment 画 mean±std（6 条：2 source × 3 size）。重画：`python studies/mnist_native_vs_hf/docs/plot_curves.py`。
+process 按 Experiment 画 mean±std（6 条：2 source × 3 size）。图在 `docs/figures/learning_curves.png`。
 
 ![learning curves](./figures/learning_curves.png)
 

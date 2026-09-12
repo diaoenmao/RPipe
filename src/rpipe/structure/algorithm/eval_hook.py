@@ -74,9 +74,9 @@ def _is_better(score: float, best: float | None, *, min_delta: float, mode: str)
 
 
 def best_spec(config: Any) -> tuple[str, str, str]:
-    """``best_split``, ``best_metric`` / ``best_metric_name``, ``best_mode``."""
+    """``best_split``, ``best_metric``, ``best_mode``."""
     split = str(config.setting('best_split', 'test') or 'test')
-    name = config.setting('best_metric', config.setting('best_metric_name', 'Accuracy'))
+    name = config.setting('best_metric', 'Accuracy')
     metric = str(name or 'Accuracy')
     mode = config.setting('best_mode')
     if mode is None:

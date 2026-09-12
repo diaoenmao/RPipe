@@ -49,7 +49,7 @@ api/                 → data_api / model_api / system_api / algorithm_api
 control/             → Control 与编解码/契约；无 control_api
 data/                → Data / DataRegistry / DataFactory / DataConfig
 model/               → Model / ModelRegistry / ModelFactory / ModelConfig
-system/              → System / Logger / SystemRegistry / SystemFactory / SystemConfig
+system/              → System / Logger / SystemFactory / SystemConfig
 algorithm/           → Algorithm / AlgorithmTracker / AlgorithmRegistry / AlgorithmFactory / AlgorithmConfig
 artifact/            → layout / config / result / asset / index IO；不 import 四层实现
 make/                → 多实验：展开、写 config/index、调度脚本；调 control + artifact；不 import 四层、不 import flow
@@ -238,7 +238,6 @@ dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必
 | `source` | 下游来源（如 `custom_torch` / `torchvision` / `timm` / `hf` / …） |
 | `path` | 模型资源根路径：其下可含权重、模型超参配置及其它 source 约定文件；**不**假定只有 weights |
 | `config` | **内容配置**：可装入 `path` 内读出的配置，或由上层覆写；合并规则下游再定 |
-| `compat_data` | **兼容的 Data**（如允许的 `name` / `source` 集合；空表示不限制——形状下游再定） |
 
 结构变体、freeze、adapter 等不进必须表；优先进 `path` / `config`。
 
@@ -281,7 +280,7 @@ flowchart LR
 
 ## 6. `structure/algorithm/`（实现 + 类）
 
-在任务范式下定义怎么算（CONCEPT §6 **algorithm**）。本层用 **`mode`** 区分 **train / eval / inference**（一次配置一个 mode；要组合多种 mode 由 Study / 多次运行或 Control 切换）。经 `data_api` / `model_api` / `system_api` 使用已落地的 `Data` / `Model` / `System`。声明字段由 **`AlgorithmConfig`** 加载。
+在任务范式下定义怎么算（CONCEPT §6 **algorithm**）。本层用 **`mode`** 区分 **train / eval / inference**（一次配置一个 mode；要组合多种 mode 由 Study / 多次运行或 Control 切换）。**当前 native 只注册 train / eval**；`mode: inference` 会在 Factory 报错。经 `data_api` / `model_api` / `system_api` 使用已落地的 `Data` / `Model` / `System`。声明字段由 **`AlgorithmConfig`** 加载。
 
 更下层目录（若实现时按 mode 拆分）由本分册后续补，**不在 LAYOUT 展开**。
 
@@ -350,7 +349,6 @@ dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必
 | `source` | 执行实现来源（如 `custom_torch` / `transformers_trainer` / `accelerate` / `diffusers` / `vllm` / `sglang` / …） |
 | `path` | 算法超参等资源路径 |
 | `config` | **内容配置**：可装入 `path` 内读出的配置，或由上层覆写；合并规则下游再定 |
-| `compat_model` | **兼容的 Model**（如允许的 `name` / `source` 集合；空表示不限制——形状下游再定） |
 
 lr、步数、`optimizer` / `scheduler` / `resume`、**`metric`**、解码参数等不进必须表；优先进 `path` / `config`（§6.9、§6.11）。不同 `source` 解释同一套键，禁止每个 Trainer 再发明一套顶层字段。
 
@@ -483,7 +481,7 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 
 文件都在 `assets/checkpoints/`：每个 stem 一份 **`<name>.pt` 整包**（兼容）外加 **`<name>/` 目录**（`model.pt` / `optimizer.pt` / `scheduler.pt` / `tracker.json` / `logger.json` / `meta.json`）。`save_best: true` 时另写 `best`。百分比时 `epoch_0005` / `step_000100`。result **不**塞权重。
 
-`best_split` / `best_metric`（或 `best_metric_name`）/ `best_mode`（`max`/`min`；Loss 默认 min）决定何时算 improved。缺省仍是 test Accuracy 越大越好。
+`best_split` / `best_metric` / `best_mode`（`max`/`min`；Loss 默认 min）决定何时算 improved。缺省仍是 test Accuracy 越大越好。
 
 **读回来**不是 system 的职责：system 只提供 `load_checkpoint(name)`（与 `save_checkpoint` 对称）。**何时读、读哪份、恢复哪些对象**由算法的 **resume 接口**决定（§6.11.3）。
 
@@ -577,8 +575,7 @@ resume **不**改 config，**不**自己 write `result.json`。
 |------|------|
 | **`System`** | 设备、精度、并行、输出路径、checkpoint **IO**；持有 **Logger** |
 | **`Logger`** | 本 Run 的文本日志：stdout + `assets/logs/`（必写）；`report(algorithm_tracker, split, extra)` 才能打出带 Loss 的行 |
-| **`SystemRegistry`** | source（及能力名）→ 如何建构执行环境；`register` / `get` / `list` |
-| **`SystemFactory`** | 读 `SystemConfig` + `assets_dir` → 经 registry 建构 → 得到 **`System`** |
+| **`SystemFactory`** | 读 `SystemConfig` + `assets_dir` → **`System`**（目前只有 native） |
 | **`SystemConfig`** | dataclass；从 JSON / Config / Control.system 加载声明字段 |
 
 对外：`SystemFactory.build(system_config, assets_dir) → System`（经 `system_api`）。
@@ -618,15 +615,13 @@ dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必
 | `source` | 执行环境来源（如 `native` / `llama_cpp` / `vllm` / `sglang`） |
 | `path` | system 超参等资源路径 |
 | `config` | **内容配置**：可装入 `path` 内读出的配置，或由上层覆写；合并规则下游再定 |
-| `compat_algorithm` | **兼容的 Algorithm**（如允许的 `mode` / `source` 集合；空表示不限制——形状下游再定） |
 
 `device` **不是**必须字段；需要时进 `path` / `config` 或作扩展键。运行时开关同样进 `path` / `config`（见 §7.9），不进必须表。
 
-### 7.5 Registry / Factory
+### 7.5 Factory
 
 | 类 | 能力 |
 |----|------|
-| `SystemRegistry` | `register` / `get` / `list` |
 | `SystemFactory` | `build(system_config: SystemConfig, assets_dir) → System` |
 
 ### 7.6 协作
@@ -637,7 +632,6 @@ flowchart LR
   cfg["SystemConfig"]
   api["system_api"]
   factory["SystemFactory"]
-  registry["SystemRegistry"]
   systemObj["System"]
   algo["Algorithm"]
   modelObj["Model"]
@@ -646,7 +640,6 @@ flowchart LR
   json --> cfg
   cfg --> api
   api --> factory
-  factory --> registry
   factory --> systemObj
   caller --> api
   systemObj --> algo
@@ -785,18 +778,15 @@ model:
   source: ...
   path: ...
   config: { ... }
-  compat_data: ...
 algorithm:
   mode: train
   source: ...
   path: ...
   config: { ... }
-  compat_model: ...
 system:
   source: ...
   path: ...
   config: { ... }
-  compat_algorithm: ...
 ```
 
 | API（名可微调） | 行为 |

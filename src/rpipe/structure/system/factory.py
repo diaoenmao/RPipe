@@ -1,9 +1,9 @@
-"""Runtime System object, registry, factory, and Logger."""
+"""Runtime System object, factory, and Logger."""
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from rpipe.structure.system.config import SystemConfig
 from rpipe.structure.system.logger import Logger
@@ -131,28 +131,10 @@ class System:
         return {'device': self.device, **self.meta}
 
 
-class SystemRegistry:
-    _items: dict[str, Callable[..., System]] = {}
-
-    @classmethod
-    def register(cls, source: str, builder: Callable[..., System]) -> None:
-        cls._items[source] = builder
-
-    @classmethod
-    def get(cls, source: str) -> Callable[..., System] | None:
-        return cls._items.get(source)
-
-    @classmethod
-    def list(cls) -> list[str]:
-        return sorted(cls._items)
-
-
 class SystemFactory:
     @staticmethod
     def build(system_config: SystemConfig, assets_dir: Path | str) -> System:
-        source = system_config.source or 'native'
-        builder = SystemRegistry.get(source) or _build_native
-        return builder(system_config, Path(assets_dir))
+        return _build_native(system_config, Path(assets_dir))
 
 
 def _build_native(system_config: SystemConfig, assets_dir: Path) -> System:
@@ -171,6 +153,3 @@ def _build_native(system_config: SystemConfig, assets_dir: Path) -> System:
             'cudnn_deterministic': system_config.setting('cudnn_deterministic'),
         },
     )
-
-
-SystemRegistry.register('native', _build_native)
