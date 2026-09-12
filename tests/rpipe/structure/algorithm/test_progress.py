@@ -5,8 +5,10 @@ from rpipe.structure.algorithm.progress import (
     checkpoint_names,
     crossed_percents,
     due_period,
+    format_hms,
     infer_steps_per_epoch,
     parse_checkpoint_mode,
+    remaining_seconds,
     resolve_budget,
     snapshot_name,
 )
@@ -115,3 +117,10 @@ def test_checkpoint_names_best_and_percent():
     parse_checkpoint_mode('percent')
     with pytest.raises(ValueError):
         parse_checkpoint_mode('all')
+
+
+def test_remaining_seconds_scales_with_leftover():
+    assert remaining_seconds(elapsed=10.0, origin=0, current=2, total=10) == 40
+    assert remaining_seconds(elapsed=10.0, origin=0, current=0, total=10) is None
+    assert remaining_seconds(elapsed=5.0, origin=4, current=5, total=5) == 0
+    assert format_hms(40) == '0:00:40'

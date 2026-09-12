@@ -37,11 +37,16 @@ class Logger:
         parts: list[str] = []
         if extra.get('epoch') is not None:
             parts.append(f"epoch {extra['epoch']}")
+        if extra.get('elapsed') is not None:
+            parts.append(f"elapsed={extra['elapsed']}")
+        if extra.get('eta') is not None:
+            parts.append(f"eta={extra['eta']}")
         parts.append(str(split))
         means = {}
         lasts = {}
         if tracker is not None:
-            means = tracker.mean(split)
+            display = getattr(tracker, 'display_mean', None)
+            means = display(split) if callable(display) else tracker.mean(split)
             lasts = tracker.last(split)
         for name in sorted(set(means) | set(lasts)):
             mean = means.get(name)
@@ -50,8 +55,9 @@ class Logger:
                 parts.append(f'{name} {mean:.4f}')
             elif last is not None:
                 parts.append(f'{name} {last:.4f}')
+        skip = {'epoch', 'elapsed', 'eta'}
         for key, value in extra.items():
-            if key == 'epoch':
+            if key in skip:
                 continue
             parts.append(f'{key}={value}')
         self._emit(' '.join(parts))

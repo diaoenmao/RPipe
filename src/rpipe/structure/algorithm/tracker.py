@@ -9,6 +9,7 @@ from typing import Any
 
 from rpipe.structure.artifact.asset import kinds
 from rpipe.structure.artifact._atomic import atomic_write_text
+from rpipe.structure.algorithm.metric import MetricBundle
 
 
 class _Meter:
@@ -53,7 +54,7 @@ class _Meter:
 class AlgorithmTracker:
     """Per-split running means; jsonl + tracker_state on flush. Not a Logger."""
 
-    def __init__(self, assets_dir: Path | str) -> None:
+    def __init__(self, assets_dir: Path | str, metrics: MetricBundle | None = None) -> None:
         self.assets_dir = Path(assets_dir)
         self.root = self.assets_dir / kinds.TRACKER
         self.root.mkdir(parents=True, exist_ok=True)
@@ -63,6 +64,7 @@ class AlgorithmTracker:
         if not self.jsonl_path.is_file():
             self.jsonl_path.write_text('', encoding='utf-8')
         self.step = 0
+        self.metrics = metrics or MetricBundle()
         self._meters: dict[str, dict[str, _Meter]] = defaultdict(dict)
         self._last_segment: dict[str, dict[str, float]] = {}
         self._pending: dict[str, dict[str, float]] = {}
@@ -80,18 +82,9 @@ class AlgorithmTracker:
         input: Any = None,
         output: Any = None,
     ) -> dict[str, float]:
-        del mode
-        import torch.nn.functional as F
-
-        images_targets = input
-        logits = output
-        if images_targets is None or logits is None:
+        if input is None or output is None:
             return {}
-        _images, targets = images_targets
-        loss = F.cross_entropy(logits, targets)
-        pred = logits.argmax(dim=1)
-        acc = (pred == targets).float().mean()
-        values = {'Loss': float(loss.item()), 'Accuracy': float(acc.item())}
+        values = self.metrics.evaluate(split, mode, input, output)
         self._pending[split] = values
         return values
 
@@ -109,6 +102,16 @@ class AlgorithmTracker:
     def mean(self, split: str) -> dict[str, float]:
         return {name: meter.mean for name, meter in self._meters.get(split, {}).items()}
 
+    def display_mean(self, split: str) -> dict[str, float]:
+        """Running mean if this segment still has samples; else last saved segment."""
+        running: dict[str, float] = {}
+        for name, meter in self._meters.get(split, {}).items():
+            if meter.n > 0:
+                running[name] = meter.mean
+        if running:
+            return running
+        return self.segment_mean(split)
+
     def last(self, split: str) -> dict[str, float]:
         return {name: meter.last for name, meter in self._meters.get(split, {}).items()}
 
@@ -121,6 +124,8 @@ class AlgorithmTracker:
         splits = [split] if split else list(self._meters)
         snapshot: dict[str, dict[str, float]] = {}
         for name in splits:
+            for metric, value in self.metrics.finish_full(name).items():
+                self._meter(name, metric).append(value, 1)
             snapshot[name] = {}
             for metric, meter in self._meters.get(name, {}).items():
                 snapshot[name][metric] = meter.save_point()

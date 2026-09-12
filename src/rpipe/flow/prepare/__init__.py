@@ -38,7 +38,10 @@ def run(ctx: FlowContext) -> None:
     if model.module is not None:
         model.module = system.place_module(model.module)
     algorithm = algorithm_api.build(AlgorithmConfig.from_mapping(ctx.control.algorithm))
-    tracker = algorithm_api.make_tracker(ctx.layout.assets_dir)
+    tracker = algorithm_api.make_tracker(
+        ctx.layout.assets_dir,
+        AlgorithmConfig.from_mapping(ctx.control.algorithm),
+    )
 
     ctx.state['system'] = system
     ctx.state['data'] = data

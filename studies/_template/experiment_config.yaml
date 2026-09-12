@@ -1,5 +1,6 @@
+# 基底默认。study.yaml 的 fixed / axes 覆盖同名键。
 experiment: mnist_linear
-description: MNIST linear classifier (train + independent eval)
+description: copy this file next to study.yaml
 data:
   name: MNIST
   source: torch
@@ -17,9 +18,6 @@ algorithm:
   checkpoint: latest
   checkpoint_period: 1
   save_best: true
-  metric:
-    train: [Loss, Accuracy]
-    test: [Loss, Accuracy]
   optimizer: SGD
   max_grad_norm: 0
   lr: 0.1

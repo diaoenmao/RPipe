@@ -67,9 +67,25 @@ def test_render_bash_waits_after_train_wave(tmp_path: Path):
     wait_between = text.find('\nwait\n', train_pos, eval_pos)
     assert train_pos != -1 and eval_pos != -1
     assert wait_between != -1
-
+    assert 'rpipe process' in text
     assert gpu_ids(2, 3) == ['2', '3', '4']
     assert gpu_ids(0, 0) == []
+
+
+def test_console_new_uses_windows_flag_only_on_nt():
+    from rpipe.structure.make.schedule import job_popen_kwargs, resolve_console
+
+    assert resolve_console('shared') == 'shared'
+    assert resolve_console('new') == 'new'
+    shared = job_popen_kwargs('shared')
+    assert 'creationflags' not in shared
+    flags = job_popen_kwargs('new')
+    import os
+
+    if os.name == 'nt':
+        assert 'creationflags' in flags
+    else:
+        assert flags == {}
 
 
 def test_plan_jobs_skips_succeeded_and_assigns_gpu(tmp_path: Path):

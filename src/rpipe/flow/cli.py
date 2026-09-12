@@ -6,6 +6,7 @@ import argparse
 from pathlib import Path
 from typing import Any
 
+from rpipe.flow.process import process_path, run_study as process_study
 from rpipe.flow.context import FlowContext
 from rpipe.flow.runner import FlowRunner
 from rpipe.structure.artifact import artifact_layout, load_config
@@ -20,6 +21,7 @@ from rpipe.structure.make.capacity import (
     attach_estimates,
     batch_summaries,
     capacity_report,
+    estimate_wall_seconds,
     pack_jobs,
     probe_gpus,
     summarize_capacity,
@@ -55,6 +57,7 @@ def run_study(
     result_paths: list[Path] = []
     if not skip_launch:
         result_paths = launch_runs(Path(out['study_dir']), list(out['configs']), phases=phases)
+        process_study(Path(out['study_dir']))
     return {
         'study_dir': out['study_dir'],
         'index': out['index'],
@@ -111,6 +114,11 @@ def _add_make_flags(parser: argparse.ArgumentParser) -> None:
         action='store_true',
         help='include Runs that already succeeded',
     )
+    parser.add_argument(
+        '--console',
+        default='auto',
+        help='auto/new/shared: Windows auto=new window per run-one; shared=mix in this terminal',
+    )
 
 
 def _make_from_args(args: argparse.Namespace) -> dict[str, Any]:
@@ -144,6 +152,7 @@ def _make_from_args(args: argparse.Namespace) -> dict[str, Any]:
     )
     if batches is not None:
         report['batches'] = batch_summaries(batches)
+        report['wall_seconds'] = estimate_wall_seconds(batches)
     written = write_launch_scripts(
         study_dir,
         jobs,
@@ -194,12 +203,15 @@ def _execute_launch(args: argparse.Namespace) -> int:
     jobs = written['job_list']
     if not jobs:
         print('nothing to launch')
+        process_study(Path(written['expand']['study_dir']))
+        print(process_path(written['expand']['study_dir']))
         return 0
     codes = launch_jobs(
         Path(written['expand']['study_dir']),
         jobs,
         round_size=int(written.get('round') or 1),
         batches=written.get('batches'),
+        console=str(getattr(args, 'console', 'auto')),
     )
     study_dir = Path(written['expand']['study_dir'])
     still = [
@@ -209,7 +221,18 @@ def _execute_launch(args: argparse.Namespace) -> int:
     ]
     if still:
         print('still failed: ' + ' '.join(still), flush=True)
+    body = process_study(study_dir)
+    print(process_path(study_dir), flush=True)
+    if not body.get('complete'):
+        print('process partial', flush=True)
     return 1 if still else 0
+
+
+def _execute_process(args: argparse.Namespace) -> int:
+    body = process_study(Path(args.study_dir).resolve())
+    print(process_path(args.study_dir))
+    print('complete' if body.get('complete') else 'partial')
+    return 0
 
 
 def _execute_run_one(args: argparse.Namespace) -> int:
@@ -245,6 +268,9 @@ def main(argv: list[str] | None = None) -> int:
     one_p.add_argument('run_id', type=str)
     one_p.add_argument('--phases', default='')
 
+    proc_p = sub.add_parser('process', help='Study-level process: mean/std/min/max history')
+    proc_p.add_argument('study_dir', type=Path, help='Path to studies/<name>/')
+
     args = parser.parse_args(argv)
     if args.cmd == 'run' or (args.cmd == 'study' and args.study_cmd == 'run'):
         return _execute_run(args)
@@ -254,6 +280,8 @@ def main(argv: list[str] | None = None) -> int:
         return _execute_launch(args)
     if args.cmd == 'run-one':
         return _execute_run_one(args)
+    if args.cmd == 'process':
+        return _execute_process(args)
     return 2
 
 

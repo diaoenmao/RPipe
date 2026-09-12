@@ -1,7 +1,12 @@
 from rpipe.structure.make.capacity import (
     GpuInfo,
+    batch_summaries,
     estimate_job_bytes,
+    estimate_job_seconds,
+    estimate_wall_seconds,
+    format_duration,
     pack_jobs,
+    pack_label,
     round_fits,
     suggest_round,
     usable_bytes,
@@ -24,6 +29,16 @@ def test_pack_same_model_together():
     assert {j['run_id'] for j in linear} == {'l0', 'l1', 'l2'}
     resnet_ids = [j['run_id'] for batch in batches if batch[0]['estimate_model'] == 'resnet18' for j in batch]
     assert set(resnet_ids) == {'r0', 'r1'}
+
+
+def test_pack_label_collapses_repeats():
+    assert pack_label(['linear'] * 9) == 'linear×9'
+    assert pack_label(['linear', 'linear', 'resnet18']) == 'linear×2+resnet18'
+    assert pack_label([]) == ''
+    rows = batch_summaries(
+        [[{'estimate_model': 'linear', 'seconds': 1, 'vram_bytes': 1}] * 3]
+    )
+    assert rows[0]['label'] == 'linear×3'
 
 
 def test_pack_eval_after_train():
@@ -62,6 +77,42 @@ def test_estimate_resnet_heavier_than_linear():
     assert resnet > linear * 5
     assert eval_resnet < resnet
     assert eval_resnet > linear
+
+
+def test_estimate_seconds_resnet_heavier_and_eval_lighter():
+    linear = estimate_job_seconds(
+        {
+            'data': {'name': 'MNIST', 'config': {'batch_size': 250, 'train_size': 500}},
+            'model': {'name': 'linear'},
+            'algorithm': {'mode': 'train', 'num_epochs': 20},
+        }
+    )
+    resnet = estimate_job_seconds(
+        {
+            'data': {'name': 'CIFAR10', 'config': {'batch_size': 250, 'train_size': 50000}},
+            'model': {'name': 'resnet18'},
+            'algorithm': {'mode': 'train', 'num_epochs': 20},
+        }
+    )
+    eval_resnet = estimate_job_seconds(
+        {
+            'data': {'name': 'CIFAR10', 'config': {'batch_size': 250, 'train_size': 50000}},
+            'model': {'name': 'resnet18'},
+            'algorithm': {'mode': 'eval', 'num_epochs': 20},
+        }
+    )
+    assert resnet > linear
+    assert eval_resnet < resnet
+    assert eval_resnet >= 1
+
+
+def test_estimate_wall_seconds_is_sum_of_group_maxima():
+    batches = [
+        [{'seconds': 10}, {'seconds': 40}],
+        [{'seconds': 5}],
+    ]
+    assert estimate_wall_seconds(batches) == 45
+    assert format_duration(90) == '1m30s'
 
 
 def test_suggest_round_follows_vram_and_safety():

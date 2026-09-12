@@ -20,6 +20,9 @@ fixed:
     checkpoint: latest
     checkpoint_period: 1
     save_best: true
+    metric:
+      train: [Loss, Accuracy]
+      test: [Loss, Accuracy]
     optimizer: SGD
     max_grad_norm: 0
     lr: 0.1
@@ -31,7 +34,8 @@ fixed:
     cudnn_benchmark: true
 
 # 3 train_size × {train, eval} × 3 seeds = 18 Runs。
-# make 先并行所有 train（& / wait），全部结束后再跑 eval；resume 默认 best。
+# 排班（STUDY_GUIDE §3）：全部 train 同一类 linear，auto 装箱叠满再 wait；然后 eval。
+# seed 是复测，不是并发。失败记 run_id，整轮后再 resume。
 axes:
   data.config.train_size: [500, 2000, 8000]
   algorithm.mode: [train, eval]

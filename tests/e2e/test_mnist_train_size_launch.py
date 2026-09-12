@@ -43,6 +43,7 @@ def test_mnist_train_size_study_runner_smoke(tmp_path: Path):
     assert log_path.is_file()
     log_text = log_path.read_text(encoding='utf-8')
     assert 'Loss' in log_text
+    assert 'elapsed=' in log_text
     tracker_state = out['results'][0].parent / 'assets' / 'tracker' / 'tracker_state.json'
     assert tracker_state.is_file()
     ckpt = out['results'][0].parent / 'assets' / 'checkpoints'

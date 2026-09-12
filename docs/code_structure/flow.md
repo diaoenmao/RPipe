@@ -37,7 +37,7 @@ flow/
 |------|------|------|
 | `FlowContext` | `context.py` | 贯穿各阶段的上下文 |
 | `FlowRunner` / `PHASES` | `runner.py` | 对一个 Run 按序执行阶段；可裁剪阶段；失败时写 failed result |
-| cli | `cli.py` | argv → 同一套 Flow；参数选择 make、阶段子集、`round` 与 GPU |
+| cli | `cli.py` | argv → 同一套 Flow；参数选择 make、阶段子集、`round`、GPU、`--console` |
 
 `PHASES = ('prepare', 'execute', 'collect', 'summarize', 'write', 'process')`。允许传入子集（例如只跑 prepare 做干检查），但不得打乱相对顺序。
 
@@ -134,7 +134,7 @@ flowchart TD
 1. 要求 `ctx.control` 已在（否则视为未 prepare）。
 2. 经 `algorithm_api` 调用实现，传入 data / model / system 与 **`state['tracker']`**。Logger 在 `system` 上。算法内部：`resume` →（train 则）`make_optimizer` / `make_scheduler` → 循环。checkpoint **文件**经 system 读写；**策略**在 algorithm。
 3. **每个 batch**：`tracker.evaluate` + `append(split, n=batch_size)`。
-4. **按 report 间隔**：`system.logger.report(tracker, …)`（stdout + `run.log` **立即 flush**）；AlgorithmTracker 往 jsonl 追加并 flush；写出 `tracker_state.json` 并 flush。
+4. **按 report 间隔**：`system.logger.report(tracker, …, extra=…)`（stdout + `run.log` **立即 flush**）。`extra` 含本进程 **`elapsed` / `eta`**（algorithm 进度时钟）。AlgorithmTracker 往 jsonl 追加并 flush；写出 `tracker_state.json` 并 flush。
 5. **epoch 末**：`tracker.save()` + `reset()`，再 flush state。预算主口径是 `num_steps`（`step_period>1` 时按 optimizer step 计）；若配置 `num_epochs` 且可推导 steps/epoch，会先换算成步数。周期 test / checkpoint 按 `progress_unit`（默认 step）。checkpoint 经 `on_checkpoint` → system 写 `assets/checkpoints/`（默认覆盖 `latest`）。
 6. **execute 结束（含失败路径尽量）**：再 flush 一遍。
 7. 短备注可进 `state['observations']`。不要把 Module / Tensor / AlgorithmTracker / Logger 整棵丢进 result。
@@ -199,17 +199,18 @@ flowchart TD
 
 ## 10. process
 
-**目的：** 在 **已经 write 的 result** 上做派生。可空。
+**目的：** 在 **已经 write 的 result** 上做派生。可空。分两层，都在 `flow/process/`：
 
-**做：**
+| | **Run process**（阶段链最后一步） | **Study process**（单独进程） |
+|--|-----------------------------------|------------------------------|
+| 入口 | `FlowRunner` 的 `process`；每条 `run-one` | `python -m rpipe process <study>`；`launch` / `run` 全部 wait 完再调一次 |
+| 写哪里 | `runs/<id>/process.json`，`scope: run` | Study 根 `process.json`，`scope: study` |
+| 读什么 | 本 Run 的 result + 本 Run tracker `history` | 全部 sibling result + 各 Run history |
+| 统计 | 这一次的 metrics / history | 按 Experiment：metrics 与 history 的 **mean / std / min / max**；Δ baseline；`docs/figures/learning_curves.png` |
 
-- 按 Experiment 读 sibling result，写 Study 根 `process.json`（mean / std / Δ baseline）
-- 读各 Run `assets/tracker/tracker_state.json` 的 epoch `history`，画 **`docs/figures/learning_curves.png`**（mean±std）。Study 报告必须嵌这张图，不能只有表
-- 本 Run `derived.json`（相对 baseline 的 Δ）
+**不做：** 改 config；重跑 execute；覆盖 write 已成功的 `status: succeeded` 正文；**不**改写 `STUDY_REPORT.md`；Run process **不**写 Study 根（避免并行抢文件）。
 
-**不做：** 改 config；重跑 execute；覆盖 write 已成功的 `status: succeeded` 正文；**不**改写 `STUDY_REPORT.md`。
-
-process 依赖「result 已在磁盘」，因此必须排在 write 之后。
+Run process 仍排在该 Run 的 write 之后。Study process 排在整轮 launch 之后，与 git `main` 的 `process.py` 一样是单独进程。
 
 ---
 
@@ -251,3 +252,13 @@ flowchart TB
 | AlgorithmTracker + Logger | 短训：`assets/tracker/` 有 train mean；终端与 `run.log` 有含 Loss 的行；result 的 `train_loss` 为段均值而非 last-batch |
 
 测试树：`tests/rpipe/flow/` 镜像各阶段包。
+
+---
+
+## 13. cli：`make` / `launch` 与 `wait`
+
+`python -m rpipe make` / `launch` 按 `round` 把未完成 Run 切成 **wait 组**。组内进程并行；组末 **必须 wait**：本组全部退出并释放 GPU 显存后，才启动下一组。不 wait 则后一批会挤进还在跑的实验，显存叠加，容易 OOM。有独立 eval 时先全部 train wait 完再开 eval。
+
+`launch` 打的 conservative 墙钟 = 各组「最慢那条」再加总，只供排班，不是实测。本进程实测时间在 Logger 行的 `elapsed`。
+
+`--console`：Windows 默认 `new`（每条 `run-one` 一个控制台，并行 printout 分开）；`shared` 混在当前终端。不改变 wait 语义。

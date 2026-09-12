@@ -17,10 +17,12 @@ from rpipe.structure.algorithm.optim import clip_gradients, make_scheduler
 from rpipe.structure.algorithm.progress import (
     UNIT_EPOCH,
     UNIT_STEP,
+    EtaClock,
     ProgressBudget,
     checkpoint_names,
     crossed_percents,
     due_period,
+    format_hms,
     infer_steps_per_epoch,
     resolve_budget,
 )
@@ -240,7 +242,12 @@ def _run_supervised(
     epoch = int(restored.get('epoch') or 0) if restored else 0
     steps = int(restored.get('step') or 0) if restored else 0
     bind_step_train_loader(data, config, step=steps, budget=budget)
+    clock = EtaClock(origin=steps if budget.unit == UNIT_STEP else epoch)
     stop = False
+
+    def _timing() -> dict[str, str]:
+        current = steps if budget.unit == UNIT_STEP else epoch
+        return clock.extra(current=current, total=budget.total)
 
     def fire_eval(extra: dict[str, Any]) -> bool:
         return bool(algo.on_eval_period(tracker, logger, data, model, system, extra))
@@ -275,9 +282,11 @@ def _run_supervised(
                 already_percent.add(hit)
 
     already_done = steps >= budget.num_steps
+    wrote_last_ckpt = False
     try:
         if already_done:
             extra = _hook_extra(epoch=epoch, lr=_current_lr(optimizer, lr), step=steps)
+            extra.update(_timing())
             extra['best_accuracy'] = algo._best_test
             fire_eval(extra)
         else:
@@ -306,12 +315,13 @@ def _run_supervised(
                     optimizer.zero_grad()
                     steps += 1
                     if log_interval and steps % log_interval == 0:
-                        logger.report(
-                            tracker, 'train', extra={'epoch': epoch, 'lr': epoch_lr, 'step': steps}
-                        )
+                        extra = {'epoch': epoch, 'lr': epoch_lr, 'step': steps}
+                        extra.update(_timing())
+                        logger.report(tracker, 'train', extra=extra)
                         tracker.flush('train')
                     if budget.unit == UNIT_STEP:
                         extra = _hook_extra(epoch=epoch, lr=epoch_lr, step=steps)
+                        extra.update(_timing())
                         improved = False
                         if due_period(eval_period, steps):
                             if fire_eval(extra):
@@ -329,14 +339,15 @@ def _run_supervised(
                 if batches_this_epoch == 0:
                     break
                 if logger is not None:
-                    logger.report(
-                        tracker, 'train', extra={'epoch': epoch, 'lr': epoch_lr, 'step': steps}
-                    )
+                    extra = {'epoch': epoch, 'lr': epoch_lr, 'step': steps}
+                    extra.update(_timing())
+                    logger.report(tracker, 'train', extra=extra)
                 tracker.flush('train')
                 tracker.save('train')
                 tracker.reset('train')
                 tracker.flush_state()
                 extra = _hook_extra(epoch=epoch, lr=_current_lr(optimizer, lr), step=steps)
+                extra.update(_timing())
                 if budget.unit == UNIT_EPOCH:
                     improved = False
                     if due_period(eval_period, epoch):
@@ -345,7 +356,10 @@ def _run_supervised(
                         improved = algo.last_improved
                     last_epoch = budget.num_epochs is not None and epoch >= budget.num_epochs
                     last_steps = steps >= budget.num_steps
-                    fire_ckpt(extra=extra, improved=improved, is_last=last_epoch or last_steps)
+                    is_last = last_epoch or last_steps
+                    fire_ckpt(extra=extra, improved=improved, is_last=is_last)
+                    if is_last:
+                        wrote_last_ckpt = True
                     if scheduler is not None:
                         scheduler.step()
                 if steps >= budget.num_steps:
@@ -356,7 +370,8 @@ def _run_supervised(
             fire_eval(extra)
             if keep_best and algo.last_improved:
                 fire_ckpt(extra=extra, improved=True, is_last=True)
-        if not already_done:
+                wrote_last_ckpt = True
+        if not already_done and not wrote_last_ckpt:
             fire_ckpt(extra=extra, improved=False, is_last=True)
     finally:
         tracker.flush_state()
@@ -376,6 +391,8 @@ def _run_supervised(
     }
     if algo._best_metric == 'Accuracy':
         summary['best_accuracy'] = algo._best_test
+    summary['elapsed'] = format_hms(clock.elapsed_seconds())
+    summary['elapsed_seconds'] = float(clock.elapsed_seconds())
     return summary
 
 

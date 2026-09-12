@@ -245,6 +245,7 @@ def _run_hf_trainer(
                 already_percent.add(hit)
 
     already_done = steps >= budget.num_steps
+    wrote_last_ckpt = False
     if already_done:
         extra = _hook_extra(epoch=epoch, lr=_current_lr(optimizer, lr), step=steps)
         extra['best_accuracy'] = algo._best_test
@@ -280,7 +281,7 @@ def _run_hf_trainer(
     class _EpochHook(transformers.TrainerCallback):
         def on_epoch_end(self, args, state, control, **kwargs):  # noqa: ANN001
             del args, kwargs
-            nonlocal epoch, steps
+            nonlocal epoch, steps, wrote_last_ckpt
             epoch = int(round(float(state.epoch or 0)))
             steps = int(state.global_step)
             extra = _hook_extra(epoch=epoch, lr=_current_lr(optimizer, lr), step=steps)
@@ -297,6 +298,8 @@ def _run_hf_trainer(
                     improved = algo.last_improved
                 last_epoch = budget.num_epochs is not None and epoch >= budget.num_epochs
                 fire_ckpt(extra=extra, improved=improved, is_last=last_epoch)
+                if last_epoch:
+                    wrote_last_ckpt = True
             return control
 
         def on_train_end(self, args, state, control, **kwargs):  # noqa: ANN001
@@ -308,7 +311,8 @@ def _run_hf_trainer(
             extra['best_accuracy'] = algo._best_test
             if eval_period <= 0:
                 fire_eval(extra)
-            fire_ckpt(extra=extra, improved=False, is_last=True)
+            if not wrote_last_ckpt:
+                fire_ckpt(extra=extra, improved=False, is_last=True)
             tracker.flush_state()
             return control
 

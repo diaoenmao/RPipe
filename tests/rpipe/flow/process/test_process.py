@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 
 from rpipe.flow import FlowContext, FlowRunner
-from rpipe.flow.process.aggregate import process_path
-from rpipe.flow.process.curves import learning_curves_path
+from rpipe.flow.process.aggregate import process_path, run_process_path
+from rpipe.flow.process.study import run_study
 from rpipe.structure.artifact import (
     artifact_layout,
     build_index,
@@ -12,7 +12,6 @@ from rpipe.structure.artifact import (
     write_result,
 )
 from rpipe.structure.artifact.asset import kinds
-from rpipe.structure.artifact.paths import DERIVED_NAME
 
 
 def _write_succeeded(study: Path, run_id: str, seed: int, size: int, metrics: dict, tags: list[str]):
@@ -39,11 +38,48 @@ def _write_succeeded(study: Path, run_id: str, seed: int, size: int, metrics: di
     return layout
 
 
-def test_process_aggregates_siblings_and_baseline_delta(tmp_path: Path):
+def test_run_process_is_individual_only(tmp_path: Path):
     study = tmp_path / 'demo'
     a = _write_succeeded(study, 'a', 0, 500, {'accuracy': 0.8, 'train_loss': 0.5}, ['baseline'])
     _write_succeeded(study, 'b', 1, 500, {'accuracy': 0.7, 'train_loss': 0.6}, ['baseline'])
+
+    ctx = FlowContext(study_dir=study, layout=a, config={})
+    ctx.control = type('C', (), {'id': 'a'})()
+    ctx.state['result'] = {
+        'status': 'succeeded',
+        'control': {'id': 'a'},
+        'metrics': {'accuracy': 0.8, 'train_loss': 0.5},
+    }
+    FlowRunner(phases=['process']).run(ctx)
+
+    body = ctx.state['process']
+    assert body['scope'] == 'run'
+    assert body['run_id'] == 'a'
+    assert body['metrics']['accuracy'] == 0.8
+    assert run_process_path(a.root).is_file()
+    assert not process_path(study).is_file()
+
+
+def test_study_process_aggregates_history_min_max(tmp_path: Path):
+    study = tmp_path / 'demo'
+    a = _write_succeeded(study, 'a', 0, 500, {'accuracy': 0.8, 'train_loss': 0.5}, ['baseline'])
+    b = _write_succeeded(study, 'b', 1, 500, {'accuracy': 0.7, 'train_loss': 0.6}, ['baseline'])
     _write_succeeded(study, 'c', 0, 2000, {'accuracy': 0.9, 'train_loss': 0.3}, [])
+
+    for layout, hist in (
+        (a, [0.5, 0.8]),
+        (b, [0.4, 0.6]),
+    ):
+        state = {
+            'step': 2,
+            'splits': {
+                'test': {'Accuracy': {'history': hist, 'last': hist[-1], 'mean': 0.0, 'n': 0}},
+            },
+            'last_segment': {},
+        }
+        path = layout.assets_dir / kinds.TRACKER_STATE
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(state), encoding='utf-8')
 
     experiments = [
         {
@@ -61,36 +97,24 @@ def test_process_aggregates_siblings_and_baseline_delta(tmp_path: Path):
             ],
         },
     ]
-    write_index(
-        study,
-        build_index(study='demo', description='', experiments=experiments),
-    )
+    write_index(study, build_index(study='demo', description='', experiments=experiments))
 
-    ctx = FlowContext(study_dir=study, layout=a, config={})
-    ctx.control = type('C', (), {'id': 'a'})()
-    ctx.state['result'] = {
-        'status': 'succeeded',
-        'control': {'id': 'a'},
-        'metrics': {'accuracy': 0.8, 'train_loss': 0.5},
-    }
-    FlowRunner(phases=['process']).run(ctx)
-
-    body = ctx.state['process']
-    assert body['study'] == 'demo'
+    body = run_study(study)
+    assert body['scope'] == 'study'
     assert body['complete'] is False
     assert process_path(study).is_file()
-    assert (a.root / DERIVED_NAME).is_file()
 
     by_size = {exp['factors']['data.config.train_size']: exp for exp in body['experiments']}
-    assert by_size[500]['baseline'] is True
-    assert by_size[500]['n'] == 2
-    assert by_size[500]['metrics']['accuracy']['mean'] == 0.75
-    assert by_size[2000]['n'] == 1
-    assert by_size[2000]['n_planned'] == 2
+    acc = by_size[500]['metrics']['accuracy']
+    assert acc['mean'] == 0.75
+    assert acc['min'] == 0.7
+    assert acc['max'] == 0.8
+    history = by_size[500]['history']['test']['Accuracy']
+    assert history['mean'] == [0.45, 0.7]
+    assert history['min'] == [0.4, 0.6]
+    assert history['max'] == [0.5, 0.8]
+    assert body.get('figures', {}).get('learning_curves') == 'docs/figures/learning_curves.png'
     assert abs(by_size[2000]['delta_vs_baseline']['accuracy'] - 0.15) < 1e-9
-    assert 'paired' in body
-    assert body['paired'][0]['factors']['data.config.train_size'] == 500
-    assert 'train' in body['paired'][0]
 
 
 def test_process_does_not_rewrite_result(tmp_path: Path):
@@ -113,46 +137,5 @@ def test_process_does_not_rewrite_result(tmp_path: Path):
     }
     FlowRunner(phases=['process']).run(ctx)
     assert layout.result_path.read_text(encoding='utf-8') == before
-    assert 'accuracy' in ctx.state['process']['experiments'][0]['metrics']
-
-
-def test_process_writes_learning_curves_from_tracker_history(tmp_path: Path):
-    study = tmp_path / 'curves'
-    layout = _write_succeeded(study, 'r0', 0, 500, {'accuracy': 0.8}, ['baseline'])
-    state = {
-        'step': 2,
-        'splits': {
-            'train': {
-                'Loss': {'history': [1.0, 0.5], 'last': 0.5, 'mean': 0.0, 'n': 0},
-                'Accuracy': {'history': [0.4, 0.8], 'last': 0.8, 'mean': 0.0, 'n': 0},
-            },
-            'test': {
-                'Loss': {'history': [0.9, 0.4], 'last': 0.4, 'mean': 0.0, 'n': 0},
-                'Accuracy': {'history': [0.5, 0.7], 'last': 0.7, 'mean': 0.0, 'n': 0},
-            },
-        },
-        'last_segment': {},
-    }
-    path = layout.assets_dir / kinds.TRACKER_STATE
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(state), encoding='utf-8')
-    write_index(
-        study,
-        build_index(
-            study='curves',
-            description='',
-            experiments=[
-                {
-                    'factors': {'data.config.train_size': 500},
-                    'runs': [{'id': 'r0', 'seed': 0, 'run_dir': 'r0'}],
-                }
-            ],
-        ),
-    )
-    ctx = FlowContext(study_dir=study, layout=layout, config={})
-    ctx.control = type('C', (), {'id': 'r0'})()
-    FlowRunner(phases=['process']).run(ctx)
-    figure = learning_curves_path(study)
-    assert figure.is_file()
-    assert ctx.state['process']['figures']['learning_curves'] == 'docs/figures/learning_curves.png'
-    assert figure.stat().st_size > 0
+    assert ctx.state['process']['scope'] == 'run'
+    assert ctx.state['process']['metrics']['accuracy'] == 0.5

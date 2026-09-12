@@ -352,7 +352,7 @@ dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必
 | `config` | **内容配置**：可装入 `path` 内读出的配置，或由上层覆写；合并规则下游再定 |
 | `compat_model` | **兼容的 Model**（如允许的 `name` / `source` 集合；空表示不限制——形状下游再定） |
 
-lr、步数、`optimizer` / `scheduler` / `resume`、解码参数等不进必须表；优先进 `path` / `config`（§6.11）。不同 `source` 解释同一套键，禁止每个 Trainer 再发明一套顶层字段。
+lr、步数、`optimizer` / `scheduler` / `resume`、**`metric`**、解码参数等不进必须表；优先进 `path` / `config`（§6.9、§6.11）。不同 `source` 解释同一套键，禁止每个 Trainer 再发明一套顶层字段。
 
 ### 6.6 Registry / Factory
 
@@ -402,7 +402,9 @@ flowchart LR
 
 内存里按 split（至少 `train` / `test`）维护：最近一次 batch 值、按样本数 `n` 加权的 running mean、累计 counter、`save()` 时追加的 history、以及给 jsonl 用的步数。
 
-`evaluate(split, mode='batch', input, output)` 先只做 batch 的 Loss / Accuracy。`add` / `mode='full'` 与 `compare()` 后做。默认 MNIST train 每个 batch 都 `append('train', n=batch_size)`；test 由 §6.10 的 `on_eval_period` 走同一套 `evaluate` / `append(..., split='test')`。
+Metric 名与 git `main` 对齐，在 **algorithm** 算、不在 Flow 另起一套：`Loss`、`Accuracy`、`MSE`（batch）；`RMSE`、`GLUE`（full，在 `save()` 时收口）。配置键 `algorithm.metric`；缺省 train / test 都是 `Loss` + `Accuracy`。Accuracy 是 **0–1**，不是百分数。train 循环与独立 `mode=eval` 共用同一套名字。
+
+`evaluate(split, mode='batch', input, output)` 按该 split 登记的名字算 batch 指标。`mode='full'` 留给 RMSE / GLUE 这类要整段才有的量。默认 MNIST train 每个 batch 都 `append('train', n=batch_size)`；test 由 §6.10 的 `on_eval_period` 走同一套 `evaluate` / `append(..., split='test')`。
 
 **进 `result.json` 的只有摘要**（如 `metrics.train_loss` = 最后一段 train mean，不是 last-batch CE）。曲线在 asset。
 
@@ -661,7 +663,9 @@ prepare 顺序建议：先 `SystemFactory.build`，再 data / model（设备与�
 
 Logger 是 **system** 的运行时对象：打到 **terminal**，并且 **同一行写入** `assets/logs/run.log` 后立刻 flush。这是执行环境的 IO，不是算法语义。
 
-`report(tracker, split, extra=None)` **必须能接收 AlgorithmTracker**：读其 mean（及最近 batch 值），拼 epoch / lr / ETA 等 `extra`，否则终端看不到 Loss/Accuracy。`info` / `warning` / `error` 不依赖 tracker，同样进终端和文件。
+`report(tracker, split, extra=None)` **必须能接收 AlgorithmTracker**：读其 mean（及最近 batch 值），拼 epoch / **`elapsed` / `eta`** / lr 等 `extra`（墙钟来自 algorithm 进度时钟，不是 make 的 pack 估计）。否则终端看不到 Loss/Accuracy。`info` / `warning` / `error` 不依赖 tracker，同样进终端和文件。
+
+并行时 Windows 上 `rpipe launch` 默认每条 Run 一个新控制台（`--console new`），避免多进程 stdout 挤在同一窗口；`--console shared` 才混打。这只影响 printout，不改变组间 `wait`。
 
 Logger **不**改 AlgorithmTracker 的 mean/history；**不**写 TensorBoard。
 
@@ -977,7 +981,9 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 |------|------|
 | 展开 | 读 Study 声明（`axes` × `seeds`）→ patch 列表 |
 | 写格子 | 每个 patch → `run_config_from_merge` → `runs/<id>/config.yaml`；写 **index** |
-| 写脚本 | 默认 `--round auto`：同类、相近耗时一组，组内按显存填满后 `wait`；手写 `--round N` 则均匀切块。`CUDA_VISIBLE_DEVICES` 轮转；可选 `--split-round` |
+| 写脚本 | 默认 `--round auto`：同类、相近耗时一组，组内按显存填满后 **`wait`**；手写 `--round N` 则均匀切块。`CUDA_VISIBLE_DEVICES` 轮转；可选 `--split-round` |
+| `wait` | 一组并发的内存闸门：本组进程全部退出、显存释放完，才启动下一组。不 `wait` 则下一组会挤进还在跑的进程，显存叠加，容易 OOM。eval 波次同样：全部 train `wait` 完再开 |
+| 墙钟估计 | 一组取组内最慢那条；整轮 conservative 墙钟 = 各组 max **再加总**。只供排班参考，不是实测。训练 Logger 的 `elapsed` 才是该进程实测 |
 
 产物：N 份 config + index，以及 `studies/<name>/scripts/`（默认 gitignore）。`launch.sh` 形状：
 
@@ -987,7 +993,7 @@ CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<id>"
 wait
 ```
 
-`algorithm.mode: eval` 单独第二波：train 全部 `wait` 完再启动。`rpipe launch` 用同一套装箱，不依赖 bash。默认 `--round auto` 按 [STUDY_GUIDE.md](../STUDY_GUIDE.md) §3 排班；脚本形状见 §4。
+`algorithm.mode: eval` 单独第二波：train 全部 `wait` 完再启动。`rpipe launch` 用同一套装箱，不依赖 bash。Windows 默认 `--console new`（每条 Run 一个窗口），组间仍 `wait`。默认 `--round auto` 按 [STUDY_GUIDE.md](../STUDY_GUIDE.md) §3 排班；脚本形状见 §4。
 
 测试：`tests/rpipe/structure/make/`。
 

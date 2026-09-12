@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
+from datetime import timedelta
 from typing import Any, Iterable
 
 UNIT_EPOCH = 'epoch'
@@ -32,6 +34,40 @@ class ProgressBudget:
         if self.num_steps is not None:
             return max(int(self.num_steps), 1)
         return 1
+
+
+def format_hms(seconds: float) -> str:
+    return str(timedelta(seconds=int(max(0, round(seconds)))))
+
+
+def remaining_seconds(*, elapsed: float, origin: int, current: int, total: int) -> int | None:
+    """Session-elapsed / session-units × remaining units. None until one unit finishes."""
+    session = int(current) - int(origin)
+    if session <= 0:
+        return None
+    leftover = max(0, int(total) - int(current))
+    return int(round(float(elapsed) / session * leftover))
+
+
+class EtaClock:
+    """Wall-clock ETA from this process's progress since construct (resume-aware origin)."""
+
+    def __init__(self, origin: int = 0) -> None:
+        self.origin = int(origin)
+        self._t0 = time.perf_counter()
+
+    def extra(self, *, current: int, total: int) -> dict[str, str]:
+        elapsed = self.elapsed_seconds()
+        out = {'elapsed': format_hms(elapsed)}
+        remain = remaining_seconds(
+            elapsed=elapsed, origin=self.origin, current=current, total=total
+        )
+        if remain is not None:
+            out['eta'] = format_hms(remain)
+        return out
+
+    def elapsed_seconds(self) -> float:
+        return time.perf_counter() - self._t0
 
 
 def infer_steps_per_epoch(data: Any) -> int | None:

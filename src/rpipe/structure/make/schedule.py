@@ -199,7 +199,14 @@ def render_bash(
                     buf = _reset()
             else:
                 buf.append(bg)
-    return chunks or ['#!/bin/bash\nwait\n']
+    if len(buf) > 3:
+        _flush()
+    process_line = f'"{py_b}" -m rpipe process "{study_b}"'
+    if chunks:
+        chunks[-1] = chunks[-1].rstrip('\n') + '\n' + process_line + '\n'
+    else:
+        chunks = ['#!/bin/bash\n' + process_line + '\n']
+    return chunks
 
 
 def write_launch_scripts(
@@ -264,6 +271,25 @@ def write_launch_scripts(
     }
 
 
+def job_popen_kwargs(console: str) -> dict[str, Any]:
+    """Windows ``new`` = one console window per run-one (same idea as Start-Process)."""
+    if console == 'new' and os.name == 'nt':
+        flag = getattr(subprocess, 'CREATE_NEW_CONSOLE', 0x00000010)
+        return {'creationflags': flag}
+    return {}
+
+
+def resolve_console(mode: str = 'auto') -> str:
+    raw = str(mode or 'auto').strip().lower()
+    if raw in ('', 'auto'):
+        return 'new' if os.name == 'nt' else 'shared'
+    if raw in ('new', 'window', 'windows', 'separate'):
+        return 'new'
+    if raw in ('shared', 'same', 'mix'):
+        return 'shared'
+    raise ValueError('console must be auto, new, or shared')
+
+
 def launch_job_env(job: dict[str, Any]) -> dict[str, str]:
     env = os.environ.copy()
     env['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
@@ -282,12 +308,15 @@ def launch_jobs(
     cwd: Path | None = None,
     batches: list[list[dict[str, Any]]] | None = None,
     retry_failed: bool = True,
+    console: str = 'auto',
 ) -> list[int]:
     if round_size < 1:
         raise ValueError('round must be >= 1')
     py = python_exe or sys.executable
     root = cwd or repo_root_from(study_dir)
     codes: list[int] = []
+    console_mode = resolve_console(console)
+    popen_extra = job_popen_kwargs(console_mode)
 
     def _run_groups(groups: list[list[dict[str, Any]]]) -> list[tuple[dict[str, Any], int]]:
         pairs: list[tuple[dict[str, Any], int]] = []
@@ -295,9 +324,18 @@ def launch_jobs(
             procs: list[tuple[dict[str, Any], subprocess.Popen[str]]] = []
             for job in group:
                 cmd = [py, '-m', 'rpipe', 'run-one', str(study_dir), str(job['run_id'])]
-                print(f'+ gpu={job.get("gpu", "-")} {job["run_id"]}', flush=True)
+                where = 'window' if console_mode == 'new' and os.name == 'nt' else 'here'
+                print(f'+ gpu={job.get("gpu", "-")} {job["run_id"]} ({where})', flush=True)
                 procs.append(
-                    (job, subprocess.Popen(cmd, cwd=str(root), env=launch_job_env(job)))
+                    (
+                        job,
+                        subprocess.Popen(
+                            cmd,
+                            cwd=str(root),
+                            env=launch_job_env(job),
+                            **popen_extra,
+                        ),
+                    )
                 )
             for job, proc in procs:
                 code = int(proc.wait())

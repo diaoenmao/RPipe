@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import json
-import statistics
 from pathlib import Path
 from typing import Any
 
+from rpipe.flow.process.aggregate import summarize_histories
 from rpipe.structure.artifact.asset import kinds
 from rpipe.structure.artifact.paths import DOCS_DIRNAME, RUNS_DIRNAME
 
@@ -58,17 +58,6 @@ def _history(study_dir: Path, run_dir: str, split: str, name: str) -> list[float
         if isinstance(value, (int, float)) and not isinstance(value, bool):
             out.append(float(value))
     return out
-
-
-def _mean_std(series: list[list[float]]) -> tuple[list[float], list[float]]:
-    length = min(len(row) for row in series)
-    means: list[float] = []
-    stds: list[float] = []
-    for i in range(length):
-        values = [row[i] for row in series]
-        means.append(float(statistics.fmean(values)))
-        stds.append(float(statistics.stdev(values)) if len(values) >= 2 else 0.0)
-    return means, stds
 
 
 def collect_curve_groups(study_dir: Path, index: dict[str, Any] | None) -> list[dict[str, Any]]:
@@ -128,7 +117,11 @@ def write_learning_curves(
             ]
             if not series:
                 continue
-            means, stds = _mean_std(series)
+            summary = summarize_histories(series)
+            if not summary:
+                continue
+            means = summary['mean']
+            stds = summary['std']
             epochs = list(range(1, len(means) + 1))
             color = palette[i % len(palette)]
             ax.plot(epochs, means, color=color, label=group['label'], linewidth=1.8)

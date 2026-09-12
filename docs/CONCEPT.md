@@ -111,7 +111,7 @@ flowchart TB
 | **structure** | `api` + `control` + 四层 + **artifact** + **make** |
 | **api** | 四层对外门面 |
 | **control** | 本 Run 对四层的取值指派；一次合并 |
-| **make** | 声明 → N 份 config 与 index；按 GPU 与 `round` 写出 `&` / `wait` 脚本 |
+| **make** | 声明 → N 份 config 与 index；按 GPU 与 `round` 写出 `&` / **`wait`** 脚本（一组结束才开下一组，避免显存叠加） |
 | **config** | 一次 Run 的 declarative 配置；prepare 只读 |
 | **flow** | 服务 Study 的执行。同一套阶段链，用参数选择行为。每个 Run：prepare → execute → collect → summarize → write → process |
 | **cli** | Flow 的命令行入口 |
@@ -119,7 +119,7 @@ flowchart TB
 | **result** | 可序列化摘要：`status`、最终 metrics、路径。逐步曲线另见 asset |
 | **asset** | 文件通道：数据集、权重、checkpoint、AlgorithmTracker 曲线、Logger 文本 |
 | **AlgorithmTracker** | algorithm 层，只记数 |
-| **Logger** | system 层，只打字；stdout 与 `assets/logs/` 同一套 |
+| **Logger** | system 层，只打字；stdout 与 `assets/logs/` 同一套；`report` 拼 epoch / `elapsed` / `eta` / Loss |
 | **index** | Study 编排清单；make 写入；按 Experiment 列 Run |
 
 读写：config 由 **make** 写入；result 由 Flow 的 **write** 写入；文件走 **asset**。index 由 make 写入。
@@ -168,10 +168,10 @@ flowchart TB
 |------|------|
 | **api** | 对外门面 |
 | **control** | 本 Run 对四层的指派；一次 `RunConfig` |
-| **make** | 循环调用 control 与 artifact，写出 N 份 config、index，以及 `&` / `wait` 脚本 |
+| **make** | 循环调用 control 与 artifact，写出 N 份 config、index，以及 `&` / **`wait`** 脚本（`wait` 拦住下一组，防止显存叠加） |
 | **data** | 运行时组织输入。落盘在 artifact 的 **asset** |
 | **model** | 运行时构造网络。权重 / checkpoint 在 **asset** |
-| **algorithm** | 怎么算。数字账本是 **AlgorithmTracker**；循环插入点是 **AlgorithmHook**。优化器、调度器、梯度裁剪、resume 是本层接口 |
+| **algorithm** | 怎么算。数字账本是 **AlgorithmTracker**；metric 名（Loss / Accuracy / MSE / RMSE / GLUE）在本层 `evaluate`；循环插入点是 **AlgorithmHook**。优化器、调度器、梯度裁剪、resume 是本层接口 |
 | **system** | 设备、精度、并行、执行节奏；prepare 最先落地 seed / deterministic / cudnn。文本日志是 **Logger** |
 | **artifact** | IO 与路径：config / result / asset，以及 Study layout |
 
@@ -196,11 +196,11 @@ flowchart LR
 | Phase | 做什么 |
 |-------|--------|
 | **prepare** | 读 **config**，落地 structure；经 **artifact** 取用文件；保持 config 不变 |
-| **execute** | 按 structure 计算；每个 batch 更新 AlgorithmTracker；Logger 按间隔打终端并 flush 日志 |
+| **execute** | 按 structure 计算；每个 batch 更新 AlgorithmTracker；Logger 按间隔打终端（含 `elapsed` / `eta`）并 flush 日志 |
 | **collect** | 从 AlgorithmTracker 收最终 metrics 摘要 |
 | **summarize** | 整理可序列化的 result 草稿，含 `status` |
 | **write** | 把 result 写入 artifact |
-| **process** | 定稿后派生：Δ baseline、按 Experiment 聚合；可空 |
+| **process** | 定稿后派生：本 Run 只写自己的旁路；Study 级 `rpipe process` 再按 Experiment 聚合 |
 
 ```mermaid
 flowchart TB
@@ -226,7 +226,7 @@ flowchart TB
 - 真数据须显式 `data.source`
 - 失败时写 `status: failed` 与 `error`
 - **write** 写该 Run 的 result；**index** 由 make 写在 Study 根
-- `process` 可按 Experiment 读多个 sibling result
+- `process`：每个 Run 只处理自己的结果；Study 总表由单独的 `rpipe process` 收口
 
 ---
 
@@ -247,8 +247,8 @@ flowchart TB
 ## 9. 编排生命周期
 
 1. 写基底配置与 study 声明：`axes` 与 `seeds`
-2. **make**：展开 Experiment × seed → 各 Run config 与 index；按 STUDY_GUIDE §3 同类装箱写出 `&` / `wait` 脚本。有独立 eval 时先并行全部 train，再跑 eval。
-3. **Flow**：经 cli，按参数对 Study 下各 Run 跑阶段链；`process` 按 Experiment 收口
+2. **make**：展开 Experiment × seed → 各 Run config 与 index；按 STUDY_GUIDE §3 同类装箱写出 `&` / `wait` 脚本。一组 `wait` 完才开下一组，免得下一波挤进还占着的显存。有独立 eval 时先并行全部 train，再跑 eval。
+3. **Flow**：经 cli，按参数对 Study 下各 Run 跑阶段链；全部 wait 完后跑 Study 级 `process`
 4. 按 Experiment 读 result 与曲线，写 Study 报告，报告里要有图
 
 ---

@@ -1,11 +1,13 @@
 """Estimate ``--round`` from Run configs and GPU memory.
 
 make does not import data / model / algorithm. Complexity is a heuristic
-from yaml fields; hardware comes from torch or nvidia-smi.
+from yaml fields; hardware comes from nvidia-smi (then torch). Seconds are
+a conservative wall-clock guess for packing, not a measurement.
 """
 
 from __future__ import annotations
 
+import math
 import shutil
 import subprocess
 from dataclasses import dataclass
@@ -16,6 +18,7 @@ from rpipe.structure.artifact import load_config
 from rpipe.structure.make.schedule import job_waves
 
 SAFETY = 0.5
+TIME_SAFETY = 2.0
 CPU_ROUND = 4
 OVERHEAD_BYTES = 512 * 1024 * 1024
 
@@ -85,18 +88,59 @@ def estimate_job_bytes(cfg: dict[str, Any] | None) -> int:
     return max(OVERHEAD_BYTES, int(total))
 
 
+# Conservative ms / optimizer step (slow card). Overestimate, not a benchmark.
+MODEL_STEP_MS: dict[str, int] = {
+    'linear': 15,
+    'mlp': 25,
+    'cnn': 40,
+    'resnet10': 80,
+    'resnet18': 120,
+    'wresnet': 180,
+}
+
+
+def estimate_job_seconds(cfg: dict[str, Any] | None) -> int:
+    """Conservative seconds for one ``run-one``. Wall clock uses max per wait group."""
+    if not isinstance(cfg, dict):
+        return int(math.ceil(600 * TIME_SAFETY))
+    data = cfg.get('data') if isinstance(cfg.get('data'), dict) else {}
+    model = cfg.get('model') if isinstance(cfg.get('model'), dict) else {}
+    algo = cfg.get('algorithm') if isinstance(cfg.get('algorithm'), dict) else {}
+    dcfg = data.get('config') if isinstance(data.get('config'), dict) else {}
+    model_name = str(model.get('name') or 'linear').lower()
+    batch = max(1, _as_int(dcfg.get('batch_size'), 64))
+    train_size = max(1, _as_int(dcfg.get('train_size'), 50000))
+    steps = _as_int(algo.get('num_steps'), 0)
+    epochs = _as_int(algo.get('num_epochs'), 0)
+    if steps <= 0 and epochs > 0:
+        steps = epochs * max(1, int(math.ceil(train_size / batch)))
+    if steps <= 0:
+        steps = 1
+    ms = MODEL_STEP_MS.get(model_name, 80)
+    seconds = steps * ms / 1000.0
+    if str(algo.get('mode') or 'train') == 'eval':
+        seconds *= 0.25
+    return max(1, int(math.ceil(seconds * TIME_SAFETY)))
+
+
 def attach_estimates(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     for job in jobs:
-        if job.get('vram_bytes') is not None:
-            continue
+        need_cfg = (
+            job.get('vram_bytes') is None
+            or job.get('seconds') is None
+            or not job.get('estimate_model')
+        )
         path = job.get('config')
         cfg: dict[str, Any] | None = None
-        if path:
+        if need_cfg and path:
             try:
                 cfg = load_config(Path(str(path)))
             except (OSError, ValueError):
                 cfg = None
-        job['vram_bytes'] = estimate_job_bytes(cfg)
+        if job.get('vram_bytes') is None:
+            job['vram_bytes'] = estimate_job_bytes(cfg)
+        if job.get('seconds') is None:
+            job['seconds'] = estimate_job_seconds(cfg)
         if cfg:
             data = cfg.get('data') if isinstance(cfg.get('data'), dict) else {}
             model = cfg.get('model') if isinstance(cfg.get('model'), dict) else {}
@@ -323,17 +367,63 @@ def _pack_homogeneous(
     return batches
 
 
+def _job_seconds(job: dict[str, Any]) -> int:
+    return max(0, int(job.get('seconds') or 0))
+
+
+def estimate_wall_seconds(batches: list[list[dict[str, Any]]]) -> int:
+    """Sum of per-wait max(job seconds). Group wall equals the slowest job."""
+    total = 0
+    for batch in batches:
+        total += max((_job_seconds(job) for job in batch), default=0)
+    return int(total)
+
+
+def format_duration(seconds: int) -> str:
+    value = max(0, int(seconds))
+    hours, rem = divmod(value, 3600)
+    minutes, secs = divmod(rem, 60)
+    if hours:
+        if minutes:
+            return f'{hours}h{minutes}m'
+        return f'{hours}h'
+    if minutes:
+        if secs:
+            return f'{minutes}m{secs}s'
+        return f'{minutes}m'
+    return f'{secs}s'
+
+
+def pack_label(models: list[str]) -> str:
+    """Collapse consecutive same names: linear,linear,linear → linear×3."""
+    if not models:
+        return ''
+    parts: list[str] = []
+    i = 0
+    while i < len(models):
+        name = models[i]
+        j = i + 1
+        while j < len(models) and models[j] == name:
+            j += 1
+        count = j - i
+        parts.append(name if count == 1 else f'{name}×{count}')
+        i = j
+    return '+'.join(parts)
+
+
 def batch_summaries(batches: list[list[dict[str, Any]]]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for batch in batches:
         models = [str(job.get('estimate_model') or job.get('mode') or 'job') for job in batch]
+        seconds = max((_job_seconds(job) for job in batch), default=0)
         rows.append(
             {
                 'size': len(batch),
                 'vram_bytes': sum(_job_vram(job) for job in batch),
+                'seconds': seconds,
                 'models': models,
                 'run_ids': [str(job.get('run_id')) for job in batch],
-                'label': '+'.join(models),
+                'label': pack_label(models),
             }
         )
     return rows
@@ -406,7 +496,11 @@ def summarize_capacity(report: dict[str, Any]) -> str:
         packed = ', '.join(
             '{0}[{1}]'.format(row.get('size'), row.get('label')) for row in batches
         )
-        return 'pack {0} waits: {1} | {2}'.format(len(batches), packed, gpu_txt)
+        wall = int(report.get('wall_seconds') or 0)
+        if wall <= 0:
+            wall = sum(int(row.get('seconds') or 0) for row in batches)
+        wall_txt = ' est wall {0}'.format(format_duration(wall)) if wall else ''
+        return 'pack {0} waits: {1}{2} | {3}'.format(len(batches), packed, wall_txt, gpu_txt)
     return (
         'round={round} ({source}) = min({n} pending, {usable} // {heavy} = {slots} slots) | {gpu}'
         .format(

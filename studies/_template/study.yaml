@@ -1,10 +1,11 @@
-# study.yaml template — copy into studies/<your_study>/
+# study.yaml — copy studies/_template/ → studies/<your_study>/
+# 对照 docs/STUDY_GUIDE.md §1–§3。格子由 make 展开，不要手写 runs/。
 
 study: my_study
-description: one-line goal for humans and agents
+description: one-line research question
 
 experiment:
-  name: mnist_linear
+  name: mnist_linear   # 给人看的基底名，不是磁盘路径
 
 fixed:
   data:
@@ -15,22 +16,37 @@ fixed:
   model:
     name: linear
   algorithm:
+    source: custom_torch
     mode: train
-    num_epochs: 2
+    num_epochs: 20
+    progress_unit: epoch
+    eval_period: 1
+    checkpoint: latest
+    checkpoint_period: 1
+    save_best: true
+    optimizer: SGD
+    max_grad_norm: 0
     lr: 0.1
+    scheduler: cosine
+    eta_min: 0.0
   system:
-    device: cpu
+    device: cuda
+    deterministic: false
+    cudnn_benchmark: true
 
-# → each combo is one Experiment (research factors; no seed)
+# 每个取值组合 = 一个 Experiment。seed 不要放这里。
+# 有独立 eval 时写上 algorithm.mode；make 会先跑完全部 train 再 eval。
 axes:
   data.config.train_size: [500, 2000, 8000]
+  algorithm.mode: [train, eval]
 
-# → each Experiment × each seed is one Run
-seeds: [0]
+# 每个 Experiment × 每个 seed = 一次 Run。这是复测次数，不是并发。
+seeds: [0, 1, 2]
 
 tags:
   - when:
       data.config.train_size: 500
+      algorithm.mode: train
     tags: [baseline]
 
-run_description: "{experiment} train_size={train_size} seed={seed}"
+run_description: "train_size={train_size} mode={mode} seed={seed}"

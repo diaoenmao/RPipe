@@ -17,10 +17,12 @@ from rpipe.structure.make.capacity import (
 )
 from rpipe.structure.make.schedule import (
     gpu_ids,
+    job_popen_kwargs,
     job_waves,
     launch_jobs,
     plan_jobs,
     render_bash,
+    resolve_console,
     run_succeeded,
     write_launch_scripts,
 )
@@ -34,6 +36,7 @@ __all__ = [
     'expand_patches',
     'expand_study',
     'gpu_ids',
+    'job_popen_kwargs',
     'job_waves',
     'launch_jobs',
     'load_study_yaml',
@@ -41,6 +44,7 @@ __all__ = [
     'plan_jobs',
     'probe_gpus',
     'render_bash',
+    'resolve_console',
     'run_succeeded',
     'suggest_round',
     'summarize_capacity',

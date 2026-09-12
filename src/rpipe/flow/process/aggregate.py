@@ -7,6 +7,7 @@ import statistics
 from pathlib import Path
 from typing import Any
 
+from rpipe.structure.artifact.asset import kinds
 from rpipe.structure.artifact.paths import PROCESS_NAME, RESULT_NAME, RUNS_DIRNAME
 from rpipe.structure.artifact.result import STATUS_SUCCEEDED, load_result
 
@@ -15,12 +16,110 @@ def process_path(study_dir: Path | str) -> Path:
     return Path(study_dir) / PROCESS_NAME
 
 
+def run_process_path(run_root: Path | str) -> Path:
+    return Path(run_root) / PROCESS_NAME
+
+
+def load_tracker_history(study_dir: Path | str, run_dir: str) -> dict[str, dict[str, list[float]]]:
+    path = Path(study_dir) / RUNS_DIRNAME / run_dir / 'assets' / kinds.TRACKER_STATE
+    if not path.is_file():
+        return {}
+    try:
+        body = json.loads(path.read_text(encoding='utf-8'))
+    except (OSError, json.JSONDecodeError, TypeError):
+        return {}
+    splits = body.get('splits') if isinstance(body, dict) else None
+    if not isinstance(splits, dict):
+        return {}
+    out: dict[str, dict[str, list[float]]] = {}
+    for split, meters in splits.items():
+        if not isinstance(meters, dict):
+            continue
+        names: dict[str, list[float]] = {}
+        for name, meter in meters.items():
+            history = meter.get('history') if isinstance(meter, dict) else None
+            if not isinstance(history, list):
+                continue
+            values = [
+                float(value)
+                for value in history
+                if isinstance(value, (int, float)) and not isinstance(value, bool)
+            ]
+            if values:
+                names[str(name)] = values
+        if names:
+            out[str(split)] = names
+    return out
+
+
+def attach_histories(
+    study_dir: Path | str,
+    groups: list[dict[str, Any]],
+    experiments: list[dict[str, Any]],
+) -> None:
+    for group, exp in zip(groups, experiments):
+        buckets: dict[str, dict[str, list[list[float]]]] = {}
+        for row in group.get('runs') or []:
+            if row.get('status') != STATUS_SUCCEEDED:
+                continue
+            run_dir = str(row.get('id') or '')
+            if not run_dir:
+                continue
+            for split, names in load_tracker_history(study_dir, run_dir).items():
+                split_map = buckets.setdefault(split, {})
+                for name, series in names.items():
+                    split_map.setdefault(name, []).append(series)
+        history: dict[str, dict[str, Any]] = {}
+        for split, names in buckets.items():
+            packed = {}
+            for name, series in names.items():
+                summary = summarize_histories(series)
+                if summary is not None:
+                    packed[name] = summary
+            if packed:
+                history[split] = packed
+        exp['history'] = history
+
+
 def _mean_std(values: list[float]) -> dict[str, float | int | None]:
+    return summarize_numbers(values)
+
+
+def summarize_numbers(values: list[float]) -> dict[str, float | int | None]:
     if not values:
-        return {'mean': None, 'std': None, 'n': 0}
-    mean = float(statistics.fmean(values))
-    std = float(statistics.stdev(values)) if len(values) >= 2 else 0.0
-    return {'mean': mean, 'std': std, 'n': len(values)}
+        return {'mean': None, 'std': None, 'min': None, 'max': None, 'n': 0}
+    return {
+        'mean': float(statistics.fmean(values)),
+        'std': float(statistics.stdev(values)) if len(values) >= 2 else 0.0,
+        'min': float(min(values)),
+        'max': float(max(values)),
+        'n': len(values),
+    }
+
+
+def summarize_histories(series: list[list[float]]) -> dict[str, Any] | None:
+    rows = [row for row in series if row]
+    if not rows:
+        return None
+    length = min(len(row) for row in rows)
+    means: list[float] = []
+    stds: list[float] = []
+    mins: list[float] = []
+    maxs: list[float] = []
+    for i in range(length):
+        col = [row[i] for row in rows]
+        means.append(float(statistics.fmean(col)))
+        stds.append(float(statistics.stdev(col)) if len(col) >= 2 else 0.0)
+        mins.append(float(min(col)))
+        maxs.append(float(max(col)))
+    return {
+        'mean': means,
+        'std': stds,
+        'min': mins,
+        'max': maxs,
+        'n': len(rows),
+        'length': length,
+    }
 
 
 def _numeric_metrics(metrics: dict[str, Any]) -> dict[str, float]:
