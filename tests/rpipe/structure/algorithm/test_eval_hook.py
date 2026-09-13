@@ -66,10 +66,53 @@ def test_best_updates_without_patience():
     assert stall == 0
 
 
+def test_eval_num_steps_caps_batches(tmp_path):
+    import torch
+
+    from rpipe.structure.algorithm.config import AlgorithmConfig
+    from rpipe.structure.algorithm.eval_hook import eval_batch_limit, eval_test_split
+    from rpipe.structure.algorithm.tracker import AlgorithmTracker
+
+    class _Data:
+        def iter_batches(self, split):
+            del split
+            for _ in range(4):
+                yield torch.zeros(2, 3), torch.zeros(2, dtype=torch.long)
+
+    class _Model:
+        def __init__(self):
+            self.module = torch.nn.Linear(3, 2)
+            self.calls = 0
+            inner = self.module.forward
+
+            def counted(x):
+                self.calls += 1
+                return inner(x)
+
+            self.module.forward = counted
+
+        def eval(self):
+            return self.module.eval()
+
+        def train(self):
+            return self.module.train()
+
+    class _System:
+        device = 'cpu'
+
+    assert eval_batch_limit(AlgorithmConfig.from_mapping({})) is None
+    assert eval_batch_limit(AlgorithmConfig.from_mapping({'eval_num_steps': -1})) is None
+    assert eval_batch_limit(AlgorithmConfig.from_mapping({'eval_num_steps': 2})) == 2
+
+    model = _Model()
+    eval_test_split(AlgorithmTracker(tmp_path), None, _Data(), model, _System(), num_steps=2)
+    assert model.calls == 2
+
+
 def test_on_eval_period_runs_eval_and_can_stop(tmp_path, monkeypatch):
     calls: list[int] = []
 
-    def fake_eval(tracker, logger, data, model, system, extra=None):
+    def fake_eval(tracker, logger, data, model, system, extra=None, **_kwargs):
         calls.append(1)
         return {'Accuracy': 0.4}
 

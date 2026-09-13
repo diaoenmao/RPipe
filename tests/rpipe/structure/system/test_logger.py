@@ -4,6 +4,16 @@ from rpipe.structure.algorithm.tracker import AlgorithmTracker
 from rpipe.structure.system.logger import Logger
 
 
+def test_logger_prefixes_run_id_from_layout(tmp_path: Path, capsys):
+    assets = tmp_path / 'runs' / 'abc123' / 'assets'
+    logger = Logger(assets)
+    logger.info('epoch 1 train Loss 0.5')
+    captured = capsys.readouterr().out
+    assert captured.startswith('abc123 ')
+    text = (assets / 'logs' / 'run.log').read_text(encoding='utf-8')
+    assert text.startswith('abc123 epoch 1')
+
+
 def test_logger_writes_run_log_and_reads_tracker(tmp_path: Path, capsys):
     tracker = AlgorithmTracker(tmp_path)
     tracker.append('train', n=1, values={'Loss': 0.5, 'Accuracy': 0.25})

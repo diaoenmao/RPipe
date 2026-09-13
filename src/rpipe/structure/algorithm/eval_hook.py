@@ -8,6 +8,22 @@ from rpipe.structure.algorithm.batch import prepare_tensors
 from rpipe.structure.algorithm.tracker import AlgorithmTracker
 
 
+def eval_batch_limit(config: Any | None) -> int | None:
+    """``eval_num_steps``: how many test batches to run. Missing or ``< 0`` = full split."""
+    if config is None or not hasattr(config, 'setting'):
+        return None
+    raw = config.setting('eval_num_steps')
+    if raw is None:
+        return None
+    try:
+        n = int(raw)
+    except (TypeError, ValueError):
+        return None
+    if n < 0:
+        return None
+    return n
+
+
 def eval_test_split(
     tracker: AlgorithmTracker,
     logger: Any,
@@ -15,6 +31,8 @@ def eval_test_split(
     model: Any,
     system: Any,
     extra: dict[str, Any] | None = None,
+    *,
+    num_steps: int | None = None,
 ) -> dict[str, float]:
     import torch
 
@@ -25,11 +43,13 @@ def eval_test_split(
     device = torch.device(getattr(system, 'device', 'cpu'))
     module.eval()
     with torch.no_grad():
-        for batch in data.iter_batches('test'):
+        for index, batch in enumerate(data.iter_batches('test')):
             images, targets = prepare_tensors(batch, module, device)
             logits = module(images)
             values = tracker.evaluate('test', 'batch', (images, targets), logits)
             tracker.append('test', n=int(images.size(0)), values=values)
+            if num_steps is not None and (index + 1) >= num_steps:
+                break
     if logger is not None:
         logger.report(tracker, 'test', extra=extra)
     tracker.flush('test')

@@ -133,7 +133,7 @@ structure/
 | Hugging Face | `datasets.Dataset` / `DatasetDict` 及加载、格式化 API |
 | ModelScope | ModelScope 数据集加载 API |
 
-已注册 `source: torch`：`MNIST`、`CIFAR10`、`SVHN`（ToTensor + Normalize；CIFAR10/SVHN 默认 train 增强对齐 main `Base`：CIFAR flip+pad-4 crop，SVHN 仅 pad-4 crop）。`Data.meta` 带 `data_size` / `target_size`，供 prepare 传给 model factory。`config.augment: false` 可关掉随机增强。
+已注册 `source: torch`：`MNIST`、`FashionMNIST`、`CIFAR10`、`CIFAR100`、`SVHN`（ToTensor + Normalize；CIFAR10/CIFAR100 默认 train 增强：flip+pad-4 crop，SVHN 仅 pad-4 crop）。`Data.meta` 带 `data_size` / `target_size`，供 prepare 传给 model factory。`config.augment: false` 可关掉随机增强。`config.pin_memory` / `config.num_workers` 传给 DataLoader（缺省 `false` / `0`）。
 
 其它来源经 Registry 注册即可。
 
@@ -202,7 +202,7 @@ flowchart LR
 
 对外：`ModelFactory.build(model_config, assets_dir, data_meta=None) → Model`。`data_meta` 是 dict（通常 `Data.meta`），**不是** Data 对象；prepare 经 `model_api` 传入。`model.config.data_size` / `target_size` 优先于 meta。
 
-已注册 `source: custom_torch`：`linear`、`mlp`、`cnn`、`resnet18`（别名 `resnet`）、`resnet10`，结构对齐 git main `src/model/`（含 `init_param`）。linear/mlp 在模块内 flatten；cnn/resnet 吃 NCHW。默认超参对齐 `hyper.py`（mlp 128×2 层；cnn/resnet hidden `[64,128,256,512]`）。
+已注册 `source: custom_torch`：`linear`、`mlp`、`cnn`、`resnet18`（别名 `resnet`）、`resnet10`、`wresnet28x2`（别名 `wresnet`）、`wresnet28x8`，结构对齐 git main `src/model/`（含 `init_param`）。linear/mlp 在模块内 flatten；cnn/resnet/wresnet 吃 NCHW。默认超参对齐 `hyper.py`（mlp 128×2 层；cnn/resnet hidden `[64,128,256,512]`；wresnet depth/widen/drop_rate）。
 
 ### 5.2 `Model` 职责要点
 
@@ -465,6 +465,7 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 | `num_epochs` | 无 | 若能推导 `steps_per_epoch`（train loader 长度，或 `train_size`/`batch_size`），则 `num_steps = num_epochs * steps_per_epoch`，并覆盖显式 `num_steps` |
 | `progress_unit` | `step` | `eval_period` / `checkpoint_period` / 百分比按这个单位数；需要按 epoch 记周期时显式设 `epoch` |
 | `eval_period` | `1` | 每 N 个单位评一次 test；`0` = 只在训完评一次 |
+| `eval_num_steps` | 缺省 / `<0` | test 评多少个 batch；缺省或负数 = 整个 split |
 
 `progress_unit=epoch` 仍可用，但要求 `num_epochs`。对不具备稳定 epoch 语义的数据（如流式数据），只配 `num_steps` 即可。cosine 的 `T_max` 跟单位走（epoch 训用 epoch 数，step 训用 step 数），可用 `T_max` 覆写。
 
@@ -654,11 +655,11 @@ prepare 顺序建议：先 `SystemFactory.build`，再 data / model（设备与�
 
 ### 7.8 `Logger`
 
-Logger 是 **system** 的运行时对象：打到 **terminal**，并且 **同一行写入** `assets/logs/run.log` 后立刻 flush。这是执行环境的 IO，不是算法语义。
+Logger 是 **system** 的运行时对象：打到 **terminal**，并且 **同一行写入** `assets/logs/run.log` 后立刻 flush。路径落在 `runs/<id>/assets/` 时，**每一行前面加 Run `id`**（`--console shared` 时用来分辨是哪条）。这是执行环境的 IO，不是算法语义。没有 Study 级总 log；index 的 `log` 指向这份文件。
 
 `report(tracker, split, extra=None)` **必须能接收 AlgorithmTracker**：读其 mean（及最近 batch 值），拼 epoch / **`elapsed` / `eta`** / lr 等 `extra`（墙钟来自 algorithm 进度时钟，不是 make 的 pack 估计）。否则终端看不到 Loss/Accuracy。`info` / `warning` / `error` 不依赖 tracker，同样进终端和文件。
 
-并行时 Windows 上 `rpipe launch` 默认每条 Run 一个新控制台（`--console new`），避免多进程 stdout 挤在同一窗口；`--console shared` 才混打。这只影响 printout，不改变组间 `wait`。
+并行时 Windows 上 `rpipe launch` 默认每条 Run 一个新控制台（`--console new`）；`--console shared` 才混打。这只影响 printout，不改变组间 `wait`。train 第一次没有 `latest` checkpoint 时 **不**打 `resume skip`（默认路径）；真正 load 到权重仍打 `resume …`。
 
 Logger **不**改 AlgorithmTracker 的 mean/history；**不**写 TensorBoard。
 
@@ -685,7 +686,7 @@ Logger **不**改 AlgorithmTracker 的 mean/history；**不**写 TensorBoard。
 | 层级 | 含义 |
 |------|------|
 | **Study** | 一轮研究：编排壳 + artifact 根（`studies/<name>/`） |
-| **Experiment** | 研究因素的一个取值点（不含 seed；无顶层目录；在 **index** 里分组） |
+| **Experiment** | 研究因素的一个取值点（不含 seed；无顶层目录）。产物是该点下各 Run 的 **mean / std / min / max**（写在 Study `process.json` 的 `experiments[]`） |
 | **Run** | 该点 × 一个 seed 的实测；有 **`id`**（内容 hash，见 §8.3）；目录 `runs/<id>/` |
 
 配置分两级：**Study 根上的 `experiment_config`** 是基底默认（类型 `ExperimentConfig`，名字沿用历史，不是「某一个 Experiment 实例」）；**`run_config`** 套在其上，作为本 Run 写入 artifact 的完整 Config。
@@ -923,7 +924,7 @@ Study 编排清单。`rpipe.structure.artifact.index`，**不是** Flow 的 writ
 | `write_index` / `load_index` | 读写 Study 根下的 index |
 | `compute_index_id` | 内容 hash（排除 `id`） |
 
-**make** 写入；按 Experiment 分组列 Run；可回填 status / metrics；不以扫描 result 建清单。
+**make** 写入；按 Experiment 分组列 Run；每条 Run 含 `config` 与 `log`（`runs/<id>/assets/logs/run.log`）。可回填 status / metrics；不以扫描 result 建清单。
 
 ### 9.6 `asset/`
 
@@ -936,7 +937,7 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 | `shared/data/`、`shared/model/` | Study 内共享 |
 | `runs/<id>/assets/` | 本 Run |
 | `runs/<id>/assets/tracker/` | AlgorithmTracker 数字（`tracker_state.json` / `scalars.jsonl`；TB 默认关） |
-| `runs/<id>/assets/logs/` | `system.Logger` 文本，**必写**，与终端同一套内容 |
+| `runs/<id>/assets/logs/` | `system.Logger` 文本，**必写**，与终端同一套；行首 Run `id` |
 
 `kinds.py` 集中相对路径（cache、weights、checkpoints、tracker、logs、samples）。
 
@@ -970,8 +971,9 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 | 职责 | 说明 |
 |------|------|
 | 展开 | 读 Study 声明（`axes` × `seeds`）→ patch 列表 |
-| 写格子 | 每个 patch → `run_config_from_merge` → `runs/<id>/config.yaml`；写 **index** |
-| 写脚本 | 默认 `--round auto`：同类、相近耗时一组，组内按显存填满后 **`wait`**；手写 `--round N` 则均匀切块。`CUDA_VISIBLE_DEVICES` 轮转；可选 `--split-round` |
+| 写格子 | 每个 patch → `run_config_from_merge` → `runs/<id>/config.yaml`；写 **index**（`log` 指向该 Run 的 `run.log`） |
+| 共享数据 | 写格子之后、spawn 之前：经 `data_api` 按 `data.name`+`source` 各 materialize 一次到 `shared/data/`（忽略 `train_size`）。已有该数据集目录则跳过。下载把 tqdm 静音。`--skip-launch` 只写格子，不下载 |
+| 写脚本 | 默认 `--round auto`：同类、相近耗时一组，组内按显存填满后 **`wait`**；手写 `--round N` 则均匀切块。`CUDA_VISIBLE_DEVICES` 轮转；可选 `--split-round`。清单在 `scripts/jobs.json`（含 wait 组） |
 | `wait` | 一组并发的内存闸门：本组进程全部退出、显存释放完，才启动下一组。不 `wait` 则下一组会挤进还在跑的进程，显存叠加，容易 OOM。eval 波次同样：全部 train `wait` 完再开 |
 | 墙钟估计 | 一组取组内最慢那条；整轮 conservative 墙钟 = 各组 max **再加总**。只供排班参考，不是实测。训练 Logger 的 `elapsed` 才是该进程实测 |
 
@@ -983,7 +985,7 @@ CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<id>"
 wait
 ```
 
-`algorithm.mode: eval` 单独第二波：train 全部 `wait` 完再启动。`rpipe launch` 用同一套装箱，不依赖 bash。Windows 默认 `--console new`（每条 Run 一个窗口），组间仍 `wait`。默认 `--round auto` 按 [STUDY_GUIDE.md](../STUDY_GUIDE.md) §3 排班；脚本形状见 §4。
+`algorithm.mode: eval` 单独第二波：train 全部 `wait` 完再启动。`rpipe make` 打印 `pack N waits`。`rpipe launch` **复用** `scripts/jobs.json`（GPU / `round` 一致），不重做 make、不重印 pack；缺清单、参数变了或 `--remake` 才再 make。Windows 默认 `--console new`，组间仍 `wait`。默认 `--round auto` 按 [STUDY_GUIDE.md](../STUDY_GUIDE.md) §3 排班；脚本形状见 §4。
 
 测试：`tests/rpipe/structure/make/`。
 

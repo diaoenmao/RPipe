@@ -169,9 +169,52 @@ def _build_resnet10(model_config: ModelConfig, assets_dir: Path, data_meta: dict
     return _build_resnet(model_config, assets_dir, data_meta, name='resnet10', num_blocks=[1, 1, 1, 1])
 
 
+def _build_wresnet(
+    model_config: ModelConfig,
+    assets_dir: Path,
+    data_meta: dict[str, Any] | None = None,
+    *,
+    name: str,
+    depth: int,
+    widen_factor: int,
+) -> Model:
+    from rpipe.structure.model.custom_torch import WideResNet
+
+    cfg = dict(model_config.config)
+    data_size, target_size = resolve_shape(cfg, data_meta)
+    depth_v = int(cfg.get('depth', depth))
+    widen = int(cfg.get('widen_factor', widen_factor))
+    drop = float(cfg.get('drop_rate', 0.0) or 0.0)
+    module = WideResNet(data_size, target_size, depth_v, widen, drop)
+    return _wrap(
+        name,
+        model_config,
+        assets_dir,
+        module,
+        {
+            'data_size': list(data_size),
+            'target_size': target_size,
+            'depth': depth_v,
+            'widen_factor': widen,
+            'drop_rate': drop,
+        },
+    )
+
+
+def _build_wresnet28x2(model_config: ModelConfig, assets_dir: Path, data_meta: dict[str, Any] | None = None) -> Model:
+    return _build_wresnet(model_config, assets_dir, data_meta, name='wresnet28x2', depth=28, widen_factor=2)
+
+
+def _build_wresnet28x8(model_config: ModelConfig, assets_dir: Path, data_meta: dict[str, Any] | None = None) -> Model:
+    return _build_wresnet(model_config, assets_dir, data_meta, name='wresnet28x8', depth=28, widen_factor=8)
+
+
 ModelRegistry.register('linear', 'custom_torch', _build_linear)
 ModelRegistry.register('mlp', 'custom_torch', _build_mlp)
 ModelRegistry.register('cnn', 'custom_torch', _build_cnn)
 ModelRegistry.register('resnet18', 'custom_torch', _build_resnet18)
 ModelRegistry.register('resnet', 'custom_torch', _build_resnet18)
 ModelRegistry.register('resnet10', 'custom_torch', _build_resnet10)
+ModelRegistry.register('wresnet28x2', 'custom_torch', _build_wresnet28x2)
+ModelRegistry.register('wresnet28x8', 'custom_torch', _build_wresnet28x8)
+ModelRegistry.register('wresnet', 'custom_torch', _build_wresnet28x2)

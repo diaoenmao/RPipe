@@ -1,4 +1,4 @@
-"""custom_torch models from git main: linear, mlp, cnn, resnet10/18."""
+"""custom_torch models from git main: linear, mlp, cnn, resnet10/18, wresnet."""
 
 from __future__ import annotations
 
@@ -135,3 +135,98 @@ class ResNet(nn.Module):
         x = F.adaptive_avg_pool2d(x, 1)
         x = x.view(x.size(0), -1)
         return self.output_proj(x)
+
+
+class _WideBlock(nn.Module):
+    def __init__(self, in_planes: int, out_planes: int, stride: int, drop_rate: float) -> None:
+        super().__init__()
+        self.n1 = nn.BatchNorm2d(in_planes)
+        self.relu1 = nn.ReLU(inplace=True)
+        self.conv1 = nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.n2 = nn.BatchNorm2d(out_planes)
+        self.relu2 = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv2d(out_planes, out_planes, kernel_size=3, stride=1, padding=1, bias=False)
+        self.drop_rate = drop_rate
+        self.equal_inout = in_planes == out_planes
+        self.shortcut = None
+        if not self.equal_inout:
+            self.shortcut = nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, padding=0, bias=False)
+
+    def forward(self, x):  # noqa: ANN001
+        if not self.equal_inout:
+            x = self.relu1(self.n1(x))
+            out = x
+        else:
+            out = self.relu1(self.n1(x))
+        out = self.relu2(self.n2(self.conv1(out if self.equal_inout else x)))
+        if self.drop_rate > 0:
+            out = F.dropout(out, p=self.drop_rate, training=self.training)
+        out = self.conv2(out)
+        skip = x if self.equal_inout else self.shortcut(x)
+        return skip + out
+
+
+class _WideNetwork(nn.Module):
+    def __init__(
+        self,
+        nb_layers: int,
+        in_planes: int,
+        out_planes: int,
+        stride: int,
+        drop_rate: float,
+    ) -> None:
+        super().__init__()
+        layers = []
+        for i in range(int(nb_layers)):
+            layers.append(
+                _WideBlock(
+                    in_planes if i == 0 else out_planes,
+                    out_planes,
+                    stride if i == 0 else 1,
+                    drop_rate,
+                )
+            )
+        self.layer = nn.Sequential(*layers)
+
+    def forward(self, x):  # noqa: ANN001
+        return self.layer(x)
+
+
+class WideResNet(nn.Module):
+    """Wide ResNet from git main ``src/model/wresnet.py``."""
+
+    def __init__(
+        self,
+        data_size: tuple[int, ...],
+        target_size: int,
+        depth: int,
+        widen_factor: int,
+        drop_rate: float,
+    ) -> None:
+        super().__init__()
+        num_down = int(min(round(math.log2(data_size[1])), round(math.log2(data_size[2])))) - 3
+        hidden_size = [16]
+        for i in range(num_down + 1):
+            hidden_size.append(16 * (2**i) * int(widen_factor))
+        n = ((int(depth) - 1) / (num_down + 1) - 1) / 2
+        blocks: list[nn.Module] = [
+            nn.Conv2d(data_size[0], hidden_size[0], kernel_size=3, stride=1, padding=1, bias=False),
+            _WideNetwork(n, hidden_size[0], hidden_size[1], 1, drop_rate),
+        ]
+        for i in range(num_down):
+            blocks.append(
+                _WideNetwork(n, hidden_size[i + 1], hidden_size[i + 2], 2, drop_rate)
+            )
+        blocks.extend(
+            [
+                nn.BatchNorm2d(hidden_size[-1]),
+                nn.ReLU(inplace=True),
+                nn.AdaptiveAvgPool2d(1),
+                nn.Flatten(),
+            ]
+        )
+        self.blocks = nn.Sequential(*blocks)
+        self.output_proj = nn.Linear(hidden_size[-1], target_size)
+
+    def forward(self, x):  # noqa: ANN001
+        return self.output_proj(self.blocks(x))

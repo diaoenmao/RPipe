@@ -1,6 +1,14 @@
 from pathlib import Path
 
-from rpipe.structure.make import expand_patches, gpu_ids, plan_jobs, render_bash, run_succeeded, write_launch_scripts
+from rpipe.structure.make import (
+    expand_patches,
+    gpu_ids,
+    load_launch_plan,
+    plan_jobs,
+    render_bash,
+    run_succeeded,
+    write_launch_scripts,
+)
 from rpipe.structure.artifact import artifact_layout
 
 
@@ -137,3 +145,32 @@ def test_write_launch_scripts_split_round(tmp_path: Path):
     assert written['jobs_json'].is_file()
     assert written['ps1'].is_file()
     assert 'rpipe launch' in written['ps1'].read_text(encoding='utf-8')
+
+
+def test_load_launch_plan_reuses_jobs_and_drops_succeeded(tmp_path: Path):
+    (tmp_path / 'pyproject.toml').write_text('[project]\nname = "rpipe"\n', encoding='utf-8')
+    study = tmp_path / 'study'
+    jobs = [
+        {'run_id': 't0', 'gpu': '0', 'mode': 'train'},
+        {'run_id': 't1', 'gpu': '0', 'mode': 'train'},
+        {'run_id': 'e0', 'gpu': '0', 'mode': 'eval'},
+    ]
+    batches = [jobs[:2], jobs[2:]]
+    write_launch_scripts(
+        study,
+        jobs,
+        round_size=2,
+        python_exe='/opt/python',
+        init_gpu=0,
+        num_gpus=1,
+        batches=batches,
+    )
+    _write_succeeded(study, 't0')
+    plan = load_launch_plan(study, init_gpu=0, num_gpus=1, round_size=0)
+    assert plan is not None
+    assert [j['run_id'] for j in plan['job_list']] == ['t1', 'e0']
+    assert [j['run_id'] for j in plan['batches'][0]] == ['t1']
+    assert [j['run_id'] for j in plan['batches'][1]] == ['e0']
+    assert load_launch_plan(study, init_gpu=0, num_gpus=2, round_size=0) is None
+    assert load_launch_plan(study, init_gpu=0, num_gpus=1, round_size=4) is None
+

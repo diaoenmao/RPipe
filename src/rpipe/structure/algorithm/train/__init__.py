@@ -10,6 +10,7 @@ from rpipe.structure.algorithm.batch import prepare_tensors
 from rpipe.structure.algorithm.eval_hook import (
     _is_better,
     best_spec,
+    eval_batch_limit,
     eval_test_split,
     should_early_stop,
 )
@@ -52,7 +53,9 @@ class TrainAlgorithm(Algorithm):
         self.last_improved = False
         if getattr(model, 'module', None) is None:
             return False
-        metrics = eval_test_split(tracker, logger, data, model, system, extra)
+        metrics = eval_test_split(
+            tracker, logger, data, model, system, extra, num_steps=eval_batch_limit(self.config)
+        )
         split, metric, mode = best_spec(self.config)
         self._best_metric = metric
         patience = self.config.setting('early_stop_patience')

@@ -11,6 +11,12 @@ from rpipe.structure.artifact.asset import kinds
 class Logger:
     def __init__(self, assets_dir: Path | str) -> None:
         self.assets_dir = Path(assets_dir)
+        parts = self.assets_dir.parts
+        self.run_id = (
+            parts[-2]
+            if len(parts) >= 3 and parts[-1] == 'assets' and parts[-3] == 'runs'
+            else None
+        )
         self.path = self.assets_dir / kinds.RUN_LOG
         self.path.parent.mkdir(parents=True, exist_ok=True)
         if not self.path.is_file():
@@ -18,6 +24,8 @@ class Logger:
 
     def _emit(self, line: str) -> None:
         text = line.rstrip('\n')
+        if self.run_id:
+            text = f'{self.run_id} {text}'
         print(text, flush=True)
         with self.path.open('a', encoding='utf-8') as handle:
             handle.write(text + '\n')

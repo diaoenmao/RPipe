@@ -68,11 +68,14 @@ class Data:
         period = max(int(step_period), 1)
         remaining = max(int(num_steps) - int(step), 0)
         num_samples = batch_size * remaining * period
+        opts = _loader_options(self.meta.get('config') if isinstance(self.meta.get('config'), dict) else {})
         self._loaders['train'] = _train_loader_for_samples(
             dataset,
             batch_size=batch_size,
             num_samples=num_samples,
             seed=self.meta.get('seed'),
+            pin_memory=opts['pin_memory'],
+            num_workers=opts['num_workers'],
         )
 
     def to_result_snapshot(self) -> dict[str, Any]:
@@ -115,6 +118,15 @@ class DataFactory:
         return builder(data_config, Path(assets_dir), seed=seed)
 
 
+def _loader_options(cfg: dict[str, Any]) -> dict[str, Any]:
+    pin = cfg.get('pin_memory')
+    workers = cfg.get('num_workers', 0)
+    return {
+        'pin_memory': bool(pin) if pin is not None else False,
+        'num_workers': int(workers or 0),
+    }
+
+
 def _empty_train_loader(dataset: Any, batch_size: int) -> Any:
     class _Empty:
         def __len__(self) -> int:
@@ -135,6 +147,8 @@ def _train_loader_for_samples(
     batch_size: int,
     num_samples: int,
     seed: int | None,
+    pin_memory: bool = False,
+    num_workers: int = 0,
 ) -> Any:
     from torch.utils.data import DataLoader, RandomSampler
 
@@ -153,6 +167,8 @@ def _train_loader_for_samples(
         dataset,
         batch_size=int(batch_size),
         sampler=sampler,
+        pin_memory=bool(pin_memory),
+        num_workers=int(num_workers),
         worker_init_fn=worker_init_fn if seed is not None else None,
     )
 
@@ -187,6 +203,17 @@ _VISION_TORCH: dict[str, dict[str, Any]] = {
         'std': (0.3081,),
         'train_aug': None,
     },
+    'FashionMNIST': {
+        'root': 'fashionmnist',
+        'ctor': 'FashionMNIST',
+        'train_kw': {'train': True},
+        'test_kw': {'train': False},
+        'data_size': (1, 28, 28),
+        'target_size': 10,
+        'mean': (0.2860,),
+        'std': (0.3530,),
+        'train_aug': None,
+    },
     'CIFAR10': {
         'root': 'cifar10',
         'ctor': 'CIFAR10',
@@ -196,6 +223,17 @@ _VISION_TORCH: dict[str, dict[str, Any]] = {
         'target_size': 10,
         'mean': (0.4914, 0.4822, 0.4465),
         'std': (0.2023, 0.1994, 0.2010),
+        'train_aug': 'cifar',
+    },
+    'CIFAR100': {
+        'root': 'cifar100',
+        'ctor': 'CIFAR100',
+        'train_kw': {'train': True},
+        'test_kw': {'train': False},
+        'data_size': (3, 32, 32),
+        'target_size': 100,
+        'mean': (0.5071, 0.4867, 0.4408),
+        'std': (0.2675, 0.2565, 0.2761),
         'train_aug': 'cifar',
     },
     'SVHN': {
@@ -275,16 +313,25 @@ def _build_torch_vision(data_config: DataConfig, assets_dir: Path, seed: int | N
     if batch_size > n:
         batch_size = n
     generator = make_generator(seed)
+    opts = _loader_options(cfg)
     train_loader = DataLoader(
         train_ds,
         batch_size=batch_size,
         shuffle=True,
         generator=generator,
+        pin_memory=opts['pin_memory'],
+        num_workers=opts['num_workers'],
         worker_init_fn=worker_init_fn if seed is not None else None,
     )
     test_ratio = float(cfg.get('test_batch_ratio', 1) or 1)
     test_batch_size = max(int(batch_size * test_ratio), 1)
-    test_loader = DataLoader(test_ds, batch_size=test_batch_size, shuffle=False)
+    test_loader = DataLoader(
+        test_ds,
+        batch_size=test_batch_size,
+        shuffle=False,
+        pin_memory=opts['pin_memory'],
+        num_workers=opts['num_workers'],
+    )
     data = Data(
         name=name,
         source='torch',
@@ -300,6 +347,8 @@ def _build_torch_vision(data_config: DataConfig, assets_dir: Path, seed: int | N
             'data_size': list(spec['data_size']),
             'target_size': int(spec['target_size']),
             'augment': augment,
+            'pin_memory': opts['pin_memory'],
+            'num_workers': opts['num_workers'],
             'dtype': str(torch.float32),
             'seed': seed,
         },
@@ -310,8 +359,12 @@ def _build_torch_vision(data_config: DataConfig, assets_dir: Path, seed: int | N
 
 DataRegistry.register('Toy', 'stub', _build_stub)
 DataRegistry.register('MNIST', 'stub', _build_stub)
+DataRegistry.register('FashionMNIST', 'stub', _build_stub)
 DataRegistry.register('CIFAR10', 'stub', _build_stub)
+DataRegistry.register('CIFAR100', 'stub', _build_stub)
 DataRegistry.register('SVHN', 'stub', _build_stub)
 DataRegistry.register('MNIST', 'torch', _build_torch_vision)
+DataRegistry.register('FashionMNIST', 'torch', _build_torch_vision)
 DataRegistry.register('CIFAR10', 'torch', _build_torch_vision)
+DataRegistry.register('CIFAR100', 'torch', _build_torch_vision)
 DataRegistry.register('SVHN', 'torch', _build_torch_vision)

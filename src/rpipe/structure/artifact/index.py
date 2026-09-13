@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from rpipe.structure.artifact.paths import INDEX_NAME
+from rpipe.structure.artifact.asset.kinds import RUN_LOG
 from rpipe.structure.control.hashing import compute_index_id
 
 
@@ -24,6 +25,10 @@ def _get_dotted(mapping: dict[str, Any], dotted: str) -> Any:
             return None
         cur = cur.get(key)
     return cur
+
+
+def _run_log_ref(run_id: str) -> str:
+    return f'runs/{run_id}/assets/{RUN_LOG}'.replace('\\', '/')
 
 
 def _config_ref(path: Path, study_dir: Path | None) -> str:
@@ -58,6 +63,7 @@ def experiment_entries(
                 'tags': cfg.get('tags') or [],
                 'run_dir': path.parent.name,
                 'config': _config_ref(Path(path), study_dir),
+                'log': _run_log_ref(str(cfg.get('id') or path.parent.name)),
             }
         )
     return [groups[key] for key in order]

@@ -6,7 +6,7 @@ from typing import Any
 
 from rpipe.structure.algorithm.base import Algorithm
 from rpipe.structure.algorithm.config import AlgorithmConfig
-from rpipe.structure.algorithm.eval_hook import eval_test_split
+from rpipe.structure.algorithm.eval_hook import eval_batch_limit, eval_test_split
 from rpipe.structure.algorithm.progress import format_hms
 from rpipe.structure.algorithm.tracker import AlgorithmTracker
 
@@ -35,7 +35,15 @@ class EvalAlgorithm(Algorithm):
             'step': (restored or {}).get('step'),
         }
         # Pass logger here: eval_test_split reports then reset(); a later report would print 0.
-        metrics = eval_test_split(tracker, logger, data, model, system, report_extra)
+        metrics = eval_test_split(
+            tracker,
+            logger,
+            data,
+            model,
+            system,
+            report_extra,
+            num_steps=eval_batch_limit(self.config),
+        )
         elapsed = time.perf_counter() - started
         report_extra['elapsed'] = format_hms(elapsed)
         if logger is not None:

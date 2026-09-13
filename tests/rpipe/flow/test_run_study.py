@@ -26,6 +26,8 @@ def test_run_study_index_groups_experiments(tmp_path: Path):
     assert modes == ['train', 'eval', 'train', 'eval', 'train', 'eval']
     for exp in index['experiments']:
         assert [r['seed'] for r in exp['runs']] == [0, 1, 2]
+        for run in exp['runs']:
+            assert run['log'] == f"runs/{run['id']}/assets/logs/run.log"
     assert (study / 'docs').is_dir()
     assert (study / 'shared' / 'data').is_dir()
     assert (study / 'runs').is_dir()

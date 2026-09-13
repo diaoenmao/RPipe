@@ -112,6 +112,53 @@ def scripts_dir(study_dir: Path) -> Path:
     return path
 
 
+def load_launch_plan(
+    study_dir: Path | str,
+    *,
+    init_gpu: int,
+    num_gpus: int,
+    round_size: int,
+    include_done: bool = False,
+) -> dict[str, Any] | None:
+    """Reuse ``scripts/jobs.json`` from a prior make. None → caller should make."""
+    if include_done:
+        return None
+    study_dir = Path(study_dir).resolve()
+    path = study_dir / SCRIPTS_DIRNAME / JOBS_NAME
+    if not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding='utf-8'))
+    except (OSError, json.JSONDecodeError, TypeError):
+        return None
+    if not isinstance(payload, dict) or not isinstance(payload.get('jobs'), list):
+        return None
+    if int(payload.get('init_gpu', 0)) != int(init_gpu):
+        return None
+    if int(payload.get('num_gpus', 1)) != int(num_gpus):
+        return None
+    stored_round = int(payload.get('round') or 1)
+    if int(round_size) > 0 and stored_round != int(round_size):
+        return None
+
+    def _pending(rows: list) -> list[dict[str, Any]]:
+        return [job for job in rows if not run_succeeded(study_dir, str(job.get('run_id') or ''))]
+
+    jobs = _pending(list(payload.get('jobs') or []))
+    raw_batches = payload.get('batches')
+    batches = None
+    if isinstance(raw_batches, list) and raw_batches and isinstance(raw_batches[0], list):
+        batches = [kept for kept in (_pending(list(group)) for group in raw_batches) if kept]
+    return {
+        'jobs_json': path,
+        'job_list': jobs,
+        'round': stored_round,
+        'batches': batches,
+        'n_jobs': len(jobs),
+        'expand': {'study_dir': study_dir, 'index': study_dir / 'index.json', 'configs': []},
+    }
+
+
 def write_jobs_json(
     study_dir: Path,
     jobs: list[dict[str, Any]],
@@ -120,6 +167,7 @@ def write_jobs_json(
     init_gpu: int,
     num_gpus: int,
     extra: dict[str, Any] | None = None,
+    batches: list[list[dict[str, Any]]] | None = None,
 ) -> Path:
     payload = {
         'study_dir': str(study_dir.resolve()),
@@ -128,6 +176,8 @@ def write_jobs_json(
         'num_gpus': int(num_gpus),
         'jobs': jobs,
     }
+    if batches:
+        payload['batches'] = batches
     if extra:
         payload.update(extra)
     dest = scripts_dir(study_dir) / JOBS_NAME
@@ -230,6 +280,7 @@ def write_launch_scripts(
         init_gpu=init_gpu,
         num_gpus=num_gpus,
         extra=extra,
+        batches=batches,
     )
     chunks = render_bash(
         study_dir,

@@ -58,8 +58,7 @@ class Algorithm(AlgorithmHook):
         if payload is None:
             if self.mode == 'eval':
                 raise FileNotFoundError(f'eval resume missing checkpoint {stem!r}')
-            if logger is not None:
-                logger.info(f'resume skip (no {stem})')
+            extra['resume_skipped'] = stem
             return None
         apply_module_state(getattr(model, 'module', None), payload)
         extra['resume_payload'] = payload

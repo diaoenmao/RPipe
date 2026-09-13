@@ -13,7 +13,8 @@
 | 是什么 | 这一轮研究的壳 + 磁盘根 | 研究因素的一个取值点 | 该点 × 一个 seed 的一次实测 |
 | 含 seed？ | 声明 `seeds` | **不含** | **至少**一个 |
 | 例子 | `studies/mnist_train_size/` | `train_size=500` | `train_size=500, seed=0` |
-| 磁盘 | `studies/<name>/` | 只在 **index** 里分组，无独立文件夹 | `runs/<id>/` |
+| 磁盘 | `studies/<name>/` | **无文件夹** | `runs/<id>/` |
+| 这一级看什么 | 声明、shared、index、process 信封、报告 | 跨 seed 的 **mean / std / min / max** | 这一次的 config / result / `run.log` |
 
 展开：`study.yaml` 的 **`axes`** → 多个 Experiment；每个 × **`seeds`** → 多次 Run。
 
@@ -37,14 +38,14 @@ studies/<name>/
 跑完后会补上，默认不入库：
 
 ```text
-  index.json                 # 按 Experiment 列 Run（make 写出）
-  shared/{data,model}/       # Study 级 asset，多次 Run 共用
+  index.json                 # 按 Experiment 列 Run；每条含 log → 该 Run 的 run.log
+  shared/{data,model}/       # Study 级 asset：make/launch 先准备共享数据，再 spawn
   runs/<id>/
     config.yaml              # 这一次 Run 的完整 config
     result.json              # Flow write：摘要（status / metrics / paths）
     assets/
       tracker/               # AlgorithmTracker 数字曲线
-      logs/                  # Logger 文本（与终端同款，必写）
+      logs/run.log           # 这一次 Run 的 Logger 文本（无 Study 级总 log）
       checkpoints/           # latest.pt + latest/（分件）；save_best 时另有 best
 ```
 
@@ -87,7 +88,7 @@ PLAN 里写清：比什么、固定什么、几个 seed、同类怎么一组、e
 
 一组并发叫一个 **wait 组**。组内用 `&` 叠满当前估得下的显存；组末必须 **`wait`**：本组进程全部退出、显存释放完，才启动下一组。不 `wait` 的话下一组会挤进还在跑的进程，显存叠加，容易 OOM。所以 `wait` 不是可选项，是并行化的内存闸门。
 
-一组 `wait` 的墙钟等于组里**最慢**的那条。`make` / `launch` 打的 conservative 墙钟是各组这个 max **再加总**，只供排班参考，不是实测。linear 和 resnet 放一起，linear 早就结束，整组还在等 resnet，卡上还互相抢；这是在浪费算力。
+一组 `wait` 的墙钟等于组里**最慢**的那条。`make` 打的 conservative 墙钟是各组这个 max **再加总**，只供排班参考，不是实测。linear 和 resnet 放一起，linear 早就结束，整组还在等 resnet，卡上还互相抢；这是在浪费算力。
 
 **标准（按优先级）：**
 
@@ -113,6 +114,7 @@ python -m rpipe run studies/<name> --skip-launch
 python -m rpipe run studies/<name>
 
 # 写出格子与调度脚本，再按 §3 同类装箱并行
+# pack 只出现在 make；launch 复用 scripts/jobs.json
 python -m rpipe make studies/<name> --num-gpus 1 --init-gpu 0
 python -m rpipe launch studies/<name> --num-gpus 1 --init-gpu 0
 # launch 结束会跑 Study process；也可单独再跑：
@@ -147,25 +149,27 @@ wait
 
 每一段 `cmd &` … `wait` 是一个并发批次：`wait` 返回后显存才空出来，下一组才能启动。
 
-训练 Logger 行带 **`elapsed` / `eta`**（本进程已用时间与剩余估计），写入 `run.log`。Windows 上 `python -m rpipe launch` 默认 **每个 run-one 一个新控制台窗口**（`CREATE_NEW_CONSOLE`，和 PowerShell 的 `Start-Process` 一样）：组内仍并行、组间仍 `wait`，printout 分开。`--console shared` 才混在当前窗口。`launch.ps1` 只转调这条 Python launch。多卡时仍设 `CUDA_VISIBLE_DEVICES`。`scripts/` 默认 gitignore。
+训练 Logger 每一行前面带 **Run `id`**，并含 **`elapsed` / `eta`**，写入该 Run 的 `run.log`（与终端同一套）。`--console shared` 时终端会混，靠行首 id 分辨；文件仍是每 Run 一份。Windows 上 `python -m rpipe launch` 默认 **每个 run-one 一个新控制台窗口**。`launch.ps1` 只转调 `rpipe launch`（有 `jobs.json` 就不再 make）。多卡时仍设 `CUDA_VISIBLE_DEVICES`。`scripts/` 默认 gitignore。
 
 1. **make** 读 `study.yaml`，按 `axes` × `seeds` 展开  
 2. 每个补丁 ⊕ `experiment_config.yaml` → `runs/<id>/config.yaml`  
-3. 写 `index.json`  
-4. 按参数对每个 Run 跑：prepare → execute → collect → summarize → **write** → process  
+3. 写 `index.json`（每条 Run 带 `log`）  
+4. 按 `data.name` + `source` 各准备一次共享数据到 `shared/data/`（忽略 `train_size`；已有缓存则跳过；下载不刷 tqdm）  
+5. **launch** 读 `scripts/jobs.json` 跑未完成 Run（缺清单或 `--remake` 才再 make）；每个 Run：prepare → execute → collect → summarize → **write** → process  
 
 常用参数：
 
 | 开关 | 作用 |
 |------|------|
-| `--skip-launch` | 只写出 config 与 index |
+| `--skip-launch` | 只写出 config 与 index（不下载共享数据、不 spawn） |
 | `--phases prepare,execute,...` | 只跑列出的阶段；相对顺序不变 |
-| `rpipe make` | 写出 config、index 与 `scripts/` |
-| `rpipe launch` | make 之后按装箱跑未完成 Run；Windows 默认每条 Run 新窗口；全部 wait 完再跑 Study `process` |
+| `rpipe make` | 写出 config、index、`scripts/jobs.json`，并把共享数据落到 `shared/data/`；这里打印 `pack N waits` |
+| `rpipe launch` | 已有 `scripts/jobs.json` 且 GPU/`round` 一致则直接跑未完成 Run，**不**再 make、**不**重印 `pack`；缺清单、参数变了或 `--remake` 才 make。Windows 默认每条 Run 新窗口；全部 wait 完再跑 Study `process` |
+| `--remake` | 仅 `launch`：忽略已有 `jobs.json`，重新 make 再跑 |
 | `--console` | `auto`（Windows=`new` 窗口 / 其它=`shared`）；`new`；`shared` |
-| `rpipe process` | 只跑 Study 级聚合（mean/std/min/max history + 图） |
+| `rpipe process` | 只跑 Study 级聚合（信封 + Experiment 的 mean/std/min/max + 图） |
 | `--round` / `--num-gpus` / `--init-gpu` | `auto` = §3 装箱；`N` = 均匀切块；卡号轮转 |
-| `--include-done` | 脚本里包含已经 succeeded 的 Run |
+| `--include-done` | 脚本里包含已经 succeeded 的 Run（`launch` 会因此走 make） |
 
 `python -m rpipe study run …` 与上面等价，只是旧别名。
 
@@ -184,6 +188,8 @@ data:
   config:
     train_size: 1000              # 可被 study.yaml 的 axes 覆盖
     batch_size: 64
+    # pin_memory: true            # DataLoader；缺省 false
+    # num_workers: 0
 model:
   name: linear                    # 默认 MNIST 784→10；CIFAR/SVHN 由 Data.meta.data_size 对齐
 algorithm:
@@ -192,6 +198,7 @@ algorithm:
   num_epochs: 20              # 有 epoch 概念时：推导并覆盖 num_steps
   progress_unit: epoch        # 本例按 epoch 评 test / 存 latest；默认 step（LLM 只写 num_steps）
   eval_period: 1              # 每 N 个进度单位评 test；0 = 只在训完评一次
+  # eval_num_steps: -1        # test 跑多少个 batch；缺省 / <0 = 整个 test split
   checkpoint: latest          # latest = 覆盖 latest 这一份（.pt 整包 + 目录分件）；percent = 再按总预算百分比留快照
   checkpoint_period: 1        # 每 N 个单位更新 latest；0 = 只在训完写一次
   save_best: true             # 默认：test Accuracy 最好时另写 best；可用 best_metric / best_mode 改口径
@@ -297,7 +304,7 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
     {
       "factors": { "data.config.train_size": 500 },
       "runs": [
-        { "id": "…", "seed": 0, "tags": ["baseline"], "config": "runs/…/config.yaml" },
+        { "id": "…", "seed": 0, "tags": ["baseline"], "config": "runs/…/config.yaml", "log": "runs/…/assets/logs/run.log" },
         { "id": "…", "seed": 1, "tags": ["baseline"] },
         { "id": "…", "seed": 2, "tags": ["baseline"] }
       ]
@@ -308,11 +315,11 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 
 **result**（`runs/<id>/result.json`）：`status`、`metrics`（如 `train_loss` / `accuracy`）、`control`、`paths`。成功则 `status: succeeded`。
 
-`metrics.train_loss` 应是 AlgorithmTracker **最后一段 train mean**，不是最后一个 batch 的 CE。完整曲线在 `runs/<id>/assets/tracker/`；终端同款文本**必写** `assets/logs/`。
+`metrics.train_loss` 应是 AlgorithmTracker **最后一段 train mean**，不是最后一个 batch 的 CE。完整曲线在 `runs/<id>/assets/tracker/`；终端同款文本**必写** `assets/logs/run.log`（行首是 Run `id`）。
 
-`process` 分两层：每条 Run 只写 `runs/<id>/process.json`。整轮结束后 Study `process` 写根 `process.json`：按 Experiment、**跨 seed** 记 metrics 与 history 的 **mean / std / min / max**，并画 `docs/figures/learning_curves.png`。**不**改 `STUDY_REPORT.md`。
+`process` 分三层含义，对应 CONCEPT §2.1：每条 Run 写 `runs/<id>/process.json`。整轮结束后 `rpipe process` 写根 `process.json`（Study **信封**）。信封里每个 Experiment 才是跨 seed 的 metrics / history **mean / std / min / max**。图在 `docs/figures/learning_curves.png`。**不**改 `STUDY_REPORT.md`。
 
-`docs/STUDY_REPORT.md` **必须有图**（至少嵌上 learning curve），不能只有表格和文字。图从 `docs/figures/` 引用；数字读 `process.json`。
+`docs/STUDY_REPORT.md` **必须有图**，并且图和各次 `run.log` **可点开**（Markdown 预览，或源码里 Ctrl+点击）。图链到 `docs/figures/learning_curves.png`；log 链到 index 里的 `log`（`../runs/<id>/assets/logs/run.log`）。数字读 `process.json`。按 Experiment 写结论，不要把 18 行 Run 表当主结论。
 
 ---
 
@@ -322,8 +329,8 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 2. 改 `experiment_config.yaml` 的基底；改 `study.yaml` 的 `axes` / `seeds` / `tags`。  
 3. 在 `docs/PLAN.md` 写清：比什么、什么固定、成功标准，以及 **§3 高效率排班**（同类一组、吃满 GPU、error 记下来整轮后再 resume）。  
 4. `python -m rpipe run studies/<name> --skip-launch`，核对 index。  
-5. `python -m rpipe make studies/<name>`，看打印的 `pack N waits`，再 `python -m rpipe launch studies/<name>`。  
-6. 读 `process.json` + `docs/figures/learning_curves.png`，按 Experiment 写 `docs/STUDY_REPORT.md`。
+5. `python -m rpipe make studies/<name>`，看打印的 `pack N waits`，再 `python -m rpipe launch studies/<name>`（launch 不应再印 pack）。  
+6. 读 `process.json` + `docs/figures/learning_curves.png`，按 Experiment 写 `docs/STUDY_REPORT.md`：图做成可点链接，Run 表带各 `run.log` 链接。
 
 检查清单：
 
@@ -332,7 +339,7 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 - [ ] 每个 Run 的 config 含 `seed`  
 - [ ] 结论按 Experiment 聚合，而不是按扁平 run 列表  
 - [ ] `PLAN.md` / `STUDY_REPORT.md` 写清本轮怎么并行（同类一组、error 后续跑）  
-- [ ] `STUDY_REPORT.md` 有 learning curve（或同等图），不是只有表格  
+- [ ] `STUDY_REPORT.md` 有可点开的 learning curve，以及各 Run 的 `run.log` 链接  
 
 ---
 
@@ -349,8 +356,9 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 | 改一次 Run 的阶段顺序 | 不要改；最多 `--phases` 裁剪，相对顺序不变 |
 | 自动出报告 / 跨 Run 对比表 | 人写 `STUDY_REPORT.md`（必须嵌图）；Study `process` 出 mean/std/min/max 和 `docs/figures/learning_curves.png` |
 | 训练曲线 | process 画 epoch `history` → `docs/figures/`；密点仍在 `scalars.jsonl`。不做 TensorBoard |
-| 终端 + 硬盘日志 | **Logger**（system）必写 `assets/logs/`，每次 report **flush**；行里带 `elapsed` / `eta`（algorithm 进度估的） |
-| 并行时日志挤在一起 | Windows：`rpipe launch` 默认 `--console new`（每条 Run 一个窗口）；`--console shared` 混打 |
+| 终端 + 硬盘日志 | **Logger** 必写 `runs/<id>/assets/logs/run.log`（行首 `id`）；`index.json` 的 `log` 指向它。没有 Study 级总 log |
+| 并行时日志挤在一起 | 文件按 Run 分开；终端每行带 `run_id`。Windows：`rpipe launch` 默认 `--console new`；`--console shared` 只混终端 |
+| 看报告里的图 / log | Markdown 预览（`Ctrl+Shift+V`）点链接；源码视图 Ctrl+点击。`runs/` 默认 gitignore，文件在本地磁盘 |
 | 下一组挤进还在跑的实验、显存爆 | 组末必须 `wait`（make 脚本 / `rpipe launch` 都这样）；不要手改脚本去掉 `wait` |
 
 脚本里若要编程调用：`from rpipe.flow.cli import run_study`。读写路径用 `rpipe.structure.artifact`；造格子用 `rpipe.structure.make`。

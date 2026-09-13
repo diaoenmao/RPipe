@@ -45,11 +45,29 @@ Study            一轮研究：编排壳 + artifact 根
 | **是什么** | 编排 + 落盘根 | 比较轴上的一个格子 | 该格子的一次抽样 |
 | **seed** | 声明 `seeds` | 不含 | 必须有 |
 | **例子** | `mnist_train_size` | `train_size=500` | `train_size=500, seed=0` |
-| **磁盘** | `studies/<name>/` | 逻辑分组，见 **index** | `runs/<id>/` |
+| **磁盘** | `studies/<name>/` | **无目录**；index 分组 + 跨 seed 摘要 | `runs/<id>/` |
+| **这一级的产物** | 声明、共享、编排、信封、报告 | 该格子下各 seed 的 **mean / std / min / max** | 这一次实测的 config / result / asset |
 
 - `axes` → 多个 Experiment；每个 × `seeds` → 多次 Run
-- 聚合 / 对照：先按 Experiment，再在其 Runs 上统计
-- 基底配置是 Study 的默认值
+- 对照与结论按 **Experiment**，不按扁平 Run 列表
+- `experiment_config.yaml` 是 Study 的基底默认，不是某一个 Experiment 实例
+
+### 2.1 什么落在哪一级
+
+**Experiment 没有自己的文件夹。** 它在磁盘上的存在是两件事：index 里一组 `factors` + 指向各 Run 的清单；以及跨这些 Run（不同 seed）算出的统计摘要。那份摘要才是 Experiment 级产物。
+
+| 落点 | **Study** | **Experiment** | **Run** |
+|------|-----------|----------------|---------|
+| **声明** | `study.yaml`（`axes` / `seeds`）；基底 `experiment_config.yaml` | `axes` 的一个取值组合（`factors`） | 合并后的 `runs/<id>/config.yaml`（含 seed） |
+| **编排** | `index.json`（整棵树的清单）；`scripts/` | index 里的一组：`factors` + 其下各 Run 的 `id` / `config` / `log` | index 里的一条 Run |
+| **共享文件** | `shared/data/`、`shared/model/`（make 先准备，再 spawn） | 无 | 不各自下一份数据 |
+| **执行摘要** | — | — | `result.json`（`status` / 本次 metrics / paths） |
+| **文本日志** | 无总 log | 无 | `assets/logs/run.log`（index.`log` 指向它） |
+| **数字曲线** | `docs/figures/`（按 Experiment 画 mean±std） | 跨 seed 对齐后的 history **mean / std / min / max** | `assets/tracker/`（这一次的 history / jsonl） |
+| **process** | 根 `process.json`：`scope: study` 的信封（是否 complete、图路径） | 信封里的 `experiments[]`：**跨 seed** 的 metrics 与 history 的 mean / std / min / max（及 Δ baseline） | `runs/<id>/process.json`：只这一次 |
+| **人文** | `docs/PLAN.md`、`docs/STUDY_REPORT.md`（按 Experiment 写结论） | 报告里的一格：该取值点的表与图 | 不单独写报告 |
+
+读数顺序：单次数字看 **Run** `result`；该格子稳不稳、该报哪个数，看 **Experiment** 的 mean / std / min / max；整轮是否跑完、图在哪，看 **Study** 信封。
 
 ```mermaid
 flowchart TB
@@ -106,7 +124,7 @@ flowchart TB
 | 概念 | 定义 |
 |------|------|
 | **Study** | 编排壳与 artifact 根 |
-| **Experiment** | 实验变量的一个点，不含 seed |
+| **Experiment** | 比较轴上一个点，不含 seed；无目录；产物是该点下各 Run 的 **mean / std / min / max** |
 | **Run** | 一次实测；含 seed；`id` 由内容导出 |
 | **structure** | `api` + `control` + 四层 + **artifact** + **make** |
 | **api** | 四层对外门面 |
@@ -119,8 +137,9 @@ flowchart TB
 | **result** | 可序列化摘要：`status`、最终 metrics、路径。逐步曲线另见 asset |
 | **asset** | 文件通道：数据集、权重、checkpoint、AlgorithmTracker 曲线、Logger 文本 |
 | **AlgorithmTracker** | algorithm 层，只记数 |
-| **Logger** | system 层，只打字；stdout 与 `assets/logs/` 同一套；`report` 拼 epoch / `elapsed` / `eta` / Loss |
+| **Logger** | system 层，只打字；stdout 与 `assets/logs/` 同一套；行首带 Run `id`；`report` 拼 epoch / `elapsed` / `eta` / Loss |
 | **index** | Study 编排清单；make 写入；按 Experiment 列 Run |
+| **process** | 定稿后派生：Run 一份旁路；Study 信封里按 Experiment 做跨 seed 统计 |
 
 读写：config 由 **make** 写入；result 由 Flow 的 **write** 写入；文件走 **asset**。index 由 make 写入。
 
@@ -128,7 +147,7 @@ flowchart TB
 
 ## 4. Study
 
-路径：`studies/<name>/`。持有声明、index、文档、共享与各次 Run 产物。
+路径：`studies/<name>/`。持有声明、index、文档、共享数据、Study process 信封，以及各次 Run 产物。Experiment 的摘要嵌在信封里，不另开目录。
 
 | 轴 | 含义 | 结果 |
 |----|------|------|
@@ -141,10 +160,10 @@ flowchart TB
 
 ## 5. Experiment 与 Run
 
-**Experiment**：含研究因素，如 `train_size`、`lr`；不含 seed；无顶层目录。
+**Experiment**：含研究因素，如 `train_size`、`lr`；不含 seed；无顶层目录。科学上它就是「这个格子重复几次 seed 之后的总结」：metrics 与曲线的 **mean / std / min / max**。这些摘要写在 Study `process.json` 的 `experiments[]` 里，不另开目录。
 
 **Run**：Experiment × seed；一 Run 对应一份 config 与 `runs/<id>/`。  
-`id` 由 config 内容导出，含 tags、seed，不含 `id` 与 `description`。`baseline` 等是 **tags**。
+`id` 由 config 内容导出，含 tags、seed，不含 `id` 与 `description`。`baseline` 等是 **tags**。Run 只对自己负责，不算跨 seed。
 
 ---
 
@@ -196,11 +215,11 @@ flowchart LR
 | Phase | 做什么 |
 |-------|--------|
 | **prepare** | 读 **config**，落地 structure；经 **artifact** 取用文件；保持 config 不变 |
-| **execute** | 按 structure 计算；每个 batch 更新 AlgorithmTracker；Logger 按间隔打终端（含 `elapsed` / `eta`）并 flush 日志 |
+| **execute** | 按 structure 计算；每个 batch 更新 AlgorithmTracker；Logger 按间隔打终端（行首 Run `id`，含 `elapsed` / `eta`）并 flush `run.log` |
 | **collect** | 从 AlgorithmTracker 收最终 metrics 摘要 |
 | **summarize** | 整理可序列化的 result 草稿，含 `status` |
 | **write** | 把 result 写入 artifact |
-| **process** | 定稿后派生：本 Run 只写自己的旁路；Study 级 `rpipe process` 再按 Experiment 聚合 |
+| **process** | 定稿后派生。Run 阶段只写自己的 `process.json`。`rpipe process` 写 Study 信封，正文按 Experiment 做跨 seed 的 mean / std / min / max |
 
 ```mermaid
 flowchart TB
@@ -226,7 +245,7 @@ flowchart TB
 - 真数据须显式 `data.source`
 - 失败时写 `status: failed` 与 `error`
 - **write** 写该 Run 的 result；**index** 由 make 写在 Study 根
-- `process`：每个 Run 只处理自己的结果；Study 总表由单独的 `rpipe process` 收口
+- `process`：Run 阶段不写别人的文件。Study 根 `process.json` 是信封；**Experiment 级**才是跨 seed 的 mean / std / min / max
 
 ---
 
@@ -236,11 +255,12 @@ flowchart TB
 
 | 成员 | 说明 |
 |------|------|
-| **docs** | 计划与报告 |
-| **config** | 每 Run 一份；make 写、prepare 读 |
-| **result** | 每 Run 一份；可序列化；含 `status` |
-| **asset** | 文件通道。共享数据 / 权重在 `shared/`；本 Run 的 tracker、logs、checkpoint、样本在 `runs/<id>/assets/` |
-| **index** | 编排清单；make 写入；按 Experiment 列 Run |
+| **docs** | Study 级：计划、报告、figures |
+| **config** | Run 级；make 写、prepare 读 |
+| **result** | Run 级；可序列化；含 `status` |
+| **asset** | Study 级共享在 `shared/`；Run 级 tracker / `run.log` / checkpoint 在 `runs/<id>/assets/` |
+| **index** | Study 级编排清单；按 Experiment 列 Run（含每条 `log`） |
+| **process** | Run 一份旁路；Study 根一份信封，内嵌各 Experiment 的跨 seed 摘要 |
 
 ---
 
@@ -249,7 +269,7 @@ flowchart TB
 1. 写基底配置与 study 声明：`axes` 与 `seeds`
 2. **make**：展开 Experiment × seed → 各 Run config 与 index；按 STUDY_GUIDE §3 同类装箱写出 `&` / `wait` 脚本。一组 `wait` 完才开下一组，免得下一波挤进还占着的显存。有独立 eval 时先并行全部 train，再跑 eval。
 3. **Flow**：经 cli，按参数对 Study 下各 Run 跑阶段链；全部 wait 完后跑 Study 级 `process`
-4. 按 Experiment 读 result 与曲线，写 Study 报告，报告里要有图
+4. 读 Experiment 的 mean / std / min / max 与图，写 Study 报告（按格子下结论，不要按单条 Run）
 
 ---
 

@@ -13,7 +13,7 @@
 | 概念 | 目录落点 |
 |------|----------|
 | **Study** | `studies/<name>/` |
-| **Experiment** | 逻辑分组（**index**）；无顶层文件夹 |
+| **Experiment** | 逻辑分组（**index** + process 里跨 seed 摘要）；无顶层文件夹 |
 | **Run** | `studies/<name>/runs/<id>/` |
 | **structure** | `src/rpipe/structure/`：`api`、`control`、四层、**artifact**、**make** |
 | **flow** | `src/rpipe/flow/`：阶段子包与 cli |
@@ -118,7 +118,7 @@ studies/<study>/
       result.json              # 摘要；曲线不在这里
       assets/
         tracker/               # AlgorithmTracker：state / scalars.jsonl
-        logs/                  # Logger（system）：与终端同款，必写
+        logs/run.log           # Logger（system）：这一次 Run；index.log 指向这里
         checkpoints/           # 训练 checkpoint（有则写）
 ```
 
@@ -127,8 +127,8 @@ studies/<study>/
 | `docs/` | 计划与报告；可入库 |
 | `shared/` | Study 内共享 asset（data / model 文件）；默认不入库 |
 | `runs/` | 每次 Run；默认不入库 |
-| `scripts/` | make 生成的调度脚本；默认不入库 |
-| `index` | make 写入的编排清单 |
+| `scripts/` | make 生成的调度脚本与 `jobs.json`；默认不入库 |
+| `index` | make 写入的编排清单（每条 Run 含 `config` 与 `log`） |
 | `shared/data/`、`shared/model/` | structure data / model 的落盘 |
 | `runs/<id>/assets/` | 本 Run 的 asset：`tracker/`（数字曲线）、`logs/`（文本）、checkpoint、样本等 |
 
@@ -142,7 +142,8 @@ studies/<name>/study.yaml
         ▼
   flow cli
         │
-        ├─► structure.make → runs/<id>/config.yaml、index、scripts/
+        ├─► structure.make → runs/<id>/config.yaml、index、scripts/jobs.json、shared/data
+        └─► FlowRunner（launch 复用 jobs.json）
         └─► FlowRunner
                     │
                     ▼

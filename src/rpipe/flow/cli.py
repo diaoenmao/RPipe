@@ -14,10 +14,12 @@ from rpipe.structure.artifact import artifact_layout, load_config
 from rpipe.structure.make import (
     expand_study,
     launch_jobs,
+    load_launch_plan,
     plan_jobs,
     run_succeeded,
     write_launch_scripts,
 )
+from rpipe.structure.api import data_api
 from rpipe.structure.make.capacity import (
     attach_estimates,
     batch_summaries,
@@ -27,6 +29,12 @@ from rpipe.structure.make.capacity import (
     probe_gpus,
     summarize_capacity,
 )
+
+
+def _prepare_shared(study_dir: Path | str, config_paths: list[Path]) -> None:
+    names = data_api.prepare_shared(study_dir, config_paths)
+    if names:
+        print('shared data: ' + ', '.join(names), flush=True)
 
 
 def launch_one(
@@ -57,6 +65,7 @@ def run_study(
     out = expand_study(study_dir)
     result_paths: list[Path] = []
     if not skip_launch:
+        _prepare_shared(out['study_dir'], list(out['configs']))
         result_paths = launch_runs(Path(out['study_dir']), list(out['configs']), phases=phases)
         process_study(Path(out['study_dir']))
     return {
@@ -124,6 +133,7 @@ def _add_make_flags(parser: argparse.ArgumentParser) -> None:
 
 def _make_from_args(args: argparse.Namespace) -> dict[str, Any]:
     out = expand_study(args.study_dir)
+    _prepare_shared(out['study_dir'], list(out['configs']))
     study_dir = Path(out['study_dir'])
     jobs = plan_jobs(
         study_dir,
@@ -199,22 +209,35 @@ def _execute_make(args: argparse.Namespace) -> int:
 
 
 def _execute_launch(args: argparse.Namespace) -> int:
-    written = _make_from_args(args)
-    _print_make_paths(written)
+    written = None
+    if not bool(getattr(args, 'remake', False)):
+        written = load_launch_plan(
+            args.study_dir,
+            init_gpu=int(args.init_gpu),
+            num_gpus=int(args.num_gpus),
+            round_size=int(args.round),
+            include_done=bool(getattr(args, 'include_done', False)),
+        )
+    if written is None:
+        written = _make_from_args(args)
+        _print_make_paths(written)
+    else:
+        print(written['jobs_json'], flush=True)
+        print(f'{written["n_jobs"]} jobs', flush=True)
     jobs = written['job_list']
+    study_dir = Path(written.get('expand', {}).get('study_dir') or args.study_dir).resolve()
     if not jobs:
         print('nothing to launch')
-        process_study(Path(written['expand']['study_dir']))
-        print(process_path(written['expand']['study_dir']))
+        process_study(study_dir)
+        print(process_path(study_dir))
         return 0
-    codes = launch_jobs(
-        Path(written['expand']['study_dir']),
+    launch_jobs(
+        study_dir,
         jobs,
         round_size=int(written.get('round') or 1),
         batches=written.get('batches'),
         console=str(getattr(args, 'console', 'auto')),
     )
-    study_dir = Path(written['expand']['study_dir'])
     still = [
         job['run_id']
         for job in jobs
@@ -283,8 +306,13 @@ def main(argv: list[str] | None = None) -> int:
     make_p = sub.add_parser('make', help='write configs, index, and launch scripts')
     _add_make_flags(make_p)
 
-    launch_p = sub.add_parser('launch', help='make then run pending jobs by round and GPU')
+    launch_p = sub.add_parser('launch', help='run pending jobs from make; make only if jobs.json is missing')
     _add_make_flags(launch_p)
+    launch_p.add_argument(
+        '--remake',
+        action='store_true',
+        help='ignore scripts/jobs.json and run make again',
+    )
 
     one_p = sub.add_parser('run-one', help='run one Run id')
     one_p.add_argument('study_dir', type=Path)

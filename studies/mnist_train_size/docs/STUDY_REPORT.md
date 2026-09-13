@@ -2,78 +2,63 @@
 
 > Plan: [PLAN.md](PLAN.md)
 > Date: 2026-09-13
-> Recipe: native `custom_torch`；MNIST + linear；20 epoch；SGD + cosine；cuda。axes = `train_size` × `{train, eval}`。数字读 `../process.json`。排班标准 [STUDY_GUIDE.md](../../../docs/STUDY_GUIDE.md) §3。
+> Recipe: native `custom_torch`；MNIST + linear；20 epoch；SGD + cosine；cuda。axes = `train_size` × `{train, eval}`。
+> Location: Study `docs/`。数字读 `../process.json`。日志按 index 的 `log` 链到各 Run 的 `run.log`。
 
-## 1. 怎么跑的
+## 1. 怎么跑的（§3）
 
-研究因素：`train_size ∈ {500, 2000, 8000}` × `{train, eval}` × seeds `0,1,2` → **6 Experiment、18 Run**。`train_size` 是前 N 条（500 ⊂ 2000 ⊂ 8000）。eval 加载 sibling `best.pt`。基底不写 `resume`：train 默认 `latest`，eval 默认 `best`。metric 用默认 Loss + Accuracy。
+产物清空后按 [STUDY_GUIDE.md](../../../docs/STUDY_GUIDE.md) 重跑。基底不写 `resume`。
 
 ```bash
 python -m rpipe make studies/mnist_train_size --num-gpus 1 --init-gpu 0
 python -m rpipe launch studies/mnist_train_size --num-gpus 1 --init-gpu 0 --console shared
 ```
 
-机器：1× RTX 5090 D v2。make 打印：
-
-`pack 2 waits: 9[linear×9], 9[linear×9] est wall 1m34s` — 先 9 次 train 同一组，`wait` 完再 9 次 eval。实测整轮约 48s；conservative 墙钟只供排班。本 Study 很短，用 `--console shared`。
-
-18 次全部一次 `succeeded`，没有 retry。eval 日志里的 Accuracy 与 `result.json` 一致（不是 0）。
+机器：1× RTX 5090 D v2。make：`pack 2 waits: 9[linear×9], 9[linear×9] est wall 1m34s`。launch 复用 `scripts/jobs.json`，未再印 pack。实测约 46s。18/18 `succeeded`。eval accuracy mean 对齐同格子 train 的 `best_accuracy` mean。error / resume：无。
 
 ## 2. Conclusion
 
-独立 eval 与 train `best_accuracy` 一致。最终口径用 **eval**：
+最终口径用 **eval**（跨 seed mean ± std；n=3）：
 
-| train_size | train last acc | train best | **eval (best.pt)** | vs eval 500 | train_loss |
-|------------|----------------|------------|--------------------|-------------|------------|
-| 500（baseline） | 0.834 | 0.836 | **0.836** | — | 0.080 |
-| 2000 | 0.883 | 0.884 | **0.884** | +0.049 | 0.123 |
-| 8000 | 0.906 | 0.907 | **0.907** | +0.072 | 0.161 |
+| train_size | accuracy mean | std | min | max |
+|------------|---------------|-----|-----|-----|
+| 500 | 0.8355 | 0.00173 | 0.8344 | 0.8375 |
+| 2000 | 0.8842 | 0.00081 | 0.8835 | 0.8851 |
+| 8000 | 0.9073 | 0.00042 | 0.9070 | 0.9078 |
 
-数据越多 test 越好；`train_loss` 随样本量上升是过拟合。
+同一预算下，测试准确率随训练集变大而升，seed 间离散变小。
 
 ## 3. Learning curves
 
-只画 train Run。
-
-![learning curves](./figures/learning_curves.png)
-
 [打开 learning_curves.png](./figures/learning_curves.png)
 
-500 过拟合；8000 一上来在 0.89 附近。
+[![learning curves](./figures/learning_curves.png)](./figures/learning_curves.png)
 
-## 4. Train Runs
+## 4. Runs
 
-| train_size | seed | tags | Run id | accuracy | best_accuracy | train_loss |
-|------------|------|------|--------|----------|---------------|------------|
-| 500 | 0 | baseline | 8176170127f91cf0 | 0.8328 | 0.8346 | 0.080 |
-| 500 | 1 | baseline | fc81e18a5207a45d | 0.8341 | 0.8344 | 0.079 |
-| 500 | 2 | baseline | 442977f37212ef68 | 0.8359 | 0.8375 | 0.080 |
-| 2000 | 0 | — | d48fd72e60c7f6ac | 0.8818 | 0.8841 | 0.123 |
-| 2000 | 1 | — | bb1c4bab027af782 | 0.8828 | 0.8835 | 0.124 |
-| 2000 | 2 | — | 31c40cec0f6d9cd5 | 0.8846 | 0.8851 | 0.123 |
-| 8000 | 0 | — | ae8cf11290ed6b54 | 0.9065 | 0.9070 | 0.161 |
-| 8000 | 1 | — | 8217ff232db48b12 | 0.9056 | 0.9072 | 0.161 |
-| 8000 | 2 | — | 778bd5b434d18762 | 0.9062 | 0.9078 | 0.161 |
+点表格里的 **run.log** 打开该次日志（源码视图用 Ctrl+点击；预览里直接点）。结论仍按 Experiment。
 
-## 5. Eval Runs
+| factors | seed | id | accuracy | log |
+|---------|------|----|----------|-----|
+| train_size=500 train | 0 | `8176170127f91cf0` | 0.8328 | [run.log](../runs/8176170127f91cf0/assets/logs/run.log) |
+| train_size=500 train | 1 | `fc81e18a5207a45d` | 0.8341 | [run.log](../runs/fc81e18a5207a45d/assets/logs/run.log) |
+| train_size=500 train | 2 | `442977f37212ef68` | 0.8359 | [run.log](../runs/442977f37212ef68/assets/logs/run.log) |
+| train_size=500 eval | 0 | `e957d8a364952d1f` | 0.8346 | [run.log](../runs/e957d8a364952d1f/assets/logs/run.log) |
+| train_size=500 eval | 1 | `dff1613a7bc1fd5f` | 0.8344 | [run.log](../runs/dff1613a7bc1fd5f/assets/logs/run.log) |
+| train_size=500 eval | 2 | `56bc9bd79216fbba` | 0.8375 | [run.log](../runs/56bc9bd79216fbba/assets/logs/run.log) |
+| train_size=2000 train | 0 | `d48fd72e60c7f6ac` | 0.8818 | [run.log](../runs/d48fd72e60c7f6ac/assets/logs/run.log) |
+| train_size=2000 train | 1 | `bb1c4bab027af782` | 0.8828 | [run.log](../runs/bb1c4bab027af782/assets/logs/run.log) |
+| train_size=2000 train | 2 | `31c40cec0f6d9cd5` | 0.8846 | [run.log](../runs/31c40cec0f6d9cd5/assets/logs/run.log) |
+| train_size=2000 eval | 0 | `478225eadad22061` | 0.8841 | [run.log](../runs/478225eadad22061/assets/logs/run.log) |
+| train_size=2000 eval | 1 | `b42b4fd9d969a3d6` | 0.8835 | [run.log](../runs/b42b4fd9d969a3d6/assets/logs/run.log) |
+| train_size=2000 eval | 2 | `02214314ba92307e` | 0.8851 | [run.log](../runs/02214314ba92307e/assets/logs/run.log) |
+| train_size=8000 train | 0 | `ae8cf11290ed6b54` | 0.9065 | [run.log](../runs/ae8cf11290ed6b54/assets/logs/run.log) |
+| train_size=8000 train | 1 | `8217ff232db48b12` | 0.9056 | [run.log](../runs/8217ff232db48b12/assets/logs/run.log) |
+| train_size=8000 train | 2 | `778bd5b434d18762` | 0.9062 | [run.log](../runs/778bd5b434d18762/assets/logs/run.log) |
+| train_size=8000 eval | 0 | `92abeedb98737917` | 0.9070 | [run.log](../runs/92abeedb98737917/assets/logs/run.log) |
+| train_size=8000 eval | 1 | `9d9e6347dee60c86` | 0.9072 | [run.log](../runs/9d9e6347dee60c86/assets/logs/run.log) |
+| train_size=8000 eval | 2 | `a83a100692ba2930` | 0.9078 | [run.log](../runs/a83a100692ba2930/assets/logs/run.log) |
 
-| train_size | seed | Run id | eval_accuracy | matches train best |
-|------------|------|--------|---------------|--------------------|
-| 500 | 0 | e957d8a364952d1f | 0.8346 | 0.8346 |
-| 500 | 1 | dff1613a7bc1fd5f | 0.8344 | 0.8344 |
-| 500 | 2 | 56bc9bd79216fbba | 0.8375 | 0.8375 |
-| 2000 | 0 | 478225eadad22061 | 0.8841 | 0.8841 |
-| 2000 | 1 | b42b4fd9d969a3d6 | 0.8835 | 0.8835 |
-| 2000 | 2 | 02214314ba92307e | 0.8851 | 0.8851 |
-| 8000 | 0 | 92abeedb98737917 | 0.9070 | 0.9070 |
-| 8000 | 1 | 9d9e6347dee60c86 | 0.9072 | 0.9072 |
-| 8000 | 2 | a83a100692ba2930 | 0.9078 | 0.9078 |
+## 5. Reproduce
 
-## 6. Reproduce
-
-```bash
-python -m rpipe make studies/mnist_train_size --num-gpus 1 --init-gpu 0
-python -m rpipe launch studies/mnist_train_size --num-gpus 1 --init-gpu 0 --console shared
-```
-
-默认跳过已 succeeded。要把装箱再走一遍：加 `--include-done`。
+同上 make / launch。已 succeeded 的默认跳过。
