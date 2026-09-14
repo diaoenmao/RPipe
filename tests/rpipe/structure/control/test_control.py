@@ -1,3 +1,5 @@
+import pytest
+
 from rpipe.structure.control import (
     ExperimentConfig,
     control_from_config,
@@ -5,6 +7,14 @@ from rpipe.structure.control import (
     run_config_from_merge,
     validate_run_config,
 )
+
+pytestmark = [
+    pytest.mark.unit,
+    pytest.mark.content,
+    pytest.mark.p1,
+    pytest.mark.structure_layer,
+    pytest.mark.module_control,
+]
 
 
 def test_control_from_config_hashes_id_and_layers():

@@ -1,5 +1,14 @@
 import pytest
 
+pytestmark = [
+    pytest.mark.unit,
+    pytest.mark.content,
+    pytest.mark.p2,
+    pytest.mark.structure_layer,
+    pytest.mark.module_algorithm,
+]
+
+
 from rpipe.structure.algorithm.config import AlgorithmConfig
 from rpipe.structure.algorithm.tracker import AlgorithmTracker
 from rpipe.structure.system.config import SystemConfig

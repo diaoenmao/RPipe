@@ -1,14 +1,26 @@
 from pathlib import Path
 
+import pytest
+
 from rpipe.flow.cli import run_study
 from rpipe.structure.artifact import load_index, load_result
 
+pytestmark = [
+    pytest.mark.e2e,
+    pytest.mark.content,
+    pytest.mark.p2,
+    pytest.mark.flow_layer,
+    pytest.mark.module_cli,
+    pytest.mark.slow,
+    pytest.mark.external,
+]
 
-def test_mnist_train_size_study_runner_smoke(tmp_path: Path):
+
+def test_mnist_train_size_cli_train_then_eval_writes_succeeded_results(tmp_path: Path):
     """Copy the real study into tmp; run one Experiment so CI stays fast."""
     import shutil
 
-    repo = Path(__file__).resolve().parents[2]
+    repo = Path(__file__).resolve().parents[3]
     src = repo / 'studies' / 'mnist_train_size'
     study = tmp_path / 'mnist_train_size'
     shutil.copytree(

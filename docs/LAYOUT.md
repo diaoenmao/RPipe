@@ -159,4 +159,5 @@ studies/<name>/study.yaml
 |--------|------|
 | `tests/rpipe/structure/` | `src/rpipe/structure/` |
 | `tests/rpipe/flow/` | `src/rpipe/flow/` |
-| e2e | `tests/e2e/` → `studies/…` |
+
+`unit` / `integration` / `e2e` 是标签，不是 `tests/` 下的一级目录。e2e 落在系统入口 `tests/rpipe/flow/`，指向包外 `studies/`。细则见 [TESTING.md](TESTING.md) 与 [tests/README.md](../tests/README.md)。

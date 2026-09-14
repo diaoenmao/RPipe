@@ -130,3 +130,4 @@ studies/**/scripts/
 .DS_Store
 scripts/
 .pytest_cache/
+.test-results/

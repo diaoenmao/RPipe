@@ -1,10 +1,21 @@
 from pathlib import Path
 
+import pytest
+
 from rpipe.flow.cli import run_study
 from rpipe.structure.artifact import load_index
 
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.content,
+    pytest.mark.p1,
+    pytest.mark.flow_layer,
+    pytest.mark.module_cli,
+    pytest.mark.external,
+]
 
-def test_run_study_index_groups_experiments(tmp_path: Path):
+
+def test_run_study_skip_launch_index_groups_train_eval_experiments(tmp_path: Path):
     import shutil
 
     repo = Path(__file__).resolve().parents[3]

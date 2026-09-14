@@ -46,12 +46,37 @@ exclude = ["examples*", "output*", "data*", "asset*", "build*", "dist*", "tests*
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
-addopts = "-q --tb=short"
+addopts = "-q --tb=short --strict-markers"
 filterwarnings = [
   "ignore::DeprecationWarning",
 ]
 markers = [
-  "unit: Unit test",
-  "integration: Integration test",
-  "e2e: End-to-end test",
+  "unit: unit test",
+  "integration: integration test",
+  "e2e: end-to-end test",
+  "location: location and structure contract",
+  "content: semantic and behavior contract",
+  "physical: resource metric contract",
+  "p1: highest priority",
+  "p2: default regression priority",
+  "p3: low-frequency or auxiliary",
+  "structure_layer: structure column",
+  "flow_layer: flow column",
+  "module_api: structure.api",
+  "module_control: structure.control",
+  "module_data: structure.data",
+  "module_model: structure.model",
+  "module_algorithm: structure.algorithm",
+  "module_system: structure.system",
+  "module_artifact: structure.artifact",
+  "module_make: structure.make",
+  "module_cli: flow.cli",
+  "module_runner: flow runner / execute",
+  "module_process: flow process / collect",
+  "runtime: runtime budget",
+  "memory: memory budget",
+  "slow: long-running",
+  "external: network, hub, or extra optional deps",
+  "flaky: known unstable",
+  "quarantined: isolated from the default gate",
 ]

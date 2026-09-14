@@ -88,9 +88,8 @@ studies/<study>/
 |----|------|
 | `tests/rpipe/structure/` | `src/rpipe/structure/` |
 | `tests/rpipe/flow/` | `src/rpipe/flow/` |
-| `tests/e2e/` | `studies/` |
 
-artifact 单测在 `tests/rpipe/structure/artifact/`。make 单测在 `tests/rpipe/structure/make/`。
+层级用 pytest 标签（`unit` / `integration` / `e2e`），不设 `tests/unit/`、`tests/e2e/`。e2e 放在 `tests/rpipe/flow/`。artifact 单测在 `tests/rpipe/structure/artifact/`。make 单测在 `tests/rpipe/structure/make/`。
 
 ---
 

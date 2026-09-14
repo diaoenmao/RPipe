@@ -1,3 +1,13 @@
+import pytest
+
+pytestmark = [
+    pytest.mark.unit,
+    pytest.mark.content,
+    pytest.mark.p2,
+    pytest.mark.structure_layer,
+    pytest.mark.module_system,
+]
+
 from rpipe.structure.system.config import SystemConfig
 from rpipe.structure.system.runtime import apply_runtime, make_generator
 

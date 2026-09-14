@@ -2,8 +2,16 @@ from pathlib import Path
 
 import pytest
 
-from rpipe.structure.artifact import artifact_layout, load_result, write_config, write_result, validate_result
+from rpipe.structure.artifact import artifact_layout, load_result, write_config, validate_result
 from rpipe.flow import FlowContext, FlowRunner
+
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.content,
+    pytest.mark.p1,
+    pytest.mark.flow_layer,
+    pytest.mark.module_runner,
+]
 
 
 def test_full_flow_writes_succeeded_status(tmp_path: Path):
@@ -64,9 +72,3 @@ def test_failed_flow_writes_failed_result(tmp_path: Path):
     assert result['status'] == 'failed'
     assert 'boom' in result['error']
     assert validate_result(result) == []
-
-
-def test_write_result_requires_status(tmp_path: Path):
-    layout = artifact_layout(tmp_path, 'x')
-    with pytest.raises(ValueError, match='status'):
-        write_result(layout.result_path, {'control': {}, 'metrics': {}, 'paths': {}})

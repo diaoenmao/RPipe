@@ -7,11 +7,21 @@ from rpipe.structure.artifact import load_index, load_result
 
 pytest.importorskip('transformers')
 
+pytestmark = [
+    pytest.mark.e2e,
+    pytest.mark.content,
+    pytest.mark.p2,
+    pytest.mark.flow_layer,
+    pytest.mark.module_cli,
+    pytest.mark.slow,
+    pytest.mark.external,
+]
 
-def test_mnist_native_vs_hf_smoke(tmp_path: Path):
+
+def test_mnist_native_vs_hf_cli_both_sources_succeed(tmp_path: Path):
     import shutil
 
-    repo = Path(__file__).resolve().parents[2]
+    repo = Path(__file__).resolve().parents[3]
     src = repo / 'studies' / 'mnist_native_vs_hf'
     study = tmp_path / 'mnist_native_vs_hf'
     shutil.copytree(

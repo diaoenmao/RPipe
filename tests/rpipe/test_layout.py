@@ -1,15 +1,18 @@
-"""Global invariant: tests/rpipe mirrors src/rpipe directory skeleton.
-
-LAYOUT §3: ``src/rpipe/`` and ``tests/rpipe/`` keep the same package tree
-(excluding ``__pycache__`` and leaf files). This test lives at the tests root
-so the contract stays visible and always-on.
-"""
+"""tests/rpipe must copy the src/rpipe directory skeleton (TESTING.md §5)."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[1]
+import pytest
+
+pytestmark = [
+    pytest.mark.unit,
+    pytest.mark.location,
+    pytest.mark.p1,
+]
+
+REPO = Path(__file__).resolve().parents[2]
 SRC_RPIPE = REPO / 'src' / 'rpipe'
 TESTS_RPIPE = REPO / 'tests' / 'rpipe'
 
@@ -30,7 +33,7 @@ def _package_dirs(root: Path) -> set[str]:
     return rels
 
 
-def test_tests_rpipe_mirrors_src_rpipe_dirs():
+def test_tests_rpipe_directory_tree_matches_src_rpipe():
     assert SRC_RPIPE.is_dir(), f'missing source package root: {SRC_RPIPE}'
     assert TESTS_RPIPE.is_dir(), f'missing tests mirror root: {TESTS_RPIPE}'
 
