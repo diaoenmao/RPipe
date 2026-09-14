@@ -1,3 +1,13 @@
+import pytest
+
+pytestmark = [
+    pytest.mark.unit,
+    pytest.mark.content,
+    pytest.mark.p1,
+    pytest.mark.structure_layer,
+    pytest.mark.module_algorithm,
+]
+
 from rpipe.structure.algorithm.base import Algorithm
 from rpipe.structure.algorithm.config import AlgorithmConfig
 from rpipe.structure.algorithm.hook import AlgorithmHook

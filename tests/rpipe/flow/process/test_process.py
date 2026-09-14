@@ -1,3 +1,13 @@
+import pytest
+
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.content,
+    pytest.mark.p1,
+    pytest.mark.flow_layer,
+    pytest.mark.module_process,
+]
+
 import json
 from pathlib import Path
 

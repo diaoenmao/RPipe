@@ -1,3 +1,13 @@
+import pytest
+
+pytestmark = [
+    pytest.mark.unit,
+    pytest.mark.content,
+    pytest.mark.p2,
+    pytest.mark.structure_layer,
+    pytest.mark.module_artifact,
+]
+
 from pathlib import Path
 
 from rpipe.structure.artifact import artifact_layout, list_asset_files

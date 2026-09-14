@@ -1,3 +1,13 @@
+import pytest
+
+pytestmark = [
+    pytest.mark.unit,
+    pytest.mark.content,
+    pytest.mark.p2,
+    pytest.mark.structure_layer,
+    pytest.mark.module_make,
+]
+
 from rpipe.structure.make.capacity import (
     GpuInfo,
     batch_summaries,

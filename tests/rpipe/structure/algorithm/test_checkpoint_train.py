@@ -1,10 +1,20 @@
 from pathlib import Path
 
+import pytest
+
 from rpipe.structure.algorithm.config import AlgorithmConfig
 from rpipe.structure.algorithm.tracker import AlgorithmTracker
 from rpipe.structure.algorithm.train import TrainAlgorithm
 from rpipe.structure.system.config import SystemConfig
 from rpipe.structure.system.factory import SystemFactory
+
+pytestmark = [
+    pytest.mark.unit,
+    pytest.mark.content,
+    pytest.mark.p1,
+    pytest.mark.structure_layer,
+    pytest.mark.module_algorithm,
+]
 
 
 def _run(tmp_path: Path, mapping: dict) -> tuple[dict, Path]:
@@ -227,7 +237,7 @@ def test_eval_algorithm_loads_best(tmp_path: Path):
 
 def test_eval_algorithm_missing_checkpoint_fails(tmp_path: Path):
     from rpipe.structure.algorithm.eval import EvalAlgorithm
-    import pytest
+
     import torch
 
     class _Data:

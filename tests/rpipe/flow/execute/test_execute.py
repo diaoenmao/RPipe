@@ -1,5 +1,14 @@
 import pytest
 
+pytestmark = [
+    pytest.mark.unit,
+    pytest.mark.content,
+    pytest.mark.p1,
+    pytest.mark.flow_layer,
+    pytest.mark.module_runner,
+]
+
+
 from rpipe.flow.context import FlowContext
 from rpipe.flow.execute import run as execute_run
 from rpipe.structure.artifact.layout import ArtifactLayout

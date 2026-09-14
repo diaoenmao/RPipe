@@ -1,3 +1,13 @@
+import pytest
+
+pytestmark = [
+    pytest.mark.unit,
+    pytest.mark.content,
+    pytest.mark.p1,
+    pytest.mark.structure_layer,
+    pytest.mark.module_data,
+]
+
 from pathlib import Path
 
 from rpipe.structure.artifact import artifact_layout, write_config

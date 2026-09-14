@@ -1,3 +1,13 @@
+import pytest
+
+pytestmark = [
+    pytest.mark.unit,
+    pytest.mark.content,
+    pytest.mark.p1,
+    pytest.mark.flow_layer,
+    pytest.mark.module_process,
+]
+
 from rpipe.flow.collect import run as collect_run
 from rpipe.flow.context import FlowContext
 from rpipe.structure.algorithm.tracker import AlgorithmTracker

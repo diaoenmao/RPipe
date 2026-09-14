@@ -833,7 +833,7 @@ prepare：`control_from_config` →（可选契约）→ 各 `*_api` Factory.bui
 
 ### 8.6 测试意图
 
-`tests/rpipe/structure/control/`：`ExperimentConfig` / `RunConfig` / `Control` 往返；合并后 **`id` = 除 id / description 外内容的 hash**（含 tags、seed）；契约校验。Study 展开见 `tests/e2e/` → `studies/`。
+`tests/rpipe/structure/control/`：`ExperimentConfig` / `RunConfig` / `Control` 往返；合并后 **`id` = 除 id / description 外内容的 hash**（含 tags、seed）；契约校验。Study 展开见 `tests/rpipe/flow/` 上带 `e2e` 标签的用例。
 
 ---
 

@@ -1,3 +1,13 @@
+import pytest
+
+pytestmark = [
+    pytest.mark.unit,
+    pytest.mark.content,
+    pytest.mark.p2,
+    pytest.mark.structure_layer,
+    pytest.mark.module_algorithm,
+]
+
 from pathlib import Path
 
 from rpipe.structure.algorithm.tracker import AlgorithmTracker

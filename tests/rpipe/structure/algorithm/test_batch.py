@@ -1,3 +1,13 @@
+import pytest
+
+pytestmark = [
+    pytest.mark.unit,
+    pytest.mark.content,
+    pytest.mark.p2,
+    pytest.mark.structure_layer,
+    pytest.mark.module_algorithm,
+]
+
 def test_prepare_tensors_keeps_spatial_for_cnn():
     import torch
 
