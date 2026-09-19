@@ -1,6 +1,6 @@
 # Study Plan: mnist_native_vs_hf
 
-> 状态：已对照。`max_grad_norm: 0` + 共用 DataLoader 后 500/2000 逐点对齐。
+> 状态：2026-09-16 按当前 Study 路径重跑。`max_grad_norm: 0` + 共用 DataLoader 后 500/2000 逐点对齐；8000 仍有约 0.0008 的 last accuracy mean 差。
 
 ## 1. 研究问题
 

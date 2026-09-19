@@ -9,7 +9,7 @@
 | structure（api / control / 四层 / artifact / **make**） | [code_structure/structure.md](code_structure/structure.md) |
 | flow | [code_structure/flow.md](code_structure/flow.md) |
 
-测试约定见 [TESTING.md](TESTING.md)、LAYOUT。
+测试约定见 [TESTING.md](TESTING.md)、LAYOUT。已知缺陷见 [BUGS.md](BUGS.md)。
 
 ---
 

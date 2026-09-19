@@ -283,4 +283,5 @@ flowchart TB
 | [code_structure/structure.md](code_structure/structure.md) | 四层 / control / make / AlgorithmTracker / Logger / artifact |
 | [code_structure/flow.md](code_structure/flow.md) | Flow：cli 与阶段链 |
 | [TESTING.md](TESTING.md) | 测试目录与标签 |
+| [BUGS.md](BUGS.md) | 已知缺陷与跟进项 |
 | [BRAINSTORM_DEEPSCIENTIST.md](BRAINSTORM_DEEPSCIENTIST.md) | 对照笔记 |
