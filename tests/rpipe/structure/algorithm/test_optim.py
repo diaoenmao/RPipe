@@ -84,6 +84,7 @@ def test_linear_scheduler_with_warmup_keeps_positive_lr():
     )
     sched = make_scheduler(opt, cfg, 10)
     assert sched is not None
+    opt.step()
     sched.step()
     assert opt.param_groups[0]['lr'] > 0
 

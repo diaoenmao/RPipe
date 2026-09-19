@@ -125,7 +125,7 @@ flowchart TB
 |------|------|
 | **Study** | 编排壳与 artifact 根 |
 | **Experiment** | 比较轴上一个点，不含 seed；无目录；产物是该点下各 Run 的 **mean / std / min / max** |
-| **Run** | 一次实测；含 seed；`id` 由内容导出 |
+| **Run** | 最底层的一次实测；含 seed；`run_id` 是该次实测的唯一身份，由内容（含可选 `version`）导出 |
 | **structure** | `api` + `control` + 四层 + **artifact** + **make** |
 | **api** | 四层对外门面 |
 | **control** | 本 Run 对四层的取值指派；一次合并 |
@@ -136,7 +136,6 @@ flowchart TB
 | **artifact** | Study 下的持久化整体；IO 在 structure 的 artifact |
 | **result** | 可序列化摘要：`status`、最终 metrics、路径。逐步曲线另见 asset |
 | **asset** | 文件通道：数据集、权重、checkpoint、AlgorithmTracker 曲线、Logger 文本 |
-| **AlgorithmTracker** | algorithm 层，只记数 |
 | **Logger** | system 层，只打字；stdout 与 `assets/logs/` 同一套；行首带 Run `id`；`report` 拼 epoch / `elapsed` / `eta` / Loss |
 | **index** | Study 编排清单；make 写入；按 Experiment 列 Run |
 | **process** | 定稿后派生：Run 一份旁路；Study 信封里按 Experiment 做跨 seed 统计 |
@@ -164,6 +163,17 @@ flowchart TB
 
 **Run**：Experiment × seed；一 Run 对应一份 config 与 `runs/<id>/`。  
 `id` 由 config 内容导出，含 tags、seed，不含 `id` 与 `description`。`baseline` 等是 **tags**。Run 只对自己负责，不算跨 seed。
+
+### 5.1 Run 的 `version` 与 `run_id`
+
+- **Run 是最底层概念。** 不再在 Run 下增加 version 或 attempt 层。
+- **`run_id`** 标识这一次实测，并继续作为 `runs/<run_id>/` 的目录名。
+- **`version`** 是 RunConfig 的可选区分字段，不是第二个 ID。它参与 `run_id` hash，用于避免实验参数与 seed 相同、但应保留为不同实测的 Run 发生身份冲突。
+- `version` 可以使用简短序号、名称、timestamp、代码 revision 或目的说明；项目不强制只用 timestamp。
+- 同配置、同 seed、同 `version` 仍得到同一 `run_id`，用于 skip / resume。需要保留一次新的完整实测时，声明新的 `version`，从而得到新的 `run_id` 和 Run 目录。
+- Study `index.json` 只列本次声明展开出的 Run，Study process 也只聚合这些 Run；旧 version 的 Run 目录不会自动重复计入统计。
+
+待落地内容只有：在 RunConfig / Study 展开中支持 `version`，确认它参与 hash，并移除 `make_run_dir(..., timestamp=...)` 这条旧的目录后缀兼容路径。`version` 只表示 Run 的区分字段，不表示 artifact 文件格式；不再增加 attempt 概念。
 
 ---
 
@@ -284,4 +294,3 @@ flowchart TB
 | [code_structure/flow.md](code_structure/flow.md) | Flow：cli 与阶段链 |
 | [TESTING.md](TESTING.md) | 测试目录与标签 |
 | [BUGS.md](BUGS.md) | 已知缺陷与跟进项 |
-| [BRAINSTORM_DEEPSCIENTIST.md](BRAINSTORM_DEEPSCIENTIST.md) | 对照笔记 |

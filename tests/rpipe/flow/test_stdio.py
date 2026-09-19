@@ -1,4 +1,5 @@
 import pytest
+import sys
 
 pytestmark = [
     pytest.mark.unit,
@@ -10,6 +11,12 @@ pytestmark = [
 
 from rpipe.flow.cli import _configure_stdio
 from rpipe.structure.make.capacity import pack_label
+
+
+def test_windows_package_preloads_numpy_before_optional_torch():
+    if sys.platform != 'win32':
+        pytest.skip('Windows OpenMP runtime ordering only')
+    assert 'numpy' in sys.modules
 
 
 def test_windows_stdio_accepts_multiplication_sign():

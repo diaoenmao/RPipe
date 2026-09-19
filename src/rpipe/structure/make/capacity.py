@@ -126,8 +126,17 @@ def attach_estimates(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
             system = cfg.get('system') if isinstance(cfg.get('system'), dict) else {}
             job['estimate_model'] = str(model.get('name') or '')
             job['estimate_data'] = str(data.get('name') or '')
-            job['estimate_device'] = str(system.get('device') or 'cpu')
+            job['device'] = str(system.get('device') or 'cpu').lower()
+        job['estimate_device'] = str(job.get('device') or 'cuda').lower()
     return jobs
+
+
+def _job_device(job: dict[str, Any]) -> str:
+    return str(job.get('device') or job.get('estimate_device') or 'cuda').lower()
+
+
+def requires_gpu(jobs: list[dict[str, Any]]) -> bool:
+    return any(_job_device(job) != 'cpu' for job in jobs)
 
 
 def probe_gpus(init_gpu: int, num_gpus: int) -> list[GpuInfo]:
@@ -242,7 +251,7 @@ def suggest_round(
     n_jobs = len(jobs)
     if n_jobs == 0:
         return 1
-    devices = {str(job.get('estimate_device') or 'cuda') for job in jobs}
+    devices = {_job_device(job) for job in jobs}
     if devices and all(dev == 'cpu' for dev in devices):
         return min(n_jobs, CPU_ROUND if cap is None else cap)
     if not gpus:
@@ -276,7 +285,7 @@ def pack_jobs(
 
 def _pack_class(job: dict[str, Any]) -> str:
     name = str(job.get('estimate_model') or '').strip().lower()
-    return name or 'job'
+    return f'{_job_device(job)}:{name or "job"}'
 
 
 def _pack_wave(
@@ -309,9 +318,11 @@ def _pack_homogeneous(
 ) -> list[list[dict[str, Any]]]:
     if not jobs:
         return []
-    devices = {str(job.get('estimate_device') or 'cuda') for job in jobs}
+    devices = {_job_device(job) for job in jobs}
     cpu_only = bool(devices) and all(dev == 'cpu' for dev in devices)
     if cpu_only:
+        for job in jobs:
+            job.pop('gpu', None)
         return [jobs[i : i + CPU_ROUND] for i in range(0, len(jobs), CPU_ROUND)]
     if not gpus:
         return [[job] for job in jobs]
@@ -440,6 +451,7 @@ def capacity_report(
         'heaviest_bytes': heaviest,
         'slots_from_mem': int(slots),
         'batches': [],
+        'devices': sorted({_job_device(job) for job in jobs}),
         'gpus': [
             {
                 'index': g.index,
@@ -455,7 +467,9 @@ def capacity_report(
 
 def summarize_capacity(report: dict[str, Any]) -> str:
     gpus = report.get('gpus') or []
-    gpu_txt = 'no-gpu'
+    devices = set(report.get('devices') or [])
+    cpu_only = bool(devices) and devices == {'cpu'}
+    gpu_txt = 'CPU' if cpu_only else 'no-gpu'
     usable_txt = '0B'
     if gpus:
         parts = []
@@ -480,6 +494,10 @@ def summarize_capacity(report: dict[str, Any]) -> str:
             wall = sum(int(row.get('seconds') or 0) for row in batches)
         wall_txt = ' est wall {0}'.format(format_duration(wall)) if wall else ''
         return 'pack {0} waits: {1}{2} | {3}'.format(len(batches), packed, wall_txt, gpu_txt)
+    if cpu_only:
+        return 'round={0} ({1}) for {2} CPU jobs | CPU'.format(
+            report.get('round'), report.get('round_source'), report.get('n_jobs')
+        )
     return (
         'round={round} ({source}) = min({n} pending, {usable} // {heavy} = {slots} slots) | {gpu}'
         .format(

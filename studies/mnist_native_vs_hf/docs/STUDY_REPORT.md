@@ -1,24 +1,24 @@
 # Study Report: mnist_native_vs_hf
 
 > Plan: [PLAN.md](PLAN.md)
-> Date: 2026-09-16
+> Date: 2026-09-19
 > Recipe: MNIST + linear；同一套键：SGD lr=0.1、cosine、`max_grad_norm: 0`、20 epoch、`progress_unit: epoch`。axes = `algorithm.source` × `train_size`。`system.device: cpu`。
 > Location: Study `docs/`。数字读 `../process.json`。日志按 index 的 `log` 链到各 Run 的 `run.log`。
 
 ## 1. 怎么跑的（§3）
 
-产物清空后按 [STUDY_GUIDE.md](../../../docs/STUDY_GUIDE.md) 重跑。基底不写 `resume`。
+保留 `shared/data`，移走旧 `runs/scripts/index/process` 后，按 [STUDY_GUIDE.md](../../../docs/STUDY_GUIDE.md) 从空 Run 目录重跑。基底不写 `resume`。
 
 ```bash
-python -m rpipe make studies/mnist_native_vs_hf --num-gpus 1 --init-gpu 0
-python -m rpipe launch studies/mnist_native_vs_hf --num-gpus 1 --init-gpu 0 --console shared
+python -m rpipe make studies/mnist_native_vs_hf
+python -m rpipe launch studies/mnist_native_vs_hf --console shared
 ```
 
-机器：1× RTX 5090 D v2。make：`pack 5 waits: 4[linear×4], 4[linear×4], 4[linear×4], 4[linear×4], 2[linear×2] est wall 5m20s`。launch 复用 `scripts/jobs.json`，未再印 pack。实测约 3m7s。18/18 `succeeded`。error / resume skip：无。
+机器：RTX 5090 D v2 主机，但本 Study 全部使用 CPU。make：`pack 5 waits: 4[linear×4], 4[linear×4], 4[linear×4], 4[linear×4], 2[linear×2] est wall 5m20s | CPU`；18 个 job 均为 `device: cpu`，没有 `gpu` 字段，launch 标签为 `+ cpu`。实测约 2m31s。18/18 `succeeded`，全部从 epoch 1 跑到 epoch 20。error / resume：无。
 
 ## 2. Conclusion
 
-最终口径用 **last accuracy** 跨 seed mean（n=3）。500 / 2000 上 native 与 HF **逐点相同**（accuracy、best_accuracy、train_loss）。8000 上 HF last accuracy mean 高约 **0.0008**（seed 标准差量级），train_loss 仍对齐。
+最终口径用 **last accuracy** 跨 seed mean（n=3）。2026-09-19 的全新重跑复现了原结论：500 / 2000 上 native 与 HF **逐点相同**（accuracy、best_accuracy、train_loss）；8000 上 HF last accuracy mean 高约 **0.0008**（seed 标准差量级），train_loss 仍对齐。
 
 | train_size | native acc mean | HF acc mean | Δ (HF − native) | native best | HF best |
 |------------|-----------------|-------------|-----------------|-------------|---------|
@@ -63,4 +63,4 @@ python -m rpipe launch studies/mnist_native_vs_hf --num-gpus 1 --init-gpu 0 --co
 
 ## 5. Reproduce
 
-同上 make / launch。已 succeeded 的默认跳过。需要 `pip install -e ".[nlp,train]"`。
+同上 make / launch。已 succeeded 的默认跳过。需要 `pip install -e ".[hf]"`。

@@ -18,13 +18,15 @@
 | **structure** | `src/rpipe/structure/`：`api`、`control`、四层、**artifact**、**make** |
 | **flow** | `src/rpipe/flow/`：阶段子包与 cli |
 
-**Run 目录名：** config 的 `id` = 除 `id` / `description` 外内容的 hash（含 tags、seed）。同 id 多次存储可用时间戳后缀。
+**Run 目录名：** config 的 `id` = 除 `id` / `description` 外内容的 hash（含 tags、seed、可选 `version`）。Run 是最底层的一次实测。需要避免相同实验参数与 seed 的不同实测发生 ID 冲突时，声明新的 `version`，生成新的 `runs/<id>/`；不再增加 version / attempt 子目录。
 
 读写：
 
 - **config**：**make** 写入 `runs/<id>/`；prepare 只读
 - **result**：summarize / **write** 写入；process 可派生
 - **asset**：文件通道。data / model 文件、checkpoint、AlgorithmTracker 曲线、Logger 文本，落在 `shared/` 或 `runs/<id>/assets/`
+
+`version` 是 RunConfig 的可选内容字段，只用于区分实际 Run 并参与 `run_id` hash；它不是目录层级或序列化格式版本。timestamp 只是可采用的字段内容之一。
 
 ---
 
@@ -131,6 +133,8 @@ studies/<study>/
 | `index` | make 写入的编排清单（每条 Run 含 `config` 与 `log`） |
 | `shared/data/`、`shared/model/` | structure data / model 的落盘 |
 | `runs/<id>/assets/` | 本 Run 的 asset：`tracker/`（数字曲线）、`logs/`（文本）、checkpoint、样本等 |
+
+上表也是目标布局：Run 已是最底层。不同实测使用不同 `version` 导出不同 `run_id`，各自保存在独立的 `runs/<id>/`。
 
 ---
 

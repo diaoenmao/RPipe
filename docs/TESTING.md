@@ -356,7 +356,7 @@ AI 选取集成路径时，应同时分析静态调用关系和可获得的运�
 # 十二、结果持久化规范
 每次执行必须生成唯一 `run_id`。推荐目录：
 ```text
-.test-results/<run_id>/
+.tmp/test-results/<run_id>/
 ├── manifest.json         # 执行环境、筛选条件、代码版本、开始时间
 ├── events.jsonl          # 每个用例结束后立即追加一条结果
 └── artifacts/            # 日志、截图、性能数据等失败证据

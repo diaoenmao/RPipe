@@ -12,7 +12,7 @@
 
 ## 排除不镜像项
 
-`__pycache__/`、`.pytest_cache/`、`.egg-info/`、`.test-results/`、虚拟环境、Study 生成的 `runs/` / `shared/`。
+`__pycache__/`、`.pytest_cache/`、`.egg-info/`、`.tmp/`、虚拟环境、Study 生成的 `runs/` / `shared/`。
 
 ## 已登记 markers
 
@@ -44,4 +44,4 @@ pytest -m "unit and not slow and not external"
 pytest -m "e2e"
 ```
 
-每次运行写入 `.test-results/<run_id>/manifest.json` 与 `events.jsonl`。
+每次运行写入 `.tmp/test-results/<run_id>/manifest.json` 与 `events.jsonl`。

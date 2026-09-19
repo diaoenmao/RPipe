@@ -27,6 +27,7 @@ from rpipe.structure.make.capacity import (
     estimate_wall_seconds,
     pack_jobs,
     probe_gpus,
+    requires_gpu,
     summarize_capacity,
 )
 
@@ -143,7 +144,7 @@ def _make_from_args(args: argparse.Namespace) -> dict[str, Any]:
         include_done=bool(getattr(args, 'include_done', False)),
     )
     attach_estimates(jobs)
-    gpus = probe_gpus(int(args.init_gpu), int(args.num_gpus))
+    gpus = probe_gpus(int(args.init_gpu), int(args.num_gpus)) if requires_gpu(jobs) else []
     requested = int(args.round)
     batches: list | None
     if requested <= 0:

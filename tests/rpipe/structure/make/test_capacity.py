@@ -11,14 +11,17 @@ pytestmark = [
 from rpipe.structure.make.capacity import (
     GpuInfo,
     batch_summaries,
+    capacity_report,
     estimate_job_bytes,
     estimate_job_seconds,
     estimate_wall_seconds,
     format_duration,
     pack_jobs,
     pack_label,
+    requires_gpu,
     round_fits,
     suggest_round,
+    summarize_capacity,
     usable_bytes,
 )
 
@@ -163,6 +166,41 @@ def test_cpu_jobs_use_small_process_cap():
         for i in range(6)
     ]
     assert suggest_round(jobs, []) == 4
+
+
+def test_cpu_and_gpu_jobs_pack_separately():
+    gpu = GpuInfo(index=0, name='fake', total_bytes=8 * 1024**3, free_bytes=8 * 1024**3)
+    cpu = {
+        'run_id': 'cpu',
+        'mode': 'train',
+        'device': 'cpu',
+        'gpu': '0',
+        'vram_bytes': 1,
+        'estimate_model': 'linear',
+    }
+    cuda = {
+        'run_id': 'cuda',
+        'mode': 'train',
+        'device': 'cuda',
+        'gpu': '0',
+        'vram_bytes': 1,
+        'estimate_model': 'linear',
+    }
+    batches = pack_jobs([cpu, cuda], [gpu])
+    assert [[job['run_id'] for job in batch] for batch in batches] == [['cpu'], ['cuda']]
+    assert 'gpu' not in cpu
+    assert cuda['gpu'] == '0'
+    assert requires_gpu([cpu, cuda])
+    assert not requires_gpu([cpu])
+
+
+def test_cpu_capacity_summary_does_not_mention_gpu():
+    jobs = [{'run_id': 'cpu', 'device': 'cpu', 'vram_bytes': 1}]
+    report = capacity_report(jobs, [], round_size=1, round_source='pack')
+    report['batches'] = batch_summaries([jobs])
+    summary = summarize_capacity(report)
+    assert summary.endswith('| CPU')
+    assert 'GPU' not in summary
 
 
 def test_tiny_jobs_round_equals_pending_count():

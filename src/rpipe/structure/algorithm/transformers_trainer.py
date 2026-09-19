@@ -34,7 +34,7 @@ def _require_transformers() -> Any:
     except ImportError as exc:
         raise ImportError(
             'algorithm.source transformers_trainer requires transformers and accelerate '
-            '(optional extras `nlp` / `train`)'
+            '(install the `hf` optional extra)'
         ) from exc
     return transformers
 

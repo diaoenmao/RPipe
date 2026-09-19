@@ -1,6 +1,6 @@
 # Study Plan: mnist_native_vs_hf
 
-> 状态：2026-09-16 按当前 Study 路径重跑。`max_grad_norm: 0` + 共用 DataLoader 后 500/2000 逐点对齐；8000 仍有约 0.0008 的 last accuracy mean 差。
+> 状态：2026-09-19 从空 Run 目录重跑。`max_grad_norm: 0` + 共用 DataLoader 后 500/2000 逐点对齐；8000 仍有约 0.0008 的 last accuracy mean 差。
 
 ## 1. 研究问题
 
@@ -42,7 +42,16 @@ HF 侧：同一套键映射到 `TrainingArguments`；优化器 / cosine / **max_
 - `process.paired` 或按 source 分组的表能并排看 accuracy / best_accuracy
 - `STUDY_REPORT.md` 有对照表 + learning curve
 
-## 5. 刻意不做什么
+## 5. 排班与执行
+
+该 Study 全部是 `system.device: cpu`：`make` 不应探测或打印 GPU，生成的 job 不应包含 `gpu` / `CUDA_VISIBLE_DEVICES`。CPU Run 按默认并发上限分组。
+
+```bash
+python -m rpipe make studies/mnist_native_vs_hf
+python -m rpipe launch studies/mnist_native_vs_hf --console shared
+```
+
+## 6. 刻意不做什么
 
 - 不把独立 eval 做成 Flow 阶段
 - 不做 TensorBoard

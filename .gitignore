@@ -1,133 +1,53 @@
-# Byte-compiled / optimized / DLL files
+# Python bytecode and package output
 __pycache__/
 *.py[cod]
-*$py.class
-
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
+/build/
+/dist/
 
-# PyInstaller
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
+# Environments and local configuration
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
 .python-version
 
-# celery beat schedule file
-celerybeat-schedule
-
-# SageMath parsed files
-*.sage.py
-
-# dotenv
-.env
-
-# virtualenv
-.venv
-venv/
-ENV/
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
+# Test, coverage, type-checker, and notebook caches
+/.tmp/
+/.test-*/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.hypothesis/
 .mypy_cache/
+.ruff_cache/
+.tox/
+.ipynb_checkpoints/
 
-# Word temporary
-~$*.doc*
-
-# Excel temporary
-~$*.xls*
-
-# Excel Backup File
-*.xlk
-
-# PowerPoint temporary
-~$*.ppt*
-
-# Legacy root folders (do not recreate; use Study shared/runs)
-/data/
-/output/
-
-tmp/
-res/
-
-# Study run trees & shared caches — regenerate via Study; do not commit
+# Study artifacts: regenerate from the tracked declarations and docs
 studies/**/runs/
 studies/**/shared/
+studies/**/scripts/
 studies/**/index.json
 studies/**/process.json
-studies/**/scripts/
-# docs/ under Study is human narrative — keep tracked
 
+# Legacy root artifact directories (do not recreate)
+/data/
+/output/
+/tmp/
+/res/
+
+# Editors and operating systems
 .idea/
 .vscode/
 .DS_Store
-scripts/
-.pytest_cache/
-.test-results/
+Thumbs.db
+Desktop.ini
+~$*.doc*
+~$*.xls*
+~$*.ppt*
+*.bak
+*.log
