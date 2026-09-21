@@ -1,16 +1,2 @@
-# Prefer: pip install -e .
-# Runtime deps also declared in pyproject.toml.
-
-matplotlib
-numpy
-pandas
-Pillow
-PyYAML
-scipy
-torch
-torchvision
-torchinfo
-tqdm
-kornia
-xlsxwriter
-tensorboard
+# Compatibility wrapper. Dependency metadata lives in pyproject.toml.
+-e .[dev]

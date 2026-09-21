@@ -17,7 +17,7 @@ TYPES = frozenset({'location', 'content', 'physical'})
 PRIORITIES = frozenset({'p1', 'p2', 'p3'})
 
 REPO = Path(__file__).resolve().parent.parent
-RESULTS_ROOT = REPO / '.test-results'
+RESULTS_ROOT = REPO / '.tmp' / 'test-results'
 
 
 def _marker_names(item: pytest.Item) -> set[str]:

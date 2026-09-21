@@ -257,7 +257,7 @@ flowchart TB
 
 ## 13. cli：`make` / `launch` 与 `wait`
 
-`python -m rpipe make` 按 `round` 把未完成 Run 切成 **wait 组** 并写入 `scripts/jobs.json`（同时打印 pack / 墙钟）。`python -m rpipe launch` 复用这份清单跑组内并行、组末 **wait**；缺清单或 `--remake` 才再 make。不 wait 则后一批会挤进还在跑的实验，显存叠加，容易 OOM。有独立 eval 时先全部 train wait 完再开 eval。
+`python -m rpipe make` 先按 `system.device` 分流：CPU Run 不绑定 GPU，CUDA Run 才按显存装箱；随后按 `round` 把未完成 Run 切成 **wait 组** 并写入 `scripts/jobs.json`（同时打印 pack / 墙钟）。`python -m rpipe launch` 复用这份清单跑组内并行、组末 **wait**；缺清单或 `--remake` 才再 make。不 wait 则后一批会挤进还在跑的实验，显存叠加，容易 OOM。有独立 eval 时先全部 train wait 完再开 eval。
 
 conservative 墙钟只在 **make** 打印。本进程实测时间在 Logger 行的 `elapsed`。
 

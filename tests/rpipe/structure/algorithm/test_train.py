@@ -51,6 +51,7 @@ def test_cosine_scheduler_decays_to_eta_min():
     assert sched is not None
     first = opt.param_groups[0]['lr']
     for _ in range(20):
+        opt.step()
         sched.step()
     last = opt.param_groups[0]['lr']
     assert first == pytest.approx(0.1)

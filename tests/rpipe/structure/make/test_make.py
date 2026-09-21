@@ -22,9 +22,12 @@ from rpipe.structure.make import (
 from rpipe.structure.artifact import artifact_layout
 
 
-def _touch_config(study: Path, run_id: str) -> Path:
+def _touch_config(study: Path, run_id: str, *, device: str = 'cuda') -> Path:
     layout = artifact_layout(study, run_id)
-    layout.config_path.write_text('id: {}\n'.format(run_id), encoding='utf-8')
+    layout.config_path.write_text(
+        'id: {}\nsystem:\n  device: {}\n'.format(run_id, device),
+        encoding='utf-8',
+    )
     return layout.config_path
 
 
@@ -118,6 +121,20 @@ def test_plan_jobs_skips_succeeded_and_assigns_gpu(tmp_path: Path):
     assert not run_succeeded(study, 'pend')
 
 
+def test_plan_jobs_does_not_assign_gpu_to_cpu_run(tmp_path: Path):
+    study = tmp_path / 'study'
+    config = _touch_config(study, 'cpu-run', device='cpu')
+    jobs = plan_jobs(study, [config], init_gpu=0, num_gpus=1)
+    assert jobs == [
+        {
+            'run_id': 'cpu-run',
+            'config': config.as_posix(),
+            'mode': 'train',
+            'device': 'cpu',
+        }
+    ]
+
+
 def test_render_bash_wait_every_round(tmp_path: Path):
     study = tmp_path / 'study'
     (tmp_path / 'pyproject.toml').write_text('[project]\nname = "rpipe"\n', encoding='utf-8')
@@ -135,6 +152,7 @@ def test_render_bash_wait_every_round(tmp_path: Path):
     assert text.count('run-one') == 4
     assert 'CUDA_VISIBLE_DEVICES="0"' in text
     assert 'CUDA_VISIBLE_DEVICES="1"' in text
+    assert 'KMP_DUPLICATE_LIB_OK' not in text
 
 
 def test_write_launch_scripts_split_round(tmp_path: Path):
@@ -154,7 +172,21 @@ def test_write_launch_scripts_split_round(tmp_path: Path):
     assert len(written['bash']) == 2
     assert written['jobs_json'].is_file()
     assert written['ps1'].is_file()
-    assert 'rpipe launch' in written['ps1'].read_text(encoding='utf-8')
+    ps1 = written['ps1'].read_text(encoding='utf-8')
+    assert 'rpipe launch' in ps1
+    assert 'KMP_DUPLICATE_LIB_OK' not in ps1
+
+
+def test_launch_job_env_only_sets_cuda_for_gpu(monkeypatch):
+    from rpipe.structure.make.schedule import launch_job_env
+
+    monkeypatch.delenv('KMP_DUPLICATE_LIB_OK', raising=False)
+    monkeypatch.delenv('CUDA_VISIBLE_DEVICES', raising=False)
+    cpu = launch_job_env({'run_id': 'cpu', 'device': 'cpu'})
+    gpu = launch_job_env({'run_id': 'gpu', 'device': 'cuda', 'gpu': '2'})
+    assert 'KMP_DUPLICATE_LIB_OK' not in cpu
+    assert 'CUDA_VISIBLE_DEVICES' not in cpu
+    assert gpu['CUDA_VISIBLE_DEVICES'] == '2'
 
 
 def test_load_launch_plan_reuses_jobs_and_drops_succeeded(tmp_path: Path):
@@ -183,4 +215,32 @@ def test_load_launch_plan_reuses_jobs_and_drops_succeeded(tmp_path: Path):
     assert [j['run_id'] for j in plan['batches'][1]] == ['e0']
     assert load_launch_plan(study, init_gpu=0, num_gpus=2, round_size=0) is None
     assert load_launch_plan(study, init_gpu=0, num_gpus=1, round_size=4) is None
+
+
+def test_cpu_make_skips_gpu_probe(tmp_path: Path, monkeypatch):
+    from rpipe.flow import cli
+
+    study = tmp_path / 'cpu-study'
+    study.mkdir()
+    (study / 'study.yaml').write_text(
+        'study: cpu-study\naxes: {}\nseeds: [0]\n',
+        encoding='utf-8',
+    )
+    (study / 'experiment_config.yaml').write_text(
+        'experiment: demo\n'
+        'data: {name: Toy, source: stub}\n'
+        'model: {name: linear}\n'
+        'algorithm: {mode: train, num_steps: 1}\n'
+        'system: {device: cpu}\n',
+        encoding='utf-8',
+    )
+
+    def fail_probe(*_args, **_kwargs):
+        raise AssertionError('CPU make must not probe GPUs')
+
+    monkeypatch.setattr(cli, 'probe_gpus', fail_probe)
+    assert cli.main(['make', str(study)]) == 0
+    jobs = (study / 'scripts' / 'jobs.json').read_text(encoding='utf-8')
+    assert '"device": "cpu"' in jobs
+    assert '"gpu"' not in jobs
 

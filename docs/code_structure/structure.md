@@ -687,7 +687,7 @@ Logger **不**改 AlgorithmTracker 的 mean/history；**不**写 TensorBoard。
 |------|------|
 | **Study** | 一轮研究：编排壳 + artifact 根（`studies/<name>/`） |
 | **Experiment** | 研究因素的一个取值点（不含 seed；无顶层目录）。产物是该点下各 Run 的 **mean / std / min / max**（写在 Study `process.json` 的 `experiments[]`） |
-| **Run** | 该点 × 一个 seed 的实测；有 **`id`**（内容 hash，见 §8.3）；目录 `runs/<id>/` |
+| **Run** | 该点 × 一个 seed 的最底层实测；**`id`** 是内容 hash（见 §8.3）；目录 `runs/<id>/` |
 
 配置分两级：**Study 根上的 `experiment_config`** 是基底默认（类型 `ExperimentConfig`，名字沿用历史，不是「某一个 Experiment 实例」）；**`run_config`** 套在其上，作为本 Run 写入 artifact 的完整 Config。
 
@@ -700,7 +700,7 @@ Logger **不**改 AlgorithmTracker 的 mean/history；**不**写 TensorBoard。
 |-------------|------|
 | **`DataConfig` / `ModelConfig` / `AlgorithmConfig` / `SystemConfig`** | 各层 dataclass（§4–§7） |
 | **`ExperimentConfig`** | dataclass；Study 基底（`experiment_config.yaml` 的类型化） |
-| **`RunConfig`** | dataclass；Run 级配置：四层 + `seed` + **`id`** 等；由 `experiment_config` 与 Run 侧补丁合并得到 |
+| **`RunConfig`** | dataclass；Run 级配置：四层 + `seed` + 可选 `version` + **`id`** 等；由 `experiment_config` 与 Run 侧补丁合并得到 |
 | **`Control`** | 持有本 Run 的 `RunConfig`（或与之同构）；prepare / 契约 / 导出四层的入口 |
 | **编解码 / 合并** | JSON/YAML ↔ `ExperimentConfig` / `RunConfig`；deep-merge |
 | **契约** | 必须字段、`mode`、兼容链 |
@@ -727,15 +727,15 @@ flowchart TB
 | 形态 | 落盘 / 位置 | 说明 |
 |------|-------------|------|
 | **`experiment_config`** | Study 根 `experiment_config.yaml` | 该 Study 的基底默认；类型 → `ExperimentConfig` |
-| **`run_config`** | `runs/<id>/config.yaml` | **套在**基底之上的本 Run 完整配置；类型 → `RunConfig`；含四层 + `seed` + tags 等；**`id` 由除 `id` / `description` 外的内容 hash 得出** |
+| **`run_config`** | `runs/<id>/config.yaml` | **套在**基底之上的本 Run 完整配置；类型 → `RunConfig`；含四层 + `seed` + tags + 可选 `version` 等；**`id` 由除 `id` / `description` 外的内容 hash 得出** |
 | **`Control`** | 内存对象 | 由本 Run 的 `run_config` 构造；供 prepare 落地四层 |
 
 **合并原则：**
 
 1. 读 Study 根 `experiment_config` → `ExperimentConfig`。
-2. **make** 为每次 Run 提供补丁（`axes` 取值、`seed`、tags 等；**不必手写 `id`**）。
+2. **make** 为每次 Run 提供补丁（`axes` 取值、`seed`、tags、可选 `version` 等；**不必手写 `id`**）。
 3. `merge(experiment_config, patch) →` 完整内容 → **对除 `id` / `description` 外做稳定序列化并 hash → 写入 `id`** → `RunConfig`。
-4. 落盘完整 `run_config`（不写 diff）。同配置内容 → 同一 `id`；若需区分多次落盘，目录名用 **`id` + timestamp**（`make_run_dir`）。
+4. 落盘完整 `run_config`（不写 diff）。同配置内容 → 同一 `id`；需要保留新的实测时修改 `version`，由完整内容导出新的 `id`，不再增加 attempt 层。
 5. prepare：只读该次落盘的 `run_config` → `Control`（一般不再回读 `experiment_config`）。
 
 ### 8.3 `RunConfig` 字段与 `id`（hash）
@@ -744,6 +744,7 @@ flowchart TB
 |------|------|
 | `id` | **由除 `id` / `description` 以外的配置内容 hash 得到**；标识「这份配置内容」 |
 | `seed` | 本 Run 的 seed（参与 hash） |
+| `version` | 可选的 Run 区分字段；参与 hash。可使用序号、名称、timestamp、代码 revision 或目的说明，但不是第二个 ID，也不是 artifact 格式版本 |
 | `experiment` | 所属 Experiment 标识（如 `mnist_linear`；参与 hash） |
 | `tags` | 如 `baseline`（参与 hash） |
 | `description` | 给人看的说明；**不参与** hash |
@@ -757,7 +758,7 @@ flowchart TB
 
 因此：配置内容相同 → `id` 相同；内容一变 → `id` 变。编排侧 **不**人工指定 `id`。
 
-**落盘路径：** `studies/<name>/runs/<id>/`（见 LAYOUT）。同一 `id` 要存多次产物时，用 **`id` + timestamp** 后缀，不要再用已废弃的 `artifact/<id>/` 根目录。
+**落盘路径：** `studies/<name>/runs/<id>/`（见 LAYOUT）。Run 是最底层；相同内容复用该目录，新的 `version` 产生新的 Run 目录。
 
 **`ExperimentConfig`** 与 `RunConfig` 在四层上同构，便于合并；基底里不带 `id`；`id` 只在合并成 `run_config` 后计算。
 
@@ -874,6 +875,8 @@ studies/<study>/
 
 叶名由 `paths.py` 集中配置。Run `id` 规则见 §8。
 
+RunConfig 可选字段 `version` 参与 `id` hash，用于让相同实验配置、同 seed 的不同实测得到不同 Run identity。artifact 文件本身不另设本轮所讨论的格式版本。
+
 ### 9.2 `layout.py` / `paths.py` / `errors.py`
 
 | 符号 | 职责 |
@@ -890,7 +893,7 @@ studies/<study>/
 | `docs_dir` | 人文文档 |
 | `ensure()` | 创建上述目录 |
 
-index 在 **Study 根**，不在 `runs/<id>/`。`make_run_dir(id, timestamp=None)` → `<id>` 或带时间戳后缀。
+index 在 **Study 根**，不在 `runs/<id>/`。现有 `make_run_dir(id, timestamp=None)` 的 timestamp 后缀是待移除的兼容实现；新的实测由 RunConfig 的 `version` 进入 hash 后生成新 `id`。
 
 错误：`ArtifactError`、`MissingConfigError`、`CorruptArtifactError`。
 
@@ -973,7 +976,7 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 | 展开 | 读 Study 声明（`axes` × `seeds`）→ patch 列表 |
 | 写格子 | 每个 patch → `run_config_from_merge` → `runs/<id>/config.yaml`；写 **index**（`log` 指向该 Run 的 `run.log`） |
 | 共享数据 | 写格子之后、spawn 之前：经 `data_api` 按 `data.name`+`source` 各 materialize 一次到 `shared/data/`（忽略 `train_size`）。已有该数据集目录则跳过。下载把 tqdm 静音。`--skip-launch` 只写格子，不下载 |
-| 写脚本 | 默认 `--round auto`：同类、相近耗时一组，组内按显存填满后 **`wait`**；手写 `--round N` 则均匀切块。`CUDA_VISIBLE_DEVICES` 轮转；可选 `--split-round`。清单在 `scripts/jobs.json`（含 wait 组） |
+| 写脚本 | 默认 `--round auto`：先按 `system.device` 分流；CPU Run 不绑 GPU，CUDA Run 再把同类、相近耗时任务按显存装箱，组末 **`wait`**。手写 `--round N` 则按资源类型均匀切块。仅 CUDA Run 设置 `CUDA_VISIBLE_DEVICES`；可选 `--split-round`。清单在 `scripts/jobs.json`（含 device 与 wait 组） |
 | `wait` | 一组并发的内存闸门：本组进程全部退出、显存释放完，才启动下一组。不 `wait` 则下一组会挤进还在跑的进程，显存叠加，容易 OOM。eval 波次同样：全部 train `wait` 完再开 |
 | 墙钟估计 | 一组取组内最慢那条；整轮 conservative 墙钟 = 各组 max **再加总**。只供排班参考，不是实测。训练 Logger 的 `elapsed` 才是该进程实测 |
 

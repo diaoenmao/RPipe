@@ -49,15 +49,16 @@ def run_succeeded(study_dir: Path, run_id: str) -> bool:
     return data.get('status') == STATUS_SUCCEEDED
 
 
-def job_mode(config_path: Path) -> str:
+def _job_fields(config_path: Path) -> tuple[str, str]:
     try:
         cfg = load_config(config_path)
     except (OSError, ValueError):
-        return 'train'
+        return 'train', 'cpu'
     algo = cfg.get('algorithm')
-    if isinstance(algo, dict):
-        return str(algo.get('mode') or 'train')
-    return 'train'
+    system = cfg.get('system')
+    mode = str(algo.get('mode') or 'train') if isinstance(algo, dict) else 'train'
+    device = str(system.get('device') or 'cpu') if isinstance(system, dict) else 'cpu'
+    return mode, device.lower()
 
 
 def job_waves(jobs: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
@@ -71,12 +72,13 @@ def job_waves(jobs: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
 
 def _assign_gpus(jobs: list[dict[str, Any]], init_gpu: int, num_gpus: int) -> None:
     gpus = gpu_ids(init_gpu, num_gpus)
-    if not gpus:
-        for job in jobs:
+    gpu_index = 0
+    for job in jobs:
+        if str(job.get('device') or 'cuda').lower() == 'cpu' or not gpus:
             job.pop('gpu', None)
-        return
-    for i, job in enumerate(jobs):
-        job['gpu'] = gpus[i % len(gpus)]
+            continue
+        job['gpu'] = gpus[gpu_index % len(gpus)]
+        gpu_index += 1
 
 
 def plan_jobs(
@@ -92,11 +94,13 @@ def plan_jobs(
         run_id = path.parent.name
         if not include_done and run_succeeded(study_dir, run_id):
             continue
+        mode, device = _job_fields(path)
         pending.append(
             {
                 'run_id': run_id,
                 'config': str(path.as_posix()),
-                'mode': job_mode(path),
+                'mode': mode,
+                'device': device,
             }
         )
     ordered: list[dict[str, Any]] = []
@@ -194,8 +198,13 @@ def wait_groups(
         return [group for group in batches if group]
     groups: list[list[dict[str, Any]]] = []
     for wave in job_waves(jobs):
-        for start in range(0, len(wave), round_size):
-            groups.append(wave[start : start + round_size])
+        resources: dict[str, list[dict[str, Any]]] = {}
+        for job in wave:
+            device = str(job.get('device') or 'cuda').lower()
+            resources.setdefault(device, []).append(job)
+        for rows in resources.values():
+            for start in range(0, len(rows), round_size):
+                groups.append(rows[start : start + round_size])
     return groups
 
 
@@ -217,7 +226,7 @@ def render_bash(
     py_b = bash_path(Path(python_exe))
     repo_b = bash_path(repo)
     chunks: list[str] = []
-    buf = ['#!/bin/bash', f'cd "{repo_b}"', 'export KMP_DUPLICATE_LIB_OK=TRUE']
+    buf = ['#!/bin/bash', f'cd "{repo_b}"']
     wait_groups_n = 0
     groups = wait_groups(jobs, round_size, batches)
 
@@ -225,7 +234,7 @@ def render_bash(
         chunks.append('\n'.join(buf) + '\n')
 
     def _reset() -> list[str]:
-        return ['#!/bin/bash', f'cd "{repo_b}"', 'export KMP_DUPLICATE_LIB_OK=TRUE']
+        return ['#!/bin/bash', f'cd "{repo_b}"']
 
     for gi, group in enumerate(groups):
         last_group = gi == len(groups) - 1
@@ -249,7 +258,7 @@ def render_bash(
                     buf = _reset()
             else:
                 buf.append(bg)
-    if len(buf) > 3:
+    if len(buf) > 2:
         _flush()
     process_line = f'"{py_b}" -m rpipe process "{study_b}"'
     if chunks:
@@ -305,7 +314,6 @@ def write_launch_scripts(
             [
                 '$ErrorActionPreference = "Stop"',
                 f'Set-Location -LiteralPath {json.dumps(str(repo_root_from(study_dir)))}',
-                '$env:KMP_DUPLICATE_LIB_OK = "TRUE"',
                 f'& {json.dumps(py_win)} -m rpipe launch {json.dumps(study_win)}',
                 '',
             ]
@@ -343,7 +351,6 @@ def resolve_console(mode: str = 'auto') -> str:
 
 def launch_job_env(job: dict[str, Any]) -> dict[str, str]:
     env = os.environ.copy()
-    env['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
     gpu = job.get('gpu')
     if gpu is not None:
         env['CUDA_VISIBLE_DEVICES'] = str(gpu)
@@ -376,7 +383,8 @@ def launch_jobs(
             for job in group:
                 cmd = [py, '-m', 'rpipe', 'run-one', str(study_dir), str(job['run_id'])]
                 where = 'window' if console_mode == 'new' and os.name == 'nt' else 'here'
-                print(f'+ gpu={job.get("gpu", "-")} {job["run_id"]} ({where})', flush=True)
+                resource = f'gpu={job["gpu"]}' if job.get('gpu') is not None else 'cpu'
+                print(f'+ {resource} {job["run_id"]} ({where})', flush=True)
                 procs.append(
                     (
                         job,

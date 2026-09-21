@@ -2,7 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from rpipe.flow.cli import run_study
+import json
+
+from rpipe.flow.cli import main
 from rpipe.structure.artifact import load_index, load_result
 
 pytestmark = [
@@ -16,8 +18,8 @@ pytestmark = [
 ]
 
 
-def test_mnist_train_size_cli_train_then_eval_writes_succeeded_results(tmp_path: Path):
-    """Copy the real study into tmp; run one Experiment so CI stays fast."""
+def test_mnist_train_size_make_launch_processes_train_before_eval(tmp_path: Path):
+    """A reduced real Study completes the public make/launch/process lifecycle."""
     import shutil
 
     repo = Path(__file__).resolve().parents[3]
@@ -28,6 +30,8 @@ def test_mnist_train_size_cli_train_then_eval_writes_succeeded_results(tmp_path:
         study,
         ignore=shutil.ignore_patterns('runs', 'shared', 'index.json', '__pycache__'),
     )
+    if (src / 'shared').is_dir():
+        shutil.copytree(src / 'shared', study / 'shared')
     yaml_path = study / 'study.yaml'
     text = yaml_path.read_text(encoding='utf-8')
     text = text.replace(
@@ -38,12 +42,17 @@ def test_mnist_train_size_cli_train_then_eval_writes_succeeded_results(tmp_path:
     text = text.replace('num_epochs: 20', 'num_epochs: 2')
     yaml_path.write_text(text, encoding='utf-8')
 
-    out = run_study(study)
-    assert out['index'].is_file()
-    assert len(out['configs']) == 2
-    assert len(out['results']) == 2
-    train_result = load_result(out['results'][0])
-    eval_result = load_result(out['results'][1])
+    assert main(['make', str(study), '--num-gpus', '1']) == 0
+    launch_plan = json.loads((study / 'scripts' / 'jobs.json').read_text(encoding='utf-8'))
+    jobs = launch_plan['jobs']
+    assert [job['mode'] for job in jobs] == ['train', 'eval']
+    assert [job['device'] for job in jobs] == ['cuda', 'cuda']
+    assert [job['gpu'] for job in jobs] == ['0', '0']
+
+    assert main(['launch', str(study), '--num-gpus', '1', '--console', 'shared']) == 0
+    results = [study / 'runs' / job['run_id'] / 'result.json' for job in jobs]
+    train_result = load_result(results[0])
+    eval_result = load_result(results[1])
     assert train_result['status'] == 'succeeded'
     assert eval_result['status'] == 'succeeded'
     assert train_result['control']['algorithm']['mode'] == 'train'
@@ -51,14 +60,14 @@ def test_mnist_train_size_cli_train_then_eval_writes_succeeded_results(tmp_path:
     assert 'accuracy' in train_result['metrics']
     assert 'train_loss' in train_result['metrics']
     assert 'eval_accuracy' in eval_result['metrics']
-    log_path = out['results'][0].parent / 'assets' / 'logs' / 'run.log'
+    log_path = results[0].parent / 'assets' / 'logs' / 'run.log'
     assert log_path.is_file()
     log_text = log_path.read_text(encoding='utf-8')
     assert 'Loss' in log_text
     assert 'elapsed=' in log_text
-    tracker_state = out['results'][0].parent / 'assets' / 'tracker' / 'tracker_state.json'
+    tracker_state = results[0].parent / 'assets' / 'tracker' / 'tracker_state.json'
     assert tracker_state.is_file()
-    ckpt = out['results'][0].parent / 'assets' / 'checkpoints'
+    ckpt = results[0].parent / 'assets' / 'checkpoints'
     assert (ckpt / 'latest.pt').is_file()
     assert (ckpt / 'best.pt').is_file()
     assert 'best_accuracy' in train_result['metrics']
@@ -75,5 +84,9 @@ def test_mnist_train_size_cli_train_then_eval_writes_succeeded_results(tmp_path:
     assert index['experiments'][0]['runs'][0]['seed'] == 0
     assert index['experiments'][0]['runs'][0]['tags'] == ['baseline']
     assert index['experiments'][1]['runs'][0]['tags'] == []
+    process = json.loads((study / 'process.json').read_text(encoding='utf-8'))
+    assert process['complete'] is True
+    assert len(process['experiments']) == 2
+    assert process['figures']['learning_curves'] == 'docs/figures/learning_curves.png'
     assert (study / 'shared' / 'data').is_dir()
     assert (study / 'docs').is_dir()

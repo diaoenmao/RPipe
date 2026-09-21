@@ -1,20 +1,20 @@
 # Study Report: mnist_train_size
 
 > Plan: [PLAN.md](PLAN.md)
-> Date: 2026-09-13
+> Date: 2026-09-19
 > Recipe: native `custom_torch`；MNIST + linear；20 epoch；SGD + cosine；cuda。axes = `train_size` × `{train, eval}`。
 > Location: Study `docs/`。数字读 `../process.json`。日志按 index 的 `log` 链到各 Run 的 `run.log`。
 
 ## 1. 怎么跑的（§3）
 
-产物清空后按 [STUDY_GUIDE.md](../../../docs/STUDY_GUIDE.md) 重跑。基底不写 `resume`。
+保留 `shared/data`，移走旧 `runs/scripts/index/process` 后，按 [STUDY_GUIDE.md](../../../docs/STUDY_GUIDE.md) 从空 Run 目录重跑。基底不写 `resume`。
 
 ```bash
 python -m rpipe make studies/mnist_train_size --num-gpus 1 --init-gpu 0
 python -m rpipe launch studies/mnist_train_size --num-gpus 1 --init-gpu 0 --console shared
 ```
 
-机器：1× RTX 5090 D v2。make：`pack 2 waits: 9[linear×9], 9[linear×9] est wall 1m34s`。launch 复用 `scripts/jobs.json`，未再印 pack。实测约 46s。18/18 `succeeded`。eval accuracy mean 对齐同格子 train 的 `best_accuracy` mean。error / resume：无。
+机器：1× RTX 5090 D v2。make：`pack 2 waits: 9[linear×9], 9[linear×9] est wall 1m34s`。实测约 40s。18/18 `succeeded`；train 全部从 epoch 1 跑到 epoch 20，随后 eval 加载 sibling train 的 `best.pt`。eval accuracy mean 对齐同格子 train 的 `best_accuracy` mean。error / resume：无。
 
 ## 2. Conclusion
 

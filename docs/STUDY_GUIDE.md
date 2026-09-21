@@ -98,6 +98,8 @@ PLAN 里写清：比什么、固定什么、几个 seed、同类怎么一组、e
 4. **按本轮格子排班。** 轻的同类型可以叠很多；重的 resnet 可能一组 1～2 个。不要用一个全局 `--round` 把轻重砍齐。默认 `auto` 按类型装箱；`--round N` 是均匀切块。
 5. **PLAN 里写清排班。** 几个 seed、哪类一组、error 后怎么续。报告里复述实际怎么跑的。
 
+`system.device` 决定资源队列：`cpu` Run 不绑定 GPU、不设置 `CUDA_VISIBLE_DEVICES`，按 CPU 并发上限分组；`cuda` Run 才探测 GPU 并按显存装箱。混合 Study 中两类 Run 分组执行，仍遵守 train 全部完成后再进入 eval 的屏障。
+
 机制（`&` / `wait`、脚本形状）见下一节。
 
 ---
@@ -106,6 +108,7 @@ PLAN 里写清：比什么、固定什么、几个 seed、同类怎么一组、e
 
 ```bash
 pip install -e ".[dev]"
+# transformers_trainer 通路：pip install -e ".[dev,hf]"
 
 # 只写出格子：config + index
 python -m rpipe run studies/<name> --skip-launch
@@ -136,7 +139,6 @@ python -m rpipe process studies/<name>
 ```bash
 #!/bin/bash
 cd "<repo>"
-export KMP_DUPLICATE_LIB_OK=TRUE
 # wait 组 1：9 次 train（打印 pack 2 waits: 9[linear×9], 9[linear×9]）
 CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>" &
 # …共 9 条，最后一条同样 &
@@ -150,6 +152,8 @@ wait
 每一段 `cmd &` … `wait` 是一个并发批次：`wait` 返回后显存才空出来，下一组才能启动。
 
 训练 Logger 每一行前面带 **Run `id`**，并含 **`elapsed` / `eta`**，写入该 Run 的 `run.log`（与终端同一套）。`--console shared` 时终端会混，靠行首 id 分辨；文件仍是每 Run 一份。Windows 上 `python -m rpipe launch` 默认 **每个 run-one 一个新控制台窗口**。`launch.ps1` 只转调 `rpipe launch`（有 `jobs.json` 就不再 make）。多卡时仍设 `CUDA_VISIBLE_DEVICES`。`scripts/` 默认 gitignore。
+
+Windows / Conda 若报 `OMP: Error #15`，说明环境里加载了多份 OpenMP runtime。先用 `where.exe libiomp5md.dll` 检查来源，并在同一个包管理器中重装 PyTorch / NumPy，或改用干净虚拟环境。`KMP_DUPLICATE_LIB_OK=TRUE` 只能由使用者临时显式设置用于诊断；RPipe 不默认注入它。
 
 1. **make** 读 `study.yaml`，按 `axes` × `seeds` 展开  
 2. 每个补丁 ⊕ `experiment_config.yaml` → `runs/<id>/config.yaml`  
@@ -168,7 +172,7 @@ wait
 | `--remake` | 仅 `launch`：忽略已有 `jobs.json`，重新 make 再跑 |
 | `--console` | `auto`（Windows=`new` 窗口 / 其它=`shared`）；`new`；`shared` |
 | `rpipe process` | 只跑 Study 级聚合（信封 + Experiment 的 mean/std/min/max + 图） |
-| `--round` / `--num-gpus` / `--init-gpu` | `auto` = §3 装箱；`N` = 均匀切块；卡号轮转 |
+| `--round` / `--num-gpus` / `--init-gpu` | `auto` = §3 按 `system.device` 分流，CUDA 按显存装箱、CPU 按进程上限分组；`N` = 均匀切块；GPU 卡号轮转 |
 | `--include-done` | 脚本里包含已经 succeeded 的 Run（`launch` 会因此走 make） |
 
 `python -m rpipe study run …` 与上面等价，只是旧别名。
@@ -289,7 +293,7 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 | `tags` | `when` 匹配当前格子（可含 seed）则打标签；`baseline` 只是 tag |
 | `run_description` | 写入 config 的说明；**不进** `id` hash。占位符可用轴的末段名（如 `{train_size}`）以及 `{seed}`、`{experiment}` |
 
-`id` hash **包含** 实验变量、seed、tags；**不含** `id`、`description`。同内容再跑会落到同一 `runs/<id>/`。
+`id` hash **包含** 实验变量、seed、tags，以及可选 `version`；**不含** `id`、`description`。Run 是最底层的一次实测。同内容、同 `version` 再跑仍落到同一 `runs/<id>/`，用于 skip / resume；需要避免相同实验参数与 seed 的不同实测发生 ID 冲突时，换一个 `version` 生成新 Run。timestamp 只是可选内容之一。
 
 ---
 
