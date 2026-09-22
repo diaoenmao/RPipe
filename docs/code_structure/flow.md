@@ -37,7 +37,7 @@ flow/
 |------|------|------|
 | `FlowContext` | `context.py` | 贯穿各阶段的上下文 |
 | `FlowRunner` / `PHASES` | `runner.py` | 对一个 Run 按序执行阶段；可裁剪阶段；失败时写 failed result |
-| cli | `cli.py` | argv → 同一套 Flow；`make` / `launch`（复用 `jobs.json`）/ `--remake` / `--mode`、阶段子集、`round`、GPU、`--console` |
+| cli | `cli.py` | argv → 同一套 Flow；`make` / `launch`（复用 `jobs.json`）/ `--remake` / `--mode` / `status`、阶段子集、`round`、GPU、`--console` |
 
 `PHASES = ('prepare', 'execute', 'collect', 'summarize', 'write', 'process')`。允许传入子集（例如只跑 prepare 做干检查），但不得打乱相对顺序。
 
@@ -263,3 +263,5 @@ flowchart TB
 conservative 墙钟只在 **make** 打印。本进程实测时间在 Logger 行的 `elapsed`。
 
 `--console`：Windows 默认 `new`（每条 `run-one` 一个控制台，并行 printout 分开）；`shared` 混在当前终端。不改变 wait 语义。
+
+`python -m rpipe status <study>` **不是** Flow 阶段。它只读 `index.json` 和各 `runs/<id>/result.json`，打 planned / succeeded / failed / pending 和一张表。没有 result 的格子是 `pending`。`--mode` 只滤行。实现在 `flow/status.py`。

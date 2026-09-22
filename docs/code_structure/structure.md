@@ -321,7 +321,7 @@ execute 典型调用：`algorithm.run(data, model, system, tracker=…) → obse
 
 ### 6.4 下游来源（至少）
 
-循环、优化器、调度器、resume、metric、生成管线等**复用生态能力**，经 Registry 按 **mode + source** 挂接。**算法层接口统一**（§6.11）：各 source 映射到同一套 `optimizer` / `scheduler` / `resume` 语义，不在 system / model 另造一套。对照 main 只约束 **native（`custom_torch`）** 这一支；HF Trainer / Accelerate 等是并列实现，不是 native 的特例。
+循环、优化器、调度器、resume、metric、生成管线等**复用生态能力**，经 Registry 按 **mode + source** 挂接。**算法层接口统一**（§6.11）：各 source 映射到同一套 `optimizer` / `scheduler` / `resume` 语义，不在 system / model 另造一套。git `main` 只有 native；本树 **不**把对照收成「只做 `custom_torch`」。HF Trainer / Accelerate 等是并列 `source`，不是 native 的特例，也不把 Trainer 特有键抬成 Control 必须表。
 
 | 来源 | 典型用于 | 复用什么 |
 |------|----------|----------|

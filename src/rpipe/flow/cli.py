@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from rpipe.flow.process import process_path, run_study as process_study
+from rpipe.flow.status import format_status, list_runs
 from rpipe.flow.context import FlowContext
 from rpipe.flow.runner import FlowRunner
 from rpipe.structure.artifact import artifact_layout, load_config
@@ -290,6 +291,25 @@ def _execute_process(args: argparse.Namespace) -> int:
     return 0
 
 
+def _execute_status(args: argparse.Namespace) -> int:
+    study_dir = Path(args.study_dir).resolve()
+    try:
+        modes = _normalize_modes(getattr(args, 'modes', None))
+    except ValueError as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    try:
+        body = list_runs(study_dir, modes=modes)
+    except FileNotFoundError:
+        print(f'missing index: {study_dir / "index.json"}', file=sys.stderr)
+        return 2
+    except (OSError, TypeError, ValueError) as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    print(format_status(body), end='')
+    return 0
+
+
 def _execute_run_one(args: argparse.Namespace) -> int:
     phases = _parse_phases(args.phases)
     path = launch_one(Path(args.study_dir).resolve(), args.run_id, phases=phases)
@@ -360,6 +380,16 @@ def main(argv: list[str] | None = None) -> int:
     proc_p = sub.add_parser('process', help='Study-level process: mean/std/min/max history')
     proc_p.add_argument('study_dir', type=Path, help='Path to studies/<name>/')
 
+    status_p = sub.add_parser('status', help='list index Runs with result status (read-only)')
+    status_p.add_argument('study_dir', type=Path, help='Path to studies/<name>/')
+    status_p.add_argument(
+        '--mode',
+        action='append',
+        dest='modes',
+        metavar='MODE',
+        help='only this algorithm.mode (repeatable: train, eval)',
+    )
+
     args = parser.parse_args(argv)
     if args.cmd == 'run' or (args.cmd == 'study' and args.study_cmd == 'run'):
         return _execute_run(args)
@@ -371,6 +401,8 @@ def main(argv: list[str] | None = None) -> int:
         return _execute_run_one(args)
     if args.cmd == 'process':
         return _execute_process(args)
+    if args.cmd == 'status':
+        return _execute_status(args)
     return 2
 
 
