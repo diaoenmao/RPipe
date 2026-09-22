@@ -279,7 +279,7 @@ flowchart TB
 1. 写基底配置与 study 声明：`axes` 与 `seeds`
 2. **make**：展开 Experiment × seed → 各 Run config 与 index；按 STUDY_GUIDE §3 同类装箱写出 `&` / `wait` 脚本。一组 `wait` 完才开下一组。默认一次 `launch` 有独立 eval 时先全部 train，再 eval。这不是唯一入口：`rpipe launch --mode eval` 只发 eval（已成功的加 `--include-done`）；缺 sibling `best` 仍失败。`jobs.json` 仍一次写全，不按 mode 改写。
 3. **Flow**：经 cli，按参数对 Study 下各 Run 跑阶段链；全部 wait 完后跑 Study 级 `process`
-4. 读 Experiment 的 mean / std / min / max 与图，写 Study 报告（按格子下结论，不要按单条 Run）
+4. 读 Experiment 的 mean / std / min / max 与图，写 Study 报告（按格子下结论，不要按单条 Run）。单条谁好了谁挂了用只读的 `rpipe status`（index + 各条 result），不改文件。
 
 ---
 
