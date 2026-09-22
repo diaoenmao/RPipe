@@ -31,6 +31,9 @@ class _Log:
     def error(self, message: str) -> None:
         self.lines.append(f'error {message}')
 
+    def exception(self, message: str, exc: BaseException) -> None:
+        self.lines.append(f'error {message} {type(exc).__name__}: {exc}')
+
 
 class _Tracker:
     def flush_state(self) -> None:

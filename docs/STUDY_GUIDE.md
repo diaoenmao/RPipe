@@ -92,13 +92,13 @@ PLAN 里写清：比什么、固定什么、几个 seed、同类怎么一组、e
 
 **标准（按优先级）：**
 
-1. **正确性先于速度。** 有依赖就分波：全部 train `wait` 完再 eval。已 `succeeded` 的默认跳过；中断后续 `latest`。一次 `FlowRunner` 只跑一个 Run。
+1. **正确性先于速度。** 默认整轮 launch：有依赖就分波，全部 train `wait` 完再 eval。也可以 `--mode eval` 单独重跑评测。已 `succeeded` 的默认跳过；中断后续 `latest`。一次 `FlowRunner` 只跑一个 Run。
 2. **吃满 GPU：显存用好、计算跑满、尽量不 error。** 同类、相近耗时的格子一起并行（CIFAR linear 和 SVHN linear 一组；resnet 和 linear 分开）。组内按当前空闲显存（约 50% 安全系数）能叠几个就叠几个，把 SM / 显存占住。估得太满会 OOM，所以保守叠，而不是按空卡理想值打穿。
 3. **error 不中断整轮。** 某条 `run-one` 失败：记下 `run_id` 和退出码（日志在该 Run 的 `assets/logs/`），**同组其余进程和后面的组继续跑完**。全部命令结束后，对未 `succeeded` 的格子再排一次，用 `resume: latest` 续跑。不要一组一挂就停掉整张卡。
 4. **按本轮格子排班。** 轻的同类型可以叠很多；重的 resnet 可能一组 1～2 个。不要用一个全局 `--round` 把轻重砍齐。默认 `auto` 按类型装箱；`--round N` 是均匀切块。
 5. **PLAN 里写清排班。** 几个 seed、哪类一组、error 后怎么续。报告里复述实际怎么跑的。
 
-`system.device` 决定资源队列：`cpu` Run 不绑定 GPU、不设置 `CUDA_VISIBLE_DEVICES`，按 CPU 并发上限分组；`cuda` Run 才探测 GPU 并按显存装箱。混合 Study 中两类 Run 分组执行，仍遵守 train 全部完成后再进入 eval 的屏障。
+`system.device` 决定资源队列：`cpu` Run 不绑定 GPU、不设置 `CUDA_VISIBLE_DEVICES`，按 CPU 并发上限分组；`cuda` Run 才探测 GPU 并按显存装箱。混合 Study 中两类 Run 分组执行。默认整轮仍是 train 全部完成后再进入 eval；`--mode` 可以只发其中一波。
 
 机制（`&` / `wait`、脚本形状）见下一节。
 
@@ -132,7 +132,7 @@ python -m rpipe process studies/<name>
 
 进程级并行。默认 `auto`：同类一组、显存吃满但留安全系数。每组末尾的 `wait` 挡住下一组，避免还在占显存时下一波挤进来。某条失败只打印 `error <id>`，整轮 `wait` 完再对失败格子 `resume` 重跑一次。手写 `--round N` 仍是均匀切块。
 
-有 `algorithm.mode: eval` 时拆成两波：全部 train `wait` 完再启动 eval。
+有 `algorithm.mode: eval` 时，**默认**一次 `launch` 拆成两波：全部 train `wait` 完再启动 eval。Study 可以按这个写 PLAN。要单独重跑 eval（或只发 train）：`python -m rpipe launch studies/<name> --mode eval`。已成功的格子默认 skip，加上 `--include-done`。单条仍可用 `run-one`。eval 找不到 sibling `best` 照样失败。
 
 `mnist_train_size`：18 次 Run、`--round auto`、1 张卡时，linear 很轻，通常 **2 个 wait 组**（9 train，再 9 eval）。脚本形状（路径已缩短）：
 
@@ -169,11 +169,12 @@ Windows / Conda 若报 `OMP: Error #15`，说明环境里加载了多份 OpenMP 
 | `--phases prepare,execute,...` | 只跑列出的阶段；相对顺序不变 |
 | `rpipe make` | 写出 config、index、`scripts/jobs.json`，并把共享数据落到 `shared/data/`；这里打印 `pack N waits` |
 | `rpipe launch` | 已有 `scripts/jobs.json` 且 GPU/`round` 一致则直接跑未完成 Run，**不**再 make、**不**重印 `pack`；缺清单、参数变了或 `--remake` 才 make。Windows 默认每条 Run 新窗口；全部 wait 完再跑 Study `process` |
+| `--mode` | 仅 `launch`：只发该 `algorithm.mode`（可重复，如 `eval`）。**不**改写 `jobs.json`。已成功的默认 skip，重跑加 `--include-done` |
 | `--remake` | 仅 `launch`：忽略已有 `jobs.json`，重新 make 再跑 |
 | `--console` | `auto`（Windows=`new` 窗口 / 其它=`shared`）；`new`；`shared` |
 | `rpipe process` | 只跑 Study 级聚合（信封 + Experiment 的 mean/std/min/max + 图） |
 | `--round` / `--num-gpus` / `--init-gpu` | `auto` = §3 按 `system.device` 分流，CUDA 按显存装箱、CPU 按进程上限分组；`N` = 均匀切块；GPU 卡号轮转 |
-| `--include-done` | 脚本里包含已经 succeeded 的 Run（`launch` 会因此走 make） |
+| `--include-done` | 把 `jobs.json` 里已经 succeeded 的也排进去（仍复用清单；清单里没有的格子才要 `--remake --include-done`） |
 
 `python -m rpipe study run …` 与上面等价，只是旧别名。
 
@@ -355,12 +356,12 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 | 换 MNIST 子集大小 / epoch | yaml 即可 |
 | 新数据集、新模型、新训练循环 | 改 `structure.data` / `model` / `algorithm`，再在 yaml 里点名 |
 | 换 HF Trainer / Accelerate | 改 `algorithm.source`；`optimizer` / `scheduler` / `resume` 键不变（structure.md §6.11） |
-| 独立评测（加载 best） | 另一次 Run：`algorithm.mode: eval`，`resume: best`；不是 Flow 多一个阶段 |
+| 独立评测（加载 best） | 另一次 Run：`algorithm.mode: eval`，`resume: best`；不是 Flow 多一个阶段。整波重跑：`rpipe launch --mode eval`（已成功加 `--include-done`） |
 | 断点续训 | train 的 `resume: latest`（算法接口；system 只读文件） |
 | 改一次 Run 的阶段顺序 | 不要改；最多 `--phases` 裁剪，相对顺序不变 |
 | 自动出报告 / 跨 Run 对比表 | 人写 `STUDY_REPORT.md`（必须嵌图）；Study `process` 出 mean/std/min/max 和 `docs/figures/learning_curves.png` |
 | 训练曲线 | process 画 epoch `history` → `docs/figures/`；密点仍在 `scalars.jsonl`。不做 TensorBoard |
-| 终端 + 硬盘日志 | **Logger** 必写 `runs/<id>/assets/logs/run.log`（行首 `id`）；`index.json` 的 `log` 指向它。没有 Study 级总 log |
+| 终端 + 硬盘日志 | **Logger** 必写 `runs/<id>/assets/logs/run.log`（行首 `id`）；失败时 traceback 进同一份文件。`index.json` 的 `log` 指向它。没有 Study 级总 log |
 | 并行时日志挤在一起 | 文件按 Run 分开；终端每行带 `run_id`。Windows：`rpipe launch` 默认 `--console new`；`--console shared` 只混终端 |
 | 看报告里的图 / log | Markdown 预览（`Ctrl+Shift+V`）点链接；源码视图 Ctrl+点击。`runs/` 默认 gitignore，文件在本地磁盘 |
 | 下一组挤进还在跑的实验、显存爆 | 组末必须 `wait`（make 脚本 / `rpipe launch` 都这样）；不要手改脚本去掉 `wait` |

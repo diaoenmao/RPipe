@@ -72,3 +72,21 @@ def test_failed_flow_writes_failed_result(tmp_path: Path):
     assert result['status'] == 'failed'
     assert 'boom' in result['error']
     assert validate_result(result) == []
+    log = (layout.assets_dir / 'logs' / 'run.log').read_text(encoding='utf-8')
+    assert 'flow start' in log
+    assert 'ERROR phase=execute status=failed RuntimeError: boom' in log
+    assert 'Traceback (most recent call last):' in log
+    assert 'RuntimeError: boom' in log
+    assert 'flow succeeded' not in log
+
+
+def test_prepare_failure_still_writes_traceback_to_run_log(tmp_path: Path):
+    layout = artifact_layout(tmp_path, 'missing_cfg')
+    ctx = FlowContext(study_dir=tmp_path, layout=layout, config={})
+    with pytest.raises(Exception):
+        FlowRunner().run(ctx)
+    log = (layout.assets_dir / 'logs' / 'run.log').read_text(encoding='utf-8')
+    assert 'flow start' in log
+    assert 'ERROR phase=prepare status=failed' in log
+    assert 'Traceback (most recent call last):' in log
+    assert 'flow succeeded' not in log

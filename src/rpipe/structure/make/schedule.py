@@ -61,6 +61,34 @@ def _job_fields(config_path: Path) -> tuple[str, str]:
     return mode, device.lower()
 
 
+def job_mode(job: dict[str, Any]) -> str:
+    return str(job.get('mode') or 'train')
+
+
+def filter_jobs_by_mode(
+    jobs: list[dict[str, Any]],
+    modes: list[str] | tuple[str, ...] | None,
+) -> list[dict[str, Any]]:
+    """Keep jobs whose ``mode`` is in ``modes``. Empty/None = no filter."""
+    if not modes:
+        return list(jobs)
+    wanted = {str(mode).strip().lower() for mode in modes if str(mode).strip()}
+    if not wanted:
+        return list(jobs)
+    return [job for job in jobs if job_mode(job) in wanted]
+
+
+def filter_batches_by_mode(
+    batches: list[list[dict[str, Any]]] | None,
+    modes: list[str] | tuple[str, ...] | None,
+) -> list[list[dict[str, Any]]] | None:
+    if batches is None:
+        return None
+    if not modes:
+        return [list(group) for group in batches if group]
+    return [kept for kept in (filter_jobs_by_mode(list(group), modes) for group in batches) if kept]
+
+
 def job_waves(jobs: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
     """Train jobs first, then eval. Eval waits until the train wave finishes."""
     trains = [job for job in jobs if job.get('mode') != 'eval']
@@ -124,9 +152,12 @@ def load_launch_plan(
     round_size: int,
     include_done: bool = False,
 ) -> dict[str, Any] | None:
-    """Reuse ``scripts/jobs.json`` from a prior make. None → caller should make."""
-    if include_done:
-        return None
+    """Reuse ``scripts/jobs.json`` from a prior make. None → caller should make.
+
+    ``include_done`` keeps already-succeeded jobs that are still listed in the
+    file. It does not invent Runs that were omitted from the original make;
+    those need ``--remake --include-done``.
+    """
     study_dir = Path(study_dir).resolve()
     path = study_dir / SCRIPTS_DIRNAME / JOBS_NAME
     if not path.is_file():
@@ -145,14 +176,17 @@ def load_launch_plan(
     if int(round_size) > 0 and stored_round != int(round_size):
         return None
 
-    def _pending(rows: list) -> list[dict[str, Any]]:
-        return [job for job in rows if not run_succeeded(study_dir, str(job.get('run_id') or ''))]
+    def _keep(rows: list) -> list[dict[str, Any]]:
+        kept = [job for job in rows if isinstance(job, dict)]
+        if include_done:
+            return kept
+        return [job for job in kept if not run_succeeded(study_dir, str(job.get('run_id') or ''))]
 
-    jobs = _pending(list(payload.get('jobs') or []))
+    jobs = _keep(list(payload.get('jobs') or []))
     raw_batches = payload.get('batches')
     batches = None
     if isinstance(raw_batches, list) and raw_batches and isinstance(raw_batches[0], list):
-        batches = [kept for kept in (_pending(list(group)) for group in raw_batches) if kept]
+        batches = [kept for kept in (_keep(list(group)) for group in raw_batches) if kept]
     return {
         'jobs_json': path,
         'job_list': jobs,

@@ -13,6 +13,8 @@ from rpipe.flow.runner import FlowRunner
 from rpipe.structure.artifact import artifact_layout, load_config
 from rpipe.structure.make import (
     expand_study,
+    filter_batches_by_mode,
+    filter_jobs_by_mode,
     launch_jobs,
     load_launch_plan,
     plan_jobs,
@@ -92,6 +94,25 @@ def _parse_round(text: str) -> int:
 
 def _parse_phases(raw: str) -> list[str] | None:
     return [s.strip() for s in raw.split(',') if s.strip()] or None
+
+
+_JOB_MODES = frozenset({'train', 'eval', 'inference'})
+
+
+def _normalize_modes(raw: list[str] | None) -> list[str] | None:
+    if not raw:
+        return None
+    modes: list[str] = []
+    for item in raw:
+        for part in str(item).split(','):
+            mode = part.strip().lower()
+            if not mode:
+                continue
+            if mode not in _JOB_MODES:
+                raise ValueError(f'mode must be train, eval, or inference; got {mode!r}')
+            if mode not in modes:
+                modes.append(mode)
+    return modes or None
 
 
 def _add_run_flags(parser: argparse.ArgumentParser) -> None:
@@ -227,6 +248,15 @@ def _execute_launch(args: argparse.Namespace) -> int:
         print(f'{written["n_jobs"]} jobs', flush=True)
     jobs = written['job_list']
     study_dir = Path(written.get('expand', {}).get('study_dir') or args.study_dir).resolve()
+    try:
+        modes = _normalize_modes(getattr(args, 'modes', None))
+    except ValueError as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    if modes:
+        jobs = filter_jobs_by_mode(jobs, modes)
+        written['batches'] = filter_batches_by_mode(written.get('batches'), modes)
+        print(f'mode {"+".join(modes)}: {len(jobs)} jobs', flush=True)
     if not jobs:
         print('nothing to launch')
         process_study(study_dir)
@@ -313,6 +343,13 @@ def main(argv: list[str] | None = None) -> int:
         '--remake',
         action='store_true',
         help='ignore scripts/jobs.json and run make again',
+    )
+    launch_p.add_argument(
+        '--mode',
+        action='append',
+        dest='modes',
+        metavar='MODE',
+        help='only this algorithm.mode (repeatable: train, eval). does not rewrite jobs.json',
     )
 
     one_p = sub.add_parser('run-one', help='run one Run id')

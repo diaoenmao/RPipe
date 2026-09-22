@@ -23,14 +23,44 @@ class FlowRunner:
             raise ValueError(f'unknown phases: {unknown}; allowed: {PHASES}')
 
     def run(self, ctx: FlowContext) -> Path:
+        logger = self._ensure_logger(ctx)
+        logger.info(f'flow start phases={",".join(self.phases)}')
+        current = None
         try:
             for name in self.phases:
+                current = name
                 module = import_module(f'rpipe.flow.{name}')
                 module.run(ctx)
         except Exception as exc:
+            self._log_failure(ctx, current, exc)
             self._write_failed_result(ctx, exc)
             raise
+        logger.info('flow succeeded')
         return ctx.layout.result_path
+
+    def _ensure_logger(self, ctx: FlowContext):
+        existing = ctx.state.get('logger')
+        if existing is not None:
+            return existing
+        from rpipe.structure.system.logger import Logger
+
+        logger = Logger(ctx.layout.assets_dir)
+        ctx.state['logger'] = logger
+        return logger
+
+    def _log_failure(self, ctx: FlowContext, phase: str | None, exc: BaseException) -> None:
+        if ctx.state.get('failure_logged'):
+            return
+        logger = self._ensure_logger(ctx)
+        where = phase or 'flow'
+        try:
+            logger.exception(f'phase={where} status=failed', exc)
+        except Exception:
+            try:
+                logger.error(f'phase={where} status=failed {type(exc).__name__}: {exc}')
+            except Exception:
+                return
+        ctx.state['failure_logged'] = True
 
     def _write_failed_result(self, ctx: FlowContext, exc: BaseException) -> None:
         """Best-effort failed Result; must not hide the original error.

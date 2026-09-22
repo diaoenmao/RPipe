@@ -26,12 +26,16 @@ def run(ctx: FlowContext) -> None:
         )
         if logger is not None:
             logger.info('execute finished')
-    except Exception:
+    except Exception as exc:
         if logger is not None:
             try:
-                logger.error('execute failed')
+                logger.exception('execute failed', exc)
             except Exception:
-                pass
+                try:
+                    logger.error(f'execute failed {type(exc).__name__}: {exc}')
+                except Exception:
+                    pass
+            ctx.state['failure_logged'] = True
         raise
     finally:
         if tracker is not None:

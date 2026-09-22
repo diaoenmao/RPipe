@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import traceback
 from pathlib import Path
 from typing import Any
 
@@ -39,6 +40,14 @@ class Logger:
 
     def error(self, message: str) -> None:
         self._emit(f'ERROR {message}')
+
+    def exception(self, message: str, exc: BaseException) -> None:
+        """ERROR line plus traceback. Same text on stdout and ``run.log``."""
+        self.error(f'{message} {type(exc).__name__}: {exc}')
+        formatted = traceback.format_exception(type(exc), exc, exc.__traceback__)
+        for line in ''.join(formatted).splitlines():
+            if line:
+                self._emit(line)
 
     def report(self, tracker: Any, split: str, extra: dict[str, Any] | None = None) -> None:
         extra = extra or {}
