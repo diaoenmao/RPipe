@@ -10,7 +10,7 @@ RPipe 是**可重复、可编排、可序列化的研究执行底座**。
 
 ## 1. 边界
 
-对照相邻系统，而不是只谈职责。DeepScientist：[ResearAI/DeepScientist](https://github.com/ResearAI/DeepScientist)。
+对照相邻系统是为了划界，不是行为基准。行为对照见 git **`main`** 与 [BRAINSTORM.md](BRAINSTORM.md)。DeepScientist：[ResearAI/DeepScientist](https://github.com/ResearAI/DeepScientist)，只借鉴契约与编排纪律。
 
 | | **RPipe** | **DeepScientist** | **Hugging Face** | **autoresearch** |
 |--|-----------|-------------------|------------------|------------------|
@@ -136,7 +136,7 @@ flowchart TB
 | **artifact** | Study 下的持久化整体；IO 在 structure 的 artifact |
 | **result** | 可序列化摘要：`status`、最终 metrics、路径。逐步曲线另见 asset |
 | **asset** | 文件通道：数据集、权重、checkpoint、AlgorithmTracker 曲线、Logger 文本 |
-| **Logger** | system 层，只打字；stdout 与 `assets/logs/` 同一套；行首带 Run `id`；`report` 拼 epoch / `elapsed` / `eta` / Loss |
+| **Logger** | system 层，只打字；stdout 与 `assets/logs/` 同一套；行首带 Run `id`；`report` 拼 epoch / `elapsed` / `eta` / Loss；失败时 traceback 也进同一份 `run.log` |
 | **index** | Study 编排清单；make 写入；按 Experiment 列 Run |
 | **process** | 定稿后派生：Run 一份旁路；Study 信封里按 Experiment 做跨 seed 统计 |
 
@@ -277,7 +277,7 @@ flowchart TB
 ## 9. 编排生命周期
 
 1. 写基底配置与 study 声明：`axes` 与 `seeds`
-2. **make**：展开 Experiment × seed → 各 Run config 与 index；按 STUDY_GUIDE §3 同类装箱写出 `&` / `wait` 脚本。一组 `wait` 完才开下一组，免得下一波挤进还占着的显存。有独立 eval 时先并行全部 train，再跑 eval。
+2. **make**：展开 Experiment × seed → 各 Run config 与 index；按 STUDY_GUIDE §3 同类装箱写出 `&` / `wait` 脚本。一组 `wait` 完才开下一组。默认一次 `launch` 有独立 eval 时先全部 train，再 eval。这不是唯一入口：`rpipe launch --mode eval` 只发 eval（已成功的加 `--include-done`）；缺 sibling `best` 仍失败。`jobs.json` 仍一次写全，不按 mode 改写。
 3. **Flow**：经 cli，按参数对 Study 下各 Run 跑阶段链；全部 wait 完后跑 Study 级 `process`
 4. 读 Experiment 的 mean / std / min / max 与图，写 Study 报告（按格子下结论，不要按单条 Run）
 
@@ -294,3 +294,4 @@ flowchart TB
 | [code_structure/flow.md](code_structure/flow.md) | Flow：cli 与阶段链 |
 | [TESTING.md](TESTING.md) | 测试目录与标签 |
 | [BUGS.md](BUGS.md) | 已知缺陷与跟进项 |
+| [BRAINSTORM.md](BRAINSTORM.md) | 未拍板想法：对照 `main`，借鉴 DeepScientist |

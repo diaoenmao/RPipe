@@ -12,6 +12,7 @@ from pathlib import Path
 
 from rpipe.structure.make import (
     expand_patches,
+    filter_jobs_by_mode,
     gpu_ids,
     load_launch_plan,
     plan_jobs,
@@ -215,6 +216,77 @@ def test_load_launch_plan_reuses_jobs_and_drops_succeeded(tmp_path: Path):
     assert [j['run_id'] for j in plan['batches'][1]] == ['e0']
     assert load_launch_plan(study, init_gpu=0, num_gpus=2, round_size=0) is None
     assert load_launch_plan(study, init_gpu=0, num_gpus=1, round_size=4) is None
+
+
+def test_filter_jobs_by_mode_keeps_eval_only():
+    jobs = [
+        {'run_id': 't0', 'mode': 'train'},
+        {'run_id': 'e0', 'mode': 'eval'},
+        {'run_id': 't1'},
+    ]
+    assert [j['run_id'] for j in filter_jobs_by_mode(jobs, ['eval'])] == ['e0']
+    assert [j['run_id'] for j in filter_jobs_by_mode(jobs, None)] == ['t0', 'e0', 't1']
+
+
+def test_load_launch_plan_include_done_keeps_succeeded(tmp_path: Path):
+    (tmp_path / 'pyproject.toml').write_text('[project]\nname = "rpipe"\n', encoding='utf-8')
+    study = tmp_path / 'study'
+    jobs = [
+        {'run_id': 't0', 'gpu': '0', 'mode': 'train'},
+        {'run_id': 'e0', 'gpu': '0', 'mode': 'eval'},
+    ]
+    write_launch_scripts(
+        study,
+        jobs,
+        round_size=2,
+        python_exe='/opt/python',
+        init_gpu=0,
+        num_gpus=1,
+        batches=[jobs[:1], jobs[1:]],
+    )
+    _write_succeeded(study, 't0')
+    _write_succeeded(study, 'e0')
+    skipped = load_launch_plan(study, init_gpu=0, num_gpus=1, round_size=0)
+    assert skipped is not None
+    assert skipped['job_list'] == []
+    again = load_launch_plan(study, init_gpu=0, num_gpus=1, round_size=0, include_done=True)
+    assert [j['run_id'] for j in again['job_list']] == ['t0', 'e0']
+    assert [j['run_id'] for j in again['batches'][1]] == ['e0']
+
+
+def test_launch_mode_eval_does_not_rewrite_jobs_json(tmp_path: Path, monkeypatch):
+    from rpipe.flow import cli
+
+    (tmp_path / 'pyproject.toml').write_text('[project]\nname = "rpipe"\n', encoding='utf-8')
+    study = tmp_path / 'study'
+    jobs = [
+        {'run_id': 't0', 'gpu': '0', 'mode': 'train'},
+        {'run_id': 'e0', 'gpu': '0', 'mode': 'eval'},
+    ]
+    write_launch_scripts(
+        study,
+        jobs,
+        round_size=2,
+        python_exe='/opt/python',
+        init_gpu=0,
+        num_gpus=1,
+        batches=[jobs[:1], jobs[1:]],
+    )
+    _write_succeeded(study, 't0')
+    launched: list[str] = []
+
+    def fake_launch(_study, job_list, **_kwargs):
+        launched.extend(str(job['run_id']) for job in job_list)
+        return [0]
+
+    monkeypatch.setattr(cli, 'launch_jobs', fake_launch)
+    monkeypatch.setattr(cli, 'process_study', lambda *_args, **_kwargs: {'complete': False})
+    monkeypatch.setattr(cli, 'process_path', lambda *_args, **_kwargs: study / 'process.json')
+    assert cli.main(['launch', str(study), '--mode', 'eval', '--console', 'shared']) == 1
+    assert launched == ['e0']
+    stored = (study / 'scripts' / 'jobs.json').read_text(encoding='utf-8')
+    assert '"t0"' in stored
+    assert '"e0"' in stored
 
 
 def test_cpu_make_skips_gpu_probe(tmp_path: Path, monkeypatch):

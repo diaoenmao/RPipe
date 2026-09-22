@@ -38,6 +38,27 @@ def test_logger_writes_run_log_and_reads_tracker(tmp_path: Path, capsys):
     assert 'eta=0:00:09' in text
 
 
+def test_logger_exception_writes_traceback(tmp_path: Path, capsys):
+    assets = tmp_path / 'runs' / 'deadbeef' / 'assets'
+    logger = Logger(assets)
+
+    def inner():
+        raise ValueError('nope')
+
+    try:
+        inner()
+    except ValueError as exc:
+        logger.exception('phase=execute status=failed', exc)
+
+    text = (assets / 'logs' / 'run.log').read_text(encoding='utf-8')
+    out = capsys.readouterr().out
+    for blob in (text, out):
+        assert 'deadbeef ERROR phase=execute status=failed ValueError: nope' in blob
+        assert 'Traceback (most recent call last):' in blob
+        assert 'ValueError: nope' in blob
+        assert 'inner' in blob
+
+
 def test_logger_report_after_save_reset_uses_segment(tmp_path: Path, capsys):
     tracker = AlgorithmTracker(tmp_path)
     tracker.append('test', n=10, values={'Loss': 0.5, 'Accuracy': 0.8})
