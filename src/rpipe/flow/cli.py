@@ -12,16 +12,19 @@ from rpipe.flow.status import format_status, list_runs
 from rpipe.flow.context import FlowContext
 from rpipe.flow.runner import FlowRunner
 from rpipe.structure.artifact import artifact_layout, load_config
+from rpipe.structure.artifact.activity import announce, clear_activity, read_activity
 from rpipe.structure.make import (
     expand_study,
     filter_batches_by_mode,
     filter_jobs_by_mode,
     launch_jobs,
     load_launch_plan,
+    load_study_yaml,
     plan_jobs,
     run_succeeded,
     write_launch_scripts,
 )
+from rpipe.structure.origin import apply_model_origin, normalize_origin
 from rpipe.structure.api import data_api
 from rpipe.structure.make.capacity import (
     attach_estimates,
@@ -155,9 +158,18 @@ def _add_make_flags(parser: argparse.ArgumentParser) -> None:
 
 
 def _make_from_args(args: argparse.Namespace) -> dict[str, Any]:
+    study_hint = Path(args.study_dir)
+    declared = load_study_yaml(study_hint)
+    raw_origin = declared.get('origin')
+    if raw_origin not in (None, ''):
+        chosen = normalize_origin(raw_origin)
+        hub = apply_model_origin(chosen)
+        announce(study_hint, 'make', f'origin {chosen} model {hub}')
+    announce(study_hint, 'make', 'expand')
     out = expand_study(args.study_dir)
     _prepare_shared(out['study_dir'], list(out['configs']))
     study_dir = Path(out['study_dir'])
+    announce(study_dir, 'make', 'pack')
     jobs = plan_jobs(
         study_dir,
         list(out['configs']),
@@ -215,19 +227,21 @@ def _execute_run(args: argparse.Namespace) -> int:
 
 
 def _print_make_paths(written: dict[str, Any]) -> None:
-    print(written['expand']['index'])
-    print(written['jobs_json'])
-    print(written['ps1'])
+    print(written['expand']['index'], flush=True)
+    print(written['jobs_json'], flush=True)
+    print(written['ps1'], flush=True)
     for path in written['bash']:
-        print(path)
-    print(f'{written["n_jobs"]} jobs')
+        print(path, flush=True)
+    print(f'{written["n_jobs"]} jobs', flush=True)
     cap = written.get('capacity')
     if isinstance(cap, dict):
-        print(summarize_capacity(cap))
+        print(summarize_capacity(cap), flush=True)
 
 
 def _execute_make(args: argparse.Namespace) -> int:
-    _print_make_paths(_make_from_args(args))
+    written = _make_from_args(args)
+    _print_make_paths(written)
+    clear_activity(written.get('expand', {}).get('study_dir') or args.study_dir)
     return 0
 
 
@@ -298,9 +312,14 @@ def _execute_status(args: argparse.Namespace) -> int:
     except ValueError as exc:
         print(exc, file=sys.stderr)
         return 2
+    activity = read_activity(study_dir)
+    if activity is not None:
+        print(f"{activity['phase']}: {activity.get('detail') or ''}".rstrip(), flush=True)
     try:
         body = list_runs(study_dir, modes=modes)
     except FileNotFoundError:
+        if activity is not None:
+            return 0
         print(f'missing index: {study_dir / "index.json"}', file=sys.stderr)
         return 2
     except (OSError, TypeError, ValueError) as exc:

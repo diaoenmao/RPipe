@@ -6,37 +6,53 @@ import os
 from pathlib import Path
 from typing import Any
 
+from rpipe.structure.artifact.activity import announce
 from rpipe.structure.artifact.config import load_config
 from rpipe.structure.artifact.layout import ensure_study_layout
 from rpipe.structure.data.config import DataConfig
-from rpipe.structure.data.factory import DataFactory
+from rpipe.structure.data.factory import DataFactory, vision_root
+from rpipe.structure.origin import endpoint_for, normalize_origin
+
+READY_NAME = '.ready'
 
 
 def prepare_shared_data(study_dir: Path | str, config_paths: list[Path]) -> list[str]:
     """Download / build each unique ``data.name`` + ``source`` into ``shared/data``.
 
     ``train_size`` is ignored here so subset Runs reuse the same files.
+    A dataset is cached only after a successful build writes ``.ready``.
     Returns names materialized on this call (cached names omitted).
     """
     study = ensure_study_layout(study_dir)
     shared = study / 'shared' / 'data'
-    seen: set[tuple[str, str]] = set()
+    seen: set[tuple[str, str, str]] = set()
     names: list[str] = []
     previous = os.environ.get('TQDM_DISABLE')
     os.environ['TQDM_DISABLE'] = '1'
     try:
         for path in config_paths:
-            mapping = _shared_data_mapping(load_config(path))
+            loaded = load_config(path)
+            mapping = _shared_data_mapping(loaded)
             if mapping is None:
                 continue
-            key = (str(mapping.get('name') or ''), str(mapping.get('source') or ''))
+            origin = normalize_origin(loaded.get('origin'))
+            key = (str(mapping.get('name') or ''), str(mapping.get('source') or ''), origin)
             if key in seen:
                 continue
             seen.add(key)
-            folder = shared / key[0]
-            if folder.is_dir() and any(folder.rglob('*')):
+            root_name = vision_root(key[0]) or key[0]
+            folder = shared / root_name
+            marker = folder / READY_NAME
+            if marker.is_file() and marker.read_text(encoding='utf-8').strip() == origin:
+                announce(study, 'make', f'shared {key[0]} cached')
                 continue
-            DataFactory.build(DataConfig.from_mapping(mapping), shared)
+            endpoint = endpoint_for(key[0], origin)
+            detail = f'shared {key[0]} download {origin} {endpoint.location}'
+            announce(study, 'make', detail)
+            DataFactory.build(DataConfig.from_mapping(mapping), shared, origin=origin)
+            marker.parent.mkdir(parents=True, exist_ok=True)
+            marker.write_text(f'{origin}\n', encoding='utf-8')
+            announce(study, 'make', f'shared {key[0]} ready')
             names.append(key[0])
     finally:
         if previous is None:

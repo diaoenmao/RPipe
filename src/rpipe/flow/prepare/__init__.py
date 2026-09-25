@@ -8,6 +8,7 @@ from rpipe.structure.artifact.asset import ensure_assets
 from rpipe.structure.artifact.config import load_config
 from rpipe.structure.control import control_from_config, validate_control
 from rpipe.structure.control.layers import AlgorithmConfig, DataConfig, ModelConfig, SystemConfig
+from rpipe.structure.origin import apply_model_origin, normalize_origin
 
 
 def run(ctx: FlowContext) -> None:
@@ -25,15 +26,20 @@ def run(ctx: FlowContext) -> None:
         ctx.layout.assets_dir,
     )
     system.meta.update(ctx.state['runtime'])
+    origin = cfg.get('origin')
+    if origin not in (None, ''):
+        apply_model_origin(normalize_origin(origin))
     data = data_api.build(
         DataConfig.from_mapping(ctx.control.data),
         ctx.layout.shared_data_dir,
         seed=ctx.control.seed,
+        origin=origin,
     )
     model = model_api.build(
         ModelConfig.from_mapping(ctx.control.model),
         ctx.layout.shared_model_dir,
         data_meta=getattr(data, 'meta', None),
+        origin=origin,
     )
     if model.module is not None:
         model.module = system.place_module(model.module)

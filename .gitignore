@@ -33,6 +33,7 @@ studies/**/shared/
 studies/**/scripts/
 studies/**/index.json
 studies/**/process.json
+studies/**/activity.json
 
 # Legacy root artifact directories (do not recreate)
 /data/

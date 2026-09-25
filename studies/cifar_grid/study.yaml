@@ -1,0 +1,48 @@
+# 对照 docs/STUDY_GUIDE.md。格子由 make 展开，不要手写 runs/。
+# 小网格：CIFAR10 × linear/mlp/cnn/resnet18，train 再 eval。不是全量 50000。
+
+study: cifar_grid
+origin: domestic
+description: CIFAR10 model grid → test accuracy (small train subset)
+
+experiment:
+  name: cifar10_models
+
+fixed:
+  data:
+    name: CIFAR10
+    source: torch
+    config:
+      train_size: 1024
+      batch_size: 64
+  algorithm:
+    source: custom_torch
+    num_epochs: 5
+    progress_unit: epoch
+    eval_period: 1
+    checkpoint: latest
+    checkpoint_period: 1
+    save_best: true
+    optimizer: SGD
+    max_grad_norm: 0
+    lr: 0.1
+    scheduler: cosine
+    eta_min: 0.0
+  system:
+    device: cuda
+    deterministic: false
+    cudnn_benchmark: true
+
+axes:
+  model.name: [linear, mlp, cnn, resnet18]
+  algorithm.mode: [train, eval]
+
+seeds: [0]
+
+tags:
+  - when:
+      model.name: linear
+      algorithm.mode: train
+    tags: [baseline]
+
+run_description: "model={model_name} mode={mode} seed={seed}"

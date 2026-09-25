@@ -2,69 +2,69 @@
 
 > 未拍板的想法。**不**当合同。权威是 [CONCEPT.md](CONCEPT.md) → [LAYOUT.md](LAYOUT.md) → [STUDY_GUIDE.md](STUDY_GUIDE.md)。缺陷进 [BUGS.md](BUGS.md)。
 
-**对照** git **`main`**：旧 RPipe 的**执行形状**（`&`/`wait`、`process.py` 收口、metric / checkpoint 习惯）。不是「只做一个 backend」——旧栈只有 custom torch；这边要多个 `source`。
+**对照** git **`main`** 的执行形状。**借鉴** DeepScientist 的账本纪律，不当对照物，不做研究 OS。
 
-**借鉴** DeepScientist：durable 契约与编排纪律。不当对照物，不做研究 OS（daemon / Web / 决策器仍在库外）。
+前面只写规则和还要做的。已经落地的在文末，不占对照清单。
 
-新想法追加在 **§3**。拍板后写入 CONCEPT / LAYOUT / STUDY_GUIDE，并从这里收口。
-
----
-
-## 1. 对照 `main`
-
-要对上、且已经落地：
-
-- **调度：** `&` + `wait`，一组结束才开下一组（`launch` 与 make 写出的脚本）
-- **Study process：** 整轮 launch wait 完后再收口（也可 `rpipe process`）。对齐旧 `process.py` 的位置：读结果做聚合/图，不是再训。信封在根 `process.json`；跨 seed 的 mean / std / min / max 在 `experiments[]`（Experiment 无文件夹）；Run 另有自己的 `process.json`
-
-metric 名、Accuracy 0–1、latest / best、shuffle / 续训：native 已钉；其它 `source` 走同一套键，自己映射。不要把 Trainer 特有键抬成 Control 必须表。
-
-**不对照：** 只做 `custom_torch`。Registry 并列挂 backend。
+新想法追加在 **§3**。拍板后写入 CONCEPT / LAYOUT / STUDY_GUIDE，并从这里删掉。
 
 ---
 
-## 2. 借鉴 DeepScientist
+## 1. 对照 `main`（硬性）
 
-学「写下的东西还能被指认」。定位仍是执行底座，不是 Quest / Canvas / Findings。
+对照的是形状：调度、Study 收口、metric / checkpoint 习惯。
+
+**不对照：**「只做 `custom_torch`」。旧 `main` 只有这一支；这边 Registry 并列挂多个 `source`。Trainer 特有键不进 Control 必须表。
 
 ---
 
-## 3. 开放想法
+## 2. 借鉴 DeepScientist（硬性）
 
-一条一事。已有的能力不重复立项。
+只借：写下的东西还能被指认（index、result、status）。
 
-### 已有（不要再做）
+**不做：** Quest、Canvas、Findings、daemon、Web、决策器。
 
-| 能力 | 现在 |
+---
+
+## 3. 要做的
+
+一条一事。
+
+**`run.log` 用 `[tag]` 排版。** 现在一行是 `id` 后面接一长串空格分开的词（`epoch 5 test Accuracy 0.3415 Loss …`），失败、checkpoint、flow 起止混在同一种句子里。改成固定前缀加方括号标签，人眼和 `rg` 都能切段。同一份 `run.log`，行首仍是 Run `id`。不改 `result.json` 的字段。
+
+示意：
+
+```text
+f487ffe68a52f01c [flow] start phases=prepare,execute,collect,summarize,write,process
+f487ffe68a52f01c [error] phase=prepare RuntimeError: operator torchvision::nms does not exist
+f487ffe68a52f01c [epoch] 5 [split] test [metric] Accuracy=0.3415 Loss=1.8424 [resume] best step=80
+f487ffe68a52f01c [ckpt] best path=runs/…/checkpoints/best.pt
+f487ffe68a52f01c [flow] succeeded
+```
+
+标签先只覆盖已经在打的几类：`[flow]` `[error]` `[epoch]` `[split]` `[metric]` `[ckpt]` `[resume]`。traceback 行保持 `[error]` 续行，不另造格式。`--console shared` 时仍靠行首 `id` 把多条 Run 拆开。
+
+**先不做：** 数据/库指纹；已成功还想多训几个 epoch；process 再多几张图。
+
+**明确不做：** 把 `inference` 当对照义务；DDP；vLLM；TensorBoard；Kornia 当库能力。
+
+---
+
+## 4. 已经做的
+
+| 能力 | 口径 |
 |------|------|
-| `&` / `wait` | `launch` + 脚本 |
-| Study process | launch 之后；`rpipe process` |
-| `--mode train` / `eval` | 只过滤这一次 launch，**不**改 `jobs.json` |
-| skip / `--include-done` / `--remake` | 已成功默认 skip；`--include-done` 复用清单；`--remake` 才再 make |
-| 失败再试 | 各组完后 `retry … (resume latest)`，不改 yaml |
+| `&` / `wait` | 一组结束才开下一组。`launch` 和 make 脚本 |
+| Study process | launch 全部 wait 完后再收口；也可 `rpipe process`。信封在根 `process.json`；跨 seed 的 mean / std / min / max 在 `experiments[]`。Experiment 无文件夹 |
+| metric / checkpoint | 名、Accuracy 0–1、latest / best、shuffle / 续训。native 已钉；其它 `source` 同一套键自己映射 |
+| `--mode train` / `eval` | 只滤这一次 launch，不改 `jobs.json` |
+| skip / `--include-done` / `--remake` | 已成功默认跳过；`--include-done` 复用清单；`--remake` 才再 make |
+| 失败再试 | 组末 `retry … (resume latest)`，不改 yaml |
 | 算法 resume | train `latest`；eval `best`（sibling） |
-| 失败 log | 同份 `run.log` + traceback；`result` 里 `status` / `error` |
-| config 身份 | Run `id` = config hash。报告表格已抄。`index.id` = 整张清单。不必再 hash 一遍 config |
-| `rpipe status` | 只读：index + 各条 result。见 STUDY_GUIDE §7 |
-| `split-round` | make CLI 已有 |
+| 失败 log | 同一份 `run.log` 加 traceback；`result` 有 `status` / `error` |
+| config 身份 | Run `id` 就是 config hash。`index.id` 是整张清单。不再做第二套 |
+| `rpipe status` | 只读。见 STUDY_GUIDE §7。已进 `dev` |
+| `split-round` | make 已有 |
+| CIFAR 小网格 | `studies/cifar_grid/`。2026-09-26 launch 完，8/8 succeeded。报告在该 Study 的 `docs/STUDY_REPORT.md` |
 
-没有 `main` 那种 `resume_mode` 开关。不必为对齐再造。retry 要不要写进 yaml、已成功还想多训几个 epoch：用得少先不动。
-
-### 可以想（未拍板）
-
-**CIFAR 小网格对照 study。** 数据和骨干已注册，现有 study 都是 MNIST。对照旧 `make.py` 网格，不是新算法。integration，不进 `--core`。
-
-**process 多图。** mean±std 曲线已有。只有对照旧 `process.py` 觉得缺图才做，不做第二套聚合。
-
-**数据/库指纹。** 不是环境变量，也不是 config hash。是 rpipe 版本 + `shared/data` 文件哈希（数据或库变了 `run_id` 可以不变）。未拍板。报告钉整轮：抄 `index.id`。
-
-**已成功还想多训。** 现在只有整格 `--include-done`。
-
-### 明确不做
-
-`inference` 当对照义务；DDP；vLLM；TensorBoard；Kornia 当库能力；daemon / Web / 决策器。
-
-### 建议下一刀
-
-1. CIFAR 小网格对照。
-2. 其余往后。
+不造 `main` 的 `resume_mode` 同名开关。

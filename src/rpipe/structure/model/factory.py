@@ -9,6 +9,7 @@ from typing import Any, Callable
 from rpipe.structure.model.config import ModelConfig
 from rpipe.structure.model.init_param import init_param
 from rpipe.structure.model.shape import resolve_shape
+from rpipe.structure.origin import apply_model_origin, normalize_origin
 
 
 class Model:
@@ -56,18 +57,25 @@ class ModelFactory:
         model_config: ModelConfig,
         assets_dir: Path | str,
         data_meta: dict[str, Any] | None = None,
+        origin: str | None = None,
     ) -> Model:
         name = model_config.name or 'unknown'
         source = model_config.source or 'custom_torch'
         builder = ModelRegistry.get(name, source) or ModelRegistry.get(name, 'custom_torch')
         if builder is None:
-            return Model(
+            model = Model(
                 name=name,
                 source=source,
                 module=None,
                 meta={'ready': True, 'assets_dir': str(assets_dir), 'config': dict(model_config.config)},
             )
-        return builder(model_config, Path(assets_dir), data_meta=data_meta)
+        else:
+            model = builder(model_config, Path(assets_dir), data_meta=data_meta)
+        if origin not in (None, ''):
+            chosen = normalize_origin(origin)
+            model.meta['origin'] = chosen
+            model.meta['hub'] = apply_model_origin(chosen)
+        return model
 
 
 def _wrap(name: str, model_config: ModelConfig, assets_dir: Path, module: Any, extra: dict[str, Any]) -> Model:

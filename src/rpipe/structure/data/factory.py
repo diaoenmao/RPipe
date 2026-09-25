@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Callable, Iterator
 
 from rpipe.structure.data.config import DataConfig
+from rpipe.structure.origin import bind_endpoint, discard_bad_archive, endpoint_for
 
 
 class Data:
@@ -103,7 +104,12 @@ class DataRegistry:
 
 class DataFactory:
     @staticmethod
-    def build(data_config: DataConfig, assets_dir: Path | str, seed: int | None = None) -> Data:
+    def build(
+        data_config: DataConfig,
+        assets_dir: Path | str,
+        seed: int | None = None,
+        origin: str | None = None,
+    ) -> Data:
         name = data_config.name or 'unknown'
         source = data_config.source
         if source is None and name in _VISION_TORCH:
@@ -115,6 +121,8 @@ class DataFactory:
             builder = DataRegistry.get(name, 'stub')
         if builder is None:
             return _build_stub(data_config, Path(assets_dir))
+        if builder is _build_torch_vision:
+            return _build_torch_vision(data_config, Path(assets_dir), seed=seed, origin=origin)
         return builder(data_config, Path(assets_dir), seed=seed)
 
 
@@ -284,12 +292,27 @@ def _eval_transforms(spec: dict[str, Any]) -> Any:
     )
 
 
-def _build_torch_vision(data_config: DataConfig, assets_dir: Path, seed: int | None = None) -> Data:
+def vision_root(name: str) -> str | None:
+    spec = _VISION_TORCH.get(name)
+    if spec is None:
+        return None
+    return str(spec['root'])
+
+
+def _build_torch_vision(
+    data_config: DataConfig,
+    assets_dir: Path,
+    seed: int | None = None,
+    origin: str | None = None,
+) -> Data:
     import torch
     from torch.utils.data import DataLoader, Subset
-    from torchvision import datasets
 
     from rpipe.structure.system.runtime import make_generator, worker_init_fn
+    from rpipe.structure.system.torchvision_load import import_torchvision
+
+    import_torchvision()
+    from torchvision import datasets
 
     name = data_config.name or 'unknown'
     spec = _VISION_TORCH[name]
@@ -300,8 +323,11 @@ def _build_torch_vision(data_config: DataConfig, assets_dir: Path, seed: int | N
     augment = bool(cfg.get('augment', spec.get('train_aug') is not None))
     train_tf = _train_transforms(spec, augment=augment)
     test_tf = _eval_transforms(spec)
-    train_full = ctor(root=str(root), download=True, transform=train_tf, **dict(spec['train_kw']))
-    test_ds = ctor(root=str(root), download=True, transform=test_tf, **dict(spec['test_kw']))
+    endpoint = endpoint_for(name, origin)
+    discard_bad_archive(root, endpoint)
+    with bind_endpoint(ctor, endpoint):
+        train_full = ctor(root=str(root), download=True, transform=train_tf, **dict(spec['train_kw']))
+        test_ds = ctor(root=str(root), download=True, transform=test_tf, **dict(spec['test_kw']))
     train_size = cfg.get('train_size')
     if train_size is not None:
         n = min(int(train_size), len(train_full))

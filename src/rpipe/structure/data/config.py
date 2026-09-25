@@ -20,6 +20,8 @@ class DataConfig:
     def from_mapping(cls, mapping: dict[str, Any] | None) -> DataConfig:
         known_names = {f.name for f in fields(cls) if f.name != 'extras'}
         body, extras = split_known(dict(mapping or {}), known_names)
+        if body.get('origin') not in (None, '') or extras.get('origin') not in (None, ''):
+            raise ValueError('origin is set on the Study, not under data')
         return cls(
             name=body.get('name'),
             source=body.get('source'),
