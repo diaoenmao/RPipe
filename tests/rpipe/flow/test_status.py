@@ -111,3 +111,14 @@ def test_status_cli_prints_table(tmp_path: Path, capsys):
     assert 'bad' in filtered
     assert '\tok\t' not in filtered
     assert main(['status', str(tmp_path / 'missing')]) == 2
+
+
+def test_status_cli_prints_activity_while_index_is_missing(tmp_path: Path, capsys):
+    study = tmp_path / 'demo'
+    study.mkdir()
+    (study / 'activity.json').write_text(
+        '{"phase": "make", "detail": "shared CIFAR10 download"}\n',
+        encoding='utf-8',
+    )
+    assert main(['status', str(study)]) == 0
+    assert capsys.readouterr().out.strip() == 'make: shared CIFAR10 download'

@@ -8,8 +8,8 @@ from rpipe.structure.data import Data, DataConfig, DataFactory, DataRegistry
 from rpipe.structure.data.prepare import prepare_shared_data
 
 
-def build(data_config: DataConfig, assets_dir, seed=None):
-    return DataFactory.build(data_config, assets_dir, seed=seed)
+def build(data_config: DataConfig, assets_dir, seed=None, origin=None):
+    return DataFactory.build(data_config, assets_dir, seed=seed, origin=origin)
 
 
 def prepare_shared(study_dir: Path | str, config_paths: list[Path]) -> list[str]:

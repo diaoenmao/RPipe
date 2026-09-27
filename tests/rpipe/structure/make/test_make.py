@@ -15,6 +15,7 @@ from rpipe.structure.make import (
     filter_jobs_by_mode,
     gpu_ids,
     load_launch_plan,
+    load_study_yaml,
     plan_jobs,
     render_bash,
     run_succeeded,
@@ -289,13 +290,13 @@ def test_launch_mode_eval_does_not_rewrite_jobs_json(tmp_path: Path, monkeypatch
     assert '"e0"' in stored
 
 
-def test_cpu_make_skips_gpu_probe(tmp_path: Path, monkeypatch):
+def test_cpu_make_skips_gpu_probe(tmp_path: Path, monkeypatch, capsys):
     from rpipe.flow import cli
 
     study = tmp_path / 'cpu-study'
     study.mkdir()
     (study / 'study.yaml').write_text(
-        'study: cpu-study\naxes: {}\nseeds: [0]\n',
+        'study: cpu-study\norigin: domestic\naxes: {}\nseeds: [0]\n',
         encoding='utf-8',
     )
     (study / 'experiment_config.yaml').write_text(
@@ -312,7 +313,39 @@ def test_cpu_make_skips_gpu_probe(tmp_path: Path, monkeypatch):
 
     monkeypatch.setattr(cli, 'probe_gpus', fail_probe)
     assert cli.main(['make', str(study)]) == 0
+    out = capsys.readouterr().out
+    assert 'make: origin domestic model https://hf-mirror.com' in out
+    assert 'make: expand' in out
+    assert 'make: pack' in out
+    assert not (study / 'activity.json').is_file()
     jobs = (study / 'scripts' / 'jobs.json').read_text(encoding='utf-8')
     assert '"device": "cpu"' in jobs
     assert '"gpu"' not in jobs
+
+
+def test_expand_rejects_origin_under_data():
+    with pytest.raises(ValueError, match='Study'):
+        expand_patches(
+            {
+                'origin': 'domestic',
+                'fixed': {'data': {'name': 'CIFAR10', 'origin': 'foreign'}},
+                'axes': {},
+                'seeds': [0],
+            }
+        )
+    repo = Path(__file__).resolve().parents[4]
+    study = load_study_yaml(repo / 'studies' / 'cifar_grid')
+    patches = expand_patches(study)
+    assert len(patches) == 8
+    pairs = [
+        (p['model']['name'], p['algorithm']['mode'], p['seed'], p['data']['config']['train_size'])
+        for p in patches
+    ]
+    assert pairs[0] == ('linear', 'train', 0, 1024)
+    assert patches[0]['origin'] == 'domestic'
+    assert 'origin' not in patches[0]['data']
+    assert pairs[1] == ('linear', 'eval', 0, 1024)
+    assert {name for name, _, _, _ in pairs} == {'linear', 'mlp', 'cnn', 'resnet18'}
+    assert sum(1 for p in patches if p.get('tags') == ['baseline']) == 1
+    assert patches[0]['description'] == 'model=linear mode=train seed=0'
 

@@ -264,4 +264,4 @@ conservative 墙钟只在 **make** 打印。本进程实测时间在 Logger 行�
 
 `--console`：Windows 默认 `new`（每条 `run-one` 一个控制台，并行 printout 分开）；`shared` 混在当前终端。不改变 wait 语义。
 
-`python -m rpipe status <study>` **不是** Flow 阶段。它只读 `index.json` 和各 `runs/<id>/result.json`，打 planned / succeeded / failed / pending 和一张表。没有 result 的格子是 `pending`。`--mode` 只滤行。实现在 `flow/status.py`。
+`python -m rpipe status <study>` **不是** Flow 阶段。它只读 `index.json` 和各 `runs/<id>/result.json`，打 planned / succeeded / failed / pending 和一张表。没有 result 的格子是 `pending`。`--mode` 只滤行。若存在 `activity.json`（make 进行中写入，成功后删除），第一行是当前阶段，例如 `make: shared CIFAR10 download`。实现在 `flow/status.py`；写入在 `structure/artifact/activity.py`。

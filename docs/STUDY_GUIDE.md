@@ -56,6 +56,7 @@ studies/<name>/
 | `studies/_template/` | **新 Study 起点**：`study.yaml` + `experiment_config.yaml` + `docs/PLAN.md` + `docs/STUDY_REPORT.md`。复制整个目录再改名。 |
 | `studies/mnist_train_size/` | 扫研究因素：三个 `train_size`，train + 独立 eval |
 | `studies/mnist_native_vs_hf/` | 同一超参：native 循环 vs HF Trainer |
+| `studies/cifar_grid/` | CIFAR10 小网格：linear / mlp / cnn / resnet18，train 再 eval。`train_size=1024`，不是全量 |
 
 新 Study 从 `_template/` 复制。`mnist_train_size` 是扫因素的研究向例子。
 
@@ -158,7 +159,7 @@ Windows / Conda 若报 `OMP: Error #15`，说明环境里加载了多份 OpenMP 
 1. **make** 读 `study.yaml`，按 `axes` × `seeds` 展开  
 2. 每个补丁 ⊕ `experiment_config.yaml` → `runs/<id>/config.yaml`  
 3. 写 `index.json`（每条 Run 带 `log`）  
-4. 按 `data.name` + `source` 各准备一次共享数据到 `shared/data/`（忽略 `train_size`；已有缓存则跳过；下载不刷 tqdm）  
+4. 按 `data.name` + `source` 各准备一次共享数据到 `shared/data/`（忽略 `train_size`；只有成功后的 `.ready` 才跳过；半截压缩包会重下；下载不刷 tqdm）。数据地址和模型 hub 都看 Study 的 `origin`。  
 5. **launch** 读 `scripts/jobs.json` 跑未完成 Run（缺清单或 `--remake` 才再 make）；每个 Run：prepare → execute → collect → summarize → **write** → process  
 
 常用参数：
@@ -233,6 +234,7 @@ system:
 
 ```yaml
 study: mnist_train_size
+origin: foreign                 # Study 级。domestic 时数据走国内镜像，模型 hub 为 hf-mirror.com
 description: MNIST train_size sweep → test accuracy
 
 experiment:
@@ -329,6 +331,8 @@ python -m rpipe status studies/<name> --mode eval
 ```
 
 先打一行计数：`planned` / `succeeded` / `failed` / `pending`。然后每条 Run 一行（tab）：`status`、`mode`、`seed`、`id`、因素、一个 metric、失败时的 `error`、`log`。顺序跟 index。没有 `result.json` 的格子是 `pending`。metric 只在 `succeeded` 时出现，优先 `accuracy`，否则 `best_accuracy` 或 `train_loss`。`--mode` 只滤显示。缺 `index.json` 则退出码 2。
+
+`make` 进行中会立刻打出阶段（flush），并写 study 根上的 `activity.json`（不进 Git）：`make: origin <foreign|domestic> model <hub>`、`make: expand`、`make: shared <name> download <origin> <url>` / `ready` / `cached`、`make: pack`。另开一个终端跑上面的 `rpipe status`，有这份文件时第一行就是当前阶段；index 还没写出时只打这一行也退出 0。make 成功结束后删掉它。下载仍不刷 tqdm。`origin` 写在 `study.yaml` 顶层，不写在 `data` 下。`foreign` 用 torchvision 官方地址和 `https://huggingface.co`；`domestic` 用国内数据镜像和 `https://hf-mirror.com`。缺省 `foreign`，且不改本机已有的 `HF_ENDPOINT`。只有 `.ready` 才跳过；半截包会删掉再下。
 
 `metrics.train_loss` 应是 AlgorithmTracker **最后一段 train mean**，不是最后一个 batch 的 CE。完整曲线在 `runs/<id>/assets/tracker/`；终端同款文本**必写** `assets/logs/run.log`（行首是 Run `id`）。
 

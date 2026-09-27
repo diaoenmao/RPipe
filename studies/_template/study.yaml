@@ -2,6 +2,7 @@
 # 对照 docs/STUDY_GUIDE.md §1–§3。格子由 make 展开，不要手写 runs/。
 
 study: my_study
+origin: foreign              # foreign：官方数据与 Hugging Face；domestic：国内镜像。Study 只定一次
 description: one-line research question
 
 experiment:

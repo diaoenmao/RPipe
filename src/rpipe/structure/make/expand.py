@@ -9,6 +9,8 @@ from typing import Any
 
 import yaml
 
+from rpipe.structure.origin import normalize_origin
+
 
 def set_dotted(mapping: dict[str, Any], dotted: str, value: Any) -> None:
     keys = dotted.split('.')
@@ -86,6 +88,12 @@ def expand_patches(study: dict[str, Any]) -> list[dict[str, Any]]:
         seeds = [0]
 
     fixed_no_seed = {k: v for k, v in fixed.items() if k != 'seed'}
+    data_fixed = fixed_no_seed.get('data')
+    if isinstance(data_fixed, dict) and data_fixed.get('origin') not in (None, ''):
+        raise ValueError('origin is set on the Study, not under data')
+    chosen = None
+    if study.get('origin') not in (None, ''):
+        chosen = normalize_origin(study.get('origin'))
 
     patches: list[dict[str, Any]] = []
     for combo in cartesian(axes):
@@ -112,6 +120,8 @@ def expand_patches(study: dict[str, Any]) -> list[dict[str, Any]]:
             patch['description'] = format_description(
                 desc_t, {**axis_flat, **patch}, exp_name
             )
+            if chosen is not None:
+                patch['origin'] = chosen
             patches.append(patch)
     return patches
 
