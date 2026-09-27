@@ -1,4 +1,4 @@
-"""Unified non-interactive test entry (TESTING.md §11)."""
+"""Unified non-interactive test entry (TESTING.md 附录：RPipe)."""
 
 from __future__ import annotations
 
@@ -16,17 +16,24 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument('--level', choices=('unit', 'integration', 'e2e'))
     parser.add_argument('--type', dest='test_type', choices=('location', 'content', 'physical'))
     parser.add_argument('--priority', choices=('p1', 'p2', 'p3'))
+    parser.add_argument(
+        '--cost-class',
+        action='append',
+        choices=('c1', 'c2', 'c3', 'c4'),
+        default=[],
+        help='repeat to allow more than one cost class',
+    )
     parser.add_argument('--layer', help='architecture layer marker, e.g. structure_layer')
     parser.add_argument('--module', help='module_* marker without prefix, e.g. control')
     parser.add_argument(
         '--fast',
         action='store_true',
-        help='unit + p1, exclude slow/external (TESTING Fast stage)',
+        help='unit + p1 + c1, exclude slow/external/gpu',
     )
     parser.add_argument(
         '--core',
         action='store_true',
-        help='all unit, exclude slow/external (TESTING Core without integration p1)',
+        help='unit c1 and c2, exclude slow/external/gpu',
     )
     parser.add_argument('--all', action='store_true', help='run every collected test')
     parser.add_argument('pytest_args', nargs=argparse.REMAINDER)
@@ -37,10 +44,13 @@ def main(argv: list[str] | None = None) -> int:
         extra = extra[1:]
 
     parts: list[str] = []
+    cost_classes = list(args.cost_class)
     if args.fast:
-        parts.append('unit and p1 and not slow and not external')
+        parts.append('unit and p1 and not slow and not external and not gpu')
+        cost_classes = cost_classes or ['c1']
     elif args.core:
-        parts.append('unit and not slow and not external')
+        parts.append('unit and not slow and not external and not gpu')
+        cost_classes = cost_classes or ['c1', 'c2']
     elif not args.all:
         if args.level:
             parts.append(args.level)
@@ -58,6 +68,8 @@ def main(argv: list[str] | None = None) -> int:
     expr = _expr(parts)
     if expr:
         cmd.extend(['-m', expr])
+    for cost_class in cost_classes:
+        cmd.extend(['--cost-class', cost_class])
     cmd.extend(extra)
     print(subprocess.list2cmdline(cmd), flush=True)
     return subprocess.call(cmd)

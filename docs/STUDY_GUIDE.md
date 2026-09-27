@@ -152,7 +152,7 @@ wait
 
 每一段 `cmd &` … `wait` 是一个并发批次：`wait` 返回后显存才空出来，下一组才能启动。
 
-训练 Logger 每一行前面带 **Run `id`**，并含 **`elapsed` / `eta`**，写入该 Run 的 `run.log`（与终端同一套）。`--console shared` 时终端会混，靠行首 id 分辨；文件仍是每 Run 一份。Windows 上 `python -m rpipe launch` 默认 **每个 run-one 一个新控制台窗口**。`launch.ps1` 只转调 `rpipe launch`（有 `jobs.json` 就不再 make）。多卡时仍设 `CUDA_VISIBLE_DEVICES`。`scripts/` 默认 gitignore。
+训练 Logger 每一行是 `时间 级别 Run id [事件] 内容`，写入该 Run 的 `run.log`（与终端同一套）。时间是本地 RFC 3339（毫秒和时区）。`--console shared` 时终端会混，靠 Run id 这一格分辨；文件仍是每 Run 一份。`[time]` 里的 `elapsed` / `eta` 是这一轮的进度时钟。Windows 上 `python -m rpipe launch` 默认 **每个 run-one 一个新控制台窗口**。`launch.ps1` 只转调 `rpipe launch`（有 `jobs.json` 就不再 make）。多卡时仍设 `CUDA_VISIBLE_DEVICES`。`scripts/` 默认 gitignore。
 
 Windows / Conda 若报 `OMP: Error #15`，说明环境里加载了多份 OpenMP runtime。先用 `where.exe libiomp5md.dll` 检查来源，并在同一个包管理器中重装 PyTorch / NumPy，或改用干净虚拟环境。`KMP_DUPLICATE_LIB_OK=TRUE` 只能由使用者临时显式设置用于诊断；RPipe 不默认注入它。
 
@@ -334,7 +334,7 @@ python -m rpipe status studies/<name> --mode eval
 
 `make` 进行中会立刻打出阶段（flush），并写 study 根上的 `activity.json`（不进 Git）：`make: origin <foreign|domestic> model <hub>`、`make: expand`、`make: shared <name> download <origin> <url>` / `ready` / `cached`、`make: pack`。另开一个终端跑上面的 `rpipe status`，有这份文件时第一行就是当前阶段；index 还没写出时只打这一行也退出 0。make 成功结束后删掉它。下载仍不刷 tqdm。`origin` 写在 `study.yaml` 顶层，不写在 `data` 下。`foreign` 用 torchvision 官方地址和 `https://huggingface.co`；`domestic` 用国内数据镜像和 `https://hf-mirror.com`。缺省 `foreign`，且不改本机已有的 `HF_ENDPOINT`。只有 `.ready` 才跳过；半截包会删掉再下。
 
-`metrics.train_loss` 应是 AlgorithmTracker **最后一段 train mean**，不是最后一个 batch 的 CE。完整曲线在 `runs/<id>/assets/tracker/`；终端同款文本**必写** `assets/logs/run.log`（行首是 Run `id`）。
+`metrics.train_loss` 应是 AlgorithmTracker **最后一段 train mean**，不是最后一个 batch 的 CE。完整曲线在 `runs/<id>/assets/tracker/`；终端同款文本**必写** `assets/logs/run.log`（`时间 级别 Run id [事件] 内容`）。
 
 `process` 分三层含义，对应 CONCEPT §2.1：每条 Run 写 `runs/<id>/process.json`。整轮结束后 `rpipe process` 写根 `process.json`（Study **信封**）。信封里每个 Experiment 才是跨 seed 的 metrics / history **mean / std / min / max**。图在 `docs/figures/learning_curves.png`。**不**改 `STUDY_REPORT.md`。
 
@@ -375,8 +375,8 @@ python -m rpipe status studies/<name> --mode eval
 | 改一次 Run 的阶段顺序 | 不要改；最多 `--phases` 裁剪，相对顺序不变 |
 | 自动出报告 / 跨 Run 对比表 | 人写 `STUDY_REPORT.md`（必须嵌图）；Study `process` 出 mean/std/min/max 和 `docs/figures/learning_curves.png` |
 | 训练曲线 | process 画 epoch `history` → `docs/figures/`；密点仍在 `scalars.jsonl`。不做 TensorBoard |
-| 终端 + 硬盘日志 | **Logger** 必写 `runs/<id>/assets/logs/run.log`（行首 `id`）；失败时 traceback 进同一份文件。`index.json` 的 `log` 指向它。没有 Study 级总 log |
-| 并行时日志挤在一起 | 文件按 Run 分开；终端每行带 `run_id`。Windows：`rpipe launch` 默认 `--console new`；`--console shared` 只混终端 |
+| 终端 + 硬盘日志 | **Logger** 必写 `runs/<id>/assets/logs/run.log`（`时间 级别 Run id [事件]`）；失败时 traceback 每一行都是 `[error]`。`index.json` 的 `log` 指向它。没有 Study 级总 log |
+| 并行时日志挤在一起 | 文件按 Run 分开；终端每行带 Run `id`。Windows：`rpipe launch` 默认 `--console new`；`--console shared` 只混终端 |
 | 看这轮谁好了谁挂了 | `python -m rpipe status studies/<name>`（只读；`--mode eval` 可滤） |
 | 下一组挤进还在跑的实验、显存爆 | 组末必须 `wait`（make 脚本 / `rpipe launch` 都这样）；不要手改脚本去掉 `wait` |
 

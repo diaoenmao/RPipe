@@ -70,7 +70,10 @@ class Algorithm(AlgorithmHook):
             if logger is not None and logger_state is not None and hasattr(logger, 'load_state_dict'):
                 logger.load_state_dict(logger_state)
         if logger is not None:
-            logger.info(f"resume {target} epoch={payload.get('epoch')} step={payload.get('step')}")
+            logger.info(
+                f"target={target} epoch={payload.get('epoch')} step={payload.get('step')}",
+                event='resume',
+            )
         return payload
 
     def run(self, data: Any, model: Any, system: Any, tracker: AlgorithmTracker) -> dict[str, Any]:

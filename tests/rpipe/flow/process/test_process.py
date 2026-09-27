@@ -6,6 +6,8 @@ pytestmark = [
     pytest.mark.p1,
     pytest.mark.flow_layer,
     pytest.mark.module_process,
+    pytest.mark.cost(cost_class='c1'),
+    pytest.mark.result_type('categorical', detail='summary'),
 ]
 
 import json
@@ -49,6 +51,7 @@ def _write_succeeded(study: Path, run_id: str, seed: int, size: int, metrics: di
 
 
 def test_run_process_is_individual_only(tmp_path: Path):
+    """One Run's process file keeps that Run's metrics and does not invent experiment stats."""
     study = tmp_path / 'demo'
     a = _write_succeeded(study, 'a', 0, 500, {'accuracy': 0.8, 'train_loss': 0.5}, ['baseline'])
     _write_succeeded(study, 'b', 1, 500, {'accuracy': 0.7, 'train_loss': 0.6}, ['baseline'])
@@ -71,6 +74,7 @@ def test_run_process_is_individual_only(tmp_path: Path):
 
 
 def test_study_process_aggregates_history_min_max(tmp_path: Path):
+    """Study process aggregates history mean, std, min, and max across seeds."""
     study = tmp_path / 'demo'
     a = _write_succeeded(study, 'a', 0, 500, {'accuracy': 0.8, 'train_loss': 0.5}, ['baseline'])
     b = _write_succeeded(study, 'b', 1, 500, {'accuracy': 0.7, 'train_loss': 0.6}, ['baseline'])
@@ -128,6 +132,7 @@ def test_study_process_aggregates_history_min_max(tmp_path: Path):
 
 
 def test_process_does_not_rewrite_result(tmp_path: Path):
+    """process reads result.json and leaves its bytes unchanged."""
     layout = artifact_layout(tmp_path, 'only')
     write_result(
         layout.result_path,

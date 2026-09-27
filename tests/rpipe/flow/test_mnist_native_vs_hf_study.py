@@ -17,10 +17,13 @@ pytestmark = [
     pytest.mark.module_cli,
     pytest.mark.slow,
     pytest.mark.external,
+    pytest.mark.cost(cost_class='c2'),
+    pytest.mark.result_type('categorical', detail='summary'),
 ]
 
 
 def test_mnist_native_vs_hf_cpu_make_launches_both_sources_without_gpu(tmp_path: Path):
+    """CPU Study from `rpipe` make through launch to a written report, with no GPU job."""
     import shutil
 
     repo = Path(__file__).resolve().parents[3]

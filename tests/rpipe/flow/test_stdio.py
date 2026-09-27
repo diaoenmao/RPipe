@@ -7,6 +7,8 @@ pytestmark = [
     pytest.mark.p2,
     pytest.mark.flow_layer,
     pytest.mark.module_cli,
+    pytest.mark.cost(cost_class='c1'),
+    pytest.mark.result_type('categorical', detail='summary'),
 ]
 
 from rpipe.flow.cli import _configure_stdio

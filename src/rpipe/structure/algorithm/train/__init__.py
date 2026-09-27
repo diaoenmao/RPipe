@@ -107,7 +107,7 @@ class TrainAlgorithm(Algorithm):
         for name in names:
             path = writer(payload, name)
             if logger is not None:
-                logger.info(f'checkpoint {name} -> {path}')
+                logger.info(f'name={name} path={path}', event='ckpt')
 
     def run(self, data: Any, model: Any, system: Any, tracker: AlgorithmTracker) -> dict[str, Any]:
         if getattr(model, 'module', None) is not None and hasattr(data, 'iter_batches'):

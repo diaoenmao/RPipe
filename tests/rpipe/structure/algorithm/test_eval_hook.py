@@ -6,6 +6,8 @@ pytestmark = [
     pytest.mark.p1,
     pytest.mark.structure_layer,
     pytest.mark.module_algorithm,
+    pytest.mark.cost(cost_class='c1'),
+    pytest.mark.result_type('categorical', detail='summary'),
 ]
 
 from rpipe.structure.algorithm.base import Algorithm
