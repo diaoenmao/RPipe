@@ -12,10 +12,13 @@ pytestmark = [
     pytest.mark.flow_layer,
     pytest.mark.module_cli,
     pytest.mark.external,
+    pytest.mark.cost(cost_class='c2'),
+    pytest.mark.result_type('categorical', detail='summary'),
 ]
 
 
 def test_run_study_skip_launch_index_groups_train_eval_experiments(tmp_path: Path):
+    """run_study with skip_launch writes an index grouped by train_size and mode."""
     import shutil
 
     repo = Path(__file__).resolve().parents[3]

@@ -11,10 +11,13 @@ pytestmark = [
     pytest.mark.p1,
     pytest.mark.flow_layer,
     pytest.mark.module_runner,
+    pytest.mark.cost(cost_class='c1'),
+    pytest.mark.result_type('categorical', detail='summary'),
 ]
 
 
 def test_full_flow_writes_succeeded_status(tmp_path: Path):
+    """FlowRunner from prepare through process writes status succeeded."""
     layout = artifact_layout(tmp_path, 'seed_0')
     write_config(
         layout.config_path,
@@ -41,6 +44,7 @@ def test_full_flow_writes_succeeded_status(tmp_path: Path):
 
 
 def test_failed_flow_writes_failed_result(tmp_path: Path):
+    """A failing execute phase writes status failed and an [error] traceback."""
     layout = artifact_layout(tmp_path, 'bad_run')
     write_config(
         layout.config_path,
@@ -73,20 +77,21 @@ def test_failed_flow_writes_failed_result(tmp_path: Path):
     assert 'boom' in result['error']
     assert validate_result(result) == []
     log = (layout.assets_dir / 'logs' / 'run.log').read_text(encoding='utf-8')
-    assert 'flow start' in log
-    assert 'ERROR phase=execute status=failed RuntimeError: boom' in log
-    assert 'Traceback (most recent call last):' in log
+    assert '[flow] start phases=' in log
+    assert '[error] phase=execute status=failed RuntimeError: boom' in log
+    assert '[error] Traceback (most recent call last):' in log
     assert 'RuntimeError: boom' in log
-    assert 'flow succeeded' not in log
+    assert '[flow] succeeded' not in log
 
 
 def test_prepare_failure_still_writes_traceback_to_run_log(tmp_path: Path):
+    """A failing prepare phase still leaves the traceback in run.log."""
     layout = artifact_layout(tmp_path, 'missing_cfg')
     ctx = FlowContext(study_dir=tmp_path, layout=layout, config={})
     with pytest.raises(Exception):
         FlowRunner().run(ctx)
     log = (layout.assets_dir / 'logs' / 'run.log').read_text(encoding='utf-8')
-    assert 'flow start' in log
-    assert 'ERROR phase=prepare status=failed' in log
-    assert 'Traceback (most recent call last):' in log
-    assert 'flow succeeded' not in log
+    assert '[flow] start phases=' in log
+    assert '[error] phase=prepare status=failed' in log
+    assert '[error] Traceback (most recent call last):' in log
+    assert '[flow] succeeded' not in log

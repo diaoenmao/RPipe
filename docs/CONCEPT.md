@@ -136,7 +136,7 @@ flowchart TB
 | **artifact** | Study 下的持久化整体；IO 在 structure 的 artifact |
 | **result** | 可序列化摘要：`status`、最终 metrics、路径。逐步曲线另见 asset |
 | **asset** | 文件通道：数据集、权重、checkpoint、AlgorithmTracker 曲线、Logger 文本 |
-| **Logger** | system 层，只打字；stdout 与 `assets/logs/` 同一套；行首带 Run `id`；`report` 拼 epoch / `elapsed` / `eta` / Loss；失败时 traceback 也进同一份 `run.log` |
+| **Logger** | system 层，只打字；stdout 与 `assets/logs/` 同一套。每行 `时间 级别 Run id [事件] 内容`（RFC 3339 毫秒+时区，`INFO`/`WARN`/`ERROR`）。事件是 `[flow]` `[error]` `[warn]` `[epoch]` `[split]` `[metric]` `[time]` `[ckpt]` `[resume]`。失败时 traceback 每一行仍是 `[error]`。不改 `result.json` |
 | **index** | Study 编排清单；make 写入；按 Experiment 列 Run |
 | **process** | 定稿后派生：Run 一份旁路；Study 信封里按 Experiment 做跨 seed 统计 |
 
@@ -225,7 +225,7 @@ flowchart LR
 | Phase | 做什么 |
 |-------|--------|
 | **prepare** | 读 **config**，落地 structure；经 **artifact** 取用文件；保持 config 不变 |
-| **execute** | 按 structure 计算；每个 batch 更新 AlgorithmTracker；Logger 按间隔打终端（行首 Run `id`，含 `elapsed` / `eta`）并 flush `run.log` |
+| **execute** | 按 structure 计算；每个 batch 更新 AlgorithmTracker；Logger 按间隔打终端（`时间 级别 Run id [事件]`，`[time]` 含 `elapsed` / `eta`）并 flush `run.log` |
 | **collect** | 从 AlgorithmTracker 收最终 metrics 摘要 |
 | **summarize** | 整理可序列化的 result 草稿，含 `status` |
 | **write** | 把 result 写入 artifact |

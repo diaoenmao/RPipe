@@ -87,7 +87,7 @@ flowchart TD
 
 - 成功：跑完 write 后 `status: succeeded`，再 process。
 - 失败：`_write_failed_result` 尽最大努力写入 `status: failed` + `error`（类型名 + 消息），补齐已知 `paths`；**不得吞掉原异常**。落盘自己再失败则静默，优先保证异常向上。
-- 失败时 **traceback 进该 Run 的 `run.log`**（与 stdout 同一套，行首 Run `id`）。execute 失败由 execute 写；prepare 等阶段由 Runner 写。prepare 尚未挂 System 时 Runner 先打开同一路径的 Logger。
+- 失败时 **traceback 进该 Run 的 `run.log`**（与 stdout 同一套；每一行都是 `[error]`，并带时间和 Run `id`）。execute 失败由 execute 写；prepare 等阶段由 Runner 写。prepare 尚未挂 System 时 Runner 先打开同一路径的 Logger。
 - 失败时若已有 `control` / `collected.metrics`，写入 result，便于对照哪次 Run 挂了。
 - process 里的异常同样走失败路径；此时 result 往往已经 write 过，失败草稿不应无故覆盖 succeeded 正文——实现上宜：仅当尚未有合法 result 时才写 failed；或把 process 失败记到独立派生文件。文档约定：**process 失败不得毁掉已经 write 成功的 result**。
 
@@ -118,7 +118,7 @@ flowchart TD
 4. **先** `system.apply_runtime(seed, system_config)`：python / numpy / torch seed，以及 `deterministic` / cudnn 开关（structure.md §7.9）。必须在建构 Data / Model **之前**。
 5. 按 control 经 `structure.api` 建构：建议 **system → data → model**（设备与输出根先就绪）。`data_api.build(..., seed=)`，train DataLoader 的 shuffle generator 绑同一 seed。data 缓存进 `shared/data/`，可复用权重进 `shared/model/`。
 6. `data.source`：`stub` 不得下载；真数据必须显式（如 `torch`）。
-7. 把运行时对象放进 `state['data'|'model'|'system']`；构造 **AlgorithmTracker**（写 `assets/tracker/`）与 **Logger**（挂在 System 上：stdout **且** `assets/logs/run.log`，行首 Run `id`）；初始化 `observations`。
+7. 把运行时对象放进 `state['data'|'model'|'system']`；构造 **AlgorithmTracker**（写 `assets/tracker/`）与 **Logger**（挂在 System 上：stdout **且** `assets/logs/run.log`，`时间 级别 Run id [事件]`）；初始化 `observations`。
 
 **不做：** 改 config；跑训练循环；写 result。
 
@@ -135,7 +135,7 @@ flowchart TD
 1. 要求 `ctx.control` 已在（否则视为未 prepare）。
 2. 经 `algorithm_api` 调用实现，传入 data / model / system 与 **`state['tracker']`**。Logger 在 `system` 上。算法内部：`resume` →（train 则）`make_optimizer` / `make_scheduler` → 循环。checkpoint **文件**经 system 读写；**策略**在 algorithm。
 3. **每个 batch**：`tracker.evaluate` + `append(split, n=batch_size)`。
-4. **按 report 间隔**：`system.logger.report(tracker, …, extra=…)`（stdout + `run.log` **立即 flush**；行首 Run `id`）。`extra` 含本进程 **`elapsed` / `eta`**（algorithm 进度时钟）。AlgorithmTracker 往 jsonl 追加并 flush；写出 `tracker_state.json` 并 flush。
+4. **按 report 间隔**：`system.logger.report(tracker, …, extra=…)`（stdout + `run.log` **立即 flush**；`[epoch]` `[split]` `[metric]` `[time]`）。`extra` 含本进程 **`elapsed` / `eta`**（algorithm 进度时钟）。AlgorithmTracker 往 jsonl 追加并 flush；写出 `tracker_state.json` 并 flush。
 5. **epoch 末**：`tracker.save()` + `reset()`，再 flush state。预算主口径是 `num_steps`（`step_period>1` 时按 optimizer step 计）；若配置 `num_epochs` 且可推导 steps/epoch，会先换算成步数。周期 test / checkpoint 按 `progress_unit`（默认 step）。checkpoint 经 `on_checkpoint` → system 写 `assets/checkpoints/`（默认覆盖 `latest`）。
 6. **execute 结束（含失败路径尽量）**：再 flush 一遍。
 7. 短备注可进 `state['observations']`。不要把 Module / Tensor / AlgorithmTracker / Logger 整棵丢进 result。
@@ -250,7 +250,7 @@ flowchart TB
 | 不改 config | prepare 前后 config 字节一致 |
 | write vs index | index 在 Study 根；result 在 `runs/<id>/` |
 | process 可空 | 默认 no-op 仍退出 0 |
-| AlgorithmTracker + Logger | 短训：`assets/tracker/` 有 train mean；终端与 `run.log` 行首有 Run `id`、行内有 Loss；result 的 `train_loss` 为段均值而非 last-batch |
+| AlgorithmTracker + Logger | 短训：`assets/tracker/` 有 train mean；终端与 `run.log` 有 Run `id` 和 `[metric] Loss=`；result 的 `train_loss` 为段均值而非 last-batch |
 
 测试树：`tests/rpipe/flow/` 镜像各阶段包。
 

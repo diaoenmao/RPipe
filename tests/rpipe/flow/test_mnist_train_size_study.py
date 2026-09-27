@@ -15,6 +15,9 @@ pytestmark = [
     pytest.mark.module_cli,
     pytest.mark.slow,
     pytest.mark.external,
+    pytest.mark.cost(cost_class='c3'),
+    pytest.mark.gpu,
+    pytest.mark.result_type('categorical', detail='summary'),
 ]
 
 

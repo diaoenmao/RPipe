@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from importlib import import_module
 from pathlib import Path
 
@@ -24,7 +25,7 @@ class FlowRunner:
 
     def run(self, ctx: FlowContext) -> Path:
         logger = self._ensure_logger(ctx)
-        logger.info(f'flow start phases={",".join(self.phases)}')
+        logger.info(f'start phases={",".join(self.phases)} pid={os.getpid()}')
         current = None
         try:
             for name in self.phases:
@@ -35,7 +36,7 @@ class FlowRunner:
             self._log_failure(ctx, current, exc)
             self._write_failed_result(ctx, exc)
             raise
-        logger.info('flow succeeded')
+        logger.info('succeeded')
         return ctx.layout.result_path
 
     def _ensure_logger(self, ctx: FlowContext):

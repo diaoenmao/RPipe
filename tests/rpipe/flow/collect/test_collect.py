@@ -6,6 +6,8 @@ pytestmark = [
     pytest.mark.p1,
     pytest.mark.flow_layer,
     pytest.mark.module_process,
+    pytest.mark.cost(cost_class='c1'),
+    pytest.mark.result_type('categorical', detail='summary'),
 ]
 
 from rpipe.flow.collect import run as collect_run

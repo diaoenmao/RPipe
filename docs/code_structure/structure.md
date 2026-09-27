@@ -655,11 +655,11 @@ prepare 顺序建议：先 `SystemFactory.build`，再 data / model（设备与�
 
 ### 7.8 `Logger`
 
-Logger 是 **system** 的运行时对象：打到 **terminal**，并且 **同一行写入** `assets/logs/run.log` 后立刻 flush。路径落在 `runs/<id>/assets/` 时，**每一行前面加 Run `id`**（`--console shared` 时用来分辨是哪条）。这是执行环境的 IO，不是算法语义。没有 Study 级总 log；index 的 `log` 指向这份文件。
+Logger 是 **system** 的运行时对象：打到 **terminal**，并且 **同一行写入** `assets/logs/run.log` 后立刻 flush。每一行是一条记录：`<RFC3339 毫秒+时区> <INFO|WARN|ERROR> <Run id 或 -> [<事件>] <内容>`。级别补齐到 5 个字符。没有 Run id 时身份格写 `-`。`--console shared` 时用 Run id 这一格把多条 Run 拆开。这是执行环境的 IO，不是算法语义。没有 Study 级总 log；index 的 `log` 指向这份文件。
 
-骨架：`flow start` → `prepared` → 训练 `report` 行 → `execute finished` → `flow succeeded`。失败时同一份文件再写 `ERROR … Type: message` 和 **整段 traceback**（每行仍带 Run `id`）。prepare 还没建 System 时，Runner 先用同一路径打开 Logger，避免 traceback 只留在控制台窗口。
+事件是闭集：`[flow]` `[error]` `[warn]` `[epoch]` `[split]` `[metric]` `[time]` `[ckpt]` `[resume]`。骨架：`[flow] start` → `[flow] prepared` → `[epoch] … [split] … [metric] … [time] …` → `[ckpt]` / `[resume]` → `[flow] execute finished` → `[flow] succeeded`。失败时同一份文件写 `[error]` 摘要，traceback 的每一行都重复时间、级别、Run id 和 `[error]`。prepare 还没建 System 时，Runner 先用同一路径打开 Logger，避免 traceback 只留在控制台窗口。
 
-`report(tracker, split, extra=None)` **必须能接收 AlgorithmTracker**：读其 mean（及最近 batch 值），拼 epoch / **`elapsed` / `eta`** / lr 等 `extra`（墙钟来自 algorithm 进度时钟，不是 make 的 pack 估计）。否则终端看不到 Loss/Accuracy。`info` / `warning` / `error` / `exception` 不依赖 tracker，同样进终端和文件。
+`report(tracker, split, extra=None)` **必须能接收 AlgorithmTracker**：读其 mean（及最近 batch 值），写成 `[epoch]` / `[split]` / `[metric] Name=0.0000` / `[time] elapsed= eta=`。`elapsed` / `eta` 是 algorithm 进度时钟，不是行首墙钟，也不是 make 的 pack 估计。否则终端看不到 Loss/Accuracy。`info` / `warning` / `error` / `exception` 不依赖 tracker，同样进终端和文件。
 
 并行时 Windows 上 `rpipe launch` 默认每条 Run 一个新控制台（`--console new`）；`--console shared` 才混打。这只影响 printout，不改变组间 `wait`。train 第一次没有 `latest` checkpoint 时 **不**打 `resume skip`（默认路径）；真正 load 到权重仍打 `resume …`。
 
@@ -942,7 +942,7 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 | `shared/data/`、`shared/model/` | Study 内共享 |
 | `runs/<id>/assets/` | 本 Run |
 | `runs/<id>/assets/tracker/` | AlgorithmTracker 数字（`tracker_state.json` / `scalars.jsonl`；TB 默认关） |
-| `runs/<id>/assets/logs/` | `system.Logger` 文本，**必写**，与终端同一套；行首 Run `id` |
+| `runs/<id>/assets/logs/` | `system.Logger` 文本，**必写**，与终端同一套；`时间 级别 Run id [事件]` |
 
 `kinds.py` 集中相对路径（cache、weights、checkpoints、tracker、logs、samples）。
 

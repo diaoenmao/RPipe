@@ -30,20 +30,6 @@
 
 一条一事。
 
-**`run.log` 用 `[tag]` 排版。** 现在一行是 `id` 后面接一长串空格分开的词（`epoch 5 test Accuracy 0.3415 Loss …`），失败、checkpoint、flow 起止混在同一种句子里。改成固定前缀加方括号标签，人眼和 `rg` 都能切段。同一份 `run.log`，行首仍是 Run `id`。不改 `result.json` 的字段。
-
-示意：
-
-```text
-f487ffe68a52f01c [flow] start phases=prepare,execute,collect,summarize,write,process
-f487ffe68a52f01c [error] phase=prepare RuntimeError: operator torchvision::nms does not exist
-f487ffe68a52f01c [epoch] 5 [split] test [metric] Accuracy=0.3415 Loss=1.8424 [resume] best step=80
-f487ffe68a52f01c [ckpt] best path=runs/…/checkpoints/best.pt
-f487ffe68a52f01c [flow] succeeded
-```
-
-标签先只覆盖已经在打的几类：`[flow]` `[error]` `[epoch]` `[split]` `[metric]` `[ckpt]` `[resume]`。traceback 行保持 `[error]` 续行，不另造格式。`--console shared` 时仍靠行首 `id` 把多条 Run 拆开。
-
 **先不做：** 数据/库指纹；已成功还想多训几个 epoch；process 再多几张图。
 
 **明确不做：** 把 `inference` 当对照义务；DDP；vLLM；TensorBoard；Kornia 当库能力。
@@ -66,5 +52,6 @@ f487ffe68a52f01c [flow] succeeded
 | `rpipe status` | 只读。见 STUDY_GUIDE §7。已进 `dev` |
 | `split-round` | make 已有 |
 | CIFAR 小网格 | `studies/cifar_grid/`。2026-09-26 launch 完，8/8 succeeded。报告在该 Study 的 `docs/STUDY_REPORT.md` |
+| `run.log` 行格式 | `时间 级别 Run id [事件] 内容`。时间是 RFC 3339 毫秒+时区。事件：`[flow]` `[error]` `[warn]` `[epoch]` `[split]` `[metric]` `[time]` `[ckpt]` `[resume]`。traceback 每一行都是 `[error]`。不改 `result.json` |
 
 不造 `main` 的 `resume_mode` 同名开关。

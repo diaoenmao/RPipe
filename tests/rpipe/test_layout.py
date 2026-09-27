@@ -1,4 +1,4 @@
-"""tests/rpipe must copy the src/rpipe directory skeleton (TESTING.md §5)."""
+"""tests/rpipe must copy the src/rpipe directory skeleton (TESTING.md 目录与映射)."""
 
 from __future__ import annotations
 
@@ -10,6 +10,8 @@ pytestmark = [
     pytest.mark.unit,
     pytest.mark.location,
     pytest.mark.p1,
+    pytest.mark.cost(cost_class='c1'),
+    pytest.mark.result_type('categorical', detail='summary'),
 ]
 
 REPO = Path(__file__).resolve().parents[2]
