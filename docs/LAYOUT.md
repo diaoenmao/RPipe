@@ -53,8 +53,8 @@ flowchart TB
 | 基底配置 | Study 目录下的 experiment 基底文件 | Study 默认值 |
 | Run | `…/runs/<id>/` | config / result / assets |
 | 共享与文档 | `…/shared/`、`…/docs/` | Study 级。`shared/` 里的 data / model 文件属于 **asset** |
-| structure | `src/rpipe/structure/` | api、control、data、model、algorithm、system、artifact、**make** |
-| flow | `src/rpipe/flow/` | cli；prepare / execute / collect / summarize / write / process |
+| structure | `src/rpipe/structure/` | api、control、data、model、algorithm、system、artifact（含 `readout/`）、**make** |
+| flow | `src/rpipe/flow/` | cli；prepare / execute / collect / summarize / write / process。`status` / `logs` / `report` 由 cli 转给 artifact readout |
 
 ---
 
@@ -98,6 +98,8 @@ RPipe/
 | `write/` | 把 result 写入 artifact |
 | `process/` | write 后派生（可空） |
 
+`rpipe status` / `logs` / `report` 的实现在 `structure/artifact/readout/`。cli 只调用它们。
+
 ---
 
 ## 4. Study 目录
@@ -105,11 +107,14 @@ RPipe/
 ```text
 studies/<study>/
   study.yaml
-  index
   experiment_config.yaml
+  index.json                 # make 写入；不入库
+  process.json               # launch / process 写入；不入库
   docs/
     PLAN.md
-    STUDY_REPORT.md
+    STUDY_REPORT.md          # 人写的结论
+    NUMBERS.md               # rpipe report 从 process.json 生成的数字表
+    figures/
   shared/
     data/
     model/
@@ -126,11 +131,13 @@ studies/<study>/
 
 | 成员 | 说明 |
 |------|------|
-| `docs/` | 计划与报告；可入库 |
+| `docs/` | 计划、人写的 `STUDY_REPORT.md`、图；可入库。`NUMBERS.md` 由 `rpipe report` 生成，也可以入库，它不是结论 |
 | `shared/` | Study 内共享 asset（data / model 文件）；默认不入库 |
 | `runs/` | 每次 Run；默认不入库 |
 | `scripts/` | make 生成的调度脚本与 `jobs.json`；默认不入库 |
-| `index` | make 写入的编排清单（每条 Run 含 `config` 与 `log`） |
+| `index.json` | make 写入的编排清单（每条 Run 含 `config` 与 `log`）；不入库 |
+| `process.json` | Study 级聚合信封；不入库 |
+| `activity.json` | 只在 make 进行中出现，成功后删除；不入库。`rpipe status` 在它还在时把第一行打成当前阶段 |
 | `shared/data/`、`shared/model/` | structure data / model 的落盘 |
 | `runs/<id>/assets/` | 本 Run 的 asset：`tracker/`（数字曲线）、`logs/`（文本）、checkpoint、样本等 |
 

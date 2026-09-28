@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
+from rpipe.structure.artifact.asset import kinds
 from rpipe.structure.artifact.index import index_path, load_index
 from rpipe.structure.artifact.paths import RESULT_NAME, RUNS_DIRNAME
 from rpipe.structure.artifact.result import STATUS_SUCCEEDED, load_result
 
 STATUS_PENDING = 'pending'
+_EVENT = re.compile(r'\[(epoch|error|flow)\]\s*(.*)$')
 
 
 def _load_result(study_dir: Path, run_dir: str) -> dict[str, Any] | None:
@@ -42,6 +45,46 @@ def _factor_label(factors: dict[str, Any]) -> str:
             continue
         parts.append(f'{str(key).split(".")[-1]}={value}')
     return ','.join(parts) or '-'
+
+
+def log_path(study_dir: Path, run: dict[str, Any], run_dir: str) -> Path | None:
+    raw = run.get('log')
+    if raw:
+        return study_dir / str(raw)
+    if not run_dir:
+        return None
+    return study_dir / RUNS_DIRNAME / run_dir / 'assets' / kinds.RUN_LOG
+
+
+def _note_from_log(path: Path | None, *, errors_only: bool = False) -> str:
+    """Last ``[epoch]`` or ``[error]`` summary, else the last ``[flow]`` line.
+
+    ``errors_only`` keeps the last ``[error]`` summary and ignores later epochs.
+    """
+    if path is None or not path.is_file():
+        return '-'
+    try:
+        lines = path.read_text(encoding='utf-8', errors='replace').splitlines()
+    except OSError:
+        return '-'
+    chosen = None
+    fallback = None
+    for line in lines:
+        match = _EVENT.search(line)
+        if match is None:
+            continue
+        event, payload = match.group(1), match.group(2).strip()
+        if event == 'error' and (payload.startswith('Traceback') or payload.startswith('File ')):
+            continue
+        text = f'[{event}] {payload}'.strip()
+        if event == 'error':
+            chosen = text
+        elif not errors_only and event == 'epoch':
+            chosen = text
+        elif not errors_only and event == 'flow':
+            fallback = text
+    note = chosen or (None if errors_only else fallback) or '-'
+    return note.replace('\t', ' ').replace('\n', ' ')
 
 
 def _metric_cell(metrics: dict[str, Any]) -> str:
@@ -80,6 +123,11 @@ def list_runs(
                 error = result.get('error')
                 if status == STATUS_SUCCEEDED:
                     metrics = dict(result.get('metrics') or {})
+            note = '-'
+            if status == STATUS_PENDING:
+                note = _note_from_log(log_path(study_dir, run, run_dir))
+            elif status == 'failed':
+                note = _note_from_log(log_path(study_dir, run, run_dir), errors_only=True)
             rows.append(
                 {
                     'id': run.get('id') or run_dir,
@@ -89,6 +137,7 @@ def list_runs(
                     'factors': _factor_label(factors),
                     'metric': _metric_cell(metrics),
                     'error': None if status == STATUS_SUCCEEDED else error,
+                    'note': note,
                     'log': run.get('log'),
                 }
             )
@@ -115,12 +164,13 @@ def format_status(body: dict[str, Any]) -> str:
         f"failed={counts.get('failed', 0)} "
         f"pending={counts.get('pending', 0)}"
     ]
-    lines.append('status\tmode\tseed\tid\tfactors\tmetric\terror\tlog')
+    lines.append('status\tmode\tseed\tid\tfactors\tmetric\terror\tnote\tlog')
     for row in body.get('runs') or []:
         seed = row.get('seed')
         seed_text = '' if seed is None else str(seed)
         error = row.get('error')
         error_text = '-' if not error else str(error).replace('\t', ' ').replace('\n', ' ')
+        note = str(row.get('note') or '-').replace('\t', ' ').replace('\n', ' ')
         log = row.get('log') or '-'
         lines.append(
             '\t'.join(
@@ -132,6 +182,7 @@ def format_status(body: dict[str, Any]) -> str:
                     str(row.get('factors') or '-'),
                     str(row.get('metric') or '-'),
                     error_text,
+                    note,
                     str(log),
                 ]
             )

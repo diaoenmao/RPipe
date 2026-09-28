@@ -33,12 +33,16 @@ studies/<name>/
   docs/
     PLAN.md                  # 研究问题（人写，可入库）
     STUDY_REPORT.md          # 跑完后写结论（人写）
+    figures/                 # process 画出的 learning_curves.png
 ```
+
+`docs/NUMBERS.md` 不在这份清单里：`rpipe report` 从 `process.json` 生成，可以入库，但它不是结论。
 
 跑完后会补上，默认不入库：
 
 ```text
   index.json                 # 按 Experiment 列 Run；每条含 log → 该 Run 的 run.log
+  process.json               # Study 信封；experiments[] 里是跨 seed 的 mean / std / min / max
   shared/{data,model}/       # Study 级 asset：make/launch 先准备共享数据，再 spawn
   runs/<id>/
     config.yaml              # 这一次 Run 的完整 config
@@ -174,7 +178,9 @@ Windows / Conda 若报 `OMP: Error #15`，说明环境里加载了多份 OpenMP 
 | `--remake` | 仅 `launch`：忽略已有 `jobs.json`，重新 make 再跑 |
 | `--console` | `auto`（Windows=`new` 窗口 / 其它=`shared`）；`new`；`shared` |
 | `rpipe process` | 只跑 Study 级聚合（信封 + Experiment 的 mean/std/min/max + 图） |
-| `rpipe status` | 只读：把 `index.json` 和各条 `result.json` 列成表（status / mode / seed / id / log）。`--mode` 可滤。不写文件 |
+| `rpipe status` | 只读，实现在 `structure/artifact/readout/`。把 `index.json` 和各条 `result.json` 列成表。`pending` / `failed` 才填 `note`（见 §7）。`--mode` 可滤。不写文件 |
+| `rpipe logs` | 同一份 readout。各 Run 的事件行按时间打到终端。不写 Study 级总 log |
+| `rpipe report` | 同一份 readout。从 `process.json` 写 `docs/NUMBERS.md`。不改 `STUDY_REPORT.md` |
 | `--round` / `--num-gpus` / `--init-gpu` | `auto` = §3 按 `system.device` 分流，CUDA 按显存装箱、CPU 按进程上限分组；`N` = 均匀切块；GPU 卡号轮转 |
 | `--include-done` | 把 `jobs.json` 里已经 succeeded 的也排进去（仍复用清单；清单里没有的格子才要 `--remake --include-done`） |
 
@@ -323,14 +329,18 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 
 **result**（`runs/<id>/result.json`）：`status`、`metrics`（如 `train_loss` / `accuracy`）、`control`、`paths`。成功则 `status: succeeded`。
 
-**`rpipe status`** 把上面两份拼成一张表，只读，不写文件、不跑训练：
+**`rpipe status`** 把上面两份拼成一张表，只读，不写文件、不跑训练。实现在 `structure/artifact/readout/`，`flow/cli.py` 只转发：
 
 ```bash
 python -m rpipe status studies/<name>
 python -m rpipe status studies/<name> --mode eval
 ```
 
-先打一行计数：`planned` / `succeeded` / `failed` / `pending`。然后每条 Run 一行（tab）：`status`、`mode`、`seed`、`id`、因素、一个 metric、失败时的 `error`、`log`。顺序跟 index。没有 `result.json` 的格子是 `pending`。metric 只在 `succeeded` 时出现，优先 `accuracy`，否则 `best_accuracy` 或 `train_loss`。`--mode` 只滤显示。缺 `index.json` 则退出码 2。
+先打一行计数：`planned` / `succeeded` / `failed` / `pending`。然后每条 Run 一行（tab）：`status`、`mode`、`seed`、`id`、因素、一个 metric、失败时的 `error`、`note`、`log`。顺序跟 index。没有 `result.json` 的格子是 `pending`。metric 只在 `succeeded` 时出现，优先 `accuracy`，否则 `best_accuracy` 或 `train_loss`。`pending` 的 `note` 读该 Run 的 `run.log`：最后一条 `[epoch]` 或 `[error]` 摘要，跳过 `Traceback` / `File ` 续行；都没有就用最后一条 `[flow]`。没有日志是 `-`。`failed` 的 `error` 仍是 result 里的消息，`note` 是日志里最后一条 `[error]` 摘要。`succeeded` 的 `note` 是 `-`。`--mode` 只滤显示。缺 `index.json` 则退出码 2。
+
+`launch` 每一组开始前打 `launch: wait i/n mode=train`（失败再试是 `launch: retry`）。结束时再打一行和 `rpipe status` 相同的 `planned` / `succeeded` / `failed` / `pending`。不改 `jobs.json`。
+
+`python -m rpipe logs studies/<name>` 把各 Run 的事件行按时间打到终端，不写 Study 级总 log。`python -m rpipe report studies/<name>` 从 `process.json` 写 `docs/NUMBERS.md`（Experiment 的 mean / std / min / max，以及 Run 表）。不改 `STUDY_REPORT.md` 里的结论。
 
 `make` 进行中会立刻打出阶段（flush），并写 study 根上的 `activity.json`（不进 Git）：`make: origin <foreign|domestic> model <hub>`、`make: expand`、`make: shared <name> download <origin> <url>` / `ready` / `cached`、`make: pack`。另开一个终端跑上面的 `rpipe status`，有这份文件时第一行就是当前阶段；index 还没写出时只打这一行也退出 0。make 成功结束后删掉它。下载仍不刷 tqdm。`origin` 写在 `study.yaml` 顶层，不写在 `data` 下。`foreign` 用 torchvision 官方地址和 `https://huggingface.co`；`domestic` 用国内数据镜像和 `https://hf-mirror.com`。缺省 `foreign`，且不改本机已有的 `HF_ENDPOINT`。只有 `.ready` 才跳过；半截包会删掉再下。
 
@@ -349,7 +359,7 @@ python -m rpipe status studies/<name> --mode eval
 3. 在 `docs/PLAN.md` 写清：比什么、什么固定、成功标准，以及 **§3 高效率排班**（同类一组、吃满 GPU、error 记下来整轮后再 resume）。  
 4. `python -m rpipe run studies/<name> --skip-launch`，核对 index。  
 5. `python -m rpipe make studies/<name>`，看打印的 `pack N waits`，再 `python -m rpipe launch studies/<name>`（launch 不应再印 pack）。  
-6. `python -m rpipe status studies/<name>` 看谁 `succeeded` / `failed` / `pending`。读 `process.json` + `docs/figures/learning_curves.png`，按 Experiment 写 `docs/STUDY_REPORT.md`：图做成可点链接，Run 表带各 `run.log` 链接。
+6. `python -m rpipe status studies/<name>` 看谁 `succeeded` / `failed` / `pending`。`python -m rpipe report studies/<name>` 把数字表写到 `docs/NUMBERS.md`。读 `process.json` + `docs/figures/learning_curves.png`，按 Experiment 写 `docs/STUDY_REPORT.md`：图做成可点链接，Run 表带各 `run.log` 链接。结论仍由人写。
 
 检查清单：
 
@@ -373,7 +383,7 @@ python -m rpipe status studies/<name> --mode eval
 | 独立评测（加载 best） | 另一次 Run：`algorithm.mode: eval`，`resume: best`；不是 Flow 多一个阶段。整波重跑：`rpipe launch --mode eval`（已成功加 `--include-done`） |
 | 断点续训 | train 的 `resume: latest`（算法接口；system 只读文件） |
 | 改一次 Run 的阶段顺序 | 不要改；最多 `--phases` 裁剪，相对顺序不变 |
-| 自动出报告 / 跨 Run 对比表 | 人写 `STUDY_REPORT.md`（必须嵌图）；Study `process` 出 mean/std/min/max 和 `docs/figures/learning_curves.png` |
+| 自动出报告 / 跨 Run 对比表 | 人写 `STUDY_REPORT.md`（必须嵌图）。Study `process` 出 mean/std/min/max 和 `docs/figures/learning_curves.png`。`rpipe report` 把同一份数字写成 `docs/NUMBERS.md` |
 | 训练曲线 | process 画 epoch `history` → `docs/figures/`；密点仍在 `scalars.jsonl`。不做 TensorBoard |
 | 终端 + 硬盘日志 | **Logger** 必写 `runs/<id>/assets/logs/run.log`（`时间 级别 Run id [事件]`）；失败时 traceback 每一行都是 `[error]`。`index.json` 的 `log` 指向它。没有 Study 级总 log |
 | 并行时日志挤在一起 | 文件按 Run 分开；终端每行带 Run `id`。Windows：`rpipe launch` 默认 `--console new`；`--console shared` 只混终端 |

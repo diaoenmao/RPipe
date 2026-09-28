@@ -410,9 +410,23 @@ def launch_jobs(
     console_mode = resolve_console(console)
     popen_extra = job_popen_kwargs(console_mode)
 
-    def _run_groups(groups: list[list[dict[str, Any]]]) -> list[tuple[dict[str, Any], int]]:
+    def _group_mode(group: list[dict[str, Any]]) -> str:
+        modes: list[str] = []
+        for job in group:
+            mode = str(job.get('mode') or 'train')
+            if mode not in modes:
+                modes.append(mode)
+        return '+'.join(modes) or 'train'
+
+    def _run_groups(
+        groups: list[list[dict[str, Any]]],
+        *,
+        kind: str,
+    ) -> list[tuple[dict[str, Any], int]]:
         pairs: list[tuple[dict[str, Any], int]] = []
-        for group in groups:
+        total = len(groups)
+        for index, group in enumerate(groups, start=1):
+            print(f'launch: {kind} {index}/{total} mode={_group_mode(group)}', flush=True)
             procs: list[tuple[dict[str, Any], subprocess.Popen[str]]] = []
             for job in group:
                 cmd = [py, '-m', 'rpipe', 'run-one', str(study_dir), str(job['run_id'])]
@@ -437,7 +451,7 @@ def launch_jobs(
                     print(f'error {job["run_id"]} exit={code}', flush=True)
         return pairs
 
-    pairs = _run_groups(wait_groups(jobs, round_size, batches))
+    pairs = _run_groups(wait_groups(jobs, round_size, batches), kind='wait')
     codes.extend(code for _, code in pairs)
     if not retry_failed:
         return codes
@@ -449,6 +463,6 @@ def launch_jobs(
     if not failed:
         return codes
     print(f'retry {len(failed)} failed jobs (resume latest)', flush=True)
-    retry_pairs = _run_groups([[job] for job in failed])
+    retry_pairs = _run_groups([[job] for job in failed], kind='retry')
     codes.extend(code for _, code in retry_pairs)
     return codes

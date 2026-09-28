@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from rpipe.flow.cli import main
-from rpipe.flow.status import list_runs
+from rpipe.structure.artifact.readout import format_status, list_runs
 from rpipe.structure.artifact.index import write_index
 from rpipe.structure.artifact.result import write_result
 
@@ -11,8 +11,8 @@ pytestmark = [
     pytest.mark.unit,
     pytest.mark.content,
     pytest.mark.p1,
-    pytest.mark.flow_layer,
-    pytest.mark.module_cli,
+    pytest.mark.structure_layer,
+    pytest.mark.module_artifact,
     pytest.mark.cost(cost_class='c1'),
     pytest.mark.result_type('categorical', detail='summary'),
 ]
@@ -96,8 +96,61 @@ def test_list_runs_joins_index_and_result_status(tmp_path: Path):
     assert by_id['bad']['status'] == 'failed'
     assert by_id['bad']['error'] == 'RuntimeError: boom'
     assert by_id['wait']['status'] == 'pending'
+    assert by_id['wait']['note'] == '-'
+    assert by_id['ok']['note'] == '-'
+    assert by_id['bad']['note'] == '-'
     evals = list_runs(study, modes=['eval'])
     assert [row['id'] for row in evals['runs']] == ['bad']
+
+
+def test_pending_note_is_last_epoch_or_error_not_traceback(tmp_path: Path):
+    study = _write_study(tmp_path)
+    (study / 'runs' / 'bad' / 'assets' / 'logs' / 'run.log').write_text(
+        '\n'.join(
+            [
+                '2026-09-28T04:00:03.000+08:00 ERROR bad [error] phase=prepare RuntimeError: boom',
+                '2026-09-28T04:00:03.001+08:00 ERROR bad [error] Traceback (most recent call last):',
+                '2026-09-28T04:00:04.000+08:00 INFO  bad [epoch] 1 [split] test [metric] Accuracy=0.1000',
+            ]
+        )
+        + '\n',
+        encoding='utf-8',
+    )
+    log = study / 'runs' / 'wait' / 'assets' / 'logs' / 'run.log'
+    log.write_text(
+        '\n'.join(
+            [
+                '2026-09-28T04:00:00.000+08:00 INFO  wait [flow] start phases=prepare pid=1',
+                '2026-09-28T04:00:01.000+08:00 INFO  wait [epoch] 2 [split] train [metric] Loss=1.2000',
+                '2026-09-28T04:00:02.000+08:00 ERROR wait [error] phase=execute RuntimeError: boom',
+                '2026-09-28T04:00:02.001+08:00 ERROR wait [error] Traceback (most recent call last):',
+                '2026-09-28T04:00:02.002+08:00 ERROR wait [error]   File "train.py", line 1, in run',
+            ]
+        )
+        + '\n',
+        encoding='utf-8',
+    )
+    body = list_runs(study)
+    by_id = {row['id']: row for row in body['runs']}
+    assert by_id['wait']['note'] == '[error] phase=execute RuntimeError: boom'
+    assert by_id['ok']['note'] == '-'
+    assert by_id['bad']['note'] == '[error] phase=prepare RuntimeError: boom'
+    assert by_id['bad']['error'] == 'RuntimeError: boom'
+    printed = format_status(body)
+    print(printed, end='')
+    assert 'note' in printed.splitlines()[1]
+    assert '[error] phase=execute RuntimeError: boom' in printed
+    assert 'Traceback' not in printed
+    assert 'File "train.py"' not in printed
+
+    log.write_text(
+        '2026-09-28T04:00:01.000+08:00 INFO  wait [flow] start phases=prepare pid=1\n'
+        '2026-09-28T04:00:08.000+08:00 INFO  wait [epoch] 2 [split] train [metric] Loss=1.2000 [time] elapsed=0:00:07\n',
+        encoding='utf-8',
+    )
+    training = format_status(list_runs(study))
+    print(training, end='')
+    assert '[epoch] 2 [split] train [metric] Loss=1.2000 [time] elapsed=0:00:07' in training
 
 
 def test_status_cli_prints_table(tmp_path: Path, capsys):
