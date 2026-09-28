@@ -51,7 +51,7 @@ data/                → Data / DataRegistry / DataFactory / DataConfig
 model/               → Model / ModelRegistry / ModelFactory / ModelConfig
 system/              → System / Logger / SystemFactory / SystemConfig
 algorithm/           → Algorithm / AlgorithmTracker / AlgorithmRegistry / AlgorithmFactory / AlgorithmConfig
-artifact/            → layout / config / result / asset / index IO；不 import 四层实现
+artifact/            → layout / config / result / asset / index IO，以及 readout（status / logs / NUMBERS）；不 import 四层实现，不 import flow
 make/                → 多实验：展开、写 config/index、调度脚本；调 control + artifact；不 import 四层、不 import flow
 ```
 
@@ -862,7 +862,13 @@ structure/artifact/
     io.py
     tree.py
     kinds.py
+  readout/
+    status.py
+    logs.py
+    report.py
 ```
+
+`readout/` 只读 index、result、`run.log`、`process.json`，或把数字表写到 `docs/NUMBERS.md`。不跑阶段链，不 import `flow`。命令仍从 `flow/cli.py` 进来。
 
 ```
 studies/<study>/

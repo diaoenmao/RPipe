@@ -28,7 +28,7 @@
 
 ## 3. 要做的
 
-一条一事。
+一条一事。对照清单是空的。B-007 留在 [BUGS.md](BUGS.md)，不在这里重做。
 
 **先不做：** 数据/库指纹；已成功还想多训几个 epoch；process 再多几张图。
 
@@ -49,9 +49,13 @@
 | 算法 resume | train `latest`；eval `best`（sibling） |
 | 失败 log | 同一份 `run.log` 加 traceback；`result` 有 `status` / `error` |
 | config 身份 | Run `id` 就是 config hash。`index.id` 是整张清单。不再做第二套 |
-| `rpipe status` | 只读。见 STUDY_GUIDE §7。已进 `dev` |
+| `rpipe status` | 只读，实现在 `structure/artifact/readout/`。`pending` 的 `note` 是最后一条 `[epoch]` 或 `[error]`；`failed` 的 `note` 是最后一条 `[error]` 摘要，`error` 列仍是 result。`succeeded` 的 `note` 是 `-` |
+| launch 阶段 | 每组开始打 `launch: wait i/n mode=`；再试打 `launch: retry`。结束打 `planned` / `succeeded` / `failed` / `pending`。不改 `jobs.json` |
+| `rpipe logs` | 只读，同一份 readout。各 Run 事件行按时间打到终端。不写 Study 级总 log |
+| `rpipe report` | 同一份 readout。从 `process.json` 写 `docs/NUMBERS.md`：Experiment mean / std / min / max 和 Run 表。不改 `STUDY_REPORT.md` 的结论 |
 | `split-round` | make 已有 |
-| CIFAR 小网格 | `studies/cifar_grid/`。2026-09-26 launch 完，8/8 succeeded。报告在该 Study 的 `docs/STUDY_REPORT.md` |
-| `run.log` 行格式 | `时间 级别 Run id [事件] 内容`。时间是 RFC 3339 毫秒+时区。事件：`[flow]` `[error]` `[warn]` `[epoch]` `[split]` `[metric]` `[time]` `[ckpt]` `[resume]`。traceback 每一行都是 `[error]`。不改 `result.json` |
+| CIFAR 小网格 | `studies/cifar_grid/`。2026-09-29 从头重跑，8/8 succeeded。结论在该 Study 的 `docs/STUDY_REPORT.md` |
+| `run.log` 行格式 | `时间 级别 Run id [事件] 内容`。时间是 RFC 3339 毫秒+时区。事件：`[flow]` `[error]` `[warn]` `[epoch]` `[split]` `[metric]` `[time]` `[ckpt]` `[resume]`。traceback 每一行都是 `[error]`。不改 `result.json`。PR #8，`e9a2f6b`，已进 `dev` |
+| 测试规范 | `docs/TESTING.md` 采用 2026-09-28 正式规范。用例声明 `cost_class` 和 `result_type`。PR #8 当时 `--core` 142、`--all` 151。其后的 status / logs / report 用例还在本地，通过数以当次 `tests/run.py` 为准 |
 
 不造 `main` 的 `resume_mode` 同名开关。

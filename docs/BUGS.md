@@ -65,7 +65,7 @@
 - 看见：`python -m rpipe make studies/cifar_grid` 在展开 index 之后下载 CIFAR，tqdm 被关掉，`shared data:` 和 jobs 路径都要等整段 make 结束才打印。终端几分钟空白，分不清是在下载还是卡住。期望：进行中能看见当前阶段。
 - 落点：`structure/artifact/activity.py`、`flow/cli.py`、`structure/data/prepare.py`
 - 方案：make 每个阶段立刻 flush 一行，并写入 study 根上的 `activity.json`（不进 Git）：`make: expand`、`make: shared <name> download <origin> <url>`、`ready`、`cached`、`make: pack`。另开终端 `rpipe status` 时，有这份文件就先打这一行。make 成功后删除 `activity.json`。下载仍然不刷 tqdm。
-- 验证：`tests/rpipe/structure/make/test_make.py` 的 CPU make 打出 `make: expand` 和 `make: pack`，结束后没有 `activity.json`。`tests/rpipe/structure/data/test_prepare.py` 在 `DataFactory.build` 返回前已经打出 download 行。`tests/rpipe/flow/test_status.py` 在没有 index 时打出活动行。2026-09-26 重跑 `make studies/cifar_grid` 时，终端在下载开始前就打出了 `make: origin`、`make: expand` 和 `make: shared CIFAR10 download`。
+- 验证：`tests/rpipe/structure/make/test_make.py` 的 CPU make 打出 `make: expand` 和 `make: pack`，结束后没有 `activity.json`。`tests/rpipe/structure/data/test_prepare.py` 在 `DataFactory.build` 返回前已经打出 download 行。`tests/rpipe/structure/artifact/readout/test_status.py` 在没有 index 时打出活动行。2026-09-26 重跑 `make studies/cifar_grid` 时，终端在下载开始前就打出了 `make: origin`、`make: expand` 和 `make: shared CIFAR10 download`。
 
 ## B-006 国内下载 torchvision 数据集走不通
 - 状态：done

@@ -16,8 +16,8 @@ src/rpipe/
   └─ flow/        # prepare → execute → collect → summarize → write → process
 ```
 
-- **structure** 定义一次 Run 如何组成，并由 `make` 将 Study 声明展开成 config、index 和调度计划。
-- **flow** 服务整个 Study，对每个 Run 执行固定阶段链，最后按 Experiment 跨 seed 聚合。
+- **structure** 定义一次 Run 如何组成，并由 `make` 将 Study 声明展开成 config、index 和调度计划。`artifact/readout/` 再把落下的 index、result、日志和 `process.json` 读成表。
+- **flow** 是跑 Study 的入口：对每个 Run 执行固定阶段链，最后按 Experiment 跨 seed 聚合。`status` / `logs` / `report` 从 cli 进来，转给 readout。
 - **artifact** 是磁盘契约：Study 级 `docs/`、`shared/`、index、process，以及 Run 级 config、result、tracker、log、checkpoint。
 
 ## 文档顺序
@@ -65,6 +65,11 @@ python -m rpipe launch studies/<name> --num-gpus 1
 
 # 只重建 Study 级聚合与曲线
 python -m rpipe process studies/<name>
+
+# 只读：谁完成了；按时间看事件行；把数字表写到 docs/NUMBERS.md
+python -m rpipe status studies/<name>
+python -m rpipe logs studies/<name>
+python -m rpipe report studies/<name>
 ```
 
 需要最短的顺序执行路径时：
@@ -81,8 +86,9 @@ python -m rpipe run studies/<name>
 |------|----------|------|
 | `study.yaml`、`experiment_config.yaml` | 是 | 可复现实验声明 |
 | `docs/PLAN.md`、`docs/STUDY_REPORT.md`、报告图片 | 是 | 人写的研究计划与结论 |
+| `docs/NUMBERS.md` | 可以 | `rpipe report` 从 `process.json` 生成的数字表，不是结论 |
 | `runs/`、`shared/`、`scripts/` | 否 | 可重新生成或体积较大的运行产物 |
-| `index.json`、`process.json` | 否 | 由 make / process 重建 |
+| `index.json`、`process.json`、`activity.json` | 否 | make / process 重建；`activity.json` 只在 make 进行中存在 |
 | `.tmp/` | 否 | 本地测试、缓存和临时验证 |
 
 不要在仓库根重新创建旧式 `data/`、`output/`；数据与产物都归属具体 Study。
@@ -90,10 +96,10 @@ python -m rpipe run studies/<name>
 ## 开发与 CI
 
 ```bash
-# 快速门：unit + p1，不跑 slow / external
+# 快速门：unit + p1 + c1，不跑 slow / external / gpu
 python tests/run.py --fast
 
-# 当前 PR 门：全部 unit，不跑 slow / external
+# 当前 PR 门：unit 的 c1 与 c2，不跑 slow / external / gpu
 python tests/run.py --core
 
 # 显式运行所有已收集测试

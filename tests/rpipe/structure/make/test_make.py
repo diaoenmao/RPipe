@@ -257,6 +257,64 @@ def test_load_launch_plan_include_done_keeps_succeeded(tmp_path: Path):
     assert [j['run_id'] for j in again['batches'][1]] == ['e0']
 
 
+def test_launch_jobs_prints_each_wait_group(tmp_path: Path, monkeypatch, capsys):
+    import rpipe.structure.make.schedule as schedule
+
+    class _Proc:
+        def wait(self) -> int:
+            return 0
+
+    monkeypatch.setattr(schedule.subprocess, 'Popen', lambda *_args, **_kwargs: _Proc())
+    monkeypatch.setattr(schedule, 'run_succeeded', lambda *_args, **_kwargs: True)
+    study = tmp_path / 'study'
+    study.mkdir()
+    jobs = [
+        {'run_id': 't0', 'mode': 'train', 'device': 'cpu'},
+        {'run_id': 'e0', 'mode': 'eval', 'device': 'cpu'},
+    ]
+    schedule.launch_jobs(
+        study,
+        jobs,
+        round_size=1,
+        batches=[jobs[:1], jobs[1:]],
+        console='shared',
+    )
+    out = capsys.readouterr().out
+    assert 'launch: wait 1/2 mode=train' in out
+    assert 'launch: wait 2/2 mode=eval' in out
+
+
+def test_launch_prints_status_counts_when_nothing_remains(tmp_path: Path, monkeypatch, capsys):
+    from rpipe.flow import cli
+    from rpipe.structure.artifact.index import write_index
+
+    (tmp_path / 'pyproject.toml').write_text('[project]\nname = "rpipe"\n', encoding='utf-8')
+    study = tmp_path / 'study'
+    jobs = [{'run_id': 't0', 'gpu': '0', 'mode': 'train', 'device': 'cpu'}]
+    write_launch_scripts(study, jobs, round_size=1, python_exe='/opt/python', init_gpu=0, num_gpus=1)
+    _write_succeeded(study, 't0')
+    write_index(
+        study,
+        {
+            'study': 'study',
+            'experiments': [
+                {
+                    'factors': {'algorithm.mode': 'train'},
+                    'runs': [{'id': 't0', 'seed': 0, 'run_dir': 't0', 'log': 'runs/t0/assets/logs/run.log'}],
+                }
+            ],
+        },
+    )
+    monkeypatch.setattr(cli, 'process_study', lambda *_args, **_kwargs: {'complete': True})
+    monkeypatch.setattr(cli, 'process_path', lambda *_args, **_kwargs: study / 'process.json')
+    assert cli.main(['launch', str(study), '--console', 'shared']) == 0
+    out = capsys.readouterr().out
+    assert 'nothing to launch' in out
+    assert 'planned=1' in out
+    assert 'succeeded=1' in out
+    assert 'pending=0' in out
+
+
 def test_launch_mode_eval_does_not_rewrite_jobs_json(tmp_path: Path, monkeypatch):
     from rpipe.flow import cli
 

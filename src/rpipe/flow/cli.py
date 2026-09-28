@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from rpipe.flow.process import process_path, run_study as process_study
-from rpipe.flow.status import format_status, list_runs
+from rpipe.structure.artifact.readout import format_logs, format_status, list_runs, write_numbers
 from rpipe.flow.context import FlowContext
 from rpipe.flow.runner import FlowRunner
 from rpipe.structure.artifact import artifact_layout, load_config
@@ -276,6 +276,7 @@ def _execute_launch(args: argparse.Namespace) -> int:
         print('nothing to launch')
         process_study(study_dir)
         print(process_path(study_dir))
+        _print_launch_counts(study_dir)
         return 0
     launch_jobs(
         study_dir,
@@ -295,7 +296,45 @@ def _execute_launch(args: argparse.Namespace) -> int:
     print(process_path(study_dir), flush=True)
     if not body.get('complete'):
         print('process partial', flush=True)
+    _print_launch_counts(study_dir)
     return 1 if still else 0
+
+
+def _print_launch_counts(study_dir: Path) -> None:
+    try:
+        body = list_runs(study_dir)
+    except (OSError, TypeError, ValueError, FileNotFoundError):
+        return
+    line = format_status(body).splitlines()[0]
+    print(line, flush=True)
+
+
+def _execute_report(args: argparse.Namespace) -> int:
+    study_dir = Path(args.study_dir).resolve()
+    try:
+        path = write_numbers(study_dir)
+    except FileNotFoundError:
+        print(f'missing process: {process_path(study_dir)}', file=sys.stderr)
+        return 2
+    except (OSError, TypeError, ValueError) as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    print(path, flush=True)
+    return 0
+
+
+def _execute_logs(args: argparse.Namespace) -> int:
+    study_dir = Path(args.study_dir).resolve()
+    try:
+        text = format_logs(study_dir)
+    except FileNotFoundError:
+        print(f'missing index: {study_dir / "index.json"}', file=sys.stderr)
+        return 2
+    except (OSError, TypeError, ValueError) as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    print(text, end='')
+    return 0
 
 
 def _execute_process(args: argparse.Namespace) -> int:
@@ -399,6 +438,12 @@ def main(argv: list[str] | None = None) -> int:
     proc_p = sub.add_parser('process', help='Study-level process: mean/std/min/max history')
     proc_p.add_argument('study_dir', type=Path, help='Path to studies/<name>/')
 
+    report_p = sub.add_parser('report', help='write docs/NUMBERS.md from process.json')
+    report_p.add_argument('study_dir', type=Path, help='Path to studies/<name>/')
+
+    logs_p = sub.add_parser('logs', help='print run.log event lines in time order')
+    logs_p.add_argument('study_dir', type=Path, help='Path to studies/<name>/')
+
     status_p = sub.add_parser('status', help='list index Runs with result status (read-only)')
     status_p.add_argument('study_dir', type=Path, help='Path to studies/<name>/')
     status_p.add_argument(
@@ -420,6 +465,10 @@ def main(argv: list[str] | None = None) -> int:
         return _execute_run_one(args)
     if args.cmd == 'process':
         return _execute_process(args)
+    if args.cmd == 'report':
+        return _execute_report(args)
+    if args.cmd == 'logs':
+        return _execute_logs(args)
     if args.cmd == 'status':
         return _execute_status(args)
     return 2

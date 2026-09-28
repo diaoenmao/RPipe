@@ -132,8 +132,8 @@ flowchart TB
 | **make** | 声明 → N 份 config 与 index；按 GPU 与 `round` 写出 `&` / **`wait`** 脚本（一组结束才开下一组，避免显存叠加） |
 | **config** | 一次 Run 的 declarative 配置；prepare 只读 |
 | **flow** | 服务 Study 的执行。同一套阶段链，用参数选择行为。每个 Run：prepare → execute → collect → summarize → write → process |
-| **cli** | Flow 的命令行入口 |
-| **artifact** | Study 下的持久化整体；IO 在 structure 的 artifact |
+| **cli** | Flow 的命令行入口。`status` / `logs` / `report` 从这里进来，实现在 artifact 的 **readout** |
+| **artifact** | Study 下的持久化整体；IO 在 structure 的 artifact。`readout/` 把 index、result、`run.log`、`process.json` 读成表，或写出 `docs/NUMBERS.md` |
 | **result** | 可序列化摘要：`status`、最终 metrics、路径。逐步曲线另见 asset |
 | **asset** | 文件通道：数据集、权重、checkpoint、AlgorithmTracker 曲线、Logger 文本 |
 | **Logger** | system 层，只打字；stdout 与 `assets/logs/` 同一套。每行 `时间 级别 Run id [事件] 内容`（RFC 3339 毫秒+时区，`INFO`/`WARN`/`ERROR`）。事件是 `[flow]` `[error]` `[warn]` `[epoch]` `[split]` `[metric]` `[time]` `[ckpt]` `[resume]`。失败时 traceback 每一行仍是 `[error]`。不改 `result.json` |
@@ -202,7 +202,7 @@ flowchart TB
 | **model** | 运行时构造网络。权重 / checkpoint 在 **asset** |
 | **algorithm** | 怎么算。数字账本是 **AlgorithmTracker**；metric 名（Loss / Accuracy / MSE / RMSE / GLUE）在本层 `evaluate`；循环插入点是 **AlgorithmHook**。优化器、调度器、梯度裁剪、resume 是本层接口 |
 | **system** | 设备、精度、并行、执行节奏；prepare 最先落地 seed / deterministic / cudnn。文本日志是 **Logger** |
-| **artifact** | IO 与路径：config / result / asset，以及 Study layout |
+| **artifact** | IO 与路径：config / result / asset，以及 Study layout。`readout/` 读这些文件，不跑阶段链，不 import `flow` |
 
 同一 Study：不同 Experiment 差在实验变量；同一 Experiment 下不同 Run 差在 seed。  
 字段与 result 快照见 [structure.md](code_structure/structure.md)。
@@ -216,6 +216,8 @@ Flow 服务 **Study**。同一套执行，用参数选择阶段子集、是否�
 命令行入口是 **cli**。每个已写出的 Run 走：
 
 **prepare → execute → collect → summarize → write → process**
+
+`rpipe status`、`rpipe logs`、`rpipe report` 不是这条链上的阶段。cli 只转发，读和写表在 `structure/artifact/readout/`。
 
 ```mermaid
 flowchart LR
@@ -271,6 +273,7 @@ flowchart TB
 | **asset** | Study 级共享在 `shared/`；Run 级 tracker / `run.log` / checkpoint 在 `runs/<id>/assets/` |
 | **index** | Study 级编排清单；按 Experiment 列 Run（含每条 `log`） |
 | **process** | Run 一份旁路；Study 根一份信封，内嵌各 Experiment 的跨 seed 摘要 |
+| **readout** | `structure/artifact/readout/`。只读拼 `rpipe status` / `rpipe logs`；`rpipe report` 从信封写 `docs/NUMBERS.md`，不写结论 |
 
 ---
 
@@ -279,7 +282,7 @@ flowchart TB
 1. 写基底配置与 study 声明：`axes` 与 `seeds`
 2. **make**：展开 Experiment × seed → 各 Run config 与 index；按 STUDY_GUIDE §3 同类装箱写出 `&` / `wait` 脚本。一组 `wait` 完才开下一组。默认一次 `launch` 有独立 eval 时先全部 train，再 eval。这不是唯一入口：`rpipe launch --mode eval` 只发 eval（已成功的加 `--include-done`）；缺 sibling `best` 仍失败。`jobs.json` 仍一次写全，不按 mode 改写。
 3. **Flow**：经 cli，按参数对 Study 下各 Run 跑阶段链；全部 wait 完后跑 Study 级 `process`
-4. 读 Experiment 的 mean / std / min / max 与图，写 Study 报告（按格子下结论，不要按单条 Run）。单条谁好了谁挂了用只读的 `rpipe status`（index + 各条 result），不改文件。
+4. 读 Experiment 的 mean / std / min / max 与图，写 Study 报告（按格子下结论，不要按单条 Run）。单条谁好了谁挂了用 `rpipe status`（index + 各条 result；`pending` / `failed` 的 `note` 来自 `run.log`）。`rpipe logs` 按时间把事件行打到终端。`rpipe report` 把数字表写到 `docs/NUMBERS.md`，不代替人写的结论。这三步的实现是 artifact 的 **readout**，不是 Flow 阶段。
 
 ---
 
