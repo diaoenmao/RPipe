@@ -29,7 +29,7 @@
 
 - **同类一组：** 同一 `model.name`、相近耗时的 Run 一起并行；不要把 resnet 和 linear 塞进同一 `wait`。
 - **`wait` 闸门：** 组末必须等本组进程退出、显存释放完，才开下一组。不 wait 下一波会挤进来，容易 OOM。
-- **吃满 GPU：** `python -m rpipe make studies/<name> --num-gpus 1` 默认 `--round auto`；看 **make** 打印的 `pack N waits`（launch 不重印）。conservative 墙钟是各组最慢条加总，只供排班。
+- **吃满 GPU：** `python -m rpipe make studies/<name> --num-gpus 1` 默认 `--round auto`；看 **make** 打印的 `pack N waits`（launch 不重印）。conservative 墙钟是各组最慢条加总。
 - **依赖：** 有 `algorithm.mode: eval` 时先全部 train `wait` 完，再 eval。
 - **error：** 单条失败只记 `run_id`；整轮结束后对未 succeeded 的格子 `resume: latest` 再跑。
 - **seed ≠ 并发。**
@@ -38,6 +38,15 @@
 python -m rpipe make studies/<name> --num-gpus 1 --init-gpu 0
 python -m rpipe launch studies/<name> --num-gpus 1 --init-gpu 0
 ```
+
+## 时长预估
+
+`make` 之后、`launch` 之前填。每一行是一条 Run 的预估秒数。同一 `wait` 并行，组墙钟取该组最慢的一条；整轮是各组相加。不含显存。
+
+| wait | factors | mode | seed | id | est |
+|---:|---|---|---:|---|---:|
+|  |  |  |  |  |  |
+| | 整轮 | | | |  |
 
 ## 6. 成功标准
 

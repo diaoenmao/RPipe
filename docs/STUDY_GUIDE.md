@@ -356,7 +356,7 @@ python -m rpipe status studies/<name> --mode eval
 
 1. 复制 `studies/_template/` 为 `studies/<name>/`，对照本指南 §1–§3。  
 2. 改 `experiment_config.yaml` 的基底；改 `study.yaml` 的 `axes` / `seeds` / `tags`。  
-3. 在 `docs/PLAN.md` 写清：比什么、什么固定、成功标准，以及 **§3 高效率排班**（同类一组、吃满 GPU、error 记下来整轮后再 resume）。  
+3. 在 `docs/PLAN.md` 写清：比什么、什么固定、成功标准，以及 **§3 高效率排班**（同类一组、吃满 GPU、error 记下来整轮后再 resume）。`make` 之后、`launch` 之前，把每条 Run 的预估秒数写进 **时长预估** 表。同一 `wait` 的墙钟是组内最慢的一条，整轮是各组相加。不含显存。  
 4. `python -m rpipe run studies/<name> --skip-launch`，核对 index。  
 5. `python -m rpipe make studies/<name>`，看打印的 `pack N waits`，再 `python -m rpipe launch studies/<name>`（launch 不应再印 pack）。  
 6. `python -m rpipe status studies/<name>` 看谁 `succeeded` / `failed` / `pending`。`python -m rpipe report studies/<name>` 把数字表写到 `docs/NUMBERS.md`。读 `process.json` + `docs/figures/learning_curves.png`，按 Experiment 写 `docs/STUDY_REPORT.md`：图做成可点链接，Run 表带各 `run.log` 链接。结论仍由人写。
@@ -367,7 +367,8 @@ python -m rpipe status studies/<name> --mode eval
 - [ ] `axes` 与 `seeds` 分开  
 - [ ] 每个 Run 的 config 含 `seed`  
 - [ ] 结论按 Experiment 聚合，而不是按扁平 run 列表  
-- [ ] `PLAN.md` / `STUDY_REPORT.md` 写清本轮怎么并行（同类一组、error 后续跑）  
+- [ ] `PLAN.md` / `STUDY_REPORT.md` 写清本轮怎么并行（同类一组、error 后续跑）
+- [ ] `STUDY_REPORT.md` 的「怎么跑的」写整轮预估和实际；Runs 表每行有 `est` 和 `actual`。不另开时长记录，不含显存  
 - [ ] `STUDY_REPORT.md` 有可点开的 learning curve，以及各 Run 的 `run.log` 链接  
 
 ---

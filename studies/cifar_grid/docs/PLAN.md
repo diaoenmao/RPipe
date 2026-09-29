@@ -48,6 +48,22 @@ python -m rpipe launch studies/cifar_grid --num-gpus 1 --init-gpu 0 --console sh
 python -m rpipe status studies/cifar_grid
 ```
 
+## 时长预估
+
+launch 之前，按 make 的 conservative 秒数。同一 `wait` 里并行，组墙钟取该组最慢的一条；整轮是各组相加。这里每组只有 1 条。不含显存。
+
+| wait | factors | mode | seed | id | est |
+|---:|---|---|---:|---|---:|
+| 1 | model=linear | train | 0 | `28a64726010738fb` | 3s |
+| 2 | model=mlp | train | 0 | `b86a478be0bec010` | 4s |
+| 3 | model=cnn | train | 0 | `d657518c04ceffe1` | 7s |
+| 4 | model=resnet18 | train | 0 | `7c3f855ce3396781` | 20s |
+| 5 | model=linear | eval | 0 | `3ddb5e6cf166f93f` | 1s |
+| 6 | model=mlp | eval | 0 | `f487ffe68a52f01c` | 1s |
+| 7 | model=cnn | eval | 0 | `e55d19bc4b3d29c2` | 2s |
+| 8 | model=resnet18 | eval | 0 | `0f238fbd83ed13f8` | 5s |
+| | 整轮 | | | | 43s |
+
 ## 6. 成功标准
 
 - 8 次 Run `status: succeeded`

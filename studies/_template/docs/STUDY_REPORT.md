@@ -12,7 +12,7 @@ python -m rpipe make studies/<name> --num-gpus 1 --init-gpu 0
 python -m rpipe launch studies/<name> --num-gpus 1 --init-gpu 0
 ```
 
-make 打印的 `pack N waits:` （贴实际输出）。launch 不应再印 pack。error / resume：（有则记 `run_id`）。
+make 打印的 `pack N waits:` （贴实际输出）。整轮预估 ___，实际 ___。launch 不应再印 pack。error / resume：（有则记 `run_id`）。每条 Run 的预估和实际写在 Runs 表，不另开一份时长记录。
 
 ## 2. Conclusion
 
@@ -26,9 +26,9 @@ make 打印的 `pack N waits:` （贴实际输出）。launch 不应再印 pack�
 
 ## 4. Runs
 
-| factors | seed | id | metrics | log |
-|---------|------|----|---------|-----|
-|  |  |  |  | [run.log](../runs/<id>/assets/logs/run.log) |
+| factors | seed | id | metrics | est | actual | log |
+|---------|------|----|---------|-----|--------|-----|
+|  |  |  |  |  |  | [run.log](../runs/<id>/assets/logs/run.log) |
 
 ## 5. Reproduce
 
