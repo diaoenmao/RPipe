@@ -22,7 +22,7 @@
 - 看见：2026-09-26 `launch studies/cifar_grid` 时，mlp 的 eval `f487ffe68a52f01c` 在 `from torchvision import datasets` 处失败：`RuntimeError: operator torchvision::nms does not exist`。同一进程稍后 `retry` 再跑，prepare 通过，eval 成功。`run.log` 里先有这次 ERROR，后面是 `flow succeeded`。其余 7 条没有这个错误。
 - 落点：`structure/system/torchvision_load.py`，由 `structure/data/factory.py` 的 `_build_torch_vision` 调用。现场日志 `studies/cifar_grid/runs/f487ffe68a52f01c/assets/logs/run.log`。
 - 方案：公开记录（[vision#9174](https://github.com/pytorch/vision/issues/9174)、[vision#8101](https://github.com/pytorch/vision/issues/8101)、[PyTorch 论坛](https://discuss.pytorch.org/t/runtimeerror-operator-torchvision-nms-does-not-exist/192829)）把这句解释成 `torchvision/_C` 没注册上。常见原因是 `torch` 与 `torchvision` 版本不配，或一个是 CPU 轮子、一个是 CUDA 轮子。`extension.py` 会吞掉真正的 `OSError`，然后 `_meta_registrations.py` 给 `nms` 登记 fake 才抛出这句。那边的修法是卸掉后从同一 index 重装配对，不是在同进程里重试导入。本机现在是 `torch 2.11.0+cu128` 与 `torchvision 0.26.0+cu128`，都在 `D:\anaconda3\Lib\site-packages`，`_has_ops()` 为 True。代码里仍会在这句错误上清掉半导入再试最多 3 次，并设 `TORCHVISION_WARN_WHEN_EXTENSION_LOADING_FAILS=1`。这层重试没有公开案例说明能治版本不配；版本不配时每次导入都会失败。
-- 验证：单测只把 `import_module` 换成假的，证明重试分支会再调一次。2026-09-26 另开 24 个新进程走 `import_torchvision()`，24 次都成功，这句错误没有再出现。同进程里 `_C` 真失败之后清掉 `sys.modules` 能否恢复，还没有打出来过。
+- 验证：单测只把 `import_module` 换成假的，证明重试分支会再调一次。2026-09-26 另开 24 个新进程走 `import_torchvision()`，24 次都成功，这句错误没有再出现。同进程里 `_C` 真失败之后清掉 `sys.modules` 能否恢复，还没有打出来过。2026-09-30 清掉 `runs/` 后从头 launch `cifar_grid`（8/8）、`mnist_train_size`（18/18）、`mnist_native_vs_hf`（18/18），日志里没有 `torchvision::nms`，也没有 retry。状态仍是 open。
 
 ---
 

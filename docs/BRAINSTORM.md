@@ -54,7 +54,7 @@
 | `rpipe logs` | 只读，同一份 readout。各 Run 事件行按时间打到终端。不写 Study 级总 log |
 | `rpipe report` | 同一份 readout。从 `process.json` 写 `docs/NUMBERS.md`：Experiment mean / std / min / max 和 Run 表。不改 `STUDY_REPORT.md` 的结论 |
 | `split-round` | make 已有 |
-| CIFAR 小网格 | `studies/cifar_grid/`。2026-09-29 从头重跑，8/8 succeeded。结论在该 Study 的 `docs/STUDY_REPORT.md` |
+| CIFAR 小网格 | `studies/cifar_grid/`。2026-09-30 从头重跑，8/8 succeeded，没有 `torchvision::nms`。结论在该 Study 的 `docs/STUDY_REPORT.md` |
 | `run.log` 行格式 | `时间 级别 Run id [事件] 内容`。时间是 RFC 3339 毫秒+时区。事件：`[flow]` `[error]` `[warn]` `[epoch]` `[split]` `[metric]` `[time]` `[ckpt]` `[resume]`。traceback 每一行都是 `[error]`。不改 `result.json`。PR #8，`e9a2f6b`，已进 `dev` |
 | 测试规范 | `docs/TESTING.md` 采用 2026-09-28 正式规范。用例声明 `cost_class` 和 `result_type`。PR #8 当时 `--core` 142、`--all` 151。其后的 status / logs / report 用例还在本地，通过数以当次 `tests/run.py` 为准 |
 
