@@ -61,6 +61,7 @@ studies/<name>/
 | `studies/mnist_train_size/` | 扫研究因素：三个 `train_size`，train + 独立 eval |
 | `studies/mnist_native_vs_hf/` | 同一超参：native 循环 vs HF Trainer |
 | `studies/cifar_grid/` | CIFAR10 小网格：linear / mlp / cnn / resnet18，train 再 eval。`train_size=1024`，不是全量 |
+| `studies/main_base/` | 对照 `main` 的 `--mode base`。先 4 step 探针，再 60 step 全网格。不是 `cifar_grid` |
 
 新 Study 从 `_template/` 复制。`mnist_train_size` 是扫因素的研究向例子。
 
@@ -123,6 +124,7 @@ python -m rpipe run studies/<name>
 
 # 写出格子与调度脚本，再按 §3 同类装箱并行
 # pack 只出现在 make；launch 复用 scripts/jobs.json
+python -m rpipe data studies/<name>
 python -m rpipe make studies/<name> --num-gpus 1 --init-gpu 0
 python -m rpipe launch studies/<name> --num-gpus 1 --init-gpu 0
 # launch 结束会跑 Study process；也可单独再跑：
@@ -132,6 +134,8 @@ python -m rpipe process studies/<name>
 #   studies/<name>/scripts/launch.ps1
 #   bash studies/<name>/scripts/launch.sh
 ```
+
+`data` 先给每个数据集写一份概况：`studies/<name>/shared/data/<数据集>/stats.yaml`（张数、形状、类别数量、像素范围，以及 train 的 mean / std）。Normalize 优先读这份文件。
 
 排班标准见 §3。下面是脚本形状（跟 git `main` 一样：`&` + `wait`）。
 

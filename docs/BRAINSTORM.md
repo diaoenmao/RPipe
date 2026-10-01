@@ -28,11 +28,11 @@
 
 ## 3. 要做的
 
-一条一事。对照清单是空的。B-007 留在 [BUGS.md](BUGS.md)，不在这里重做。
+一条一事。下一轮对照是 `studies/main_base`：一个 Study，先跑 4 step 探针，再用实测 step 时间展开 `main` 的 60 step 网格。两种规模不要同时放进 `axes`，`launch` 不能按规模过滤。B-007 留在 [BUGS.md](BUGS.md)，不在这里重做。
 
 **先不做：** 数据/库指纹；已成功还想多训几个 epoch；process 再多几张图。
 
-**明确不做：** 把 `inference` 当对照义务；DDP；vLLM；TensorBoard；Kornia 当库能力。
+**明确不做：** 把 `inference` 当对照义务；DDP；vLLM；TensorBoard。Kornia 只用于模型入口：Normalize，以及训练态的 flip / crop。
 
 ---
 

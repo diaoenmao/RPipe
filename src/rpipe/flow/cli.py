@@ -344,6 +344,15 @@ def _execute_process(args: argparse.Namespace) -> int:
     return 0
 
 
+def _execute_data(args: argparse.Namespace) -> int:
+    from rpipe.structure.data.profile import profile_study
+
+    written = profile_study(args.study_dir)
+    for path in written:
+        print(path, flush=True)
+    return 0 if written else 2
+
+
 def _execute_status(args: argparse.Namespace) -> int:
     study_dir = Path(args.study_dir).resolve()
     try:
@@ -454,6 +463,9 @@ def main(argv: list[str] | None = None) -> int:
         help='only this algorithm.mode (repeatable: train, eval)',
     )
 
+    data_p = sub.add_parser('data', help='write shared/data/<set>/stats.yaml for each dataset in the Study')
+    data_p.add_argument('study_dir', type=Path, help='Path to studies/<name>/')
+
     args = parser.parse_args(argv)
     if args.cmd == 'run' or (args.cmd == 'study' and args.study_cmd == 'run'):
         return _execute_run(args)
@@ -471,6 +483,8 @@ def main(argv: list[str] | None = None) -> int:
         return _execute_logs(args)
     if args.cmd == 'status':
         return _execute_status(args)
+    if args.cmd == 'data':
+        return _execute_data(args)
     return 2
 
 

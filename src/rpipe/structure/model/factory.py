@@ -71,11 +71,28 @@ class ModelFactory:
             )
         else:
             model = builder(model_config, Path(assets_dir), data_meta=data_meta)
+            model.module = _attach_input_norm(model.module, data_meta)
         if origin not in (None, ''):
             chosen = normalize_origin(origin)
             model.meta['origin'] = chosen
             model.meta['hub'] = apply_model_origin(chosen)
         return model
+
+
+def _attach_input_norm(module: Any, data_meta: dict[str, Any] | None) -> Any:
+    """Wrap with kornia Normalize, and train-only crop / flip when augment is on."""
+    if module is None or not isinstance(data_meta, dict):
+        return module
+    mean = data_meta.get('mean')
+    std = data_meta.get('std')
+    if not mean or not std:
+        return module
+    from rpipe.structure.model.input_norm import InputNorm
+
+    data_size = data_meta.get('data_size') or []
+    spatial = int(data_size[-1]) if data_size else None
+    kind = data_meta.get('train_aug') if data_meta.get('augment') else None
+    return InputNorm(module, tuple(mean), tuple(std), augment=kind, spatial=spatial)
 
 
 def _wrap(name: str, model_config: ModelConfig, assets_dir: Path, module: Any, extra: dict[str, Any]) -> Model:

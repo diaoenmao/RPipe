@@ -1,0 +1,58 @@
+# 对照 git main 的 --mode base。格子由 make 展开，不要手写 runs/。
+# 探针（4 step）已跑完，记录在 docs/STUDY_REPORT.md。
+# 这里是正式网格：60 step，train 再 eval。不要和探针规模写在同一份 axes 里。
+
+study: main_base
+origin: domestic
+description: Reproduce main --mode base; 60-step grid after the 4-step probe
+
+experiment:
+  name: main_base
+
+fixed:
+  data:
+    source: torch
+    config:
+      batch_size: 250
+      test_batch_ratio: 4
+      pin_memory: true
+      num_workers: 0
+      augment: false
+  algorithm:
+    source: custom_torch
+    mode: train
+    num_steps: 4
+    progress_unit: step
+    eval_period: 0
+    eval_num_steps: 4
+    checkpoint: latest
+    checkpoint_period: 30
+    save_best: true
+    best_metric: Loss
+    best_split: test
+    optimizer: SGD
+    lr: 0.1
+    momentum: 0.9
+    weight_decay: 0.0005
+    nesterov: true
+    max_grad_norm: 0
+    scheduler: cosine
+    eta_min: 0.0
+  system:
+    device: cuda
+    deterministic: false
+    cudnn_benchmark: true
+
+axes:
+  data.name: [MNIST, CIFAR10]
+  model.name: [linear, mlp, cnn, resnet18]
+
+seeds: [0]
+
+tags:
+  - when:
+      data.name: MNIST
+      model.name: linear
+    tags: [baseline]
+
+run_description: "data={data_name} model={model_name} mode={mode} seed={seed}"

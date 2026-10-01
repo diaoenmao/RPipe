@@ -85,7 +85,8 @@ def accuracy_value(packed: dict[str, Any], *, topk: int = 1) -> float:
         n = int(target.numel())
         if n <= 0:
             return 0.0
-        return float((pred == target).float().mean().item())
+        correct = (pred == target).float().sum()
+        return float((correct * (100.0 / n)).item())
 
 
 def loss_value(packed: dict[str, Any]) -> float:

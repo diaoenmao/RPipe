@@ -217,8 +217,8 @@ def _run_supervised(
     logger = getattr(system, 'logger', None)
     budget = resolve_budget(config, steps_per_epoch=infer_steps_per_epoch(data))
     lr = float(config.setting('lr', 0.1))
-    log_interval = config.setting('log_interval')
-    log_interval = int(log_interval) if log_interval is not None else None
+    log_period = config.setting('log_period', config.setting('log_interval'))
+    log_period = int(log_period) if log_period is not None else None
     eval_period = algo.eval_period()
     ckpt_period = algo.checkpoint_period()
     ckpt_mode = algo.checkpoint_mode()
@@ -317,7 +317,7 @@ def _run_supervised(
                     optimizer.step()
                     optimizer.zero_grad()
                     steps += 1
-                    if log_interval and steps % log_interval == 0:
+                    if log_period and steps % log_period == 0:
                         extra = {'epoch': epoch, 'lr': epoch_lr, 'step': steps}
                         extra.update(_timing())
                         logger.report(tracker, 'train', extra=extra)
