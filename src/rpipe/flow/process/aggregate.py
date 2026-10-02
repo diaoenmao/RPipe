@@ -172,49 +172,6 @@ def collect_from_index(study_dir: Path, index: dict[str, Any]) -> list[dict[str,
     return groups
 
 
-def _factors_from_control(control: dict[str, Any]) -> dict[str, Any]:
-    return {
-        'data': control.get('data') or {},
-        'model': control.get('model') or {},
-        'algorithm': control.get('algorithm') or {},
-        'system': control.get('system') or {},
-    }
-
-
-def collect_from_runs(study_dir: Path) -> list[dict[str, Any]]:
-    root = study_dir / RUNS_DIRNAME
-    if not root.is_dir():
-        return []
-    grouped: dict[str, dict[str, Any]] = {}
-    order: list[str] = []
-    for result_path in sorted(root.glob(f'*/{RESULT_NAME}')):
-        try:
-            result = load_result(result_path)
-        except (OSError, TypeError, ValueError):
-            continue
-        control = result.get('control') if isinstance(result.get('control'), dict) else {}
-        factors = _factors_from_control(control)
-        token = json.dumps(factors, sort_keys=True, default=str)
-        if token not in grouped:
-            grouped[token] = {'factors': factors, 'n_planned': 0, 'runs': []}
-            order.append(token)
-        grouped[token]['n_planned'] += 1
-        grouped[token]['runs'].append(
-            {
-                'id': control.get('id') or result_path.parent.name,
-                'seed': control.get('seed'),
-                'tags': list(control.get('tags') or []),
-                'status': result.get('status'),
-                'metrics': (
-                    _numeric_metrics(result.get('metrics') or {})
-                    if result.get('status') == STATUS_SUCCEEDED
-                    else {}
-                ),
-            }
-        )
-    return [grouped[key] for key in order]
-
-
 def summarize(
     groups: list[dict[str, Any]],
     *,

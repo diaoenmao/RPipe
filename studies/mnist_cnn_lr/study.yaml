@@ -1,0 +1,12 @@
+study: mnist_cnn_lr
+origin: domestic
+description: MNIST CNN lr sensitivity; 60 steps, three paired seeds, train then eval
+experiment:
+  name: mnist_cnn_lr
+fixed:
+  version: cnn-lr-clean-20261002
+axes:
+  algorithm.lr: [0.1, 0.03, 0.01]
+  algorithm.mode: [train, eval]
+seeds: [0, 1, 2]
+run_description: "MNIST cnn mode={mode} seed={seed}"

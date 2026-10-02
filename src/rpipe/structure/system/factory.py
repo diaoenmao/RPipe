@@ -38,18 +38,27 @@ class System:
         return directory
 
     def save_checkpoint(self, payload: dict[str, Any], name: str) -> Path:
-        """Write ``assets/checkpoints/<name>.pt`` plus ``<name>/`` piece files."""
+        """Publish an atomic bundle after updating its diagnostic piece mirror."""
         import json
         import shutil
         import torch
 
-        from rpipe.structure.artifact._atomic import atomic_write_text
+        from rpipe.structure.artifact._atomic import atomic_replace, atomic_write_text
 
         stem = str(name).replace('/', '_').replace('\\', '_')
+        if not stem or stem in ('.', '..') or Path(stem).name != stem:
+            raise ValueError(f'invalid checkpoint name: {name!r}')
         root = self.checkpoint_dir()
         bundle = root / f'{stem}.pt'
-        torch.save(payload, bundle)
+        pending_bundle = root / f'.{stem}.pt.writing'
         folder = root / stem
+        incomplete = root / f'.{stem}.incomplete'
+        if not bundle.is_file() and folder.is_dir() and not incomplete.exists():
+            previous = self.load_checkpoint(str(folder))
+            if previous is not None:
+                torch.save(previous, pending_bundle)
+                atomic_replace(pending_bundle, bundle)
+        torch.save(payload, pending_bundle)
         tmp = root / f'.{stem}.writing'
         if tmp.exists():
             shutil.rmtree(tmp)
@@ -72,9 +81,21 @@ class System:
             atomic_write_text(tmp / 'meta.json', json.dumps(meta, indent=2, ensure_ascii=False))
         except TypeError:
             torch.save(meta, tmp / 'meta.pt')
-        if folder.exists():
-            shutil.rmtree(folder)
-        tmp.rename(folder)
+        # ponytail: one writer per Run/stem; concurrent writers need separate staging and locking.
+        incomplete.touch()
+        folder.mkdir(exist_ok=True)
+        for part in ('model.pt', 'optimizer.pt', 'scheduler.pt', 'tracker.json', 'logger.json', 'meta.json', 'meta.pt', 'payload.pt'):
+            source, target = tmp / part, folder / part
+            if source.is_file():
+                atomic_replace(source, target)
+            else:
+                target.unlink(missing_ok=True)
+        atomic_replace(pending_bundle, bundle)
+        try:
+            incomplete.unlink()
+            tmp.rmdir()
+        except OSError:
+            pass  # The bundle is committed; leftover diagnostics cannot turn this into a failed save.
         return bundle
 
     def load_checkpoint(self, name: str) -> dict[str, Any] | None:
@@ -95,6 +116,13 @@ class System:
                 path = folder
             else:
                 path = bundle
+        if not path.is_file():
+            folder = path if path.is_dir() or path.suffix.lower() != '.pt' else path.with_suffix('')
+            bundle = folder.with_name(f'{folder.name}.pt')
+            if bundle.is_file():
+                path = bundle
+            elif (folder.parent / f'.{folder.name}.incomplete').exists():
+                raise OSError(f'incomplete checkpoint without a committed bundle: {folder}')
         if path.is_dir():
             payload_path = path / 'payload.pt'
             if payload_path.is_file():

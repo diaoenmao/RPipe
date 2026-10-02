@@ -1,8 +1,9 @@
-"""Study-level learning curves from tracker_state history (process sidecar)."""
+"""Study-level curves from report observations, falling back to tracker history."""
 
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -34,12 +35,37 @@ def _label(factors: dict[str, Any]) -> str:
         return 'experiment'
     parts: list[str] = []
     for key, value in factors.items():
-        parts.append(f'{str(key).split(".")[-1]}={value}')
+        parts.append(f'{str(key).removesuffix(".name").split(".")[-1]}={value}')
     return ' '.join(parts)
 
 
 def _history(study_dir: Path, run_dir: str, split: str, name: str) -> list[float]:
-    path = study_dir / RUNS_DIRNAME / run_dir / 'assets' / kinds.TRACKER_STATE
+    """Prefer recorded report observations for this metric; do not infer units or deduplicate."""
+    assets = study_dir / RUNS_DIRNAME / run_dir / 'assets'
+    observations: list[float] = []
+    try:
+        with (assets / kinds.TRACKER_JSONL).open('rb') as handle:
+            for line in handle:
+                try:
+                    row = json.loads(line)
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    continue
+                if not isinstance(row, dict) or row.get('split') != split or row.get('name') != name:
+                    continue
+                value = row.get('mean')
+                if isinstance(value, (int, float)) and not isinstance(value, bool):
+                    try:
+                        point = float(value)
+                    except OverflowError:
+                        continue
+                    if math.isfinite(point):
+                        observations.append(point)
+    except OSError:
+        pass
+    if observations:
+        return observations
+
+    path = assets / kinds.TRACKER_STATE
     if not path.is_file():
         return []
     try:
@@ -85,7 +111,7 @@ def write_learning_curves(
     *,
     title: str | None = None,
 ) -> Path | None:
-    """Write ``docs/figures/learning_curves.png``. None if no epoch history."""
+    """Write ``docs/figures/learning_curves.png``. None if no report observations or history."""
     study_dir = Path(study_dir)
     groups = collect_curve_groups(study_dir, index)
     drawn = False
@@ -103,7 +129,7 @@ def write_learning_curves(
 
     dest = learning_curves_path(study_dir)
     dest.parent.mkdir(parents=True, exist_ok=True)
-    palette = ('#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b')
+    palette = plt.rcParams['axes.prop_cycle'].by_key()['color']
     fig, axes = plt.subplots(2, 2, figsize=(9.2, 6.4), sharex=True)
     panel_axes = (axes[0, 0], axes[0, 1], axes[1, 0], axes[1, 1])
     for ax, (split, name, panel_title) in zip(panel_axes, _PANELS):
@@ -122,20 +148,25 @@ def write_learning_curves(
                 continue
             means = summary['mean']
             stds = summary['std']
-            epochs = list(range(1, len(means) + 1))
+            points = list(range(1, len(means) + 1))
             color = palette[i % len(palette)]
-            ax.plot(epochs, means, color=color, label=group['label'], linewidth=1.8)
+            ax.plot(
+                points, means, color=color, label=group['label'], linewidth=1.8,
+                marker='o' if len(means) == 1 else None,
+            )
             lo = [m - s for m, s in zip(means, stds)]
             hi = [m + s for m, s in zip(means, stds)]
-            ax.fill_between(epochs, lo, hi, color=color, alpha=0.18)
+            ax.fill_between(points, lo, hi, color=color, alpha=0.18)
         ax.set_title(panel_title)
-        ax.set_xlabel('epoch')
+        ax.set_xlabel('history point')
         ax.grid(True, alpha=0.3)
         if name == 'Accuracy':
-            ax.set_ylim(0.0, 1.02)
-    axes[0, 0].legend(loc='best', fontsize=8)
+            ax.set_ylim(0.0, 102.0)
+            ax.set_ylabel('Accuracy (%)')
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='lower center', ncol=2, fontsize=8)
     fig.suptitle(title or f'{study_dir.name} · mean ± std', fontsize=11)
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0.12, 1, 1))
     fig.savefig(dest, dpi=140)
     plt.close(fig)
     return dest

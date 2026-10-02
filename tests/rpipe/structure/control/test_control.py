@@ -98,3 +98,37 @@ def test_description_ignored_tags_affect_run_id():
     assert a.id != c.id  # tags included in hash
     assert a.to_dict()['tags'] == ['baseline']
     assert c.to_dict()['tags'] == ['smoke']
+
+
+def test_omitted_version_preserves_existing_run_id():
+    control = control_from_config({'seed': 0, 'data': {'name': 'MNIST'}})
+    # Existing content identity, before adding any version declaration.
+    assert control.id == '96a1993415ec5eae'
+    assert 'version' not in control_to_config(control)
+
+
+@pytest.mark.parametrize('version', [7, 'repeat-1', '2026-10-02T10:00:00+08:00'])
+def test_version_same_value_reuses_id_new_value_changes_id(version):
+    config = {'seed': 0, 'data': {'name': 'MNIST'}, 'version': version}
+    first = control_from_config(config)
+    same = control_from_config(dict(config))
+    different = control_from_config({**config, 'version': 'another-repeat'})
+    assert first.id == same.id
+    assert first.id != different.id
+    assert control_to_config(first)['version'] == version
+
+
+@pytest.mark.parametrize(
+    ('patch', 'expected_version'),
+    [({}, 'base'), ({'version': 'repeat'}, 'repeat')],
+    ids=['inherit-base', 'override-base'],
+)
+def test_version_merge_and_roundtrip_preserve_value_and_id(patch, expected_version):
+    base = ExperimentConfig.from_mapping({'version': 'base', 'data': {'name': 'MNIST'}})
+    run = run_config_from_merge(base, {'seed': 0, **patch})
+    mapping = run.to_mapping()
+    # Merge recomputes the ID instead of trusting a serialized id field.
+    again = run_config_from_merge(mapping)
+    assert base.to_mapping()['version'] == 'base'
+    assert mapping['version'] == expected_version
+    assert again.to_mapping() == mapping

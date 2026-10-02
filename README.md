@@ -22,6 +22,8 @@ src/rpipe/
 
 ## 文档顺序
 
+Agent 的文档导航与通用工作约定见 [AGENTS.md](AGENTS.md)。
+
 设计与代码冲突时，先更新文档，再更新实现。权威阅读顺序是：
 
 1. [CONCEPT.md](docs/CONCEPT.md)：概念、职责与边界
@@ -93,6 +95,8 @@ python -m rpipe run studies/<name>
 
 不要在仓库根重新创建旧式 `data/`、`output/`；数据与产物都归属具体 Study。
 
+`studies/` 保留正式研究和可复用验收案例。一次性的文件占用、环境开关等排错放 `.tmp/diagnostics/`，结论合并到相关 Study 报告；本地证据链接不会随 Git clone 提供。
+
 ## 开发与 CI
 
 ```bash
@@ -119,6 +123,8 @@ pytest 的 base temp、cache 和测试结果都写入 `.tmp/`。GitHub Actions �
 - 运行：顺序执行、按 GPU/wait 组并行、checkpoint/resume、Run 日志与 Study 聚合。
 
 文档中列出的其他下游生态是扩展边界，不代表已经实现；以 Registry 和 [BUGS.md](docs/BUGS.md) 为准。
+
+上述清单表示已有实现，不代表全部模型与数据组合已完成真实运行验收；当前已确认的配置校验和依赖缺口见 BUGS。
 
 ## Acknowledgements
 

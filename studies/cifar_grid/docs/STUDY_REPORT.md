@@ -15,7 +15,7 @@ python -m rpipe launch studies/cifar_grid --num-gpus 1 --init-gpu 0 --console sh
 python -m rpipe status studies/cifar_grid
 ```
 
-机器：1× RTX 5090 D v2。make：`pack 8 waits`。整轮预估 43s，实际 1m21s。8/8 `succeeded`。train 从 epoch 1 跑到 epoch 5，随后 eval 加载 sibling train 的 `best.pt`。这次没有 `torchvision::nms`，也没有 retry。2026-09-26 那次 mlp eval 的失败仍记在 [BUGS.md](../../../docs/BUGS.md) B-007，状态保持 open。每条 Run 的预估和实际在下面的 Runs 表。
+机器：1× RTX 5090 D v2。make：`pack 8 waits`。整轮预估 43s，实际 1m21s。8/8 `succeeded`。train 从 epoch 1 跑到 epoch 5，随后 eval 加载 sibling train 的 `best.pt`。这次没有 `torchvision::nms`，也没有 retry。2026-09-26 那次 mlp eval 的失败在本轮报告时仍列为 B-007；2026-10-02 后续按维护决定关闭，见 [BRAINSTORM](../../../docs/BRAINSTORM.md) §4，并非本轮证明根因已消除。每条 Run 的预估和实际在下面的 Runs 表。
 
 ## 2. Conclusion
 

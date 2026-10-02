@@ -58,3 +58,186 @@ def test_cosine_scheduler_decays_to_eta_min():
     last = opt.param_groups[0]['lr']
     assert first == pytest.approx(0.1)
     assert last == pytest.approx(0.0, abs=1e-6)
+
+
+@pytest.mark.parametrize('eval_period', [1, 0], ids=['periodic_eval', 'terminal_eval'])
+def test_train_reports_lr_used_by_completed_optimizer_step(tmp_path, eval_period):
+    import re
+    from types import SimpleNamespace
+
+    import torch
+
+    from rpipe.structure.system.config import SystemConfig
+    from rpipe.structure.system.factory import SystemFactory
+
+    images = torch.eye(2)
+    targets = torch.arange(2)
+
+    class _Batches:
+        meta = {'train_size': 12, 'batch_size': 2}
+
+        def iter_batches(self, split):
+            for _ in range(6 if split == 'train' else 1):
+                yield images, targets
+
+    module = torch.nn.Linear(2, 2, bias=False)
+    torch.nn.init.zeros_(module.weight)
+    reference = torch.nn.Linear(2, 2, bias=False)
+    reference.load_state_dict(module.state_dict())
+    expected_lrs = [0.1, 0.075, 0.025]
+    reference_optimizer = torch.optim.SGD(reference.parameters(), lr=expected_lrs[0])
+    for used_lr in expected_lrs:
+        reference_optimizer.param_groups[0]['lr'] = used_lr
+        reference_optimizer.zero_grad()
+        torch.nn.functional.cross_entropy(reference(images), targets).backward()
+        reference_optimizer.step()
+
+    config = AlgorithmConfig.from_mapping({
+        'mode': 'train', 'num_steps': 3, 'step_period': 2,
+        'lr': 0.1, 'scheduler': 'cosine', 'log_period': 1,
+        'eval_period': eval_period, 'checkpoint_period': 0,
+    })
+    system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
+    model = SimpleNamespace(module=module)
+    result = TrainAlgorithm(config).run(_Batches(), model, system, AlgorithmTracker(tmp_path))
+    records = re.findall(
+        r'\[split\] (train|test).*? lr=([^ ]+) step=(\d+)',
+        system.logger.path.read_text(encoding='utf-8'),
+    )
+    train = [(int(step), float(lr)) for split, lr, step in records if split == 'train']
+    test = [(int(step), float(lr)) for split, lr, step in records if split == 'test']
+    assert [step for step, _ in train] == [1, 2, 3, 3]
+    assert [lr for _, lr in train] == pytest.approx(expected_lrs + [expected_lrs[-1]])
+    assert [step for step, _ in test] == ([1, 2, 3] if eval_period else [3])
+    assert [lr for _, lr in test] == pytest.approx(expected_lrs if eval_period else [expected_lrs[-1]])
+    assert result['steps'] == 3
+    torch.testing.assert_close(module.weight, reference.weight)
+
+    # No new optimizer step: the restored current LR, not the old used LR, is reported.
+    TrainAlgorithm(config).run(_Batches(), model, system, AlgorithmTracker(tmp_path))
+    resumed = re.findall(
+        r'\[split\] test.*? lr=([^ ]+) step=(\d+)',
+        system.logger.path.read_text(encoding='utf-8'),
+    )
+    assert tuple(map(float, resumed[-1])) == pytest.approx((0.0, 3))
+    torch.testing.assert_close(module.weight, reference.weight)
+
+
+@pytest.mark.parametrize('unit', ['step', 'epoch'])
+@pytest.mark.parametrize('early_stop', [False, True], ids=['complete', 'early_stop'])
+def test_checkpoint_progress_matches_completed_updates(tmp_path, unit, early_stop):
+    from copy import deepcopy
+    from math import cos, pi
+    from types import SimpleNamespace
+
+    import torch
+
+    from rpipe.structure.system.config import SystemConfig
+    from rpipe.structure.system.factory import SystemFactory
+
+    images, targets = torch.eye(2), torch.arange(2)
+
+    class _Batches:
+        meta = {'train_size': 4, 'batch_size': 2}
+
+        def iter_batches(self, split):
+            for _ in range(2 if split == 'train' else 1):
+                yield images, targets
+
+    settings = {
+        'mode': 'train', 'progress_unit': unit,
+        ('num_steps' if unit == 'step' else 'num_epochs'): 4,
+        'step_period': 2, 'lr': 0.1, 'momentum': 0.9, 'scheduler': 'cosine',
+        'eval_period': 1, 'checkpoint_period': 1, 'checkpoint': 'percent',
+        'checkpoint_percents': [0.5, 1.0], 'save_best': True, 'best_metric': 'Loss',
+    }
+    if early_stop:
+        settings.update(early_stop_patience=1, early_stop_min_delta=100.0)
+    config = AlgorithmConfig.from_mapping(settings)
+
+    def execute(root, *, interrupt=False):
+        module = torch.nn.Linear(2, 2, bias=False)
+        torch.nn.init.zeros_(module.weight)
+        system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), root)
+        snapshots = []
+        save = system.save_checkpoint
+
+        def save_and_observe(payload, name):
+            snapshots.append((name, deepcopy(payload)))
+            path = save(payload, name)
+            if interrupt and name == 'latest' and payload['step'] == 2:
+                raise RuntimeError('injected interruption after checkpoint')
+            return path
+
+        system.save_checkpoint = save_and_observe
+        result = TrainAlgorithm(config).run(
+            _Batches(), SimpleNamespace(module=module), system, AlgorithmTracker(root)
+        )
+        return result, module, snapshots, system
+
+    result, module, snapshots, system = execute(tmp_path / 'clean')
+    final_step = 2 if early_stop else 4
+    assert result['steps'] == final_step
+    assert result['best_metric'] == 'Loss'
+    assert 'best_accuracy' not in result
+    assert {name for name, _ in snapshots} >= {
+        'latest', 'best', 'step_000002' if unit == 'step' else 'epoch_0002',
+    }
+    reference = torch.nn.Linear(2, 2, bias=False)
+    torch.nn.init.zeros_(reference.weight)
+    optimizer = torch.optim.SGD(reference.parameters(), lr=0.1, momentum=0.9)
+    weights = {}
+    for step in range(1, final_step + 1):
+        optimizer.param_groups[0]['lr'] = 0.05 * (1 + cos(pi * (step - 1) / 4))
+        optimizer.zero_grad()
+        torch.nn.functional.cross_entropy(reference(images), targets).backward()
+        optimizer.step()
+        weights[step] = deepcopy(reference.state_dict())
+    for _name, payload in snapshots:
+        step = payload['step']
+        assert payload['scheduler']['last_epoch'] == step
+        assert payload['optimizer']['param_groups'][0]['lr'] == pytest.approx(
+            0.05 * (1 + cos(pi * step / 4))
+        )
+        torch.testing.assert_close(payload['model'], weights[step])
+        assert payload['best_metric'] == 'Loss'
+        assert payload['best_value'] is not None
+        assert 'best_accuracy' not in payload
+    torch.testing.assert_close(module.weight, reference.weight)
+
+    if not early_stop:
+        # Fixed repeated batches isolate optimizer/scheduler recovery, not RNG or sampler parity.
+        with pytest.raises(RuntimeError, match='injected interruption'):
+            execute(tmp_path / 'interrupted', interrupt=True)
+        resumed, resumed_model, _, resumed_system = execute(tmp_path / 'interrupted')
+        assert resumed['steps'] == final_step
+        assert resumed['best_value'] == pytest.approx(result['best_value'])
+        torch.testing.assert_close(resumed_model.weight, module.weight)
+        assert resumed_system.load_checkpoint('latest')['scheduler'] == system.load_checkpoint('latest')['scheduler']
+        # Budget already done: no update or checkpoint rewrite, and Loss keeps its own name.
+        done, done_model, writes, _ = execute(tmp_path / 'interrupted')
+        assert done['steps'] == final_step
+        assert done['best_metric'] == 'Loss'
+        assert 'best_accuracy' not in done
+        assert writes == []
+        torch.testing.assert_close(done_model.weight, module.weight)
+
+
+@pytest.mark.parametrize('metric', ['Loss', 'Accuracy'])
+def test_checkpoint_hook_normalizes_best_metric_for_all_train_callers(metric):
+    from types import SimpleNamespace
+
+    algo = TrainAlgorithm(AlgorithmConfig.from_mapping({'mode': 'train', 'best_metric': metric}))
+    algo._best_test = 0.25
+    saved = []
+    # Some callers build their payload before adding generic best metadata (HF included).
+    payload = {'step': 2, 'best_accuracy': 0.25}
+    algo.on_checkpoint(None, None, None, None, SimpleNamespace(
+        save_checkpoint=lambda body, name: saved.append(body),
+    ), {'checkpoint_names': ['latest'], 'payload': payload})
+    assert saved[0]['best_metric'] == metric
+    assert saved[0]['best_value'] == 0.25
+    if metric == 'Accuracy':
+        assert saved[0]['best_accuracy'] == 0.25
+    else:
+        assert 'best_accuracy' not in saved[0]

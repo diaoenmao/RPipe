@@ -206,10 +206,14 @@ flowchart TD
 |--|-----------------------------------|------------------------------|
 | 入口 | `FlowRunner` 的 `process`；每条 `run-one` | `python -m rpipe process <study>`；`launch` / `run` 全部 wait 完再调一次 |
 | 写哪里 | `runs/<id>/process.json`，`scope: run` | Study 根 `process.json`，`scope: study`（**信封**） |
-| 读什么 | 本 Run 的 result + 本 Run tracker `history` | 全部 sibling result + 各 Run history |
+| 读什么 | 本 Run 的 result + 本 Run tracker `history` | 当前 index 列出的 result + 各 Run history |
 | 统计 | 这一次的 metrics / history（**Run 级**） | 正文 `experiments[]` 才是 **Experiment 级**：跨 seed 的 mean / std / min / max；Δ baseline。图 `docs/figures/learning_curves.png` 是 Study 级可视化 |
 
 **不做：** 改 config；重跑 execute；覆盖 write 已成功的 `status: succeeded` 正文；**不**改写 `STUDY_REPORT.md`；Run process **不**写 Study 根（避免并行抢文件）。
+
+Study process 必须读取当前 `index.json`，不回退扫描 `runs/`。index 缺失、不能读取/解析，或不是含 `experiments` 列表的对象时，明确失败并提示重新 make；不改已有 process、图或 Run result。当前 index 之外的旧 version Run 不参加统计。Run process 仍只依赖自身，不要求 Study index。
+
+学习曲线优先读取 `scalars.jsonl` 对应 split / metric 的有效报告观测，没有对应记录时回退到 `tracker_state.json` 的 history；不改变训练和指标收口。直接使用当前 tracker 的百分制 Accuracy（0–100），纵轴标注 `Accuracy (%)` 并留少量顶部余量；Loss 保持原值。单点也显示点标记。横轴是报告观测/历史记录序号，不冒充 optimizer step 或 epoch；不按数值相同去重。历史 0–1 数据不按数值大小自动猜单位或转换，需要另行明确处理后才重绘。
 
 Run process 仍排在该 Run 的 write 之后。Study process 排在整轮 launch 之后，与 git `main` 的 `process.py` 一样是单独进程。
 
@@ -271,3 +275,5 @@ conservative 墙钟只在 **make** 打印。本进程实测时间在 Logger 行�
 `python -m rpipe report <study>` 读 `process.json`，写 `docs/NUMBERS.md`（Experiment 的 mean / std / min / max，以及 Run 表）。不改 `STUDY_REPORT.md`。缺 `process.json` 退出 2。
 
 `launch` 每一组开始前打 `launch: wait i/n mode=`，失败再试打 `launch: retry`。全部 wait 完再打一行和 status 相同的计数。不改 `jobs.json`。
+
+失败重试属于本波：先结束 train 的初次执行与重试，再放行 eval。按 index 匹配的 sibling train 最终未成功时，其 eval 不启动且不算成功；重跑 train 前失效旧的 sibling eval 结果。后续 launch 对父结果较新的旧 eval 重新执行。具体匹配、独立 eval 的例外与手动改文件的边界见 [STUDY_GUIDE.md](../STUDY_GUIDE.md) §4。

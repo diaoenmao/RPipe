@@ -155,7 +155,6 @@ studies/<name>/study.yaml
         │
         ├─► structure.make → runs/<id>/config.yaml、index、scripts/jobs.json、shared/data
         └─► FlowRunner（launch 复用 jobs.json）
-        └─► FlowRunner
                     │
                     ▼
             runs/<id>/ 下的 result 与 assets

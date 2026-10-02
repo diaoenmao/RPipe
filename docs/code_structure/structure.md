@@ -422,6 +422,8 @@ flush **必须有**，与 print 同一套间隔，不能攒到 Run 结束：
 - **epoch 末**：`save`+`reset`，再 flush state
 - **execute 结束 / 尽量在失败时**：再 flush 一遍
 
+native train 日志的 `lr` 记录刚完成的 optimizer step 实际使用的第一参数组学习率；周期 train / test 及该轮收尾保持同一口径。step 调度时不能复用 epoch 开始的缓存值。没有执行新 step 的恢复评测使用恢复后 optimizer 当前值。此日志修正不改变 optimizer / scheduler 的更新顺序。
+
 不允许：log 只打终端不写文件；jsonl / state 只在 Run 结束写一次。不必每个 batch 都 rewrite 整份 state。
 
 ### 6.10 `AlgorithmHook`
@@ -480,7 +482,17 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 | `checkpoint_percents` | `[0.25, 0.5, 0.75, 1.0]` | `checkpoint: percent` 时生效；相对 **该单位的总预算**（epoch 训 = 总 epoch，step 训 = 总 step） |
 | `save_best` | `false` | `true` 时 best 口径创新高则写 `best`（跟 eval 走，不跟 period 绑死；口径见下） |
 
-文件都在 `assets/checkpoints/`：每个 stem 一份 **`<name>.pt` 整包**（兼容）外加 **`<name>/` 目录**（`model.pt` / `optimizer.pt` / `scheduler.pt` / `tracker.json` / `logger.json` / `meta.json`）。`save_best: true` 时另写 `best`。百分比时 `epoch_0005` / `step_000100`。result **不**塞权重。
+文件都在 `assets/checkpoints/`：每个 stem 一份 **`<name>.pt` 整包**（恢复权威）外加 **`<name>/` 诊断镜像目录**（`model.pt` / `optimizer.pt` / `scheduler.pt` / `tracker.json` / `logger.json` / `meta.json`）。`save_best: true` 时另写 `best`。百分比时 `epoch_0005` / `step_000100`。result **不**塞权重。
+
+**进度一致性：** native checkpoint 表示该 `step` / `epoch` 已完成。保存前必须完成对应的 scheduler 更新；model、optimizer、scheduler 的进度一致，恢复后 optimizer 中的 lr 用于下一次更新。日志中的 lr 仍是刚完成更新实际使用的值，不随保存顺序改成下一步 lr。周期 latest、best、百分比快照、early stop 和正常终态使用同一约定。
+
+**指标语义：** best 的通用字段是 `best_metric` / `best_value`；仅当选择指标是 `Accuracy` 时才记录 `best_accuracy`。以 Loss 选 best 时不得把 Loss 填进准确率字段，恢复与 already-done 分支也不例外。
+
+**完整发布：** `<name>.pt` 是恢复权威。先在同一 checkpoint 根目录写完整临时整包和分件，再更新诊断分件镜像，最后原子替换整包；替换前出错仍保留旧整包，不直接覆盖它。不通过删除旧分件目录再重命名新目录来发布。镜像更新期间保留 `.<name>.incomplete` 标记：存在标记时不能将裸分件当作已提交快照。`System.load_checkpoint` 即使收到目录路径，也优先读取同名整包；无整包且发布未完成时明确报错。无标记的历史纯分件目录仍兼容。提交后标记清理失败可以保留诊断标记，但不能把已提交的完整整包误报成未保存。这个约定只支持同一 Run / stem 单 writer，不承诺跨多个 stem 的事务或突然断电的持久化保证。
+
+历史纯分件目录首次被覆盖前，先将旧快照原子迁成权威整包，再更新镜像，避免失败时损坏其唯一副本。
+
+**Windows 短暂占用：** 原子文本写入与 checkpoint 的分件、旧快照迁移及最终整包提交共用 artifact 的有界文件替换。只对 Windows `winerror` 5 / 32 / 33 最多尝试 6 次，间隔 50 / 100 / 150 / 200 / 250 ms（总等待最多 750 ms）；每次仍用原子 replace，不先删除目标或修改 ACL。持续拒绝或其他 IO 错误向上传播，提交前失败仍保留旧权威整包。有限重试处理短暂文件占用，不承诺修复外部进程或永久权限配置。
 
 `best_split` / `best_metric` / `best_mode`（`max`/`min`；Loss 默认 min）决定何时算 improved。缺省仍是 test Accuracy 越大越好。
 
@@ -540,6 +552,8 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 | `resume_from` | 无 | 显式覆盖：本 Run 内 stem，其它 Run 的 `.pt` 路径，或 `sibling`（eval 按 index 找同 seed、同因素且 `mode=train` 的 checkpoint） |
 
 **train 恢复（native 对齐 main）：** 有文件则恢复 `step` / epoch、model、optimizer、scheduler、**tracker**、**logger 文本不截断**。没有文件 = 从 step 0 开始，不算失败。
+
+当前承诺是从已发布的完整 checkpoint 继续计算，不承诺与不中断训练逐步等价：step 模式重建采样器时会从同 seed 的采样前缀重新开始，完整 RNG / 数据迭代位置及 early-stop 的 stall 计数未持久化。恢复后的指标不能直接当作无中断对照；研究报告应注明中断及恢复位置。旧 checkpoint 若已保存了落后的 scheduler 状态，不自动猜测修正，应保留历史证据并用新 version 验证新约定。
 
 **eval 恢复：** 通常只要 **权重**（`best` 优先）；不建或不加载 optimizer。本 Run 没有目标文件时，eval 按 Study index 找 **sibling train** 的同名 checkpoint（默认 `best`）。两边都没有则失败（对齐 main `test_model.py`：先训出 best）。
 
@@ -764,6 +778,8 @@ flowchart TB
 
 **`ExperimentConfig`** 与 `RunConfig` 在四层上同构，便于合并；基底里不带 `id`；`id` 只在合并成 `run_config` 后计算。
 
+`version` 沿用两级 Config 的 `extras` 保存，序列化时写回顶层并参与 hash，不额外添加默认值。入口为基底的 `version` 或 Study 的 `fixed.version`，后者覆盖前者；省略时不改变旧配置的 ID。Study 顶层同名字段不参与展开。
+
 示例（落盘 Config；`id` 为示意 hash）：
 
 ```yaml
@@ -836,7 +852,7 @@ prepare：`control_from_config` →（可选契约）→ 各 `*_api` Factory.bui
 
 ### 8.6 测试意图
 
-`tests/rpipe/structure/control/`：`ExperimentConfig` / `RunConfig` / `Control` 往返；合并后 **`id` = 除 id / description 外内容的 hash**（含 tags、seed）；契约校验。Study 展开见 `tests/rpipe/flow/` 上带 `e2e` 标签的用例。
+`tests/rpipe/structure/control/`：`ExperimentConfig` / `RunConfig` / `Control` 往返；合并后 **`id` = 除 id / description 外内容的 hash**（含 tags、seed、可选 version）；契约校验。version 回归验证省略时旧 ID 稳定、同值同 ID、新值新 ID、基底/补丁合并及往返。Study 展开与 index 切换见 `tests/rpipe/flow/` 的集成用例，独立 eval 只从当前 index 找 sibling train，不因磁盘残留旧 Run 而回退。
 
 ---
 
@@ -901,7 +917,7 @@ RunConfig 可选字段 `version` 参与 `id` hash，用于让相同实验配置�
 | `docs_dir` | 人文文档 |
 | `ensure()` | 创建上述目录 |
 
-index 在 **Study 根**，不在 `runs/<id>/`。现有 `make_run_dir(id, timestamp=None)` 的 timestamp 后缀是待移除的兼容实现；新的实测由 RunConfig 的 `version` 进入 hash 后生成新 `id`。
+index 在 **Study 根**，不在 `runs/<id>/`。Run 目录直接使用 `id`，不提供 timestamp 后缀接口；新的实测由 RunConfig 的 `version` 进入 hash 后生成新 `id`，历史目录保持不变。
 
 错误：`ArtifactError`、`MissingConfigError`、`CorruptArtifactError`。
 
@@ -977,7 +993,7 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 
 ## 10. `make/`
 
-多实验管理与调度脚本化。与 **control** 并列：control 做**一次**合并；make **循环**调用 control 与 artifact。不 import 四层，不 import flow。
+多实验管理与调度脚本化。与 **control** 并列：control 做**一次**合并；make **循环**调用 control 与 artifact。不直接 import 四层或 flow；调度时经 `algorithm_api` 复用 resume 的 sibling 依赖解析，避免另写一套匹配规则。
 
 | 职责 | 说明 |
 |------|------|
@@ -988,13 +1004,7 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 | `wait` | 一组并发的内存闸门：本组进程全部退出、显存释放完，才启动下一组。不 `wait` 则下一组会挤进还在跑的进程，显存叠加，容易 OOM。eval 波次同样：全部 train `wait` 完再开 |
 | 墙钟估计 | 一组取组内最慢那条；整轮 conservative 墙钟 = 各组 max **再加总**。只供排班参考，不是实测。训练 Logger 的 `elapsed` 才是该进程实测 |
 
-产物：N 份 config + index，以及 `studies/<name>/scripts/`（默认 gitignore）。`launch.sh` 形状：
-
-```bash
-CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<id>" &
-CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<id>"
-wait
-```
+产物：N 份 config + index，以及 `studies/<name>/scripts/`（默认 gitignore）。`launch.sh` 用 Python heredoc 调同一 `launch_jobs`，保留分组并行 / wait / GPU 分配，并复用依赖检查和波内重试。`--split-round` 按 wait 组切片，最后一片执行 Study process；旧版裸 `run-one` 脚本须重新 make 后才有这些保护。
 
 `algorithm.mode: eval` 在**默认整轮 launch**里是第二波：train 全部 `wait` 完再启动。`rpipe launch --mode eval` 只发 eval，不改 `jobs.json`。已成功的加 `--include-done`。`rpipe make` 打印 `pack N waits`。`rpipe launch` **复用** `scripts/jobs.json`（GPU / `round` 一致），不重做 make、不重印 pack；缺清单、参数变了或 `--remake` 才再 make。Windows 默认 `--console new`，组间仍 `wait`。默认 `--round auto` 按 [STUDY_GUIDE.md](../STUDY_GUIDE.md) §3 排班；脚本形状见 §4。
 
