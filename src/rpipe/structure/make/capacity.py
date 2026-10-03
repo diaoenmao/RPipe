@@ -1,8 +1,7 @@
 """Estimate ``--round`` from Run configs and GPU memory.
 
 make does not import data / model / algorithm. Complexity is a heuristic
-from yaml fields; hardware comes from nvidia-smi (then torch). Seconds are
-a conservative wall-clock guess for packing, not a measurement.
+from yaml fields; hardware comes from nvidia-smi (then torch). Seconds are process start plus train steps plus each scheduled test pass.
 """
 
 from __future__ import annotations
@@ -18,7 +17,6 @@ from rpipe.structure.artifact import load_config
 from rpipe.structure.make.schedule import job_waves
 
 SAFETY = 0.5
-TIME_SAFETY = 2.0
 CPU_ROUND = 4
 OVERHEAD_BYTES = 512 * 1024 * 1024
 
@@ -30,14 +28,27 @@ DATA_SHAPE: dict[str, tuple[int, int, int]] = {
     'SVHN': (3, 32, 32),
 }
 
-# act multiplier, param MiB, conservative ms/step
+# ms/step is at batch 64. linear comes from mnist_train_size (2026-09-30):
+# a run is about 3s to start, 6 ms per linear step, and about 1s per full MNIST test.
+# mlp / cnn / resnet18 are the same shape fitted to cifar_grid train times.
+# resnet10 / wresnet are not measured; they sit on that scale.
+REF_BATCH = 64
+STARTUP_SECONDS = 3
+_TEST_ROWS = {
+    'MNIST': 10000,
+    'FashionMNIST': 10000,
+    'CIFAR10': 10000,
+    'CIFAR100': 10000,
+    'SVHN': 26032,
+}
+# act multiplier, param MiB, ms/step at REF_BATCH
 _MODEL = {
-    'linear': (80, 32, 15),
-    'mlp': (200, 64, 25),
-    'cnn': (600, 128, 40),
-    'resnet10': (1200, 256, 80),
-    'resnet18': (1800, 512, 120),
-    'wresnet': (2800, 1024, 180),
+    'linear': (80, 32, 6),
+    'mlp': (200, 64, 6),
+    'cnn': (600, 128, 10),
+    'resnet10': (1200, 256, 14),
+    'resnet18': (1800, 512, 18),
+    'wresnet': (2800, 1024, 28),
 }
 
 
@@ -78,28 +89,63 @@ def estimate_job_bytes(cfg: dict[str, Any] | None) -> int:
     return max(OVERHEAD_BYTES, int(total))
 
 
+def _ms_per_step(model_name: str, batch: int) -> float:
+    ms = _MODEL.get(model_name, _MODEL['resnet18'])[2]
+    return float(ms) * (max(int(batch), 1) / REF_BATCH)
+
+
+def _scheduled_test_passes(algo: dict[str, Any], units: int) -> int:
+    """How many full test passes this train run makes. ``eval_period <= 0`` is once at the end."""
+    raw = algo.get('eval_period')
+    period = 1 if raw is None else _as_int(raw, 1)
+    if period <= 0:
+        return 1
+    if units <= 0:
+        return 0
+    return units // period
+
+
 def estimate_job_seconds(cfg: dict[str, Any] | None) -> int:
-    """Conservative seconds for one ``run-one``. Wall clock uses max per wait group."""
+    """Seconds for one run: process start + train steps + each scheduled test pass.
+
+    Wall clock is still the sum of the slowest job in each wait group.
+    There is no safety multiplier on top of this sum.
+    """
     if not isinstance(cfg, dict):
-        return int(math.ceil(600 * TIME_SAFETY))
+        return STARTUP_SECONDS
     data = cfg.get('data') if isinstance(cfg.get('data'), dict) else {}
     model = cfg.get('model') if isinstance(cfg.get('model'), dict) else {}
     algo = cfg.get('algorithm') if isinstance(cfg.get('algorithm'), dict) else {}
     dcfg = data.get('config') if isinstance(data.get('config'), dict) else {}
     model_name = str(model.get('name') or 'linear').lower()
-    batch = max(1, _as_int(dcfg.get('batch_size'), 64))
-    train_size = max(1, _as_int(dcfg.get('train_size'), 50000))
-    steps = _as_int(algo.get('num_steps'), 0)
+    batch = max(1, _as_int(dcfg.get('batch_size'), REF_BATCH))
+    ratio = float(dcfg.get('test_batch_ratio') or 1)
+    test_batch = max(1, int(batch * ratio))
+    data_name = str(data.get('name') or '')
     epochs = _as_int(algo.get('num_epochs'), 0)
-    if steps <= 0 and epochs > 0:
-        steps = epochs * max(1, int(math.ceil(train_size / batch)))
-    if steps <= 0:
+    steps = _as_int(algo.get('num_steps'), 0)
+    if epochs > 0:
+        rows = _as_int(dcfg.get('train_size'), 0)
+        if rows <= 0:
+            rows = _TEST_ROWS.get(data_name, 50000)
+        steps = epochs * max(1, int(math.ceil(rows / batch)))
+    elif steps <= 0:
         steps = 1
-    ms = _MODEL.get(model_name, (80, 512, 80))[2]
-    seconds = steps * ms / 1000.0
-    if str(algo.get('mode') or 'train') == 'eval':
-        seconds *= 0.25
-    return max(1, int(math.ceil(seconds * TIME_SAFETY)))
+    unit = str(algo.get('progress_unit') or 'step').lower()
+    units = epochs if unit == 'epoch' and epochs > 0 else steps
+    mode = str(algo.get('mode') or 'train')
+    passes = 1 if mode == 'eval' else _scheduled_test_passes(algo, units)
+    limit = algo.get('eval_num_steps')
+    if limit is not None and _as_int(limit, -1) >= 0:
+        test_steps = _as_int(limit, 0)
+    else:
+        test_rows = _TEST_ROWS.get(data_name, 0)
+        test_steps = int(math.ceil(test_rows / test_batch)) if test_rows else 0
+    seconds = float(STARTUP_SECONDS)
+    if mode != 'eval':
+        seconds += steps * _ms_per_step(model_name, batch) / 1000.0
+    seconds += passes * test_steps * _ms_per_step(model_name, test_batch) / 1000.0
+    return max(1, int(math.ceil(seconds)))
 
 
 def attach_estimates(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:

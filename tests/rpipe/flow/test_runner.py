@@ -24,7 +24,7 @@ def test_full_flow_writes_succeeded_status(tmp_path: Path):
         {
             'slug': 'seed_0',
             'seed': 0,
-            'data': {'name': 'Toy'},
+            'data': {'name': 'Toy', 'source': 'stub'},
             'model': {'name': 'linear'},
             'algorithm': {'mode': 'train', 'num_steps': 2},
             'system': {'device': 'cpu'},
@@ -35,6 +35,8 @@ def test_full_flow_writes_succeeded_status(tmp_path: Path):
     assert result_path.is_file()
     result = load_result(result_path)
     assert result['status'] == 'succeeded'
+    assert result['structure']['data']['source'] == 'stub'
+    assert result['structure']['data']['stub'] is True
     assert ctx.control is not None
     assert ctx.control.id
     assert ctx.control.seed == 0
@@ -50,7 +52,7 @@ def test_failed_flow_writes_failed_result(tmp_path: Path):
         layout.config_path,
         {
             'seed': 0,
-            'data': {'name': 'Toy'},
+            'data': {'name': 'Toy', 'source': 'stub'},
             'model': {'name': 'linear'},
             'algorithm': {'mode': 'train'},
             'system': {'device': 'cpu'},
@@ -94,4 +96,33 @@ def test_prepare_failure_still_writes_traceback_to_run_log(tmp_path: Path):
     assert '[flow] start phases=' in log
     assert '[error] phase=prepare status=failed' in log
     assert '[error] Traceback (most recent call last):' in log
+    assert '[flow] succeeded' not in log
+
+
+@pytest.mark.parametrize('layer,mapping', [
+    ('data', {'name': 'Typo', 'source': 'torch'}),
+    ('data', {'name': 'Toy', 'source': 'torch'}),
+    ('model', {'name': 'Typo', 'source': 'custom_torch'}),
+    ('model', {'name': 'linear', 'source': 'not-installed-source'}),
+])
+def test_invalid_configuration_writes_failed_result(tmp_path, layer, mapping):
+    """Invalid data/model declaration → prepare failure → failed result, never succeeded."""
+    layout = artifact_layout(tmp_path, 'invalid')
+    config = {
+        'seed': 0,
+        'data': {'name': 'Toy', 'source': 'stub'},
+        'model': {'name': 'linear'},
+        'algorithm': {'mode': 'train', 'num_steps': 2},
+        'system': {'device': 'cpu'},
+    }
+    config[layer] = mapping
+    write_config(layout.config_path, config)
+    ctx = FlowContext(study_dir=tmp_path, layout=layout, config={})
+    with pytest.raises(ValueError, match=f'unknown {layer} name/source'):
+        FlowRunner().run(ctx)
+    result = load_result(layout.result_path)
+    assert result['status'] == 'failed'
+    assert result['metrics'] == {}
+    log = (layout.assets_dir / 'logs' / 'run.log').read_text(encoding='utf-8')
+    assert 'phase=prepare status=failed' in log
     assert '[flow] succeeded' not in log

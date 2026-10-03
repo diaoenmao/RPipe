@@ -9,7 +9,10 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from rpipe.structure.api.algorithm_api import sibling_train_dependency
 from rpipe.structure.artifact import artifact_layout, load_config
+from rpipe.structure.artifact.index import load_index
+from rpipe.structure.artifact.result import write_result
 from rpipe.structure.artifact.result.format import STATUS_SUCCEEDED, decode_result
 
 SCRIPTS_DIRNAME = 'scripts'
@@ -38,15 +41,34 @@ def bash_path(path: Path) -> str:
     return text.replace('\\', '/')
 
 
-def run_succeeded(study_dir: Path, run_id: str) -> bool:
-    result_path = artifact_layout(study_dir, run_id).result_path
-    if not result_path.is_file():
-        return False
+def _run_result(study_dir: Path, run_id: str) -> dict[str, Any]:
+    result_path = Path(study_dir) / 'runs' / run_id / 'result.json'
     try:
-        data = decode_result(result_path.read_text(encoding='utf-8'))
+        return decode_result(result_path.read_text(encoding='utf-8'))
     except (OSError, json.JSONDecodeError, ValueError):
+        return {}
+
+
+def run_succeeded(study_dir: Path, run_id: str) -> bool:
+    if _run_result(study_dir, run_id).get('status') != STATUS_SUCCEEDED:
         return False
-    return data.get('status') == STATUS_SUCCEEDED
+    parent = sibling_train_dependency(study_dir, run_id)
+    if parent is None:
+        return True
+    if _run_result(study_dir, parent).get('status') != STATUS_SUCCEEDED:
+        return False
+    # ponytail: conservative local freshness; copied/backdated artifacts need explicit re-evaluation.
+    try:
+        runs = Path(study_dir) / 'runs'
+        return (runs / parent / 'result.json').stat().st_mtime_ns <= (runs / run_id / 'result.json').stat().st_mtime_ns
+    except OSError:
+        return False
+
+
+def _fail_result(study_dir: Path, run_id: str, error: str) -> None:
+    body = _run_result(study_dir, run_id)
+    body.update(status='failed', error=error)
+    write_result(artifact_layout(study_dir, run_id).result_path, body)
 
 
 def _job_fields(config_path: Path) -> tuple[str, str]:
@@ -256,49 +278,33 @@ def render_bash(
     if split_round < 1:
         raise ValueError('split_round must be >= 1')
     repo = repo_root_from(study_dir)
-    study_b = bash_path(study_dir)
     py_b = bash_path(Path(python_exe))
     repo_b = bash_path(repo)
     chunks: list[str] = []
-    buf = ['#!/bin/bash', f'cd "{repo_b}"']
-    wait_groups_n = 0
     groups = wait_groups(jobs, round_size, batches)
-
-    def _flush() -> None:
-        chunks.append('\n'.join(buf) + '\n')
-
-    def _reset() -> list[str]:
-        return ['#!/bin/bash', f'cd "{repo_b}"']
-
-    for gi, group in enumerate(groups):
-        last_group = gi == len(groups) - 1
-        for i, job in enumerate(group):
-            run_id = job['run_id']
-            gpu = job.get('gpu')
-            cmd = f'"{py_b}" -m rpipe run-one "{study_b}" "{run_id}"'
-            if gpu is not None:
-                bg = f'CUDA_VISIBLE_DEVICES="{gpu}" {cmd} &'
-                fg = f'CUDA_VISIBLE_DEVICES="{gpu}" {cmd}'
-            else:
-                bg = f'{cmd} &'
-                fg = cmd
-            last = i == len(group) - 1
-            if last:
-                buf.append(fg)
-                buf.append('wait')
-                wait_groups_n += 1
-                if wait_groups_n % split_round == 0 or last_group:
-                    _flush()
-                    buf = _reset()
-            else:
-                buf.append(bg)
-    if len(buf) > 2:
-        _flush()
-    process_line = f'"{py_b}" -m rpipe process "{study_b}"'
-    if chunks:
-        chunks[-1] = chunks[-1].rstrip('\n') + '\n' + process_line + '\n'
-    else:
-        chunks = ['#!/bin/bash\n' + process_line + '\n']
+    partitions = [groups[start:start + split_round] for start in range(0, len(groups), split_round)] or [[]]
+    for index, part in enumerate(partitions):
+        body = [
+            'from pathlib import Path',
+            'from rpipe.structure.make.schedule import launch_jobs, run_succeeded',
+            f'study = Path({str(study_dir.resolve())!r})',
+            f'groups = {part!r}',
+            'jobs = [job for group in groups for job in group]',
+            f"launch_jobs(study, jobs, round_size={round_size}, batches=groups, console='shared')",
+            "failed = any(not run_succeeded(study, str(job['run_id'])) for job in jobs)",
+        ]
+        if index == len(partitions) - 1:
+            body.extend([
+                'from rpipe.flow.process import run_study',
+                'result = run_study(study)',
+                "print(study / 'process.json', flush=True)",
+                "failed = failed or not result.get('complete', False)",
+            ])
+        body.append('raise SystemExit(int(failed))')
+        chunks.append('\n'.join([
+            '#!/bin/bash', f'cd "{repo_b}"', f'"{py_b}" - <<\'RPIPE_LAUNCH\'',
+            *body, 'RPIPE_LAUNCH', '',
+        ]))
     return chunks
 
 
@@ -409,6 +415,28 @@ def launch_jobs(
     codes: list[int] = []
     console_mode = resolve_console(console)
     popen_extra = job_popen_kwargs(console_mode)
+    try:
+        index = load_index(study_dir)
+    except (OSError, TypeError, ValueError):
+        index = {}
+    dependencies = {
+        run_id: parent
+        for exp in index.get('experiments') or []
+        for run in exp.get('runs') or []
+        if (run_id := str(run.get('run_dir') or run.get('id') or ''))
+        if (parent := sibling_train_dependency(study_dir, run_id)) is not None
+    }
+    for run_id, parent in dependencies.items():
+        if _run_result(study_dir, run_id).get('status') == STATUS_SUCCEEDED and not run_succeeded(study_dir, run_id):
+            _fail_result(study_dir, run_id, f'sibling train {parent} is unfinished or newer; re-evaluation required')
+    groups = wait_groups(jobs, round_size, batches)
+    # A supplied batch must not bypass the train/eval barrier either.
+    waves = [
+        [kept for group in groups if (kept := [job for job in group if (job_mode(job) == 'eval') == is_eval])]
+        for is_eval in (False, True)
+    ]
+    total_waits = sum(len(wave) for wave in waves)
+    wait_index = 0
 
     def _group_mode(group: list[dict[str, Any]]) -> str:
         modes: list[str] = []
@@ -423,13 +451,30 @@ def launch_jobs(
         *,
         kind: str,
     ) -> list[tuple[dict[str, Any], int]]:
+        nonlocal wait_index
         pairs: list[tuple[dict[str, Any], int]] = []
         total = len(groups)
         for index, group in enumerate(groups, start=1):
-            print(f'launch: {kind} {index}/{total} mode={_group_mode(group)}', flush=True)
+            if kind == 'wait':
+                wait_index += 1
+            position = f'{wait_index}/{total_waits}' if kind == 'wait' else f'{index}/{total}'
+            print(f'launch: {kind} {position} mode={_group_mode(group)}', flush=True)
             procs: list[tuple[dict[str, Any], subprocess.Popen[str]]] = []
             for job in group:
-                cmd = [py, '-m', 'rpipe', 'run-one', str(study_dir), str(job['run_id'])]
+                run_id = str(job['run_id'])
+                parent = dependencies.get(run_id)
+                if parent is not None and not run_succeeded(study_dir, parent):
+                    message = f'blocked: sibling train {parent} did not succeed'
+                    _fail_result(study_dir, run_id, message)
+                    print(f'error {run_id} {message}', flush=True)
+                    pairs.append((job, 1))
+                    continue
+                for eval_id, train_id in dependencies.items():
+                    if train_id == run_id and _run_result(study_dir, eval_id).get('status') == STATUS_SUCCEEDED:
+                        _fail_result(study_dir, eval_id, f'sibling train {run_id} is being rerun; re-evaluation required')
+                if _run_result(study_dir, run_id).get('status') == STATUS_SUCCEEDED:
+                    _fail_result(study_dir, run_id, 'rerun started; no successful result from this execution yet')
+                cmd = [py, '-m', 'rpipe', 'run-one', str(study_dir), run_id]
                 where = 'window' if console_mode == 'new' and os.name == 'nt' else 'here'
                 resource = f'gpu={job["gpu"]}' if job.get('gpu') is not None else 'cpu'
                 print(f'+ {resource} {job["run_id"]} ({where})', flush=True)
@@ -449,20 +494,21 @@ def launch_jobs(
                 pairs.append((job, code))
                 if code != 0:
                     print(f'error {job["run_id"]} exit={code}', flush=True)
+                    if _run_result(study_dir, str(job['run_id'])).get('status') == STATUS_SUCCEEDED:
+                        _fail_result(study_dir, str(job['run_id']), f'run-one exited with code {code}')
         return pairs
 
-    pairs = _run_groups(wait_groups(jobs, round_size, batches), kind='wait')
-    codes.extend(code for _, code in pairs)
-    if not retry_failed:
-        return codes
-    failed = [
-        job
-        for job, code in pairs
-        if code != 0 or not run_succeeded(study_dir, str(job['run_id']))
-    ]
-    if not failed:
-        return codes
-    print(f'retry {len(failed)} failed jobs (resume latest)', flush=True)
-    retry_pairs = _run_groups([[job] for job in failed], kind='retry')
-    codes.extend(code for _, code in retry_pairs)
+    for wave in waves:
+        pairs = _run_groups(wave, kind='wait')
+        codes.extend(code for _, code in pairs)
+        failed = [
+            job for job, code in pairs
+            if (code != 0 or not run_succeeded(study_dir, str(job['run_id'])))
+            and (dependencies.get(str(job['run_id'])) is None
+                 or run_succeeded(study_dir, dependencies[str(job['run_id'])]))
+        ]
+        if retry_failed and failed:
+            print(f'retry {len(failed)} failed jobs (resume latest)', flush=True)
+            retry_pairs = _run_groups([[job] for job in failed], kind='retry')
+            codes.extend(code for _, code in retry_pairs)
     return codes

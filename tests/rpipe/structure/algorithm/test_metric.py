@@ -37,10 +37,20 @@ def test_accuracy_and_mse_values():
     logits = torch.tensor([[0.1, 4.0], [4.0, 0.1]])
     target = torch.tensor([1, 0])
     packed = pack_io((None, target), logits)
-    assert accuracy_value(packed) == 1.0
+    assert accuracy_value(packed) == 100.0
     pred = torch.tensor([1.0, 2.0])
     y = torch.tensor([1.0, 3.0])
     assert abs(mse_value(pack_io({'target': y}, {'pred': pred})) - 0.5) < 1e-6
+
+
+def test_topk_accuracy_keeps_sample_axis():
+    import torch
+
+    logits = torch.tensor([[5.0, 4.0, 1.0], [1.0, 5.0, 4.0], [4.0, 1.0, 5.0]])
+    target = torch.tensor([1, 2, 1])
+    packed = pack_io((None, target), logits)
+    assert accuracy_value(packed) == 0.0
+    assert accuracy_value(packed, topk=2) == pytest.approx(200.0 / 3)
 
 
 def test_metric_bundle_batch_defaults():
@@ -52,4 +62,4 @@ def test_metric_bundle_batch_defaults():
     values = bundle.evaluate('train', 'batch', (None, target), logits)
     assert 'Loss' in values
     assert 'Accuracy' in values
-    assert values['Accuracy'] == 1.0
+    assert values['Accuracy'] == 100.0

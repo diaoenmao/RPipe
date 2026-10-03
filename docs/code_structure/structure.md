@@ -117,6 +117,8 @@ structure/
 
 对外：`DataFactory.build(data_config, assets_dir) → Data`。
 
+Factory 按注册的 `name` / `source` 精确匹配，未注册组合抛 `ValueError`，不回退其他来源。省略数据 `source` 时使用 `torch`；占位数据必须显式声明 `source: stub`，且 name 已注册（`Toy` 或上述视觉数据集）。stub 只用于流程验证，不代表真实训练或评测。SVHN 的 `.mat` 读取依赖 `scipy`，列入基础安装依赖。
+
 ### 4.2 `Data` 职责要点
 
 - 按 split 提供可迭代 batch（供 algorithm）
@@ -133,7 +135,7 @@ structure/
 | Hugging Face | `datasets.Dataset` / `DatasetDict` 及加载、格式化 API |
 | ModelScope | ModelScope 数据集加载 API |
 
-已注册 `source: torch`：`MNIST`、`FashionMNIST`、`CIFAR10`、`CIFAR100`、`SVHN`（ToTensor + Normalize；CIFAR10/CIFAR100 默认 train 增强：flip+pad-4 crop，SVHN 仅 pad-4 crop）。`Data.meta` 带 `data_size` / `target_size`，供 prepare 传给 model factory。`config.augment: false` 可关掉随机增强。`config.pin_memory` / `config.num_workers` 传给 DataLoader（缺省 `false` / `0`）。
+已注册 `source: torch`：`MNIST`、`FashionMNIST`、`CIFAR10`、`CIFAR100`、`SVHN`。数据侧只做 ToTensor，像素留在 0–1。`python -m rpipe data studies/<name>` 在 `shared/data/<数据集>/stats.yaml` 写下张数、形状、类别数量、像素最小/最大，以及 train 的 mean / std。有这份文件时 Normalize 用它，否则用代码里的常数。模型前面用 kornia：始终 Normalize；`augment` 为真时，训练态再加 CIFAR 的翻转+pad-4 crop，或 SVHN 的 pad-4 crop。`config.augment: false` 关掉随机增强。`config.pin_memory` / `config.num_workers` 传给 DataLoader（缺省 `false` / `0`）。
 
 其它来源经 Registry 注册即可。
 
@@ -201,6 +203,8 @@ flowchart LR
 | **`ModelConfig`** | dataclass；从 JSON / Config / Control.model 加载声明字段 |
 
 对外：`ModelFactory.build(model_config, assets_dir, data_meta=None) → Model`。`data_meta` 是 dict（通常 `Data.meta`），**不是** Data 对象；prepare 经 `model_api` 传入。`model.config.data_size` / `target_size` 优先于 meta。
+
+省略模型 `source` 时使用 `custom_torch`；显式 source 必须与注册项匹配。未知模型名或来源抛 `ValueError`，不创建 `module=None` 的占位模型，也不改用 `custom_torch`。
 
 已注册 `source: custom_torch`：`linear`、`mlp`、`cnn`、`resnet18`（别名 `resnet`）、`resnet10`、`wresnet28x2`（别名 `wresnet`）、`wresnet28x8`，结构对齐 git main `src/model/`（含 `init_param`）。linear/mlp 在模块内 flatten；cnn/resnet/wresnet 吃 NCHW。默认超参对齐 `hyper.py`（mlp 128×2 层；cnn/resnet hidden `[64,128,256,512]`；wresnet depth/widen/drop_rate）。
 
@@ -302,6 +306,7 @@ execute 典型调用：`algorithm.run(data, model, system, tracker=…) → obse
 
 - 按 `mode` 执行 train **或** eval **或** inference（三者行为不同；一次 Run 一个 mode）
 - 从 `Data` 取 batch；调用 `Model`；经 `System` 做设备 / IO 协作。native 监督循环：有 `module` + `iter_batches` 即训，不按 `data.name` 特判 MNIST
+- native 占位 train / eval 只接受显式 stub 数据（`source: stub` 且 `meta.stub: true`），结果标 `stub: true`；正式路径缺少模型 module 或数据迭代接口时抛 `ValueError`，不生成占位指标。HF 的回退路径复用此规则。
 - **每个计算 batch** 更新 AlgorithmTracker（§6.9）；按间隔把 tracker 交给 `system.Logger` 打终端并写 `assets/logs/`
 - train：更新参数；tracker 曲线进 `assets/tracker/`；checkpoint 经 system 写 asset；循环点上调 **AlgorithmHook**（§6.10），不另开 Flow 阶段
 - **优化器 / 调度器 / resume**：本层接口（§6.11），各 `source` 自己落实；native 手写 loop 与 HF Trainer 走同一套名字
@@ -400,7 +405,9 @@ flowchart LR
 
 内存里按 split（至少 `train` / `test`）维护：最近一次 batch 值、按样本数 `n` 加权的 running mean、累计 counter、`save()` 时追加的 history、以及给 jsonl 用的步数。
 
-Metric 名与 git `main` 对齐，在 **algorithm** 算、不在 Flow 另起一套：`Loss`、`Accuracy`、`MSE`（batch）；`RMSE`、`GLUE`（full，在 `save()` 时收口）。配置键 `algorithm.metric`；缺省 train / test 都是 `Loss` + `Accuracy`。Accuracy 是 **0–1**，不是百分数。train 循环与独立 `mode=eval` 共用同一套名字。
+Metric 名与 git `main` 对齐，在 **algorithm** 算、不在 Flow 另起一套：`Loss`、`Accuracy`、`MSE`（batch）；`RMSE`、`GLUE`（full，在 `save()` 时收口）。配置键 `algorithm.metric`；缺省 train / test 都是 `Loss` + `Accuracy`。Accuracy 是 **0–100**。train 循环与独立 `mode=eval` 共用同一套名字。
+
+`accuracy_value` 的既有 `topk` 参数按样本判断：标签出现在该样本的任一候选中即计为正确，分母为样本数，不是候选数；MetricBundle仍使用默认top1，本轮不新增配置键。
 
 `evaluate(split, mode='batch', input, output)` 按该 split 登记的名字算 batch 指标。`mode='full'` 留给 RMSE / GLUE 这类要整段才有的量。默认 MNIST train 每个 batch 都 `append('train', n=batch_size)`；test 由 §6.10 的 `on_eval_period` 走同一套 `evaluate` / `append(..., split='test')`。
 
@@ -409,18 +416,26 @@ Metric 名与 git `main` 对齐，在 **algorithm** 算、不在 Flow 另起一�
 #### 6.9.1 每个 batch 与每个周期
 
 每个 batch：`evaluate` → `append`（只更新内存 mean，不重写整份 state 文件）。
-每个 epoch 末：`save()` 把当前 mean 推进 history，再 `reset()` tracker/mean/counter（history 与步数保留）。test / checkpoint 节奏见 `eval_period` 与 `progress_unit`（§6.10）。
+native step 模式在每次周期 test 前收口 train 段：`save()` 将本段 mean 推进 history，再 `reset('train')`，与 main 每次 train / test 段结束后 reset 的指标窗口对齐。epoch 收尾只保存仍有新 batch 的剩余段，不记录空段的零值；epoch 模式仍在 epoch 末收口。`eval_period<=0` 时训练结束后收口整段。batch / optimizer 计数与 history 不清零，采样和参数更新顺序不因指标分段改变。HF 仍按自己的 epoch 回调收口。test / checkpoint 节奏见 `eval_period` 与 `progress_unit`（§6.10）。
 
 #### 6.9.2 画图与 flush
 
-密曲线读 `assets/tracker/scalars.jsonl`（每次 **report 间隔** 一行：step、split、name、mean）；稀曲线读 `tracker_state.json` 的 `history`（每个 epoch 一个点）。jsonl 是主画图源。**不做 TensorBoard**：process 已经从 history / jsonl 出图。
+密曲线读 `assets/tracker/scalars.jsonl`（每次 **report 间隔** 每个 metric 一行：step、split、name、mean）；稀曲线读 `tracker_state.json` 的 `history`。`step` 仍是累计 batch 计数（含 test），不代表参数更新次数。真实 train / test 观测另记 `optimizer_step`（已完成更新次数）与 `epoch`；梯度累积多个 batch 只推进一次 optimizer_step。native 使用循环的更新计数，HF 使用 TrainerState.global_step 加恢复起点；HF epoch 保留实际浮点进度。即使预算按 epoch，优先用 optimizer_step 比较训练进度；仅有明确 epoch 的记录才使用 epoch。stub 不伪造进度。
+
+train 开始时向原 JSONL 追加 `event: start`、`keep_until`（字节位置）。tracker state 保存 `jsonl_path`、`jsonl_offset` 和最近报告的 `progress`；checkpoint 中的 progress 使用该 checkpoint 的实际训练进度，即使此刻没有新报告。同一日志恢复时只继承该位置之前的有效观测；从头重跑、旧 checkpoint 无位置、来自另一日志或位置不可用时 keep_until=0，只比较本次新观测。日志不截断，回滚后的废弃分支仍可用于诊断。连续恢复按每次 start 的位置回溯选取轨迹，不仅依据 step 大小删除；复制/迁移日志不自动认定为同一来源。
+
+HF 观测的连续坐标继承 checkpoint tracker.progress，再加本次 TrainerState.global_step / epoch；独立 eval 优先取 checkpoint 保存的观测坐标。该元数据只描述实际更新，不改变既有 HF 训练预算、回调节奏、checkpoint 调度或恢复策略，也不承诺采样 / 数值等价。
+
+同一有效轨迹上 split / metric / 进度相同的重复观测取最后一条，保持原始日志；进度字段缺失或混合的新旧观测按 observation 处理，不猜单位。state history 回退也用 observation。jsonl 是 process 与绘图共用的主源。**不做 TensorBoard**。
 
 flush **必须有**，与 print 同一套间隔，不能攒到 Run 结束：
 
 - **batch**：只内存 `append`
-- **report 间隔**（默认每 epoch 至少一次；长训用 `algorithm.config.log_interval`）：`system.Logger.report` 并立刻 flush `run.log`；tracker 往 jsonl 追加并 flush；写出 `tracker_state.json` 并 flush
+- **report 间隔**（这一轮 step 结束时至少一次；中途用 `log_period`，整数 step，和 `checkpoint_period` 一样）：`system.Logger.report` 并立刻 flush `run.log`；tracker 往 jsonl 追加并 flush；写出 `tracker_state.json` 并 flush
 - **epoch 末**：`save`+`reset`，再 flush state
 - **execute 结束 / 尽量在失败时**：再 flush 一遍
+
+native train 日志的 `lr` 记录刚完成的 optimizer step 实际使用的第一参数组学习率；周期 train / test 及该轮收尾保持同一口径。step 调度时不能复用 epoch 开始的缓存值。没有执行新 step 的恢复评测使用恢复后 optimizer 当前值。此日志修正不改变 optimizer / scheduler 的更新顺序。
 
 不允许：log 只打终端不写文件；jsonl / state 只在 Run 结束写一次。不必每个 batch 都 rewrite 整份 state。
 
@@ -465,7 +480,7 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 | `num_epochs` | 无 | 若能推导 `steps_per_epoch`（train loader 长度，或 `train_size`/`batch_size`），则 `num_steps = num_epochs * steps_per_epoch`，并覆盖显式 `num_steps` |
 | `progress_unit` | `step` | `eval_period` / `checkpoint_period` / 百分比按这个单位数；需要按 epoch 记周期时显式设 `epoch` |
 | `eval_period` | `1` | 每 N 个单位评一次 test；`0` = 只在训完评一次 |
-| `eval_num_steps` | 缺省 / `<0` | test 评多少个 batch；缺省或负数 = 整个 split |
+| `eval_num_steps` | 缺省 / `<0` | 正整数限定test batch数；缺省或负数 = 整个 split；`0` 报错，不能产生有效评测指标 |
 
 `progress_unit=epoch` 仍可用，但要求 `num_epochs`。对不具备稳定 epoch 语义的数据（如流式数据），只配 `num_steps` 即可。cosine 的 `T_max` 跟单位走（epoch 训用 epoch 数，step 训用 step 数），可用 `T_max` 覆写。
 
@@ -480,7 +495,17 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 | `checkpoint_percents` | `[0.25, 0.5, 0.75, 1.0]` | `checkpoint: percent` 时生效；相对 **该单位的总预算**（epoch 训 = 总 epoch，step 训 = 总 step） |
 | `save_best` | `false` | `true` 时 best 口径创新高则写 `best`（跟 eval 走，不跟 period 绑死；口径见下） |
 
-文件都在 `assets/checkpoints/`：每个 stem 一份 **`<name>.pt` 整包**（兼容）外加 **`<name>/` 目录**（`model.pt` / `optimizer.pt` / `scheduler.pt` / `tracker.json` / `logger.json` / `meta.json`）。`save_best: true` 时另写 `best`。百分比时 `epoch_0005` / `step_000100`。result **不**塞权重。
+文件都在 `assets/checkpoints/`：每个 stem 一份 **`<name>.pt` 整包**（恢复权威）外加 **`<name>/` 诊断镜像目录**（`model.pt` / `optimizer.pt` / `scheduler.pt` / `tracker.json` / `logger.json` / `meta.json`）。`save_best: true` 时另写 `best`。百分比时 `epoch_0005` / `step_000100`。result **不**塞权重。
+
+**进度一致性：** native checkpoint 表示该 `step` / `epoch` 已完成。保存前必须完成对应的 scheduler 更新；model、optimizer、scheduler 的进度一致，恢复后 optimizer 中的 lr 用于下一次更新。日志中的 lr 仍是刚完成更新实际使用的值，不随保存顺序改成下一步 lr。周期 latest、best、百分比快照、early stop 和正常终态使用同一约定。
+
+**指标语义：** best 的通用字段是 `best_metric` / `best_value`；仅当选择指标是 `Accuracy` 时才记录 `best_accuracy`。以 Loss 选 best 时不得把 Loss 填进准确率字段，恢复与 already-done 分支也不例外。
+
+**完整发布：** `<name>.pt` 是恢复权威。先在同一 checkpoint 根目录写完整临时整包和分件，再更新诊断分件镜像，最后原子替换整包；替换前出错仍保留旧整包，不直接覆盖它。不通过删除旧分件目录再重命名新目录来发布。镜像更新期间保留 `.<name>.incomplete` 标记：存在标记时不能将裸分件当作已提交快照。`System.load_checkpoint` 即使收到目录路径，也优先读取同名整包；无整包且发布未完成时明确报错。无标记的历史纯分件目录仍兼容。提交后标记清理失败可以保留诊断标记，但不能把已提交的完整整包误报成未保存。这个约定只支持同一 Run / stem 单 writer，不承诺跨多个 stem 的事务或突然断电的持久化保证。
+
+历史纯分件目录首次被覆盖前，先将旧快照原子迁成权威整包，再更新镜像，避免失败时损坏其唯一副本。
+
+**Windows 短暂占用：** 原子文本写入与 checkpoint 的分件、旧快照迁移及最终整包提交共用 artifact 的有界文件替换。只对 Windows `winerror` 5 / 32 / 33 最多尝试 6 次，间隔 50 / 100 / 150 / 200 / 250 ms（总等待最多 750 ms）；每次仍用原子 replace，不先删除目标或修改 ACL。持续拒绝或其他 IO 错误向上传播，提交前失败仍保留旧权威整包。有限重试处理短暂文件占用，不承诺修复外部进程或永久权限配置。
 
 `best_split` / `best_metric` / `best_mode`（`max`/`min`；Loss 默认 min）决定何时算 improved。缺省仍是 test Accuracy 越大越好。
 
@@ -540,6 +565,8 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 | `resume_from` | 无 | 显式覆盖：本 Run 内 stem，其它 Run 的 `.pt` 路径，或 `sibling`（eval 按 index 找同 seed、同因素且 `mode=train` 的 checkpoint） |
 
 **train 恢复（native 对齐 main）：** 有文件则恢复 `step` / epoch、model、optimizer、scheduler、**tracker**、**logger 文本不截断**。没有文件 = 从 step 0 开始，不算失败。
+
+当前承诺是从已发布的完整 checkpoint 继续计算，不承诺与不中断训练逐步等价：step 模式重建采样器时会从同 seed 的采样前缀重新开始，完整 RNG / 数据迭代位置及 early-stop 的 stall 计数未持久化。恢复后的指标不能直接当作无中断对照；研究报告应注明中断及恢复位置。旧 checkpoint 若已保存了落后的 scheduler 状态，不自动猜测修正，应保留历史证据并用新 version 验证新约定。
 
 **eval 恢复：** 通常只要 **权重**（`best` 优先）；不建或不加载 optimizer。本 Run 没有目标文件时，eval 按 Study index 找 **sibling train** 的同名 checkpoint（默认 `best`）。两边都没有则失败（对齐 main `test_model.py`：先训出 best）。
 
@@ -764,6 +791,8 @@ flowchart TB
 
 **`ExperimentConfig`** 与 `RunConfig` 在四层上同构，便于合并；基底里不带 `id`；`id` 只在合并成 `run_config` 后计算。
 
+`version` 沿用两级 Config 的 `extras` 保存，序列化时写回顶层并参与 hash，不额外添加默认值。入口为基底的 `version` 或 Study 的 `fixed.version`，后者覆盖前者；省略时不改变旧配置的 ID。Study 顶层同名字段不参与展开。
+
 示例（落盘 Config；`id` 为示意 hash）：
 
 ```yaml
@@ -836,7 +865,7 @@ prepare：`control_from_config` →（可选契约）→ 各 `*_api` Factory.bui
 
 ### 8.6 测试意图
 
-`tests/rpipe/structure/control/`：`ExperimentConfig` / `RunConfig` / `Control` 往返；合并后 **`id` = 除 id / description 外内容的 hash**（含 tags、seed）；契约校验。Study 展开见 `tests/rpipe/flow/` 上带 `e2e` 标签的用例。
+`tests/rpipe/structure/control/`：`ExperimentConfig` / `RunConfig` / `Control` 往返；合并后 **`id` = 除 id / description 外内容的 hash**（含 tags、seed、可选 version）；契约校验。version 回归验证省略时旧 ID 稳定、同值同 ID、新值新 ID、基底/补丁合并及往返。Study 展开与 index 切换见 `tests/rpipe/flow/` 的集成用例，独立 eval 只从当前 index 找 sibling train，不因磁盘残留旧 Run 而回退。
 
 ---
 
@@ -901,7 +930,7 @@ RunConfig 可选字段 `version` 参与 `id` hash，用于让相同实验配置�
 | `docs_dir` | 人文文档 |
 | `ensure()` | 创建上述目录 |
 
-index 在 **Study 根**，不在 `runs/<id>/`。现有 `make_run_dir(id, timestamp=None)` 的 timestamp 后缀是待移除的兼容实现；新的实测由 RunConfig 的 `version` 进入 hash 后生成新 `id`。
+index 在 **Study 根**，不在 `runs/<id>/`。Run 目录直接使用 `id`，不提供 timestamp 后缀接口；新的实测由 RunConfig 的 `version` 进入 hash 后生成新 `id`，历史目录保持不变。
 
 错误：`ArtifactError`、`MissingConfigError`、`CorruptArtifactError`。
 
@@ -977,7 +1006,7 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 
 ## 10. `make/`
 
-多实验管理与调度脚本化。与 **control** 并列：control 做**一次**合并；make **循环**调用 control 与 artifact。不 import 四层，不 import flow。
+多实验管理与调度脚本化。与 **control** 并列：control 做**一次**合并；make **循环**调用 control 与 artifact。不直接 import 四层或 flow；调度时经 `algorithm_api` 复用 resume 的 sibling 依赖解析，避免另写一套匹配规则。
 
 | 职责 | 说明 |
 |------|------|
@@ -988,13 +1017,7 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 | `wait` | 一组并发的内存闸门：本组进程全部退出、显存释放完，才启动下一组。不 `wait` 则下一组会挤进还在跑的进程，显存叠加，容易 OOM。eval 波次同样：全部 train `wait` 完再开 |
 | 墙钟估计 | 一组取组内最慢那条；整轮 conservative 墙钟 = 各组 max **再加总**。只供排班参考，不是实测。训练 Logger 的 `elapsed` 才是该进程实测 |
 
-产物：N 份 config + index，以及 `studies/<name>/scripts/`（默认 gitignore）。`launch.sh` 形状：
-
-```bash
-CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<id>" &
-CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<id>"
-wait
-```
+产物：N 份 config + index，以及 `studies/<name>/scripts/`（默认 gitignore）。`launch.sh` 用 Python heredoc 调同一 `launch_jobs`，保留分组并行 / wait / GPU 分配，并复用依赖检查和波内重试。`--split-round` 按 wait 组切片，最后一片执行 Study process；旧版裸 `run-one` 脚本须重新 make 后才有这些保护。
 
 `algorithm.mode: eval` 在**默认整轮 launch**里是第二波：train 全部 `wait` 完再启动。`rpipe launch --mode eval` 只发 eval，不改 `jobs.json`。已成功的加 `--include-done`。`rpipe make` 打印 `pack N waits`。`rpipe launch` **复用** `scripts/jobs.json`（GPU / `round` 一致），不重做 make、不重印 pack；缺清单、参数变了或 `--remake` 才再 make。Windows 默认 `--console new`，组间仍 `wait`。默认 `--round auto` 按 [STUDY_GUIDE.md](../STUDY_GUIDE.md) §3 排班；脚本形状见 §4。
 

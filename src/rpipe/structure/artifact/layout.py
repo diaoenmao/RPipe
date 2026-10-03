@@ -61,16 +61,10 @@ def ensure_study_layout(study_dir: Path | str) -> Path:
     return study
 
 
-def make_run_dir(run_id: str, timestamp: str | None = None) -> str:
-    if timestamp:
-        return f'{run_id}_{timestamp}'
-    return run_id
-
-
 def artifact_layout(study_dir: Path | str, run_dir: str) -> ArtifactLayout:
     """Build layout under ``study_dir/runs/<run_dir>/``.
 
-    ``run_dir`` is typically Config ``id`` or ``id_<timestamp>``.
+    ``run_dir`` is the content-derived Config ``id``.
     """
     study = ensure_study_layout(study_dir)
     layout = ArtifactLayout(root=study / paths.RUNS_DIRNAME / run_dir, study_dir=study)

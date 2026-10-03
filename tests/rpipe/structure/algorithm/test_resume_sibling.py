@@ -11,6 +11,7 @@ pytestmark = [
 ]
 
 from pathlib import Path
+from types import SimpleNamespace
 
 from rpipe.structure.algorithm.config import AlgorithmConfig
 from rpipe.structure.algorithm.eval import EvalAlgorithm
@@ -80,3 +81,38 @@ def test_eval_run_loads_sibling_train_best(tmp_path: Path):
     )
     assert out['mode'] == 'eval'
     assert 'accuracy' in out
+
+
+@pytest.mark.parametrize('current_checkpoint', [True, False], ids=['current-best', 'missing-current-best'])
+def test_sibling_lookup_ignores_previous_version_outside_index(tmp_path: Path, current_checkpoint):
+    old_best = tmp_path / 'runs' / 'train-v1' / 'assets' / 'checkpoints' / 'best.pt'
+    old_best.parent.mkdir(parents=True)
+    old_best.write_bytes(b'previous version checkpoint')
+    current_best = tmp_path / 'runs' / 'train-v2' / 'assets' / 'checkpoints' / 'best.pt'
+    if current_checkpoint:
+        current_best.parent.mkdir(parents=True)
+        current_best.write_bytes(b'current version checkpoint')
+    eval_assets = tmp_path / 'runs' / 'eval-v2' / 'assets'
+    eval_assets.mkdir(parents=True)
+    write_index(
+        tmp_path,
+        build_index(
+            study='versioned',
+            description='',
+            experiments=[
+                {
+                    'factors': {'algorithm.mode': 'train'},
+                    'runs': [{'id': 'train-v2', 'seed': 0, 'run_dir': 'train-v2'}],
+                },
+                {
+                    'factors': {'algorithm.mode': 'eval'},
+                    'runs': [{'id': 'eval-v2', 'seed': 0, 'run_dir': 'eval-v2'}],
+                },
+            ],
+        ),
+    )
+
+    # This tests path selection only; checkpoint payloads are not loaded.
+    found = sibling_train_checkpoint(SimpleNamespace(assets_dir=eval_assets), stem='best')
+    assert found == (current_best if current_checkpoint else None)
+    assert old_best.read_bytes() == b'previous version checkpoint'

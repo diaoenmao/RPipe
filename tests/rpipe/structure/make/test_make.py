@@ -10,6 +10,7 @@ pytestmark = [
     pytest.mark.result_type('categorical', detail='summary'),
 ]
 
+import ast
 from pathlib import Path
 
 from rpipe.structure.make import (
@@ -87,12 +88,10 @@ def test_render_bash_waits_after_train_wave(tmp_path: Path):
         round_size=4,
         split_round=65535,
     )[0]
-    train_pos = text.rfind('"t1"')
-    eval_pos = text.find('"e0"')
-    wait_between = text.find('\nwait\n', train_pos, eval_pos)
-    assert train_pos != -1 and eval_pos != -1
-    assert wait_between != -1
-    assert 'rpipe process' in text
+    groups = ast.literal_eval(next(line.removeprefix('groups = ') for line in text.splitlines() if line.startswith('groups = ')))
+    assert [[job['run_id'] for job in group] for group in groups] == [['t0', 't1'], ['e0', 'e1']]
+    assert 'launch_jobs(study, jobs,' in text
+    assert 'result = run_study(study)' in text
     assert gpu_ids(2, 3) == ['2', '3', '4']
     assert gpu_ids(0, 0) == []
 
@@ -152,10 +151,9 @@ def test_render_bash_wait_every_round(tmp_path: Path):
     )
     assert len(chunks) == 1
     text = chunks[0]
-    assert text.count('\nwait\n') == 2
-    assert text.count('run-one') == 4
-    assert 'CUDA_VISIBLE_DEVICES="0"' in text
-    assert 'CUDA_VISIBLE_DEVICES="1"' in text
+    groups = ast.literal_eval(next(line.removeprefix('groups = ') for line in text.splitlines() if line.startswith('groups = ')))
+    assert [[job['run_id'] for job in group] for group in groups] == [['r0', 'r1'], ['r2', 'r3']]
+    assert [job['gpu'] for group in groups for job in group] == ['0', '1', '0', '1']
     assert 'KMP_DUPLICATE_LIB_OK' not in text
 
 

@@ -34,6 +34,8 @@ def eval_test_split(
     *,
     num_steps: int | None = None,
 ) -> dict[str, float]:
+    if num_steps is not None and num_steps <= 0:
+        raise ValueError('eval_num_steps must be positive, or use -1 for the full test split')
     import torch
 
     extra = extra or {}
@@ -52,7 +54,7 @@ def eval_test_split(
                 break
     if logger is not None:
         logger.report(tracker, 'test', extra=extra)
-    tracker.flush('test')
+    tracker.flush('test', progress=extra.get('progress', extra))
     tracker.save('test')
     tracker.reset('test')
     tracker.flush_state()

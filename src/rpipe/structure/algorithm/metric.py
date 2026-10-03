@@ -79,13 +79,15 @@ def accuracy_value(packed: dict[str, Any], *, topk: int = 1) -> float:
         if target.dtype != torch.int64:
             target = target.topk(1, -1, True, True)[1].view(-1)
         if pred.ndim > 1 and pred.size(-1) > 1:
-            pred = pred.topk(topk, -1, True, True)[1]
-        pred = pred.view(-1)
-        target = target.view(-1)
+            pred = pred.topk(topk, -1, True, True)[1].reshape(-1, topk)
+        else:
+            pred = pred.reshape(-1, 1)
+        target = target.reshape(-1, 1)
         n = int(target.numel())
         if n <= 0:
             return 0.0
-        return float((pred == target).float().mean().item())
+        correct = (pred == target).any(dim=-1).float().sum()
+        return float((correct * (100.0 / n)).item())
 
 
 def loss_value(packed: dict[str, Any]) -> float:

@@ -10,6 +10,7 @@ from rpipe.structure.algorithm import (
     AlgorithmTracker,
 )
 from rpipe.structure.algorithm.metric import MetricBundle, resolve_metric_names
+from rpipe.structure.algorithm.resume import sibling_train_dependency
 
 
 def build(algorithm_config: AlgorithmConfig, **kwargs):

@@ -131,6 +131,56 @@ def test_step_period_accumulates_before_optimizer_step(tmp_path: Path):
         },
     )
     assert out['steps'] == 1
+    import json
+
+    records = [json.loads(line) for line in (tmp_path / 'tracker' / 'scalars.jsonl').read_text().splitlines()]
+    reports = [row for row in records if 'mean' in row]
+    assert {row['optimizer_step'] for row in reports} == {1}
+    assert reports[-1]['step'] > reports[-1]['optimizer_step']  # Includes test and accumulated batches.
+    checkpoint = json.loads((tmp_path / 'checkpoints' / 'latest' / 'tracker.json').read_text())
+    assert checkpoint['jsonl_offset'] == (tmp_path / 'tracker' / 'scalars.jsonl').stat().st_size
+
+
+def test_curve_discards_reports_after_failed_checkpoint_and_resume(tmp_path, monkeypatch):
+    import json
+    from rpipe.flow.process.aggregate import load_curve_series
+    from rpipe.structure.system.factory import System
+
+    original = System.save_checkpoint
+    failed = False
+
+    def fail_once(system, payload, name):
+        nonlocal failed
+        if not failed and name == 'latest' and payload['step'] == 3:
+            failed = True
+            raise OSError('injected checkpoint failure')
+        return original(system, payload, name)
+
+    monkeypatch.setattr(System, 'save_checkpoint', fail_once)
+    root = tmp_path / 'runs' / 'run' / 'assets'
+    mapping = {'mode': 'train', 'num_steps': 4, 'eval_period': 1, 'log_period': 1}
+    with pytest.raises(OSError, match='injected checkpoint failure'):
+        _run(root, mapping)
+    completed, _ = _run(root, mapping)
+    assert completed['steps'] == 4
+    reports = [json.loads(line) for line in (root / 'tracker' / 'scalars.jsonl').read_text().splitlines()]
+    at3 = [row for row in reports if row.get('split') == 'test' and row.get('name') == 'Loss' and row.get('optimizer_step') == 3]
+    assert len(at3) == 2  # Raw diagnostics retain the failed branch.
+    curve = load_curve_series(tmp_path, 'run')['test']['Loss']
+    assert curve['x'] == [1, 2, 3, 4]
+    assert curve['values'][2] == at3[-1]['mean']
+
+
+def test_checkpoint_curve_progress_is_current_even_without_a_report(tmp_path):
+    import torch
+
+    _run(tmp_path, {
+        'num_steps': 4, 'eval_period': 0, 'checkpoint': 'percent', 'checkpoint_percents': [0.75],
+    })
+    snapshot = torch.load(tmp_path / 'checkpoints' / 'step_000003.pt', weights_only=False)
+    assert snapshot['step'] == snapshot['tracker']['progress']['step'] == 3
+    # The last reported train segment ended at step 2, but these weights are from step 3.
+    assert snapshot['tracker']['splits']['train']['Loss']['history']
 
 
 def test_resume_rebinds_remaining_train_loader(tmp_path: Path):

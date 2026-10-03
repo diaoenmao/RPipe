@@ -26,6 +26,8 @@
 
 最少两份声明 + 一份计划（建议）：
 
+正式研究或可复用的验收案例放 `studies/`。一次性环境排错（例如文件占用、杀毒软件开关复测）放 `.tmp/diagnostics/`，把条件、结论及必要数字合并进关联 Study 报告；原始日志、缓存和临时配置保留本地，不为每次排错增加一个正式 Study。
+
 ```text
 studies/<name>/
   study.yaml                 # 比什么：axes / seeds / tags
@@ -61,6 +63,15 @@ studies/<name>/
 | `studies/mnist_train_size/` | 扫研究因素：三个 `train_size`，train + 独立 eval |
 | `studies/mnist_native_vs_hf/` | 同一超参：native 循环 vs HF Trainer |
 | `studies/cifar_grid/` | CIFAR10 小网格：linear / mlp / cnn / resnet18，train 再 eval。`train_size=1024`，不是全量 |
+| `studies/main_base/` | 对照 `main` 的 `--mode base`。先 4 step 探针，再 60 step 全网格。不是 `cifar_grid` |
+| `studies/checkpoint_recovery/` | 小规模 CPU 故障恢复验收：checkpoint 提交失败、train 重试与 sibling eval 依赖；不是精度基准 |
+| `studies/mnist_cnn_lr/` | MNIST CNN 学习率筛选，记录多 seed 对照及历史故障证据 |
+| `studies/mnist_cnn_budget/` | MNIST CNN 600-step 三 seed 本地研究；包含一次真实保存失败后的恢复，报告区分无中断与恢复证据 |
+| `studies/mnist_cnn_budget_repeat/` | checkpoint IO 修复后 seed 2 无中断补测；报告合并后续 360 开关诊断结论，原始诊断证据留 `.tmp/` |
+| `studies/local_model_matrix/` | MNIST / CIFAR10 × CNN / ResNet18 × 三 seed 的 600-step 固定配方研究，按资源估计同类分组 |
+| `studies/support_data_smoke/` | FashionMNIST / CIFAR100 / SVHN × CNN 的 seed 0、30-step 官方数据加载 / checkpoint / 独立 eval 验收 |
+| `studies/support_model_smoke/` | CIFAR10 × ResNet10 / 两个 WideResNet 的 seed 0、30-step 验收；报告保留 ResNet10 的严格 Accuracy 复算差异 |
+| `studies/main_reproduction/` | 固定 main `98648f3` 的真实数据 60-step / eval30 对照；原默认 CUDA 配方执行成功与数值门分开报告，历史 README 图的配方来源另行核对 |
 
 新 Study 从 `_template/` 复制。`mnist_train_size` 是扫因素的研究向例子。
 
@@ -99,13 +110,13 @@ PLAN 里写清：比什么、固定什么、几个 seed、同类怎么一组、e
 
 1. **正确性先于速度。** 默认整轮 launch：有依赖就分波，全部 train `wait` 完再 eval。也可以 `--mode eval` 单独重跑评测。已 `succeeded` 的默认跳过；中断后续 `latest`。一次 `FlowRunner` 只跑一个 Run。
 2. **吃满 GPU：显存用好、计算跑满、尽量不 error。** 同类、相近耗时的格子一起并行（CIFAR linear 和 SVHN linear 一组；resnet 和 linear 分开）。组内按当前空闲显存（约 50% 安全系数）能叠几个就叠几个，把 SM / 显存占住。估得太满会 OOM，所以保守叠，而不是按空卡理想值打穿。
-3. **error 不中断整轮。** 某条 `run-one` 失败：记下 `run_id` 和退出码（日志在该 Run 的 `assets/logs/`），**同组其余进程和后面的组继续跑完**。全部命令结束后，对未 `succeeded` 的格子再排一次，用 `resume: latest` 续跑。不要一组一挂就停掉整张卡。
+3. **error 不阻断无关任务。** 某条 `run-one` 失败：记下 `run_id` 和退出码（日志在该 Run 的 `assets/logs/`），同组其余进程继续。本波结束后对未 `succeeded` 的格子重试一次，用 `resume: latest` 续跑；依赖该 train 的 eval 只有在它成功后才运行，不把局部故障扩散到其他 seed。
 4. **按本轮格子排班。** 轻的同类型可以叠很多；重的 resnet 可能一组 1～2 个。不要用一个全局 `--round` 把轻重砍齐。默认 `auto` 按类型装箱；`--round N` 是均匀切块。
 5. **PLAN 里写清排班。** 几个 seed、哪类一组、error 后怎么续。报告里复述实际怎么跑的。
 
 `system.device` 决定资源队列：`cpu` Run 不绑定 GPU、不设置 `CUDA_VISIBLE_DEVICES`，按 CPU 并发上限分组；`cuda` Run 才探测 GPU 并按显存装箱。混合 Study 中两类 Run 分组执行。默认整轮仍是 train 全部完成后再进入 eval；`--mode` 可以只发其中一波。
 
-机制（`&` / `wait`、脚本形状）见下一节。
+机制（进程并行 / `wait`、脚本入口）见下一节。
 
 ---
 
@@ -123,6 +134,7 @@ python -m rpipe run studies/<name>
 
 # 写出格子与调度脚本，再按 §3 同类装箱并行
 # pack 只出现在 make；launch 复用 scripts/jobs.json
+python -m rpipe data studies/<name>
 python -m rpipe make studies/<name> --num-gpus 1 --init-gpu 0
 python -m rpipe launch studies/<name> --num-gpus 1 --init-gpu 0
 # launch 结束会跑 Study process；也可单独再跑：
@@ -133,28 +145,27 @@ python -m rpipe process studies/<name>
 #   bash studies/<name>/scripts/launch.sh
 ```
 
-排班标准见 §3。下面是脚本形状（跟 git `main` 一样：`&` + `wait`）。
+`data` 先给每个数据集写一份概况：`studies/<name>/shared/data/<数据集>/stats.yaml`（张数、形状、类别数量、像素范围，以及 train 的 mean / std）。Normalize 优先读这份文件。
 
-进程级并行。默认 `auto`：同类一组、显存吃满但留安全系数。每组末尾的 `wait` 挡住下一组，避免还在占显存时下一波挤进来。某条失败只打印 `error <id>`，整轮 `wait` 完再对失败格子 `resume` 重跑一次。手写 `--round N` 仍是均匀切块。
+排班标准见 §3。保持与 git `main` 一致的组内进程并行 / 组末 wait；生成脚本复用同一调度器，以免裸 `run-one` 绕过失败重试和依赖检查。
+
+进程级并行。默认 `auto`：同类一组、显存吃满但留安全系数。每组末尾的 `wait` 挡住下一组，避免还在占显存时下一波挤进来。某条失败打印 `error <id>`，在本波结束后对失败格子 `resume` 重跑一次；train 的重试必须在 eval 波之前完成。手写 `--round N` 仍是均匀切块。
 
 有 `algorithm.mode: eval` 时，**默认**一次 `launch` 拆成两波：全部 train `wait` 完再启动 eval。Study 可以按这个写 PLAN。要单独重跑 eval（或只发 train）：`python -m rpipe launch studies/<name> --mode eval`。已成功的格子默认 skip，加上 `--include-done`。单条仍可用 `run-one`。eval 找不到 sibling `best` 照样失败。
 
-`mnist_train_size`：18 次 Run、`--round auto`、1 张卡时，linear 很轻，通常 **2 个 wait 组**（9 train，再 9 eval）。脚本形状（路径已缩短）：
+**失败恢复验收约定：** `launch` 按当前 index 的同因素（仅替换 mode）与同 seed 识别 sibling train；它最终未成功时，不启动依赖它的 eval，并将该 eval 记为非成功，其他独立任务仍可继续。开始重跑 train 前，已成功的相关 sibling eval 必须失效，防止 `--mode train` 后聚合旧评估。后续 launch 还会将父 train 未成功、或 train result 修改时间晚于 eval result 的旧成功 eval 视为待重评；不因此重写 jobs 清单，清单漏掉的 Run 仍需 `--remake`。`resume: false`、明确的外部权重或 eval 自己的 checkpoint 不应被误当作 sibling 依赖。
+
+这是本地 `launch` 的依赖保护，不是通用 DAG 或文件来源追踪系统。手动修改/复制权重、回拨文件时间，或绕过调度器直接 `run-one`，不在自动失效承诺内；研究结论仍需核对实际 checkpoint 来源。`--include-done` 只是重执行，不清 checkpoint；需要独立无中断对照时换新 `version`。
+
+`mnist_train_size`：18 次 Run、`--round auto`、1 张卡时，linear 很轻，通常 **2 个 wait 组**（9 train，再 9 eval）。推荐入口：
 
 ```bash
-#!/bin/bash
-cd "<repo>"
-# wait 组 1：9 次 train（打印 pack 2 waits: 9[linear×9], 9[linear×9]）
-CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<train>" &
-# …共 9 条，最后一条同样 &
-wait
-# wait 组 2：9 次 eval（上一组全部退出、显存释放完才到这里）
-CUDA_VISIBLE_DEVICES="0" python -m rpipe run-one "<study>" "<eval>" &
-# …共 9 条
-wait
+python -m rpipe launch studies/mnist_train_size --num-gpus 1 --console shared
+# 或使用 make 生成的脚本
+bash studies/mnist_train_size/scripts/launch.sh
 ```
 
-每一段 `cmd &` … `wait` 是一个并发批次：`wait` 返回后显存才空出来，下一组才能启动。
+`launch.sh` 用 Python heredoc 调用同一 `launch_jobs`，保留 make 生成的 wait 组及 GPU 分配；`--split-round` 仍按 wait 组切脚本，按顺序执行各片段，最后一个片段执行 Study process。每组子进程全部退出后下一组才启动。旧版已生成的裸 `run-one` 脚本不会自动变更，需要重新 make 后使用新脚本。
 
 训练 Logger 每一行是 `时间 级别 Run id [事件] 内容`，写入该 Run 的 `run.log`（与终端同一套）。时间是本地 RFC 3339（毫秒和时区）。`--console shared` 时终端会混，靠 Run id 这一格分辨；文件仍是每 Run 一份。`[time]` 里的 `elapsed` / `eta` 是这一轮的进度时钟。Windows 上 `python -m rpipe launch` 默认 **每个 run-one 一个新控制台窗口**。`launch.ps1` 只转调 `rpipe launch`（有 `jobs.json` 就不再 make）。多卡时仍设 `CUDA_VISIBLE_DEVICES`。`scripts/` 默认 gitignore。
 
@@ -211,7 +222,7 @@ algorithm:
   num_epochs: 20              # 有 epoch 概念时：推导并覆盖 num_steps
   progress_unit: epoch        # 本例按 epoch 评 test / 存 latest；默认 step（LLM 只写 num_steps）
   eval_period: 1              # 每 N 个进度单位评 test；0 = 只在训完评一次
-  # eval_num_steps: -1        # test 跑多少个 batch；缺省 / <0 = 整个 test split
+  # eval_num_steps: -1        # 正整数限test batch数；缺省 / <0 = 完整test；0报错
   checkpoint: latest          # latest = 覆盖 latest 这一份（.pt 整包 + 目录分件）；percent = 再按总预算百分比留快照
   checkpoint_period: 1        # 每 N 个单位更新 latest；0 = 只在训完写一次
   save_best: true             # 默认：test Accuracy 最好时另写 best；可用 best_metric / best_mode 改口径
@@ -305,6 +316,15 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 
 `id` hash **包含** 实验变量、seed、tags，以及可选 `version`；**不含** `id`、`description`。Run 是最底层的一次实测。同内容、同 `version` 再跑仍落到同一 `runs/<id>/`，用于 skip / resume；需要避免相同实验参数与 seed 的不同实测发生 ID 冲突时，换一个 `version` 生成新 Run。timestamp 只是可选内容之一。
 
+version 可写在 `experiment_config.yaml` 顶层，或在 `study.yaml` 的 `fixed` 下覆盖，例如：
+
+```yaml
+fixed:
+  version: "baseline-repeat-2"
+```
+
+这段合并到已有 fixed，不替换其余配置。不要写成 Study 顶层的 `version`，它不会被展开。省略字段保持原有 ID；改变它后重新 make，旧 Run 文件保留，新 index 只列本轮。launch 会复用 jobs，`--include-done` 不清 checkpoint，不代表从头训练。需要保留一次独立实测时使用新 version，不靠删除旧日志或权重实现。
+
 ---
 
 ## 7. 跑完看什么
@@ -348,6 +368,8 @@ python -m rpipe status studies/<name> --mode eval
 
 `process` 分三层含义，对应 CONCEPT §2.1：每条 Run 写 `runs/<id>/process.json`。整轮结束后 `rpipe process` 写根 `process.json`（Study **信封**）。信封里每个 Experiment 才是跨 seed 的 metrics / history **mean / std / min / max**。图在 `docs/figures/learning_curves.png`。**不**改 `STUDY_REPORT.md`。
 
+Study process 只聚合当前 index 列出的 Run，不扫描旧 version 目录。index 缺失或不可读取时会失败并提示 make，已有 process、图与 result 保留。重建前先确认当前 YAML 就是要分析的那一轮，再执行 make 和 process。
+
 `docs/STUDY_REPORT.md` **必须有图**，并且图和各次 `run.log` **可点开**（Markdown 预览，或源码里 Ctrl+点击）。图链到 `docs/figures/learning_curves.png`；log 链到 index 里的 `log`（`../runs/<id>/assets/logs/run.log`）。数字读 `process.json`。按 Experiment 写结论，不要把 18 行 Run 表当主结论。
 
 ---
@@ -356,7 +378,7 @@ python -m rpipe status studies/<name> --mode eval
 
 1. 复制 `studies/_template/` 为 `studies/<name>/`，对照本指南 §1–§3。  
 2. 改 `experiment_config.yaml` 的基底；改 `study.yaml` 的 `axes` / `seeds` / `tags`。  
-3. 在 `docs/PLAN.md` 写清：比什么、什么固定、成功标准，以及 **§3 高效率排班**（同类一组、吃满 GPU、error 记下来整轮后再 resume）。`make` 之后、`launch` 之前，把每条 Run 的预估秒数写进 **时长预估** 表。同一 `wait` 的墙钟是组内最慢的一条，整轮是各组相加。不含显存。  
+3. 在 `docs/PLAN.md` 写清：比什么、什么固定、成功标准，以及 **§3 高效率排班**（同类一组、吃满 GPU、error 后在本波重试，成功后才放行依赖 eval）。`make` 之后、`launch` 之前，把每条 Run 的预估秒数写进 **时长预估** 表。同一 `wait` 的墙钟是组内最慢的一条，整轮是各组相加。不含显存。
 4. `python -m rpipe run studies/<name> --skip-launch`，核对 index。  
 5. `python -m rpipe make studies/<name>`，看打印的 `pack N waits`，再 `python -m rpipe launch studies/<name>`（launch 不应再印 pack）。  
 6. `python -m rpipe status studies/<name>` 看谁 `succeeded` / `failed` / `pending`。`python -m rpipe report studies/<name>` 把数字表写到 `docs/NUMBERS.md`。读 `process.json` + `docs/figures/learning_curves.png`，按 Experiment 写 `docs/STUDY_REPORT.md`：图做成可点链接，Run 表带各 `run.log` 链接。结论仍由人写。
@@ -385,7 +407,7 @@ python -m rpipe status studies/<name> --mode eval
 | 断点续训 | train 的 `resume: latest`（算法接口；system 只读文件） |
 | 改一次 Run 的阶段顺序 | 不要改；最多 `--phases` 裁剪，相对顺序不变 |
 | 自动出报告 / 跨 Run 对比表 | 人写 `STUDY_REPORT.md`（必须嵌图）。Study `process` 出 mean/std/min/max 和 `docs/figures/learning_curves.png`。`rpipe report` 把同一份数字写成 `docs/NUMBERS.md` |
-| 训练曲线 | process 画 epoch `history` → `docs/figures/`；密点仍在 `scalars.jsonl`。不做 TensorBoard |
+| 训练曲线 | process 优先读 JSONL 的有效训练轨迹：显式 optimizer_step（优先）或 epoch；旧记录 / state history 回退仍用 observation。跨 seed 按坐标并集统计，缺失点不插值，逐点 n 见 process / 图；不同单位分开。原始日志保留回滚分支，恢复规则见 structure §6.9.2。不做 TensorBoard |
 | 终端 + 硬盘日志 | **Logger** 必写 `runs/<id>/assets/logs/run.log`（`时间 级别 Run id [事件]`）；失败时 traceback 每一行都是 `[error]`。`index.json` 的 `log` 指向它。没有 Study 级总 log |
 | 并行时日志挤在一起 | 文件按 Run 分开；终端每行带 Run `id`。Windows：`rpipe launch` 默认 `--console new`；`--console shared` 只混终端 |
 | 看这轮谁好了谁挂了 | `python -m rpipe status studies/<name>`（只读；`--mode eval` 可滤） |

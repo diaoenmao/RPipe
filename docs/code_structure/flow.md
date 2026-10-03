@@ -206,10 +206,18 @@ flowchart TD
 |--|-----------------------------------|------------------------------|
 | 入口 | `FlowRunner` 的 `process`；每条 `run-one` | `python -m rpipe process <study>`；`launch` / `run` 全部 wait 完再调一次 |
 | 写哪里 | `runs/<id>/process.json`，`scope: run` | Study 根 `process.json`，`scope: study`（**信封**） |
-| 读什么 | 本 Run 的 result + 本 Run tracker `history` | 全部 sibling result + 各 Run history |
+| 读什么 | 本 Run 的 result + 本 Run tracker `history` | 当前 index 列出的 result + 各 Run history |
 | 统计 | 这一次的 metrics / history（**Run 级**） | 正文 `experiments[]` 才是 **Experiment 级**：跨 seed 的 mean / std / min / max；Δ baseline。图 `docs/figures/learning_curves.png` 是 Study 级可视化 |
 
 **不做：** 改 config；重跑 execute；覆盖 write 已成功的 `status: succeeded` 正文；**不**改写 `STUDY_REPORT.md`；Run process **不**写 Study 根（避免并行抢文件）。
+
+Study process 必须读取当前 `index.json`，不回退扫描 `runs/`。index 缺失、不能读取/解析，或不是含 `experiments` 列表的对象时，明确失败并提示重新 make；不改已有 process、图或 Run result。当前 index 之外的旧 version Run 不参加统计。Run process 仍只依赖自身，不要求 Study index。
+
+学习曲线与 history 聚合共用 `scalars.jsonl` 的有效轨迹（start / checkpoint 日志位置规则见 structure §6.9.2）；无对应有效记录时回退到 `tracker_state.json` 的 history。只聚合当前 index 中 succeeded 的 Run。真实记录优先以 `optimizer_step` 为坐标，仅有显式 epoch 时用 epoch；旧记录仍为 observation，不猜 batch 计数。不同单位分开统计与绘图，不混合平均。同一有效轨迹的同坐标重复观测取最后一条，不按数值相同去重。
+
+新坐标曲线取各 Run 坐标的并集，仅对该坐标上实际存在的观测计算 mean / std / min / max，记录 `x`、`unit` 与逐点 `n_at_point`；缺失点不插值，不截短其他 Run。n=1 的 std=0 仅是描述。旧 observation 保留按序号、最短长度对齐的口径。混合单位的 metric 以 `by_unit` 分组；Run history 保留数值列表，另写对应 `history_coordinates`。图例注明 n，逐点 n 不同则在点旁标注。原始 JSONL 保留完整诊断记录，学习曲线只画有效轨迹。
+
+Accuracy 仍用当前百分制（0–100），纵轴标注 `Accuracy (%)`；Loss 保持原值，单点显示 marker。历史 0–1 数据不自动转换。process 不改变训练、result、指标收口或原始 tracker；不自动重绘历史 Study。
 
 Run process 仍排在该 Run 的 write 之后。Study process 排在整轮 launch 之后，与 git `main` 的 `process.py` 一样是单独进程。
 
@@ -271,3 +279,5 @@ conservative 墙钟只在 **make** 打印。本进程实测时间在 Logger 行�
 `python -m rpipe report <study>` 读 `process.json`，写 `docs/NUMBERS.md`（Experiment 的 mean / std / min / max，以及 Run 表）。不改 `STUDY_REPORT.md`。缺 `process.json` 退出 2。
 
 `launch` 每一组开始前打 `launch: wait i/n mode=`，失败再试打 `launch: retry`。全部 wait 完再打一行和 status 相同的计数。不改 `jobs.json`。
+
+失败重试属于本波：先结束 train 的初次执行与重试，再放行 eval。按 index 匹配的 sibling train 最终未成功时，其 eval 不启动且不算成功；重跑 train 前失效旧的 sibling eval 结果。后续 launch 对父结果较新的旧 eval 重新执行。具体匹配、独立 eval 的例外与手动改文件的边界见 [STUDY_GUIDE.md](../STUDY_GUIDE.md) §4。

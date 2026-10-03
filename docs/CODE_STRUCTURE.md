@@ -18,7 +18,7 @@
 - `studies/` 只 import `rpipe`；库不反向依赖包外
 - `flow` 可 import `structure`（含 `artifact`、`make`、`control`）
 - structure 跨层只经 `structure.api`；四层实现互不直接 import
-- `structure` 只被 flow 调用；**make** 调用 control 与 artifact
+- `structure` 只被 flow 调用；**make** 调用 control 与 artifact，调度的 sibling 依赖解析经 algorithm_api 复用算法规则
 - 第三方运行时适配写在 structure 各层内部
 
 **编排：** Study → Experiment → Run。  

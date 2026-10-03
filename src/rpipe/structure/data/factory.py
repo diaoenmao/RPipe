@@ -110,17 +110,11 @@ class DataFactory:
         seed: int | None = None,
         origin: str | None = None,
     ) -> Data:
-        name = data_config.name or 'unknown'
-        source = data_config.source
-        if source is None and name in _VISION_TORCH:
-            source = 'torch'
-        if source is None:
-            source = 'stub'
+        name = data_config.name
+        source = data_config.source if data_config.source is not None else 'torch'
         builder = DataRegistry.get(name, source)
         if builder is None:
-            builder = DataRegistry.get(name, 'stub')
-        if builder is None:
-            return _build_stub(data_config, Path(assets_dir))
+            raise ValueError(f'unknown data name/source: {name!r}/{source!r}')
         if builder is _build_torch_vision:
             return _build_torch_vision(data_config, Path(assets_dir), seed=seed, origin=origin)
         return builder(data_config, Path(assets_dir), seed=seed)
@@ -258,38 +252,31 @@ _VISION_TORCH: dict[str, dict[str, Any]] = {
 }
 
 
+def _with_recorded_stats(spec: dict[str, Any], path: Path) -> dict[str, Any]:
+    """Prefer mean / std from ``stats.yaml`` when a profile has been written."""
+    from rpipe.structure.data.profile import load_stats
+
+    recorded = load_stats(path)
+    if recorded is None:
+        return spec
+    copied = dict(spec)
+    copied['mean'] = tuple(float(x) for x in recorded['mean'])
+    copied['std'] = tuple(float(x) for x in recorded['std'])
+    return copied
+
+
 def _train_transforms(spec: dict[str, Any], *, augment: bool) -> Any:
+    """Pixels stay in 0–1. Flip / crop happen later, in the model, via kornia."""
+    del spec, augment
     from torchvision import transforms
 
-    ops: list[Any] = []
-    spatial = int(spec['data_size'][-1])
-    if augment and spec.get('train_aug') == 'cifar':
-        ops.extend(
-            [
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomCrop(spatial, padding=4, padding_mode='reflect'),
-            ]
-        )
-    elif augment and spec.get('train_aug') == 'svhn':
-        ops.append(transforms.RandomCrop(spatial, padding=4, padding_mode='reflect'))
-    ops.extend(
-        [
-            transforms.ToTensor(),
-            transforms.Normalize(spec['mean'], spec['std']),
-        ]
-    )
-    return transforms.Compose(ops)
+    return transforms.ToTensor()
 
 
 def _eval_transforms(spec: dict[str, Any]) -> Any:
     from torchvision import transforms
 
-    return transforms.Compose(
-        [
-            transforms.ToTensor(),
-            transforms.Normalize(spec['mean'], spec['std']),
-        ]
-    )
+    return transforms.ToTensor()
 
 
 def vision_root(name: str) -> str | None:
@@ -321,6 +308,7 @@ def _build_torch_vision(
     root.mkdir(parents=True, exist_ok=True)
     ctor = getattr(datasets, str(spec['ctor']))
     augment = bool(cfg.get('augment', spec.get('train_aug') is not None))
+    spec = _with_recorded_stats(spec, root / 'stats.yaml')
     train_tf = _train_transforms(spec, augment=augment)
     test_tf = _eval_transforms(spec)
     endpoint = endpoint_for(name, origin)
@@ -372,6 +360,9 @@ def _build_torch_vision(
             'test_batch_size': test_batch_size,
             'data_size': list(spec['data_size']),
             'target_size': int(spec['target_size']),
+            'mean': tuple(spec['mean']),
+            'std': tuple(spec['std']),
+            'train_aug': spec.get('train_aug') if augment else None,
             'augment': augment,
             'pin_memory': opts['pin_memory'],
             'num_workers': opts['num_workers'],

@@ -1,0 +1,18 @@
+study: support_model_smoke
+origin: foreign
+description: 30-step support acceptance with independent Loss-best evaluation
+experiment:
+  name: support_model_smoke
+fixed:
+  version: support-30step-20261003
+axes:
+  model.name:
+  - resnet10
+  - wresnet28x2
+  - wresnet28x8
+  algorithm.mode:
+  - train
+  - eval
+seeds:
+- 0
+run_description: support model={model_name} mode={mode} seed={seed}

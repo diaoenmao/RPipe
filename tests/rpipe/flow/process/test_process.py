@@ -73,21 +73,38 @@ def test_run_process_is_individual_only(tmp_path: Path):
     assert not process_path(study).is_file()
 
 
-def test_study_process_aggregates_history_min_max(tmp_path: Path):
-    """Study process aggregates history mean, std, min, and max across seeds."""
+def test_study_process_aggregates_history_min_max(tmp_path: Path, monkeypatch):
+    """Indexed results/tracker → process and PNG; percent values and single points remain visible."""
+    from matplotlib.figure import Figure
+
+    saved_figures = []
+    savefig = Figure.savefig
+
+    def capture_figure(figure, *args, **kwargs):
+        saved_figures.append(figure)
+        return savefig(figure, *args, **kwargs)
+
+    monkeypatch.setattr(Figure, 'savefig', capture_figure)
     study = tmp_path / 'demo'
-    a = _write_succeeded(study, 'a', 0, 500, {'accuracy': 0.8, 'train_loss': 0.5}, ['baseline'])
-    b = _write_succeeded(study, 'b', 1, 500, {'accuracy': 0.7, 'train_loss': 0.6}, ['baseline'])
-    _write_succeeded(study, 'c', 0, 2000, {'accuracy': 0.9, 'train_loss': 0.3}, [])
+    a = _write_succeeded(study, 'a', 0, 500, {'accuracy': 80.0, 'train_loss': 0.5}, ['baseline'])
+    b = _write_succeeded(study, 'b', 1, 500, {'accuracy': 70.0, 'train_loss': 0.6}, ['baseline'])
+    _write_succeeded(study, 'c', 0, 2000, {'accuracy': 90.0, 'train_loss': 0.3}, [])
 
     for layout, hist in (
-        (a, [0.5, 0.8]),
-        (b, [0.4, 0.6]),
+        (a, [0.0, 50.0, 100.0]),
+        (b, [0.0, 40.0, 100.0]),
     ):
         state = {
             'step': 2,
             'splits': {
-                'test': {'Accuracy': {'history': hist, 'last': hist[-1], 'mean': 0.0, 'n': 0}},
+                'test': {
+                    'Accuracy': {'history': hist, 'last': hist[-1], 'mean': 0.0, 'n': 0},
+                    'Loss': {'history': [0.5]},
+                },
+                'train': {
+                    'Accuracy': {'history': [0.5]},
+                    'Loss': {'history': [0.6]},
+                },
             },
             'last_segment': {},
         }
@@ -120,15 +137,29 @@ def test_study_process_aggregates_history_min_max(tmp_path: Path):
 
     by_size = {exp['factors']['data.config.train_size']: exp for exp in body['experiments']}
     acc = by_size[500]['metrics']['accuracy']
-    assert acc['mean'] == 0.75
-    assert acc['min'] == 0.7
-    assert acc['max'] == 0.8
+    assert acc['mean'] == 75.0
+    assert acc['min'] == 70.0
+    assert acc['max'] == 80.0
     history = by_size[500]['history']['test']['Accuracy']
-    assert history['mean'] == [0.45, 0.7]
-    assert history['min'] == [0.4, 0.6]
-    assert history['max'] == [0.5, 0.8]
+    assert history['mean'] == [0.0, 45.0, 100.0]
+    assert history['min'] == [0.0, 40.0, 100.0]
+    assert history['max'] == [0.0, 50.0, 100.0]
     assert body.get('figures', {}).get('learning_curves') == 'docs/figures/learning_curves.png'
-    assert abs(by_size[2000]['delta_vs_baseline']['accuracy'] - 0.15) < 1e-9
+    assert (study / body['figures']['learning_curves']).is_file()
+    assert by_size[2000]['delta_vs_baseline']['accuracy'] == 15.0
+
+    assert len(saved_figures) == 1
+    axes = saved_figures[0].axes
+    for ax in axes[:2]:
+        lower, upper = ax.get_ylim()
+        assert lower <= 0.0 and upper >= 100.0
+        assert ax.get_ylabel() == 'Accuracy (%)'
+    for ax, expected in zip(axes, ([0.0, 45.0, 100.0], [0.5], [0.5], [0.6])):
+        # A real 0.5% is not inferred to be legacy 50%; Loss stays unscaled too.
+        assert list(ax.lines[0].get_ydata()) == expected
+        assert ax.get_xlabel() == 'history point'
+        if len(expected) == 1:
+            assert ax.lines[0].get_marker() not in (None, '', ' ', 'None')
 
 
 def test_process_does_not_rewrite_result(tmp_path: Path):
@@ -154,3 +185,82 @@ def test_process_does_not_rewrite_result(tmp_path: Path):
     assert layout.result_path.read_text(encoding='utf-8') == before
     assert ctx.state['process']['scope'] == 'run'
     assert ctx.state['process']['metrics']['accuracy'] == 0.5
+
+
+@pytest.mark.parametrize(
+    'index_bytes',
+    [None, b'{', b'[]', b'{}', b'{"experiments": {}}', b'\xff'],
+    ids=['missing', 'invalid-json', 'not-object', 'missing-experiments', 'not-list', 'invalid-utf8'],
+)
+def test_study_process_rejects_unusable_index_without_touching_artifacts(tmp_path: Path, index_bytes):
+    """Invalid Study index → process error with make hint; old outputs and Runs stay intact."""
+    old = _write_succeeded(tmp_path, 'historical', 0, 500, {'accuracy': 80.0}, [])
+    output = process_path(tmp_path)
+    output.write_bytes(b'previous study process')
+    figure = tmp_path / 'docs' / 'figures' / 'learning_curves.png'
+    figure.parent.mkdir(parents=True)
+    figure.write_bytes(b'previous learning curves')
+    preserved = {path: path.read_bytes() for path in (old.config_path, old.result_path, output, figure)}
+    if index_bytes is not None:
+        (tmp_path / 'index.json').write_bytes(index_bytes)
+
+    with pytest.raises(ValueError, match=r'index\.json.*make'):
+        run_study(tmp_path)
+
+    assert {path: path.read_bytes() for path in preserved} == preserved
+
+
+def test_study_process_accepts_empty_current_index(tmp_path: Path):
+    """Valid empty index → empty partial process, without scanning historical Runs."""
+    _write_succeeded(tmp_path, 'historical', 0, 500, {'accuracy': 80.0}, [])
+    write_index(tmp_path, build_index(study='empty', description='', experiments=[]))
+    body = run_study(tmp_path)
+    assert body['experiments'] == []
+    assert body['complete'] is False
+
+
+def test_study_progress_summary_and_plot_share_coordinates_and_counts(tmp_path, monkeypatch):
+    """Indexed successful trackers → coordinate aggregates and PNG, excluding failed runs."""
+    from matplotlib.figure import Figure
+    from rpipe.structure.algorithm.tracker import AlgorithmTracker
+
+    figures = []
+    savefig = Figure.savefig
+
+    def capture(figure, *args, **kwargs):
+        figures.append(figure)
+        return savefig(figure, *args, **kwargs)
+
+    monkeypatch.setattr(Figure, 'savefig', capture)
+    runs = []
+    for seed, (rid, coordinates) in enumerate([
+        ('a', [(10, 1.0), (20, 2.0), (40, 4.0)]),
+        ('b', [(10, 3.0), (30, 6.0), (40, 8.0)]),
+        ('failed', [(999, 99.0)]),
+        ('epoch', [(0.5, 7.0)]),
+    ]):
+        layout = _write_succeeded(tmp_path, rid, seed, 500, {'accuracy': 80.0}, [])
+        if rid == 'failed':
+            write_result(layout.result_path, {'status': 'failed', 'control': {'id': rid}, 'error': 'injected'})
+        tracker = AlgorithmTracker(layout.assets_dir)
+        tracker.begin_run()
+        for point, value in coordinates:
+            tracker.reset('test')
+            tracker.append('test', values={'Loss': value})
+            tracker.flush('test', progress={'epoch' if rid == 'epoch' else 'step': point})
+        runs.append({'id': rid, 'run_dir': rid, 'seed': seed})
+    write_index(tmp_path, build_index(study='progress', description='', experiments=[
+        {'factors': {}, 'runs': runs},
+    ]))
+    body = run_study(tmp_path)
+    by_unit = body['experiments'][0]['history']['test']['Loss']['by_unit']
+    step = by_unit['step']
+    assert step['x'] == [10, 20, 30, 40]
+    assert step['n_at_point'] == [2, 1, 1, 2]
+    assert step['mean'] == [2.0, 2.0, 6.0, 6.0]
+    assert by_unit['epoch']['x'] == [0.5]
+    assert {ax.get_xlabel() for ax in figures[0].axes} == {'optimizer step', 'epoch'}
+    step_axis = next(ax for ax in figures[0].axes if ax.get_title() == 'Test loss' and ax.get_xlabel() == 'optimizer step')
+    assert list(step_axis.lines[0].get_xdata()) == step['x']
+    assert list(step_axis.lines[0].get_ydata()) == step['mean']
+    assert [text.get_text() for text in step_axis.texts] == ['n=2', 'n=1', 'n=1', 'n=2']

@@ -806,7 +806,7 @@ Fast / Core / Extended / Full 可继续作为项目已有计划名称，但不�
 ## （五）结果持久化
 每次执行必须生成唯一 `run_id`。推荐目录（项目临时目录约定优先）：
 ```text
-.test-results/<run_id>/
+.tmp/test-results/<run_id>/
 ├── manifest.json         # 执行环境、筛选条件、代码版本、开始时间
 ├── events.jsonl          # 每个用例结束后立即追加一条结果
 ├── report.md             # 自动生成的测试报告

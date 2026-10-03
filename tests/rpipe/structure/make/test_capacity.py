@@ -119,6 +119,36 @@ def test_estimate_seconds_resnet_heavier_and_eval_lighter():
     assert resnet > linear
     assert eval_resnet < resnet
     assert eval_resnet >= 1
+    short = estimate_job_seconds(
+        {
+            'data': {'name': 'MNIST', 'config': {'batch_size': 64}},
+            'model': {'name': 'linear'},
+            'algorithm': {'mode': 'train', 'num_steps': 1000, 'progress_unit': 'step', 'eval_period': 0},
+        }
+    )
+    longer = estimate_job_seconds(
+        {
+            'data': {'name': 'MNIST', 'config': {'batch_size': 64}},
+            'model': {'name': 'linear'},
+            'algorithm': {'mode': 'train', 'num_steps': 2000, 'progress_unit': 'step', 'eval_period': 0},
+        }
+    )
+    assert longer - short == 6
+    eval_short = estimate_job_seconds(
+        {
+            'data': {'name': 'MNIST', 'config': {'batch_size': 64}},
+            'model': {'name': 'linear'},
+            'algorithm': {'mode': 'eval', 'num_epochs': 1},
+        }
+    )
+    eval_long = estimate_job_seconds(
+        {
+            'data': {'name': 'MNIST', 'config': {'batch_size': 64}},
+            'model': {'name': 'linear'},
+            'algorithm': {'mode': 'eval', 'num_epochs': 20},
+        }
+    )
+    assert eval_short == eval_long
 
 
 def test_estimate_wall_seconds_is_sum_of_group_maxima():

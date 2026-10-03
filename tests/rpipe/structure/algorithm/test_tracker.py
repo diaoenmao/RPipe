@@ -38,3 +38,21 @@ def test_tracker_weighted_mean_and_segment(tmp_path: Path):
     assert tracker.segment_mean('train')['Loss'] == 2.0
     tracker.flush('train')
     assert (tmp_path / 'tracker' / 'tracker_state.json').is_file()
+
+
+def test_segment_presence_includes_full_metrics_and_survives_checkpoint(tmp_path):
+    import torch
+    from rpipe.structure.algorithm.metric import MetricBundle
+
+    tracker = AlgorithmTracker(tmp_path, MetricBundle({'train': ['RMSE']}))
+    values = tracker.evaluate('train', 'batch', {'target': torch.tensor([0.0])}, {'pred': torch.tensor([2.0])})
+    tracker.append('train', values=values)
+    assert values == {} and tracker.has_samples('train')
+    state = tracker.state_dict()
+    restored = AlgorithmTracker(tmp_path / 'restored')
+    restored.load_state_dict(state)
+    assert restored.has_samples('train')
+    tracker.save('train')
+    tracker.reset('train')
+    assert not tracker.has_samples('train')
+    assert tracker.segment_mean('train') == {'RMSE': 2.0}

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 from rpipe.structure.algorithm.config import AlgorithmConfig
@@ -46,15 +47,30 @@ def sibling_train_checkpoint(
     """Eval Run: ``best.pt`` lives on the matching train Run, not this assets dir."""
     assets_dir = getattr(system, 'assets_dir', None)
     study_dir = study_dir_from_assets(assets_dir)
-    if study_dir is None or not (study_dir / 'index.json').is_file():
+    if study_dir is None:
         return None
     run_id = current_id or Path(assets_dir).resolve().parent.name
+    name = stem if stem.endswith('.pt') else f'{stem}.pt'
+    folder_name = stem[:-3] if stem.endswith('.pt') else stem
+    for rid in sibling_train_ids(study_dir, run_id):
+        base = study_dir / 'runs' / rid / 'assets' / 'checkpoints'
+        path = base / name
+        if path.is_file():
+            return path
+        folder = base / folder_name
+        if folder.is_dir() and ((folder / 'model.pt').is_file() or (folder / 'meta.json').is_file()):
+            return folder
+    return None
+
+
+def sibling_train_ids(study_dir: Path, run_id: str) -> list[str]:
+    """Match the current index's factors and seed, even before checkpoints exist."""
     from rpipe.structure.artifact.index import load_index
 
     try:
         index = load_index(study_dir)
     except (OSError, TypeError, ValueError):
-        return None
+        return []
     current_factors: dict[str, Any] | None = None
     current_seed: Any = None
     for exp in index.get('experiments') or []:
@@ -67,11 +83,10 @@ def sibling_train_checkpoint(
         if current_factors is not None:
             break
     if current_factors is None:
-        return None
+        return []
     want = dict(current_factors)
     want['algorithm.mode'] = 'train'
-    name = stem if stem.endswith('.pt') else f'{stem}.pt'
-    folder_name = stem[:-3] if stem.endswith('.pt') else stem
+    matched: list[str] = []
     for exp in index.get('experiments') or []:
         if dict(exp.get('factors') or {}) != want:
             continue
@@ -79,14 +94,9 @@ def sibling_train_checkpoint(
             if run.get('seed') != current_seed:
                 continue
             rid = str(run.get('run_dir') or run.get('id') or '')
-            base = study_dir / 'runs' / rid / 'assets' / 'checkpoints'
-            path = base / name
-            if path.is_file():
-                return path
-            folder = base / folder_name
-            if folder.is_dir() and ((folder / 'model.pt').is_file() or (folder / 'meta.json').is_file()):
-                return folder
-    return None
+            if rid:
+                matched.append(rid)
+    return matched
 
 
 def resolve_checkpoint_ref(
@@ -115,6 +125,47 @@ def resolve_checkpoint_ref(
             if alt.is_file():
                 return str(alt)
     return text
+
+
+def _has_checkpoint_material(path: Path) -> bool:
+    """Recognize weight-bearing paths without loading tensors during planning."""
+    if path.is_file():
+        return True
+    folder = path if path.is_dir() or path.suffix.lower() != '.pt' else path.with_suffix('')
+    return folder.with_name(f'{folder.name}.pt').is_file() or any(
+        (folder / name).is_file() for name in ('payload.pt', 'model.pt')
+    )
+
+
+def sibling_train_dependency(study_dir: Path, run_id: str) -> str | None:
+    """Identify the train that launch must finish before this eval can run."""
+    from rpipe.structure.artifact import load_config
+
+    root = Path(study_dir) / 'runs' / run_id
+    try:
+        cfg = AlgorithmConfig.from_mapping(load_config(root / 'config.yaml').get('algorithm'))
+    except (OSError, ValueError):
+        return None
+    if cfg.mode != 'eval':
+        return None
+    ref = resume_stem(cfg, mode='eval')
+    if ref is None:
+        return None
+    parents = sibling_train_ids(study_dir, run_id)
+    if not parents:
+        return None
+    target = Path(resolve_checkpoint_ref(ref, SimpleNamespace(assets_dir=root / 'assets'), mode='eval'))
+    if target.exists() or target.suffix.lower() == '.pt' or '/' in str(target) or '\\' in str(target):
+        if _has_checkpoint_material(target):
+            # Explicit external/local weights do not depend on a sibling train.
+            return next((rid for rid in parents if
+                         (Path(study_dir) / 'runs' / rid / 'assets' / 'checkpoints').resolve()
+                         in target.resolve().parents), None)
+    else:
+        own = root / 'assets' / 'checkpoints' / target
+        if _has_checkpoint_material(own):
+            return None
+    return parents[0]
 
 
 def apply_module_state(module: Any, payload: dict[str, Any] | None) -> None:

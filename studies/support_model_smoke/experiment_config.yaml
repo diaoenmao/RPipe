@@ -1,0 +1,39 @@
+data:
+  name: CIFAR10
+  source: torch
+  config:
+    batch_size: 64
+    test_batch_ratio: 4
+    pin_memory: true
+    num_workers: 0
+    augment: true
+model:
+  name: resnet10
+  source: custom_torch
+algorithm:
+  source: custom_torch
+  mode: train
+  num_steps: 30
+  progress_unit: step
+  log_period: 10
+  eval_period: 10
+  eval_num_steps: -1
+  checkpoint: latest
+  checkpoint_period: 10
+  save_best: true
+  best_metric: Loss
+  best_split: test
+  optimizer: SGD
+  lr: 0.03
+  momentum: 0.9
+  weight_decay: 0.0005
+  nesterov: true
+  max_grad_norm: 0
+  scheduler: cosine
+  eta_min: 0.0
+system:
+  device: cuda
+  deterministic: false
+  cudnn_benchmark: true
+experiment: support_model_smoke
+description: 30-step support acceptance with independent Loss-best evaluation

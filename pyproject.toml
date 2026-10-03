@@ -23,7 +23,9 @@ classifiers = [
 dependencies = [
   "matplotlib",
   "numpy",
+  "scipy",
   "PyYAML",
+  "kornia",
   "torch",
   "torchvision",
 ]

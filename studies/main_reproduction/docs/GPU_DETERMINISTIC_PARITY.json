@@ -1,0 +1,202 @@
+[
+  {
+    "data": "MNIST",
+    "model": "linear",
+    "init_delta": 0.0,
+    "sample_order_equal": true,
+    "comparisons": [
+      {
+        "step": 2,
+        "parameter_max_delta": 0.0,
+        "train_loss_delta": 0.0,
+        "test_loss_delta": 0.0,
+        "accuracy_delta": 0.0,
+        "scheduler_equal": true
+      },
+      {
+        "step": 4,
+        "parameter_max_delta": 0.0,
+        "train_loss_delta": 0.0,
+        "test_loss_delta": 0.0,
+        "accuracy_delta": 0.0,
+        "scheduler_equal": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "data": "MNIST",
+    "model": "mlp",
+    "init_delta": 0.0,
+    "sample_order_equal": true,
+    "comparisons": [
+      {
+        "step": 2,
+        "parameter_max_delta": 0.0,
+        "train_loss_delta": 0.0,
+        "test_loss_delta": 0.0,
+        "accuracy_delta": 0.0,
+        "scheduler_equal": true
+      },
+      {
+        "step": 4,
+        "parameter_max_delta": 0.0,
+        "train_loss_delta": 0.0,
+        "test_loss_delta": 0.0,
+        "accuracy_delta": 0.0,
+        "scheduler_equal": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "data": "MNIST",
+    "model": "cnn",
+    "init_delta": 0.0,
+    "sample_order_equal": true,
+    "comparisons": [
+      {
+        "step": 2,
+        "parameter_max_delta": 0.0,
+        "train_loss_delta": 0.0,
+        "test_loss_delta": 0.0,
+        "accuracy_delta": 0.0,
+        "scheduler_equal": true
+      },
+      {
+        "step": 4,
+        "parameter_max_delta": 0.0,
+        "train_loss_delta": 0.0,
+        "test_loss_delta": 0.0,
+        "accuracy_delta": 0.0,
+        "scheduler_equal": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "data": "MNIST",
+    "model": "resnet18",
+    "init_delta": 0.0,
+    "sample_order_equal": true,
+    "comparisons": [
+      {
+        "step": 2,
+        "parameter_max_delta": 0.0,
+        "train_loss_delta": 0.0,
+        "test_loss_delta": 0.0,
+        "accuracy_delta": 0.0,
+        "scheduler_equal": true
+      },
+      {
+        "step": 4,
+        "parameter_max_delta": 0.0,
+        "train_loss_delta": 0.0,
+        "test_loss_delta": 0.0,
+        "accuracy_delta": 0.0,
+        "scheduler_equal": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "data": "CIFAR10",
+    "model": "linear",
+    "init_delta": 0.0,
+    "sample_order_equal": true,
+    "comparisons": [
+      {
+        "step": 2,
+        "parameter_max_delta": 0.0,
+        "train_loss_delta": 0.0,
+        "test_loss_delta": 0.0,
+        "accuracy_delta": 0.0,
+        "scheduler_equal": true
+      },
+      {
+        "step": 4,
+        "parameter_max_delta": 0.0,
+        "train_loss_delta": 0.0,
+        "test_loss_delta": 0.0,
+        "accuracy_delta": 0.0,
+        "scheduler_equal": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "data": "CIFAR10",
+    "model": "mlp",
+    "init_delta": 0.0,
+    "sample_order_equal": true,
+    "comparisons": [
+      {
+        "step": 2,
+        "parameter_max_delta": 0.0,
+        "train_loss_delta": 0.0,
+        "test_loss_delta": 0.0,
+        "accuracy_delta": 0.0,
+        "scheduler_equal": true
+      },
+      {
+        "step": 4,
+        "parameter_max_delta": 0.0,
+        "train_loss_delta": 0.0,
+        "test_loss_delta": 0.0,
+        "accuracy_delta": 0.0,
+        "scheduler_equal": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "data": "CIFAR10",
+    "model": "cnn",
+    "init_delta": 0.0,
+    "sample_order_equal": true,
+    "comparisons": [
+      {
+        "step": 2,
+        "parameter_max_delta": 0.0,
+        "train_loss_delta": 0.0,
+        "test_loss_delta": 0.0,
+        "accuracy_delta": 0.0,
+        "scheduler_equal": true
+      },
+      {
+        "step": 4,
+        "parameter_max_delta": 0.0,
+        "train_loss_delta": 0.0,
+        "test_loss_delta": 0.0,
+        "accuracy_delta": 0.0,
+        "scheduler_equal": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "data": "CIFAR10",
+    "model": "resnet18",
+    "init_delta": 0.0,
+    "sample_order_equal": true,
+    "comparisons": [
+      {
+        "step": 2,
+        "parameter_max_delta": 0.0,
+        "train_loss_delta": 0.0,
+        "test_loss_delta": 0.0,
+        "accuracy_delta": 0.0,
+        "scheduler_equal": true
+      },
+      {
+        "step": 4,
+        "parameter_max_delta": 0.0,
+        "train_loss_delta": 0.0,
+        "test_loss_delta": 0.0,
+        "accuracy_delta": 0.0,
+        "scheduler_equal": true
+      }
+    ],
+    "passed": true
+  }
+]

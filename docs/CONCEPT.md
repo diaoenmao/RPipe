@@ -171,9 +171,11 @@ flowchart TB
 - **`version`** 是 RunConfig 的可选区分字段，不是第二个 ID。它参与 `run_id` hash，用于避免实验参数与 seed 相同、但应保留为不同实测的 Run 发生身份冲突。
 - `version` 可以使用简短序号、名称、timestamp、代码 revision 或目的说明；项目不强制只用 timestamp。
 - 同配置、同 seed、同 `version` 仍得到同一 `run_id`，用于 skip / resume。需要保留一次新的完整实测时，声明新的 `version`，从而得到新的 `run_id` 和 Run 目录。
-- Study `index.json` 只列本次声明展开出的 Run，Study process 也只聚合这些 Run；旧 version 的 Run 目录不会自动重复计入统计。
+- Study `index.json` 只列本次声明展开出的 Run，Study process 也只聚合这些 Run。缺失或不可读取的 index 必须先重新 make，不回退扫描历史 Run 目录，以免旧 version 重复计入统计。
 
-待落地内容只有：在 RunConfig / Study 展开中支持 `version`，确认它参与 hash，并移除 `make_run_dir(..., timestamp=...)` 这条旧的目录后缀兼容路径。`version` 只表示 Run 的区分字段，不表示 artifact 文件格式；不再增加 attempt 概念。
+声明位置是 `experiment_config.yaml` 顶层的 `version`，或 `study.yaml` 的 `fixed.version`（覆盖基底）。两级 Config 通过已有 `extras` 保留它，往返序列化和 hash 不另开一条路径；省略该字段时保持原有 ID。Study 顶层的 `version` 不会被展开，不作为声明入口。
+
+Run 目录直接使用内容导出的 ID，不再提供 timestamp 目录后缀接口。改变 version 后重新 make，旧 Run 文件保留，新 index 只列本轮 Run。`version` 不表示 artifact 文件格式，也不增加 attempt 概念。
 
 ---
 

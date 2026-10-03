@@ -7,24 +7,28 @@ import time
 from pathlib import Path
 
 
+def atomic_replace(source: Path | str, target: Path | str) -> Path:
+    """Replace once, allowing a short Windows sharing/access denial to clear."""
+    source, target = Path(source), Path(target)
+    for attempt in range(6):
+        try:
+            source.replace(target)
+            return target
+        except OSError as error:
+            if getattr(error, 'winerror', None) not in (5, 32, 33) or attempt == 5:
+                raise
+            time.sleep(0.05 * (attempt + 1))
+
+
 def atomic_write_text(path: Path | str, text: str, encoding: str = 'utf-8') -> Path:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     tmp = target.with_name(f'{target.name}.{os.getpid()}.{time.time_ns()}.tmp')
     tmp.write_text(text, encoding=encoding)
-    last_error: OSError | None = None
-    for attempt in range(6):
+    try:
+        return atomic_replace(tmp, target)
+    finally:
         try:
-            tmp.replace(target)
-            return target
-        except (PermissionError, FileNotFoundError, OSError) as error:
-            last_error = error
-            time.sleep(0.05 * (attempt + 1))
-    if tmp.is_file():
-        try:
-            tmp.unlink()
+            tmp.unlink(missing_ok=True)
         except OSError:
             pass
-    if last_error is not None:
-        raise last_error
-    return target

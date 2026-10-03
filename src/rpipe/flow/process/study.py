@@ -8,30 +8,29 @@ from typing import Any
 from rpipe.flow.process.aggregate import (
     attach_histories,
     collect_from_index,
-    collect_from_runs,
     process_path,
     summarize,
 )
 from rpipe.flow.process.curves import write_learning_curves
 from rpipe.structure.artifact._atomic import atomic_write_text
-from rpipe.structure.artifact.index import load_index
+from rpipe.structure.artifact.index import index_path, load_index
 from rpipe.structure.artifact.result.format import encode_result
 
 
 def run_study(study_dir: Path | str) -> dict[str, Any]:
     study_dir = Path(study_dir)
-    index = None
     try:
         index = load_index(study_dir)
-    except (OSError, TypeError):
-        index = None
+        if not isinstance(index.get('experiments'), list):
+            raise TypeError('Study index must contain an experiments list')
+    except (OSError, TypeError, ValueError) as exc:
+        raise ValueError(
+            f'Cannot process Study without a usable current index: {index_path(study_dir)}; '
+            f'check study.yaml and rebuild with python -m rpipe make "{study_dir}"'
+        ) from exc
 
-    if index is not None:
-        groups = collect_from_index(study_dir, index)
-        study_name = str(index.get('study') or study_dir.name)
-    else:
-        groups = collect_from_runs(study_dir)
-        study_name = study_dir.name
+    groups = collect_from_index(study_dir, index)
+    study_name = str(index.get('study') or study_dir.name)
 
     body = summarize(groups, study=study_name, source_run=None)
     body['scope'] = 'study'

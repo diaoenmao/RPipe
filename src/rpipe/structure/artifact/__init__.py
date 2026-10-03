@@ -18,7 +18,6 @@ from rpipe.structure.artifact.layout import (
     ArtifactLayout,
     artifact_layout,
     ensure_study_layout,
-    make_run_dir,
 )
 from rpipe.structure.artifact.result import (
     STATUS_FAILED,
@@ -45,7 +44,6 @@ __all__ = [
     'load_config',
     'load_index',
     'load_result',
-    'make_run_dir',
     'validate_result',
     'write_config',
     'write_index',

@@ -1,0 +1,45 @@
+version: main-98648f3-20261003
+data:
+  source: torch
+  config:
+    batch_size: 250
+    test_batch_ratio: 4
+    pin_memory: true
+    num_workers: 0
+    augment: true
+  name: MNIST
+algorithm:
+  source: custom_torch
+  mode: train
+  num_steps: 60
+  progress_unit: step
+  log_period: 7
+  eval_period: 30
+  eval_num_steps: -1
+  checkpoint: percent
+  checkpoint_period: 30
+  save_best: true
+  best_metric: Loss
+  best_split: test
+  optimizer: SGD
+  lr: 0.1
+  momentum: 0.9
+  weight_decay: 0.0005
+  nesterov: true
+  max_grad_norm: 0
+  scheduler: cosine
+  eta_min: 0.0
+  checkpoint_percents:
+  - 0.5
+  - 1.0
+  step_period: 1
+system:
+  device: cuda
+  deterministic: false
+  cudnn_benchmark: true
+model:
+  source: custom_torch
+  name: linear
+experiment: main_reproduction
+description: 'Pinned main base recipe: 60 optimizer steps, full test every 30 steps,
+  same-environment original-code comparison'
