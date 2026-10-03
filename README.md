@@ -35,6 +35,8 @@ Agent 的文档导航与通用工作约定见 [AGENTS.md](AGENTS.md)。
 
 已知缺陷与尚未兑现的设计见 [BUGS.md](docs/BUGS.md)，历史交接记录不覆盖上述文档。
 
+开发过程与 main 结果复现进度见 [SUMMARY.md](docs/SUMMARY.md)，阶段性方案见 [BRAINSTORM.md](docs/BRAINSTORM.md)。
+
 ## 安装
 
 要求 Python 3.10 或更高版本。
@@ -124,7 +126,7 @@ pytest 的 base temp、cache 和测试结果都写入 `.tmp/`。GitHub Actions �
 
 文档中列出的其他下游生态是扩展边界，不代表已经实现；以 Registry 和 [BUGS.md](docs/BUGS.md) 为准。
 
-上述清单表示已有实现，不代表全部模型与数据组合已完成真实运行验收；当前已确认的配置校验和依赖缺口见 BUGS。
+上述清单表示已有实现，不代表全部模型与数据组合已完成真实运行验收。六个指定组合的 30-step 验收见 [数据报告](studies/support_data_smoke/docs/STUDY_REPORT.md) 与 [模型报告](studies/support_model_smoke/docs/STUDY_REPORT.md)，模型报告保留 ResNet10 的 Accuracy 复算差异；未解决缺陷见 BUGS。
 
 ## Acknowledgements
 

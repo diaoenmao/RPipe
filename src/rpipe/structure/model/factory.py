@@ -59,19 +59,13 @@ class ModelFactory:
         data_meta: dict[str, Any] | None = None,
         origin: str | None = None,
     ) -> Model:
-        name = model_config.name or 'unknown'
-        source = model_config.source or 'custom_torch'
-        builder = ModelRegistry.get(name, source) or ModelRegistry.get(name, 'custom_torch')
+        name = model_config.name
+        source = model_config.source if model_config.source is not None else 'custom_torch'
+        builder = ModelRegistry.get(name, source)
         if builder is None:
-            model = Model(
-                name=name,
-                source=source,
-                module=None,
-                meta={'ready': True, 'assets_dir': str(assets_dir), 'config': dict(model_config.config)},
-            )
-        else:
-            model = builder(model_config, Path(assets_dir), data_meta=data_meta)
-            model.module = _attach_input_norm(model.module, data_meta)
+            raise ValueError(f'unknown model name/source: {name!r}/{source!r}')
+        model = builder(model_config, Path(assets_dir), data_meta=data_meta)
+        model.module = _attach_input_norm(model.module, data_meta)
         if origin not in (None, ''):
             chosen = normalize_origin(origin)
             model.meta['origin'] = chosen

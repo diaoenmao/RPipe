@@ -19,7 +19,8 @@ from rpipe.structure.system.factory import SystemFactory
 pytest.importorskip('transformers')
 
 
-def test_hf_trainer_runs_one_epoch(tmp_path):
+@pytest.mark.parametrize('budget', [{'num_epochs': 1, 'progress_unit': 'epoch'}, {'num_steps': 1}])
+def test_hf_trainer_records_actual_progress(tmp_path, budget):
     import torch
 
     from rpipe.structure.algorithm.transformers_trainer import HfTrainAlgorithm
@@ -69,8 +70,7 @@ def test_hf_trainer_runs_one_epoch(tmp_path):
             {
                 'mode': 'train',
                 'source': 'transformers_trainer',
-                'num_epochs': 1,
-                'progress_unit': 'epoch',
+                **budget,
                 'eval_period': 1,
                 'optimizer': 'SGD',
                 'lr': 0.1,
@@ -79,7 +79,28 @@ def test_hf_trainer_runs_one_epoch(tmp_path):
         )
     )
     system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
-    out = algo.run(_Data(), _Model(), system, AlgorithmTracker(tmp_path))
+    data, model = _Data(), _Model()
+    updates = []
+    model.module.weight.register_hook(lambda grad: updates.append(1))
+    out = algo.run(data, model, system, AlgorithmTracker(tmp_path))
     assert out['source'] == 'transformers_trainer'
-    assert out['epochs'] >= 1
+    recorded_epoch = 1 if 'num_epochs' in budget else 0.5
     assert (tmp_path / 'checkpoints' / 'latest.pt').is_file()
+    import json
+
+    reports = [json.loads(line) for line in (tmp_path / 'tracker' / 'scalars.jsonl').read_text().splitlines()]
+    reports = [row for row in reports if 'mean' in row]
+    assert {row['optimizer_step'] for row in reports} == {out['steps']}
+    assert {row['epoch'] for row in reports} == {recorded_epoch}
+    assert len(updates) == out['steps']
+    if 'num_epochs' in budget:
+        # Count actual backward/update calls, independently of the curve's resume offset.
+        second = HfTrainAlgorithm(AlgorithmConfig.from_mapping({
+            'mode': 'train', 'source': 'transformers_trainer', 'num_epochs': 2,
+            'progress_unit': 'epoch', 'eval_period': 1, 'optimizer': 'SGD', 'lr': 0.1,
+        }))
+        second.run(data, model, system, AlgorithmTracker(tmp_path))
+        checkpoint = system.load_checkpoint('latest')
+        assert checkpoint['tracker']['progress']['step'] == len(updates)
+        rows = [json.loads(line) for line in (tmp_path / 'tracker' / 'scalars.jsonl').read_text().splitlines()]
+        assert rows[-1]['optimizer_step'] == len(updates)

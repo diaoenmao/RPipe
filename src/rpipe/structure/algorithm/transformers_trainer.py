@@ -129,7 +129,11 @@ class _ClassificationWrap(nn.Module):
 
 class HfTrainAlgorithm(TrainAlgorithm):
     def run(self, data: Any, model: Any, system: Any, tracker: AlgorithmTracker) -> dict[str, Any]:
-        if getattr(model, 'module', None) is None or not hasattr(data, 'iter_batches'):
+        if (
+            getattr(data, 'source', None) == 'stub'
+            or getattr(model, 'module', None) is None
+            or not callable(getattr(data, 'iter_batches', None))
+        ):
             return super().run(data, model, system, tracker)
         return _run_hf_trainer(self, data, model, system, tracker)
 
@@ -216,6 +220,8 @@ def _run_hf_trainer(
         seed = int(meta['seed'])
 
     def fire_eval(extra: dict[str, Any]) -> bool:
+        if tracker.progress is not None:
+            extra['progress'] = tracker.progress
         return bool(algo.on_eval_period(tracker, logger, data, model, system, extra))
 
     def fire_ckpt(*, extra: dict[str, Any], improved: bool, is_last: bool) -> None:
@@ -236,6 +242,7 @@ def _run_hf_trainer(
         if not names:
             return
         extra = dict(extra)
+        extra['progress'] = tracker.progress
         extra['best_accuracy'] = algo._best_test
         extra['checkpoint_names'] = names
         extra['payload'] = _build_payload(module, optimizer, inner_sched, extra, tracker, logger)
@@ -247,6 +254,7 @@ def _run_hf_trainer(
     already_done = steps >= budget.num_steps
     wrote_last_ckpt = False
     if already_done:
+        tracker.begin_run((restored or {}).get('tracker'))
         extra = _hook_extra(epoch=epoch, lr=_current_lr(optimizer, lr), step=steps)
         extra['best_accuracy'] = algo._best_test
         fire_eval(extra)
@@ -256,6 +264,11 @@ def _run_hf_trainer(
     train_ds = _dataset_from_loader(data, 'train')
     if train_ds is None and native_loader is None:
         return TrainAlgorithm.run(algo, data, model, system, tracker)
+
+    tracker.begin_run((restored or {}).get('tracker'))
+    recorded = tracker.progress or {}
+    step_origin = recorded.get('step', steps)
+    epoch_origin = recorded.get('epoch', epoch)
 
     def observe(inputs: dict[str, Any], outputs: Any) -> None:
         labels = inputs.get('labels')
@@ -287,7 +300,9 @@ def _run_hf_trainer(
             extra = _hook_extra(epoch=epoch, lr=_current_lr(optimizer, lr), step=steps)
             if logger is not None:
                 logger.report(tracker, 'train', extra=extra)
-            tracker.flush('train')
+            tracker.flush('train', progress={
+                'step': step_origin + steps, 'epoch': epoch_origin + float(state.epoch or 0),
+            })
             tracker.save('train')
             tracker.reset('train')
             tracker.flush_state()

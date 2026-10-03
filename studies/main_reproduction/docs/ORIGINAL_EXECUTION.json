@@ -1,0 +1,242 @@
+[
+  {
+    "mode": "train",
+    "data": "MNIST",
+    "model": "linear",
+    "exit_code": 0,
+    "elapsed_seconds": 9.465254799928516,
+    "log": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original-train-MNIST_linear.log",
+    "command": [
+      "D:\\anaconda3\\python.exe",
+      "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original_case.py",
+      "train_model.py",
+      "--control_name",
+      "MNIST_linear"
+    ]
+  },
+  {
+    "mode": "train",
+    "data": "MNIST",
+    "model": "mlp",
+    "exit_code": 0,
+    "elapsed_seconds": 9.738740200176835,
+    "log": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original-train-MNIST_mlp.log",
+    "command": [
+      "D:\\anaconda3\\python.exe",
+      "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original_case.py",
+      "train_model.py",
+      "--control_name",
+      "MNIST_mlp"
+    ]
+  },
+  {
+    "mode": "train",
+    "data": "MNIST",
+    "model": "cnn",
+    "exit_code": 0,
+    "elapsed_seconds": 13.782761900220066,
+    "log": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original-train-MNIST_cnn.log",
+    "command": [
+      "D:\\anaconda3\\python.exe",
+      "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original_case.py",
+      "train_model.py",
+      "--control_name",
+      "MNIST_cnn"
+    ]
+  },
+  {
+    "mode": "train",
+    "data": "MNIST",
+    "model": "resnet18",
+    "exit_code": 0,
+    "elapsed_seconds": 21.091491399798542,
+    "log": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original-train-MNIST_resnet18.log",
+    "command": [
+      "D:\\anaconda3\\python.exe",
+      "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original_case.py",
+      "train_model.py",
+      "--control_name",
+      "MNIST_resnet18"
+    ]
+  },
+  {
+    "mode": "train",
+    "data": "CIFAR10",
+    "model": "linear",
+    "exit_code": 0,
+    "elapsed_seconds": 14.446216899901628,
+    "log": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original-train-CIFAR10_linear.log",
+    "command": [
+      "D:\\anaconda3\\python.exe",
+      "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original_case.py",
+      "train_model.py",
+      "--control_name",
+      "CIFAR10_linear"
+    ]
+  },
+  {
+    "mode": "train",
+    "data": "CIFAR10",
+    "model": "mlp",
+    "exit_code": 0,
+    "elapsed_seconds": 14.446257200092077,
+    "log": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original-train-CIFAR10_mlp.log",
+    "command": [
+      "D:\\anaconda3\\python.exe",
+      "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original_case.py",
+      "train_model.py",
+      "--control_name",
+      "CIFAR10_mlp"
+    ]
+  },
+  {
+    "mode": "train",
+    "data": "CIFAR10",
+    "model": "cnn",
+    "exit_code": 0,
+    "elapsed_seconds": 18.755669000092894,
+    "log": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original-train-CIFAR10_cnn.log",
+    "command": [
+      "D:\\anaconda3\\python.exe",
+      "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original_case.py",
+      "train_model.py",
+      "--control_name",
+      "CIFAR10_cnn"
+    ]
+  },
+  {
+    "mode": "train",
+    "data": "CIFAR10",
+    "model": "resnet18",
+    "exit_code": 0,
+    "elapsed_seconds": 26.07614570017904,
+    "log": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original-train-CIFAR10_resnet18.log",
+    "command": [
+      "D:\\anaconda3\\python.exe",
+      "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original_case.py",
+      "train_model.py",
+      "--control_name",
+      "CIFAR10_resnet18"
+    ]
+  },
+  {
+    "mode": "eval",
+    "data": "MNIST",
+    "model": "linear",
+    "exit_code": 0,
+    "elapsed_seconds": 7.328120099846274,
+    "log": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original-eval-MNIST_linear.log",
+    "command": [
+      "D:\\anaconda3\\python.exe",
+      "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original_case.py",
+      "test_model.py",
+      "--control_name",
+      "MNIST_linear"
+    ]
+  },
+  {
+    "mode": "eval",
+    "data": "MNIST",
+    "model": "mlp",
+    "exit_code": 0,
+    "elapsed_seconds": 7.3296046000905335,
+    "log": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original-eval-MNIST_mlp.log",
+    "command": [
+      "D:\\anaconda3\\python.exe",
+      "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original_case.py",
+      "test_model.py",
+      "--control_name",
+      "MNIST_mlp"
+    ]
+  },
+  {
+    "mode": "eval",
+    "data": "MNIST",
+    "model": "cnn",
+    "exit_code": 0,
+    "elapsed_seconds": 9.242968800012022,
+    "log": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original-eval-MNIST_cnn.log",
+    "command": [
+      "D:\\anaconda3\\python.exe",
+      "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original_case.py",
+      "test_model.py",
+      "--control_name",
+      "MNIST_cnn"
+    ]
+  },
+  {
+    "mode": "eval",
+    "data": "MNIST",
+    "model": "resnet18",
+    "exit_code": 0,
+    "elapsed_seconds": 12.758726299740374,
+    "log": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original-eval-MNIST_resnet18.log",
+    "command": [
+      "D:\\anaconda3\\python.exe",
+      "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original_case.py",
+      "test_model.py",
+      "--control_name",
+      "MNIST_resnet18"
+    ]
+  },
+  {
+    "mode": "eval",
+    "data": "CIFAR10",
+    "model": "linear",
+    "exit_code": 0,
+    "elapsed_seconds": 8.361669700127095,
+    "log": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original-eval-CIFAR10_linear.log",
+    "command": [
+      "D:\\anaconda3\\python.exe",
+      "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original_case.py",
+      "test_model.py",
+      "--control_name",
+      "CIFAR10_linear"
+    ]
+  },
+  {
+    "mode": "eval",
+    "data": "CIFAR10",
+    "model": "mlp",
+    "exit_code": 0,
+    "elapsed_seconds": 8.999369200319052,
+    "log": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original-eval-CIFAR10_mlp.log",
+    "command": [
+      "D:\\anaconda3\\python.exe",
+      "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original_case.py",
+      "test_model.py",
+      "--control_name",
+      "CIFAR10_mlp"
+    ]
+  },
+  {
+    "mode": "eval",
+    "data": "CIFAR10",
+    "model": "cnn",
+    "exit_code": 0,
+    "elapsed_seconds": 10.214252999983728,
+    "log": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original-eval-CIFAR10_cnn.log",
+    "command": [
+      "D:\\anaconda3\\python.exe",
+      "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original_case.py",
+      "test_model.py",
+      "--control_name",
+      "CIFAR10_cnn"
+    ]
+  },
+  {
+    "mode": "eval",
+    "data": "CIFAR10",
+    "model": "resnet18",
+    "exit_code": 0,
+    "elapsed_seconds": 13.571993299759924,
+    "log": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original-eval-CIFAR10_resnet18.log",
+    "command": [
+      "D:\\anaconda3\\python.exe",
+      "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-reproduction-20261003\\original_case.py",
+      "test_model.py",
+      "--control_name",
+      "CIFAR10_resnet18"
+    ]
+  }
+]

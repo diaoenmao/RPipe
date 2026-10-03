@@ -217,3 +217,50 @@ def test_study_process_accepts_empty_current_index(tmp_path: Path):
     body = run_study(tmp_path)
     assert body['experiments'] == []
     assert body['complete'] is False
+
+
+def test_study_progress_summary_and_plot_share_coordinates_and_counts(tmp_path, monkeypatch):
+    """Indexed successful trackers → coordinate aggregates and PNG, excluding failed runs."""
+    from matplotlib.figure import Figure
+    from rpipe.structure.algorithm.tracker import AlgorithmTracker
+
+    figures = []
+    savefig = Figure.savefig
+
+    def capture(figure, *args, **kwargs):
+        figures.append(figure)
+        return savefig(figure, *args, **kwargs)
+
+    monkeypatch.setattr(Figure, 'savefig', capture)
+    runs = []
+    for seed, (rid, coordinates) in enumerate([
+        ('a', [(10, 1.0), (20, 2.0), (40, 4.0)]),
+        ('b', [(10, 3.0), (30, 6.0), (40, 8.0)]),
+        ('failed', [(999, 99.0)]),
+        ('epoch', [(0.5, 7.0)]),
+    ]):
+        layout = _write_succeeded(tmp_path, rid, seed, 500, {'accuracy': 80.0}, [])
+        if rid == 'failed':
+            write_result(layout.result_path, {'status': 'failed', 'control': {'id': rid}, 'error': 'injected'})
+        tracker = AlgorithmTracker(layout.assets_dir)
+        tracker.begin_run()
+        for point, value in coordinates:
+            tracker.reset('test')
+            tracker.append('test', values={'Loss': value})
+            tracker.flush('test', progress={'epoch' if rid == 'epoch' else 'step': point})
+        runs.append({'id': rid, 'run_dir': rid, 'seed': seed})
+    write_index(tmp_path, build_index(study='progress', description='', experiments=[
+        {'factors': {}, 'runs': runs},
+    ]))
+    body = run_study(tmp_path)
+    by_unit = body['experiments'][0]['history']['test']['Loss']['by_unit']
+    step = by_unit['step']
+    assert step['x'] == [10, 20, 30, 40]
+    assert step['n_at_point'] == [2, 1, 1, 2]
+    assert step['mean'] == [2.0, 2.0, 6.0, 6.0]
+    assert by_unit['epoch']['x'] == [0.5]
+    assert {ax.get_xlabel() for ax in figures[0].axes} == {'optimizer step', 'epoch'}
+    step_axis = next(ax for ax in figures[0].axes if ax.get_title() == 'Test loss' and ax.get_xlabel() == 'optimizer step')
+    assert list(step_axis.lines[0].get_xdata()) == step['x']
+    assert list(step_axis.lines[0].get_ydata()) == step['mean']
+    assert [text.get_text() for text in step_axis.texts] == ['n=2', 'n=1', 'n=1', 'n=2']

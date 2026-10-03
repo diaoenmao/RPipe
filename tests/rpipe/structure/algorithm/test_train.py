@@ -16,8 +16,51 @@ from rpipe.structure.algorithm.train import TrainAlgorithm, make_scheduler
 from rpipe.structure.algorithm.tracker import AlgorithmTracker
 
 
+@pytest.mark.parametrize('unit', ['step', 'epoch'])
+def test_train_summary_uses_last_evaluation_segment(tmp_path, unit):
+    import torch
+    from types import SimpleNamespace
+    from rpipe.structure.system.factory import SystemFactory
+    from rpipe.structure.system.config import SystemConfig
+
+    class Batches:
+        meta = {'train_size': 4, 'batch_size': 1}
+        calls = 0
+
+        def steps_per_epoch(self):
+            return 2 if unit == 'epoch' else 4
+
+        def iter_batches(self, split):
+            if split == 'test':
+                yield torch.tensor([[1.0, 0.0]]), torch.tensor([0])
+                return
+            targets = [self.calls, self.calls] if unit == 'epoch' else [0, 0, 1, 1]
+            self.calls += 1
+            for target in targets:
+                yield torch.tensor([[1.0, 0.0]]), torch.tensor([target])
+
+    module = torch.nn.Linear(2, 2, bias=False)
+    with torch.no_grad():
+        module.weight.copy_(torch.tensor([[5.0, 0.0], [-5.0, 0.0]]))
+    expected = [torch.nn.functional.cross_entropy(module(torch.tensor([[1.0, 0.0]])),
+                torch.tensor([target])).item() for target in (0, 1)]
+    config = {'mode': 'train', 'lr': 0.0, 'weight_decay': 0.0, 'momentum': 0.0,
+              'nesterov': False, 'progress_unit': unit, 'log_period': 1,
+              'eval_period': 1 if unit == 'epoch' else 2}
+    config.update({'num_epochs': 2} if unit == 'epoch' else {'num_steps': 4})
+    tracker = AlgorithmTracker(tmp_path)
+    system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
+    out = TrainAlgorithm(AlgorithmConfig.from_mapping(config)).run(
+        Batches(), SimpleNamespace(module=module), system, tracker,
+    )
+    assert out['train_loss'] == pytest.approx(expected[-1])
+    assert tracker.state_dict()['splits']['train']['Loss']['history'] == pytest.approx(expected)
+
+
 class _Data:
     name = 'Toy'
+    source = 'stub'
+    meta = {'stub': True}
 
 
 def test_two_epoch_stub_train_does_not_raise(tmp_path):
@@ -25,7 +68,46 @@ def test_two_epoch_stub_train_does_not_raise(tmp_path):
     tracker = AlgorithmTracker(tmp_path)
     out = algo.run(_Data(), None, None, tracker)
     assert out['mode'] == 'train'
+    assert out['stub'] is True
     assert tracker.segment_mean('train').get('Loss') == 0.0
+
+
+@pytest.mark.parametrize('mode', ['train', 'eval'])
+@pytest.mark.parametrize('source', ['custom_torch', 'transformers_trainer'])
+def test_missing_inputs_do_not_become_stub_results(tmp_path, mode, source):
+    from types import SimpleNamespace
+
+    from rpipe.structure.algorithm.factory import AlgorithmFactory
+
+    algorithm = AlgorithmFactory.build(AlgorithmConfig(mode=mode, source=source))
+    tracker = AlgorithmTracker(tmp_path)
+    for data, model in [
+        (None, None),
+        (SimpleNamespace(source='torch', meta={}, iter_batches=lambda split: iter(())), None),
+        (SimpleNamespace(source='stub', meta={'stub': False}), None),
+        (SimpleNamespace(source='torch', meta={'stub': True}), None),
+        (SimpleNamespace(), SimpleNamespace(module=object())),
+    ]:
+        with pytest.raises(ValueError, match='requires a model module and data.iter_batches'):
+            algorithm.run(data, model, None, tracker)
+    assert tracker.segment_mean('train') == {}
+    assert tracker.segment_mean('test') == {}
+
+
+@pytest.mark.parametrize('mode', ['train', 'eval'])
+@pytest.mark.parametrize('source', ['custom_torch', 'transformers_trainer'])
+def test_explicit_stub_is_supported_by_both_sources(tmp_path, mode, source):
+    from types import SimpleNamespace
+
+    from rpipe.structure.api import algorithm_api, data_api
+    from rpipe.structure.data import DataConfig
+
+    data = data_api.build(DataConfig(name='Toy', source='stub'), tmp_path, seed=2)
+    algorithm = algorithm_api.build(AlgorithmConfig(mode=mode, source=source))
+    result = algorithm.run(data, SimpleNamespace(module=object()), None, AlgorithmTracker(tmp_path))
+    assert result['mode'] == mode
+    assert result['stub'] is True
+    assert data.meta['seed'] == 2
 
 
 def test_make_scheduler_none_or_constant():
@@ -106,8 +188,8 @@ def test_train_reports_lr_used_by_completed_optimizer_step(tmp_path, eval_period
     )
     train = [(int(step), float(lr)) for split, lr, step in records if split == 'train']
     test = [(int(step), float(lr)) for split, lr, step in records if split == 'test']
-    assert [step for step, _ in train] == [1, 2, 3, 3]
-    assert [lr for _, lr in train] == pytest.approx(expected_lrs + [expected_lrs[-1]])
+    assert [step for step, _ in train] == ([1, 2, 3] if eval_period else [1, 2, 3, 3])
+    assert [lr for _, lr in train] == pytest.approx(expected_lrs if eval_period else expected_lrs + [expected_lrs[-1]])
     assert [step for step, _ in test] == ([1, 2, 3] if eval_period else [3])
     assert [lr for _, lr in test] == pytest.approx(expected_lrs if eval_period else [expected_lrs[-1]])
     assert result['steps'] == 3

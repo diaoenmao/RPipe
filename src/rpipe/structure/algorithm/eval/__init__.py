@@ -15,16 +15,19 @@ class EvalAlgorithm(Algorithm):
     def run(self, data: Any, model: Any, system: Any, tracker: AlgorithmTracker) -> dict[str, Any]:
         logger = getattr(system, 'logger', None)
         extra: dict[str, Any] = {}
-        if getattr(model, 'module', None) is None:
+        if getattr(data, 'source', None) == 'stub' and (getattr(data, 'meta', None) or {}).get('stub') is True:
             tracker.append('test', n=1, values={'Accuracy': 0.0})
             tracker.save('test')
             tracker.flush('test')
             if logger is not None:
                 logger.report(tracker, 'test')
             return {'mode': 'eval', 'stub': True}
+        if getattr(model, 'module', None) is None or not callable(getattr(data, 'iter_batches', None)):
+            raise ValueError('eval requires a model module and data.iter_batches; use explicit stub data for flow checks')
         if getattr(system, 'place_module', None):
             model.module = system.place_module(model.module)
         restored = self.resume(data, model, system, tracker, extra)
+        tracker.begin_run()
         import time
 
         started = time.perf_counter()
@@ -34,6 +37,9 @@ class EvalAlgorithm(Algorithm):
             'epoch': (restored or {}).get('epoch'),
             'step': (restored or {}).get('step'),
         }
+        recorded_progress = ((restored or {}).get('tracker') or {}).get('progress')
+        if recorded_progress is not None:
+            report_extra['progress'] = recorded_progress
         # Pass logger here: eval_test_split reports then reset(); a later report would print 0.
         metrics = eval_test_split(
             tracker,

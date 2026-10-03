@@ -213,7 +213,11 @@ flowchart TD
 
 Study process 必须读取当前 `index.json`，不回退扫描 `runs/`。index 缺失、不能读取/解析，或不是含 `experiments` 列表的对象时，明确失败并提示重新 make；不改已有 process、图或 Run result。当前 index 之外的旧 version Run 不参加统计。Run process 仍只依赖自身，不要求 Study index。
 
-学习曲线优先读取 `scalars.jsonl` 对应 split / metric 的有效报告观测，没有对应记录时回退到 `tracker_state.json` 的 history；不改变训练和指标收口。直接使用当前 tracker 的百分制 Accuracy（0–100），纵轴标注 `Accuracy (%)` 并留少量顶部余量；Loss 保持原值。单点也显示点标记。横轴是报告观测/历史记录序号，不冒充 optimizer step 或 epoch；不按数值相同去重。历史 0–1 数据不按数值大小自动猜单位或转换，需要另行明确处理后才重绘。
+学习曲线与 history 聚合共用 `scalars.jsonl` 的有效轨迹（start / checkpoint 日志位置规则见 structure §6.9.2）；无对应有效记录时回退到 `tracker_state.json` 的 history。只聚合当前 index 中 succeeded 的 Run。真实记录优先以 `optimizer_step` 为坐标，仅有显式 epoch 时用 epoch；旧记录仍为 observation，不猜 batch 计数。不同单位分开统计与绘图，不混合平均。同一有效轨迹的同坐标重复观测取最后一条，不按数值相同去重。
+
+新坐标曲线取各 Run 坐标的并集，仅对该坐标上实际存在的观测计算 mean / std / min / max，记录 `x`、`unit` 与逐点 `n_at_point`；缺失点不插值，不截短其他 Run。n=1 的 std=0 仅是描述。旧 observation 保留按序号、最短长度对齐的口径。混合单位的 metric 以 `by_unit` 分组；Run history 保留数值列表，另写对应 `history_coordinates`。图例注明 n，逐点 n 不同则在点旁标注。原始 JSONL 保留完整诊断记录，学习曲线只画有效轨迹。
+
+Accuracy 仍用当前百分制（0–100），纵轴标注 `Accuracy (%)`；Loss 保持原值，单点显示 marker。历史 0–1 数据不自动转换。process 不改变训练、result、指标收口或原始 tracker；不自动重绘历史 Study。
 
 Run process 仍排在该 Run 的 write 之后。Study process 排在整轮 launch 之后，与 git `main` 的 `process.py` 一样是单独进程。
 

@@ -120,9 +120,11 @@ class TrainAlgorithm(Algorithm):
                 logger.info(f'name={name} path={path}', event='ckpt')
 
     def run(self, data: Any, model: Any, system: Any, tracker: AlgorithmTracker) -> dict[str, Any]:
-        if getattr(model, 'module', None) is not None and hasattr(data, 'iter_batches'):
-            return _run_supervised(self, data, model, system, tracker)
-        return _run_stub(self.config, tracker)
+        if getattr(data, 'source', None) == 'stub' and (getattr(data, 'meta', None) or {}).get('stub') is True:
+            return _run_stub(self.config, tracker)
+        if getattr(model, 'module', None) is None or not callable(getattr(data, 'iter_batches', None)):
+            raise ValueError('train requires a model module and data.iter_batches; use explicit stub data for flow checks')
+        return _run_supervised(self, data, model, system, tracker)
 
 
 def run(control_algorithm: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
@@ -174,6 +176,10 @@ def _build_payload(
         payload['best_metric'] = extra.get('best_metric')
     if tracker is not None:
         payload['tracker'] = tracker.state_dict()
+        progress = extra.get('progress') or extra
+        payload['tracker']['progress'] = {
+            key: progress[key] for key in ('step', 'epoch') if key in progress
+        }
     if logger is not None and hasattr(logger, 'state_dict'):
         payload['logger'] = logger.state_dict()
     return payload
@@ -254,6 +260,7 @@ def _run_supervised(
     module.train()
     epoch = int(restored.get('epoch') or 0) if restored else 0
     steps = int(restored.get('step') or 0) if restored else 0
+    tracker.begin_run((restored or {}).get('tracker'))
     bind_step_train_loader(data, config, step=steps, budget=budget)
     clock = EtaClock(origin=steps if budget.unit == UNIT_STEP else epoch)
     stop = False
@@ -263,7 +270,20 @@ def _run_supervised(
         current = steps if budget.unit == UNIT_STEP else epoch
         return clock.extra(current=current, total=budget.total)
 
+    def finish_train_segment(extra: dict[str, Any], *, reported: bool = False) -> None:
+        if not tracker.has_samples('train'):
+            return
+        if not reported:
+            if logger is not None:
+                logger.report(tracker, 'train', extra=extra)
+            tracker.flush('train', progress=extra)
+        tracker.save('train')
+        tracker.reset('train')
+        tracker.flush_state()
+
     def fire_eval(extra: dict[str, Any]) -> bool:
+        if budget.unit == UNIT_STEP:
+            finish_train_segment(extra, reported=bool(log_period and steps % log_period == 0))
         return bool(algo.on_eval_period(tracker, logger, data, model, system, extra))
 
     def fire_ckpt(*, extra: dict[str, Any], improved: bool, is_last: bool) -> None:
@@ -327,7 +347,7 @@ def _run_supervised(
                         extra = {'epoch': epoch, 'lr': used_lr, 'step': steps}
                         extra.update(_timing())
                         logger.report(tracker, 'train', extra=extra)
-                        tracker.flush('train')
+                        tracker.flush('train', progress=extra)
                     if budget.unit == UNIT_STEP:
                         extra = _hook_extra(epoch=epoch, lr=used_lr, step=steps)
                         extra.update(_timing())
@@ -347,14 +367,9 @@ def _run_supervised(
                 optimizer.zero_grad()
                 if batches_this_epoch == 0:
                     break
-                if logger is not None:
-                    extra = {'epoch': epoch, 'lr': used_lr, 'step': steps}
-                    extra.update(_timing())
-                    logger.report(tracker, 'train', extra=extra)
-                tracker.flush('train')
-                tracker.save('train')
-                tracker.reset('train')
-                tracker.flush_state()
+                extra = _hook_extra(epoch=epoch, lr=used_lr, step=steps)
+                extra.update(_timing())
+                finish_train_segment(extra)
                 extra = _hook_extra(epoch=epoch, lr=used_lr, step=steps)
                 extra.update(_timing())
                 if budget.unit == UNIT_EPOCH:

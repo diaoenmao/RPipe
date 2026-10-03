@@ -78,7 +78,8 @@ def test_best_updates_without_patience():
     assert stall == 0
 
 
-def test_eval_num_steps_caps_batches(tmp_path):
+@pytest.mark.parametrize('limit, expected', [(None, 4), (1, 1), (2, 2)])
+def test_eval_num_steps_caps_batches(tmp_path, limit, expected):
     import torch
 
     from rpipe.structure.algorithm.config import AlgorithmConfig
@@ -117,8 +118,27 @@ def test_eval_num_steps_caps_batches(tmp_path):
     assert eval_batch_limit(AlgorithmConfig.from_mapping({'eval_num_steps': 2})) == 2
 
     model = _Model()
-    eval_test_split(AlgorithmTracker(tmp_path), None, _Data(), model, _System(), num_steps=2)
-    assert model.calls == 2
+    eval_test_split(AlgorithmTracker(tmp_path), None, _Data(), model, _System(), num_steps=limit)
+    assert model.calls == expected
+
+
+def test_zero_eval_budget_rejected_before_iteration(tmp_path):
+    from types import SimpleNamespace
+    import torch
+    from rpipe.structure.algorithm.eval_hook import eval_batch_limit, eval_test_split
+
+    calls = []
+
+    def batches(split):
+        calls.append(split)
+        return iter([(torch.zeros(2, 3), torch.zeros(2, dtype=torch.long))])
+
+    config = AlgorithmConfig.from_mapping({'eval_num_steps': 0})
+    with pytest.raises(ValueError, match='eval_num_steps'):
+        eval_test_split(AlgorithmTracker(tmp_path), None, SimpleNamespace(iter_batches=batches),
+                        SimpleNamespace(module=torch.nn.Linear(3, 2)), SimpleNamespace(device='cpu'),
+                        num_steps=eval_batch_limit(config))
+    assert calls == []
 
 
 def test_on_eval_period_runs_eval_and_can_stop(tmp_path, monkeypatch):

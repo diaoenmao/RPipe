@@ -4,6 +4,8 @@ from pathlib import Path
 import pytest
 
 from rpipe.flow.process.curves import _history
+from rpipe.flow.process.aggregate import load_curve_series, summarize_curve_series
+from rpipe.structure.algorithm.tracker import AlgorithmTracker
 
 pytestmark = [
     pytest.mark.unit,
@@ -75,3 +77,93 @@ def test_history_falls_back_when_jsonl_has_no_matching_values(tmp_path: Path, js
         (tracker / 'scalars.jsonl').write_bytes(jsonl_bytes)
 
     assert _history(tmp_path, 'run', 'train', 'Accuracy') == [0.5, 80.0]
+
+
+def test_curve_follows_checkpoint_prefix_and_preserves_raw_rollback_records(tmp_path):
+    tracker = AlgorithmTracker(tmp_path / 'runs' / 'run' / 'assets')
+    tracker.begin_run()
+
+    def record(step, value):
+        tracker.reset('test')
+        tracker.append('test', values={'Loss': value})
+        tracker.flush('test', progress={'step': step, 'epoch': 1})
+
+    record(10, 1.0)
+    at10 = tracker.state_dict()
+    record(20, 2.0)
+    at20 = tracker.state_dict()
+    record(30, 99.0)  # Uncommitted branch, also beyond the eventual final budget.
+    tracker.begin_run(at10)
+    record(15, 88.0)
+    tracker.begin_run(at20)  # Restore another committed prefix, not just prune the last list.
+    record(25, 3.0)
+    record(25, 4.0)  # A repeated final report uses its last observation.
+    series = load_curve_series(tmp_path, 'run')['test']['Loss']
+    assert series == {'unit': 'step', 'x': [10, 20, 25], 'values': [1.0, 2.0, 4.0]}
+    raw = tracker.jsonl_path.read_text(encoding='utf-8')
+    assert '99.0' in raw and '88.0' in raw
+
+
+@pytest.mark.parametrize('checkpoint', ['fresh', 'legacy', 'other-log', 'invalid-offset'])
+def test_curve_does_not_inherit_unidentified_log_prefix(tmp_path, checkpoint):
+    tracker = AlgorithmTracker(tmp_path / 'runs' / 'run' / 'assets')
+    tracker.append('train', values={'Loss': 9.0})
+    tracker.flush('train', progress={'step': 90})
+    state = tracker.state_dict()
+    if checkpoint == 'fresh':
+        state = None
+    elif checkpoint == 'legacy':
+        state = {'step': tracker.step}
+    elif checkpoint == 'other-log':
+        state['jsonl_path'] = 'another-log'
+    else:
+        state['jsonl_offset'] += 1000
+    tracker.begin_run(state)
+    tracker.reset('train')
+    tracker.append('train', values={'Loss': 1.0})
+    tracker.flush('train', progress={'step': 1})
+    assert load_curve_series(tmp_path, 'run')['train']['Loss']['x'] == [1]
+
+
+def test_progress_aggregation_uses_union_and_separates_epoch_and_legacy():
+    summary = summarize_curve_series([
+        {'unit': 'step', 'x': [10, 20, 40], 'values': [1.0, 2.0, 4.0]},
+        {'unit': 'step', 'x': [10, 30, 40], 'values': [3.0, 6.0, 8.0]},
+        {'unit': 'epoch', 'x': [0.5], 'values': [7.0]},
+        {'unit': 'observation', 'x': [1, 2], 'values': [9.0, 10.0]},
+    ])
+    step = summary['by_unit']['step']
+    assert step['x'] == [10, 20, 30, 40]
+    assert step['mean'] == [2.0, 2.0, 6.0, 6.0]
+    assert step['n_at_point'] == [2, 1, 1, 2]
+    assert step['std'][1:3] == [0.0, 0.0]
+    assert summary['by_unit']['epoch']['x'] == [0.5]
+    assert summary['by_unit']['observation']['unit'] == 'observation'
+
+
+def test_restart_marker_survives_a_partial_jsonl_tail(tmp_path):
+    tracker = AlgorithmTracker(tmp_path / 'runs' / 'run' / 'assets')
+    tracker.append('test', values={'Loss': 9.0})
+    tracker.flush('test', progress={'step': 90})
+    with tracker.jsonl_path.open('ab') as handle:
+        handle.write(b'{"mean":')
+    tracker.begin_run()
+    tracker.reset('test')
+    tracker.append('test', values={'Loss': 1.0})
+    tracker.flush('test', progress={'step': 1})
+    assert load_curve_series(tmp_path, 'run')['test']['Loss']['x'] == [1]
+
+
+@pytest.mark.parametrize('coordinates,unit,x', [
+    ([{'epoch': 0.5}, {'epoch': 1.5}], 'epoch', [0.5, 1.5]),
+    ([{'step': 100}, {'step': 200}], 'observation', [1, 2]),
+    ([{'optimizer_step': True}, {'optimizer_step': 20}], 'observation', [1, 2]),
+    ([{'optimizer_step': 10}, {}], 'observation', [1, 2]),
+])
+def test_curve_only_uses_explicit_valid_coordinates(tmp_path, coordinates, unit, x):
+    tracker = tmp_path / 'runs' / 'run' / 'assets' / 'tracker'
+    tracker.mkdir(parents=True)
+    rows = [dict(split='test', name='Loss', mean=i + 1.0, **point) for i, point in enumerate(coordinates)]
+    (tracker / 'scalars.jsonl').write_text('\n'.join(map(json.dumps, rows)), encoding='utf-8')
+    series = load_curve_series(tmp_path, 'run')['test']['Loss']
+    assert series['unit'] == unit and series['x'] == x

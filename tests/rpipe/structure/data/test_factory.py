@@ -26,6 +26,21 @@ def test_stub_source_does_not_download(tmp_path: Path):
     assert not (tmp_path / 'mnist').exists()
 
 
+@pytest.mark.parametrize('mapping', [
+    {'name': 'Typo', 'source': 'torch'},
+    {'name': 'Typo', 'source': 'stub'},
+    {'name': 'Typo'},
+    {'name': 'Toy'},
+    {'name': 'MNIST', 'source': 'not-installed-source'},
+    {'name': 'MNIST', 'source': ''},
+    {},
+])
+def test_unregistered_data_is_rejected(tmp_path, mapping):
+    with pytest.raises(ValueError, match='unknown data name/source'):
+        data_api.build(DataConfig.from_mapping(mapping), tmp_path)
+    assert list(tmp_path.iterdir()) == []
+
+
 def test_rebind_train_steps_uses_remaining_prefix():
     import torch
     from torch.utils.data import TensorDataset

@@ -110,17 +110,11 @@ class DataFactory:
         seed: int | None = None,
         origin: str | None = None,
     ) -> Data:
-        name = data_config.name or 'unknown'
-        source = data_config.source
-        if source is None and name in _VISION_TORCH:
-            source = 'torch'
-        if source is None:
-            source = 'stub'
+        name = data_config.name
+        source = data_config.source if data_config.source is not None else 'torch'
         builder = DataRegistry.get(name, source)
         if builder is None:
-            builder = DataRegistry.get(name, 'stub')
-        if builder is None:
-            return _build_stub(data_config, Path(assets_dir))
+            raise ValueError(f'unknown data name/source: {name!r}/{source!r}')
         if builder is _build_torch_vision:
             return _build_torch_vision(data_config, Path(assets_dir), seed=seed, origin=origin)
         return builder(data_config, Path(assets_dir), seed=seed)

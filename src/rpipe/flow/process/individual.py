@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from rpipe.flow.context import FlowContext
-from rpipe.flow.process.aggregate import load_tracker_history, run_process_path
+from rpipe.flow.process.aggregate import load_curve_series, run_process_path
 from rpipe.structure.artifact._atomic import atomic_write_text
 from rpipe.structure.artifact.result import load_result
 from rpipe.structure.artifact.result.format import encode_result
@@ -30,13 +30,18 @@ def run(ctx: FlowContext) -> None:
     if isinstance(result, dict):
         metrics = dict(result.get('metrics') or {})
 
-    history = load_tracker_history(ctx.study_dir, str(run_id or ctx.layout.root.name))
+    series = load_curve_series(ctx.study_dir, str(run_id or ctx.layout.root.name))
+    history = {split: {name: row['values'] for name, row in names.items()} for split, names in series.items()}
     body = {
         'scope': 'run',
         'study': ctx.study_dir.name,
         'run_id': run_id,
         'metrics': metrics,
         'history': history,
+        'history_coordinates': {
+            split: {name: {'unit': row['unit'], 'x': row['x']} for name, row in names.items()}
+            for split, names in series.items()
+        },
     }
     atomic_write_text(run_process_path(ctx.layout.root), encode_result(body))
     ctx.state['process'] = body

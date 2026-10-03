@@ -1,0 +1,66 @@
+[
+  {
+    "data": "MNIST",
+    "model": "linear",
+    "initial_parameters_equal": true,
+    "rng_after_init_equal": true,
+    "all_15000_sample_indices_equal": true,
+    "sampler_sha256": "08284cc5870135414b0945a01e18f5e4162a45fc337cbb56cffc8a4e36edcd53"
+  },
+  {
+    "data": "MNIST",
+    "model": "mlp",
+    "initial_parameters_equal": true,
+    "rng_after_init_equal": true,
+    "all_15000_sample_indices_equal": true,
+    "sampler_sha256": "08284cc5870135414b0945a01e18f5e4162a45fc337cbb56cffc8a4e36edcd53"
+  },
+  {
+    "data": "MNIST",
+    "model": "cnn",
+    "initial_parameters_equal": true,
+    "rng_after_init_equal": true,
+    "all_15000_sample_indices_equal": true,
+    "sampler_sha256": "08284cc5870135414b0945a01e18f5e4162a45fc337cbb56cffc8a4e36edcd53"
+  },
+  {
+    "data": "MNIST",
+    "model": "resnet18",
+    "initial_parameters_equal": true,
+    "rng_after_init_equal": true,
+    "all_15000_sample_indices_equal": true,
+    "sampler_sha256": "08284cc5870135414b0945a01e18f5e4162a45fc337cbb56cffc8a4e36edcd53"
+  },
+  {
+    "data": "CIFAR10",
+    "model": "linear",
+    "initial_parameters_equal": true,
+    "rng_after_init_equal": true,
+    "all_15000_sample_indices_equal": true,
+    "sampler_sha256": "e83a816297dff81e69cd0415bc3ab8f3b48544d8e1c464f82f38f3817fa7ffb2"
+  },
+  {
+    "data": "CIFAR10",
+    "model": "mlp",
+    "initial_parameters_equal": true,
+    "rng_after_init_equal": true,
+    "all_15000_sample_indices_equal": true,
+    "sampler_sha256": "e83a816297dff81e69cd0415bc3ab8f3b48544d8e1c464f82f38f3817fa7ffb2"
+  },
+  {
+    "data": "CIFAR10",
+    "model": "cnn",
+    "initial_parameters_equal": true,
+    "rng_after_init_equal": true,
+    "all_15000_sample_indices_equal": true,
+    "sampler_sha256": "e83a816297dff81e69cd0415bc3ab8f3b48544d8e1c464f82f38f3817fa7ffb2"
+  },
+  {
+    "data": "CIFAR10",
+    "model": "resnet18",
+    "initial_parameters_equal": true,
+    "rng_after_init_equal": true,
+    "all_15000_sample_indices_equal": true,
+    "sampler_sha256": "e83a816297dff81e69cd0415bc3ab8f3b48544d8e1c464f82f38f3817fa7ffb2"
+  }
+]

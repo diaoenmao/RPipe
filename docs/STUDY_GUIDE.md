@@ -69,6 +69,9 @@ studies/<name>/
 | `studies/mnist_cnn_budget/` | MNIST CNN 600-step 三 seed 本地研究；包含一次真实保存失败后的恢复，报告区分无中断与恢复证据 |
 | `studies/mnist_cnn_budget_repeat/` | checkpoint IO 修复后 seed 2 无中断补测；报告合并后续 360 开关诊断结论，原始诊断证据留 `.tmp/` |
 | `studies/local_model_matrix/` | MNIST / CIFAR10 × CNN / ResNet18 × 三 seed 的 600-step 固定配方研究，按资源估计同类分组 |
+| `studies/support_data_smoke/` | FashionMNIST / CIFAR100 / SVHN × CNN 的 seed 0、30-step 官方数据加载 / checkpoint / 独立 eval 验收 |
+| `studies/support_model_smoke/` | CIFAR10 × ResNet10 / 两个 WideResNet 的 seed 0、30-step 验收；报告保留 ResNet10 的严格 Accuracy 复算差异 |
+| `studies/main_reproduction/` | 固定 main `98648f3` 的真实数据 60-step / eval30 对照；原默认 CUDA 配方执行成功与数值门分开报告，历史 README 图的配方来源另行核对 |
 
 新 Study 从 `_template/` 复制。`mnist_train_size` 是扫因素的研究向例子。
 
@@ -219,7 +222,7 @@ algorithm:
   num_epochs: 20              # 有 epoch 概念时：推导并覆盖 num_steps
   progress_unit: epoch        # 本例按 epoch 评 test / 存 latest；默认 step（LLM 只写 num_steps）
   eval_period: 1              # 每 N 个进度单位评 test；0 = 只在训完评一次
-  # eval_num_steps: -1        # test 跑多少个 batch；缺省 / <0 = 整个 test split
+  # eval_num_steps: -1        # 正整数限test batch数；缺省 / <0 = 完整test；0报错
   checkpoint: latest          # latest = 覆盖 latest 这一份（.pt 整包 + 目录分件）；percent = 再按总预算百分比留快照
   checkpoint_period: 1        # 每 N 个单位更新 latest；0 = 只在训完写一次
   save_best: true             # 默认：test Accuracy 最好时另写 best；可用 best_metric / best_mode 改口径
@@ -404,7 +407,7 @@ Study process 只聚合当前 index 列出的 Run，不扫描旧 version 目录�
 | 断点续训 | train 的 `resume: latest`（算法接口；system 只读文件） |
 | 改一次 Run 的阶段顺序 | 不要改；最多 `--phases` 裁剪，相对顺序不变 |
 | 自动出报告 / 跨 Run 对比表 | 人写 `STUDY_REPORT.md`（必须嵌图）。Study `process` 出 mean/std/min/max 和 `docs/figures/learning_curves.png`。`rpipe report` 把同一份数字写成 `docs/NUMBERS.md` |
-| 训练曲线 | process 优先画 `scalars.jsonl` 的报告观测；无对应有效记录时回退 epoch `history` → `docs/figures/`。横轴为观测序号，不冒充 optimizer step。不做 TensorBoard |
+| 训练曲线 | process 优先读 JSONL 的有效训练轨迹：显式 optimizer_step（优先）或 epoch；旧记录 / state history 回退仍用 observation。跨 seed 按坐标并集统计，缺失点不插值，逐点 n 见 process / 图；不同单位分开。原始日志保留回滚分支，恢复规则见 structure §6.9.2。不做 TensorBoard |
 | 终端 + 硬盘日志 | **Logger** 必写 `runs/<id>/assets/logs/run.log`（`时间 级别 Run id [事件]`）；失败时 traceback 每一行都是 `[error]`。`index.json` 的 `log` 指向它。没有 Study 级总 log |
 | 并行时日志挤在一起 | 文件按 Run 分开；终端每行带 Run `id`。Windows：`rpipe launch` 默认 `--console new`；`--console shared` 只混终端 |
 | 看这轮谁好了谁挂了 | `python -m rpipe status studies/<name>`（只读；`--mode eval` 可滤） |

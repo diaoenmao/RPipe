@@ -1,0 +1,18 @@
+study: support_data_smoke
+origin: foreign
+description: 30-step support acceptance with independent Loss-best evaluation
+experiment:
+  name: support_data_smoke
+fixed:
+  version: support-30step-20261003
+axes:
+  data.name:
+  - FashionMNIST
+  - CIFAR100
+  - SVHN
+  algorithm.mode:
+  - train
+  - eval
+seeds:
+- 0
+run_description: support data={data_name} mode={mode} seed={seed}

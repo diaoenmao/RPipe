@@ -43,6 +43,16 @@ def test_accuracy_and_mse_values():
     assert abs(mse_value(pack_io({'target': y}, {'pred': pred})) - 0.5) < 1e-6
 
 
+def test_topk_accuracy_keeps_sample_axis():
+    import torch
+
+    logits = torch.tensor([[5.0, 4.0, 1.0], [1.0, 5.0, 4.0], [4.0, 1.0, 5.0]])
+    target = torch.tensor([1, 2, 1])
+    packed = pack_io((None, target), logits)
+    assert accuracy_value(packed) == 0.0
+    assert accuracy_value(packed, topk=2) == pytest.approx(200.0 / 3)
+
+
 def test_metric_bundle_batch_defaults():
     import torch
 

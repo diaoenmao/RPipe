@@ -21,6 +21,18 @@ def test_registry_lists_main_custom_torch_models():
     assert {'linear', 'mlp', 'cnn', 'resnet18', 'resnet10', 'resnet', 'wresnet28x2', 'wresnet28x8', 'wresnet'} <= names
 
 
+@pytest.mark.parametrize('mapping', [
+    {'name': 'Typo'},
+    {'name': 'linear', 'source': 'not-installed-source'},
+    {'name': 'linear', 'source': 'stub'},
+    {'name': 'linear', 'source': ''},
+    {},
+])
+def test_unregistered_model_is_rejected(tmp_path, mapping):
+    with pytest.raises(ValueError, match='unknown model name/source'):
+        model_api.build(ModelConfig.from_mapping(mapping), tmp_path)
+
+
 def test_linear_uses_data_meta_shape(tmp_path: Path):
     import torch
 
