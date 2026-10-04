@@ -36,7 +36,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | 现代 main 本机对照 | 已有旧设备受控60-step结果，当前 cu130 设备尚缺同条件执行与存档核验 | 本机8组合、60-step受控对照通过，16段参数最大差0，并完成独立 CPU 重载；原默认条件失败仍保留 | [本机结果](../studies/main_reproduction/docs/CURRENT_DEVICE_RESULT.md) |
 | 历史曲线复现 | 只完成 seed0、200-step前缀探针；接入主要在 `.tmp/`，四 seed 完整曲线未运行 | 新增正式历史 Study 与复跑入口；32条80000-step训练、32条自身 best 评测成功，固定图像估读门通过 | [历史复现](../studies/main_historical/README.md) |
 | 统一测试入口 | 子进程隐式继承环境与输出；当前沙箱曾有3项 Kornia 导入失败，正常本机原入口为286项通过 | 显式传递环境和 stdout/stderr，补2个真实子进程回归；当前统一 CPU 门288项通过，原失败记录保留 | [测试入口](../tests/README.md) |
-| 包与 CI | Ubuntu / Python3.10 只跑 core；包门构建后仅对 wheel 做无依赖安装和轻量 import | 新 CI 加入 Windows、Python3.13 CPU及本地 integration；wheel / sdist 分别安装并验 CLI。本机各9命令通过，新远端矩阵待执行 | [包验收](../tests/package_smoke.py)、[整理报告](REPOSITORY_CLEANUP.md) |
+| 包与 CI | Ubuntu / Python3.10 只跑 core；包门构建后仅对 wheel 做无依赖安装和轻量 import | Linux / Windows、Python3.10 / 3.13 的 CPU及本地 integration 全部通过；两种 OS 全新环境中的 wheel / sdist 安装和公开 CLI 全部通过 | [远端测试](https://github.com/diaoenmao/RPipe/actions/runs/37210453756)、[远端包验收](https://github.com/diaoenmao/RPipe/actions/runs/37210453815) |
 | 导航与清理 | Study 入口分散；SUMMARY 先按日期叙述；有13个冗余占位和未忽略的本地事务标记，模板直接链接未生成图片 | 增加14项 Study 导航和摘要对照表；移除13个冗余占位、保留7个空目录占位；忽略并保留事务标记，模板图片改为代码示例 | [Study 导航](../studies/README.md)、[整理报告](REPOSITORY_CLEANUP.md) |
 
 ## （二）已经验证到哪一步
@@ -45,6 +45,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | --- | --- |
 | CPU unit / integration | 288 passed / 3 deselected；c1/c2，排除 external / gpu / slow，包含两个新测试入口回归 |
 | 安装后的 wheel / sdist | 各9条公开 CLI 命令退出0，各4个 Toy/Stub Run、2个 Experiment完整；配置不变，重复 launch 跳过成功任务 |
+| 远端发布准备 CI | PR #12 的四个 OS / Python 测试矩阵、两个 OS 包矩阵及 Unit tests / Build package 聚合门全部成功，绑定提交 `216e2b8`；实际运行链接见上表 |
 | 现代 main 计算对照 | 8组合、seed0、60-step；step30/60共16段参数最大差0，optimizer / RNG / scheduler与完整 test一致，独立 CPU 重载通过 |
 | 历史 main 完整曲线 | 32条四 seed 连续80000-step训练、32条自身 best 独立评测成功；8组固定图像估读门通过，最大终点差0.207502个百分点 |
 | 整理后的证据保全 | 772个唯一科学证据文件哈希一致，原始失败与旧快照保留；正式相对链接、代码语法和 CI YAML 检查通过 |
