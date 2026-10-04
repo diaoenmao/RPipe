@@ -150,11 +150,3 @@ GitHub Actions 配置包括：
 
 上述清单表示已有实现，不代表全部模型与数据组合已完成真实运行验收。六个指定组合的 30-step 验收见 [数据报告](studies/support_data_smoke/docs/STUDY_REPORT.md) 与 [模型报告](studies/support_model_smoke/docs/STUDY_REPORT.md)，模型报告保留 ResNet10 的 Accuracy 复算差异；未解决缺陷见 BUGS。
 
-## Acknowledgements
-
-[Federated Learning Platform](https://github.com/IBM/federated-learning-lib),
-[EasyFL](https://github.com/EasyFL-AI/EasyFL/),
-[FedLab](https://github.com/SMILELab-FL/FedLab),
-[Flower](https://flower.dev/),
-[NIID-Bench](https://github.com/Xtra-Computing/NIID-Bench),
-[FedTorch](https://github.com/OPTML-Group/FedTorch)
