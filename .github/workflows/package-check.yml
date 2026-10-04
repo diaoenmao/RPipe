@@ -15,8 +15,12 @@ permissions:
 
 jobs:
   build-package:
-    name: Build package
-    runs-on: ubuntu-latest
+    name: Build package (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
 
     steps:
@@ -35,8 +39,35 @@ jobs:
       - name: Build wheel and source distribution
         run: python -m build
 
-      - name: Verify wheel import
+      - name: Verify installed wheel CLI and CPU workflow
+        shell: bash
         run: |
-          python -m pip install --no-deps --force-reinstall dist/*.whl
-          cd "${{ runner.temp }}"
-          python -c "import rpipe; print(rpipe.__version__)"
+          python -m venv .tmp/wheel-env
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            package_python="$PWD/.tmp/wheel-env/Scripts/python.exe"
+          else
+            package_python="$PWD/.tmp/wheel-env/bin/python"
+          fi
+          "$package_python" -m pip install dist/*.whl
+          "$package_python" tests/package_smoke.py --workspace "$RUNNER_TEMP/rpipe-wheel-smoke"
+
+      - name: Verify source distribution installation and CLI
+        shell: bash
+        run: |
+          python -m venv .tmp/sdist-env
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            package_python="$PWD/.tmp/sdist-env/Scripts/python.exe"
+          else
+            package_python="$PWD/.tmp/sdist-env/bin/python"
+          fi
+          "$package_python" -m pip install dist/*.tar.gz
+          "$package_python" tests/package_smoke.py --workspace "$RUNNER_TEMP/rpipe-sdist-smoke"
+
+  package-gate:
+    name: Build package
+    needs: build-package
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every distribution matrix job to succeed
+        run: test "${{ needs.build-package.result }}" = success

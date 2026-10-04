@@ -20,9 +20,13 @@ make 打印的 `pack N waits:` （贴实际输出）。整轮预估 ___，实际
 
 ## 3. Learning curves
 
+生成实际曲线后，将图保存在 `docs/figures/`，再按下面的示例添加链接；模板本身不包含实验图片。
+
+```markdown
 [打开 learning_curves.png](./figures/learning_curves.png)
 
 [![learning curves](./figures/learning_curves.png)](./figures/learning_curves.png)
+```
 
 ## 4. Runs
 

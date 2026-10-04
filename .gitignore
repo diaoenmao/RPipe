@@ -35,6 +35,10 @@ studies/**/index.json
 studies/**/process.json
 studies/**/activity.json
 
+# Local transaction/ownership records are not research reports
+studies/**/docs/*.tmp
+studies/**/docs/*.claim
+
 # Legacy root artifact directories (do not recreate)
 /data/
 /output/

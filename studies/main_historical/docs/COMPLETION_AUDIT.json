@@ -1,0 +1,111 @@
+{
+  "recorded_at_utc": "2026-10-04T10:53:49.882349+00:00",
+  "goal_status": "complete",
+  "complete": true,
+  "passed": true,
+  "errors": [],
+  "requirements": [
+    {
+      "requirement": "continue from current development baseline",
+      "status": "verified",
+      "evidence": "HEAD 8bccbac321d4c3ac1ea9892a5e774c114e0298c6; 99 frozen source / 65 expanded plan hashes unchanged"
+    },
+    {
+      "requirement": "same-device historical recipe numerical agreement",
+      "status": "verified",
+      "evidence": "8/8 historical 600-step, 24 segments; PREFLIGHT_VERIFICATION.json passed"
+    },
+    {
+      "requirement": "current-main 60-step same-device agreement",
+      "status": "verified",
+      "evidence": "8/8 full CUDA matrix, tool49399 exit0; CURRENT_DEVICE_CPU_RELOAD_AUDIT.json complete/passed; conditional full-precision original Stats profile and deterministic settings"
+    },
+    {
+      "requirement": "32 continuous 80000-step training Runs and 32 sibling-best evals",
+      "status": "verified",
+      "evidence": "64 unique succeeded; all train 400 points, no resume/retry; all eval own-best/full10000; FINAL_EXECUTION_AUDIT.json passed"
+    },
+    {
+      "requirement": "four-seed complete historical image gate",
+      "status": "verified",
+      "evidence": "COMPARISON default exit0 complete/final_gates_applied/passed=true; 8x5 numeric gates + two model-order gates all pass"
+    },
+    {
+      "requirement": "final source, artifact and curve review",
+      "status": "verified",
+      "evidence": "All eight completed-group CPU audits plus FINAL_EXECUTION/REFERENCE audits pass; complete plot visually reviewed; report and source hashes checked"
+    }
+  ],
+  "counts": {
+    "train:succeeded": 32,
+    "eval:succeeded": 32
+  },
+  "live_handles": [],
+  "completed_handles": {
+    "main_controller": {
+      "session_id": 37125,
+      "exit_code": 0
+    },
+    "eager_train": [
+      {
+        "session_id": 11464,
+        "exit_code": 0
+      },
+      {
+        "session_id": 17242,
+        "exit_code": 0
+      }
+    ],
+    "guard": {
+      "session_id": 89871,
+      "exit_code": 0,
+      "restored_parent": true
+    },
+    "modern_main": {
+      "session_id": 49399,
+      "exit_code": 0
+    },
+    "early_mnist_linear_eval": {
+      "session_id": 3926,
+      "exit_code": 0
+    },
+    "early_mnist_mlp_eval": {
+      "session_id": 48387,
+      "exit_code": 0
+    },
+    "early_cifar_linear_eval": {
+      "session_id": 10488,
+      "controller_exit_code": 1,
+      "worker_exit_codes": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "report_recovered": true,
+      "workers_restarted": false
+    },
+    "isolated_capacity_diagnostic": {
+      "session_id": 41748,
+      "exit_code": 0,
+      "formal_matrix_run": false
+    }
+  },
+  "next_action": "None; all authorized acceptance work is complete.",
+  "scientific_limitations": [
+    "Reference values are raster-image estimates, not recovered original metrics; original seed set and execution environment are unknown.",
+    "Image contract checks seven fixed anchors, endpoint and late-window statistics and model order; it does not establish exact agreement at all 400 original points or reference uncertainty-band matching.",
+    "Historical original/native 600-step agreement proves a prefix numerical bridge, not full 80000-step original/native checkpoint identity.",
+    "Modern main 60-step exact agreement is conditional on the prepared original Stats(dim1) full-precision profile and deterministic settings, not default no-profile or benchmark=true configurations.",
+    "Formal evaluation provenance is audited through actual resume logs, frozen loader and canonical best checkpoints; formal eval workers did not export online terminal-model fingerprints. Extra CPU inference was performed only for the two linear groups.",
+    "Raw datasets, Run checkpoint/log/tracker artifacts, archived code exports and temporary runtime dependencies are local ignored files and are not provided by a Git clone."
+  ],
+  "final_result_sha256": "d06228d40e3720eecef3ec4909650b5bc0dbecda7dffde58743eacbe0d2da553",
+  "report_sha256": "90cdda589e23ba5848158f5758c9b2a4973559c60221342faba2115f29864eff",
+  "goal_tool_result": {
+    "status": "complete",
+    "tokensUsed": 4226520,
+    "timeUsedSeconds": 11506,
+    "updatedAt": 1791111460
+  }
+}

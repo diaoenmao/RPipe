@@ -1,0 +1,683 @@
+{
+  "schema": "rpipe.historical_group_cpu_audit_entry_portability.v3",
+  "recorded_at_utc": "2026-10-03T19:19:07.930923+00:00",
+  "recorded_at_cst": "2026-10-04T03:19:07.930939+08:00",
+  "scope": "Current portable reporting wording distinguishes saved-state-only nonlinear audits from optional Linear CPU inference; numeric audit AST outside report_text/REPO remains equal to original. Retained prior Linear scientific regressions are versioned evidence, not re-executed under the new SHA.",
+  "original_audit_script": {
+    "path": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\historical_group_audit.py",
+    "sha256": "1b00c0eb77ea4ee25bbc7252f77502dc0497c29d810d7ce9dbb9cee2c8ec8c2f",
+    "preserved_unchanged": true
+  },
+  "portable_audit_entry": {
+    "path": "studies/main_historical/verify_group.py",
+    "sha256": "2b9efcf86f2a7f1fe23c447be95f29cd38a8dd05ba1459954411c8e1068f9ce7"
+  },
+  "source_edits": [
+    {
+      "location": "REPO",
+      "old": "Path(__file__).resolve().parents[1]",
+      "new": "Path(__file__).resolve().parents[2]"
+    },
+    {
+      "location": "report_text Markdown provenance sentence",
+      "old": "'审计程序位于本机 `.tmp/historical_group_audit.py`，实际SHA-256记录在同名JSON；程序和原始runs/checkpoint不会随Git clone提供。冻结训练源与配置未改变。正式长训练未保存完整RNG/迭代位置，本审查以无resume连续日志和正式终态为证据，不声称重新证明每一次未记录的RNG状态。', '']",
+      "new": "f\"本次审计程序为 `{report['audit_script_path']}`，实际 SHA-256 为 `{report['audit_script_sha256']}`。原始 runs/checkpoint 不会随 Git clone 提供。冻结训练源与配置未改变。正式长训练未保存完整 RNG/迭代位置，本审查以无 resume 连续日志和正式终态为证据，不声称重新证明每一次未记录的 RNG 状态。\", '']",
+      "behavior": "Uses actual report.audit_script_path and report.audit_script_sha256; removes incorrect claim that the portable audit program is unavailable in a Git clone."
+    },
+    {
+      "location": "report_text replay/model wording",
+      "behavior": "Nonlinear saved SGD checks explicitly omit Linear parameter/momentum shape mapping; without replay reports no additional CPU inference. Replay-specific evidence appears only when actually performed."
+    }
+  ],
+  "non_scientific_metadata_fields": [
+    "audit_script_path",
+    "audit_script_sha256",
+    "recorded_at_cst",
+    "recorded_at_utc"
+  ],
+  "time_bound_runtime_context_fields": [
+    "whole_study_status_snapshot"
+  ],
+  "scientific_comparison_rule": "Compare every JSON field after removing only the four audit path/SHA/time metadata fields and the whole-study runtime context snapshot; retain all differences and both context snapshots. Entire completed-group curves, checkpoints, history, optimizer/scheduler, source integrity and formal/CPU eval records must be exactly equal.",
+  "formal_snapshots_overwritten": false,
+  "formal_snapshot_sha256": {
+    "studies/main_historical/docs/MNIST_LINEAR_RESULT.json": "a3543d01ab16860b4d1b960f3b6aab65f52bd889159c3d63cb940d85aa0628eb",
+    "studies/main_historical/docs/CIFAR_LINEAR_RESULT.json": "bfb3988dff3f949fd45eaf9e6cb14a43b05f1db86dfb0ffe15a23bb33dc58dc2"
+  },
+  "initial_portability_audit": {
+    "schema": "rpipe.historical_group_cpu_audit_entry_portability.v1",
+    "recorded_at_utc": "2026-10-03T18:53:49.493300+00:00",
+    "recorded_at_cst": "2026-10-04T02:53:49.493314+08:00",
+    "scope": "CPU-only original/new audit entry regression over completed MNIST/linear and CIFAR10/linear; no GPU, formal Run, or active checkpoint operations.",
+    "original_audit_script": {
+      "path": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\historical_group_audit.py",
+      "sha256": "1b00c0eb77ea4ee25bbc7252f77502dc0497c29d810d7ce9dbb9cee2c8ec8c2f",
+      "preserved_unchanged": true
+    },
+    "portable_audit_entry": {
+      "path": "studies/main_historical/verify_group.py",
+      "sha256": "549dc30670b48ea3da929da06a1945ad204c55971b5acb8200733796ad50fd3b"
+    },
+    "only_source_edit": "REPO = Path(__file__).resolve().parents[1] -> parents[2]",
+    "source_bytes_otherwise_identical": true,
+    "allowed_non_scientific_differences": [
+      "audit_script_path",
+      "audit_script_sha256",
+      "recorded_at_cst",
+      "recorded_at_utc"
+    ],
+    "runs": [
+      {
+        "data": "MNIST",
+        "model": "linear",
+        "old_entry_exit_code": 0,
+        "new_entry_exit_code": 0,
+        "old_output": ".tmp/verify-group-portability-old-mnist/MNIST_LINEAR_RESULT.json",
+        "new_output": ".tmp/verify-group-portability-new-mnist/MNIST_LINEAR_RESULT.json",
+        "old_output_sha256": "7ce1c081fdc8eb028104e33d68f7061cc0c22232eb2c0d9000bbd5f45797ada7",
+        "new_output_sha256": "72a14a1f663c4352bef06eff5d3b63079890b382d46a203d6872e5248c4d2e47",
+        "differences": [
+          {
+            "path": "$.audit_script_path",
+            "old": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\historical_group_audit.py",
+            "new": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_historical\\verify_group.py"
+          },
+          {
+            "path": "$.audit_script_sha256",
+            "old": "1b00c0eb77ea4ee25bbc7252f77502dc0497c29d810d7ce9dbb9cee2c8ec8c2f",
+            "new": "549dc30670b48ea3da929da06a1945ad204c55971b5acb8200733796ad50fd3b"
+          },
+          {
+            "path": "$.recorded_at_cst",
+            "old": "2026-10-04T02:49:57.630332+08:00",
+            "new": "2026-10-04T02:49:51.609445+08:00"
+          },
+          {
+            "path": "$.recorded_at_utc",
+            "old": "2026-10-03T18:49:57.630332+00:00",
+            "new": "2026-10-03T18:49:51.609445+00:00"
+          }
+        ],
+        "scientific_fields_exact_equal": true,
+        "scientific_json_sha256": "32df3e947e0a33a151af875570d09e92b1005c204ddcb94d757d7e6ddb73919c",
+        "train_integrity_passed": true,
+        "formal_eval_integrity_passed": true,
+        "curve_points": 400,
+        "seed_count": 4,
+        "max_cpu_replay_loss_difference": 1.0244548320770264e-08,
+        "scope_keeps_whole_final_unapplied": true
+      },
+      {
+        "data": "CIFAR10",
+        "model": "linear",
+        "old_entry_exit_code": 0,
+        "new_entry_exit_code": 0,
+        "old_output": ".tmp/verify-group-portability-old-cifar/CIFAR_LINEAR_RESULT.json",
+        "new_output": ".tmp/verify-group-portability-new-cifar/CIFAR_LINEAR_RESULT.json",
+        "old_output_sha256": "10760be94f7f0e215a59b98ebe50237816f67e6eb0f69c5f8555f88c3dbec94c",
+        "new_output_sha256": "d365e15438424ef9aca6564024b27c5c32d68ba4e80bc8c192f8d015d1637e1d",
+        "differences": [
+          {
+            "path": "$.audit_script_path",
+            "old": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\historical_group_audit.py",
+            "new": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_historical\\verify_group.py"
+          },
+          {
+            "path": "$.audit_script_sha256",
+            "old": "1b00c0eb77ea4ee25bbc7252f77502dc0497c29d810d7ce9dbb9cee2c8ec8c2f",
+            "new": "549dc30670b48ea3da929da06a1945ad204c55971b5acb8200733796ad50fd3b"
+          },
+          {
+            "path": "$.recorded_at_cst",
+            "old": "2026-10-04T02:50:16.673517+08:00",
+            "new": "2026-10-04T02:50:10.456112+08:00"
+          },
+          {
+            "path": "$.recorded_at_utc",
+            "old": "2026-10-03T18:50:16.673517+00:00",
+            "new": "2026-10-03T18:50:10.456112+00:00"
+          }
+        ],
+        "scientific_fields_exact_equal": true,
+        "scientific_json_sha256": "983f5ab7f694a62fa178dc43bc0d91bfa5ebab30a81781f906dc15031b5de54c",
+        "train_integrity_passed": true,
+        "formal_eval_integrity_passed": true,
+        "curve_points": 400,
+        "seed_count": 4,
+        "max_cpu_replay_loss_difference": 2.682209010451686e-08,
+        "scope_keeps_whole_final_unapplied": true
+      }
+    ],
+    "formal_snapshots_overwritten": false,
+    "formal_snapshot_sha256": {
+      "studies/main_historical/docs/MNIST_LINEAR_RESULT.json": "a3543d01ab16860b4d1b960f3b6aab65f52bd889159c3d63cb940d85aa0628eb",
+      "studies/main_historical/docs/CIFAR_LINEAR_RESULT.json": "bfb3988dff3f949fd45eaf9e6cb14a43b05f1db86dfb0ffe15a23bb33dc58dc2"
+    },
+    "whole_study_final_gates_applied": false,
+    "historical_reproduction_passed": null,
+    "passed": true
+  },
+  "runs": [
+    {
+      "data": "MNIST",
+      "model": "linear",
+      "old_entry_exit_code": 0,
+      "new_entry_exit_code": 0,
+      "old_output": ".tmp/verify-group-portability-old-mnist/MNIST_LINEAR_RESULT.json",
+      "new_output": ".tmp/verify-group-template-fixed-mnist/MNIST_LINEAR_RESULT.json",
+      "old_output_sha256": "7ce1c081fdc8eb028104e33d68f7061cc0c22232eb2c0d9000bbd5f45797ada7",
+      "new_output_sha256": "eeb8606700c3d566b28ee965d2af37a391bad5d05fe2017f9cb611866a4ab970",
+      "new_markdown_sha256": "f92fa42a1a7e23acf5013977634bf00ecd17c12538f127fafa7f5dded400686e",
+      "differences": [
+        {
+          "path": "$.audit_script_path",
+          "old": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\historical_group_audit.py",
+          "new": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_historical\\verify_group.py"
+        },
+        {
+          "path": "$.audit_script_sha256",
+          "old": "1b00c0eb77ea4ee25bbc7252f77502dc0497c29d810d7ce9dbb9cee2c8ec8c2f",
+          "new": "21958ded2c250d3fa04319a9a0e2c65a74dcb30df8e06638e1622a2b8aeb7bea"
+        },
+        {
+          "path": "$.recorded_at_cst",
+          "old": "2026-10-04T02:49:57.630332+08:00",
+          "new": "2026-10-04T02:56:53.044080+08:00"
+        },
+        {
+          "path": "$.recorded_at_utc",
+          "old": "2026-10-03T18:49:57.630332+00:00",
+          "new": "2026-10-03T18:56:53.044080+00:00"
+        },
+        {
+          "path": "$.whole_study_status_snapshot.counts.train.started",
+          "old": 6,
+          "new": 5
+        },
+        {
+          "path": "$.whole_study_status_snapshot.counts.train.succeeded",
+          "old": 8,
+          "new": 9
+        }
+      ],
+      "old_runtime_context": {
+        "counts": {
+          "train": {
+            "succeeded": 8,
+            "started": 6,
+            "pending": 18
+          },
+          "eval": {
+            "succeeded": 8,
+            "pending": 24
+          }
+        },
+        "completed_training_groups": 2,
+        "completed_train_and_eval_groups": 2
+      },
+      "new_runtime_context": {
+        "counts": {
+          "train": {
+            "succeeded": 9,
+            "started": 5,
+            "pending": 18
+          },
+          "eval": {
+            "succeeded": 8,
+            "pending": 24
+          }
+        },
+        "completed_training_groups": 2,
+        "completed_train_and_eval_groups": 2
+      },
+      "scientific_fields_exact_equal": true,
+      "scientific_json_sha256": "08a24a1ddac9a58b0b5638e85f1de59ef0b890b93dad4b9b68da0a29e1253bd0",
+      "new_markdown_actual_path_verified": true,
+      "new_markdown_actual_sha_verified": true,
+      "new_markdown_old_fixed_path_absent": true,
+      "train_integrity_passed": true,
+      "formal_eval_integrity_passed": true,
+      "curve_points": 400,
+      "seed_count": 4,
+      "max_cpu_replay_loss_difference": 1.0244548320770264e-08
+    },
+    {
+      "data": "CIFAR10",
+      "model": "linear",
+      "old_entry_exit_code": 0,
+      "new_entry_exit_code": 0,
+      "old_output": ".tmp/verify-group-portability-old-cifar/CIFAR_LINEAR_RESULT.json",
+      "new_output": ".tmp/verify-group-template-fixed-cifar/CIFAR_LINEAR_RESULT.json",
+      "old_output_sha256": "10760be94f7f0e215a59b98ebe50237816f67e6eb0f69c5f8555f88c3dbec94c",
+      "new_output_sha256": "fa1334d9f7e8b0d883114a2d68c882329d2d1f312fe16e37ace859055763f261",
+      "new_markdown_sha256": "4d7c270326e1b0ba71502c200358405fd20f2430fb71d42d84d80f35c96a2629",
+      "differences": [
+        {
+          "path": "$.audit_script_path",
+          "old": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\historical_group_audit.py",
+          "new": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_historical\\verify_group.py"
+        },
+        {
+          "path": "$.audit_script_sha256",
+          "old": "1b00c0eb77ea4ee25bbc7252f77502dc0497c29d810d7ce9dbb9cee2c8ec8c2f",
+          "new": "21958ded2c250d3fa04319a9a0e2c65a74dcb30df8e06638e1622a2b8aeb7bea"
+        },
+        {
+          "path": "$.recorded_at_cst",
+          "old": "2026-10-04T02:50:16.673517+08:00",
+          "new": "2026-10-04T02:56:58.897907+08:00"
+        },
+        {
+          "path": "$.recorded_at_utc",
+          "old": "2026-10-03T18:50:16.673517+00:00",
+          "new": "2026-10-03T18:56:58.897907+00:00"
+        },
+        {
+          "path": "$.whole_study_status_snapshot.counts.train.started",
+          "old": 6,
+          "new": 5
+        },
+        {
+          "path": "$.whole_study_status_snapshot.counts.train.succeeded",
+          "old": 8,
+          "new": 9
+        }
+      ],
+      "old_runtime_context": {
+        "counts": {
+          "train": {
+            "succeeded": 8,
+            "started": 6,
+            "pending": 18
+          },
+          "eval": {
+            "succeeded": 8,
+            "pending": 24
+          }
+        },
+        "completed_training_groups": 2,
+        "completed_train_and_eval_groups": 2
+      },
+      "new_runtime_context": {
+        "counts": {
+          "train": {
+            "succeeded": 9,
+            "started": 5,
+            "pending": 18
+          },
+          "eval": {
+            "succeeded": 8,
+            "pending": 24
+          }
+        },
+        "completed_training_groups": 2,
+        "completed_train_and_eval_groups": 2
+      },
+      "scientific_fields_exact_equal": true,
+      "scientific_json_sha256": "32d212de8ff0013649afd5f4f39cde52b2fb07925e2fec8dc7b60771c172ad0e",
+      "new_markdown_actual_path_verified": true,
+      "new_markdown_actual_sha_verified": true,
+      "new_markdown_old_fixed_path_absent": true,
+      "train_integrity_passed": true,
+      "formal_eval_integrity_passed": true,
+      "curve_points": 400,
+      "seed_count": 4,
+      "max_cpu_replay_loss_difference": 2.682209010451686e-08
+    }
+  ],
+  "whole_study_final_gates_applied": false,
+  "historical_reproduction_passed": null,
+  "passed": true,
+  "previous_portable_template_repair_audit": {
+    "schema": "rpipe.historical_group_cpu_audit_entry_portability.v2",
+    "recorded_at_utc": "2026-10-03T18:59:58.712121+00:00",
+    "recorded_at_cst": "2026-10-04T02:59:58.712134+08:00",
+    "scope": "Portable Markdown provenance template repair; completed MNIST/linear and CIFAR10/linear CPU recheck against retained original-entry baselines. No GPU, formal Run, process action, or active checkpoint operation.",
+    "original_audit_script": {
+      "path": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\historical_group_audit.py",
+      "sha256": "1b00c0eb77ea4ee25bbc7252f77502dc0497c29d810d7ce9dbb9cee2c8ec8c2f",
+      "preserved_unchanged": true
+    },
+    "portable_audit_entry": {
+      "path": "studies/main_historical/verify_group.py",
+      "sha256": "21958ded2c250d3fa04319a9a0e2c65a74dcb30df8e06638e1622a2b8aeb7bea"
+    },
+    "source_edits": [
+      {
+        "location": "REPO",
+        "old": "Path(__file__).resolve().parents[1]",
+        "new": "Path(__file__).resolve().parents[2]"
+      },
+      {
+        "location": "report_text Markdown provenance sentence",
+        "old": "'审计程序位于本机 `.tmp/historical_group_audit.py`，实际SHA-256记录在同名JSON；程序和原始runs/checkpoint不会随Git clone提供。冻结训练源与配置未改变。正式长训练未保存完整RNG/迭代位置，本审查以无resume连续日志和正式终态为证据，不声称重新证明每一次未记录的RNG状态。', '']",
+        "new": "f\"本次审计程序为 `{report['audit_script_path']}`，实际 SHA-256 为 `{report['audit_script_sha256']}`。原始 runs/checkpoint 不会随 Git clone 提供。冻结训练源与配置未改变。正式长训练未保存完整 RNG/迭代位置，本审查以无 resume 连续日志和正式终态为证据，不声称重新证明每一次未记录的 RNG 状态。\", '']",
+        "behavior": "Uses actual report.audit_script_path and report.audit_script_sha256; removes incorrect claim that the portable audit program is unavailable in a Git clone."
+      }
+    ],
+    "source_bytes_equal_after_reversing_declared_edits": true,
+    "non_scientific_metadata_fields": [
+      "audit_script_path",
+      "audit_script_sha256",
+      "recorded_at_cst",
+      "recorded_at_utc"
+    ],
+    "time_bound_runtime_context_fields": [
+      "whole_study_status_snapshot"
+    ],
+    "scientific_comparison_rule": "Compare every JSON field after removing only the four audit path/SHA/time metadata fields and the whole-study runtime context snapshot; retain all differences and both context snapshots. Entire completed-group curves, checkpoints, history, optimizer/scheduler, source integrity and formal/CPU eval records must be exactly equal.",
+    "formal_snapshots_overwritten": false,
+    "formal_snapshot_sha256": {
+      "studies/main_historical/docs/MNIST_LINEAR_RESULT.json": "a3543d01ab16860b4d1b960f3b6aab65f52bd889159c3d63cb940d85aa0628eb",
+      "studies/main_historical/docs/CIFAR_LINEAR_RESULT.json": "bfb3988dff3f949fd45eaf9e6cb14a43b05f1db86dfb0ffe15a23bb33dc58dc2"
+    },
+    "initial_portability_audit": {
+      "schema": "rpipe.historical_group_cpu_audit_entry_portability.v1",
+      "recorded_at_utc": "2026-10-03T18:53:49.493300+00:00",
+      "recorded_at_cst": "2026-10-04T02:53:49.493314+08:00",
+      "scope": "CPU-only original/new audit entry regression over completed MNIST/linear and CIFAR10/linear; no GPU, formal Run, or active checkpoint operations.",
+      "original_audit_script": {
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\historical_group_audit.py",
+        "sha256": "1b00c0eb77ea4ee25bbc7252f77502dc0497c29d810d7ce9dbb9cee2c8ec8c2f",
+        "preserved_unchanged": true
+      },
+      "portable_audit_entry": {
+        "path": "studies/main_historical/verify_group.py",
+        "sha256": "549dc30670b48ea3da929da06a1945ad204c55971b5acb8200733796ad50fd3b"
+      },
+      "only_source_edit": "REPO = Path(__file__).resolve().parents[1] -> parents[2]",
+      "source_bytes_otherwise_identical": true,
+      "allowed_non_scientific_differences": [
+        "audit_script_path",
+        "audit_script_sha256",
+        "recorded_at_cst",
+        "recorded_at_utc"
+      ],
+      "runs": [
+        {
+          "data": "MNIST",
+          "model": "linear",
+          "old_entry_exit_code": 0,
+          "new_entry_exit_code": 0,
+          "old_output": ".tmp/verify-group-portability-old-mnist/MNIST_LINEAR_RESULT.json",
+          "new_output": ".tmp/verify-group-portability-new-mnist/MNIST_LINEAR_RESULT.json",
+          "old_output_sha256": "7ce1c081fdc8eb028104e33d68f7061cc0c22232eb2c0d9000bbd5f45797ada7",
+          "new_output_sha256": "72a14a1f663c4352bef06eff5d3b63079890b382d46a203d6872e5248c4d2e47",
+          "differences": [
+            {
+              "path": "$.audit_script_path",
+              "old": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\historical_group_audit.py",
+              "new": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_historical\\verify_group.py"
+            },
+            {
+              "path": "$.audit_script_sha256",
+              "old": "1b00c0eb77ea4ee25bbc7252f77502dc0497c29d810d7ce9dbb9cee2c8ec8c2f",
+              "new": "549dc30670b48ea3da929da06a1945ad204c55971b5acb8200733796ad50fd3b"
+            },
+            {
+              "path": "$.recorded_at_cst",
+              "old": "2026-10-04T02:49:57.630332+08:00",
+              "new": "2026-10-04T02:49:51.609445+08:00"
+            },
+            {
+              "path": "$.recorded_at_utc",
+              "old": "2026-10-03T18:49:57.630332+00:00",
+              "new": "2026-10-03T18:49:51.609445+00:00"
+            }
+          ],
+          "scientific_fields_exact_equal": true,
+          "scientific_json_sha256": "32df3e947e0a33a151af875570d09e92b1005c204ddcb94d757d7e6ddb73919c",
+          "train_integrity_passed": true,
+          "formal_eval_integrity_passed": true,
+          "curve_points": 400,
+          "seed_count": 4,
+          "max_cpu_replay_loss_difference": 1.0244548320770264e-08,
+          "scope_keeps_whole_final_unapplied": true
+        },
+        {
+          "data": "CIFAR10",
+          "model": "linear",
+          "old_entry_exit_code": 0,
+          "new_entry_exit_code": 0,
+          "old_output": ".tmp/verify-group-portability-old-cifar/CIFAR_LINEAR_RESULT.json",
+          "new_output": ".tmp/verify-group-portability-new-cifar/CIFAR_LINEAR_RESULT.json",
+          "old_output_sha256": "10760be94f7f0e215a59b98ebe50237816f67e6eb0f69c5f8555f88c3dbec94c",
+          "new_output_sha256": "d365e15438424ef9aca6564024b27c5c32d68ba4e80bc8c192f8d015d1637e1d",
+          "differences": [
+            {
+              "path": "$.audit_script_path",
+              "old": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\historical_group_audit.py",
+              "new": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_historical\\verify_group.py"
+            },
+            {
+              "path": "$.audit_script_sha256",
+              "old": "1b00c0eb77ea4ee25bbc7252f77502dc0497c29d810d7ce9dbb9cee2c8ec8c2f",
+              "new": "549dc30670b48ea3da929da06a1945ad204c55971b5acb8200733796ad50fd3b"
+            },
+            {
+              "path": "$.recorded_at_cst",
+              "old": "2026-10-04T02:50:16.673517+08:00",
+              "new": "2026-10-04T02:50:10.456112+08:00"
+            },
+            {
+              "path": "$.recorded_at_utc",
+              "old": "2026-10-03T18:50:16.673517+00:00",
+              "new": "2026-10-03T18:50:10.456112+00:00"
+            }
+          ],
+          "scientific_fields_exact_equal": true,
+          "scientific_json_sha256": "983f5ab7f694a62fa178dc43bc0d91bfa5ebab30a81781f906dc15031b5de54c",
+          "train_integrity_passed": true,
+          "formal_eval_integrity_passed": true,
+          "curve_points": 400,
+          "seed_count": 4,
+          "max_cpu_replay_loss_difference": 2.682209010451686e-08,
+          "scope_keeps_whole_final_unapplied": true
+        }
+      ],
+      "formal_snapshots_overwritten": false,
+      "formal_snapshot_sha256": {
+        "studies/main_historical/docs/MNIST_LINEAR_RESULT.json": "a3543d01ab16860b4d1b960f3b6aab65f52bd889159c3d63cb940d85aa0628eb",
+        "studies/main_historical/docs/CIFAR_LINEAR_RESULT.json": "bfb3988dff3f949fd45eaf9e6cb14a43b05f1db86dfb0ffe15a23bb33dc58dc2"
+      },
+      "whole_study_final_gates_applied": false,
+      "historical_reproduction_passed": null,
+      "passed": true
+    },
+    "runs": [
+      {
+        "data": "MNIST",
+        "model": "linear",
+        "old_entry_exit_code": 0,
+        "new_entry_exit_code": 0,
+        "old_output": ".tmp/verify-group-portability-old-mnist/MNIST_LINEAR_RESULT.json",
+        "new_output": ".tmp/verify-group-template-fixed-mnist/MNIST_LINEAR_RESULT.json",
+        "old_output_sha256": "7ce1c081fdc8eb028104e33d68f7061cc0c22232eb2c0d9000bbd5f45797ada7",
+        "new_output_sha256": "eeb8606700c3d566b28ee965d2af37a391bad5d05fe2017f9cb611866a4ab970",
+        "new_markdown_sha256": "f92fa42a1a7e23acf5013977634bf00ecd17c12538f127fafa7f5dded400686e",
+        "differences": [
+          {
+            "path": "$.audit_script_path",
+            "old": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\historical_group_audit.py",
+            "new": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_historical\\verify_group.py"
+          },
+          {
+            "path": "$.audit_script_sha256",
+            "old": "1b00c0eb77ea4ee25bbc7252f77502dc0497c29d810d7ce9dbb9cee2c8ec8c2f",
+            "new": "21958ded2c250d3fa04319a9a0e2c65a74dcb30df8e06638e1622a2b8aeb7bea"
+          },
+          {
+            "path": "$.recorded_at_cst",
+            "old": "2026-10-04T02:49:57.630332+08:00",
+            "new": "2026-10-04T02:56:53.044080+08:00"
+          },
+          {
+            "path": "$.recorded_at_utc",
+            "old": "2026-10-03T18:49:57.630332+00:00",
+            "new": "2026-10-03T18:56:53.044080+00:00"
+          },
+          {
+            "path": "$.whole_study_status_snapshot.counts.train.started",
+            "old": 6,
+            "new": 5
+          },
+          {
+            "path": "$.whole_study_status_snapshot.counts.train.succeeded",
+            "old": 8,
+            "new": 9
+          }
+        ],
+        "old_runtime_context": {
+          "counts": {
+            "train": {
+              "succeeded": 8,
+              "started": 6,
+              "pending": 18
+            },
+            "eval": {
+              "succeeded": 8,
+              "pending": 24
+            }
+          },
+          "completed_training_groups": 2,
+          "completed_train_and_eval_groups": 2
+        },
+        "new_runtime_context": {
+          "counts": {
+            "train": {
+              "succeeded": 9,
+              "started": 5,
+              "pending": 18
+            },
+            "eval": {
+              "succeeded": 8,
+              "pending": 24
+            }
+          },
+          "completed_training_groups": 2,
+          "completed_train_and_eval_groups": 2
+        },
+        "scientific_fields_exact_equal": true,
+        "scientific_json_sha256": "08a24a1ddac9a58b0b5638e85f1de59ef0b890b93dad4b9b68da0a29e1253bd0",
+        "new_markdown_actual_path_verified": true,
+        "new_markdown_actual_sha_verified": true,
+        "new_markdown_old_fixed_path_absent": true,
+        "train_integrity_passed": true,
+        "formal_eval_integrity_passed": true,
+        "curve_points": 400,
+        "seed_count": 4,
+        "max_cpu_replay_loss_difference": 1.0244548320770264e-08
+      },
+      {
+        "data": "CIFAR10",
+        "model": "linear",
+        "old_entry_exit_code": 0,
+        "new_entry_exit_code": 0,
+        "old_output": ".tmp/verify-group-portability-old-cifar/CIFAR_LINEAR_RESULT.json",
+        "new_output": ".tmp/verify-group-template-fixed-cifar/CIFAR_LINEAR_RESULT.json",
+        "old_output_sha256": "10760be94f7f0e215a59b98ebe50237816f67e6eb0f69c5f8555f88c3dbec94c",
+        "new_output_sha256": "fa1334d9f7e8b0d883114a2d68c882329d2d1f312fe16e37ace859055763f261",
+        "new_markdown_sha256": "4d7c270326e1b0ba71502c200358405fd20f2430fb71d42d84d80f35c96a2629",
+        "differences": [
+          {
+            "path": "$.audit_script_path",
+            "old": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\historical_group_audit.py",
+            "new": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_historical\\verify_group.py"
+          },
+          {
+            "path": "$.audit_script_sha256",
+            "old": "1b00c0eb77ea4ee25bbc7252f77502dc0497c29d810d7ce9dbb9cee2c8ec8c2f",
+            "new": "21958ded2c250d3fa04319a9a0e2c65a74dcb30df8e06638e1622a2b8aeb7bea"
+          },
+          {
+            "path": "$.recorded_at_cst",
+            "old": "2026-10-04T02:50:16.673517+08:00",
+            "new": "2026-10-04T02:56:58.897907+08:00"
+          },
+          {
+            "path": "$.recorded_at_utc",
+            "old": "2026-10-03T18:50:16.673517+00:00",
+            "new": "2026-10-03T18:56:58.897907+00:00"
+          },
+          {
+            "path": "$.whole_study_status_snapshot.counts.train.started",
+            "old": 6,
+            "new": 5
+          },
+          {
+            "path": "$.whole_study_status_snapshot.counts.train.succeeded",
+            "old": 8,
+            "new": 9
+          }
+        ],
+        "old_runtime_context": {
+          "counts": {
+            "train": {
+              "succeeded": 8,
+              "started": 6,
+              "pending": 18
+            },
+            "eval": {
+              "succeeded": 8,
+              "pending": 24
+            }
+          },
+          "completed_training_groups": 2,
+          "completed_train_and_eval_groups": 2
+        },
+        "new_runtime_context": {
+          "counts": {
+            "train": {
+              "succeeded": 9,
+              "started": 5,
+              "pending": 18
+            },
+            "eval": {
+              "succeeded": 8,
+              "pending": 24
+            }
+          },
+          "completed_training_groups": 2,
+          "completed_train_and_eval_groups": 2
+        },
+        "scientific_fields_exact_equal": true,
+        "scientific_json_sha256": "32d212de8ff0013649afd5f4f39cde52b2fb07925e2fec8dc7b60771c172ad0e",
+        "new_markdown_actual_path_verified": true,
+        "new_markdown_actual_sha_verified": true,
+        "new_markdown_old_fixed_path_absent": true,
+        "train_integrity_passed": true,
+        "formal_eval_integrity_passed": true,
+        "curve_points": 400,
+        "seed_count": 4,
+        "max_cpu_replay_loss_difference": 2.682209010451686e-08
+      }
+    ],
+    "whole_study_final_gates_applied": false,
+    "historical_reproduction_passed": null,
+    "passed": true
+  },
+  "numeric_audit_logic_ast_equal_to_original_except_REPO": true,
+  "current_template_validation": {
+    "data": "MNIST",
+    "model": "mlp",
+    "audit_script_sha256": "2b9efcf86f2a7f1fe23c447be95f29cd38a8dd05ba1459954411c8e1068f9ce7",
+    "train_only_output": ".tmp/verify-group-mnist-mlp-train/MNIST_MLP_RESULT.json",
+    "train_and_eval_output": ".tmp/verify-group-mnist-mlp-complete/MNIST_MLP_RESULT.json",
+    "train_only_command_exit_code": 0,
+    "train_and_eval_command_exit_code": 0,
+    "extra_cpu_inference_performed": false,
+    "linear_momentum_shape_mapping_applied": false,
+    "formal_report_sha256": "5050800cc08e5d399d2808b19064f070894fd922c1e0643de0c8f3d965d30600",
+    "actual_MD_path_sha_verified": true,
+    "nonlinear_no_replay_wording_verified": true,
+    "nonlinear_no_linear_shape_mapping_wording_verified": true,
+    "actual_eval_helper_v2_sha256": "aea398fea16fb1b35ed2e2103742b95d778358a90e78fb86aa221c1019d5d552",
+    "eval_helper_manifest_binding_verified": true,
+    "training_group_complete": true,
+    "run_integrity_audit_passed": true,
+    "formal_eval_group_complete": true,
+    "cpu_full_test_replay_performed": false,
+    "diagnostic_gates_inside_original_limits": true,
+    "audit_snapshot_at_cst": "2026-10-04T03:16:25.604286+08:00"
+  }
+}

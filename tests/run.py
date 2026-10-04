@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 
@@ -72,7 +73,9 @@ def main(argv: list[str] | None = None) -> int:
         cmd.extend(['--cost-class', cost_class])
     cmd.extend(extra)
     print(subprocess.list2cmdline(cmd), flush=True)
-    return subprocess.call(cmd)
+    # Preserve environment and diagnostics when an embedding process captures
+    # this launcher; implicit handle/environment inheritance can be lost there.
+    return subprocess.call(cmd, env=dict(os.environ), stdout=sys.stdout, stderr=sys.stderr)
 
 
 if __name__ == '__main__':

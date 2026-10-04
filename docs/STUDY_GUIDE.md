@@ -71,9 +71,12 @@ studies/<name>/
 | `studies/local_model_matrix/` | MNIST / CIFAR10 × CNN / ResNet18 × 三 seed 的 600-step 固定配方研究，按资源估计同类分组 |
 | `studies/support_data_smoke/` | FashionMNIST / CIFAR100 / SVHN × CNN 的 seed 0、30-step 官方数据加载 / checkpoint / 独立 eval 验收 |
 | `studies/support_model_smoke/` | CIFAR10 × ResNet10 / 两个 WideResNet 的 seed 0、30-step 验收；报告保留 ResNet10 的严格 Accuracy 复算差异 |
-| `studies/main_reproduction/` | 固定 main `98648f3` 的真实数据 60-step / eval30 对照；原默认 CUDA 配方执行成功与数值门分开报告，历史 README 图的配方来源另行核对 |
+| `studies/main_reproduction/` | 固定 main `98648f3` 的真实数据 60-step / eval30 对照；原默认 CUDA 配方执行成功与数值门分开报告。本机新对照见 [CURRENT_DEVICE_RESULT](../studies/main_reproduction/docs/CURRENT_DEVICE_RESULT.md)，历史 README 图的配方来源另行核对 |
+| `studies/main_historical/` | 历史 README PNG 候选配方的 80000-step、四 seed 长曲线；32 train + 32 eval 与固定估读门已完成。使用 [专用入口](../studies/main_historical/README.md)，通用 CLI 不自动注册归档数据/模型 |
 
 新 Study 从 `_template/` 复制。`mnist_train_size` 是扫因素的研究向例子。
+
+全目录与证据可用范围见 [Study 导航](../studies/README.md)。`main_historical` 的 `historical_4ccb28d` Registry 必须由专用 `run.py` 在每个子进程 prepare 前注册；直接运行通用 `python -m rpipe run/launch studies/main_historical` 不会完成该注册。准备依赖、数据、同设备 preflight 和长矩阵的顺序以该 Study 专用入口为准。
 
 ### 模版目录（`studies/_template/`）
 

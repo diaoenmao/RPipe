@@ -1,0 +1,162 @@
+{
+  "mode": "probe",
+  "started_at_utc": "2026-10-03T17:37:50.194418+00:00",
+  "status": "succeeded",
+  "passed": true,
+  "parent": {
+    "pid": 35852,
+    "create_time": 1791046826.0321603,
+    "cmdline": [
+      "D:\\anaconda3\\python.exe",
+      "-B",
+      "studies/main_historical/run.py",
+      "launch"
+    ]
+  },
+  "helper_pid": 65864,
+  "psutil": "7.0.0",
+  "script_sha256": "eeb3c6ff56b175d8143a4c8e074a9cfcd145ec0535ac996e111d2c1ab29820a1",
+  "events": [
+    {
+      "event": "parent_suspended",
+      "at_utc": "2026-10-03T17:37:50.207774+00:00"
+    },
+    {
+      "event": "parent_resumed",
+      "at_utc": "2026-10-03T17:38:02.214507+00:00"
+    },
+    {
+      "event": "probe_verified",
+      "at_utc": "2026-10-03T17:38:02.215483+00:00",
+      "duration_seconds": 12.0
+    }
+  ],
+  "original_children": [
+    {
+      "id": "24db7966c8b8469a",
+      "pid": 66288,
+      "create_time": 1791048277.3498528,
+      "data": "CIFAR10",
+      "model": "linear",
+      "mode": "train",
+      "seed": 0
+    },
+    {
+      "id": "f91f89c4afdcb655",
+      "pid": 36972,
+      "create_time": 1791048277.3698573,
+      "data": "CIFAR10",
+      "model": "linear",
+      "mode": "train",
+      "seed": 1
+    },
+    {
+      "id": "d8583c714101e7fb",
+      "pid": 54072,
+      "create_time": 1791048277.3870273,
+      "data": "CIFAR10",
+      "model": "linear",
+      "mode": "train",
+      "seed": 2
+    },
+    {
+      "id": "4b42a10dd5424d93",
+      "pid": 48016,
+      "create_time": 1791048277.4101412,
+      "data": "CIFAR10",
+      "model": "linear",
+      "mode": "train",
+      "seed": 3
+    }
+  ],
+  "before": {
+    "24db7966c8b8469a": {
+      "bytes": 31878,
+      "step": 15800,
+      "flow_succeeded": false
+    },
+    "f91f89c4afdcb655": {
+      "bytes": 31178,
+      "step": 15800,
+      "flow_succeeded": false
+    },
+    "d8583c714101e7fb": {
+      "bytes": 31878,
+      "step": 15800,
+      "flow_succeeded": false
+    },
+    "4b42a10dd5424d93": {
+      "bytes": 31878,
+      "step": 15800,
+      "flow_succeeded": false
+    }
+  },
+  "observations": [
+    {
+      "id": "24db7966c8b8469a",
+      "identity_alive": true,
+      "before": {
+        "bytes": 31878,
+        "step": 15800,
+        "flow_succeeded": false
+      },
+      "after": {
+        "bytes": 32428,
+        "step": 16000,
+        "flow_succeeded": false
+      },
+      "advanced": true,
+      "completed_successfully": false
+    },
+    {
+      "id": "f91f89c4afdcb655",
+      "identity_alive": true,
+      "before": {
+        "bytes": 31178,
+        "step": 15800,
+        "flow_succeeded": false
+      },
+      "after": {
+        "bytes": 31728,
+        "step": 16000,
+        "flow_succeeded": false
+      },
+      "advanced": true,
+      "completed_successfully": false
+    },
+    {
+      "id": "d8583c714101e7fb",
+      "identity_alive": true,
+      "before": {
+        "bytes": 31878,
+        "step": 15800,
+        "flow_succeeded": false
+      },
+      "after": {
+        "bytes": 32428,
+        "step": 16000,
+        "flow_succeeded": false
+      },
+      "advanced": true,
+      "completed_successfully": false
+    },
+    {
+      "id": "4b42a10dd5424d93",
+      "identity_alive": true,
+      "before": {
+        "bytes": 31878,
+        "step": 15800,
+        "flow_succeeded": false
+      },
+      "after": {
+        "bytes": 32428,
+        "step": 16000,
+        "flow_succeeded": false
+      },
+      "advanced": true,
+      "completed_successfully": false
+    }
+  ],
+  "finished_at_utc": "2026-10-03T17:38:02.216352+00:00",
+  "parent_suspension_owned": false
+}
