@@ -1,0 +1,13 @@
+{
+  "recorded_at_utc": "2026-10-03T16:56:44.250976+00:00",
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:09:58) [MSC v.1929 64 bit (AMD64)]",
+  "torch": "2.11.0+cu130",
+  "torchvision": "0.26.0+cu130",
+  "numpy": "2.4.4",
+  "cuda": "13.0",
+  "gpu": "NVIDIA GeForce RTX 5090 D v2",
+  "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+  "cpu_threads": 2,
+  "historical_ref": "4ccb28d0496110253e9f8e3f3df658853f07996b",
+  "dev_ref": "8bccbac321d4c3ac1ea9892a5e774c114e0298c6"
+}

@@ -1,0 +1,3766 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-03T18:18:51.812633+00:00",
+  "experiment_local_date": "2026-10-04",
+  "scope": "current_main_60step_deterministic_full_matrix",
+  "complete": true,
+  "passed": true,
+  "workspace_relative_to_repository": ".tmp/main-current-device-gpu-20261004-ready",
+  "execution": {
+    "command": "python -B studies/main_reproduction/current_device.py run --workspace .tmp/main-current-device-gpu-20261004-ready --device cuda",
+    "process_exit_code": 0,
+    "exit_code_provenance": "Root agent confirmed write_stdin session 49399 completed with exit_code 0.",
+    "started_at_utc": "2026-10-03T17:56:36.339224+00:00",
+    "finished_at_utc": "2026-10-03T17:59:11.608026+00:00",
+    "matrix_wall_seconds": 155.268802,
+    "concurrent_workload_present": true,
+    "is_algorithm_benchmark": false
+  },
+  "environment": {
+    "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:09:58) [MSC v.1929 64 bit (AMD64)]",
+    "torch": "2.11.0+cu130",
+    "numpy": "2.4.4",
+    "cpu_threads": 2,
+    "CUDA_build": "13.0",
+    "gpu_execution_started": true,
+    "controls": {
+      "deterministic": true,
+      "benchmark": false,
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8"
+    },
+    "execution_device": "cuda",
+    "gpu": {
+      "name": "NVIDIA GeForce RTX 5090 D v2",
+      "total_memory_bytes": 25642467328
+    }
+  },
+  "source_provenance": {
+    "main_commit": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+    "dev_commit": "8bccbac321d4c3ac1ea9892a5e774c114e0298c6",
+    "helper_sha256": "b2059c369e2067d9f9f5369f4e1162fc5b8f546f4e7b930424c55e8ebca1f461",
+    "source_manifest_sha256": "a61ae36e777f459f8c8f84e1cfb352cfea16ed22bc541350927512a79947d6fe",
+    "archive_manifest_sha256": "93b20b642e0867b60b9a9180b45601c81a49843f81ee16c2d74919489ffa3aa0",
+    "comparison_sha256": "4d4727074910f0b57e8567e21ca0593a27b7b085c9b63765dd870fded59aea7e",
+    "prepared_sha256": "6e36620a2b01589b52f3ca7a7ef7d120567fb43d11b67c7f8b80eb004b2eed93",
+    "environment_sha256": "ba9de2273774069b2ef1ea4287c44086ebfeae5daf40e7bc86c4d5ed541e779a",
+    "source_files": {
+      "src/rpipe/__init__.py": "066b3ceb4d845b914ae54c3461ba6073b466c744a2b7028d6f15e718a2fd5ffb",
+      "src/rpipe/__main__.py": "ef7e7d545516931f67a2654374fc8ee5e83c721916e7f31959f72365dcce1b29",
+      "src/rpipe/flow/__init__.py": "5ccc93d4c86f89ba46e1ab6edb021f16893de68c4046cdef757059effd57c1bf",
+      "src/rpipe/flow/cli.py": "6db2a7726ddeba018c5311bbbf30a9a79f6db9dc75c29a60b504e4ee21b32a61",
+      "src/rpipe/flow/collect/__init__.py": "f5d5469128b3cb9981b432a35e499d6f32ee902f675be223b0d6881b81c477db",
+      "src/rpipe/flow/context.py": "d8d302fb113f1450387d19851c226d224b231644c5bafd74bfce0381e8860978",
+      "src/rpipe/flow/execute/__init__.py": "72b7a617655f2bc8cb7621cc23151a7bddf447efc9424417bf2e0f2c8724f3f7",
+      "src/rpipe/flow/prepare/__init__.py": "7fed65b472835f4b00da168c8a7169b039dc6d7c6088874748f63418e15b2e66",
+      "src/rpipe/flow/process/__init__.py": "36fe5cc64a41b537d6237e248f5159b83e80b1ad6d7bec47b23f30262aac6977",
+      "src/rpipe/flow/process/aggregate.py": "c2cf3183038bf0c944aff8a1208d65ee440f3886d420f90ffb3fc226c329de60",
+      "src/rpipe/flow/process/curves.py": "4a9b2ecf4686dc7be50ce9387da08b7fdd72b422bb745fe01485b79410d0f2c7",
+      "src/rpipe/flow/process/individual.py": "896ed7bc5faa4af431e1a8c9d2b409f55b6222f13b3732921b24020409f80759",
+      "src/rpipe/flow/process/study.py": "0ce758943896faeb234bb98202140c448e377be2828b6764e087ff69a2056f59",
+      "src/rpipe/flow/runner.py": "f1295927c9d7eb1cd55cc281b66b1ce53a467b2cd925b90b0178c3e7a31721e2",
+      "src/rpipe/flow/summarize/__init__.py": "1977fdcd61c5bd59e794938b6e532b33d3e1cdeb1b4b9bc09f6e912213cf4d20",
+      "src/rpipe/flow/write/__init__.py": "9258e947385f5abf5d02b0b2de6d8332efcef0d0ccdaf630773b0a03634a41f2",
+      "src/rpipe/structure/__init__.py": "7b83c25010d70e0ad390c28cb185c34c6dcd7cc55e53c517468c4de62d7b2204",
+      "src/rpipe/structure/algorithm/__init__.py": "681a5f3ed68efe1f3722ce1220c4b8638d6bfd949336bd2ae3f8ed123fde5ff9",
+      "src/rpipe/structure/algorithm/base.py": "0a72579502bacab7acc9152a3621552343234bde31106f051788b9c7b7468fab",
+      "src/rpipe/structure/algorithm/batch.py": "55d3f9b6969f2cee6824ab1f5caba1d07362e95179ec0d978e7f46c687e3c44b",
+      "src/rpipe/structure/algorithm/config.py": "f0480794914d546f67079f3990f6d609659d5aa737b26c25027c8680f347c5e0",
+      "src/rpipe/structure/algorithm/eval/__init__.py": "ac1fc7980ea07e597aa1ae93d3789dab3371b11db8c769556f1b6db5f9f96934",
+      "src/rpipe/structure/algorithm/eval_hook.py": "91036e2439070d32b4c53f8f917a2fcb4f8649a2d1de7dd5c8df1e29e617a22c",
+      "src/rpipe/structure/algorithm/factory.py": "795cca3f717bb6a495db4d86efd9992a718a4516ab63e57c021343ccfd36cd04",
+      "src/rpipe/structure/algorithm/hf_map.py": "c2f24891c640aa89ffb632dcb623182f6af9feb2a35a236b38920acec4372d0f",
+      "src/rpipe/structure/algorithm/hook.py": "7417b56d15dbaa101799c1cdcf57b3741f630431a9d1d7382491f8fbdb58f082",
+      "src/rpipe/structure/algorithm/kwargs.py": "34c2a8cadcb2e896e48a0d70bebbd51fd7ff0d34a22dc93520387cf4aec2e57b",
+      "src/rpipe/structure/algorithm/metric.py": "48590322361d8c050fbd821c93cc4d74ccff5d97cdc9e1e129a19c568744c011",
+      "src/rpipe/structure/algorithm/optim.py": "80a5708e530c044c401f98fbe8c808014f681204af42752abc0903f4698584c8",
+      "src/rpipe/structure/algorithm/progress.py": "9f87262e546758011ecd5b3b3aa63f66903642e34e1a507987d69994c2e6b0fb",
+      "src/rpipe/structure/algorithm/resume.py": "bcb315ab371d84a61860e408e223ff3ed7fd859714f6194cf1e61550c4c887c2",
+      "src/rpipe/structure/algorithm/tracker.py": "d286ff532e8fb37f053f5c71a492f82891871c2c263a6ebfa36ca72ce0177042",
+      "src/rpipe/structure/algorithm/train/__init__.py": "3c71c0750d0832a8faddb4cf7d6b872119ac26ab12d8709bcacb43c66a9c23cf",
+      "src/rpipe/structure/algorithm/transformers_trainer.py": "c85082100de48c45050cdedcb976debf68259fc193521fc9abf1823638d4e3d8",
+      "src/rpipe/structure/api/__init__.py": "893e0c2b535d8e386ddd26c4cfc7f10956a251ff98dc8eee3027b0cbf786959e",
+      "src/rpipe/structure/api/algorithm_api.py": "833dc04d3401532c08f24ff55cf33f99d97b90ddf8a8f1500c6d03bc89e7174c",
+      "src/rpipe/structure/api/data_api.py": "50d343f00e5a25c24c322b187640b4c28e1d00acd6f13f2a2cf4d5b7f3545926",
+      "src/rpipe/structure/api/model_api.py": "3f2dcaf77bcab53266df9190cfb531e8e704b3fa16205dc8e27f0770a296fb52",
+      "src/rpipe/structure/api/system_api.py": "0e8ba7b42255cd57c2b05297b8c54afe4397e08868d59856cb035e4c4dfdfc88",
+      "src/rpipe/structure/artifact/__init__.py": "337ca28d3550951d50fadd3ca6d03b235fbdfa7ee8445f3ca082216b5636072c",
+      "src/rpipe/structure/artifact/_atomic.py": "f803729c2797168647c0874e46cd34c7380bf1443ca3b1036d8055675a221d15",
+      "src/rpipe/structure/artifact/activity.py": "9992415c71701bb2c7ccccd7bfaa0f27937a6e5b589b803366c887da69de95d8",
+      "src/rpipe/structure/artifact/asset/__init__.py": "4382efa5e890c6216b9be71594ed18dd8d86cf70da6bc8e557962e02fa405df3",
+      "src/rpipe/structure/artifact/asset/kinds.py": "8911aabe853ca6851b6f718317ee262144c5fd10f0731b55e05973e3b6487504",
+      "src/rpipe/structure/artifact/asset/tree.py": "a06bcf7f01a8f0671756c614d5a539e354a65de0918e5ba6e9271a21743f718b",
+      "src/rpipe/structure/artifact/config/__init__.py": "ce817a23244a24e484769860d04ea623ed014ac38c04a88516563caecbfa2d35",
+      "src/rpipe/structure/artifact/config/format.py": "33ae0251d81938def7761cb60e9edd6167536e97d0dc8114318691302791b45e",
+      "src/rpipe/structure/artifact/config/io.py": "e99293aeeddaa9497b8d748300b16823dcbc3a4bfff153f90be498f6b81717a0",
+      "src/rpipe/structure/artifact/errors.py": "3f51d364bf216d951628567501b56fd849ca52e37878f0c6cd650d29adbf10af",
+      "src/rpipe/structure/artifact/index.py": "2fbf04988de21ceefa0261d3d31b8c26fb46974f738d25367f0dbb7c7be4352b",
+      "src/rpipe/structure/artifact/layout.py": "a607bb2fb41eda91199a18a879a68b3d396f667c119eaae42e606cc99fc78dd0",
+      "src/rpipe/structure/artifact/paths.py": "0404261f32ac7098974a6b5786577b58ea3e3a6f171301a7383b3d492bd68017",
+      "src/rpipe/structure/artifact/readout/__init__.py": "c894641c3503925dbd9aa2a18af7e8932a1b05ffe7a7bbdb89da1046439cbe46",
+      "src/rpipe/structure/artifact/readout/logs.py": "0e5fbbc473a3885605bcf3e82d4fc68ff586bc4388ed59e24db3b886884426ef",
+      "src/rpipe/structure/artifact/readout/report.py": "0bb43f672d561e6c754beb49196c1553b53e72cbd9cb22749a6946351277e5d3",
+      "src/rpipe/structure/artifact/readout/status.py": "a2e29ef966991f2fd1e4ec0a277f0d486f2a59df870ab8dbe80d7492a73cf50e",
+      "src/rpipe/structure/artifact/result/__init__.py": "251d7f0778884c61a52f3927656e8cc5ff98852e195823f7cdb2d7ddb889dddd",
+      "src/rpipe/structure/artifact/result/format.py": "f1a6ee6e99a64e35a09d0f29d36c8b15e093f1b1db30e2e5dd46a38616a3c2ed",
+      "src/rpipe/structure/artifact/result/io.py": "5e8af7ce051c56ce014ce5a6bffc9c0587ee37efa76e96589d952555a40be58f",
+      "src/rpipe/structure/control/__init__.py": "da6dd00ae73bbfde51e5a6cc7ecbcb81790add7a869182b9e1513a2db1c28cba",
+      "src/rpipe/structure/control/contract.py": "8dd1096974d67292f8334ea2250025ef940d10fb5cc79c0a1b19ccf2ead21d31",
+      "src/rpipe/structure/control/control.py": "9964e5e67601bffb1a1f76b9bdf7c0c36761dc02e7529aa57e7f3aa553f806e8",
+      "src/rpipe/structure/control/hashing.py": "29b12347bbfb17e07df02cb80244cb478ab8a0e873c42256bf9007251567ca66",
+      "src/rpipe/structure/control/layers.py": "154adb49328a667634a12277b77f042035956af9e244cfae5333a3be308bdf6c",
+      "src/rpipe/structure/control/mapping.py": "a87dbbbec4b2a6f5941b04d89c9af3af0f30ec9252033a08eabfcb6ffd9b0c74",
+      "src/rpipe/structure/control/merge.py": "b39b9f28700718f433f016ecebf24a2536189a49cee409a9bcaa40fb0bad9ef5",
+      "src/rpipe/structure/control/run_config.py": "94cf0dd2d408fac4f353c362f7b755583c4e0fb4c4aeddd5ca9d2d38e274de00",
+      "src/rpipe/structure/data/__init__.py": "a850ad231478651f40eac00e6e6d1132cc3b248f1c055258db151317c0a9e494",
+      "src/rpipe/structure/data/config.py": "cf3245dff1799893c441bf608534bda1d1248441963bdad38b4dc7bd1e35f96a",
+      "src/rpipe/structure/data/factory.py": "e86090a67687073c51df5572963bd206dbb6c47c57e00eb3b0bf99c5e851c3f4",
+      "src/rpipe/structure/data/prepare.py": "cf24b59576a86897398b5acccd4ca3abffb094a01f7087188259044fadda8c88",
+      "src/rpipe/structure/data/profile.py": "2db9f261d1961c9aee81434af2e647d57bac9f0786db9feb88d631b1956d54d1",
+      "src/rpipe/structure/make/__init__.py": "f63b67eab73652b8fd74a88f11192c23b7f2e4a5c4f7a4e1856cb9bbe54b5f6a",
+      "src/rpipe/structure/make/capacity.py": "eb99d4cc671d320f76b4edce59085ecf6e53a70e0fd4ac0739f6b921972c4bd3",
+      "src/rpipe/structure/make/expand.py": "1aca85519f5c17be6ed0ecc3be84c04ddc144b47d3e8378531086e65c5a76e49",
+      "src/rpipe/structure/make/schedule.py": "9b4099e2b255e6ae6435ba74b04af3599d710a2b9fdac565d81f1c6a09135d79",
+      "src/rpipe/structure/make/write.py": "b06db67fbc9de1dbcee9bb46888f66ad0903d796c53da0e93bb854da4e8896ec",
+      "src/rpipe/structure/model/__init__.py": "acb4eacba3ada9bb722837ce1aa3c07950b83456753543d6bc2708ce2b27d3a7",
+      "src/rpipe/structure/model/config.py": "97f0905cb81cc0985c1e02d40306f44a1bdae3299aabbaf69c0a97c6ac69f761",
+      "src/rpipe/structure/model/custom_torch.py": "544f40fd25b12d9d08e060fe7bc03ed367afa39c93a4a9372419823504e10a61",
+      "src/rpipe/structure/model/factory.py": "2dbe31e4ff97bf1baad5272afac88436ca43f615dda782fd39ba3f4bd590a2f2",
+      "src/rpipe/structure/model/init_param.py": "8363d093a3abaaae6222d7defbf74b9b7821e88e7398b3def90026c089a10af8",
+      "src/rpipe/structure/model/input_norm.py": "fca05c0bdc46096b113dc9b869743af4cad5e814298caab134112fe11af4eb1e",
+      "src/rpipe/structure/model/shape.py": "209ba45f916f61576c47d514584a35ab2e45915935ff9e8354af696389c2588c",
+      "src/rpipe/structure/origin.py": "e09e3df09bfdf2d7abb44898b043d3a2d8534e806ca5e5738737285a03b5d6c7",
+      "src/rpipe/structure/system/__init__.py": "260dc897120b3149599b05b677510ead6a65452e662ce1958498a0848ba4ec63",
+      "src/rpipe/structure/system/config.py": "87749697c32c057e071e9e949b9ff4d4f5a65f85777ac68f601c5ec33b4f16da",
+      "src/rpipe/structure/system/factory.py": "1766b00e76c6f2ee6c01c6cd3a5aa285e2de69b2e929f9c8f5c206e374705fc5",
+      "src/rpipe/structure/system/logger.py": "1fed69f42035b60d7bfbb246b6eb74785a5c96e399486388d23a1a3e1214f048",
+      "src/rpipe/structure/system/runtime.py": "45e1f82340eb73e6bb67bd83c55d98a86f9b18c37488f39845cda1b0f828fac8",
+      "src/rpipe/structure/system/torchvision_load.py": "4bcdf894422daf9e9549b429d306c9db55466d57545192c7f7237186c3f710cd",
+      "studies/main_reproduction/current_device.py": "b2059c369e2067d9f9f5369f4e1162fc5b8f546f4e7b930424c55e8ebca1f461"
+    },
+    "source_unchanged": true,
+    "archive_files": [
+      {
+        "path": ".gitignore",
+        "git_blob": "016f81287b1653cce0df60640f2f3c33f7ac44d8",
+        "sha256": "3d58e88509690d3cc46799b730695363b7eb7d4a39e23eebb929f3005d650d18"
+      },
+      {
+        "path": "LICENSE.md",
+        "git_blob": "bd5a3ee1a0ecdecf3c2eed743db611bd804002d3",
+        "sha256": "7822295b080db9c54e17fa30c2601fe642b323dc6f8a016825f1c59fd9b2e968"
+      },
+      {
+        "path": "README.md",
+        "git_blob": "bee4cc4d0858bd9890a3f139143b9d90a8cda82e",
+        "sha256": "f860d0b78134e03dbdd75384486aaf95b074e41ff99d9a8ac749a56e21c60ad0"
+      },
+      {
+        "path": "asset/CIFAR10_Accuracy_mean.png",
+        "git_blob": "61a8e92ff461176c2fe2150e08d45802ba2b57d9",
+        "sha256": "0a892f04c1c044b43cf7db2a0386b8e7c7dc07bc38225e0e8c2878a8eb925f3a"
+      },
+      {
+        "path": "asset/MNIST_Accuracy_mean.png",
+        "git_blob": "39fc4cd04e63a72c2a458aba436b5e1f8200a613",
+        "sha256": "58744e8721035ad523c82e7019f395f41b2b5acad3097ecca29c0c4ccb48fa26"
+      },
+      {
+        "path": "requirements.txt",
+        "git_blob": "afb096e45ed2ff03122cdea6892688e8bf3529bd",
+        "sha256": "80a5d68ef9369dcfc3c1646d6a540e5b069881ca27b5bb848cfa1d04082a1a51"
+      },
+      {
+        "path": "src/config.py",
+        "git_blob": "f6902ffb8242c8c4a3a1fbeaa76a14864b0ca312",
+        "sha256": "198f52a40cf8b85d8b8eb32baad79cd290b0cbb65e40307dce104e43bfba981e"
+      },
+      {
+        "path": "src/config.yml",
+        "git_blob": "9646d8909f94be02f478197297f9456c7bbb881e",
+        "sha256": "54af3a63bc97cd11bb155f4fc8f2da7f366ea33d0c6f4fda5ba00711f99db013"
+      },
+      {
+        "path": "src/dataset/__init__.py",
+        "git_blob": "52d9a2503fbcf2c296b122e2084d02676d7ff172",
+        "sha256": "b2ee0a2cd99e5363151ffb2cb669a6f4c354cc6c34b4684549efaeb3e7f89969"
+      },
+      {
+        "path": "src/dataset/cifar.py",
+        "git_blob": "57d620ba900c366ae5cdf77369c0ac4e68f20eb3",
+        "sha256": "4696ee70460700a30b6c75c91986c0a72f0bf93032e82974317e5ce48199e9b5"
+      },
+      {
+        "path": "src/dataset/dataset.py",
+        "git_blob": "48d7fae70c52430d5ea8b8b69cbc2cfb191a1167",
+        "sha256": "ab6747b394d7bf46d318273d0802d2e2ff99479a2e3a957740c945e461461648"
+      },
+      {
+        "path": "src/dataset/mnist.py",
+        "git_blob": "286c5a9d2e6545a0027df0c7451b2d9809305cc4",
+        "sha256": "468e767b6e6a7f1c004f260992929c4cfa6f38d21da6581435856e3b7b173064"
+      },
+      {
+        "path": "src/dataset/svhn.py",
+        "git_blob": "6ec8e221f96330be2b272ff6f6228a27f1538707",
+        "sha256": "56052fdb7807aa6451eb22ccf18dde70117477e0eef85e74014172740980975b"
+      },
+      {
+        "path": "src/dataset/utils.py",
+        "git_blob": "37ca87ceabc74c83cc1a7bbabdb3d85efb9b8c01",
+        "sha256": "73b6fa99011b4b5bf1255dbd1fc19dfe0ed2effae278bbb04d9e334c7714f1ce"
+      },
+      {
+        "path": "src/make.py",
+        "git_blob": "3f789e6cdcbff7d2b822457036eaed902f82f938",
+        "sha256": "96d2725ee72f04d7e1b6819366d46764f6560595c468b5d253cb6dd6d5b4d2e5"
+      },
+      {
+        "path": "src/make.sh",
+        "git_blob": "ef627e2a0ae3f4bb9bd45c07d1ac4ee18f4d6555",
+        "sha256": "714b122f55031f8d66526a7d0365c800cebf925f933332e540bc08f0d29649d1"
+      },
+      {
+        "path": "src/make_dataset.py",
+        "git_blob": "86f45f84feeb9400fadb79420aecb313ff5ad755",
+        "sha256": "14ceb30db84005169126d77532b99eaa19151aa70c280bc6e1eca0f8efd173b7"
+      },
+      {
+        "path": "src/metric/__init__.py",
+        "git_blob": "7b9ee81137e0cfeaa05b7534b9ca2a9ce9806aa2",
+        "sha256": "b4657d8d8ae4c94431776cb21a8676724dbddcc0e49ab2f0b637f5c5fe71d6d1"
+      },
+      {
+        "path": "src/metric/logger.py",
+        "git_blob": "64a11581c7d0336322eba9c877a3d11311e44886",
+        "sha256": "6c4654b4ea4f848e026ff15a39d4760543f5648073a7ca2259e725debb2ab8b2"
+      },
+      {
+        "path": "src/metric/metric.py",
+        "git_blob": "b68502d870a2d5ced628fde86497d2783e6cbbdf",
+        "sha256": "b0891890fe6d43c1993f180a9715ccaa2317c00268571170c9923afe1dff2402"
+      },
+      {
+        "path": "src/metric/utils.py",
+        "git_blob": "2818fbe913fd8758afb9ee994360d700bb128324",
+        "sha256": "b5b3862d42addf5e5822cf893d3dd2685893fb632bc8fef926c0e2da74f27bc3"
+      },
+      {
+        "path": "src/model/__init__.py",
+        "git_blob": "8cb15933574e03078c38085ae00f60a1f1bf3793",
+        "sha256": "4074d99cb0f0c3fb5cf393eb2ce9d81abbff1c0b758d8d4a63964c73ddb8c7ac"
+      },
+      {
+        "path": "src/model/base.py",
+        "git_blob": "7a1dc2c061418830161b513b48d61ed16d8c66bc",
+        "sha256": "a6dba8dd1c71cc59af1a72e6d1b2c6da0367be7f401d183cd9d3ab300d2daee0"
+      },
+      {
+        "path": "src/model/cnn.py",
+        "git_blob": "d47ece642cc3800c02cc0c251a5b198f74bddd42",
+        "sha256": "005460c34002f95d0505dc18c2f7a5f408616c33c729bcb85231d1d28a295bf0"
+      },
+      {
+        "path": "src/model/linear.py",
+        "git_blob": "1c22876a4118c3c17e1c0e4aa272e25e22d59d20",
+        "sha256": "b3ddce6b903c0755aa23ea485a86698bad4d11d093b4fa73066c2f1d574eee4c"
+      },
+      {
+        "path": "src/model/loss.py",
+        "git_blob": "a307429664780e91d449f4ac4b8a4d8e4111848b",
+        "sha256": "fbc67157d8b37902e7d161ea05b245cfae7ddb89183efaafadf41b9272d8b7e3"
+      },
+      {
+        "path": "src/model/mlp.py",
+        "git_blob": "a8d1cbacee9c555e7e0559d8954df9b25b27e14d",
+        "sha256": "b82b32f93a521d33d613e3c8c1379228ba30cf5c705fabbec479aacd0b261930"
+      },
+      {
+        "path": "src/model/model.py",
+        "git_blob": "347f2abfa7a01cf9c0996f21b2ece9c8ab0f5cd7",
+        "sha256": "098599cf29a691fcb670040fa88990477a3c57219e4ceeadb178579a1d3badda"
+      },
+      {
+        "path": "src/model/resnet.py",
+        "git_blob": "34514530d3e04290e742c6bd0f7b8ca9f56371b7",
+        "sha256": "1c0d2e230f12537d6ad84dadb43682d959b7a7c7381493396c1b3ca2eacb04de"
+      },
+      {
+        "path": "src/model/wresnet.py",
+        "git_blob": "cf7ff473590c9214fb8a023372bedd034ab6979b",
+        "sha256": "e9f37c3ee6d3e3a35c4a847aaefce94ba0a33a46aed4b4ac56933144b0101c13"
+      },
+      {
+        "path": "src/module/__init__.py",
+        "git_blob": "e66615d11cddf2929637bd24594765c40d1a7adf",
+        "sha256": "08087250a4804121135438564895bcc948cda36e3e191e3e75a4949a5a14c6af"
+      },
+      {
+        "path": "src/module/hyper.py",
+        "git_blob": "744711ac6f1878a51e5d1d4ead70b2107a029041",
+        "sha256": "337c27fba01c44e5909f739e1f34c2b7c814c48a202cba28e5679944400d2ce8"
+      },
+      {
+        "path": "src/module/io.py",
+        "git_blob": "f212a23b9984f2978afb2ad65cbd7b0e9038388a",
+        "sha256": "63e131126b44d41033102b75de153bbfe081476d5a48c979adfdb541d59718f2"
+      },
+      {
+        "path": "src/module/stats.py",
+        "git_blob": "3d019ee83e9701b55b1c8c0d95da14b6c5102ef6",
+        "sha256": "56fb27187ca014687121a75eab0668efc26a77839bf8b9276ad1ba1ba751193b"
+      },
+      {
+        "path": "src/module/utils.py",
+        "git_blob": "3864f1708541efbd025e29ab550afb23939b6eeb",
+        "sha256": "0896b2daa6179c6ee6b7cdb82a6dd0153dc4c272571dbecec55e5a5dd0030e21"
+      },
+      {
+        "path": "src/process.py",
+        "git_blob": "a0a3048b85d5311a061de538ca21851803298318",
+        "sha256": "8a80a0afc386efb7b55b7c0dd11787cbd78ee885795e03e31f6fe27a984db4f8"
+      },
+      {
+        "path": "src/summary.py",
+        "git_blob": "5d9167128ff440409d7428b24820e3531d51bb21",
+        "sha256": "efa22be935e6b28d1bde5c30e28b4fcd32cf9f597772841c026ddad2a5c4ea66"
+      },
+      {
+        "path": "src/test.py",
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "src/test_model.py",
+        "git_blob": "4aed5a0739a78460d5902b5e4dcbc39d12939626",
+        "sha256": "9400db8e36d16a08637c07f1d736bcaecc329e65e28ad1ff77f9538cda5a4fef"
+      },
+      {
+        "path": "src/train_model.py",
+        "git_blob": "19caf232944a96b3447c9cb6c4c0d7ccffaae8bb",
+        "sha256": "5e348a5b6825e3756e98e857998c26b1c42c22a3d3179f6b99117fbb92ca90b7"
+      }
+    ],
+    "archive_after": {
+      "main_commit": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+      "files_checked": 40,
+      "manifest_sha256": "93b20b642e0867b60b9a9180b45601c81a49843f81ee16c2d74919489ffa3aa0",
+      "changed_files": [],
+      "unchanged": true
+    }
+  },
+  "preparation": {
+    "prepared_at_utc": "2026-10-03T17:54:27.165470+00:00",
+    "main_commit": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+    "dev_commit": "8bccbac321d4c3ac1ea9892a5e774c114e0298c6",
+    "device": "cpu",
+    "raw_files": [
+      {
+        "dataset": "MNIST",
+        "relative": "t10k-images-idx3-ubyte",
+        "sha256": "0fa7898d509279e482958e8ce81c8e77db3f2f8254e26661ceb7762c4d494ce7"
+      },
+      {
+        "dataset": "MNIST",
+        "relative": "t10k-images-idx3-ubyte.gz",
+        "sha256": "8d422c7b0a1c1c79245a5bcf07fe86e33eeafee792b84584aec276f5a2dbc4e6"
+      },
+      {
+        "dataset": "MNIST",
+        "relative": "t10k-labels-idx1-ubyte",
+        "sha256": "ff7bcfd416de33731a308c3f266cc351222c34898ecbeaf847f06e48f7ec33f2"
+      },
+      {
+        "dataset": "MNIST",
+        "relative": "t10k-labels-idx1-ubyte.gz",
+        "sha256": "f7ae60f92e00ec6debd23a6088c31dbd2371eca3ffa0defaefb259924204aec6"
+      },
+      {
+        "dataset": "MNIST",
+        "relative": "train-images-idx3-ubyte",
+        "sha256": "ba891046e6505d7aadcbbe25680a0738ad16aec93bde7f9b65e87a2fc25776db"
+      },
+      {
+        "dataset": "MNIST",
+        "relative": "train-images-idx3-ubyte.gz",
+        "sha256": "440fcabf73cc546fa21475e81ea370265605f56be210a4024d2ca8f203523609"
+      },
+      {
+        "dataset": "MNIST",
+        "relative": "train-labels-idx1-ubyte",
+        "sha256": "65a50cbbf4e906d70832878ad85ccda5333a97f0f4c3dd2ef09a8a9eef7101c5"
+      },
+      {
+        "dataset": "MNIST",
+        "relative": "train-labels-idx1-ubyte.gz",
+        "sha256": "3552534a0a558bbed6aed32b30c495cca23d567ec52cac8be1a0730e8010255c"
+      },
+      {
+        "dataset": "CIFAR10",
+        "relative": "cifar-10-batches-py/batches.meta",
+        "sha256": "f962466ef690d46b226450fb9aadc74ba4bc64a76aa526b5827fe4bc5c7125cb"
+      },
+      {
+        "dataset": "CIFAR10",
+        "relative": "cifar-10-batches-py/data_batch_1",
+        "sha256": "54636561a3ce25bd3e19253c6b0d8538147b0ae398331ac4a2d86c6d987368cd"
+      },
+      {
+        "dataset": "CIFAR10",
+        "relative": "cifar-10-batches-py/data_batch_2",
+        "sha256": "766b2cef9fbc745cf056b3152224f7cf77163b330ea9a15f9392beb8b89bc5a8"
+      },
+      {
+        "dataset": "CIFAR10",
+        "relative": "cifar-10-batches-py/data_batch_3",
+        "sha256": "0f00d98ebfb30b3ec0ad19f9756dc2630b89003e10525f5e148445e82aa6a1f9"
+      },
+      {
+        "dataset": "CIFAR10",
+        "relative": "cifar-10-batches-py/data_batch_4",
+        "sha256": "3f7bb240661948b8f4d53e36ec720d8306f5668bd0071dcb4e6c947f78e9682b"
+      },
+      {
+        "dataset": "CIFAR10",
+        "relative": "cifar-10-batches-py/data_batch_5",
+        "sha256": "d91802434d8376bbaeeadf58a737e3a1b12ac839077e931237e0dcd43adcb154"
+      },
+      {
+        "dataset": "CIFAR10",
+        "relative": "cifar-10-batches-py/readme.html",
+        "sha256": "4d1c3fb199d6a183ae03f5162b469d7bc04edf2fad9547bd5f224271d52f98e5"
+      },
+      {
+        "dataset": "CIFAR10",
+        "relative": "cifar-10-batches-py/test_batch",
+        "sha256": "f53d8d457504f7cff4ea9e021afcf0e0ad8e24a91f3fc42091b8adef61157831"
+      },
+      {
+        "dataset": "CIFAR10",
+        "relative": "cifar-10-python.tar.gz",
+        "sha256": "6d958be074577803d12ecdefd02955f39262c83c16fe9348329d7fe0b5c001ce"
+      }
+    ],
+    "data": [
+      {
+        "name": "MNIST",
+        "mean": [
+          0.13066047430038452
+        ],
+        "std": [
+          0.30810844898223877
+        ],
+        "stats_method": "original Stats(dim=1), sequential complete train, batch250",
+        "split_parity": [
+          {
+            "split": "train",
+            "samples": 60000,
+            "pixels_equal": true,
+            "labels_equal": true
+          },
+          {
+            "split": "test",
+            "samples": 10000,
+            "pixels_equal": true,
+            "labels_equal": true
+          }
+        ]
+      },
+      {
+        "name": "CIFAR10",
+        "mean": [
+          0.4913996756076813,
+          0.4821585416793823,
+          0.4465310871601105
+        ],
+        "std": [
+          0.24703294038772583,
+          0.2434857338666916,
+          0.26158812642097473
+        ],
+        "stats_method": "original Stats(dim=1), sequential complete train, batch250",
+        "split_parity": [
+          {
+            "split": "train",
+            "samples": 50000,
+            "pixels_equal": true,
+            "labels_equal": true
+          },
+          {
+            "split": "test",
+            "samples": 10000,
+            "pixels_equal": true,
+            "labels_equal": true
+          }
+        ]
+      }
+    ],
+    "models": [
+      {
+        "data": "MNIST",
+        "model": "linear",
+        "initial_state": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "initial_cpu_rng_equal": true,
+        "fixed_eval_logits_maximum_difference": 0.0,
+        "passed": true
+      },
+      {
+        "data": "MNIST",
+        "model": "mlp",
+        "initial_state": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "initial_cpu_rng_equal": true,
+        "fixed_eval_logits_maximum_difference": 0.0,
+        "passed": true
+      },
+      {
+        "data": "MNIST",
+        "model": "cnn",
+        "initial_state": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "initial_cpu_rng_equal": true,
+        "fixed_eval_logits_maximum_difference": 0.0,
+        "passed": true
+      },
+      {
+        "data": "MNIST",
+        "model": "resnet18",
+        "initial_state": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "initial_cpu_rng_equal": true,
+        "fixed_eval_logits_maximum_difference": 0.0,
+        "passed": true
+      },
+      {
+        "data": "CIFAR10",
+        "model": "linear",
+        "initial_state": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "initial_cpu_rng_equal": true,
+        "fixed_eval_logits_maximum_difference": 0.0,
+        "passed": true
+      },
+      {
+        "data": "CIFAR10",
+        "model": "mlp",
+        "initial_state": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "initial_cpu_rng_equal": true,
+        "fixed_eval_logits_maximum_difference": 0.0,
+        "passed": true
+      },
+      {
+        "data": "CIFAR10",
+        "model": "cnn",
+        "initial_state": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "initial_cpu_rng_equal": true,
+        "fixed_eval_logits_maximum_difference": 0.0,
+        "passed": true
+      },
+      {
+        "data": "CIFAR10",
+        "model": "resnet18",
+        "initial_state": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "initial_cpu_rng_equal": true,
+        "fixed_eval_logits_maximum_difference": 0.0,
+        "passed": true
+      }
+    ],
+    "source_unchanged": true,
+    "archive_verification": {
+      "main_commit": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+      "files_checked": 40,
+      "manifest_sha256": "93b20b642e0867b60b9a9180b45601c81a49843f81ee16c2d74919489ffa3aa0",
+      "changed_files": [],
+      "unchanged": true
+    },
+    "passed": true
+  },
+  "statistics_profile_condition": {
+    "method": "Archive original Stats(dim=1), sequential complete train, batch250",
+    "profile_paths": [
+      "native-data/mnist/stats.yaml",
+      "native-data/cifar10/stats.yaml"
+    ],
+    "current_factory_reads_saved_profile": true,
+    "no_profile_defaults_tested": false,
+    "factory_automatic_stats_recomputation_tested": false
+  },
+  "summary": {
+    "combinations": 8,
+    "segments": 16,
+    "all_parameters_and_integer_buffers_exact": true,
+    "parameter_maximum_absolute_difference": 0.0,
+    "all_optimizer_states_exact": true,
+    "all_schedulers_equal": true,
+    "all_torch_rng_states_equal": true,
+    "all_actual_input_hash_gates_passed": true,
+    "all_actual_sample_count_gates_passed": true,
+    "train_test_loss_maximum_absolute_difference": 6.661338147750939e-16,
+    "test_loss_maximum_absolute_difference": 0.0,
+    "train_test_accuracy_maximum_absolute_difference_percentage_points": 1.4210854715202004e-14,
+    "all_correct_sample_counts_equal": true,
+    "all_best_steps": 60,
+    "independent_eval_cross_implementation_loss_maximum_absolute_difference": 0.0,
+    "independent_eval_original_vs_own_best_loss_maximum_absolute_difference": 0.0,
+    "independent_eval_current_vs_own_best_loss_maximum_absolute_difference": 0.0,
+    "torch_process_peak_allocated_bytes": 2111100416,
+    "torch_process_peak_allocated_mib": 2013.30224609375,
+    "torch_process_peak_reserved_bytes": 3806330880,
+    "torch_process_peak_reserved_mib": 3630.0
+  },
+  "step60_test_results": [
+    {
+      "data": "MNIST",
+      "model": "linear",
+      "original_step60_test": {
+        "Loss": 0.402580925822258,
+        "Accuracy": 90.73000106811523
+      },
+      "current_step60_test": {
+        "Loss": 0.402580925822258,
+        "Accuracy": 90.73000106811523
+      },
+      "correct_test_samples": 9073,
+      "test_samples": 10000,
+      "best_step": 60,
+      "independent_eval": {
+        "original": {
+          "Loss": 0.402580925822258,
+          "Accuracy": 90.73000106811523
+        },
+        "current": {
+          "Loss": 0.402580925822258,
+          "Accuracy": 90.73000106811523
+        },
+        "weights": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "actual_counts": {
+          "original": {
+            "samples": 10000,
+            "batches": 10
+          },
+          "current": {
+            "samples": 10000,
+            "batches": 10
+          }
+        },
+        "full_sample_count_gate_passed": true,
+        "loss_difference": 0.0,
+        "correct_counts_equal": true,
+        "original_vs_own_best_loss_difference": 0.0,
+        "current_vs_own_best_loss_difference": 0.0,
+        "original_vs_own_best_correct_counts_equal": true,
+        "current_vs_own_best_correct_counts_equal": true,
+        "current_summary": {
+          "mode": "eval",
+          "accuracy": 90.73000106811523,
+          "best_accuracy": 90.73000106811523,
+          "resume_stem": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\MNIST_linear\\current_train\\assets\\checkpoints\\best.pt",
+          "step": 60,
+          "epoch": 1,
+          "elapsed": "0:00:00",
+          "elapsed_seconds": 0.4083840000675991
+        }
+      },
+      "gpu_peak_allocated_bytes": 78549504,
+      "gpu_peak_reserved_bytes": 92274688,
+      "passed": true
+    },
+    {
+      "data": "MNIST",
+      "model": "mlp",
+      "original_step60_test": {
+        "Loss": 0.27101368457078934,
+        "Accuracy": 91.82000122070312
+      },
+      "current_step60_test": {
+        "Loss": 0.27101368457078934,
+        "Accuracy": 91.82000122070312
+      },
+      "correct_test_samples": 9182,
+      "test_samples": 10000,
+      "best_step": 60,
+      "independent_eval": {
+        "original": {
+          "Loss": 0.27101368457078934,
+          "Accuracy": 91.82000122070312
+        },
+        "current": {
+          "Loss": 0.27101368457078934,
+          "Accuracy": 91.82000122070312
+        },
+        "weights": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "actual_counts": {
+          "original": {
+            "samples": 10000,
+            "batches": 10
+          },
+          "current": {
+            "samples": 10000,
+            "batches": 10
+          }
+        },
+        "full_sample_count_gate_passed": true,
+        "loss_difference": 0.0,
+        "correct_counts_equal": true,
+        "original_vs_own_best_loss_difference": 0.0,
+        "current_vs_own_best_loss_difference": 0.0,
+        "original_vs_own_best_correct_counts_equal": true,
+        "current_vs_own_best_correct_counts_equal": true,
+        "current_summary": {
+          "mode": "eval",
+          "accuracy": 91.82000122070312,
+          "best_accuracy": 91.82000122070312,
+          "resume_stem": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\MNIST_mlp\\current_train\\assets\\checkpoints\\best.pt",
+          "step": 60,
+          "epoch": 1,
+          "elapsed": "0:00:00",
+          "elapsed_seconds": 0.41568009997718036
+        }
+      },
+      "gpu_peak_allocated_bytes": 79903232,
+      "gpu_peak_reserved_bytes": 96468992,
+      "passed": true
+    },
+    {
+      "data": "MNIST",
+      "model": "cnn",
+      "original_step60_test": {
+        "Loss": 2.282201552391052,
+        "Accuracy": 11.350000286102295
+      },
+      "current_step60_test": {
+        "Loss": 2.282201552391052,
+        "Accuracy": 11.350000286102295
+      },
+      "correct_test_samples": 1135,
+      "test_samples": 10000,
+      "best_step": 60,
+      "independent_eval": {
+        "original": {
+          "Loss": 2.282201552391052,
+          "Accuracy": 11.350000286102295
+        },
+        "current": {
+          "Loss": 2.282201552391052,
+          "Accuracy": 11.350000286102295
+        },
+        "weights": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "actual_counts": {
+          "original": {
+            "samples": 10000,
+            "batches": 10
+          },
+          "current": {
+            "samples": 10000,
+            "batches": 10
+          }
+        },
+        "full_sample_count_gate_passed": true,
+        "loss_difference": 0.0,
+        "correct_counts_equal": true,
+        "original_vs_own_best_loss_difference": 0.0,
+        "current_vs_own_best_loss_difference": 0.0,
+        "original_vs_own_best_correct_counts_equal": true,
+        "current_vs_own_best_correct_counts_equal": true,
+        "current_summary": {
+          "mode": "eval",
+          "accuracy": 11.350000286102295,
+          "best_accuracy": 11.350000286102295,
+          "resume_stem": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\MNIST_cnn\\current_train\\assets\\checkpoints\\best.pt",
+          "step": 60,
+          "epoch": 1,
+          "elapsed": "0:00:00",
+          "elapsed_seconds": 0.43968469998799264
+        }
+      },
+      "gpu_peak_allocated_bytes": 503980544,
+      "gpu_peak_reserved_bytes": 843055104,
+      "passed": true
+    },
+    {
+      "data": "MNIST",
+      "model": "resnet18",
+      "original_step60_test": {
+        "Loss": 0.07538461461663246,
+        "Accuracy": 97.69000091552735
+      },
+      "current_step60_test": {
+        "Loss": 0.07538461461663246,
+        "Accuracy": 97.69000091552735
+      },
+      "correct_test_samples": 9769,
+      "test_samples": 10000,
+      "best_step": 60,
+      "independent_eval": {
+        "original": {
+          "Loss": 0.07538461461663246,
+          "Accuracy": 97.69000091552735
+        },
+        "current": {
+          "Loss": 0.07538461461663246,
+          "Accuracy": 97.69000091552735
+        },
+        "weights": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "actual_counts": {
+          "original": {
+            "samples": 10000,
+            "batches": 10
+          },
+          "current": {
+            "samples": 10000,
+            "batches": 10
+          }
+        },
+        "full_sample_count_gate_passed": true,
+        "loss_difference": 0.0,
+        "correct_counts_equal": true,
+        "original_vs_own_best_loss_difference": 0.0,
+        "current_vs_own_best_loss_difference": 0.0,
+        "original_vs_own_best_correct_counts_equal": true,
+        "current_vs_own_best_correct_counts_equal": true,
+        "current_summary": {
+          "mode": "eval",
+          "accuracy": 97.69000091552735,
+          "best_accuracy": 97.69000091552735,
+          "resume_stem": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\MNIST_resnet18\\current_train\\assets\\checkpoints\\best.pt",
+          "step": 60,
+          "epoch": 1,
+          "elapsed": "0:00:01",
+          "elapsed_seconds": 0.7685135999927297
+        }
+      },
+      "gpu_peak_allocated_bytes": 1661878784,
+      "gpu_peak_reserved_bytes": 2896166912,
+      "passed": true
+    },
+    {
+      "data": "CIFAR10",
+      "model": "linear",
+      "original_step60_test": {
+        "Loss": 2.965871715545654,
+        "Accuracy": 29.520000076293947
+      },
+      "current_step60_test": {
+        "Loss": 2.965871715545654,
+        "Accuracy": 29.520000076293947
+      },
+      "correct_test_samples": 2952,
+      "test_samples": 10000,
+      "best_step": 60,
+      "independent_eval": {
+        "original": {
+          "Loss": 2.965871715545654,
+          "Accuracy": 29.520000076293947
+        },
+        "current": {
+          "Loss": 2.965871715545654,
+          "Accuracy": 29.520000076293947
+        },
+        "weights": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "actual_counts": {
+          "original": {
+            "samples": 10000,
+            "batches": 10
+          },
+          "current": {
+            "samples": 10000,
+            "batches": 10
+          }
+        },
+        "full_sample_count_gate_passed": true,
+        "loss_difference": 0.0,
+        "correct_counts_equal": true,
+        "original_vs_own_best_loss_difference": 0.0,
+        "current_vs_own_best_loss_difference": 0.0,
+        "original_vs_own_best_correct_counts_equal": true,
+        "current_vs_own_best_correct_counts_equal": true,
+        "current_summary": {
+          "mode": "eval",
+          "accuracy": 29.520000076293947,
+          "best_accuracy": 29.520000076293947,
+          "resume_stem": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\CIFAR10_linear\\current_train\\assets\\checkpoints\\best.pt",
+          "step": 60,
+          "epoch": 1,
+          "elapsed": "0:00:01",
+          "elapsed_seconds": 0.58363620005548
+        }
+      },
+      "gpu_peak_allocated_bytes": 109083648,
+      "gpu_peak_reserved_bytes": 127926272,
+      "passed": true
+    },
+    {
+      "data": "CIFAR10",
+      "model": "mlp",
+      "original_step60_test": {
+        "Loss": 1.6899436950683593,
+        "Accuracy": 40.30000114440918
+      },
+      "current_step60_test": {
+        "Loss": 1.6899436950683593,
+        "Accuracy": 40.30000114440918
+      },
+      "correct_test_samples": 4030,
+      "test_samples": 10000,
+      "best_step": 60,
+      "independent_eval": {
+        "original": {
+          "Loss": 1.6899436950683593,
+          "Accuracy": 40.30000114440918
+        },
+        "current": {
+          "Loss": 1.6899436950683593,
+          "Accuracy": 40.30000114440918
+        },
+        "weights": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "actual_counts": {
+          "original": {
+            "samples": 10000,
+            "batches": 10
+          },
+          "current": {
+            "samples": 10000,
+            "batches": 10
+          }
+        },
+        "full_sample_count_gate_passed": true,
+        "loss_difference": 0.0,
+        "correct_counts_equal": true,
+        "original_vs_own_best_loss_difference": 0.0,
+        "current_vs_own_best_loss_difference": 0.0,
+        "original_vs_own_best_correct_counts_equal": true,
+        "current_vs_own_best_correct_counts_equal": true,
+        "current_summary": {
+          "mode": "eval",
+          "accuracy": 40.30000114440918,
+          "best_accuracy": 40.30000114440918,
+          "resume_stem": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\CIFAR10_mlp\\current_train\\assets\\checkpoints\\best.pt",
+          "step": 60,
+          "epoch": 1,
+          "elapsed": "0:00:01",
+          "elapsed_seconds": 0.6066995000001043
+        }
+      },
+      "gpu_peak_allocated_bytes": 112637952,
+      "gpu_peak_reserved_bytes": 132120576,
+      "passed": true
+    },
+    {
+      "data": "CIFAR10",
+      "model": "cnn",
+      "original_step60_test": {
+        "Loss": 1.83429354429245,
+        "Accuracy": 32.94000053405762
+      },
+      "current_step60_test": {
+        "Loss": 1.83429354429245,
+        "Accuracy": 32.94000053405762
+      },
+      "correct_test_samples": 3294,
+      "test_samples": 10000,
+      "best_step": 60,
+      "independent_eval": {
+        "original": {
+          "Loss": 1.83429354429245,
+          "Accuracy": 32.94000053405762
+        },
+        "current": {
+          "Loss": 1.83429354429245,
+          "Accuracy": 32.94000053405762
+        },
+        "weights": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "actual_counts": {
+          "original": {
+            "samples": 10000,
+            "batches": 10
+          },
+          "current": {
+            "samples": 10000,
+            "batches": 10
+          }
+        },
+        "full_sample_count_gate_passed": true,
+        "loss_difference": 0.0,
+        "correct_counts_equal": true,
+        "original_vs_own_best_loss_difference": 0.0,
+        "current_vs_own_best_loss_difference": 0.0,
+        "original_vs_own_best_correct_counts_equal": true,
+        "current_vs_own_best_correct_counts_equal": true,
+        "current_summary": {
+          "mode": "eval",
+          "accuracy": 32.94000053405762,
+          "best_accuracy": 32.94000053405762,
+          "resume_stem": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\CIFAR10_cnn\\current_train\\assets\\checkpoints\\best.pt",
+          "step": 60,
+          "epoch": 1,
+          "elapsed": "0:00:01",
+          "elapsed_seconds": 0.7501379000023007
+        }
+      },
+      "gpu_peak_allocated_bytes": 578343424,
+      "gpu_peak_reserved_bytes": 1136656384,
+      "passed": true
+    },
+    {
+      "data": "CIFAR10",
+      "model": "resnet18",
+      "original_step60_test": {
+        "Loss": 1.4457239508628845,
+        "Accuracy": 46.420000839233396
+      },
+      "current_step60_test": {
+        "Loss": 1.4457239508628845,
+        "Accuracy": 46.420000839233396
+      },
+      "correct_test_samples": 4642,
+      "test_samples": 10000,
+      "best_step": 60,
+      "independent_eval": {
+        "original": {
+          "Loss": 1.4457239508628845,
+          "Accuracy": 46.420000839233396
+        },
+        "current": {
+          "Loss": 1.4457239508628845,
+          "Accuracy": 46.420000839233396
+        },
+        "weights": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "actual_counts": {
+          "original": {
+            "samples": 10000,
+            "batches": 10
+          },
+          "current": {
+            "samples": 10000,
+            "batches": 10
+          }
+        },
+        "full_sample_count_gate_passed": true,
+        "loss_difference": 0.0,
+        "correct_counts_equal": true,
+        "original_vs_own_best_loss_difference": 0.0,
+        "current_vs_own_best_loss_difference": 0.0,
+        "original_vs_own_best_correct_counts_equal": true,
+        "current_vs_own_best_correct_counts_equal": true,
+        "current_summary": {
+          "mode": "eval",
+          "accuracy": 46.420000839233396,
+          "best_accuracy": 46.420000839233396,
+          "resume_stem": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\CIFAR10_resnet18\\current_train\\assets\\checkpoints\\best.pt",
+          "step": 60,
+          "epoch": 1,
+          "elapsed": "0:00:01",
+          "elapsed_seconds": 1.1002712999470532
+        }
+      },
+      "gpu_peak_allocated_bytes": 2111100416,
+      "gpu_peak_reserved_bytes": 3806330880,
+      "passed": true
+    }
+  ],
+  "actual_comparison": {
+    "started_at_utc": "2026-10-03T17:56:36.339224+00:00",
+    "main_commit": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+    "dev_commit": "8bccbac321d4c3ac1ea9892a5e774c114e0298c6",
+    "device": "cuda",
+    "torch": "2.11.0+cu130",
+    "seed": 0,
+    "expected_combinations": [
+      [
+        "MNIST",
+        "linear"
+      ],
+      [
+        "MNIST",
+        "mlp"
+      ],
+      [
+        "MNIST",
+        "cnn"
+      ],
+      [
+        "MNIST",
+        "resnet18"
+      ],
+      [
+        "CIFAR10",
+        "linear"
+      ],
+      [
+        "CIFAR10",
+        "mlp"
+      ],
+      [
+        "CIFAR10",
+        "cnn"
+      ],
+      [
+        "CIFAR10",
+        "resnet18"
+      ]
+    ],
+    "full_eight_combination_matrix_selected": true,
+    "scope": "full_matrix",
+    "recipe": {
+      "source": "custom_torch",
+      "mode": "train",
+      "num_steps": 60,
+      "progress_unit": "step",
+      "eval_period": 30,
+      "eval_num_steps": -1,
+      "log_period": 30,
+      "checkpoint": "latest",
+      "checkpoint_period": 30,
+      "save_best": true,
+      "best_metric": "Loss",
+      "best_mode": "min",
+      "best_split": "test",
+      "optimizer": "SGD",
+      "lr": 0.1,
+      "momentum": 0.9,
+      "nesterov": true,
+      "weight_decay": 0.0005,
+      "max_grad_norm": 0.0,
+      "scheduler": "cosine",
+      "T_max": 60,
+      "eta_min": 0.0,
+      "resume": false
+    },
+    "control_changed_from_main_default": [
+      "deterministic=true",
+      "benchmark=false",
+      "CUBLAS_WORKSPACE_CONFIG=:4096:8"
+    ],
+    "gate": {
+      "loss_atol": 1e-06,
+      "parameter_atol": 1e-06,
+      "parameter_rtol": 1e-05,
+      "integers_and_correct_sample_counts": "equal"
+    },
+    "runs": [
+      {
+        "data": "MNIST",
+        "model": "linear",
+        "initial_state": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "initial_rng_equal": true,
+        "segments": [
+          {
+            "step": 30,
+            "parameters": {
+              "keys_equal": true,
+              "exact": true,
+              "integers_equal": true,
+              "maximum_absolute_difference": 0.0,
+              "within_gate": true
+            },
+            "scheduler_equal": true,
+            "optimizer": {
+              "exact": true,
+              "within_gate": true
+            },
+            "rng_equal": true,
+            "loss_differences": {
+              "train": 0.0,
+              "test": 0.0
+            },
+            "correct_counts": {
+              "train": {
+                "original": 6024,
+                "current": 6024,
+                "samples": 7500
+              },
+              "test": {
+                "original": 8963,
+                "current": 8963,
+                "samples": 10000
+              }
+            },
+            "actual_cumulative_counts": {
+              "original": {
+                "train": {
+                  "samples": 7500,
+                  "batches": 30
+                },
+                "test": {
+                  "samples": 10000,
+                  "batches": 10
+                }
+              },
+              "current": {
+                "train": {
+                  "samples": 7500,
+                  "batches": 30
+                },
+                "test": {
+                  "samples": 10000,
+                  "batches": 10
+                }
+              }
+            },
+            "expected_cumulative_counts": {
+              "train": {
+                "samples": 7500,
+                "batches": 30
+              },
+              "test": {
+                "samples": 10000,
+                "batches": 10
+              }
+            },
+            "actual_sample_count_gate_passed": true,
+            "original_metrics": {
+              "train": {
+                "Loss": 0.8049916058778763,
+                "Accuracy": 80.32000171343485
+              },
+              "test": {
+                "Loss": 0.46461088210344315,
+                "Accuracy": 89.63000106811523
+              }
+            },
+            "current_metrics": {
+              "train": {
+                "Loss": 0.8049916058778763,
+                "Accuracy": 80.32000171343485
+              },
+              "test": {
+                "Loss": 0.46461088210344315,
+                "Accuracy": 89.63000106811523
+              }
+            },
+            "passed": true
+          },
+          {
+            "step": 60,
+            "parameters": {
+              "keys_equal": true,
+              "exact": true,
+              "integers_equal": true,
+              "maximum_absolute_difference": 0.0,
+              "within_gate": true
+            },
+            "scheduler_equal": true,
+            "optimizer": {
+              "exact": true,
+              "within_gate": true
+            },
+            "rng_equal": true,
+            "loss_differences": {
+              "train": 0.0,
+              "test": 0.0
+            },
+            "correct_counts": {
+              "train": {
+                "original": 6725,
+                "current": 6725,
+                "samples": 7500
+              },
+              "test": {
+                "original": 9073,
+                "current": 9073,
+                "samples": 10000
+              }
+            },
+            "actual_cumulative_counts": {
+              "original": {
+                "train": {
+                  "samples": 15000,
+                  "batches": 60
+                },
+                "test": {
+                  "samples": 20000,
+                  "batches": 20
+                }
+              },
+              "current": {
+                "train": {
+                  "samples": 15000,
+                  "batches": 60
+                },
+                "test": {
+                  "samples": 20000,
+                  "batches": 20
+                }
+              }
+            },
+            "expected_cumulative_counts": {
+              "train": {
+                "samples": 15000,
+                "batches": 60
+              },
+              "test": {
+                "samples": 20000,
+                "batches": 20
+              }
+            },
+            "actual_sample_count_gate_passed": true,
+            "original_metrics": {
+              "train": {
+                "Loss": 0.42480773230393726,
+                "Accuracy": 89.66666768391927
+              },
+              "test": {
+                "Loss": 0.402580925822258,
+                "Accuracy": 90.73000106811523
+              }
+            },
+            "current_metrics": {
+              "train": {
+                "Loss": 0.42480773230393726,
+                "Accuracy": 89.66666768391927
+              },
+              "test": {
+                "Loss": 0.402580925822258,
+                "Accuracy": 90.73000106811523
+              }
+            },
+            "passed": true
+          }
+        ],
+        "original_inputs": {
+          "train": {
+            "samples": 15000,
+            "batches": 60,
+            "recorded_indices": 15000,
+            "indices_sha256": "08284cc5870135414b0945a01e18f5e4162a45fc337cbb56cffc8a4e36edcd53",
+            "images_sha256": "84d4d6a15d5b9c86017382bbd3b08c99b46de44570e96bfbc81816be870aa69a",
+            "targets_sha256": "54f742787e8b35cc2edc15246487d688ed50213283e60a2468fe4b7ac5a269f3",
+            "core_inputs_sha256": "6439568adb8b51f9a135ae435df04811dd08ef89bd03fe7929213218d0d4edf8"
+          },
+          "test": {
+            "samples": 20000,
+            "batches": 20,
+            "recorded_indices": 20000,
+            "indices_sha256": "16fa823577786973f0887fc65ea5cbf8576a273d2082eb56dd310cb2ace0df95",
+            "images_sha256": "3f03a8c4becad29aa22ffc986ac7010789d7b28e8e9f1eb6d6c21cb6f04f6055",
+            "targets_sha256": "6cf6f53c0ea53203ad00aa728ce2f850a237dcdf55676cf62066001d48edfa4a",
+            "core_inputs_sha256": "474cd600854f76c3aad161146c34bca426cc45bc846eb5ae287da6d4b4e4f897"
+          }
+        },
+        "current_inputs": {
+          "train": {
+            "samples": 15000,
+            "batches": 60,
+            "recorded_indices": 15000,
+            "indices_sha256": "08284cc5870135414b0945a01e18f5e4162a45fc337cbb56cffc8a4e36edcd53",
+            "images_sha256": "84d4d6a15d5b9c86017382bbd3b08c99b46de44570e96bfbc81816be870aa69a",
+            "targets_sha256": "54f742787e8b35cc2edc15246487d688ed50213283e60a2468fe4b7ac5a269f3",
+            "core_inputs_sha256": "6439568adb8b51f9a135ae435df04811dd08ef89bd03fe7929213218d0d4edf8"
+          },
+          "test": {
+            "samples": 20000,
+            "batches": 20,
+            "recorded_indices": 0,
+            "indices_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "images_sha256": "3f03a8c4becad29aa22ffc986ac7010789d7b28e8e9f1eb6d6c21cb6f04f6055",
+            "targets_sha256": "6cf6f53c0ea53203ad00aa728ce2f850a237dcdf55676cf62066001d48edfa4a",
+            "core_inputs_sha256": "474cd600854f76c3aad161146c34bca426cc45bc846eb5ae287da6d4b4e4f897"
+          }
+        },
+        "input_core_train_equal": true,
+        "input_core_test_equal": true,
+        "best": {
+          "original_step": 60,
+          "current_step": 60,
+          "selection_equal": true,
+          "weights": {
+            "keys_equal": true,
+            "exact": true,
+            "integers_equal": true,
+            "maximum_absolute_difference": 0.0,
+            "within_gate": true
+          }
+        },
+        "independent_eval": {
+          "original": {
+            "Loss": 0.402580925822258,
+            "Accuracy": 90.73000106811523
+          },
+          "current": {
+            "Loss": 0.402580925822258,
+            "Accuracy": 90.73000106811523
+          },
+          "weights": {
+            "keys_equal": true,
+            "exact": true,
+            "integers_equal": true,
+            "maximum_absolute_difference": 0.0,
+            "within_gate": true
+          },
+          "actual_counts": {
+            "original": {
+              "samples": 10000,
+              "batches": 10
+            },
+            "current": {
+              "samples": 10000,
+              "batches": 10
+            }
+          },
+          "full_sample_count_gate_passed": true,
+          "loss_difference": 0.0,
+          "correct_counts_equal": true,
+          "original_vs_own_best_loss_difference": 0.0,
+          "current_vs_own_best_loss_difference": 0.0,
+          "original_vs_own_best_correct_counts_equal": true,
+          "current_vs_own_best_correct_counts_equal": true,
+          "current_summary": {
+            "mode": "eval",
+            "accuracy": 90.73000106811523,
+            "best_accuracy": 90.73000106811523,
+            "resume_stem": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\MNIST_linear\\current_train\\assets\\checkpoints\\best.pt",
+            "step": 60,
+            "epoch": 1,
+            "elapsed": "0:00:00",
+            "elapsed_seconds": 0.4083840000675991
+          }
+        },
+        "summary": {
+          "mode": "train",
+          "steps": 60,
+          "epochs": 1,
+          "progress_unit": "step",
+          "train_size": 60000,
+          "train_loss": 0.42480773230393726,
+          "accuracy": 90.73000106811523,
+          "best_value": 0.402580925822258,
+          "best_metric": "Loss",
+          "elapsed": "0:00:02",
+          "elapsed_seconds": 1.9326147999381647
+        },
+        "elapsed_seconds": 7.77651060000062,
+        "gpu_peak_allocated_bytes": 78549504,
+        "gpu_peak_reserved_bytes": 92274688,
+        "full_sample_counts_equal": true,
+        "passed": true,
+        "source_unchanged": true,
+        "archive_verification": {
+          "main_commit": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+          "files_checked": 40,
+          "manifest_sha256": "93b20b642e0867b60b9a9180b45601c81a49843f81ee16c2d74919489ffa3aa0",
+          "changed_files": [],
+          "unchanged": true
+        }
+      },
+      {
+        "data": "MNIST",
+        "model": "mlp",
+        "initial_state": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "initial_rng_equal": true,
+        "segments": [
+          {
+            "step": 30,
+            "parameters": {
+              "keys_equal": true,
+              "exact": true,
+              "integers_equal": true,
+              "maximum_absolute_difference": 0.0,
+              "within_gate": true
+            },
+            "scheduler_equal": true,
+            "optimizer": {
+              "exact": true,
+              "within_gate": true
+            },
+            "rng_equal": true,
+            "loss_differences": {
+              "train": 2.220446049250313e-16,
+              "test": 0.0
+            },
+            "correct_counts": {
+              "train": {
+                "original": 5167,
+                "current": 5167,
+                "samples": 7500
+              },
+              "test": {
+                "original": 8947,
+                "current": 8947,
+                "samples": 10000
+              }
+            },
+            "actual_cumulative_counts": {
+              "original": {
+                "train": {
+                  "samples": 7500,
+                  "batches": 30
+                },
+                "test": {
+                  "samples": 10000,
+                  "batches": 10
+                }
+              },
+              "current": {
+                "train": {
+                  "samples": 7500,
+                  "batches": 30
+                },
+                "test": {
+                  "samples": 10000,
+                  "batches": 10
+                }
+              }
+            },
+            "expected_cumulative_counts": {
+              "train": {
+                "samples": 7500,
+                "batches": 30
+              },
+              "test": {
+                "samples": 10000,
+                "batches": 10
+              }
+            },
+            "actual_sample_count_gate_passed": true,
+            "original_metrics": {
+              "train": {
+                "Loss": 1.0811129530270898,
+                "Accuracy": 68.89333454767862
+              },
+              "test": {
+                "Loss": 0.33462628424167634,
+                "Accuracy": 89.47000122070312
+              }
+            },
+            "current_metrics": {
+              "train": {
+                "Loss": 1.0811129530270895,
+                "Accuracy": 68.89333454767863
+              },
+              "test": {
+                "Loss": 0.33462628424167634,
+                "Accuracy": 89.47000122070312
+              }
+            },
+            "passed": true
+          },
+          {
+            "step": 60,
+            "parameters": {
+              "keys_equal": true,
+              "exact": true,
+              "integers_equal": true,
+              "maximum_absolute_difference": 0.0,
+              "within_gate": true
+            },
+            "scheduler_equal": true,
+            "optimizer": {
+              "exact": true,
+              "within_gate": true
+            },
+            "rng_equal": true,
+            "loss_differences": {
+              "train": 5.551115123125783e-17,
+              "test": 0.0
+            },
+            "correct_counts": {
+              "train": {
+                "original": 6764,
+                "current": 6764,
+                "samples": 7500
+              },
+              "test": {
+                "original": 9182,
+                "current": 9182,
+                "samples": 10000
+              }
+            },
+            "actual_cumulative_counts": {
+              "original": {
+                "train": {
+                  "samples": 15000,
+                  "batches": 60
+                },
+                "test": {
+                  "samples": 20000,
+                  "batches": 20
+                }
+              },
+              "current": {
+                "train": {
+                  "samples": 15000,
+                  "batches": 60
+                },
+                "test": {
+                  "samples": 20000,
+                  "batches": 20
+                }
+              }
+            },
+            "expected_cumulative_counts": {
+              "train": {
+                "samples": 15000,
+                "batches": 60
+              },
+              "test": {
+                "samples": 20000,
+                "batches": 20
+              }
+            },
+            "actual_sample_count_gate_passed": true,
+            "original_metrics": {
+              "train": {
+                "Loss": 0.3104525630672773,
+                "Accuracy": 90.1866678873698
+              },
+              "test": {
+                "Loss": 0.27101368457078934,
+                "Accuracy": 91.82000122070312
+              }
+            },
+            "current_metrics": {
+              "train": {
+                "Loss": 0.31045256306727725,
+                "Accuracy": 90.1866678873698
+              },
+              "test": {
+                "Loss": 0.27101368457078934,
+                "Accuracy": 91.82000122070312
+              }
+            },
+            "passed": true
+          }
+        ],
+        "original_inputs": {
+          "train": {
+            "samples": 15000,
+            "batches": 60,
+            "recorded_indices": 15000,
+            "indices_sha256": "08284cc5870135414b0945a01e18f5e4162a45fc337cbb56cffc8a4e36edcd53",
+            "images_sha256": "84d4d6a15d5b9c86017382bbd3b08c99b46de44570e96bfbc81816be870aa69a",
+            "targets_sha256": "54f742787e8b35cc2edc15246487d688ed50213283e60a2468fe4b7ac5a269f3",
+            "core_inputs_sha256": "6439568adb8b51f9a135ae435df04811dd08ef89bd03fe7929213218d0d4edf8"
+          },
+          "test": {
+            "samples": 20000,
+            "batches": 20,
+            "recorded_indices": 20000,
+            "indices_sha256": "16fa823577786973f0887fc65ea5cbf8576a273d2082eb56dd310cb2ace0df95",
+            "images_sha256": "3f03a8c4becad29aa22ffc986ac7010789d7b28e8e9f1eb6d6c21cb6f04f6055",
+            "targets_sha256": "6cf6f53c0ea53203ad00aa728ce2f850a237dcdf55676cf62066001d48edfa4a",
+            "core_inputs_sha256": "474cd600854f76c3aad161146c34bca426cc45bc846eb5ae287da6d4b4e4f897"
+          }
+        },
+        "current_inputs": {
+          "train": {
+            "samples": 15000,
+            "batches": 60,
+            "recorded_indices": 15000,
+            "indices_sha256": "08284cc5870135414b0945a01e18f5e4162a45fc337cbb56cffc8a4e36edcd53",
+            "images_sha256": "84d4d6a15d5b9c86017382bbd3b08c99b46de44570e96bfbc81816be870aa69a",
+            "targets_sha256": "54f742787e8b35cc2edc15246487d688ed50213283e60a2468fe4b7ac5a269f3",
+            "core_inputs_sha256": "6439568adb8b51f9a135ae435df04811dd08ef89bd03fe7929213218d0d4edf8"
+          },
+          "test": {
+            "samples": 20000,
+            "batches": 20,
+            "recorded_indices": 0,
+            "indices_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "images_sha256": "3f03a8c4becad29aa22ffc986ac7010789d7b28e8e9f1eb6d6c21cb6f04f6055",
+            "targets_sha256": "6cf6f53c0ea53203ad00aa728ce2f850a237dcdf55676cf62066001d48edfa4a",
+            "core_inputs_sha256": "474cd600854f76c3aad161146c34bca426cc45bc846eb5ae287da6d4b4e4f897"
+          }
+        },
+        "input_core_train_equal": true,
+        "input_core_test_equal": true,
+        "best": {
+          "original_step": 60,
+          "current_step": 60,
+          "selection_equal": true,
+          "weights": {
+            "keys_equal": true,
+            "exact": true,
+            "integers_equal": true,
+            "maximum_absolute_difference": 0.0,
+            "within_gate": true
+          }
+        },
+        "independent_eval": {
+          "original": {
+            "Loss": 0.27101368457078934,
+            "Accuracy": 91.82000122070312
+          },
+          "current": {
+            "Loss": 0.27101368457078934,
+            "Accuracy": 91.82000122070312
+          },
+          "weights": {
+            "keys_equal": true,
+            "exact": true,
+            "integers_equal": true,
+            "maximum_absolute_difference": 0.0,
+            "within_gate": true
+          },
+          "actual_counts": {
+            "original": {
+              "samples": 10000,
+              "batches": 10
+            },
+            "current": {
+              "samples": 10000,
+              "batches": 10
+            }
+          },
+          "full_sample_count_gate_passed": true,
+          "loss_difference": 0.0,
+          "correct_counts_equal": true,
+          "original_vs_own_best_loss_difference": 0.0,
+          "current_vs_own_best_loss_difference": 0.0,
+          "original_vs_own_best_correct_counts_equal": true,
+          "current_vs_own_best_correct_counts_equal": true,
+          "current_summary": {
+            "mode": "eval",
+            "accuracy": 91.82000122070312,
+            "best_accuracy": 91.82000122070312,
+            "resume_stem": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\MNIST_mlp\\current_train\\assets\\checkpoints\\best.pt",
+            "step": 60,
+            "epoch": 1,
+            "elapsed": "0:00:00",
+            "elapsed_seconds": 0.41568009997718036
+          }
+        },
+        "summary": {
+          "mode": "train",
+          "steps": 60,
+          "epochs": 1,
+          "progress_unit": "step",
+          "train_size": 60000,
+          "train_loss": 0.31045256306727725,
+          "accuracy": 91.82000122070312,
+          "best_value": 0.27101368457078934,
+          "best_metric": "Loss",
+          "elapsed": "0:00:02",
+          "elapsed_seconds": 2.0642701000906527
+        },
+        "elapsed_seconds": 7.965810399968177,
+        "gpu_peak_allocated_bytes": 79903232,
+        "gpu_peak_reserved_bytes": 96468992,
+        "full_sample_counts_equal": true,
+        "passed": true,
+        "source_unchanged": true,
+        "archive_verification": {
+          "main_commit": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+          "files_checked": 40,
+          "manifest_sha256": "93b20b642e0867b60b9a9180b45601c81a49843f81ee16c2d74919489ffa3aa0",
+          "changed_files": [],
+          "unchanged": true
+        }
+      },
+      {
+        "data": "MNIST",
+        "model": "cnn",
+        "initial_state": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "initial_rng_equal": true,
+        "segments": [
+          {
+            "step": 30,
+            "parameters": {
+              "keys_equal": true,
+              "exact": true,
+              "integers_equal": true,
+              "maximum_absolute_difference": 0.0,
+              "within_gate": true
+            },
+            "scheduler_equal": true,
+            "optimizer": {
+              "exact": true,
+              "within_gate": true
+            },
+            "rng_equal": true,
+            "loss_differences": {
+              "train": 0.0,
+              "test": 0.0
+            },
+            "correct_counts": {
+              "train": {
+                "original": 1368,
+                "current": 1368,
+                "samples": 7500
+              },
+              "test": {
+                "original": 1135,
+                "current": 1135,
+                "samples": 10000
+              }
+            },
+            "actual_cumulative_counts": {
+              "original": {
+                "train": {
+                  "samples": 7500,
+                  "batches": 30
+                },
+                "test": {
+                  "samples": 10000,
+                  "batches": 10
+                }
+              },
+              "current": {
+                "train": {
+                  "samples": 7500,
+                  "batches": 30
+                },
+                "test": {
+                  "samples": 10000,
+                  "batches": 10
+                }
+              }
+            },
+            "expected_cumulative_counts": {
+              "train": {
+                "samples": 7500,
+                "batches": 30
+              },
+              "test": {
+                "samples": 10000,
+                "batches": 10
+              }
+            },
+            "actual_sample_count_gate_passed": true,
+            "original_metrics": {
+              "train": {
+                "Loss": 2.3102879444758098,
+                "Accuracy": 18.240000343322755
+              },
+              "test": {
+                "Loss": 2.301600122451782,
+                "Accuracy": 11.350000286102295
+              }
+            },
+            "current_metrics": {
+              "train": {
+                "Loss": 2.3102879444758098,
+                "Accuracy": 18.240000343322755
+              },
+              "test": {
+                "Loss": 2.301600122451782,
+                "Accuracy": 11.350000286102295
+              }
+            },
+            "passed": true
+          },
+          {
+            "step": 60,
+            "parameters": {
+              "keys_equal": true,
+              "exact": true,
+              "integers_equal": true,
+              "maximum_absolute_difference": 0.0,
+              "within_gate": true
+            },
+            "scheduler_equal": true,
+            "optimizer": {
+              "exact": true,
+              "within_gate": true
+            },
+            "rng_equal": true,
+            "loss_differences": {
+              "train": 0.0,
+              "test": 0.0
+            },
+            "correct_counts": {
+              "train": {
+                "original": 874,
+                "current": 874,
+                "samples": 7500
+              },
+              "test": {
+                "original": 1135,
+                "current": 1135,
+                "samples": 10000
+              }
+            },
+            "actual_cumulative_counts": {
+              "original": {
+                "train": {
+                  "samples": 15000,
+                  "batches": 60
+                },
+                "test": {
+                  "samples": 20000,
+                  "batches": 20
+                }
+              },
+              "current": {
+                "train": {
+                  "samples": 15000,
+                  "batches": 60
+                },
+                "test": {
+                  "samples": 20000,
+                  "batches": 20
+                }
+              }
+            },
+            "expected_cumulative_counts": {
+              "train": {
+                "samples": 15000,
+                "batches": 60
+              },
+              "test": {
+                "samples": 20000,
+                "batches": 20
+              }
+            },
+            "actual_sample_count_gate_passed": true,
+            "original_metrics": {
+              "train": {
+                "Loss": 2.2889822642008464,
+                "Accuracy": 11.653333473205567
+              },
+              "test": {
+                "Loss": 2.282201552391052,
+                "Accuracy": 11.350000286102295
+              }
+            },
+            "current_metrics": {
+              "train": {
+                "Loss": 2.2889822642008464,
+                "Accuracy": 11.653333473205567
+              },
+              "test": {
+                "Loss": 2.282201552391052,
+                "Accuracy": 11.350000286102295
+              }
+            },
+            "passed": true
+          }
+        ],
+        "original_inputs": {
+          "train": {
+            "samples": 15000,
+            "batches": 60,
+            "recorded_indices": 15000,
+            "indices_sha256": "08284cc5870135414b0945a01e18f5e4162a45fc337cbb56cffc8a4e36edcd53",
+            "images_sha256": "84d4d6a15d5b9c86017382bbd3b08c99b46de44570e96bfbc81816be870aa69a",
+            "targets_sha256": "54f742787e8b35cc2edc15246487d688ed50213283e60a2468fe4b7ac5a269f3",
+            "core_inputs_sha256": "6439568adb8b51f9a135ae435df04811dd08ef89bd03fe7929213218d0d4edf8"
+          },
+          "test": {
+            "samples": 20000,
+            "batches": 20,
+            "recorded_indices": 20000,
+            "indices_sha256": "16fa823577786973f0887fc65ea5cbf8576a273d2082eb56dd310cb2ace0df95",
+            "images_sha256": "3f03a8c4becad29aa22ffc986ac7010789d7b28e8e9f1eb6d6c21cb6f04f6055",
+            "targets_sha256": "6cf6f53c0ea53203ad00aa728ce2f850a237dcdf55676cf62066001d48edfa4a",
+            "core_inputs_sha256": "474cd600854f76c3aad161146c34bca426cc45bc846eb5ae287da6d4b4e4f897"
+          }
+        },
+        "current_inputs": {
+          "train": {
+            "samples": 15000,
+            "batches": 60,
+            "recorded_indices": 15000,
+            "indices_sha256": "08284cc5870135414b0945a01e18f5e4162a45fc337cbb56cffc8a4e36edcd53",
+            "images_sha256": "84d4d6a15d5b9c86017382bbd3b08c99b46de44570e96bfbc81816be870aa69a",
+            "targets_sha256": "54f742787e8b35cc2edc15246487d688ed50213283e60a2468fe4b7ac5a269f3",
+            "core_inputs_sha256": "6439568adb8b51f9a135ae435df04811dd08ef89bd03fe7929213218d0d4edf8"
+          },
+          "test": {
+            "samples": 20000,
+            "batches": 20,
+            "recorded_indices": 0,
+            "indices_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "images_sha256": "3f03a8c4becad29aa22ffc986ac7010789d7b28e8e9f1eb6d6c21cb6f04f6055",
+            "targets_sha256": "6cf6f53c0ea53203ad00aa728ce2f850a237dcdf55676cf62066001d48edfa4a",
+            "core_inputs_sha256": "474cd600854f76c3aad161146c34bca426cc45bc846eb5ae287da6d4b4e4f897"
+          }
+        },
+        "input_core_train_equal": true,
+        "input_core_test_equal": true,
+        "best": {
+          "original_step": 60,
+          "current_step": 60,
+          "selection_equal": true,
+          "weights": {
+            "keys_equal": true,
+            "exact": true,
+            "integers_equal": true,
+            "maximum_absolute_difference": 0.0,
+            "within_gate": true
+          }
+        },
+        "independent_eval": {
+          "original": {
+            "Loss": 2.282201552391052,
+            "Accuracy": 11.350000286102295
+          },
+          "current": {
+            "Loss": 2.282201552391052,
+            "Accuracy": 11.350000286102295
+          },
+          "weights": {
+            "keys_equal": true,
+            "exact": true,
+            "integers_equal": true,
+            "maximum_absolute_difference": 0.0,
+            "within_gate": true
+          },
+          "actual_counts": {
+            "original": {
+              "samples": 10000,
+              "batches": 10
+            },
+            "current": {
+              "samples": 10000,
+              "batches": 10
+            }
+          },
+          "full_sample_count_gate_passed": true,
+          "loss_difference": 0.0,
+          "correct_counts_equal": true,
+          "original_vs_own_best_loss_difference": 0.0,
+          "current_vs_own_best_loss_difference": 0.0,
+          "original_vs_own_best_correct_counts_equal": true,
+          "current_vs_own_best_correct_counts_equal": true,
+          "current_summary": {
+            "mode": "eval",
+            "accuracy": 11.350000286102295,
+            "best_accuracy": 11.350000286102295,
+            "resume_stem": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\MNIST_cnn\\current_train\\assets\\checkpoints\\best.pt",
+            "step": 60,
+            "epoch": 1,
+            "elapsed": "0:00:00",
+            "elapsed_seconds": 0.43968469998799264
+          }
+        },
+        "summary": {
+          "mode": "train",
+          "steps": 60,
+          "epochs": 1,
+          "progress_unit": "step",
+          "train_size": 60000,
+          "train_loss": 2.2889822642008464,
+          "accuracy": 11.350000286102295,
+          "best_value": 2.282201552391052,
+          "best_metric": "Loss",
+          "elapsed": "0:00:02",
+          "elapsed_seconds": 2.4103289999766275
+        },
+        "elapsed_seconds": 8.679070699959993,
+        "gpu_peak_allocated_bytes": 503980544,
+        "gpu_peak_reserved_bytes": 843055104,
+        "full_sample_counts_equal": true,
+        "passed": true,
+        "source_unchanged": true,
+        "archive_verification": {
+          "main_commit": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+          "files_checked": 40,
+          "manifest_sha256": "93b20b642e0867b60b9a9180b45601c81a49843f81ee16c2d74919489ffa3aa0",
+          "changed_files": [],
+          "unchanged": true
+        }
+      },
+      {
+        "data": "MNIST",
+        "model": "resnet18",
+        "initial_state": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "initial_rng_equal": true,
+        "segments": [
+          {
+            "step": 30,
+            "parameters": {
+              "keys_equal": true,
+              "exact": true,
+              "integers_equal": true,
+              "maximum_absolute_difference": 0.0,
+              "within_gate": true
+            },
+            "scheduler_equal": true,
+            "optimizer": {
+              "exact": true,
+              "within_gate": true
+            },
+            "rng_equal": true,
+            "loss_differences": {
+              "train": 0.0,
+              "test": 0.0
+            },
+            "correct_counts": {
+              "train": {
+                "original": 5375,
+                "current": 5375,
+                "samples": 7500
+              },
+              "test": {
+                "original": 9296,
+                "current": 9296,
+                "samples": 10000
+              }
+            },
+            "actual_cumulative_counts": {
+              "original": {
+                "train": {
+                  "samples": 7500,
+                  "batches": 30
+                },
+                "test": {
+                  "samples": 10000,
+                  "batches": 10
+                }
+              },
+              "current": {
+                "train": {
+                  "samples": 7500,
+                  "batches": 30
+                },
+                "test": {
+                  "samples": 10000,
+                  "batches": 10
+                }
+              }
+            },
+            "expected_cumulative_counts": {
+              "train": {
+                "samples": 7500,
+                "batches": 30
+              },
+              "test": {
+                "samples": 10000,
+                "batches": 10
+              }
+            },
+            "actual_sample_count_gate_passed": true,
+            "original_metrics": {
+              "train": {
+                "Loss": 0.8349158085882664,
+                "Accuracy": 71.66666773160298
+              },
+              "test": {
+                "Loss": 0.2532432362437248,
+                "Accuracy": 92.9599998474121
+              }
+            },
+            "current_metrics": {
+              "train": {
+                "Loss": 0.8349158085882664,
+                "Accuracy": 71.66666773160298
+              },
+              "test": {
+                "Loss": 0.2532432362437248,
+                "Accuracy": 92.9599998474121
+              }
+            },
+            "passed": true
+          },
+          {
+            "step": 60,
+            "parameters": {
+              "keys_equal": true,
+              "exact": true,
+              "integers_equal": true,
+              "maximum_absolute_difference": 0.0,
+              "within_gate": true
+            },
+            "scheduler_equal": true,
+            "optimizer": {
+              "exact": true,
+              "within_gate": true
+            },
+            "rng_equal": true,
+            "loss_differences": {
+              "train": 0.0,
+              "test": 0.0
+            },
+            "correct_counts": {
+              "train": {
+                "original": 7288,
+                "current": 7288,
+                "samples": 7500
+              },
+              "test": {
+                "original": 9769,
+                "current": 9769,
+                "samples": 10000
+              }
+            },
+            "actual_cumulative_counts": {
+              "original": {
+                "train": {
+                  "samples": 15000,
+                  "batches": 60
+                },
+                "test": {
+                  "samples": 20000,
+                  "batches": 20
+                }
+              },
+              "current": {
+                "train": {
+                  "samples": 15000,
+                  "batches": 60
+                },
+                "test": {
+                  "samples": 20000,
+                  "batches": 20
+                }
+              }
+            },
+            "expected_cumulative_counts": {
+              "train": {
+                "samples": 15000,
+                "batches": 60
+              },
+              "test": {
+                "samples": 20000,
+                "batches": 20
+              }
+            },
+            "actual_sample_count_gate_passed": true,
+            "original_metrics": {
+              "train": {
+                "Loss": 0.0974891676257054,
+                "Accuracy": 97.17333501180013
+              },
+              "test": {
+                "Loss": 0.07538461461663246,
+                "Accuracy": 97.69000091552735
+              }
+            },
+            "current_metrics": {
+              "train": {
+                "Loss": 0.0974891676257054,
+                "Accuracy": 97.17333501180013
+              },
+              "test": {
+                "Loss": 0.07538461461663246,
+                "Accuracy": 97.69000091552735
+              }
+            },
+            "passed": true
+          }
+        ],
+        "original_inputs": {
+          "train": {
+            "samples": 15000,
+            "batches": 60,
+            "recorded_indices": 15000,
+            "indices_sha256": "08284cc5870135414b0945a01e18f5e4162a45fc337cbb56cffc8a4e36edcd53",
+            "images_sha256": "84d4d6a15d5b9c86017382bbd3b08c99b46de44570e96bfbc81816be870aa69a",
+            "targets_sha256": "54f742787e8b35cc2edc15246487d688ed50213283e60a2468fe4b7ac5a269f3",
+            "core_inputs_sha256": "6439568adb8b51f9a135ae435df04811dd08ef89bd03fe7929213218d0d4edf8"
+          },
+          "test": {
+            "samples": 20000,
+            "batches": 20,
+            "recorded_indices": 20000,
+            "indices_sha256": "16fa823577786973f0887fc65ea5cbf8576a273d2082eb56dd310cb2ace0df95",
+            "images_sha256": "3f03a8c4becad29aa22ffc986ac7010789d7b28e8e9f1eb6d6c21cb6f04f6055",
+            "targets_sha256": "6cf6f53c0ea53203ad00aa728ce2f850a237dcdf55676cf62066001d48edfa4a",
+            "core_inputs_sha256": "474cd600854f76c3aad161146c34bca426cc45bc846eb5ae287da6d4b4e4f897"
+          }
+        },
+        "current_inputs": {
+          "train": {
+            "samples": 15000,
+            "batches": 60,
+            "recorded_indices": 15000,
+            "indices_sha256": "08284cc5870135414b0945a01e18f5e4162a45fc337cbb56cffc8a4e36edcd53",
+            "images_sha256": "84d4d6a15d5b9c86017382bbd3b08c99b46de44570e96bfbc81816be870aa69a",
+            "targets_sha256": "54f742787e8b35cc2edc15246487d688ed50213283e60a2468fe4b7ac5a269f3",
+            "core_inputs_sha256": "6439568adb8b51f9a135ae435df04811dd08ef89bd03fe7929213218d0d4edf8"
+          },
+          "test": {
+            "samples": 20000,
+            "batches": 20,
+            "recorded_indices": 0,
+            "indices_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "images_sha256": "3f03a8c4becad29aa22ffc986ac7010789d7b28e8e9f1eb6d6c21cb6f04f6055",
+            "targets_sha256": "6cf6f53c0ea53203ad00aa728ce2f850a237dcdf55676cf62066001d48edfa4a",
+            "core_inputs_sha256": "474cd600854f76c3aad161146c34bca426cc45bc846eb5ae287da6d4b4e4f897"
+          }
+        },
+        "input_core_train_equal": true,
+        "input_core_test_equal": true,
+        "best": {
+          "original_step": 60,
+          "current_step": 60,
+          "selection_equal": true,
+          "weights": {
+            "keys_equal": true,
+            "exact": true,
+            "integers_equal": true,
+            "maximum_absolute_difference": 0.0,
+            "within_gate": true
+          }
+        },
+        "independent_eval": {
+          "original": {
+            "Loss": 0.07538461461663246,
+            "Accuracy": 97.69000091552735
+          },
+          "current": {
+            "Loss": 0.07538461461663246,
+            "Accuracy": 97.69000091552735
+          },
+          "weights": {
+            "keys_equal": true,
+            "exact": true,
+            "integers_equal": true,
+            "maximum_absolute_difference": 0.0,
+            "within_gate": true
+          },
+          "actual_counts": {
+            "original": {
+              "samples": 10000,
+              "batches": 10
+            },
+            "current": {
+              "samples": 10000,
+              "batches": 10
+            }
+          },
+          "full_sample_count_gate_passed": true,
+          "loss_difference": 0.0,
+          "correct_counts_equal": true,
+          "original_vs_own_best_loss_difference": 0.0,
+          "current_vs_own_best_loss_difference": 0.0,
+          "original_vs_own_best_correct_counts_equal": true,
+          "current_vs_own_best_correct_counts_equal": true,
+          "current_summary": {
+            "mode": "eval",
+            "accuracy": 97.69000091552735,
+            "best_accuracy": 97.69000091552735,
+            "resume_stem": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\MNIST_resnet18\\current_train\\assets\\checkpoints\\best.pt",
+            "step": 60,
+            "epoch": 1,
+            "elapsed": "0:00:01",
+            "elapsed_seconds": 0.7685135999927297
+          }
+        },
+        "summary": {
+          "mode": "train",
+          "steps": 60,
+          "epochs": 1,
+          "progress_unit": "step",
+          "train_size": 60000,
+          "train_loss": 0.0974891676257054,
+          "accuracy": 97.69000091552735,
+          "best_value": 0.07538461461663246,
+          "best_metric": "Loss",
+          "elapsed": "0:00:06",
+          "elapsed_seconds": 6.015443500014953
+        },
+        "elapsed_seconds": 16.589651999995112,
+        "gpu_peak_allocated_bytes": 1661878784,
+        "gpu_peak_reserved_bytes": 2896166912,
+        "full_sample_counts_equal": true,
+        "passed": true,
+        "source_unchanged": true,
+        "archive_verification": {
+          "main_commit": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+          "files_checked": 40,
+          "manifest_sha256": "93b20b642e0867b60b9a9180b45601c81a49843f81ee16c2d74919489ffa3aa0",
+          "changed_files": [],
+          "unchanged": true
+        }
+      },
+      {
+        "data": "CIFAR10",
+        "model": "linear",
+        "initial_state": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "initial_rng_equal": true,
+        "segments": [
+          {
+            "step": 30,
+            "parameters": {
+              "keys_equal": true,
+              "exact": true,
+              "integers_equal": true,
+              "maximum_absolute_difference": 0.0,
+              "within_gate": true
+            },
+            "scheduler_equal": true,
+            "optimizer": {
+              "exact": true,
+              "within_gate": true
+            },
+            "rng_equal": true,
+            "loss_differences": {
+              "train": 0.0,
+              "test": 0.0
+            },
+            "correct_counts": {
+              "train": {
+                "original": 1565,
+                "current": 1565,
+                "samples": 7500
+              },
+              "test": {
+                "original": 2865,
+                "current": 2865,
+                "samples": 10000
+              }
+            },
+            "actual_cumulative_counts": {
+              "original": {
+                "train": {
+                  "samples": 7500,
+                  "batches": 30
+                },
+                "test": {
+                  "samples": 10000,
+                  "batches": 10
+                }
+              },
+              "current": {
+                "train": {
+                  "samples": 7500,
+                  "batches": 30
+                },
+                "test": {
+                  "samples": 10000,
+                  "batches": 10
+                }
+              }
+            },
+            "expected_cumulative_counts": {
+              "train": {
+                "samples": 7500,
+                "batches": 30
+              },
+              "test": {
+                "samples": 10000,
+                "batches": 10
+              }
+            },
+            "actual_sample_count_gate_passed": true,
+            "original_metrics": {
+              "train": {
+                "Loss": 11.205720027287802,
+                "Accuracy": 20.86666711171468
+              },
+              "test": {
+                "Loss": 5.950401782989502,
+                "Accuracy": 28.650000381469727
+              }
+            },
+            "current_metrics": {
+              "train": {
+                "Loss": 11.205720027287802,
+                "Accuracy": 20.86666711171468
+              },
+              "test": {
+                "Loss": 5.950401782989502,
+                "Accuracy": 28.650000381469727
+              }
+            },
+            "passed": true
+          },
+          {
+            "step": 60,
+            "parameters": {
+              "keys_equal": true,
+              "exact": true,
+              "integers_equal": true,
+              "maximum_absolute_difference": 0.0,
+              "within_gate": true
+            },
+            "scheduler_equal": true,
+            "optimizer": {
+              "exact": true,
+              "within_gate": true
+            },
+            "rng_equal": true,
+            "loss_differences": {
+              "train": 0.0,
+              "test": 0.0
+            },
+            "correct_counts": {
+              "train": {
+                "original": 1963,
+                "current": 1963,
+                "samples": 7500
+              },
+              "test": {
+                "original": 2952,
+                "current": 2952,
+                "samples": 10000
+              }
+            },
+            "actual_cumulative_counts": {
+              "original": {
+                "train": {
+                  "samples": 15000,
+                  "batches": 60
+                },
+                "test": {
+                  "samples": 20000,
+                  "batches": 20
+                }
+              },
+              "current": {
+                "train": {
+                  "samples": 15000,
+                  "batches": 60
+                },
+                "test": {
+                  "samples": 20000,
+                  "batches": 20
+                }
+              }
+            },
+            "expected_cumulative_counts": {
+              "train": {
+                "samples": 15000,
+                "batches": 60
+              },
+              "test": {
+                "samples": 20000,
+                "batches": 20
+              }
+            },
+            "actual_sample_count_gate_passed": true,
+            "original_metrics": {
+              "train": {
+                "Loss": 3.995149819056193,
+                "Accuracy": 26.173333740234376
+              },
+              "test": {
+                "Loss": 2.965871715545654,
+                "Accuracy": 29.520000076293947
+              }
+            },
+            "current_metrics": {
+              "train": {
+                "Loss": 3.995149819056193,
+                "Accuracy": 26.173333740234376
+              },
+              "test": {
+                "Loss": 2.965871715545654,
+                "Accuracy": 29.520000076293947
+              }
+            },
+            "passed": true
+          }
+        ],
+        "original_inputs": {
+          "train": {
+            "samples": 15000,
+            "batches": 60,
+            "recorded_indices": 15000,
+            "indices_sha256": "e83a816297dff81e69cd0415bc3ab8f3b48544d8e1c464f82f38f3817fa7ffb2",
+            "images_sha256": "941ed88522a7a1548847770ea7cf22b2b2fcc32da8742fc39a51d7943c900e3b",
+            "targets_sha256": "e8254c5deb0cc3c68b2bcd5fee3fe294a9559550dde60048b518bb67cd18d018",
+            "core_inputs_sha256": "121ff17e65f4c53a8e01ae94979aaa782872de8870050ea52f9f30a3c692cb18"
+          },
+          "test": {
+            "samples": 20000,
+            "batches": 20,
+            "recorded_indices": 20000,
+            "indices_sha256": "16fa823577786973f0887fc65ea5cbf8576a273d2082eb56dd310cb2ace0df95",
+            "images_sha256": "67c99b8e362293d8233ca5cb32f5c12bd9a8398b82477f163839f84f9dcf1a2f",
+            "targets_sha256": "8246f05cdabfb48370983549f72647e9c84f5b08c03ab97b82dc686e4c829324",
+            "core_inputs_sha256": "fe834242ce372fe570893cd37bd01105810a1893a2426d5e88ff3c87c52c49a5"
+          }
+        },
+        "current_inputs": {
+          "train": {
+            "samples": 15000,
+            "batches": 60,
+            "recorded_indices": 15000,
+            "indices_sha256": "e83a816297dff81e69cd0415bc3ab8f3b48544d8e1c464f82f38f3817fa7ffb2",
+            "images_sha256": "941ed88522a7a1548847770ea7cf22b2b2fcc32da8742fc39a51d7943c900e3b",
+            "targets_sha256": "e8254c5deb0cc3c68b2bcd5fee3fe294a9559550dde60048b518bb67cd18d018",
+            "core_inputs_sha256": "121ff17e65f4c53a8e01ae94979aaa782872de8870050ea52f9f30a3c692cb18"
+          },
+          "test": {
+            "samples": 20000,
+            "batches": 20,
+            "recorded_indices": 0,
+            "indices_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "images_sha256": "67c99b8e362293d8233ca5cb32f5c12bd9a8398b82477f163839f84f9dcf1a2f",
+            "targets_sha256": "8246f05cdabfb48370983549f72647e9c84f5b08c03ab97b82dc686e4c829324",
+            "core_inputs_sha256": "fe834242ce372fe570893cd37bd01105810a1893a2426d5e88ff3c87c52c49a5"
+          }
+        },
+        "input_core_train_equal": true,
+        "input_core_test_equal": true,
+        "best": {
+          "original_step": 60,
+          "current_step": 60,
+          "selection_equal": true,
+          "weights": {
+            "keys_equal": true,
+            "exact": true,
+            "integers_equal": true,
+            "maximum_absolute_difference": 0.0,
+            "within_gate": true
+          }
+        },
+        "independent_eval": {
+          "original": {
+            "Loss": 2.965871715545654,
+            "Accuracy": 29.520000076293947
+          },
+          "current": {
+            "Loss": 2.965871715545654,
+            "Accuracy": 29.520000076293947
+          },
+          "weights": {
+            "keys_equal": true,
+            "exact": true,
+            "integers_equal": true,
+            "maximum_absolute_difference": 0.0,
+            "within_gate": true
+          },
+          "actual_counts": {
+            "original": {
+              "samples": 10000,
+              "batches": 10
+            },
+            "current": {
+              "samples": 10000,
+              "batches": 10
+            }
+          },
+          "full_sample_count_gate_passed": true,
+          "loss_difference": 0.0,
+          "correct_counts_equal": true,
+          "original_vs_own_best_loss_difference": 0.0,
+          "current_vs_own_best_loss_difference": 0.0,
+          "original_vs_own_best_correct_counts_equal": true,
+          "current_vs_own_best_correct_counts_equal": true,
+          "current_summary": {
+            "mode": "eval",
+            "accuracy": 29.520000076293947,
+            "best_accuracy": 29.520000076293947,
+            "resume_stem": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\CIFAR10_linear\\current_train\\assets\\checkpoints\\best.pt",
+            "step": 60,
+            "epoch": 1,
+            "elapsed": "0:00:01",
+            "elapsed_seconds": 0.58363620005548
+          }
+        },
+        "summary": {
+          "mode": "train",
+          "steps": 60,
+          "epochs": 1,
+          "progress_unit": "step",
+          "train_size": 50000,
+          "train_loss": 3.995149819056193,
+          "accuracy": 29.520000076293947,
+          "best_value": 2.965871715545654,
+          "best_metric": "Loss",
+          "elapsed": "0:00:09",
+          "elapsed_seconds": 8.696995400008745
+        },
+        "elapsed_seconds": 26.827870999928564,
+        "gpu_peak_allocated_bytes": 109083648,
+        "gpu_peak_reserved_bytes": 127926272,
+        "full_sample_counts_equal": true,
+        "passed": true,
+        "source_unchanged": true,
+        "archive_verification": {
+          "main_commit": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+          "files_checked": 40,
+          "manifest_sha256": "93b20b642e0867b60b9a9180b45601c81a49843f81ee16c2d74919489ffa3aa0",
+          "changed_files": [],
+          "unchanged": true
+        }
+      },
+      {
+        "data": "CIFAR10",
+        "model": "mlp",
+        "initial_state": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "initial_rng_equal": true,
+        "segments": [
+          {
+            "step": 30,
+            "parameters": {
+              "keys_equal": true,
+              "exact": true,
+              "integers_equal": true,
+              "maximum_absolute_difference": 0.0,
+              "within_gate": true
+            },
+            "scheduler_equal": true,
+            "optimizer": {
+              "exact": true,
+              "within_gate": true
+            },
+            "rng_equal": true,
+            "loss_differences": {
+              "train": 2.220446049250313e-16,
+              "test": 0.0
+            },
+            "correct_counts": {
+              "train": {
+                "original": 1989,
+                "current": 1989,
+                "samples": 7500
+              },
+              "test": {
+                "original": 3644,
+                "current": 3644,
+                "samples": 10000
+              }
+            },
+            "actual_cumulative_counts": {
+              "original": {
+                "train": {
+                  "samples": 7500,
+                  "batches": 30
+                },
+                "test": {
+                  "samples": 10000,
+                  "batches": 10
+                }
+              },
+              "current": {
+                "train": {
+                  "samples": 7500,
+                  "batches": 30
+                },
+                "test": {
+                  "samples": 10000,
+                  "batches": 10
+                }
+              }
+            },
+            "expected_cumulative_counts": {
+              "train": {
+                "samples": 7500,
+                "batches": 30
+              },
+              "test": {
+                "samples": 10000,
+                "batches": 10
+              }
+            },
+            "actual_sample_count_gate_passed": true,
+            "original_metrics": {
+              "train": {
+                "Loss": 1.9993716319402062,
+                "Accuracy": 26.52000036239624
+              },
+              "test": {
+                "Loss": 1.7671398878097535,
+                "Accuracy": 36.44000053405762
+              }
+            },
+            "current_metrics": {
+              "train": {
+                "Loss": 1.999371631940206,
+                "Accuracy": 26.52000036239624
+              },
+              "test": {
+                "Loss": 1.7671398878097535,
+                "Accuracy": 36.44000053405762
+              }
+            },
+            "passed": true
+          },
+          {
+            "step": 60,
+            "parameters": {
+              "keys_equal": true,
+              "exact": true,
+              "integers_equal": true,
+              "maximum_absolute_difference": 0.0,
+              "within_gate": true
+            },
+            "scheduler_equal": true,
+            "optimizer": {
+              "exact": true,
+              "within_gate": true
+            },
+            "rng_equal": true,
+            "loss_differences": {
+              "train": 0.0,
+              "test": 0.0
+            },
+            "correct_counts": {
+              "train": {
+                "original": 2673,
+                "current": 2673,
+                "samples": 7500
+              },
+              "test": {
+                "original": 4030,
+                "current": 4030,
+                "samples": 10000
+              }
+            },
+            "actual_cumulative_counts": {
+              "original": {
+                "train": {
+                  "samples": 15000,
+                  "batches": 60
+                },
+                "test": {
+                  "samples": 20000,
+                  "batches": 20
+                }
+              },
+              "current": {
+                "train": {
+                  "samples": 15000,
+                  "batches": 60
+                },
+                "test": {
+                  "samples": 20000,
+                  "batches": 20
+                }
+              }
+            },
+            "expected_cumulative_counts": {
+              "train": {
+                "samples": 15000,
+                "batches": 60
+              },
+              "test": {
+                "samples": 20000,
+                "batches": 20
+              }
+            },
+            "actual_sample_count_gate_passed": true,
+            "original_metrics": {
+              "train": {
+                "Loss": 1.7910581549008688,
+                "Accuracy": 35.64000072479249
+              },
+              "test": {
+                "Loss": 1.6899436950683593,
+                "Accuracy": 40.30000114440918
+              }
+            },
+            "current_metrics": {
+              "train": {
+                "Loss": 1.7910581549008688,
+                "Accuracy": 35.64000072479248
+              },
+              "test": {
+                "Loss": 1.6899436950683593,
+                "Accuracy": 40.30000114440918
+              }
+            },
+            "passed": true
+          }
+        ],
+        "original_inputs": {
+          "train": {
+            "samples": 15000,
+            "batches": 60,
+            "recorded_indices": 15000,
+            "indices_sha256": "e83a816297dff81e69cd0415bc3ab8f3b48544d8e1c464f82f38f3817fa7ffb2",
+            "images_sha256": "941ed88522a7a1548847770ea7cf22b2b2fcc32da8742fc39a51d7943c900e3b",
+            "targets_sha256": "e8254c5deb0cc3c68b2bcd5fee3fe294a9559550dde60048b518bb67cd18d018",
+            "core_inputs_sha256": "43041291bc85955d35756be467ef881afb5a2f61f74e2c69fef24653d22980a1"
+          },
+          "test": {
+            "samples": 20000,
+            "batches": 20,
+            "recorded_indices": 20000,
+            "indices_sha256": "16fa823577786973f0887fc65ea5cbf8576a273d2082eb56dd310cb2ace0df95",
+            "images_sha256": "67c99b8e362293d8233ca5cb32f5c12bd9a8398b82477f163839f84f9dcf1a2f",
+            "targets_sha256": "8246f05cdabfb48370983549f72647e9c84f5b08c03ab97b82dc686e4c829324",
+            "core_inputs_sha256": "fe834242ce372fe570893cd37bd01105810a1893a2426d5e88ff3c87c52c49a5"
+          }
+        },
+        "current_inputs": {
+          "train": {
+            "samples": 15000,
+            "batches": 60,
+            "recorded_indices": 15000,
+            "indices_sha256": "e83a816297dff81e69cd0415bc3ab8f3b48544d8e1c464f82f38f3817fa7ffb2",
+            "images_sha256": "941ed88522a7a1548847770ea7cf22b2b2fcc32da8742fc39a51d7943c900e3b",
+            "targets_sha256": "e8254c5deb0cc3c68b2bcd5fee3fe294a9559550dde60048b518bb67cd18d018",
+            "core_inputs_sha256": "43041291bc85955d35756be467ef881afb5a2f61f74e2c69fef24653d22980a1"
+          },
+          "test": {
+            "samples": 20000,
+            "batches": 20,
+            "recorded_indices": 0,
+            "indices_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "images_sha256": "67c99b8e362293d8233ca5cb32f5c12bd9a8398b82477f163839f84f9dcf1a2f",
+            "targets_sha256": "8246f05cdabfb48370983549f72647e9c84f5b08c03ab97b82dc686e4c829324",
+            "core_inputs_sha256": "fe834242ce372fe570893cd37bd01105810a1893a2426d5e88ff3c87c52c49a5"
+          }
+        },
+        "input_core_train_equal": true,
+        "input_core_test_equal": true,
+        "best": {
+          "original_step": 60,
+          "current_step": 60,
+          "selection_equal": true,
+          "weights": {
+            "keys_equal": true,
+            "exact": true,
+            "integers_equal": true,
+            "maximum_absolute_difference": 0.0,
+            "within_gate": true
+          }
+        },
+        "independent_eval": {
+          "original": {
+            "Loss": 1.6899436950683593,
+            "Accuracy": 40.30000114440918
+          },
+          "current": {
+            "Loss": 1.6899436950683593,
+            "Accuracy": 40.30000114440918
+          },
+          "weights": {
+            "keys_equal": true,
+            "exact": true,
+            "integers_equal": true,
+            "maximum_absolute_difference": 0.0,
+            "within_gate": true
+          },
+          "actual_counts": {
+            "original": {
+              "samples": 10000,
+              "batches": 10
+            },
+            "current": {
+              "samples": 10000,
+              "batches": 10
+            }
+          },
+          "full_sample_count_gate_passed": true,
+          "loss_difference": 0.0,
+          "correct_counts_equal": true,
+          "original_vs_own_best_loss_difference": 0.0,
+          "current_vs_own_best_loss_difference": 0.0,
+          "original_vs_own_best_correct_counts_equal": true,
+          "current_vs_own_best_correct_counts_equal": true,
+          "current_summary": {
+            "mode": "eval",
+            "accuracy": 40.30000114440918,
+            "best_accuracy": 40.30000114440918,
+            "resume_stem": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\CIFAR10_mlp\\current_train\\assets\\checkpoints\\best.pt",
+            "step": 60,
+            "epoch": 1,
+            "elapsed": "0:00:01",
+            "elapsed_seconds": 0.6066995000001043
+          }
+        },
+        "summary": {
+          "mode": "train",
+          "steps": 60,
+          "epochs": 1,
+          "progress_unit": "step",
+          "train_size": 50000,
+          "train_loss": 1.7910581549008688,
+          "accuracy": 40.30000114440918,
+          "best_value": 1.6899436950683593,
+          "best_metric": "Loss",
+          "elapsed": "0:00:08",
+          "elapsed_seconds": 8.45286380010657
+        },
+        "elapsed_seconds": 25.022824999992736,
+        "gpu_peak_allocated_bytes": 112637952,
+        "gpu_peak_reserved_bytes": 132120576,
+        "full_sample_counts_equal": true,
+        "passed": true,
+        "source_unchanged": true,
+        "archive_verification": {
+          "main_commit": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+          "files_checked": 40,
+          "manifest_sha256": "93b20b642e0867b60b9a9180b45601c81a49843f81ee16c2d74919489ffa3aa0",
+          "changed_files": [],
+          "unchanged": true
+        }
+      },
+      {
+        "data": "CIFAR10",
+        "model": "cnn",
+        "initial_state": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "initial_rng_equal": true,
+        "segments": [
+          {
+            "step": 30,
+            "parameters": {
+              "keys_equal": true,
+              "exact": true,
+              "integers_equal": true,
+              "maximum_absolute_difference": 0.0,
+              "within_gate": true
+            },
+            "scheduler_equal": true,
+            "optimizer": {
+              "exact": true,
+              "within_gate": true
+            },
+            "rng_equal": true,
+            "loss_differences": {
+              "train": 0.0,
+              "test": 0.0
+            },
+            "correct_counts": {
+              "train": {
+                "original": 1386,
+                "current": 1386,
+                "samples": 7500
+              },
+              "test": {
+                "original": 2876,
+                "current": 2876,
+                "samples": 10000
+              }
+            },
+            "actual_cumulative_counts": {
+              "original": {
+                "train": {
+                  "samples": 7500,
+                  "batches": 30
+                },
+                "test": {
+                  "samples": 10000,
+                  "batches": 10
+                }
+              },
+              "current": {
+                "train": {
+                  "samples": 7500,
+                  "batches": 30
+                },
+                "test": {
+                  "samples": 10000,
+                  "batches": 10
+                }
+              }
+            },
+            "expected_cumulative_counts": {
+              "train": {
+                "samples": 7500,
+                "batches": 30
+              },
+              "test": {
+                "samples": 10000,
+                "batches": 10
+              }
+            },
+            "actual_sample_count_gate_passed": true,
+            "original_metrics": {
+              "train": {
+                "Loss": 2.155863082408905,
+                "Accuracy": 18.48000033696492
+              },
+              "test": {
+                "Loss": 1.9640504717826843,
+                "Accuracy": 28.760000228881836
+              }
+            },
+            "current_metrics": {
+              "train": {
+                "Loss": 2.155863082408905,
+                "Accuracy": 18.480000336964924
+              },
+              "test": {
+                "Loss": 1.9640504717826843,
+                "Accuracy": 28.760000228881836
+              }
+            },
+            "passed": true
+          },
+          {
+            "step": 60,
+            "parameters": {
+              "keys_equal": true,
+              "exact": true,
+              "integers_equal": true,
+              "maximum_absolute_difference": 0.0,
+              "within_gate": true
+            },
+            "scheduler_equal": true,
+            "optimizer": {
+              "exact": true,
+              "within_gate": true
+            },
+            "rng_equal": true,
+            "loss_differences": {
+              "train": 0.0,
+              "test": 0.0
+            },
+            "correct_counts": {
+              "train": {
+                "original": 2255,
+                "current": 2255,
+                "samples": 7500
+              },
+              "test": {
+                "original": 3294,
+                "current": 3294,
+                "samples": 10000
+              }
+            },
+            "actual_cumulative_counts": {
+              "original": {
+                "train": {
+                  "samples": 15000,
+                  "batches": 60
+                },
+                "test": {
+                  "samples": 20000,
+                  "batches": 20
+                }
+              },
+              "current": {
+                "train": {
+                  "samples": 15000,
+                  "batches": 60
+                },
+                "test": {
+                  "samples": 20000,
+                  "batches": 20
+                }
+              }
+            },
+            "expected_cumulative_counts": {
+              "train": {
+                "samples": 15000,
+                "batches": 60
+              },
+              "test": {
+                "samples": 20000,
+                "batches": 20
+              }
+            },
+            "actual_sample_count_gate_passed": true,
+            "original_metrics": {
+              "train": {
+                "Loss": 1.9001845200856526,
+                "Accuracy": 30.06666717529297
+              },
+              "test": {
+                "Loss": 1.83429354429245,
+                "Accuracy": 32.94000053405762
+              }
+            },
+            "current_metrics": {
+              "train": {
+                "Loss": 1.9001845200856526,
+                "Accuracy": 30.06666717529297
+              },
+              "test": {
+                "Loss": 1.83429354429245,
+                "Accuracy": 32.94000053405762
+              }
+            },
+            "passed": true
+          }
+        ],
+        "original_inputs": {
+          "train": {
+            "samples": 15000,
+            "batches": 60,
+            "recorded_indices": 15000,
+            "indices_sha256": "e83a816297dff81e69cd0415bc3ab8f3b48544d8e1c464f82f38f3817fa7ffb2",
+            "images_sha256": "941ed88522a7a1548847770ea7cf22b2b2fcc32da8742fc39a51d7943c900e3b",
+            "targets_sha256": "e8254c5deb0cc3c68b2bcd5fee3fe294a9559550dde60048b518bb67cd18d018",
+            "core_inputs_sha256": "2cdfecec30d77f4a18d444fad6ea06ccbeb75e3e4cb6cd5b0bde5f07997d591a"
+          },
+          "test": {
+            "samples": 20000,
+            "batches": 20,
+            "recorded_indices": 20000,
+            "indices_sha256": "16fa823577786973f0887fc65ea5cbf8576a273d2082eb56dd310cb2ace0df95",
+            "images_sha256": "67c99b8e362293d8233ca5cb32f5c12bd9a8398b82477f163839f84f9dcf1a2f",
+            "targets_sha256": "8246f05cdabfb48370983549f72647e9c84f5b08c03ab97b82dc686e4c829324",
+            "core_inputs_sha256": "fe834242ce372fe570893cd37bd01105810a1893a2426d5e88ff3c87c52c49a5"
+          }
+        },
+        "current_inputs": {
+          "train": {
+            "samples": 15000,
+            "batches": 60,
+            "recorded_indices": 15000,
+            "indices_sha256": "e83a816297dff81e69cd0415bc3ab8f3b48544d8e1c464f82f38f3817fa7ffb2",
+            "images_sha256": "941ed88522a7a1548847770ea7cf22b2b2fcc32da8742fc39a51d7943c900e3b",
+            "targets_sha256": "e8254c5deb0cc3c68b2bcd5fee3fe294a9559550dde60048b518bb67cd18d018",
+            "core_inputs_sha256": "2cdfecec30d77f4a18d444fad6ea06ccbeb75e3e4cb6cd5b0bde5f07997d591a"
+          },
+          "test": {
+            "samples": 20000,
+            "batches": 20,
+            "recorded_indices": 0,
+            "indices_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "images_sha256": "67c99b8e362293d8233ca5cb32f5c12bd9a8398b82477f163839f84f9dcf1a2f",
+            "targets_sha256": "8246f05cdabfb48370983549f72647e9c84f5b08c03ab97b82dc686e4c829324",
+            "core_inputs_sha256": "fe834242ce372fe570893cd37bd01105810a1893a2426d5e88ff3c87c52c49a5"
+          }
+        },
+        "input_core_train_equal": true,
+        "input_core_test_equal": true,
+        "best": {
+          "original_step": 60,
+          "current_step": 60,
+          "selection_equal": true,
+          "weights": {
+            "keys_equal": true,
+            "exact": true,
+            "integers_equal": true,
+            "maximum_absolute_difference": 0.0,
+            "within_gate": true
+          }
+        },
+        "independent_eval": {
+          "original": {
+            "Loss": 1.83429354429245,
+            "Accuracy": 32.94000053405762
+          },
+          "current": {
+            "Loss": 1.83429354429245,
+            "Accuracy": 32.94000053405762
+          },
+          "weights": {
+            "keys_equal": true,
+            "exact": true,
+            "integers_equal": true,
+            "maximum_absolute_difference": 0.0,
+            "within_gate": true
+          },
+          "actual_counts": {
+            "original": {
+              "samples": 10000,
+              "batches": 10
+            },
+            "current": {
+              "samples": 10000,
+              "batches": 10
+            }
+          },
+          "full_sample_count_gate_passed": true,
+          "loss_difference": 0.0,
+          "correct_counts_equal": true,
+          "original_vs_own_best_loss_difference": 0.0,
+          "current_vs_own_best_loss_difference": 0.0,
+          "original_vs_own_best_correct_counts_equal": true,
+          "current_vs_own_best_correct_counts_equal": true,
+          "current_summary": {
+            "mode": "eval",
+            "accuracy": 32.94000053405762,
+            "best_accuracy": 32.94000053405762,
+            "resume_stem": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\CIFAR10_cnn\\current_train\\assets\\checkpoints\\best.pt",
+            "step": 60,
+            "epoch": 1,
+            "elapsed": "0:00:01",
+            "elapsed_seconds": 0.7501379000023007
+          }
+        },
+        "summary": {
+          "mode": "train",
+          "steps": 60,
+          "epochs": 1,
+          "progress_unit": "step",
+          "train_size": 50000,
+          "train_loss": 1.9001845200856526,
+          "accuracy": 32.94000053405762,
+          "best_value": 1.83429354429245,
+          "best_metric": "Loss",
+          "elapsed": "0:00:09",
+          "elapsed_seconds": 9.38081940007396
+        },
+        "elapsed_seconds": 27.006120500038378,
+        "gpu_peak_allocated_bytes": 578343424,
+        "gpu_peak_reserved_bytes": 1136656384,
+        "full_sample_counts_equal": true,
+        "passed": true,
+        "source_unchanged": true,
+        "archive_verification": {
+          "main_commit": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+          "files_checked": 40,
+          "manifest_sha256": "93b20b642e0867b60b9a9180b45601c81a49843f81ee16c2d74919489ffa3aa0",
+          "changed_files": [],
+          "unchanged": true
+        }
+      },
+      {
+        "data": "CIFAR10",
+        "model": "resnet18",
+        "initial_state": {
+          "keys_equal": true,
+          "exact": true,
+          "integers_equal": true,
+          "maximum_absolute_difference": 0.0,
+          "within_gate": true
+        },
+        "initial_rng_equal": true,
+        "segments": [
+          {
+            "step": 30,
+            "parameters": {
+              "keys_equal": true,
+              "exact": true,
+              "integers_equal": true,
+              "maximum_absolute_difference": 0.0,
+              "within_gate": true
+            },
+            "scheduler_equal": true,
+            "optimizer": {
+              "exact": true,
+              "within_gate": true
+            },
+            "rng_equal": true,
+            "loss_differences": {
+              "train": 6.661338147750939e-16,
+              "test": 0.0
+            },
+            "correct_counts": {
+              "train": {
+                "original": 2037,
+                "current": 2037,
+                "samples": 7500
+              },
+              "test": {
+                "original": 3773,
+                "current": 3773,
+                "samples": 10000
+              }
+            },
+            "actual_cumulative_counts": {
+              "original": {
+                "train": {
+                  "samples": 7500,
+                  "batches": 30
+                },
+                "test": {
+                  "samples": 10000,
+                  "batches": 10
+                }
+              },
+              "current": {
+                "train": {
+                  "samples": 7500,
+                  "batches": 30
+                },
+                "test": {
+                  "samples": 10000,
+                  "batches": 10
+                }
+              }
+            },
+            "expected_cumulative_counts": {
+              "train": {
+                "samples": 7500,
+                "batches": 30
+              },
+              "test": {
+                "samples": 10000,
+                "batches": 10
+              }
+            },
+            "actual_sample_count_gate_passed": true,
+            "original_metrics": {
+              "train": {
+                "Loss": 1.9437886993090319,
+                "Accuracy": 27.160000546773276
+              },
+              "test": {
+                "Loss": 1.7265789270401002,
+                "Accuracy": 37.73000030517578
+              }
+            },
+            "current_metrics": {
+              "train": {
+                "Loss": 1.9437886993090312,
+                "Accuracy": 27.160000546773276
+              },
+              "test": {
+                "Loss": 1.7265789270401002,
+                "Accuracy": 37.73000030517578
+              }
+            },
+            "passed": true
+          },
+          {
+            "step": 60,
+            "parameters": {
+              "keys_equal": true,
+              "exact": true,
+              "integers_equal": true,
+              "maximum_absolute_difference": 0.0,
+              "within_gate": true
+            },
+            "scheduler_equal": true,
+            "optimizer": {
+              "exact": true,
+              "within_gate": true
+            },
+            "rng_equal": true,
+            "loss_differences": {
+              "train": 0.0,
+              "test": 0.0
+            },
+            "correct_counts": {
+              "train": {
+                "original": 3149,
+                "current": 3149,
+                "samples": 7500
+              },
+              "test": {
+                "original": 4642,
+                "current": 4642,
+                "samples": 10000
+              }
+            },
+            "actual_cumulative_counts": {
+              "original": {
+                "train": {
+                  "samples": 15000,
+                  "batches": 60
+                },
+                "test": {
+                  "samples": 20000,
+                  "batches": 20
+                }
+              },
+              "current": {
+                "train": {
+                  "samples": 15000,
+                  "batches": 60
+                },
+                "test": {
+                  "samples": 20000,
+                  "batches": 20
+                }
+              }
+            },
+            "expected_cumulative_counts": {
+              "train": {
+                "samples": 15000,
+                "batches": 60
+              },
+              "test": {
+                "samples": 20000,
+                "batches": 20
+              }
+            },
+            "actual_sample_count_gate_passed": true,
+            "original_metrics": {
+              "train": {
+                "Loss": 1.5725849231084188,
+                "Accuracy": 41.986667251586915
+              },
+              "test": {
+                "Loss": 1.4457239508628845,
+                "Accuracy": 46.420000839233396
+              }
+            },
+            "current_metrics": {
+              "train": {
+                "Loss": 1.5725849231084188,
+                "Accuracy": 41.986667251586915
+              },
+              "test": {
+                "Loss": 1.4457239508628845,
+                "Accuracy": 46.420000839233396
+              }
+            },
+            "passed": true
+          }
+        ],
+        "original_inputs": {
+          "train": {
+            "samples": 15000,
+            "batches": 60,
+            "recorded_indices": 15000,
+            "indices_sha256": "e83a816297dff81e69cd0415bc3ab8f3b48544d8e1c464f82f38f3817fa7ffb2",
+            "images_sha256": "941ed88522a7a1548847770ea7cf22b2b2fcc32da8742fc39a51d7943c900e3b",
+            "targets_sha256": "e8254c5deb0cc3c68b2bcd5fee3fe294a9559550dde60048b518bb67cd18d018",
+            "core_inputs_sha256": "dc8f8ea1532e7c07cdf285cda76f9fbb8de35d24a54ab9a53acb9ff412a9a8dc"
+          },
+          "test": {
+            "samples": 20000,
+            "batches": 20,
+            "recorded_indices": 20000,
+            "indices_sha256": "16fa823577786973f0887fc65ea5cbf8576a273d2082eb56dd310cb2ace0df95",
+            "images_sha256": "67c99b8e362293d8233ca5cb32f5c12bd9a8398b82477f163839f84f9dcf1a2f",
+            "targets_sha256": "8246f05cdabfb48370983549f72647e9c84f5b08c03ab97b82dc686e4c829324",
+            "core_inputs_sha256": "fe834242ce372fe570893cd37bd01105810a1893a2426d5e88ff3c87c52c49a5"
+          }
+        },
+        "current_inputs": {
+          "train": {
+            "samples": 15000,
+            "batches": 60,
+            "recorded_indices": 15000,
+            "indices_sha256": "e83a816297dff81e69cd0415bc3ab8f3b48544d8e1c464f82f38f3817fa7ffb2",
+            "images_sha256": "941ed88522a7a1548847770ea7cf22b2b2fcc32da8742fc39a51d7943c900e3b",
+            "targets_sha256": "e8254c5deb0cc3c68b2bcd5fee3fe294a9559550dde60048b518bb67cd18d018",
+            "core_inputs_sha256": "dc8f8ea1532e7c07cdf285cda76f9fbb8de35d24a54ab9a53acb9ff412a9a8dc"
+          },
+          "test": {
+            "samples": 20000,
+            "batches": 20,
+            "recorded_indices": 0,
+            "indices_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "images_sha256": "67c99b8e362293d8233ca5cb32f5c12bd9a8398b82477f163839f84f9dcf1a2f",
+            "targets_sha256": "8246f05cdabfb48370983549f72647e9c84f5b08c03ab97b82dc686e4c829324",
+            "core_inputs_sha256": "fe834242ce372fe570893cd37bd01105810a1893a2426d5e88ff3c87c52c49a5"
+          }
+        },
+        "input_core_train_equal": true,
+        "input_core_test_equal": true,
+        "best": {
+          "original_step": 60,
+          "current_step": 60,
+          "selection_equal": true,
+          "weights": {
+            "keys_equal": true,
+            "exact": true,
+            "integers_equal": true,
+            "maximum_absolute_difference": 0.0,
+            "within_gate": true
+          }
+        },
+        "independent_eval": {
+          "original": {
+            "Loss": 1.4457239508628845,
+            "Accuracy": 46.420000839233396
+          },
+          "current": {
+            "Loss": 1.4457239508628845,
+            "Accuracy": 46.420000839233396
+          },
+          "weights": {
+            "keys_equal": true,
+            "exact": true,
+            "integers_equal": true,
+            "maximum_absolute_difference": 0.0,
+            "within_gate": true
+          },
+          "actual_counts": {
+            "original": {
+              "samples": 10000,
+              "batches": 10
+            },
+            "current": {
+              "samples": 10000,
+              "batches": 10
+            }
+          },
+          "full_sample_count_gate_passed": true,
+          "loss_difference": 0.0,
+          "correct_counts_equal": true,
+          "original_vs_own_best_loss_difference": 0.0,
+          "current_vs_own_best_loss_difference": 0.0,
+          "original_vs_own_best_correct_counts_equal": true,
+          "current_vs_own_best_correct_counts_equal": true,
+          "current_summary": {
+            "mode": "eval",
+            "accuracy": 46.420000839233396,
+            "best_accuracy": 46.420000839233396,
+            "resume_stem": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\CIFAR10_resnet18\\current_train\\assets\\checkpoints\\best.pt",
+            "step": 60,
+            "epoch": 1,
+            "elapsed": "0:00:01",
+            "elapsed_seconds": 1.1002712999470532
+          }
+        },
+        "summary": {
+          "mode": "train",
+          "steps": 60,
+          "epochs": 1,
+          "progress_unit": "step",
+          "train_size": 50000,
+          "train_loss": 1.5725849231084188,
+          "accuracy": 46.420000839233396,
+          "best_value": 1.4457239508628845,
+          "best_metric": "Loss",
+          "elapsed": "0:00:11",
+          "elapsed_seconds": 11.448226800072007
+        },
+        "elapsed_seconds": 33.2080006999895,
+        "gpu_peak_allocated_bytes": 2111100416,
+        "gpu_peak_reserved_bytes": 3806330880,
+        "full_sample_counts_equal": true,
+        "passed": true,
+        "source_unchanged": true,
+        "archive_verification": {
+          "main_commit": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+          "files_checked": 40,
+          "manifest_sha256": "93b20b642e0867b60b9a9180b45601c81a49843f81ee16c2d74919489ffa3aa0",
+          "changed_files": [],
+          "unchanged": true
+        }
+      }
+    ],
+    "complete": true,
+    "passed": true,
+    "selected_complete": true,
+    "selected_passed": true,
+    "full_matrix_complete": true,
+    "full_matrix_passed": true,
+    "source_manifest_sha256": "a61ae36e777f459f8c8f84e1cfb352cfea16ed22bc541350927512a79947d6fe",
+    "archive_before": {
+      "main_commit": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+      "files_checked": 40,
+      "manifest_sha256": "93b20b642e0867b60b9a9180b45601c81a49843f81ee16c2d74919489ffa3aa0",
+      "changed_files": [],
+      "unchanged": true
+    },
+    "source_unchanged": true,
+    "archive_after": {
+      "main_commit": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+      "files_checked": 40,
+      "manifest_sha256": "93b20b642e0867b60b9a9180b45601c81a49843f81ee16c2d74919489ffa3aa0",
+      "changed_files": [],
+      "unchanged": true
+    },
+    "finished_at_utc": "2026-10-03T17:59:11.608026+00:00"
+  },
+  "independent_cpu_reload_audit": {
+    "relative_path": "CURRENT_DEVICE_CPU_RELOAD_AUDIT.json",
+    "sha256": "f265f9db4a4ee123e50ae3d66cd5631c48e51503552679c7c69bb03e3caca3f7",
+    "passed": true,
+    "complete": true,
+    "errors": [],
+    "gpu_reexecuted": false,
+    "provenance": {
+      "source_files_verified": 92,
+      "source_manifest_sha256": "a61ae36e777f459f8c8f84e1cfb352cfea16ed22bc541350927512a79947d6fe",
+      "archive_blobs_verified": 40,
+      "archive_manifest_sha256": "93b20b642e0867b60b9a9180b45601c81a49843f81ee16c2d74919489ffa3aa0",
+      "raw_file_pairs_verified": 17,
+      "prepared_sha256": "6e36620a2b01589b52f3ca7a7ef7d120567fb43d11b67c7f8b80eb004b2eed93",
+      "formal_comparison_sha256": "4d4727074910f0b57e8567e21ca0593a27b7b085c9b63765dd870fded59aea7e",
+      "formal_finished_at_utc": "2026-10-03T17:59:11.608026+00:00"
+    },
+    "limitations": [
+      "No additional training or inference was executed. Original independent-eval metrics are reloaded from raw TensorBoard; native eval metrics and resume provenance are reloaded from tracker/scalars/log. The online native eval model-state comparison has no separate terminal eval weight .pt and is bound to its own unchanged best checkpoint and explicit resume log."
+    ]
+  },
+  "limitations": [
+    "Both implementations were run with deterministic=true, cudnn.deterministic=true, benchmark=false, and CUBLAS_WORKSPACE_CONFIG=:4096:8. Main default benchmark=true/nondeterministic behavior was not tested here.",
+    "The archive original Stats(dim=1) was recomputed on sequential complete train batches of 250. Its full-precision mean/std were saved as native-data/<dataset>/stats.yaml and read by the current DataFactory. No-profile fallback normalization constants or automatic Stats recomputation by DataFactory were not tested.",
+    "Only seed 0 and the current main 60-step recipe were tested. This does not establish the historical README PNG 80000-step target or other seeds/hyperparameters.",
+    "GPU allocated/reserved peaks are this process Torch allocator counters, not total device memory or allocations outside Torch. Wall time was measured with concurrent historical workloads and is not an algorithm benchmark.",
+    "The CPU audit reloaded saved artifacts without another training or inference execution. The terminal native independent-eval model had no separate weight snapshot; its online comparison is bound to the audited own-best checkpoint, explicit resume log, and tracker metrics.",
+    "Raw training/eval artifacts remain under .tmp and are not distributed with a Git clone. This formal JSON preserves the actual comparison, preparation, environment, source provenance, and full-precision values."
+  ]
+}

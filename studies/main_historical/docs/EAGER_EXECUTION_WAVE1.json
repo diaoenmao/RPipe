@@ -1,0 +1,62 @@
+{
+  "scope": "original planned Run, advanced start without changing numerical recipe",
+  "recorded_at_utc": "2026-10-03T17:12:42.372015+00:00",
+  "runs": [
+    {
+      "id": "4b6781cffa2c2b8c",
+      "data": "CIFAR10",
+      "model": "resnet18",
+      "seed": 0,
+      "pid": 64656,
+      "tool_session_id": 11464,
+      "status": "succeeded",
+      "log": "../runs/4b6781cffa2c2b8c/assets/logs/run.log",
+      "create_time": 1791047530.421903,
+      "cmdline": [
+        "D:\\anaconda3\\python.exe",
+        "-u",
+        "-B",
+        "-c",
+        "import os,sys,runpy; print('eager worker pid='+str(os.getpid()),flush=True); sys.argv=['run.py','one','4b6781cffa2c2b8c']; runpy.run_path('studies/main_historical/run.py',run_name='__main__')"
+      ],
+      "exit_code": 0,
+      "finished_at_cst": "2026-10-04T02:53:50.744+08:00",
+      "terminal_tool_session": 11464
+    },
+    {
+      "id": "9003fd56d3612f4d",
+      "data": "CIFAR10",
+      "model": "resnet18",
+      "seed": 1,
+      "pid": 59936,
+      "create_time": 1791049116.9261825,
+      "tool_session_id": 17242,
+      "status": "running",
+      "log": "../runs/9003fd56d3612f4d/assets/logs/run.log",
+      "cmdline": [
+        "D:\\anaconda3\\python.exe",
+        "-u",
+        "-B",
+        "-c",
+        "import os,sys,runpy; print('eager worker pid='+str(os.getpid()),flush=True); sys.argv=['run.py','one','9003fd56d3612f4d']; runpy.run_path('studies/main_historical/run.py',run_name='__main__')"
+      ]
+    }
+  ],
+  "coordination": "Must finish before main controller constructs CIFAR10/resnet18 candidates. Poll both exact handles; do not restart on observation timeout.",
+  "main_controller": {
+    "pid": 35852,
+    "create_time": 1791046826.0321603,
+    "tool_session_id": 37125
+  },
+  "updated_at_utc": "2026-10-03T19:00:37.238004+00:00",
+  "guard": {
+    "script": ".tmp/historical_controller_guard.py",
+    "sha256": "eeb3c6ff56b175d8143a4c8e074a9cfcd145ec0535ac996e111d2c1ab29820a1",
+    "probe": "PARENT_COORDINATION_PROBE.json",
+    "report": "GUARD.json",
+    "hold_at": "cifar-mlp",
+    "status": "running",
+    "tool_session_id": 89871,
+    "pid": 62868
+  }
+}

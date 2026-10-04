@@ -1,0 +1,11 @@
+study: mnist_cnn_budget
+origin: domestic
+description: MNIST CNN lr 0.03; 600 steps, three paired seeds, train then eval
+experiment:
+  name: mnist_cnn_budget
+fixed:
+  version: cnn-600step-20261002
+axes:
+  algorithm.mode: [train, eval]
+seeds: [0, 1, 2]
+run_description: "MNIST cnn 600-step mode={mode} seed={seed}"

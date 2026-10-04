@@ -1,0 +1,51 @@
+{
+  "started_at_utc": "2026-10-03T17:53:34.940618+00:00",
+  "pid": 29084,
+  "status": "succeeded",
+  "scope": "original four planned MNIST/linear sibling-best eval Runs",
+  "resume_policy": "Do not start again while this exact process/tool handle remains alive.",
+  "events": [],
+  "runs": [
+    {
+      "id": "ba0a42f0131ebd4a",
+      "train": "f7b6c59223a46803",
+      "seed": 0,
+      "start_utc": "2026-10-03T17:53:34.976789+00:00",
+      "pid": 54436,
+      "exit_code": 0,
+      "status": "succeeded",
+      "end_utc": "2026-10-03T17:53:48.269243+00:00"
+    },
+    {
+      "id": "0005897719db9384",
+      "train": "93a684aa9d0631f5",
+      "seed": 1,
+      "start_utc": "2026-10-03T17:53:48.308262+00:00",
+      "pid": 49600,
+      "exit_code": 0,
+      "status": "succeeded",
+      "end_utc": "2026-10-03T17:54:01.431474+00:00"
+    },
+    {
+      "id": "f8567981f878e200",
+      "train": "51fd2cbf55af3719",
+      "seed": 2,
+      "start_utc": "2026-10-03T17:54:01.466463+00:00",
+      "pid": 48336,
+      "exit_code": 0,
+      "status": "succeeded",
+      "end_utc": "2026-10-03T17:54:15.208272+00:00"
+    },
+    {
+      "id": "81d5e2fdf7e8d89c",
+      "train": "b667e3702ad664b4",
+      "seed": 3,
+      "start_utc": "2026-10-03T17:54:15.259648+00:00",
+      "pid": 31764,
+      "exit_code": 0,
+      "status": "succeeded",
+      "end_utc": "2026-10-03T17:54:29.821415+00:00"
+    }
+  ],
+  "finished_at_utc": "2026-10-03T17:54:29.861398+00:00"
+}

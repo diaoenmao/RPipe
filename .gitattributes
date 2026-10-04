@@ -1,0 +1,9 @@
+# Scientific manifests bind exact bytes, including original line endings.
+# Keep measured production sources and archived reports identical on every OS.
+src/rpipe/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+studies/main_historical/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+studies/main_reproduction/current_device.py -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+studies/main_reproduction/docs/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Published and historical raster figures are binary artifacts.
+*.png binary

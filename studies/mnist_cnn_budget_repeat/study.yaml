@@ -1,0 +1,11 @@
+study: mnist_cnn_budget_repeat
+origin: domestic
+description: Uninterrupted seed 2 follow-up after B-013 checkpoint IO fix
+experiment:
+  name: mnist_cnn_budget_repeat
+fixed:
+  version: cnn-600step-seed2-fixed-20261003
+axes:
+  algorithm.mode: [train, eval]
+seeds: [2]
+run_description: "MNIST CNN checkpoint fix verification mode={mode} seed={seed}"

@@ -1,0 +1,29 @@
+# 基底默认。study.yaml 的 fixed / axes 覆盖同名键。
+experiment: cifar10_models
+description: CIFAR10 small model grid
+data:
+  name: CIFAR10
+  source: torch
+  config:
+    train_size: 1024
+    batch_size: 64
+model:
+  name: linear
+algorithm:
+  source: custom_torch
+  mode: train
+  num_epochs: 5
+  progress_unit: epoch
+  eval_period: 1
+  checkpoint: latest
+  checkpoint_period: 1
+  save_best: true
+  optimizer: SGD
+  max_grad_norm: 0
+  lr: 0.1
+  scheduler: cosine
+  eta_min: 0.0
+system:
+  device: cuda
+  deterministic: false
+  cudnn_benchmark: true

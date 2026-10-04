@@ -1,0 +1,9 @@
+# Install into .tmp/runtime, preserving the existing torch/torchvision/numpy.
+kornia==0.8.3
+kornia_rs==0.2.0
+tensorboard==2.21.0
+protobuf==6.33.6
+evaluate==0.4.6
+absl-py==2.5.0
+grpcio==1.84.0
+tensorboard-data-server==0.7.2

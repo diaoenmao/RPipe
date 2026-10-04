@@ -1,0 +1,76 @@
+name: Package Check
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+  push:
+    branches:
+      - dev
+      - main
+
+permissions:
+  contents: read
+
+env:
+  MPLBACKEND: Agg
+
+jobs:
+  build-package:
+    name: Build package (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Install build frontend
+        run: python -m pip install --upgrade build
+
+      - name: Build wheel and source distribution
+        run: python -m build
+
+      - name: Verify installed wheel CLI and CPU workflow
+        shell: bash
+        run: |
+          python -m venv .tmp/wheel-env
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            package_python="$PWD/.tmp/wheel-env/Scripts/python.exe"
+          else
+            package_python="$PWD/.tmp/wheel-env/bin/python"
+          fi
+          "$package_python" -m pip install dist/*.whl
+          "$package_python" tests/package_smoke.py --workspace "$RUNNER_TEMP/rpipe-wheel-smoke"
+
+      - name: Verify source distribution installation and CLI
+        shell: bash
+        run: |
+          python -m venv .tmp/sdist-env
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            package_python="$PWD/.tmp/sdist-env/Scripts/python.exe"
+          else
+            package_python="$PWD/.tmp/sdist-env/bin/python"
+          fi
+          "$package_python" -m pip install dist/*.tar.gz
+          "$package_python" tests/package_smoke.py --workspace "$RUNNER_TEMP/rpipe-sdist-smoke"
+
+  package-gate:
+    name: Build package
+    needs: build-package
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every distribution matrix job to succeed
+        run: test "${{ needs.build-package.result }}" = success

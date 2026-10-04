@@ -1,0 +1,84 @@
+{
+  "started_at_utc": "2026-10-03T19:13:50.212223+00:00",
+  "pid": 25628,
+  "status": "succeeded",
+  "scope": "Original four planned MNIST/mlp sibling-best eval Runs",
+  "resume_policy": "Do not restart while this exact controller or a child remains alive.",
+  "runs": [
+    {
+      "id": "7327aec21ab7437f",
+      "train": "d3d9d1c94f0981f3",
+      "seed": 0,
+      "start_utc": "2026-10-03T19:13:50.246090+00:00",
+      "pid": 63780,
+      "command": [
+        "D:\\anaconda3\\python.exe",
+        "-B",
+        "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_historical\\run.py",
+        "one",
+        "7327aec21ab7437f"
+      ],
+      "exit_code": 0,
+      "status": "succeeded",
+      "end_utc": "2026-10-03T19:14:02.846722+00:00"
+    },
+    {
+      "id": "a9aea870e5109f87",
+      "train": "b44b3eb465b12318",
+      "seed": 1,
+      "start_utc": "2026-10-03T19:14:02.879298+00:00",
+      "pid": 36756,
+      "command": [
+        "D:\\anaconda3\\python.exe",
+        "-B",
+        "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_historical\\run.py",
+        "one",
+        "a9aea870e5109f87"
+      ],
+      "exit_code": 0,
+      "status": "succeeded",
+      "end_utc": "2026-10-03T19:14:15.591594+00:00"
+    },
+    {
+      "id": "8ddd32256875b483",
+      "train": "568bad58b59b7728",
+      "seed": 2,
+      "start_utc": "2026-10-03T19:14:15.631678+00:00",
+      "pid": 63160,
+      "command": [
+        "D:\\anaconda3\\python.exe",
+        "-B",
+        "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_historical\\run.py",
+        "one",
+        "8ddd32256875b483"
+      ],
+      "exit_code": 0,
+      "status": "succeeded",
+      "end_utc": "2026-10-03T19:14:28.374414+00:00"
+    },
+    {
+      "id": "764eaa17d56ff8a1",
+      "train": "6e63d83b28da4f6e",
+      "seed": 3,
+      "start_utc": "2026-10-03T19:14:28.406873+00:00",
+      "pid": 8248,
+      "command": [
+        "D:\\anaconda3\\python.exe",
+        "-B",
+        "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_historical\\run.py",
+        "one",
+        "764eaa17d56ff8a1"
+      ],
+      "exit_code": 0,
+      "status": "succeeded",
+      "end_utc": "2026-10-03T19:14:40.807995+00:00"
+    }
+  ],
+  "finished_at_utc": "2026-10-03T19:14:40.840401+00:00",
+  "controller_tool_session": 48387,
+  "controller_exit_code": 0,
+  "actual_execution_helper_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_historical\\docs\\EARLY_EVAL_GROUP_EXECUTION_HELPER_V2.py",
+  "actual_execution_helper_sha256": "aea398fea16fb1b35ed2e2103742b95d778358a90e78fb86aa221c1019d5d552",
+  "source_manifest_sha256": "744c3ded41a0f3ca69b798bc43f18c5b64d918d5e482f5778a4ecb31fd58925a",
+  "record_binding_at_utc": "2026-10-03T19:16:19.186415+00:00"
+}
