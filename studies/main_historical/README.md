@@ -32,7 +32,7 @@ python -B studies/main_historical/compare.py
 
 `make` 展开 64 个 Run 并绑定源/配置清单；`preflight` 在新设备执行原代码 / 当前链 600-step 八格 CUDA 对照，采样和 scheduler 总预算仍为 80000。`verify_preflight` 只用 CPU 重载探针，`launch` 检查同设备探针、源码和配置后执行长矩阵。准备、调度与比较会写本轮清单和报告；应使用独立目录保留此前实测快照。
 
-本机既有 64 个 Run 已成功，适合只读核验：
+本机既有 64 个 Run 已成功。v0.2.0 将包版本和 `src/rpipe/__init__.py` 的 `__version__` 从旧开发编号改为 `0.2.0`，未重跑实验或修改固定报告。严格源码 SHA 核验仍要求实测原字节；需要核验既有 Run 时，在保留的实测源码快照 `b95873f` 中执行以下命令，不把当前版本号修订当作原清单的字节一致：
 
 ```powershell
 python -B studies/main_historical/run.py status
