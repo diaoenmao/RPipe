@@ -49,11 +49,13 @@ python tests/run.py --all
 
 ## CI 与验收范围
 
-[Unit Tests](../.github/workflows/unit-tests.yml) 保留 core 门，并在 Ubuntu/Windows × Python 3.10/3.13 四个环境运行上述 CPU 流程门。矩阵是远端待执行的配置，是否通过以对应提交的 Actions 结果为准。当前两个 e2e 均含 `external`，因此这条门目前选择本地 integration；今后符合条件的 e2e 自动纳入。
+[Unit Tests](../.github/workflows/unit-tests.yml) 保留 core 门，并在 Ubuntu/Windows × Python 3.10/3.13 四个环境运行上述 CPU 流程门。每个提交是否通过以其对应 Actions 结果为准。当前两个 e2e 均含 `external`，因此这条门目前选择本地 integration；今后符合条件的 e2e 自动纳入。
 
 CI 安装 `.[dev]`，未安装 `hf` 可选依赖；HF 真实 Trainer 用例可能跳过。GPU、下载依赖与慢任务不属于此门。需要验证这些能力时，按对应 Study 计划单独执行；已有复现实验只证明各自声明的配方与预算。
 
 [Package Check](../.github/workflows/package-check.yml) 在 Ubuntu/Windows 构建 wheel / sdist，再分别创建环境、正常安装依赖和生成包，从源码目录之外运行 [package_smoke.py](package_smoke.py)：模块入口与 console script、离线 Toy/Stub Study 的 make→launch→process→status/logs/report、四个 Run 与两个 Experiment、已成功 Run 的重复 launch 跳过。Stub 验证的是安装及产物合同，不代表真实数据训练精度。这个新增门的远端结果以提交后的 Actions 为准。
+
+两种工作流均设置 `MPLBACKEND=Agg`，在无显示的 CI 环境中生成静态图，避免依赖运行器的 Tk / Tcl 安装；测试选择与绘图坐标、计数等断言保持不变。
 
 手动验收时，用已安装分发包的 Python 运行 `tests/package_smoke.py --workspace <全新目录>`。程序拒绝从 `src/` 导入 rpipe，拒绝覆盖已有工作区，并保留每条命令的 stdout、stderr 与退出码。
 

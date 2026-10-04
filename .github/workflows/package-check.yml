@@ -13,6 +13,9 @@ on:
 permissions:
   contents: read
 
+env:
+  MPLBACKEND: Agg
+
 jobs:
   build-package:
     name: Build package (${{ matrix.os }})
