@@ -28,7 +28,23 @@
 
 ## 3. 待执行想法
 
-上一轮候选已处理。2026-10-03 新一轮 §3.1「曲线记录并对齐真实训练进度」已按用户决定落实，规则进入 structure / flow / STUDY_GUIDE，验证见 §4；新一轮 §3.2「自动记录复现信息」与 §3.3「独立 eval 复算判定」按用户决定不做。上一轮取消的 CIFAR10 1800-step 实验与不再单列的文档维护任务保持原决定。
+当前没有待执行的实验扩展。仓库整理和 main 迁移准备按 [REPOSITORY_CLEANUP](REPOSITORY_CLEANUP.md) 与 [MAIN_MIGRATION](MAIN_MIGRATION.md)执行，发布前的提交、远端CI与合并另按实际授权处理。
+
+2026-10-03新一轮§3.1「曲线记录并对齐真实训练进度」已落实；§3.2「自动记录复现信息」与§3.3「独立eval复算判定」按用户决定不做。取消的CIFAR10 1800-step实验保持原决定。新的未确认想法再追加于本节，不把已经完成的长矩阵列为待执行任务。
+
+---
+
+## 4. 已经做的
+
+### 2026-10-04
+
+持续目标已完成：历史32条80000-step四seed训练与32条own-best eval，八组完整曲线通过事先原图估读门；本机现代60-step受控八格和历史600-step前缀桥也通过。正式入口和独立CPU审计进入 [main_historical](../studies/main_historical/README.md)。图像、原默认失败及原环境未知的证据边界保留，科学结论不扩称所有原始逐点数据一致。
+
+本轮整理全仓库导航、正式成果及事务标记，补充迁移文档和发布验收，见 [整理报告](REPOSITORY_CLEANUP.md)。生产数值源和原存档没有改动，不再以临时脚本作为唯一重跑入口。
+
+### 2026-10-03 阶段计划备查
+
+以下保留当时的只探针授权和候选工作量；2026-10-04另获持续运行授权并完成长矩阵，不倒写旧记录。
 
 2026-10-03 main复现阶段已有结果，见 [main_reproduction报告](../studies/main_reproduction/docs/STUDY_REPORT.md)：原默认60-step配方各16/16执行成功、严格数值门4/8；原代码重复也分歧，完整确定性控制则8/8对齐。两个历史PNG最后更新于`4ccb28d`，该提交为80000-step / eval200 / 4-seed候选配方，CNN含BN、梯度裁剪1、CPU增强和统计也不同。用户已选择历史图对应超参路线，随后明确**本轮只做到探针**；200-step/eval200、seed0的8格前缀对照和计时进入[执行计划](../studies/main_reproduction/docs/PLAN.md#用户确认的历史超参前缀探针2026-10-03执行前)，不是长实验授权。
 
@@ -36,9 +52,7 @@
 
 历史证据搜索已完成本地可达Git范围，未找到原始指标/权重；PNG绘图版本还与旧requirements不同。已生成供核对的64条原调度命令，未执行。单套完整候选即256万次更新、6.4亿train样本处理，两套对照翻倍。详细依据见 [历史审计](../studies/main_reproduction/docs/HISTORICAL_AUDIT.md)。用户本轮限制为探针，后续是否制定长实验预算另行决定，不自动执行。
 
----
-
-## 4. 已经做的
+### 2026-10-03 实施记录
 
 历史超参前缀探针（2026-10-03）：按用户“只做到探针”的范围，MNIST / CIFAR10 × linear / mlp / cnn / resnet18，seed0、200 optimizer steps、eval200完整test10000，保留旧BN/CPU增强/常量统计/clip1及scheduler T_max80000。两边8/8通过，参数和buffer差值0、初始/最终RNG及50000个采样与增强输入相同；训练/test正确样本数相同，Loss差仅浮点累计。独立加载checkpoint/optimizer/tracker复核8/8，内部148.740s；91当前源文件及36历史归档文件不变。见[探针报告](../studies/main_reproduction/docs/HISTORICAL_PREFIX_PROBE.md)。未发现新生产bug；BUGS清除已关闭项的重复说明，明确无开放缺陷。本轮结束，不执行80000-step/4-seed长实验，历史图仍未复现。
 

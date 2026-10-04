@@ -1,0 +1,551 @@
+{
+  "schema": "rpipe.repository_cleanup.v1",
+  "recorded_at_utc": "2026-10-04T12:17:44.624999+00:00",
+  "complete": true,
+  "passed": true,
+  "errors": [],
+  "objective": "Update and organize the repository, verify delivery, and assess dev-to-main migration readiness.",
+  "git": {
+    "fetch_origin_succeeded": true,
+    "head": "8bccbac321d4c3ac1ea9892a5e774c114e0298c6",
+    "dev": "8bccbac321d4c3ac1ea9892a5e774c114e0298c6",
+    "origin_dev": "8bccbac321d4c3ac1ea9892a5e774c114e0298c6",
+    "main": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+    "origin_main": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+    "merge_base": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+    "main_dev_left_right_commits": [
+      0,
+      61
+    ],
+    "local_changes_committed": false,
+    "push_performed": false,
+    "main_merge_performed": false,
+    "note": "Fetched refs are this audit snapshot; verify again before a later merge."
+  },
+  "environment": {
+    "python": "3.13.9",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "cpu_validation_only_this_cleanup": true,
+    "long_gpu_training_repeated": false
+  },
+  "cleanup": {
+    "study_navigation_entries": 14,
+    "redundant_test_gitkeep_removed": 13,
+    "empty_test_gitkeep_retained": [
+      "tests/rpipe/flow/prepare/.gitkeep",
+      "tests/rpipe/flow/summarize/.gitkeep",
+      "tests/rpipe/flow/write/.gitkeep",
+      "tests/rpipe/structure/algorithm/eval/.gitkeep",
+      "tests/rpipe/structure/algorithm/train/.gitkeep",
+      "tests/rpipe/structure/artifact/config/.gitkeep",
+      "tests/rpipe/structure/artifact/result/.gitkeep"
+    ],
+    "new_ignored_local_transactions": [
+      "studies/**/docs/*.tmp",
+      "studies/**/docs/*.claim"
+    ],
+    "original_transactions_preserved": true,
+    "removed_own_generated_build_directory": {
+      "path": "build/",
+      "verified_source_copy_files": 91
+    },
+    "training_data_checkpoints_logs_or_original_failure_evidence_deleted": false,
+    "production_numerical_sources_modified": false
+  },
+  "cpu_gate": {
+    "public_command": "python tests/run.py --all --cost-class c1 --cost-class c2 -- -m \"not external and not gpu and not slow\"",
+    "exit_code": 0,
+    "passed": 288,
+    "deselected": 3,
+    "skipped": 0,
+    "failed": 0,
+    "seconds": 20.14,
+    "includes_real_test_launcher_child_regressions": 2,
+    "scope": "Native c1/c2 unit/integration excluding external, gpu and slow; not full optional e2e or GPU.",
+    "report_run_id": "20261004T120524Z_284bb7"
+  },
+  "package_build": {
+    "passed": true,
+    "version": "0.3.0",
+    "backend": "setuptools.build_meta (local setuptools80.9.0/wheel0.45.1)",
+    "isolated_build": false,
+    "production_python_files": 91,
+    "wheel_python_files": 91,
+    "wheel_source_byte_equality": true,
+    "study_run_temporary_assets_packaged": false,
+    "artifacts": [
+      {
+        "path": ".tmp/repo-cleanup/dist-final/rpipe-0.3.0-py3-none-any.whl",
+        "sha256": "192297a3eddba1a2743606d1f9950e944e771bae2f22aa5f44c4f5f1bb2ba658",
+        "local_only": true
+      },
+      {
+        "path": ".tmp/repo-cleanup/dist-final/rpipe-0.3.0.tar.gz",
+        "sha256": "5f7446dc22cad30241cad32ae2d9ae3d35e764caf9dd5f67f2022398d33c74f1",
+        "local_only": true
+      }
+    ]
+  },
+  "installed_package_smoke": [
+    {
+      "kind": "wheel",
+      "command_count": 9,
+      "command_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "runs_succeeded": 4,
+      "experiments_complete": 2,
+      "generated_configs_unchanged": true,
+      "completed_runs_skipped_on_second_launch": true,
+      "installed_module": ".tmp/repo-cleanup/wheel-env-final/Lib/site-packages/rpipe/__init__.py",
+      "evidence": {
+        "path": ".tmp/repo-cleanup/wheel-smoke-final/SMOKE_RESULT.json",
+        "sha256": "6aa4b323d3aea6edef407d7878ef738dc4be2c2baeb918c27e20d20cfe8e9378",
+        "local_only": true
+      },
+      "scope": "offline Toy/Stub packaging and CLI contract"
+    },
+    {
+      "kind": "sdist",
+      "command_count": 9,
+      "command_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "runs_succeeded": 4,
+      "experiments_complete": 2,
+      "generated_configs_unchanged": true,
+      "completed_runs_skipped_on_second_launch": true,
+      "installed_module": ".tmp/repo-cleanup/sdist-env-final/Lib/site-packages/rpipe/__init__.py",
+      "evidence": {
+        "path": ".tmp/repo-cleanup/sdist-smoke-final/SMOKE_RESULT.json",
+        "sha256": "964011ffe39ba135fbf6d328c6b4fa5530a8bbad877c44f8eec744627b60269b",
+        "local_only": true
+      },
+      "scope": "offline Toy/Stub packaging and CLI contract"
+    }
+  ],
+  "local_installation_boundary": {
+    "network_dependency_resolution": false,
+    "system_site_packages": true,
+    "existing_scientific_dependencies_reused": true,
+    "runtime_packages_copied": [
+      "kornia",
+      "kornia_rs"
+    ],
+    "pip_flags": [
+      "--no-index",
+      "--no-deps",
+      "--no-build-isolation"
+    ],
+    "real_ml_accuracy_proven_by_toy_smoke": false
+  },
+  "remote_ci": {
+    "existing_dev_commit_runs": [
+      {
+        "name": "Package Check",
+        "sha": "8bccbac321d4c3ac1ea9892a5e774c114e0298c6",
+        "conclusion": "success",
+        "url": "https://github.com/diaoenmao/RPipe/actions/runs/37125686622"
+      },
+      {
+        "name": "Unit Tests",
+        "sha": "8bccbac321d4c3ac1ea9892a5e774c114e0298c6",
+        "conclusion": "success",
+        "url": "https://github.com/diaoenmao/RPipe/actions/runs/37125686675"
+      }
+    ],
+    "new_local_configuration_executed_remotely": false,
+    "new_cpu_matrix": {
+      "os": [
+        "ubuntu-latest",
+        "windows-latest"
+      ],
+      "python": [
+        "3.10",
+        "3.13"
+      ]
+    },
+    "new_package_matrix": {
+      "os": [
+        "ubuntu-latest",
+        "windows-latest"
+      ],
+      "python": [
+        "3.10"
+      ],
+      "wheel_and_sdist_separate_ordinary_venvs": true,
+      "full_dependency_installation": true
+    }
+  },
+  "repository_checks": {
+    "passed": true,
+    "document_links": {
+      "passed": true,
+      "counts": {
+        "documents": 79,
+        "relative_links": 977,
+        "absent_local_ignored_evidence": 281,
+        "template_placeholders": 1
+      },
+      "missing_formal_links": [],
+      "scope": "Active relative Markdown link targets, excluding fenced examples; anchors and remote URLs are not a web crawl."
+    },
+    "syntax_python": [
+      "tests/run.py",
+      "tests/package_smoke.py",
+      "tests/test_run_entry.py"
+    ],
+    "workflow_yaml": [
+      ".github/workflows/unit-tests.yml",
+      ".github/workflows/package-check.yml"
+    ],
+    "git_diff_check_exit_code": 0,
+    "retained_empty_mirror_placeholders": [
+      "tests/rpipe/flow/prepare/.gitkeep",
+      "tests/rpipe/flow/summarize/.gitkeep",
+      "tests/rpipe/flow/write/.gitkeep",
+      "tests/rpipe/structure/algorithm/eval/.gitkeep",
+      "tests/rpipe/structure/algorithm/train/.gitkeep",
+      "tests/rpipe/structure/artifact/config/.gitkeep",
+      "tests/rpipe/structure/artifact/result/.gitkeep"
+    ],
+    "errors": []
+  },
+  "science_preservation": {
+    "schema": "rpipe.repo_cleanup.science_preservation.v1",
+    "started_at_utc": "2026-10-04T12:16:18.065427+00:00",
+    "finished_at_utc": "2026-10-04T12:16:22.148042+00:00",
+    "script_sha256": "bd69168943adcaaacec727603e24ff667f9e17cd1347404c302d87053034a203",
+    "scope": "Read-only explicit scientific SHA/Git bindings and original document presence after repository cleanup",
+    "passed": true,
+    "errors": [],
+    "categories": {
+      "historical_frozen_sources": {
+        "bindings_checked": 99,
+        "passed": true,
+        "differences": []
+      },
+      "historical_frozen_plan": {
+        "bindings_checked": 65,
+        "passed": true,
+        "differences": []
+      },
+      "historical_raw_data": {
+        "bindings_checked": 16,
+        "passed": true,
+        "differences": []
+      },
+      "historical_final_result_evidence": {
+        "bindings_checked": 17,
+        "passed": true,
+        "differences": []
+      },
+      "historical_final_execution_evidence": {
+        "bindings_checked": 465,
+        "passed": true,
+        "differences": []
+      },
+      "historical_archive": {
+        "bindings_checked": 36,
+        "passed": true,
+        "differences": [],
+        "git_commit": "4ccb28d0496110253e9f8e3f3df658853f07996b",
+        "git_blobs_checked": 36,
+        "git_blob_differences": []
+      },
+      "historical_execution_manifest_bindings": {
+        "bindings_checked": 3,
+        "passed": true,
+        "differences": []
+      },
+      "modern_frozen_sources": {
+        "bindings_checked": 92,
+        "passed": true,
+        "differences": []
+      },
+      "modern_archive": {
+        "bindings_checked": 40,
+        "passed": true,
+        "differences": [],
+        "git_commit": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+        "git_blobs_checked": 40,
+        "git_blob_differences": []
+      },
+      "modern_final_result_evidence": {
+        "bindings_checked": 7,
+        "passed": true,
+        "differences": []
+      },
+      "modern_cpu_audit_manifest_bindings": {
+        "bindings_checked": 5,
+        "passed": true,
+        "differences": []
+      },
+      "modern_raw_pairs": {
+        "bindings_checked": 34,
+        "passed": true,
+        "differences": []
+      },
+      "modern_cpu_audit_artifacts": {
+        "bindings_checked": 56,
+        "passed": true,
+        "differences": []
+      },
+      "preserved_first_three_formal_snapshots": {
+        "bindings_checked": 3,
+        "passed": true,
+        "differences": []
+      },
+      "preserved_local_machine_markers": {
+        "bindings_checked": 2,
+        "passed": true,
+        "differences": []
+      },
+      "original_scientific_document_presence": {
+        "paths_checked": 103,
+        "passed": true,
+        "missing": []
+      }
+    },
+    "unique_files_hashed": 772,
+    "unique_file_bytes_hashed": 4250602629,
+    "verified_file_bindings_sha256": "d09d876239f5de6b3b33464eb3b8e811c9644a8215ee9579775dfdef5fe7b217",
+    "historical": {
+      "source_files": 99,
+      "plan_files": 65,
+      "raw_files": 16,
+      "archived_git_blobs": 36,
+      "formal_runs": 64,
+      "final_result_bindings": 17,
+      "final_execution_bindings": 465
+    },
+    "modern": {
+      "source_files": 92,
+      "archived_git_blobs": 40,
+      "raw_pairs": 17,
+      "cpu_audit_artifact_bindings": 56,
+      "combinations": 8,
+      "segments": 16
+    },
+    "machine_marker_sha256": {
+      "EARLY_EVAL_CIFAR10_LINEAR_EXECUTION.tmp": "d8a21ae082fafd47eb8e29215af54486614822a99a1673a7597ce8cd28959e80",
+      "EARLY_EVAL_MNIST_MLP_EXECUTION.claim": "8090eb6d67d7178860c59c90a7fa19ea8845404aa24cb5998083842d3d2f0f25"
+    },
+    "gpu_operations": 0,
+    "training_or_inference_executed": false,
+    "scientific_reports_edited": false,
+    "limitations": [
+      "Checks every explicit file SHA/Git binding listed in the named final records; does not re-execute numeric inference or reconstruct unrecorded training states.",
+      "Document-presence checks retain prior report paths; only explicit scientific bindings establish immutable byte equality, not unbound historical prose.",
+      "Original native eval has no separately exported terminal weight checkpoint; its previously stated own-best evidence boundary is retained."
+    ]
+  },
+  "failures_preserved": [
+    {
+      "case": "Original launcher inside this sandbox",
+      "actual": "283 passed / 3 failed (Kornia import); raw record retained."
+    },
+    {
+      "case": "Original launcher in normal host",
+      "actual": "286 passed / 3 deselected, exit0 before two new regressions."
+    },
+    {
+      "case": "First wheel console script launch",
+      "actual": "WinError32 before CreateProcess succeeded; original failure retained, only bounded prelaunch retry added."
+    },
+    {
+      "case": "Historical CIFAR10 linear early-eval controller",
+      "actual": "Original exit1/WinError5 retained; all four workers exit0, only controller record recovered."
+    }
+  ],
+  "delivery_bindings": [
+    {
+      "path": ".github/workflows/package-check.yml",
+      "sha256": "59fcfdc8ff1a60f7b34b56e40f525c41a4ffc35f9c32dfdc1330047b4fbd052e",
+      "local_only": false
+    },
+    {
+      "path": ".github/workflows/unit-tests.yml",
+      "sha256": "1d4f4a6f8bfcedc49fe56bf388ff92b89ba248e8eac7f8eb6d3645d9200ea23f",
+      "local_only": false
+    },
+    {
+      "path": "tests/package_smoke.py",
+      "sha256": "3d960b612c28ecd6c679bcfd97d000d7a5254629133f68d0128b9cd4103eb9b7",
+      "local_only": false
+    },
+    {
+      "path": "tests/run.py",
+      "sha256": "07642b02b6ab4b54a92c251b86f41dce0800ca1fe4ac38dfc5a9e8679ea74609",
+      "local_only": false
+    },
+    {
+      "path": "tests/test_run_entry.py",
+      "sha256": "6b66dd3e864143fd87ff16253f8ce4d3ea9c60b10df0c48acf1c92fc4ee5165c",
+      "local_only": false
+    },
+    {
+      "path": "tests/README.md",
+      "sha256": "f843d72e17fbec6ad1cfbb8ad41d47f0fb0f2ee05ed02d912e94612f6e30c67b",
+      "local_only": false
+    },
+    {
+      "path": "docs/REPOSITORY_CLEANUP.md",
+      "sha256": "aeed1042478b73c442a6540dfcf21daa7c58566ba9fb18b1dbed3175f8935d4f",
+      "local_only": false
+    },
+    {
+      "path": "docs/MAIN_MIGRATION.md",
+      "sha256": "e42303a13800b65b79fbc340a2e305a3c11ca29f8eb19d999806ae7b04e3913a",
+      "local_only": false
+    },
+    {
+      "path": "docs/LAYOUT.md",
+      "sha256": "661274bcb0389897b4b65d50f089ad5295d858bfd791baaf9b6c0243df89c5c9",
+      "local_only": false
+    },
+    {
+      "path": "studies/README.md",
+      "sha256": "28e1abd19153e77d7eb76295d52a9207ca1224145db7c91fb8e6def06089aa64",
+      "local_only": false
+    },
+    {
+      "path": "studies/main_historical/README.md",
+      "sha256": "c5e4da2f685440f51fab627adbbe7cced3eaf7643fdb5e381672992ddc1b19eb",
+      "local_only": false
+    },
+    {
+      "path": "studies/_template/docs/STUDY_REPORT.md",
+      "sha256": "1a2ec608ea882eabf74f752843eb98b6bf7a091f00b06b0ac0d0853244350385",
+      "local_only": false
+    }
+  ],
+  "scientific_report_bindings": [
+    {
+      "path": "studies/main_historical/docs/FINAL_RESULT.json",
+      "sha256": "d06228d40e3720eecef3ec4909650b5bc0dbecda7dffde58743eacbe0d2da553",
+      "local_only": false
+    },
+    {
+      "path": "studies/main_historical/docs/FINAL_EXECUTION_AUDIT.json",
+      "sha256": "76966b4d58328d4718d49f448ce5dd51ec3013556549a93a641e50bb62433fa6",
+      "local_only": false
+    },
+    {
+      "path": "studies/main_historical/docs/COMPARISON.json",
+      "sha256": "a9f7dd5e8da467bcb7acbe8968624229f03891f31803abae44338e95471f2dd4",
+      "local_only": false
+    },
+    {
+      "path": "studies/main_reproduction/docs/CURRENT_DEVICE_RESULT.json",
+      "sha256": "b9bfd62caa9908c76ccba3a4fa359040e8630ff0d7da29c0aebe9421b9a32f56",
+      "local_only": false
+    },
+    {
+      "path": "studies/main_reproduction/docs/CURRENT_DEVICE_CPU_RELOAD_AUDIT.json",
+      "sha256": "f265f9db4a4ee123e50ae3d66cd5631c48e51503552679c7c69bb03e3caca3f7",
+      "local_only": false
+    }
+  ],
+  "local_evidence_bindings": [
+    {
+      "path": ".tmp/repo-cleanup/CPU_TEST_EXECUTION.json",
+      "sha256": "ebf37c5957fb4da6203a2f03ee75ef2ceca75e14c2c5b62a27487fac5c8f4bef",
+      "local_only": true
+    },
+    {
+      "path": ".tmp/test-results/20261004T120524Z_284bb7/manifest.json",
+      "sha256": "fdd714698b06450cc2b53ce001daa148d6a46cf9e97e501c0fb54be14eda4196",
+      "local_only": true
+    },
+    {
+      "path": ".tmp/test-results/20261004T120524Z_284bb7/report.md",
+      "sha256": "4dfb9e0c0694edee80aad9f586a00a82bbd2df69b18536d42aadcf3660b2677d",
+      "local_only": true
+    },
+    {
+      "path": ".tmp/test-results/20261004T120524Z_284bb7/events.jsonl",
+      "sha256": "d56f1ff0cde2da819f7f27a517a1338e59e216006984cc49150d498e30e6dcf5",
+      "local_only": true
+    },
+    {
+      "path": ".tmp/repo-cleanup/BUILD_RESULT.json",
+      "sha256": "49b1040030fd85d2be040d804e59c3ac0655b00ffc3ef33f76e189d6219e9491",
+      "local_only": true
+    },
+    {
+      "path": ".tmp/repo-cleanup/BUILD.log",
+      "sha256": "46dd1708ffad9475e1427697b9fe75ef09718be279637fd44692bf84e9a6c9d5",
+      "local_only": true
+    },
+    {
+      "path": ".tmp/repo-cleanup/INSTALLATION_RESULT.json",
+      "sha256": "7f6df281d0b89cd1360edec50430089f10269587760390cfd039af0a958ed7ba",
+      "local_only": true
+    },
+    {
+      "path": ".tmp/repo-cleanup/CPU_TEST_FAILED_SANDBOX.json",
+      "sha256": "9e42aa6c2a59b113d217db0fae4805bd1d4191578ee356875800c428342ca8f8",
+      "local_only": true
+    },
+    {
+      "path": ".tmp/repo-cleanup/CPU_TEST_ORIGINAL_ENTRY_HOST.json",
+      "sha256": "9b77b16ccf69b12140bd328c8fb37dca8bbac9735980f1540f90c12075ad08f8",
+      "local_only": true
+    },
+    {
+      "path": ".tmp/repo-cleanup/TEST_ENTRY_DIAGNOSTIC.json",
+      "sha256": "00e5c7f107a6f9723d1df7a021b4a0b37fa69a3802dca857d462934f49f50a76",
+      "local_only": true
+    },
+    {
+      "path": ".tmp/repo-cleanup/WHEEL_INSTALLATION_SHARING_FAILURE.json",
+      "sha256": "1c63919d219c875ab05b3c55875df45954978a9d833f581979ea288a720ecf62",
+      "local_only": true
+    },
+    {
+      "path": ".tmp/repo-cleanup/REPOSITORY_CHECKS.json",
+      "sha256": "f4ef5eb4007591e10bd9e56cc5827c8f643e4c9e1f7476af2781c0413ac28718",
+      "local_only": true
+    },
+    {
+      "path": ".tmp/repo-cleanup/DOCUMENT_LINK_AUDIT.json",
+      "sha256": "124357794ef44e9e9b787253c50eaeeafba69ec22a8728e303dfd68a372a7b14",
+      "local_only": true
+    },
+    {
+      "path": ".tmp/repo-cleanup/SCIENCE_PRESERVATION.json",
+      "sha256": "a0459db5e29fdfb9d2a9f4264a68a5be9258df36cede769f1966d67713d1227c",
+      "local_only": true
+    }
+  ],
+  "local_evidence_availability": "Paths under .tmp are retained on this machine and excluded from Git clone; summaries and hashes in this formal record do not embed all raw artifacts.",
+  "merge_assessment": {
+    "ready_to_start_migration_pr": true,
+    "existing_main_is_dev_ancestor": true,
+    "breaking_public_interface_migration": true,
+    "old_checkpoint_direct_resume_supported": false,
+    "remaining_release_actions": [
+      "Commit the current formal new study runners, declarations, reports, figures/manifests and cleanup changes; already pushed dev alone omits local new files.",
+      "Push the reviewed commits and require the new remote CPU/platform and clean-install CI gates to pass.",
+      "Review command/config/checkpoint/Stats/std/resume migration guidance and preserve the old main commit/artifacts.",
+      "Recheck current remote refs before an authorized actual dev-to-main merge."
+    ]
+  }
+}

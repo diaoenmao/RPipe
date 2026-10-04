@@ -1,5 +1,15 @@
 # Study Report: main_reproduction
 
+## 2026-10-04：本机新结果与历史完整曲线导航
+
+最新 dev `8bccbac` 在本机 Torch2.11.0+cu130 环境完成固定现代 main `98648f3` 的 60-step / eval30 八格对照，受控数值门 **8/8 通过**；16段参数、整数buffer、SGD、scheduler与Torch RNG一致，独立eval与自身Loss-best一致。采用原Stats全精度profile和deterministic=true / benchmark=false，详细原值、条件与CPU存档复核见 [CURRENT_DEVICE_RESULT](CURRENT_DEVICE_RESULT.md)、[当前设备计划](CURRENT_DEVICE_PLAN.md) 和 [独立CPU重载审计](CURRENT_DEVICE_CPU_RELOAD_AUDIT.json)。原默认非确定性与无profile常量条件未在这次新对照覆盖。
+
+历史 README PNG 候选配方另在 [main_historical](../../main_historical/README.md) 完成四seed、32条连续80000-step训练及32条自身best独立eval，预先固定的终点/末段/七锚点/排序门通过，见 [完整报告](../../main_historical/docs/STUDY_REPORT.md)。参考值仍是PNG估读，未找回历史原始指标或实际seed集合；现代短预算对齐与历史曲线相近复现分别报告。
+
+以下正文保留2026-10-03及此前的旧设备cu128、原默认严格门4/8、确定性8/8和200-step前缀探针记录。正文中的“尚未启动长实验”“历史图未通过”是这些记录当时的状态；旧JSON、失败、门限及源码快照未被后来的本机结果覆盖。全Study导航见 [studies/README](../../README.md)。
+
+## 2026-10-03：原设备结果与接续复核
+
 2026-10-03。原 main 与 RPipe 各 **16/16 执行成功**；原默认 CUDA 配方的完整数值门 **4/8 通过**。完整确定性控制则 **8/8 通过**，step30/60 的参数、test Loss、test Accuracy 差值均为0，独立 eval 与 best 一致；训练均值存在浮点累加顺序造成的极小差异，详见下文。当前60-step计算在确定性条件下已对齐；原默认严格门与历史README图复现仍未通过，失败指标和执行前门限保留。
 
 ## 配方与证据

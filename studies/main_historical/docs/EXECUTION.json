@@ -1,0 +1,859 @@
+{
+  "started_at_utc": "2026-10-03T17:00:30.931095+00:00",
+  "seeds": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "events": [
+    {
+      "run": "f7b6c59223a46803",
+      "event": "start",
+      "pid": 67152,
+      "at_utc": "2026-10-03T17:00:30.975900+00:00"
+    },
+    {
+      "run": "93a684aa9d0631f5",
+      "event": "start",
+      "pid": 54768,
+      "at_utc": "2026-10-03T17:00:30.994264+00:00"
+    },
+    {
+      "run": "51fd2cbf55af3719",
+      "event": "start",
+      "pid": 20584,
+      "at_utc": "2026-10-03T17:00:31.010329+00:00"
+    },
+    {
+      "run": "b667e3702ad664b4",
+      "event": "start",
+      "pid": 7360,
+      "at_utc": "2026-10-03T17:00:31.029399+00:00"
+    },
+    {
+      "run": "f7b6c59223a46803",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T17:24:37.309928+00:00"
+    },
+    {
+      "run": "93a684aa9d0631f5",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T17:24:37.310576+00:00"
+    },
+    {
+      "run": "51fd2cbf55af3719",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T17:24:37.311171+00:00"
+    },
+    {
+      "run": "b667e3702ad664b4",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T17:24:37.311712+00:00"
+    },
+    {
+      "run": "24db7966c8b8469a",
+      "event": "start",
+      "pid": 66288,
+      "at_utc": "2026-10-03T17:24:37.361500+00:00"
+    },
+    {
+      "run": "f91f89c4afdcb655",
+      "event": "start",
+      "pid": 36972,
+      "at_utc": "2026-10-03T17:24:37.378648+00:00"
+    },
+    {
+      "run": "d8583c714101e7fb",
+      "event": "start",
+      "pid": 54072,
+      "at_utc": "2026-10-03T17:24:37.395985+00:00"
+    },
+    {
+      "run": "4b42a10dd5424d93",
+      "event": "start",
+      "pid": 48016,
+      "at_utc": "2026-10-03T17:24:37.422491+00:00"
+    },
+    {
+      "run": "24db7966c8b8469a",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T18:35:00.854227+00:00"
+    },
+    {
+      "run": "f91f89c4afdcb655",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T18:35:00.854970+00:00"
+    },
+    {
+      "run": "d8583c714101e7fb",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T18:35:00.855850+00:00"
+    },
+    {
+      "run": "4b42a10dd5424d93",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T18:35:00.856564+00:00"
+    },
+    {
+      "run": "d3d9d1c94f0981f3",
+      "event": "start",
+      "pid": 8548,
+      "at_utc": "2026-10-03T18:35:00.916518+00:00"
+    },
+    {
+      "run": "b44b3eb465b12318",
+      "event": "start",
+      "pid": 38696,
+      "at_utc": "2026-10-03T18:35:00.936397+00:00"
+    },
+    {
+      "run": "568bad58b59b7728",
+      "event": "start",
+      "pid": 42488,
+      "at_utc": "2026-10-03T18:35:00.954878+00:00"
+    },
+    {
+      "run": "6e63d83b28da4f6e",
+      "event": "start",
+      "pid": 19168,
+      "at_utc": "2026-10-03T18:35:00.973275+00:00"
+    },
+    {
+      "run": "d3d9d1c94f0981f3",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T19:07:01.354083+00:00"
+    },
+    {
+      "run": "b44b3eb465b12318",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T19:07:01.354725+00:00"
+    },
+    {
+      "run": "568bad58b59b7728",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T19:07:01.355274+00:00"
+    },
+    {
+      "run": "6e63d83b28da4f6e",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T19:07:01.355802+00:00"
+    },
+    {
+      "run": "cf51afd11fe36835",
+      "event": "start",
+      "pid": 50628,
+      "at_utc": "2026-10-03T19:07:01.410771+00:00"
+    },
+    {
+      "run": "5252ff4a197f9726",
+      "event": "start",
+      "pid": 43532,
+      "at_utc": "2026-10-03T19:07:01.437347+00:00"
+    },
+    {
+      "run": "6eaba53037a2b075",
+      "event": "start",
+      "pid": 65372,
+      "at_utc": "2026-10-03T19:07:01.455964+00:00"
+    },
+    {
+      "run": "3b3a455394e695a0",
+      "event": "start",
+      "pid": 30112,
+      "at_utc": "2026-10-03T19:07:01.475178+00:00"
+    },
+    {
+      "run": "cf51afd11fe36835",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T20:10:48.756836+00:00"
+    },
+    {
+      "run": "5252ff4a197f9726",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T20:10:48.757533+00:00"
+    },
+    {
+      "run": "6eaba53037a2b075",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T20:10:48.758114+00:00"
+    },
+    {
+      "run": "3b3a455394e695a0",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T20:10:48.758672+00:00"
+    },
+    {
+      "run": "bcf04a4357b7012b",
+      "event": "start",
+      "pid": 23264,
+      "at_utc": "2026-10-03T20:10:48.814245+00:00"
+    },
+    {
+      "run": "31f5cfd31edaf536",
+      "event": "start",
+      "pid": 43500,
+      "at_utc": "2026-10-03T20:10:48.833872+00:00"
+    },
+    {
+      "run": "f1b66f044ef18b34",
+      "event": "start",
+      "pid": 15768,
+      "at_utc": "2026-10-03T20:10:48.852553+00:00"
+    },
+    {
+      "run": "97af5d64fa010044",
+      "event": "start",
+      "pid": 15620,
+      "at_utc": "2026-10-03T20:10:48.884743+00:00"
+    },
+    {
+      "run": "bcf04a4357b7012b",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T20:38:51.192492+00:00"
+    },
+    {
+      "run": "31f5cfd31edaf536",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T20:38:51.193210+00:00"
+    },
+    {
+      "run": "f1b66f044ef18b34",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T20:38:51.193778+00:00"
+    },
+    {
+      "run": "97af5d64fa010044",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T20:38:51.194350+00:00"
+    },
+    {
+      "run": "67f1f12af61edb4c",
+      "event": "start",
+      "pid": 51824,
+      "at_utc": "2026-10-03T20:38:51.242440+00:00"
+    },
+    {
+      "run": "dbc8e2a4f684cf8e",
+      "event": "start",
+      "pid": 32080,
+      "at_utc": "2026-10-03T20:38:51.260715+00:00"
+    },
+    {
+      "run": "e9999e28241568aa",
+      "event": "start",
+      "pid": 62980,
+      "at_utc": "2026-10-03T20:38:51.278887+00:00"
+    },
+    {
+      "run": "e91adb37db5f9927",
+      "event": "start",
+      "pid": 49408,
+      "at_utc": "2026-10-03T20:38:51.295777+00:00"
+    },
+    {
+      "run": "67f1f12af61edb4c",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T21:44:56.054398+00:00"
+    },
+    {
+      "run": "dbc8e2a4f684cf8e",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T21:44:56.055061+00:00"
+    },
+    {
+      "run": "e9999e28241568aa",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T21:44:56.055792+00:00"
+    },
+    {
+      "run": "e91adb37db5f9927",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T21:44:56.056370+00:00"
+    },
+    {
+      "run": "6d6bd02aadf66eb0",
+      "event": "start",
+      "pid": 43592,
+      "at_utc": "2026-10-03T21:44:56.107192+00:00"
+    },
+    {
+      "run": "d4057e1cdf1c4dc4",
+      "event": "start",
+      "pid": 63204,
+      "at_utc": "2026-10-03T21:44:56.125007+00:00"
+    },
+    {
+      "run": "6d6bd02aadf66eb0",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T22:43:46.690449+00:00"
+    },
+    {
+      "run": "d4057e1cdf1c4dc4",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T22:43:46.691195+00:00"
+    },
+    {
+      "run": "f9af547f2362dcf5",
+      "event": "start",
+      "pid": 37032,
+      "at_utc": "2026-10-03T22:43:46.740501+00:00"
+    },
+    {
+      "run": "886b0201caa9fea8",
+      "event": "start",
+      "pid": 57508,
+      "at_utc": "2026-10-03T22:43:46.760123+00:00"
+    },
+    {
+      "run": "f9af547f2362dcf5",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T23:42:29.332363+00:00"
+    },
+    {
+      "run": "886b0201caa9fea8",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-03T23:42:29.332984+00:00"
+    },
+    {
+      "run": "b218a0bde4013fb8",
+      "event": "start",
+      "pid": 20796,
+      "at_utc": "2026-10-03T23:42:29.385438+00:00"
+    },
+    {
+      "run": "3b6bdafdab45a4ef",
+      "event": "start",
+      "pid": 3472,
+      "at_utc": "2026-10-03T23:42:29.401387+00:00"
+    },
+    {
+      "run": "b218a0bde4013fb8",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:10:44.339239+00:00"
+    },
+    {
+      "run": "3b6bdafdab45a4ef",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:10:44.339874+00:00"
+    },
+    {
+      "run": "49ddc9993d292ed7",
+      "event": "start",
+      "pid": 43516,
+      "at_utc": "2026-10-04T01:10:44.396824+00:00"
+    },
+    {
+      "run": "93799de623e13522",
+      "event": "start",
+      "pid": 37128,
+      "at_utc": "2026-10-04T01:10:44.422737+00:00"
+    },
+    {
+      "run": "0b00c595b613cb51",
+      "event": "start",
+      "pid": 45528,
+      "at_utc": "2026-10-04T01:10:44.438794+00:00"
+    },
+    {
+      "run": "0cbe54cb3ac4470d",
+      "event": "start",
+      "pid": 57800,
+      "at_utc": "2026-10-04T01:10:44.455726+00:00"
+    },
+    {
+      "run": "49ddc9993d292ed7",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:11:00.461632+00:00"
+    },
+    {
+      "run": "93799de623e13522",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:11:00.462264+00:00"
+    },
+    {
+      "run": "0b00c595b613cb51",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:11:00.462810+00:00"
+    },
+    {
+      "run": "0cbe54cb3ac4470d",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:11:00.463399+00:00"
+    },
+    {
+      "run": "ceca766cb87dd1e4",
+      "event": "start",
+      "pid": 66832,
+      "at_utc": "2026-10-04T01:11:00.514640+00:00"
+    },
+    {
+      "run": "b704133c6b4cd603",
+      "event": "start",
+      "pid": 42508,
+      "at_utc": "2026-10-04T01:11:00.533459+00:00"
+    },
+    {
+      "run": "4bfb95d2a66ad924",
+      "event": "start",
+      "pid": 9356,
+      "at_utc": "2026-10-04T01:11:00.551088+00:00"
+    },
+    {
+      "run": "124f08db16067239",
+      "event": "start",
+      "pid": 35284,
+      "at_utc": "2026-10-04T01:11:00.569537+00:00"
+    },
+    {
+      "run": "ceca766cb87dd1e4",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:11:16.576758+00:00"
+    },
+    {
+      "run": "b704133c6b4cd603",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:11:16.577377+00:00"
+    },
+    {
+      "run": "4bfb95d2a66ad924",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:11:16.577908+00:00"
+    },
+    {
+      "run": "124f08db16067239",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:11:16.578404+00:00"
+    },
+    {
+      "run": "b357409255c9124a",
+      "event": "start",
+      "pid": 54336,
+      "at_utc": "2026-10-04T01:11:16.628168+00:00"
+    },
+    {
+      "run": "424e5ab0c4d2b71d",
+      "event": "start",
+      "pid": 12560,
+      "at_utc": "2026-10-04T01:11:16.644744+00:00"
+    },
+    {
+      "run": "a17f1a2474d8425a",
+      "event": "start",
+      "pid": 52928,
+      "at_utc": "2026-10-04T01:11:16.662613+00:00"
+    },
+    {
+      "run": "51a9ff648cff3883",
+      "event": "start",
+      "pid": 62408,
+      "at_utc": "2026-10-04T01:11:16.682087+00:00"
+    },
+    {
+      "run": "b357409255c9124a",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:11:32.689284+00:00"
+    },
+    {
+      "run": "424e5ab0c4d2b71d",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:11:32.689951+00:00"
+    },
+    {
+      "run": "a17f1a2474d8425a",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:11:32.690514+00:00"
+    },
+    {
+      "run": "51a9ff648cff3883",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:11:32.691052+00:00"
+    },
+    {
+      "run": "48a3f005762cb11d",
+      "event": "start",
+      "pid": 48140,
+      "at_utc": "2026-10-04T01:11:32.739984+00:00"
+    },
+    {
+      "run": "23786b1c061e9ebe",
+      "event": "start",
+      "pid": 604,
+      "at_utc": "2026-10-04T01:11:32.758140+00:00"
+    },
+    {
+      "run": "48a3f005762cb11d",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:11:46.763574+00:00"
+    },
+    {
+      "run": "23786b1c061e9ebe",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:11:46.764331+00:00"
+    },
+    {
+      "run": "5887232578c33d3e",
+      "event": "start",
+      "pid": 64628,
+      "at_utc": "2026-10-04T01:11:46.810717+00:00"
+    },
+    {
+      "run": "eb5a34a38e710dc7",
+      "event": "start",
+      "pid": 44128,
+      "at_utc": "2026-10-04T01:11:46.829034+00:00"
+    },
+    {
+      "run": "5887232578c33d3e",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:12:00.835795+00:00"
+    },
+    {
+      "run": "eb5a34a38e710dc7",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:12:00.836451+00:00"
+    },
+    {
+      "run": "fa0abc3a6473d51d",
+      "event": "start",
+      "pid": 38896,
+      "at_utc": "2026-10-04T01:12:00.886755+00:00"
+    },
+    {
+      "run": "211570b176e08d03",
+      "event": "start",
+      "pid": 50248,
+      "at_utc": "2026-10-04T01:12:00.907399+00:00"
+    },
+    {
+      "run": "fa0abc3a6473d51d",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:12:14.914929+00:00"
+    },
+    {
+      "run": "211570b176e08d03",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:12:14.915534+00:00"
+    },
+    {
+      "run": "5450c19b6121e5bb",
+      "event": "start",
+      "pid": 12452,
+      "at_utc": "2026-10-04T01:12:14.963235+00:00"
+    },
+    {
+      "run": "63593a653bb5a08f",
+      "event": "start",
+      "pid": 61540,
+      "at_utc": "2026-10-04T01:12:14.981582+00:00"
+    },
+    {
+      "run": "5450c19b6121e5bb",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:12:28.987295+00:00"
+    },
+    {
+      "run": "63593a653bb5a08f",
+      "event": "exit",
+      "exit_code": 0,
+      "status": "succeeded",
+      "at_utc": "2026-10-04T01:12:28.987899+00:00"
+    }
+  ],
+  "groups": [
+    {
+      "mode": "train",
+      "model": "linear",
+      "data": "MNIST",
+      "runs": [
+        "f7b6c59223a46803",
+        "93a684aa9d0631f5",
+        "51fd2cbf55af3719",
+        "b667e3702ad664b4"
+      ],
+      "start_utc": "2026-10-03T17:00:30.957862+00:00",
+      "end_utc": "2026-10-03T17:24:37.312122+00:00"
+    },
+    {
+      "mode": "train",
+      "model": "linear",
+      "data": "CIFAR10",
+      "runs": [
+        "24db7966c8b8469a",
+        "f91f89c4afdcb655",
+        "d8583c714101e7fb",
+        "4b42a10dd5424d93"
+      ],
+      "start_utc": "2026-10-03T17:24:37.341178+00:00",
+      "end_utc": "2026-10-03T18:35:00.856810+00:00"
+    },
+    {
+      "mode": "train",
+      "model": "mlp",
+      "data": "MNIST",
+      "runs": [
+        "d3d9d1c94f0981f3",
+        "b44b3eb465b12318",
+        "568bad58b59b7728",
+        "6e63d83b28da4f6e"
+      ],
+      "start_utc": "2026-10-03T18:35:00.894134+00:00",
+      "end_utc": "2026-10-03T19:07:01.356122+00:00"
+    },
+    {
+      "mode": "train",
+      "model": "mlp",
+      "data": "CIFAR10",
+      "runs": [
+        "cf51afd11fe36835",
+        "5252ff4a197f9726",
+        "6eaba53037a2b075",
+        "3b3a455394e695a0"
+      ],
+      "start_utc": "2026-10-03T19:07:01.391221+00:00",
+      "end_utc": "2026-10-03T20:10:48.758911+00:00"
+    },
+    {
+      "mode": "train",
+      "model": "cnn",
+      "data": "MNIST",
+      "runs": [
+        "bcf04a4357b7012b",
+        "31f5cfd31edaf536",
+        "f1b66f044ef18b34",
+        "97af5d64fa010044"
+      ],
+      "start_utc": "2026-10-03T20:10:48.795559+00:00",
+      "end_utc": "2026-10-03T20:38:51.194577+00:00"
+    },
+    {
+      "mode": "train",
+      "model": "cnn",
+      "data": "CIFAR10",
+      "runs": [
+        "67f1f12af61edb4c",
+        "dbc8e2a4f684cf8e",
+        "e9999e28241568aa",
+        "e91adb37db5f9927"
+      ],
+      "start_utc": "2026-10-03T20:38:51.223630+00:00",
+      "end_utc": "2026-10-03T21:44:56.056594+00:00"
+    },
+    {
+      "mode": "train",
+      "model": "resnet18",
+      "data": "MNIST",
+      "runs": [
+        "6d6bd02aadf66eb0",
+        "d4057e1cdf1c4dc4"
+      ],
+      "start_utc": "2026-10-03T21:44:56.088947+00:00",
+      "end_utc": "2026-10-03T22:43:46.691601+00:00"
+    },
+    {
+      "mode": "train",
+      "model": "resnet18",
+      "data": "MNIST",
+      "runs": [
+        "f9af547f2362dcf5",
+        "886b0201caa9fea8"
+      ],
+      "start_utc": "2026-10-03T22:43:46.721955+00:00",
+      "end_utc": "2026-10-03T23:42:29.333245+00:00"
+    },
+    {
+      "mode": "train",
+      "model": "resnet18",
+      "data": "CIFAR10",
+      "runs": [
+        "b218a0bde4013fb8",
+        "3b6bdafdab45a4ef"
+      ],
+      "start_utc": "2026-10-03T23:42:29.366670+00:00",
+      "end_utc": "2026-10-04T01:10:44.340125+00:00"
+    },
+    {
+      "mode": "eval",
+      "model": "mlp",
+      "data": "CIFAR10",
+      "runs": [
+        "49ddc9993d292ed7",
+        "93799de623e13522",
+        "0b00c595b613cb51",
+        "0cbe54cb3ac4470d"
+      ],
+      "start_utc": "2026-10-04T01:10:44.378421+00:00",
+      "end_utc": "2026-10-04T01:11:00.463690+00:00"
+    },
+    {
+      "mode": "eval",
+      "model": "cnn",
+      "data": "MNIST",
+      "runs": [
+        "ceca766cb87dd1e4",
+        "b704133c6b4cd603",
+        "4bfb95d2a66ad924",
+        "124f08db16067239"
+      ],
+      "start_utc": "2026-10-04T01:11:00.495571+00:00",
+      "end_utc": "2026-10-04T01:11:16.578619+00:00"
+    },
+    {
+      "mode": "eval",
+      "model": "cnn",
+      "data": "CIFAR10",
+      "runs": [
+        "b357409255c9124a",
+        "424e5ab0c4d2b71d",
+        "a17f1a2474d8425a",
+        "51a9ff648cff3883"
+      ],
+      "start_utc": "2026-10-04T01:11:16.608758+00:00",
+      "end_utc": "2026-10-04T01:11:32.691325+00:00"
+    },
+    {
+      "mode": "eval",
+      "model": "resnet18",
+      "data": "MNIST",
+      "runs": [
+        "48a3f005762cb11d",
+        "23786b1c061e9ebe"
+      ],
+      "start_utc": "2026-10-04T01:11:32.721582+00:00",
+      "end_utc": "2026-10-04T01:11:46.764603+00:00"
+    },
+    {
+      "mode": "eval",
+      "model": "resnet18",
+      "data": "MNIST",
+      "runs": [
+        "5887232578c33d3e",
+        "eb5a34a38e710dc7"
+      ],
+      "start_utc": "2026-10-04T01:11:46.792669+00:00",
+      "end_utc": "2026-10-04T01:12:00.836710+00:00"
+    },
+    {
+      "mode": "eval",
+      "model": "resnet18",
+      "data": "CIFAR10",
+      "runs": [
+        "fa0abc3a6473d51d",
+        "211570b176e08d03"
+      ],
+      "start_utc": "2026-10-04T01:12:00.867690+00:00",
+      "end_utc": "2026-10-04T01:12:14.915770+00:00"
+    },
+    {
+      "mode": "eval",
+      "model": "resnet18",
+      "data": "CIFAR10",
+      "runs": [
+        "5450c19b6121e5bb",
+        "63593a653bb5a08f"
+      ],
+      "start_utc": "2026-10-04T01:12:14.943742+00:00",
+      "end_utc": "2026-10-04T01:12:28.988139+00:00"
+    }
+  ],
+  "status": "succeeded",
+  "finished_at_utc": "2026-10-04T01:12:29.005702+00:00"
+}

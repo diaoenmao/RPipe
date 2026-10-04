@@ -1,0 +1,88 @@
+{
+  "recorded_at_utc": "2026-10-03T19:00:37.238004+00:00",
+  "goal_status": "active",
+  "complete": false,
+  "requirements": [
+    {
+      "requirement": "continue from current development baseline",
+      "status": "verified",
+      "evidence": "HEAD/dev/origin-dev 8bccbac321d4c3ac1ea9892a5e774c114e0298c6; SOURCE_MANIFEST unchanged"
+    },
+    {
+      "requirement": "same-device historical recipe numerical agreement",
+      "status": "verified",
+      "evidence": "PREFLIGHT.json and PREFLIGHT_VERIFICATION.json: 8/8 at 200/400/600"
+    },
+    {
+      "requirement": "current-main 60-step same-device agreement",
+      "status": "verified",
+      "evidence": "8/8 full GPU matrix, terminal tool49399 exit0; CURRENT_DEVICE_CPU_RELOAD_AUDIT.json passed. Conditions: prepared original Stats profile, deterministic=true / benchmark=false."
+    },
+    {
+      "requirement": "32 continuous 80000-step training Runs and 32 sibling-best evals",
+      "status": "in_progress",
+      "evidence": "{\"train:succeeded\": 9, \"eval:succeeded\": 8, \"train:started\": 5, \"eval:pending\": 24, \"train:pending\": 18}; controller37125/eager17242/guard89871 remain live; eager11464 terminal exit0 after80k. Original live-handle observation at2026-10-03T18:52:26Z; do not restart."
+    },
+    {
+      "requirement": "four-seed complete historical image gate",
+      "status": "pending",
+      "evidence": "MNIST_LINEAR_RESULT.json and CIFAR_LINEAR_RESULT.json independently verify2/8 complete four-seed train+eval groups. Fixed single-group diagnostics within gates; full32+32 final gate remains pending."
+    },
+    {
+      "requirement": "final source, artifact and curve review",
+      "status": "pending",
+      "evidence": "99numerical files and65expanded plan files remain unchanged; completed-group source/raw/checkpoint/curve audit passed. Final audit waits for remaining six groups."
+    }
+  ],
+  "live_handles": {
+    "controller": 37125,
+    "eager": [
+      17242
+    ],
+    "guard": 89871
+  },
+  "next_action": "Keep current5workers continuous. Review/run isolated historical GPU capacity diagnostics; then finish remaining23train and24eval and apply full fixed image gates. Do not alter EAGER membership until old workers and guard exit successfully.",
+  "latest_turn_classification": "progress",
+  "counts": {
+    "train:succeeded": 9,
+    "eval:succeeded": 8,
+    "train:started": 5,
+    "eval:pending": 24,
+    "train:pending": 18
+  },
+  "completed_handles": {
+    "modern_current_main": {
+      "session_id": 49399,
+      "exit_code": 0
+    },
+    "early_mnist_linear_eval": {
+      "session_id": 3926,
+      "exit_code": 0
+    },
+    "early_cifar_linear_eval": {
+      "session_id": 10488,
+      "exit_code": 1,
+      "four_worker_exit_codes": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "reporting_failure": "WinError5 replacing execution metadata after final child.wait; failed record and uncommitted bytes retained.",
+      "recovery_command_exit_code": 0,
+      "recovery_source": ".tmp/recover_cifar_eval_record.py",
+      "recovered_record": "EARLY_EVAL_CIFAR10_LINEAR_EXECUTION.json",
+      "workers_restarted": false
+    },
+    "eager_cifar_resnet_seed0": {
+      "session_id": 11464,
+      "exit_code": 0,
+      "run": "4b6781cffa2c2b8c",
+      "flow_succeeded_at_cst": "2026-10-04T02:53:50.744+08:00",
+      "optimizer_steps": 80000,
+      "full_test_points": 400,
+      "single_seed_is_not_full_group": true
+    }
+  },
+  "latest_concrete_progress": "CIFAR10/linear four continuous80k trains plus four original evals completed and independently CPU audited; completed train+eval groups now2/8."
+}

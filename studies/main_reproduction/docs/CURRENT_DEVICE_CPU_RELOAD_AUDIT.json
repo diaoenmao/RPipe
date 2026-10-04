@@ -1,0 +1,923 @@
+{
+  "audited_at_utc": "2026-10-03T18:05:10.932184+00:00",
+  "workspace": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready",
+  "device_for_audit": "cpu",
+  "gpu_reexecuted": false,
+  "main_commit": "98648f3a5c7db7dccf3ca806410d5b6fdee9484c",
+  "helper_sha256": "b2059c369e2067d9f9f5369f4e1162fc5b8f546f4e7b930424c55e8ebca1f461",
+  "passed": true,
+  "runs": [
+    {
+      "data": "MNIST",
+      "model": "linear",
+      "passed": true,
+      "segments": [
+        {
+          "step": 30,
+          "parameters": {
+            "exact": true,
+            "within_gate": true,
+            "maximum_absolute_difference": 0.0,
+            "floating_fields": 2,
+            "integer_fields": 0,
+            "total_tensor_values": 7850
+          },
+          "optimizer_exact": true,
+          "scheduler_exact": true,
+          "rng_exact": true,
+          "metrics": {
+            "train": {
+              "loss_difference": 0.0,
+              "correct": 6024,
+              "samples": 7500
+            },
+            "test": {
+              "loss_difference": 0.0,
+              "correct": 8963,
+              "samples": 10000
+            }
+          },
+          "actual_cumulative_counts": {
+            "train": {
+              "samples": 7500,
+              "batches": 30
+            },
+            "test": {
+              "samples": 10000,
+              "batches": 10
+            }
+          }
+        },
+        {
+          "step": 60,
+          "parameters": {
+            "exact": true,
+            "within_gate": true,
+            "maximum_absolute_difference": 0.0,
+            "floating_fields": 2,
+            "integer_fields": 0,
+            "total_tensor_values": 7850
+          },
+          "optimizer_exact": true,
+          "scheduler_exact": true,
+          "rng_exact": true,
+          "metrics": {
+            "train": {
+              "loss_difference": 0.0,
+              "correct": 6725,
+              "samples": 7500
+            },
+            "test": {
+              "loss_difference": 0.0,
+              "correct": 9073,
+              "samples": 10000
+            }
+          },
+          "actual_cumulative_counts": {
+            "train": {
+              "samples": 15000,
+              "batches": 60
+            },
+            "test": {
+              "samples": 20000,
+              "batches": 20
+            }
+          }
+        }
+      ],
+      "artifact_sha256": {
+        "matrix/MNIST_linear/original_step_30.pt": "160b9791e3a4eb6904baacc8ef0907714e29e7ad1a5de3c5655f997ae4117eef",
+        "matrix/MNIST_linear/current_train/current_step_30.pt": "c99294361434c6ba1a1cd499e8fd143c558e2fb399d44a571c35b809ab0f9b35",
+        "matrix/MNIST_linear/original_step_60.pt": "a81be5c87d4383b7e097f6928775271076f592a031dfd09c3605ffd270c5feca",
+        "matrix/MNIST_linear/current_train/current_step_60.pt": "07f3584af9b34616ba9f704fb6cfe636a8b66238fc00035a32e3d52baa627217",
+        "matrix/MNIST_linear/current_train/assets/checkpoints/latest.pt": "0839b97f2ef120373426ce90f3ebefd347d3f703e288f8cf1d2759e3b7d27fe2",
+        "matrix/MNIST_linear/current_train/assets/checkpoints/best.pt": "20bdbd06c9fc6a8ed984aa30e403cc7d709bf1f0bea223c24cfae91da2284ca6",
+        "matrix/MNIST_linear/original_best.pt": "3e09698f746fd0d1149dcfe7d2029ce13e830076ad4b6b9665a1ef74b99e34e9"
+      },
+      "latest_and_tracker_verified": true,
+      "best_step": 60,
+      "best_payload_verified": true,
+      "independent_eval": {
+        "source_step": 60,
+        "own_best_checkpoint": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\MNIST_linear\\current_train\\assets\\checkpoints\\best.pt",
+        "actual_counts": {
+          "original": {
+            "samples": 10000,
+            "batches": 10
+          },
+          "current": {
+            "samples": 10000,
+            "batches": 10
+          }
+        },
+        "metrics": {
+          "loss_difference": 0.0,
+          "correct": 9073,
+          "samples": 10000
+        },
+        "raw_original_tensorboard_verified": true,
+        "native_tracker_and_resume_log_verified": true
+      }
+    },
+    {
+      "data": "MNIST",
+      "model": "mlp",
+      "passed": true,
+      "segments": [
+        {
+          "step": 30,
+          "parameters": {
+            "exact": true,
+            "within_gate": true,
+            "maximum_absolute_difference": 0.0,
+            "floating_fields": 6,
+            "integer_fields": 0,
+            "total_tensor_values": 136074
+          },
+          "optimizer_exact": true,
+          "scheduler_exact": true,
+          "rng_exact": true,
+          "metrics": {
+            "train": {
+              "loss_difference": 2.220446049250313e-16,
+              "correct": 5167,
+              "samples": 7500
+            },
+            "test": {
+              "loss_difference": 0.0,
+              "correct": 8947,
+              "samples": 10000
+            }
+          },
+          "actual_cumulative_counts": {
+            "train": {
+              "samples": 7500,
+              "batches": 30
+            },
+            "test": {
+              "samples": 10000,
+              "batches": 10
+            }
+          }
+        },
+        {
+          "step": 60,
+          "parameters": {
+            "exact": true,
+            "within_gate": true,
+            "maximum_absolute_difference": 0.0,
+            "floating_fields": 6,
+            "integer_fields": 0,
+            "total_tensor_values": 136074
+          },
+          "optimizer_exact": true,
+          "scheduler_exact": true,
+          "rng_exact": true,
+          "metrics": {
+            "train": {
+              "loss_difference": 5.551115123125783e-17,
+              "correct": 6764,
+              "samples": 7500
+            },
+            "test": {
+              "loss_difference": 0.0,
+              "correct": 9182,
+              "samples": 10000
+            }
+          },
+          "actual_cumulative_counts": {
+            "train": {
+              "samples": 15000,
+              "batches": 60
+            },
+            "test": {
+              "samples": 20000,
+              "batches": 20
+            }
+          }
+        }
+      ],
+      "artifact_sha256": {
+        "matrix/MNIST_mlp/original_step_30.pt": "5224ff17f4fc8d0829e7a4b308436d62ad40d8b5874be31d3731cea574eaa577",
+        "matrix/MNIST_mlp/current_train/current_step_30.pt": "3a29bc45e738fb759da20bd4fe54f5a6da559b13cd05102fc7d2112bb29ef57b",
+        "matrix/MNIST_mlp/original_step_60.pt": "9e2c1fa90730634081bb2272c0277c2b853c412b8613e2a11574b98e06c516b1",
+        "matrix/MNIST_mlp/current_train/current_step_60.pt": "3e708f44fc26e34f60730f7bf39b6938af18d3f0b466a2aa5d7d0dee36652981",
+        "matrix/MNIST_mlp/current_train/assets/checkpoints/latest.pt": "2ceac051e1b28192e7a84ad6069ae044707d9a2cfa21b1e9484ac269ff5aed39",
+        "matrix/MNIST_mlp/current_train/assets/checkpoints/best.pt": "379c51c75ccd6b9984b6ea3044ed1999b53b7547c15498788247645a8a62ab61",
+        "matrix/MNIST_mlp/original_best.pt": "86d77fb2798031d7fbd23159e0320b7584d96e0b279a2b1edf3e72dd858ef1f0"
+      },
+      "latest_and_tracker_verified": true,
+      "best_step": 60,
+      "best_payload_verified": true,
+      "independent_eval": {
+        "source_step": 60,
+        "own_best_checkpoint": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\MNIST_mlp\\current_train\\assets\\checkpoints\\best.pt",
+        "actual_counts": {
+          "original": {
+            "samples": 10000,
+            "batches": 10
+          },
+          "current": {
+            "samples": 10000,
+            "batches": 10
+          }
+        },
+        "metrics": {
+          "loss_difference": 0.0,
+          "correct": 9182,
+          "samples": 10000
+        },
+        "raw_original_tensorboard_verified": true,
+        "native_tracker_and_resume_log_verified": true
+      }
+    },
+    {
+      "data": "MNIST",
+      "model": "cnn",
+      "passed": true,
+      "segments": [
+        {
+          "step": 30,
+          "parameters": {
+            "exact": true,
+            "within_gate": true,
+            "maximum_absolute_difference": 0.0,
+            "floating_fields": 10,
+            "integer_fields": 0,
+            "total_tensor_values": 1554954
+          },
+          "optimizer_exact": true,
+          "scheduler_exact": true,
+          "rng_exact": true,
+          "metrics": {
+            "train": {
+              "loss_difference": 0.0,
+              "correct": 1368,
+              "samples": 7500
+            },
+            "test": {
+              "loss_difference": 0.0,
+              "correct": 1135,
+              "samples": 10000
+            }
+          },
+          "actual_cumulative_counts": {
+            "train": {
+              "samples": 7500,
+              "batches": 30
+            },
+            "test": {
+              "samples": 10000,
+              "batches": 10
+            }
+          }
+        },
+        {
+          "step": 60,
+          "parameters": {
+            "exact": true,
+            "within_gate": true,
+            "maximum_absolute_difference": 0.0,
+            "floating_fields": 10,
+            "integer_fields": 0,
+            "total_tensor_values": 1554954
+          },
+          "optimizer_exact": true,
+          "scheduler_exact": true,
+          "rng_exact": true,
+          "metrics": {
+            "train": {
+              "loss_difference": 0.0,
+              "correct": 874,
+              "samples": 7500
+            },
+            "test": {
+              "loss_difference": 0.0,
+              "correct": 1135,
+              "samples": 10000
+            }
+          },
+          "actual_cumulative_counts": {
+            "train": {
+              "samples": 15000,
+              "batches": 60
+            },
+            "test": {
+              "samples": 20000,
+              "batches": 20
+            }
+          }
+        }
+      ],
+      "artifact_sha256": {
+        "matrix/MNIST_cnn/original_step_30.pt": "5cad8f0be0dc5c3c3c564609045d724fdf14777d8eb74ea08f9f739fa07f5e5a",
+        "matrix/MNIST_cnn/current_train/current_step_30.pt": "167876ed663d18c0fcb7a13641aa5262fc60c5c0c3ab90ccf06f206345bf54d0",
+        "matrix/MNIST_cnn/original_step_60.pt": "24b436946f48a201cf1ea0ade4316665e2dda9a1741391b201a02560d0dddd1c",
+        "matrix/MNIST_cnn/current_train/current_step_60.pt": "6f4ebb35b717ab2138254178bfd38ac19942153d668a7817a88e30b3c0701203",
+        "matrix/MNIST_cnn/current_train/assets/checkpoints/latest.pt": "f96cfef6bc0b35780199c1ef1dd235e35429b31ed6949b6b57d0f41b469e8607",
+        "matrix/MNIST_cnn/current_train/assets/checkpoints/best.pt": "41448005c55cdbf2ae39c548df78bede65026d035e20ecfbf376031db868ad5d",
+        "matrix/MNIST_cnn/original_best.pt": "6529223c2cb4dedba42fd4404c27c921a75eb96f4c6b9cda635bbdf5c64f2061"
+      },
+      "latest_and_tracker_verified": true,
+      "best_step": 60,
+      "best_payload_verified": true,
+      "independent_eval": {
+        "source_step": 60,
+        "own_best_checkpoint": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\MNIST_cnn\\current_train\\assets\\checkpoints\\best.pt",
+        "actual_counts": {
+          "original": {
+            "samples": 10000,
+            "batches": 10
+          },
+          "current": {
+            "samples": 10000,
+            "batches": 10
+          }
+        },
+        "metrics": {
+          "loss_difference": 0.0,
+          "correct": 1135,
+          "samples": 10000
+        },
+        "raw_original_tensorboard_verified": true,
+        "native_tracker_and_resume_log_verified": true
+      }
+    },
+    {
+      "data": "MNIST",
+      "model": "resnet18",
+      "passed": true,
+      "segments": [
+        {
+          "step": 30,
+          "parameters": {
+            "exact": true,
+            "within_gate": true,
+            "maximum_absolute_difference": 0.0,
+            "floating_fields": 90,
+            "integer_fields": 17,
+            "total_tensor_values": 11178843
+          },
+          "optimizer_exact": true,
+          "scheduler_exact": true,
+          "rng_exact": true,
+          "metrics": {
+            "train": {
+              "loss_difference": 0.0,
+              "correct": 5375,
+              "samples": 7500
+            },
+            "test": {
+              "loss_difference": 0.0,
+              "correct": 9296,
+              "samples": 10000
+            }
+          },
+          "actual_cumulative_counts": {
+            "train": {
+              "samples": 7500,
+              "batches": 30
+            },
+            "test": {
+              "samples": 10000,
+              "batches": 10
+            }
+          }
+        },
+        {
+          "step": 60,
+          "parameters": {
+            "exact": true,
+            "within_gate": true,
+            "maximum_absolute_difference": 0.0,
+            "floating_fields": 90,
+            "integer_fields": 17,
+            "total_tensor_values": 11178843
+          },
+          "optimizer_exact": true,
+          "scheduler_exact": true,
+          "rng_exact": true,
+          "metrics": {
+            "train": {
+              "loss_difference": 0.0,
+              "correct": 7288,
+              "samples": 7500
+            },
+            "test": {
+              "loss_difference": 0.0,
+              "correct": 9769,
+              "samples": 10000
+            }
+          },
+          "actual_cumulative_counts": {
+            "train": {
+              "samples": 15000,
+              "batches": 60
+            },
+            "test": {
+              "samples": 20000,
+              "batches": 20
+            }
+          }
+        }
+      ],
+      "artifact_sha256": {
+        "matrix/MNIST_resnet18/original_step_30.pt": "6f1f2e8008e8761ed4286837d0d59da360465d109c898f19ca32ee93ffaeb988",
+        "matrix/MNIST_resnet18/current_train/current_step_30.pt": "f57526911352a50d856af6be6318429e0c27cf4b11c33cce0640ca76eb2077cd",
+        "matrix/MNIST_resnet18/original_step_60.pt": "b4f4cdc415f50ae12d1e20e57240f15d39232db43af9e2c9d0dfde1d297fb505",
+        "matrix/MNIST_resnet18/current_train/current_step_60.pt": "ca1947146d853cc644ff04f651153d695d2bd829c0c0dc59f497973ef07454d3",
+        "matrix/MNIST_resnet18/current_train/assets/checkpoints/latest.pt": "1458257e6e5c604e298f9bba9dffaf6ac6e4ca173feed51646b94b67ea9b3289",
+        "matrix/MNIST_resnet18/current_train/assets/checkpoints/best.pt": "90cd1d4d5f0e9e268548c676783a8fb43ebda72d0eeaa144a44789929de82839",
+        "matrix/MNIST_resnet18/original_best.pt": "94aad60fbe4b0b19a7ec9748d8f2b7c580c33372ea13613524fb158c085858c4"
+      },
+      "latest_and_tracker_verified": true,
+      "best_step": 60,
+      "best_payload_verified": true,
+      "independent_eval": {
+        "source_step": 60,
+        "own_best_checkpoint": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\MNIST_resnet18\\current_train\\assets\\checkpoints\\best.pt",
+        "actual_counts": {
+          "original": {
+            "samples": 10000,
+            "batches": 10
+          },
+          "current": {
+            "samples": 10000,
+            "batches": 10
+          }
+        },
+        "metrics": {
+          "loss_difference": 0.0,
+          "correct": 9769,
+          "samples": 10000
+        },
+        "raw_original_tensorboard_verified": true,
+        "native_tracker_and_resume_log_verified": true
+      }
+    },
+    {
+      "data": "CIFAR10",
+      "model": "linear",
+      "passed": true,
+      "segments": [
+        {
+          "step": 30,
+          "parameters": {
+            "exact": true,
+            "within_gate": true,
+            "maximum_absolute_difference": 0.0,
+            "floating_fields": 2,
+            "integer_fields": 0,
+            "total_tensor_values": 30730
+          },
+          "optimizer_exact": true,
+          "scheduler_exact": true,
+          "rng_exact": true,
+          "metrics": {
+            "train": {
+              "loss_difference": 0.0,
+              "correct": 1565,
+              "samples": 7500
+            },
+            "test": {
+              "loss_difference": 0.0,
+              "correct": 2865,
+              "samples": 10000
+            }
+          },
+          "actual_cumulative_counts": {
+            "train": {
+              "samples": 7500,
+              "batches": 30
+            },
+            "test": {
+              "samples": 10000,
+              "batches": 10
+            }
+          }
+        },
+        {
+          "step": 60,
+          "parameters": {
+            "exact": true,
+            "within_gate": true,
+            "maximum_absolute_difference": 0.0,
+            "floating_fields": 2,
+            "integer_fields": 0,
+            "total_tensor_values": 30730
+          },
+          "optimizer_exact": true,
+          "scheduler_exact": true,
+          "rng_exact": true,
+          "metrics": {
+            "train": {
+              "loss_difference": 0.0,
+              "correct": 1963,
+              "samples": 7500
+            },
+            "test": {
+              "loss_difference": 0.0,
+              "correct": 2952,
+              "samples": 10000
+            }
+          },
+          "actual_cumulative_counts": {
+            "train": {
+              "samples": 15000,
+              "batches": 60
+            },
+            "test": {
+              "samples": 20000,
+              "batches": 20
+            }
+          }
+        }
+      ],
+      "artifact_sha256": {
+        "matrix/CIFAR10_linear/original_step_30.pt": "676506fee10e67541a1fa574b83923aa7bca145fe707ef1c0000f19d6ac1fb5f",
+        "matrix/CIFAR10_linear/current_train/current_step_30.pt": "a983c4ff3e5d5462714e5d1f62e55437ab7edfdb72a755d6e4f35d971e373a51",
+        "matrix/CIFAR10_linear/original_step_60.pt": "5a5a0a850620446c9ce700172f6019be6cfa096b498bb817b1ed57a7844042af",
+        "matrix/CIFAR10_linear/current_train/current_step_60.pt": "3d225b0b6f4136d407e20b297ede37477498bc76f989946e500181a450d8ee2d",
+        "matrix/CIFAR10_linear/current_train/assets/checkpoints/latest.pt": "818543f26fa592a4e66d17e4a4a93542f1a26d97fd6be778ef69e703ac8b3092",
+        "matrix/CIFAR10_linear/current_train/assets/checkpoints/best.pt": "018136391d5702642f4c6863ecc6767b650aad3d2b000273ade5daed6a1545c6",
+        "matrix/CIFAR10_linear/original_best.pt": "acf3341ef631c383796c45f040df327b682172bdef5ee371fc4696dc6e5bb3b8"
+      },
+      "latest_and_tracker_verified": true,
+      "best_step": 60,
+      "best_payload_verified": true,
+      "independent_eval": {
+        "source_step": 60,
+        "own_best_checkpoint": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\CIFAR10_linear\\current_train\\assets\\checkpoints\\best.pt",
+        "actual_counts": {
+          "original": {
+            "samples": 10000,
+            "batches": 10
+          },
+          "current": {
+            "samples": 10000,
+            "batches": 10
+          }
+        },
+        "metrics": {
+          "loss_difference": 0.0,
+          "correct": 2952,
+          "samples": 10000
+        },
+        "raw_original_tensorboard_verified": true,
+        "native_tracker_and_resume_log_verified": true
+      }
+    },
+    {
+      "data": "CIFAR10",
+      "model": "mlp",
+      "passed": true,
+      "segments": [
+        {
+          "step": 30,
+          "parameters": {
+            "exact": true,
+            "within_gate": true,
+            "maximum_absolute_difference": 0.0,
+            "floating_fields": 6,
+            "integer_fields": 0,
+            "total_tensor_values": 428938
+          },
+          "optimizer_exact": true,
+          "scheduler_exact": true,
+          "rng_exact": true,
+          "metrics": {
+            "train": {
+              "loss_difference": 2.220446049250313e-16,
+              "correct": 1989,
+              "samples": 7500
+            },
+            "test": {
+              "loss_difference": 0.0,
+              "correct": 3644,
+              "samples": 10000
+            }
+          },
+          "actual_cumulative_counts": {
+            "train": {
+              "samples": 7500,
+              "batches": 30
+            },
+            "test": {
+              "samples": 10000,
+              "batches": 10
+            }
+          }
+        },
+        {
+          "step": 60,
+          "parameters": {
+            "exact": true,
+            "within_gate": true,
+            "maximum_absolute_difference": 0.0,
+            "floating_fields": 6,
+            "integer_fields": 0,
+            "total_tensor_values": 428938
+          },
+          "optimizer_exact": true,
+          "scheduler_exact": true,
+          "rng_exact": true,
+          "metrics": {
+            "train": {
+              "loss_difference": 0.0,
+              "correct": 2673,
+              "samples": 7500
+            },
+            "test": {
+              "loss_difference": 0.0,
+              "correct": 4030,
+              "samples": 10000
+            }
+          },
+          "actual_cumulative_counts": {
+            "train": {
+              "samples": 15000,
+              "batches": 60
+            },
+            "test": {
+              "samples": 20000,
+              "batches": 20
+            }
+          }
+        }
+      ],
+      "artifact_sha256": {
+        "matrix/CIFAR10_mlp/original_step_30.pt": "60c04bb8f1f41d438e736782878deac44a4b74ed54eb4da413107ce9f38599b1",
+        "matrix/CIFAR10_mlp/current_train/current_step_30.pt": "11b791d4813a57884cb05fb154596aa0e1bb0c1279add2ea27e30f9ef025f2b3",
+        "matrix/CIFAR10_mlp/original_step_60.pt": "e455f3a8aa5fadb77ff950dc83642c986219cf6f16bcb7aeb5e51defc43c8050",
+        "matrix/CIFAR10_mlp/current_train/current_step_60.pt": "db771d3d9fbfe1e0962a38427cd6c84707b7b238d006e12d30f0017b70acec44",
+        "matrix/CIFAR10_mlp/current_train/assets/checkpoints/latest.pt": "8c228b8c0e200eb5ba88b77889cf9cb5eca7152db375c54566efec3f46f5ba0c",
+        "matrix/CIFAR10_mlp/current_train/assets/checkpoints/best.pt": "2af8855f92e3e36ea016773e3f5556e1d247715f404e2a49cc49022d8adc6399",
+        "matrix/CIFAR10_mlp/original_best.pt": "fb1bbe1c69f6bd18b6d4c3a54e58569ac9d228cb208ae5dc3b123869b78d835c"
+      },
+      "latest_and_tracker_verified": true,
+      "best_step": 60,
+      "best_payload_verified": true,
+      "independent_eval": {
+        "source_step": 60,
+        "own_best_checkpoint": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\CIFAR10_mlp\\current_train\\assets\\checkpoints\\best.pt",
+        "actual_counts": {
+          "original": {
+            "samples": 10000,
+            "batches": 10
+          },
+          "current": {
+            "samples": 10000,
+            "batches": 10
+          }
+        },
+        "metrics": {
+          "loss_difference": 0.0,
+          "correct": 4030,
+          "samples": 10000
+        },
+        "raw_original_tensorboard_verified": true,
+        "native_tracker_and_resume_log_verified": true
+      }
+    },
+    {
+      "data": "CIFAR10",
+      "model": "cnn",
+      "passed": true,
+      "segments": [
+        {
+          "step": 30,
+          "parameters": {
+            "exact": true,
+            "within_gate": true,
+            "maximum_absolute_difference": 0.0,
+            "floating_fields": 10,
+            "integer_fields": 0,
+            "total_tensor_values": 1556106
+          },
+          "optimizer_exact": true,
+          "scheduler_exact": true,
+          "rng_exact": true,
+          "metrics": {
+            "train": {
+              "loss_difference": 0.0,
+              "correct": 1386,
+              "samples": 7500
+            },
+            "test": {
+              "loss_difference": 0.0,
+              "correct": 2876,
+              "samples": 10000
+            }
+          },
+          "actual_cumulative_counts": {
+            "train": {
+              "samples": 7500,
+              "batches": 30
+            },
+            "test": {
+              "samples": 10000,
+              "batches": 10
+            }
+          }
+        },
+        {
+          "step": 60,
+          "parameters": {
+            "exact": true,
+            "within_gate": true,
+            "maximum_absolute_difference": 0.0,
+            "floating_fields": 10,
+            "integer_fields": 0,
+            "total_tensor_values": 1556106
+          },
+          "optimizer_exact": true,
+          "scheduler_exact": true,
+          "rng_exact": true,
+          "metrics": {
+            "train": {
+              "loss_difference": 0.0,
+              "correct": 2255,
+              "samples": 7500
+            },
+            "test": {
+              "loss_difference": 0.0,
+              "correct": 3294,
+              "samples": 10000
+            }
+          },
+          "actual_cumulative_counts": {
+            "train": {
+              "samples": 15000,
+              "batches": 60
+            },
+            "test": {
+              "samples": 20000,
+              "batches": 20
+            }
+          }
+        }
+      ],
+      "artifact_sha256": {
+        "matrix/CIFAR10_cnn/original_step_30.pt": "cef9ef55bfaccc39ac6d743a50fc3b695b58863760b779a7cd6c7b5c648fa5f6",
+        "matrix/CIFAR10_cnn/current_train/current_step_30.pt": "576cdd858123ab53dd38f10cb011cbeac190095be766580fbb1ada1af8f2104a",
+        "matrix/CIFAR10_cnn/original_step_60.pt": "608c7802a50239c17f42febee4886124000c9d360113fccaa18dc8b4d3554326",
+        "matrix/CIFAR10_cnn/current_train/current_step_60.pt": "acec2c643cd6e383c02474b2c65c91cbec940c176a06076c6373cfd73f7a4f78",
+        "matrix/CIFAR10_cnn/current_train/assets/checkpoints/latest.pt": "6f05001193db0fa2ac3a5af7d3d32bbee1138705f605349cb312c968625d5d0e",
+        "matrix/CIFAR10_cnn/current_train/assets/checkpoints/best.pt": "72eb8a599a301d2dab2303ce5fb72504ceb18a2526b47bfa21875068fa4428fc",
+        "matrix/CIFAR10_cnn/original_best.pt": "0280aec819d9582385100def339a7e1f0fe200e2453a29f3607ec4d89a93eab8"
+      },
+      "latest_and_tracker_verified": true,
+      "best_step": 60,
+      "best_payload_verified": true,
+      "independent_eval": {
+        "source_step": 60,
+        "own_best_checkpoint": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\CIFAR10_cnn\\current_train\\assets\\checkpoints\\best.pt",
+        "actual_counts": {
+          "original": {
+            "samples": 10000,
+            "batches": 10
+          },
+          "current": {
+            "samples": 10000,
+            "batches": 10
+          }
+        },
+        "metrics": {
+          "loss_difference": 0.0,
+          "correct": 3294,
+          "samples": 10000
+        },
+        "raw_original_tensorboard_verified": true,
+        "native_tracker_and_resume_log_verified": true
+      }
+    },
+    {
+      "data": "CIFAR10",
+      "model": "resnet18",
+      "passed": true,
+      "segments": [
+        {
+          "step": 30,
+          "parameters": {
+            "exact": true,
+            "within_gate": true,
+            "maximum_absolute_difference": 0.0,
+            "floating_fields": 90,
+            "integer_fields": 17,
+            "total_tensor_values": 11179995
+          },
+          "optimizer_exact": true,
+          "scheduler_exact": true,
+          "rng_exact": true,
+          "metrics": {
+            "train": {
+              "loss_difference": 6.661338147750939e-16,
+              "correct": 2037,
+              "samples": 7500
+            },
+            "test": {
+              "loss_difference": 0.0,
+              "correct": 3773,
+              "samples": 10000
+            }
+          },
+          "actual_cumulative_counts": {
+            "train": {
+              "samples": 7500,
+              "batches": 30
+            },
+            "test": {
+              "samples": 10000,
+              "batches": 10
+            }
+          }
+        },
+        {
+          "step": 60,
+          "parameters": {
+            "exact": true,
+            "within_gate": true,
+            "maximum_absolute_difference": 0.0,
+            "floating_fields": 90,
+            "integer_fields": 17,
+            "total_tensor_values": 11179995
+          },
+          "optimizer_exact": true,
+          "scheduler_exact": true,
+          "rng_exact": true,
+          "metrics": {
+            "train": {
+              "loss_difference": 0.0,
+              "correct": 3149,
+              "samples": 7500
+            },
+            "test": {
+              "loss_difference": 0.0,
+              "correct": 4642,
+              "samples": 10000
+            }
+          },
+          "actual_cumulative_counts": {
+            "train": {
+              "samples": 15000,
+              "batches": 60
+            },
+            "test": {
+              "samples": 20000,
+              "batches": 20
+            }
+          }
+        }
+      ],
+      "artifact_sha256": {
+        "matrix/CIFAR10_resnet18/original_step_30.pt": "8844b5271ed7b1eba3abddfe7e60ad4181d7d25ecfac65f806a6ea0a6159a6cb",
+        "matrix/CIFAR10_resnet18/current_train/current_step_30.pt": "f118ae5b46d23d54afa7cca520ec972c00401645010e4f19bf2d35a6e29c230f",
+        "matrix/CIFAR10_resnet18/original_step_60.pt": "24fb9f726488fd285cb6dca5601baa5608aec6735c0ccdcbd418cefbe7826adb",
+        "matrix/CIFAR10_resnet18/current_train/current_step_60.pt": "2dc9f1d102ad02b86007e5c688a71cf5513c8a6b3a9b48f468f2e6d9e54b369d",
+        "matrix/CIFAR10_resnet18/current_train/assets/checkpoints/latest.pt": "c354d37562dca7c8b598862776c7d89eb4951d516dbe55abaaf0d7136a52167c",
+        "matrix/CIFAR10_resnet18/current_train/assets/checkpoints/best.pt": "1328850075180a095fd3fbb9610eab6948f598e9fcf05a81698ec83f9af714a6",
+        "matrix/CIFAR10_resnet18/original_best.pt": "20a14c66c6be18c86b23b0ace89901fd2f0160d1ffe66adc9ad99d7d52c4d64e"
+      },
+      "latest_and_tracker_verified": true,
+      "best_step": 60,
+      "best_payload_verified": true,
+      "independent_eval": {
+        "source_step": 60,
+        "own_best_checkpoint": "D:\\GitHub\\diaoenmao\\RPipe\\.tmp\\main-current-device-gpu-20261004-ready\\matrix\\CIFAR10_resnet18\\current_train\\assets\\checkpoints\\best.pt",
+        "actual_counts": {
+          "original": {
+            "samples": 10000,
+            "batches": 10
+          },
+          "current": {
+            "samples": 10000,
+            "batches": 10
+          }
+        },
+        "metrics": {
+          "loss_difference": 0.0,
+          "correct": 4642,
+          "samples": 10000
+        },
+        "raw_original_tensorboard_verified": true,
+        "native_tracker_and_resume_log_verified": true
+      }
+    }
+  ],
+  "errors": [],
+  "limitations": [
+    "No additional training or inference was executed. Original independent-eval metrics are reloaded from raw TensorBoard; native eval metrics and resume provenance are reloaded from tracker/scalars/log. The online native eval model-state comparison has no separate terminal eval weight .pt and is bound to its own unchanged best checkpoint and explicit resume log."
+  ],
+  "provenance": {
+    "source_files_verified": 92,
+    "source_manifest_sha256": "a61ae36e777f459f8c8f84e1cfb352cfea16ed22bc541350927512a79947d6fe",
+    "archive_blobs_verified": 40,
+    "archive_manifest_sha256": "93b20b642e0867b60b9a9180b45601c81a49843f81ee16c2d74919489ffa3aa0",
+    "raw_file_pairs_verified": 17,
+    "prepared_sha256": "6e36620a2b01589b52f3ca7a7ef7d120567fb43d11b67c7f8b80eb004b2eed93",
+    "formal_comparison_sha256": "4d4727074910f0b57e8567e21ca0593a27b7b085c9b63765dd870fded59aea7e",
+    "formal_finished_at_utc": "2026-10-03T17:59:11.608026+00:00"
+  },
+  "complete": true,
+  "finished_at_utc": "2026-10-03T18:05:17.289998+00:00"
+}
