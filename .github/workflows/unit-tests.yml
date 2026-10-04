@@ -13,6 +13,9 @@ on:
 permissions:
   contents: read
 
+env:
+  MPLBACKEND: Agg
+
 jobs:
   unit:
     name: CPU tests (${{ matrix.os }}, Python ${{ matrix.python-version }})
