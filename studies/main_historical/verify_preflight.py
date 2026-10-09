@@ -67,12 +67,10 @@ def equal_tree(left: Any, right: Any, path: str = '', *, stats: dict[str, int] |
 
 
 def source_hashes() -> dict[str, str]:
-    files = sorted((ROOT / 'src').rglob('*.py'))
-    files += [STUDY / name for name in ('recipe.py', 'run.py', 'prepare_data.py')]
-    files += sorted(STUDY.glob('*.yaml')) + sorted(STUDY.glob('*.txt'))
-    files += [STUDY / 'docs' / name for name in ('TARGET.md', 'REFERENCE_CURVES.json')
-              if (STUDY / 'docs' / name).is_file()]
-    return {path.relative_to(ROOT).as_posix(): digest(path) for path in files}
+    from rpipe.structure.artifact.provenance import source_files
+    from rpipe.structure.make import load_study_yaml
+
+    return source_files(STUDY, load_study_yaml(STUDY))
 
 
 def verify_sources(preflight: dict[str, Any]) -> dict[str, Any]:

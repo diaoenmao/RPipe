@@ -105,7 +105,9 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 2. 来源清单：make 写 `provenance.json`（库源码、声明、recipe、`provenance.include`、计划的哈希，环境与 git 提交）。`freeze: true` 时有变化则 launch 退出 2、prepare 失败；result 记录 `environment` 与清单摘要。
 3. `python -m rpipe compare <run_a> <run_b>`：比较 result 指标、tracker history 与 checkpoint 的 model / optimizer / scheduler，按 `--atol` / `--rtol` 判定。
 
-新增10个测试。本地 `tests/run.py --core` 为 272 passed / 29 deselected；CPU 的 integration 与 e2e（c1/c2，排除 external / gpu / slow）为 26 passed / 275 deselected，均设置 `MKL_THREADING_LAYER=SEQUENTIAL`。`main_historical` 与 `main_reproduction` 尚未改接新接口。
+新增10个测试。本地 `tests/run.py --core` 为 272 passed / 29 deselected；CPU 的 integration 与 e2e（c1/c2，排除 external / gpu / slow）为 26 passed / 275 deselected，均设置 `MKL_THREADING_LAYER=SEQUENTIAL`。
+
+`main_historical` 已改接：`study.yaml` 加 `recipe: recipe.py`、`freeze: true` 和 `provenance.include`；`recipe.register(ctx)` 承担原 `run.py one` 的线程、CUBLAS、拒绝续跑中断训练和 preflight 检查，preflight 入口移到 `recipe.py preflight`；206 行的 `run.py` 删除，调度改用通用 `rpipe make / launch / status / report`。在 `.tmp/` 副本上展开，64 个 Run ID 与 `docs/COMPARISON.json` 记录的一致。`compare.py`、`verify_group.py`、`verify_preflight.py`、`publish_figures.py`、`prepare_data.py` 是本 Study 的终验与审计，保留；`verify_preflight.py` 的源码哈希改用库的 `source_files`。`docs/` 中既有清单记录验收时点的哈希，不再与当前文件逐字节一致，严格核验仍在快照 `b95873f` 进行。未重跑训练。`main_reproduction` 尚未改接。
 
 ## （二）2026-10-04
 

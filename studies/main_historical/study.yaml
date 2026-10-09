@@ -1,6 +1,10 @@
 study: main_historical
 origin: foreign
 description: Four-seed continuous historical candidate rerun with archived data/model and native RPipe training
+recipe: recipe.py
+freeze: true
+provenance:
+  include: [prepare_data.py, runtime-requirements.txt, docs/TARGET.md, docs/REFERENCE_CURVES.json]
 experiment:
   name: main_historical
 axes:

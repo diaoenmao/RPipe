@@ -90,7 +90,9 @@ main固定为 `98648f3a5c7db7dccf3ca806410d5b6fdee9484c`，README两张图与历
 
 ## 六、可重跑入口与存档
 
-先读 [PLAN.md](PLAN.md)、[TARGET.md](TARGET.md)、[REFERENCE_CURVES.json](REFERENCE_CURVES.json)，环境见 [ENVIRONMENT.json](ENVIRONMENT.json)，数据见 [DATA_MANIFEST.json](DATA_MANIFEST.json)，源码清单见 [SOURCE_MANIFEST.json](SOURCE_MANIFEST.json)。适配/准备/调度入口为 [recipe.py](../recipe.py)、[prepare_data.py](../prepare_data.py)、[run.py](../run.py)。本机既有64Run已成功，launch只跳过已成功项，不应重新创建重复矩阵。
+先读 [PLAN.md](PLAN.md)、[TARGET.md](TARGET.md)、[REFERENCE_CURVES.json](REFERENCE_CURVES.json)，环境见 [ENVIRONMENT.json](ENVIRONMENT.json)，数据见 [DATA_MANIFEST.json](DATA_MANIFEST.json)，源码清单见 [SOURCE_MANIFEST.json](SOURCE_MANIFEST.json)。适配/准备/调度入口为 [recipe.py](../recipe.py)、[prepare_data.py](../prepare_data.py)、[run.py](https://github.com/diaoenmao/RPipe/blob/ea8eb39/studies/main_historical/run.py)。本机既有64Run已成功，launch只跳过已成功项，不应重新创建重复矩阵。
+
+2026-10-10 补记：`run.py` 已删除，调度改由通用 `rpipe make / launch / status` 和 `study.yaml` 的 `recipe` 完成，现行命令见 [Study README](../README.md) 第二节。下方命令是验收时点的入口。
 
 ```powershell
 python studies/main_historical/run.py status

@@ -2,9 +2,9 @@
 
 The archive remains byte-for-byte equal to Git. Only live object adapters are
 used: the old dataset dict becomes a tuple, and ``model.f`` provides logits.
-Import this module before RPipe prepare in every worker and call ``register``.
-``preflight`` explicitly runs an original/current prefix comparison; importing
-or registering never starts a training job.
+``study.yaml`` names this file as ``recipe``; RPipe prepare calls ``register``
+in every Run's process. ``python -B recipe.py preflight`` explicitly runs the
+original/current prefix comparison; importing or registering never trains.
 """
 
 from __future__ import annotations
@@ -22,7 +22,8 @@ import time
 from typing import Any, Iterable
 
 
-REPO = Path(__file__).resolve().parents[2]
+STUDY = Path(__file__).resolve().parent
+REPO = STUDY.parents[1]
 COMMIT = '4ccb28d0496110253e9f8e3f3df658853f07996b'
 SOURCE = 'historical_4ccb28d'
 HORIZON = 80000
@@ -172,7 +173,27 @@ def _observed_dicts(loader: Iterable[Any], observation: Observation):
         yield batch
 
 
-def register(data_root: Path | str, seed: int = 0, sampler_steps: int = HORIZON) -> Archive:
+def register(ctx: Any) -> None:
+    """RPipe prepare hook (``study.yaml`` ``recipe``): runs in every Run's process."""
+    os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+    import torch
+
+    torch.set_num_threads(2)
+    if ctx.config['algorithm']['mode'] == 'train':
+        checkpoints = Path(ctx.assets_dir) / 'checkpoints'
+        if checkpoints.is_dir() and any(checkpoints.iterdir()):
+            raise RuntimeError(f'{ctx.run_id}: interrupted training has checkpoints; preserve it and use a new '
+                               'version for a fresh continuous run')
+    report = json.loads((STUDY / 'docs' / 'PREFLIGHT.json').read_text(encoding='utf-8'))
+    expected = {(d, m) for d in DATA_NAMES for m in MODEL_NAMES}
+    if report.get('passed') is not True or {(r['data'], r['model']) for r in report.get('runs', [])} != expected:
+        raise RuntimeError('the same-device original/native preflight must pass before launch')
+    if (report.get('environment') or {}).get('torch') != torch.__version__:
+        raise RuntimeError('Torch environment changed after preflight')
+    install(ctx.shared_data_dir, seed=ctx.seed)
+
+
+def install(data_root: Path | str, seed: int = 0, sampler_steps: int = HORIZON) -> Archive:
     """Register the immutable archive as source ``historical_4ccb28d``.
 
     Builders accept each Run's seed; the argument is a fallback for manual
@@ -348,7 +369,7 @@ def preflight(data_root: Path | str, output_dir: Path | str, *, steps: int = 200
     from rpipe.structure.system.runtime import apply_runtime
 
     mapping = algorithm_config(steps)
-    archive = register(data_root, seed)
+    archive = install(data_root, seed)
     output = Path(output_dir).resolve()
     output.mkdir(parents=True, exist_ok=False)
     system_config = SystemConfig.from_mapping({'device': device, 'deterministic': True,
@@ -499,3 +520,33 @@ def preflight(data_root: Path | str, output_dir: Path | str, *, steps: int = 200
         (output / 'COMPARISON.json').write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
         print(f'preflight {data_name}/{model_name}: passed={row["passed"]} max_parameter_diff={final["max_absolute_difference"]}', flush=True)
     return result
+
+
+def main(argv: list[str] | None = None) -> int:
+    """``preflight``: same-device 600-step gate written to ``docs/PREFLIGHT.json``."""
+    import argparse
+    import uuid
+    from datetime import datetime, timezone
+
+    parser = argparse.ArgumentParser(description=main.__doc__)
+    parser.add_argument('command', choices=['preflight'])
+    parser.parse_args(argv)
+    bootstrap()
+    from rpipe.structure.artifact._atomic import atomic_write_text
+    from rpipe.structure.artifact.provenance import capture_environment, source_files
+    from rpipe.structure.make import load_study_yaml
+
+    study = load_study_yaml(STUDY)
+    before = source_files(STUDY, study)
+    stamp = datetime.now(timezone.utc).strftime('%Y%m%d')
+    output = REPO / '.tmp' / f'historical-preflight-{stamp}-{uuid.uuid4().hex[:8]}'
+    report = preflight(data_root=STUDY / 'shared' / 'data', output_dir=output, steps=600, device='cuda')
+    if before != source_files(STUDY, study):
+        raise RuntimeError('source/configuration changed during preflight; retained output is not a valid launch gate')
+    report.update(source_hashes=before, output_dir=str(output), environment=capture_environment())
+    atomic_write_text(STUDY / 'docs' / 'PREFLIGHT.json', json.dumps(report, indent=2, ensure_ascii=False))
+    return 0 if report.get('passed') else 1
+
+
+if __name__ == '__main__':
+    sys.exit(main())

@@ -10,7 +10,7 @@
 
 ## 二、专用入口与依赖
 
-本 Study 使用 [recipe.py](recipe.py) 的 `historical_4ccb28d` 数据和模型 Registry。每个训练子进程必须由 [run.py](run.py) 在 Flow prepare 前注册；通用 `python -m rpipe run/launch` 不自动安装这些注册项。直接照搬通用 Study 命令不能执行这一归档配方。
+本 Study 使用 [recipe.py](recipe.py) 的 `historical_4ccb28d` 数据和模型 Registry。`study.yaml` 写了 `recipe: recipe.py`，通用 `rpipe launch` 的每个子进程在 Flow prepare 中调用 `register(ctx)`，见 [flow.md](../../docs/code/flow.md) §14。`register` 还负责本 Study 的三条约束：设置 `CUBLAS_WORKSPACE_CONFIG=:4096:8` 与2线程；train 已有 checkpoint 时拒绝续跑；`docs/PREFLIGHT.json` 未通过或 Torch 版本变化时拒绝运行。`freeze: true` 让 make 之后源码、声明或计划有任何变化时拒绝 launch。
 
 运行需要可安装的 RPipe、本机可用的 Torch / torchvision / NumPy / PyYAML，以及 [runtime-requirements.txt](runtime-requirements.txt) 列出的隔离依赖。完整本次版本见 [ENVIRONMENT.json](docs/ENVIRONMENT.json)。归档源码按 Git blob 原字节导出，需要本地 Git 对象 `4ccb28d`；原始数据由 [prepare_data.py](prepare_data.py) 下载或复用缓存，逐文件核对 [历史数据清单](../main_reproduction/docs/HISTORICAL_BRIDGE_DATA_MANIFEST.json)，写入本 Study 的 `shared/data/`。
 
@@ -23,21 +23,24 @@ python -m pip install -e .
 python -m pip install tensorboard==2.21.0 evaluate==0.4.6
 python -m pip install --target .tmp/runtime --no-deps -r studies/main_historical/runtime-requirements.txt
 python -B studies/main_historical/prepare_data.py
-python -B studies/main_historical/run.py make
-python -B studies/main_historical/run.py preflight
+python -m rpipe make studies/main_historical
+python -B studies/main_historical/recipe.py preflight
 python -B studies/main_historical/verify_preflight.py
-python -B studies/main_historical/run.py launch
+python -m rpipe launch studies/main_historical
+python -m rpipe report studies/main_historical
 python -B studies/main_historical/compare.py
 ```
 
-`make` 展开 64 个 Run 并绑定源/配置清单；`preflight` 在新设备执行原代码 / 当前链 600-step 八格 CUDA 对照，采样和 scheduler 总预算仍为 80000。`verify_preflight` 只用 CPU 重载探针，`launch` 检查同设备探针、源码和配置后执行长矩阵。准备、调度与比较会写本轮清单和报告；应使用独立目录保留此前实测快照。
+`make` 展开 64 个 Run，并在 Study 根写 `provenance.json`（源码、声明、recipe、计划哈希与环境）；`recipe.py preflight` 在新设备执行原代码 / 当前链 600-step 八格 CUDA 对照，采样和 scheduler 总预算仍为 80000。`verify_preflight` 只用 CPU 重载探针。`launch` 先 train 后 eval，失败格子按通用规则重试，eval 只在 sibling train 成功后运行；同组并行数默认按显存装箱，原入口固定为每组4条、resnet18 每组2条，需要时用 `--round N` 指定。`compare.py` 是本 Study 对原图估读的终验门，不是通用 Run 对比。准备、调度与比较会写本轮清单和报告；应使用独立目录保留此前实测快照。
 
-本机既有 64 个 Run 已成功。v0.2.0 将包版本和 `src/rpipe/__init__.py` 的 `__version__` 从旧开发编号改为 `0.2.0`，未重跑实验或修改固定报告。严格源码 SHA 核验仍要求实测原字节；需要核验既有 Run 时，在保留的实测源码快照 `b95873f` 中执行以下命令，不把当前版本号修订当作原清单的字节一致：
+本机既有 64 个 Run 已成功，Run ID 在改接后不变。2026-10-10 起专用 `run.py` 已删除，`docs/` 中的 `SOURCE_MANIFEST.json`、`PREFLIGHT.json` 等记录的是验收时点的源码哈希，与当前文件不再逐字节一致。需要按原清单严格核验既有 Run 时，在保留的实测源码快照 `b95873f` 中执行当时的命令：
 
 ```powershell
 python -B studies/main_historical/run.py status
 python -B studies/main_historical/verify_group.py --data CIFAR10 --model resnet18 --with-eval --output .tmp/independent-historical-audit
 ```
+
+当前树中查看状态用 `python -m rpipe status studies/main_historical`。
 
 `verify_group.py` 不启动训练或 GPU，只读取已完成 Run；额外 `--replay` 仅支持 linear。完整比较默认要求全部 32 train + 32 eval 和同点四 seed；`compare.py --partial` 只供未完成阶段查看，不应用终验。已有连续长训中断后保留证据，另用新 version 从头执行；专用入口不会把缺少完整 RNG / 采样位置的恢复当成连续训练。
 
