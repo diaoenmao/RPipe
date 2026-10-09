@@ -12,7 +12,9 @@ from uuid import uuid4
 from rpipe.structure.make.recipe import STUDY_PHASES, study_phase_files, study_phases_enabled
 
 
-def run_study_phase(study_dir: Path | str, phase: str, ctx: Any, study: dict[str, Any]) -> bool:
+def run_study_phase(study_dir: Path | str, phase: str, ctx: Any, study: dict[str, Any], *, entry: str = 'run') -> bool:
+    if entry not in ('run', 'before') or (entry == 'before' and phase != 'prepare'):
+        raise ValueError(f'unsupported Study phase entry: {phase}.{entry}')
     if phase not in STUDY_PHASES:
         raise ValueError(f'unknown Study phase: {phase}')
     if not study_phases_enabled(study):
@@ -36,9 +38,11 @@ def run_study_phase(study_dir: Path | str, phase: str, ctx: Any, study: dict[str
         module = importlib.util.module_from_spec(spec)
         sys.modules[spec.name] = module
         spec.loader.exec_module(module)
-        hook = getattr(module, 'run', None)
+        hook = getattr(module, entry, None)
+        if entry == 'before' and hook is None:
+            return False
         if not callable(hook):
-            raise AttributeError(f'Study phase must define run(ctx): {path}')
+            raise AttributeError(f'Study phase must define {entry}(ctx): {path}')
         hook(ctx)
     finally:
         for key in list(sys.modules):

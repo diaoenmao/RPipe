@@ -12,36 +12,41 @@ def _load(path):
     return module
 
 
+def validate(config, seed, engine):
+    """Reject a changed numerical recipe before preparing or constructing data."""
+    if seed != 0 or config['algorithm'].get('resume_from'):
+        raise ValueError('main_probe requires seed0 and a fresh Run without checkpoint resume')
+    pair = (config['data']['name'], config['model']['name'])
+    if pair[0] not in engine.DATA or pair[1] not in engine.MODELS:
+        raise ValueError('unsupported probe pair')
+    expected = dict(engine.mapping(), source='main_probe')
+    if any(config['algorithm'].get(key) != value for key, value in expected.items()):
+        raise ValueError('main_probe algorithm must match the pinned 60-step recipe')
+    if config['model'].get('source') != 'custom_torch':
+        raise ValueError('main_probe requires the native custom_torch model')
+    if config['data'].get('config') != {'batch_size': 250, 'test_batch_ratio': 4,
+            'pin_memory': True, 'num_workers': 0, 'augment': True}:
+        raise ValueError('main_probe requires the pinned data recipe')
+    if not config['system'].get('deterministic') or config['system'].get('cudnn_benchmark'):
+        raise ValueError('main_probe requires deterministic execution without benchmark')
+    return pair
+
+
 def register(ctx):
     from rpipe.structure.algorithm.base import Algorithm
     from rpipe.structure.algorithm.factory import AlgorithmRegistry
     from rpipe.structure.data.factory import DataRegistry
 
-    if ctx.seed != 0 or ctx.config['algorithm'].get('resume_from'):
-        raise ValueError('main_probe requires seed0 and a fresh Run without checkpoint resume')
-    pair = (ctx.config['data']['name'], ctx.config['model']['name'])
     engine = _load(ctx.study_dir / 'execute' / 'paired.py')
-    if pair[0] not in engine.DATA or pair[1] not in engine.MODELS:
-        raise ValueError('unsupported probe pair')
-    expected = dict(engine.mapping(), source='main_probe')
-    if any(ctx.config['algorithm'].get(key) != value for key, value in expected.items()):
-        raise ValueError('main_probe algorithm must match the pinned 60-step recipe')
-    if ctx.config['model'].get('source') != 'custom_torch':
-        raise ValueError('main_probe requires the native custom_torch model')
-    if ctx.config['data'].get('config') != {'batch_size': 250, 'test_batch_ratio': 4,
-            'pin_memory': True, 'num_workers': 0, 'augment': True}:
-        raise ValueError('main_probe requires the pinned data recipe')
-    if not ctx.config['system'].get('deterministic') or ctx.config['system'].get('cudnn_benchmark'):
-        raise ValueError('main_probe requires deterministic execution without benchmark')
+    pair = validate(ctx.config, ctx.seed, engine)
     workspace = ctx.assets_dir / 'probe'
-    source = ctx.study_dir.parent / 'main_exp' / 'shared' / 'data'
-    raw = source / pair[0] / 'raw'
-    if not raw.is_dir() or not any(raw.rglob('*')):
-        raise FileNotFoundError(f'prepare the raw dataset before launch: {raw}')
-    prepared = engine.prepare(workspace, source, pair)
+    import json
+    prepared_path = workspace / 'PREPARED.json'
+    if not prepared_path.is_file():
+        raise RuntimeError('Study prepare.before must prepare the probe before registration')
+    prepared = json.loads(prepared_path.read_text(encoding='utf-8'))
     if prepared.get('passed') is not True:
         raise RuntimeError(f'CPU preparation failed; evidence: {workspace}')
-    projector = _load(ctx.study_dir / 'write' / '__init__.py').write_observed_run
     device = str(ctx.config['system'].get('device', 'cpu'))
     engine.seed_runtime(device)
 
@@ -57,9 +62,7 @@ def register(ctx):
 
         def run(self, data, model, system, tracker):
             self.report = engine.run_pair(workspace, device, pair,
-                (data, model, system, tracker, self.initial_rng), projector)
-            if self.report.get('selected_passed') is not True:
-                raise RuntimeError(f'paired numerical gate failed; evidence: {workspace / "COMPARISON.json"}')
+                (data, model, system, tracker, self.initial_rng))
             row = self.report['runs'][0]
             return dict(row['summary'], elapsed_seconds=row['elapsed_seconds'])
 

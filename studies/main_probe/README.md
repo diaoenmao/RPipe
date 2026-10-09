@@ -4,9 +4,9 @@
 
 ## 一、流程
 
-[study.yaml](study.yaml) 声明八个成对 Run（两种数据集 × 四种模型，seed0）。[recipe.py](recipe.py) 在库 prepare 内准备该组合并注册成对 Algorithm；[execute/](execute/) 在同一进程先计算原版，再计算当前版并执行各自 best 独立评测。当前侧直接使用库 prepare 的 Data / Model / System / Tracker，训练 checkpoint、history 和 result 使用普通 Run 合同。
+[study.yaml](study.yaml) 声明八个成对 Run（两种数据集 × 四种模型，seed0）。[prepare/](prepare/) 在对象构造前准备该组合，[recipe.py](recipe.py) 注册成对 Algorithm；[execute/](execute/) 在同一进程先计算原版，再计算当前版并执行各自 best 独立评测。当前侧直接使用库 prepare 的 Data / Model / System / Tracker，训练 checkpoint、history 和 result 使用普通 Run 合同。
 
-[prepare/](prepare/)、[collect/](collect/)、[summarize/](summarize/)、[write/](write/) 与 [process/](process/) 接入库阶段链。write 模块投影两侧已有观测并调用库 compare，保留输入、RNG、样本计数、逐段参数与自身 best 的严格门；没有独立探针脚本入口。
+[prepare/](prepare/)、[collect/](collect/)、[summarize/](summarize/)、[write/](write/) 与 [process/](process/) 接入库阶段链。collect 比较输入、RNG、样本计数、逐段参数与自身 best，summarize 执行数值门；write 投影两侧已有观测并调用库 compare，在库成功结果定稿前验收；没有独立探针脚本入口。
 
 ## 二、命令
 
@@ -20,4 +20,4 @@ python -m rpipe report studies/main_probe
 
 每个 Run 的证据在 `runs/<id>/assets/probe/`：CPU 准备、原代码归档、环境、来源清单与 `COMPARISON.json`；`matrix/<data>_<model>/observed/runs/` 保存两侧已有观测的 artifact 投影，`RUN_COMPARISON.json` 保存库 compare 结果。数值门失败写 failed Run 并保留证据。重新执行必须使用新 Run 目录，不能覆盖既有工作区。
 
-Study process 只读当前 index，八个组合齐全、同设备与同来源且全部通过后，`PROBE_COMPARISON.json` 才报告 complete/passed；子集不是完整验收。正式数字整理进 `docs/STUDY_REPORT.md`。本轮仅做 CPU 合同验证，不重跑正式探针。
+Study process 只读当前 index，八个组合齐全、同设备与同来源且全部通过后，`PROBE_COMPARISON.json` 才报告 complete/passed；子集不是完整验收。正式数字整理进 `docs/STUDY_REPORT.md`。Flow 重构已通过 CPU 合同验证，正式复跑按计划先准备数据，再运行八组合。CPU 伪计算不能替代正式数值验收。

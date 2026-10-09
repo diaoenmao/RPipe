@@ -63,11 +63,11 @@ studies/<name>/
 | `main_exp` | 历史 main `4ccb28d` 配方的四 seed、80000-step 曲线复现，对原图估读门终验 | [入口](main_exp/README.md) / [计划](main_exp/docs/PLAN.md) | 待重跑 |
 | `main_probe` | 固定 main `98648f3` 原代码与当前 RPipe 的 60-step 同设备数值探针 | [入口](main_probe/README.md) / [计划](main_probe/docs/PLAN.md) | 待重跑 |
 
-2026-10-10 两个 Study 由 `main_historical`、`main_reproduction` 改名，按 [flow.md](../docs/code/flow.md) §14 清理为只写声明和 recipe，旧结果与证据从当前树删除，见提交 [`18cd76c`](https://github.com/diaoenmao/RPipe/tree/18cd76c/studies)。
+2026-10-10 两个 Study 由 `main_historical`、`main_reproduction` 改名，按 [flow.md](../docs/code/flow.md) §14 整理为声明、recipe 与同名阶段扩展，旧结果与证据从当前树删除，见提交 [`18cd76c`](https://github.com/diaoenmao/RPipe/tree/18cd76c/studies)。
 
 2026-10-10 只保留以上三个 Study。其余 Study（`mnist_train_size`、`mnist_native_vs_hf`、`cifar_grid`、`main_base`、`checkpoint_recovery`、`mnist_cnn_lr`、`mnist_cnn_budget`、`mnist_cnn_budget_repeat`、`local_model_matrix`、`support_data_smoke`、`support_model_smoke`）已删除，计划与报告见提交 [`71143ab`](https://github.com/diaoenmao/RPipe/tree/71143ab/studies)。测试要用的 `mnist_train_size`、`mnist_native_vs_hf`、`cifar_grid` 声明在 [`tests/_data/studies/`](../tests/_data/studies/)。
 
-Study 代码只有声明、recipe 和 Study 特有的数据准备或终验脚本，调度一律用 `rpipe make / launch`。`main_exp` 的 `historical_4ccb28d` 由 `study.yaml` 的 `recipe` 注册，通用 launch 即可运行；`main_probe/probe.py` 是原代码与当前实现的同进程对照。各自的文件说明与命令见两个 Study 的 README。
+Study 保存声明、recipe、阶段包、专用 Algorithm 及研究证据，调度一律用 `rpipe make / launch`。`main_exp` 的 `historical_4ccb28d` 由 `study.yaml` 的 `recipe` 注册，通用 launch 即可运行；`main_probe` 通过 prepare / execute / collect / summarize / write 执行两侧同进程对照与验收。各自的文件说明与命令见两个 Study 的 README。
 
 声明、研究计划、报告、图、正式数字随 Git 提供。`runs/`、`shared/`、`scripts/`、`index.json`、`process.json`、`provenance.json` 和 `.tmp/` 按仓库忽略规则留在本机；clone 只有报告，不自动拥有报告内引用的原始 checkpoint、日志和数据。
 
@@ -311,7 +311,7 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 | `run_description` | 写入 config 的说明；**不进** `id` hash。占位符可用轴的末段名（如 `{train_size}`）以及 `{seed}`、`{experiment}` |
 | `recipe` | 可选，Study 内的 Python 文件（如 `recipe.py`），定义 `register(ctx)`，注册本 Study 自己的 data / model / algorithm `source`。prepare 在每条 Run 建构前调用；**不进** `id` hash。见 [flow.md](../docs/code/flow.md) §14.1 |
 | `flow.study_phases` | `true` 时加载六个同名阶段包，库先执行、Study hook 后执行；Python helper 自动纳入 provenance |
-| `flow.prepare_shared` | 默认 `true`；专用 recipe 在每条 Run 内准备隔离数据时设为 `false`，make 不提前构造 Data |
+| `flow.prepare_shared` | 默认 `true`；每条 Run 内准备隔离数据或注册专用 source 时设为 `false`，make 不提前构造 Data |
 | `freeze` | `true` 时，make 之后源码、声明、recipe 或计划有任何变化，`launch` / `run-one` 都拒绝运行，重新 make 才接受 |
 | `provenance.include` | 额外纳入来源清单的 Study 内文件（glob 列表），例如固定的参考数据或清单 |
 
@@ -326,7 +326,7 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 | 两条 Run 的指标、曲线、checkpoint 是否一致 | `python -m rpipe compare <run_a> <run_b> [--atol --rtol --checkpoint NAME --out FILE]` |
 | 聚合、数字表、曲线图 | `process` / `report` |
 
-recipe 负责构造前注册和必要准备，阶段包负责构造后的研究检查与派生逻辑。与外部实现对比时，将已有观测投影为 Run artifact 后复用 `compare`，研究特有的输入、RNG、样本计数和自身 best 等门继续保留。成对计算可通过注册的 Algorithm 执行，每条 Run 只负责自己的组合。
+recipe 负责构造前注册；Study `prepare.before` 负责隔离准备，`prepare.run` 检查构造结果。collect / summarize 收口数值与判定，write 写证据并在库结果定稿前验收，process 生成派生内容。与外部实现对比时，将已有观测投影为 Run artifact 后复用 `compare`，研究特有的输入、RNG、样本计数和自身 best 等门继续保留。成对计算可通过注册的 Algorithm 执行，每条 Run 只负责自己的组合。
 
 `id` hash **包含** 实验变量、seed、tags，以及可选 `version`；**不含** `id`、`description`。Run 是最底层的一次实测。同内容、同 `version` 再跑仍落到同一 `runs/<id>/`，用于 skip / resume；需要避免相同实验参数与 seed 的不同实测发生 ID 冲突时，换一个 `version` 生成新 Run。timestamp 只是可选内容之一。
 
@@ -411,7 +411,7 @@ Study process 只聚合当前 index 列出的 Run，不扫描旧 version 目录�
 
 ## 9. 现成能力 vs 要改库
 
-Study 可在 `study.yaml` 写 `flow: {study_phases: true}`，添加 `prepare/`、`execute/`、`collect/`、`summarize/`、`write/`、`process/` 包，每包定义 `run(ctx)`。选中阶段先跑库，再跑 Study；未启用时不会自动加载目录。recipe 负责 Data/Model 建构前注册，Study prepare 在建构之后。阶段目录的 Python 源码自动记入 provenance；目录外的辅助源码须加入 `provenance.include`。
+Study 可在 `study.yaml` 写 `flow: {study_phases: true}`，添加 `prepare/`、`execute/`、`collect/`、`summarize/`、`write/`、`process/` 包，每包定义 `run(ctx)`。prepare 可定义 `before(ctx)`，在库初始化后、recipe / Factory 构造前准备；`run(ctx)` 检查已构造对象。write 先跑 Study 再由库定稿，其他阶段先跑库再跑 Study；未启用时不会自动加载目录。recipe 负责 Data/Model 建构前注册。阶段目录的 Python 源码自动记入 provenance；目录外的辅助源码须加入 `provenance.include`。
 
 `ctx.scope == 'run'` 时是单条 Run 上下文；整轮聚合后还会调用一次 `process.run(ctx)`，此时 `ctx.scope == 'study'`，使用 `ctx.study_dir` 和 `ctx.state['process']`，没有单条 Run 的 layout。只在 Study scope 做终验，避免每条 Run 重复执行矩阵或跨 seed 统计。make 前的下载、数据预检仍使用根目录显式入口。加载、失败和 freeze 的完整合同见 [flow.md §14.0](../docs/code/flow.md#140-study-阶段目录)。
 

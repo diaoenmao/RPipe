@@ -48,9 +48,29 @@ def write_observed_run(root, *, snapshots, best, data, model, implementation):
 
 
 def run(ctx):
-    """Verify the artifact projections already written by the paired Algorithm."""
+    """Write observed artifacts and validate them before the outer result commits."""
+    import torch
+    from rpipe.structure.artifact.readout.compare import compare_runs, write_compare
+    from ..execute.paired import save_json
+
     workspace = ctx.state['algorithm'].workspace
-    row = ctx.state['probe']['runs'][0]
-    evidence = workspace / 'matrix' / f"{row['data']}_{row['model']}" / 'RUN_COMPARISON.json'
-    if not evidence.is_file():
-        raise RuntimeError(f'missing library comparison evidence: {evidence}')
+    report = ctx.state['probe']
+    row = report['runs'][0]
+    cell = workspace / 'matrix' / f"{row['data']}_{row['model']}"
+    raw = torch.load(row['observations'], map_location='cpu', weights_only=False)
+    observed = cell / 'observed' / 'runs'
+    original = write_observed_run(observed / 'original', snapshots=raw['old_snaps'], best=raw['old_best'],
+                                 data=row['data'], model=row['model'], implementation='original main')
+    current = write_observed_run(observed / 'current', snapshots=raw['current_snaps'], best=raw['new_best'],
+                                data=row['data'], model=row['model'], implementation='current RPipe')
+    comparison = compare_runs(original, current, atol=1e-6, rtol=1e-5, checkpoints=['latest', 'best'])
+    write_compare(cell / 'RUN_COMPARISON.json', comparison)
+    row['run_comparison'] = comparison
+    row['passed'] &= comparison['passed']
+    report['selected_passed'] &= comparison['passed']
+    ctx.state['collected']['metrics']['probe_passed'] = report['selected_passed']
+    ctx.state['result_draft']['metrics']['probe_passed'] = report['selected_passed']
+    save_json(cell / 'COMPARISON.json', row)
+    save_json(workspace / 'COMPARISON.json', report)
+    if not comparison['passed']:
+        raise RuntimeError(f'library Run comparison failed; evidence: {cell / "RUN_COMPARISON.json"}')
