@@ -392,7 +392,7 @@ def test_expand_rejects_origin_under_data():
             }
         )
     repo = Path(__file__).resolve().parents[4]
-    study = load_study_yaml(repo / 'studies' / 'cifar_grid')
+    study = load_study_yaml(repo / 'tests' / '_data' / 'studies' / 'cifar_grid')
     patches = expand_patches(study)
     assert len(patches) == 8
     pairs = [

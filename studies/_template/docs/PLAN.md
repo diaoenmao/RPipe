@@ -1,6 +1,6 @@
 # Study Plan: my_study
 
-> 对照 [STUDY_GUIDE.md](../../../docs/STUDY_GUIDE.md) §3。跑完后写同目录 `STUDY_REPORT.md`。
+> 对照 [README.md](../../README.md) §3。跑完后写同目录 `STUDY_REPORT.md`。
 
 ## 1. 研究问题
 

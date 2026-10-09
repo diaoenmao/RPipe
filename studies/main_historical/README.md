@@ -64,4 +64,4 @@ python -B studies/main_historical/verify_group.py --data CIFAR10 --model resnet1
 
 README 首页和根 `asset/` 发布本次实测的新图；旧参考 PNG 逐字节保存在 [历史图归档](docs/reference/README.md)。冻结报告中的旧 `asset/` 路径描述的是验收时点，重读旧参考时使用归档路径和固定 Git blob；训练与 `compare.py` 的门计算仍读取原固定合同。
 
-两组 linear 有额外 CPU 完整 test 推理；六组非线性仅核对保存状态、history、正式 eval 实际加载来源与结果。正式 80000-step worker 未逐样本记录输入字节，也未保存完整 RNG / 迭代位置；同机前缀桥和日志连续性分别作为已取得证据。更多范围说明见完整报告第五节。返回 [全 Study 导航](../README.md)。
+两组 linear 有额外 CPU 完整 test 推理；六组非线性仅核对保存状态、history、正式 eval 实际加载来源与结果。正式 80000-step worker 未逐样本记录输入字节，也未保存完整 RNG / 迭代位置；同机前缀桥和日志连续性分别作为已取得证据。更多范围说明见完整报告第五节。返回 [Study 使用指南](../README.md)。

@@ -26,7 +26,7 @@ def test_mnist_train_size_make_launch_processes_train_before_eval(tmp_path: Path
     import shutil
 
     repo = Path(__file__).resolve().parents[3]
-    src = repo / 'studies' / 'mnist_train_size'
+    src = repo / 'tests' / '_data' / 'studies' / 'mnist_train_size'
     study = tmp_path / 'mnist_train_size'
     shutil.copytree(
         src,
