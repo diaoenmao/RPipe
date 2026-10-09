@@ -53,7 +53,7 @@ def save_json(path: Path, body: Any) -> None:
 
 
 def source_manifest() -> dict[str, str]:
-    files = sorted((ROOT / 'src').rglob('*.py')) + [Path(__file__).resolve()]
+    files = sorted((ROOT / 'src').rglob('*.py')) + sorted(Path(__file__).resolve().parent.rglob('*.py'))
     return {path.relative_to(ROOT).as_posix(): sha(path) for path in files}
 
 
@@ -673,6 +673,18 @@ def run_matrix(workspace: Path, device: str, combinations: list[tuple[str, str]]
             row['source_unchanged'] = source_before == source_manifest()
             row['archive_verification'] = archive.verify_exports()
             row['passed'] &= row['source_unchanged'] and row['archive_verification']['unchanged']
+            from write import write_observed_run
+            from rpipe.structure.artifact.readout.compare import compare_runs, write_compare
+
+            observed = cell / 'observed' / 'runs'
+            original_run = write_observed_run(observed / 'original', snapshots=old_snaps, best=old_best,
+                                             data=name, model=model_name, implementation='original main')
+            current_run = write_observed_run(observed / 'current', snapshots=algorithm.snapshots, best=new_best,
+                                            data=name, model=model_name, implementation='current RPipe')
+            comparison = compare_runs(original_run, current_run, atol=1e-6, rtol=1e-5, checkpoints=['latest', 'best'])
+            write_compare(cell / 'RUN_COMPARISON.json', comparison)
+            row['run_comparison'] = comparison
+            row['passed'] &= comparison['passed']
             save_json(cell / 'COMPARISON.json', row)
             result['runs'].append(row)
             save_json(workspace / 'COMPARISON.json', result)

@@ -21,6 +21,22 @@ class FlowContext:
     state: dict[str, Any] = field(default_factory=dict)
 
     @property
+    def scope(self) -> str:
+        return 'run'
+
+    @property
     def experiment_dir(self) -> Path:
         """Deprecated alias for ``study_dir`` (recipe lives inside the Study)."""
         return self.study_dir
+
+
+@dataclass
+class StudyProcessContext:
+    """Study aggregation context, with no single Run layout or control."""
+
+    study_dir: Path
+    state: dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def scope(self) -> str:
+        return 'study'

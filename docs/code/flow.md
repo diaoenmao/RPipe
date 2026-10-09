@@ -290,6 +290,18 @@ conservative 墙钟只在 **make** 打印。本进程实测时间在 Logger 行�
 
 Study 只写声明（`study.yaml`、`experiment_config.yaml`）、自己特有的配方，以及结论报告。调度、阶段链、来源记录和 Run 之间的对比由库提供。Study 目录里不应再出现自写的 launch、run-one、哈希清单或比较脚本。
 
+### 14.0 Study 阶段目录
+
+Study 在 `study.yaml` 显式声明 `flow: {study_phases: true}` 后，可添加与库同名的阶段包：`prepare/`、`execute/`、`collect/`、`summarize/`、`write/`、`process/`。缺省或 `false` 不加载这些目录；已存在的普通辅助目录不会自动执行。`flow` 必须是 mapping，`study_phases` 必须是 boolean。
+
+每个存在的阶段目录必须有 `__init__.py`，定义 `run(ctx) -> None`。对选中的阶段，Runner 先调用库的 `run(ctx)`，再调用 Study 的 `run(ctx)`；未选中的阶段不执行。阶段不能改变顺序。包支持相对导入，用独立的模块命名空间加载，调用后清理该命名空间，避免不同 Study 的同名 helper 串用。阶段路径及其源码必须留在 Study 根目录内。
+
+单条 Run 的 ctx 是 `FlowContext`，`scope == 'run'`。Study process 在库完成当前 index 的聚合后调用同一个 `process.run(ctx)` 一次，此时 ctx 是 `StudyProcessContext`，`scope == 'study'`、`study_dir` 是根路径，`state['process']` 是聚合正文；没有单条 Run 的 layout/control。终验必须判断 scope，只在 Study 聚合后执行，派生文件写入 Study 的 docs，不能修改已定稿 Run result。Study 阶段抛错时保留原异常和失败日志；write 后的成功 result 不因派生失败被覆盖。Study process 抛错时保留已完成的通用聚合，不报告终验成功。
+
+启用时，来源清单自动包含六个阶段目录下全部 Python 源码，新增、修改或删除 helper 都能被 freeze 检出。Runner 在执行任何阶段前、Study process 在聚合前核对 freeze。阶段代码不进入 Run ID，修改后需重新 make 接受新的来源清单；需要独立实测时仍使用新 version。
+
+recipe 继续负责 **Data/Model 建构前** 的注册、runtime 设置与必须提前拒绝的运行条件；Study prepare 是库 prepare **之后**的实验特有检查，不能承担建构前注册。数据下载、原代码导出和显式前缀预检等 make 前操作保留在 Study 根，不因加载阶段包自动启动。原训练循环、RNG 与数值门限不随目录拆分改变。
+
 ### 14.1 recipe
 
 `study.yaml` 可写 `recipe: recipe.py`。路径相对 Study 根，必须落在 Study 目录内。模块必须定义：

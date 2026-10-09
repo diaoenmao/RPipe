@@ -409,6 +409,10 @@ Study process 只聚合当前 index 列出的 Run，不扫描旧 version 目录�
 
 ## 9. 现成能力 vs 要改库
 
+Study 可在 `study.yaml` 写 `flow: {study_phases: true}`，添加 `prepare/`、`execute/`、`collect/`、`summarize/`、`write/`、`process/` 包，每包定义 `run(ctx)`。选中阶段先跑库，再跑 Study；未启用时不会自动加载目录。recipe 负责 Data/Model 建构前注册，Study prepare 在建构之后。阶段目录的 Python 源码自动记入 provenance；目录外的辅助源码须加入 `provenance.include`。
+
+`ctx.scope == 'run'` 时是单条 Run 上下文；整轮聚合后还会调用一次 `process.run(ctx)`，此时 `ctx.scope == 'study'`，使用 `ctx.study_dir` 和 `ctx.state['process']`，没有单条 Run 的 layout。只在 Study scope 做终验，避免每条 Run 重复执行矩阵或跨 seed 统计。make 前的下载、数据预检仍使用根目录显式入口。加载、失败和 freeze 的完整合同见 [flow.md §14.0](../docs/code/flow.md#140-study-阶段目录)。
+
 | 你想做的 | 怎么做 |
 |----------|--------|
 | 扫已有字段（样本量、lr、seed…） | 只改 Study 的 yaml |

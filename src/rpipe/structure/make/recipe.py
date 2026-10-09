@@ -9,6 +9,36 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
+STUDY_PHASES = ('prepare', 'execute', 'collect', 'summarize', 'write', 'process')
+
+
+def study_phases_enabled(study: dict[str, Any]) -> bool:
+    block = study.get('flow', {})
+    if not isinstance(block, dict):
+        raise ValueError('flow must be a mapping')
+    enabled = block.get('study_phases', False)
+    if not isinstance(enabled, bool):
+        raise ValueError('flow.study_phases must be a boolean')
+    return enabled
+
+
+def study_phase_files(study_dir: Path | str, study: dict[str, Any]) -> list[Path]:
+    if not study_phases_enabled(study):
+        return []
+    root = Path(study_dir).resolve()
+    files = []
+    for phase in STUDY_PHASES:
+        directory = root / phase
+        if not directory.exists():
+            continue
+        if not directory.is_dir() or not (directory / '__init__.py').is_file():
+            raise ValueError(f'Study phase must be a package: {directory}')
+        for path in sorted(directory.rglob('*.py')):
+            if not path.resolve().is_relative_to(root):
+                raise ValueError(f'Study phase source must stay inside the Study: {path}')
+            files.append(path)
+    return files
+
 
 @dataclass(frozen=True)
 class RecipeContext:
