@@ -17,6 +17,7 @@
 | 目录与代码结构 | [layout.md](docs/code/layout.md)、[code.md](docs/code/code.md)，再读 [structure.md](docs/code/structure.md) / [flow.md](docs/code/flow.md) |
 | 研究设计与执行 | [studies/README.md](studies/README.md)，以及目标 Study 的计划、配置和报告 |
 | 测试与验证 | [testing.md](docs/development/testing.md)、[tests/README.md](tests/README.md) |
+| CI 与分支 | [cicd.md](docs/development/cicd.md) |
 | 已知问题与后续想法 | [bugs.md](docs/development/bugs.md)、[brainstorm.md](docs/development/brainstorm.md) |
 | 开发记录 | [record.md](docs/development/record.md) |
 
@@ -29,6 +30,7 @@ brainstorm 用于记录探索。具体工作以当前要求和已确认的设计
 - Study 的计划、报告、图、正式数字和复跑代码只放在对应的 `studies/<name>/` 下，不放进 `docs/` 或仓库根目录。`docs/development/record.md` 只记开发事实，实验结论链接到对应 Study 报告
 - 测试公共输入放 `tests/_data/`，不放进 `tests/rpipe/` 镜像，也不依赖正式 Study 目录
 - 文档文件名用小写；目录入口统一用 `README.md`。Study 内的 `PLAN.md`、`STUDY_REPORT.md`、`NUMBERS.md` 保持原名
+- 工作分支通过 PR 进入 `dev`，发布时再由 `dev` 通过 PR 进入 `main`。必需检查和自行合并见 [cicd.md](docs/development/cicd.md)
 - 按当前任务范围推进，清理、较大规模实验、提交推送和对外发布需符合当次授权
 - 只把长期通用的工作约定放在这里，具体技术规则和阶段状态留在对应文档，避免重复维护
 
@@ -60,4 +62,4 @@ brainstorm 用于记录探索。具体工作以当前要求和已确认的设计
 - 日志用于解释阶段、异常和恢复，遵循现有磁盘契约，保留必要上下文和原始故障，不掩盖失败或反复输出同一份详情。任务完成以正式状态和结果为依据，日志及交付物不泄露凭据或敏感信息
 - 协作与交付前核对变更范围、实际代码基线及验证证据，跨模块影响应由相关维护者确认。异机交付需验证目标环境的安装与核心流程，已有本机结果不能代替目标环境验收
 
-上述原则不自动引入 DreamSoul 的分支流程、评审配置、论文库分类或发表渠道排名，也不改变当前任务的实施与发布授权。
+分支流转和必需检查以 [cicd.md](docs/development/cicd.md) 为准。上述原则不自动引入 DreamSoul 的评审人数、论文库分类或发表渠道排名，也不改变当前任务的实施与发布授权。

@@ -133,7 +133,7 @@ GitHub Actions 配置包括：
 - `Unit Tests`：Ubuntu/Windows × Python 3.10/3.13，安装 `.[dev]` 后执行 core 和本地 CPU 流程门；
 - `Package Check`：在 Ubuntu/Windows 构建 wheel / sdist，在源码目录之外的全新虚拟环境中安装两种分发包，验证模块入口、console script 与离线 Toy/Stub Study 的 make / launch / process / readout。
 
-各提交的检查状态见 [GitHub Actions](https://github.com/diaoenmao/RPipe/actions)。CPU 安装与流程验收不覆盖所有 GPU 或可选 HF 场景。
+各提交的检查状态见 [GitHub Actions](https://github.com/diaoenmao/RPipe/actions)。CPU 安装与流程验收不覆盖所有 GPU 或可选 HF 场景。分支顺序、必需检查和自行合并见 [cicd.md](docs/development/cicd.md)。
 
 ## 当前实现范围
 

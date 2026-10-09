@@ -1,0 +1,71 @@
+# CI/CD 接入
+
+本文件是 RPipe 的仓库接入说明，依据 DreamSoul《CI CD 执行规范》和《多人协作代码开发规范》编写。测试怎么写、怎么跑见 [testing.md](testing.md)。当前只有一名维护者，评审人数按这个事实收窄，不另设批准人。
+
+## 一、分支
+
+长期分支只有两个：
+
+| **分支** | **用途** |
+| --- | --- |
+| `dev` | 日常集成。工作分支只合到这里 |
+| `main` | 可发布状态。只接收来自 `dev` 的发布 PR |
+
+临时分支用 `feature/<scope>-<name>`、`fix/<scope>-<name>`、`refactor/<scope>-<name>`。合并后删除。
+
+```text
+feature/* / fix/* / refactor/* → PR → dev → 发布 PR → main
+```
+
+`dev` 和 `main` 都不能直接 push，不能 force push，也不能删除。合并由 GitHub 在必需检查通过后完成。冲突在工作分支上解决。
+
+当前维护者就是仓库所有者。合入 `dev` 和 `dev → main` 都不要求另一人 Approve，必需检查通过后自行合并。增加维护者之后，再按改动责任范围打开评审。
+
+## 二、触发
+
+两条验证工作流监听 `dev` 和 `main` 的 Pull Request，以及合入这两条分支之后的 push。分支方向检查只在 Pull Request 上运行。
+
+| **时机** | **工作流** | **目的** |
+| --- | --- | --- |
+| 打开或更新 PR | Unit Tests、Package Check、Branch flow | 判断这次改动能不能合进目标分支 |
+| 合入 `dev` 或 `main` | Unit Tests、Package Check | 验证实际集成后的提交 |
+| 手动 | 本地 `tests/run.py` | 合入前的快速反馈，不代替远端必需检查 |
+
+工作分支直接向 `main` 开 PR 时，Branch flow 失败，合并被阻断。`main` 只接受 head 为 `dev` 的 PR。
+
+## 三、必需检查
+
+`dev` 与 `main` 使用同一组必需检查。分支必须包含目标分支的最新提交。检查名称与工作流里的聚合任务名一致。
+
+| **检查名** | **完成条件** |
+| --- | --- |
+| `Unit tests` | Ubuntu / Windows × Python 3.10 / 3.13 的矩阵全部成功 |
+| `Build package` | Ubuntu / Windows 的 wheel 与 sdist 构建、干净环境安装和 Toy/Stub 流程全部成功 |
+| `Branch flow` | PR 的目标是 `dev`，或是从 `dev` 合向 `main` |
+
+必需检查被跳过、取消或没有上报时，不能合并。流程跑完不等于质量通过；失败、超时和未收集到预期用例都阻断。重跑保留原来的失败记录。
+
+本地对应命令：
+
+```bash
+python tests/run.py --core
+python tests/run.py --all --cost-class c1 --cost-class c2 -- -m "(integration or e2e) and not external and not gpu and not slow"
+```
+
+Package Check 在 Actions 里执行 `python -m build`，再在独立虚拟环境安装 wheel 和 sdist，并运行 `tests/package_smoke.py`。
+
+支持平台是 GitHub 托管的 Ubuntu 与 Windows。不覆盖 GPU 和可选的 HF 依赖。
+
+## 四、结果与产物
+
+| **结果** | **位置** |
+| --- | --- |
+| 远端检查 | [GitHub Actions](https://github.com/diaoenmao/RPipe/actions)，绑定触发该次运行的提交 |
+| 本地测试报告 | `.tmp/test-results/<run_id>/` 的 `manifest.json`、`events.jsonl`、`report.md`。不随 Git clone 提供 |
+| 安装包 | 只在 Package Check 的 runner 上构建并当场安装验收，不上传，也不作为 Release 分发 |
+
+对外发布、版本标签和安装包归档还没有接入。把 `dev` 合进 `main` 只表示这条提交通过了上面的必需检查，不等于已经向用户分发。
+
+## 五、当前状态
+
+`dev` 的 Ruleset 从 2026-09-22 起生效，要求 PR、禁止 force push 和删除，并要求 `Build package` 与 `Unit tests`。2026-10-10 为 `main` 建立同等级 Ruleset，两边都加上 `Branch flow`，并移除 `main` 上只要求 `Build package` 的旧版 branch protection。受控失败 PR 的结果写在 [record.md](record.md) 当天记录里。

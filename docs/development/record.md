@@ -89,6 +89,12 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 
 远端结果以 PR #19 的 Checks 为准。Flow 重构、Study 改接到新库接口，以及只含 `.gitkeep` 的测试占位目录，都留到后续分支；改完后需要重新跑验证。
 
+### 4. CI/CD 接入
+
+按《CI CD 执行规范》和《多人协作代码开发规范》写下 [cicd.md](cicd.md)。仓库只有一名维护者，合入 `dev` 和 `dev → main` 都不要求另一人 Approve，必需检查通过后自行合并。
+
+分支路径由 `.github/workflows/branch-flow.yml` 检查：工作分支的 PR 目标必须是 `dev`，`main` 只接受来自 `dev` 的 PR。`dev` 与 `main` 的 Ruleset 都要求 `Unit tests`、`Build package`、`Branch flow`，并禁止直接 push、force push 和删除。`main` 上只要求 `Build package` 的旧版 branch protection 已移除。对外发布和安装包归档仍未接入。受控失败 PR 的编号与结论在规则生效后补记。
+
 ## （二）2026-10-04
 
 最新远端 dev 基线为 `8bccbac`。本机完成 [历史 main 曲线复现](../../studies/main_historical/docs/STUDY_REPORT.md)：32 条四 seed 连续80000-step训练与32条自身best独立评测全部成功，每条400个完整test点。八组的终点、末50点均值、七锚点、末段波动及两数据集模型排序通过预先冻结的原图估读合同，最大终点差0.207502个百分点。
