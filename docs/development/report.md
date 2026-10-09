@@ -37,13 +37,14 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | 历史曲线复现 | 只完成 seed0、200-step前缀探针；接入主要在 `.tmp/`，四 seed 完整曲线未运行 | 新增正式历史 Study 与复跑入口；32条80000-step训练、32条自身 best 评测成功，固定图像估读门通过 | [历史复现](../../studies/main_historical/README.md) |
 | 统一测试入口 | 子进程隐式继承环境与输出；当前沙箱曾有3项 Kornia 导入失败，正常本机原入口为286项通过 | 显式传递环境和 stdout/stderr，补2个真实子进程回归；当前统一 CPU 门288项通过，原失败记录保留 | [测试入口](../../tests/README.md) |
 | 包与 CI | Ubuntu / Python3.10 只跑 core；包门构建后仅对 wheel 做无依赖安装和轻量 import | Linux / Windows、Python3.10 / 3.13 的 CPU及本地 integration 全部通过；两种 OS 全新环境中的 wheel / sdist 安装和公开 CLI 全部通过 | [远端测试](https://github.com/diaoenmao/RPipe/actions/runs/37210453756)、[远端包验收](https://github.com/diaoenmao/RPipe/actions/runs/37210453815) |
-| 导航与清理 | Study 入口分散；SUMMARY 先按日期叙述；有13个冗余占位和未忽略的本地事务标记，模板直接链接未生成图片 | 增加14项 Study 导航和摘要对照表；移除13个冗余占位、保留7个空目录占位；忽略并保留事务标记，模板图片改为代码示例 | [Study 使用指南](../../studies/README.md)、整理报告 |
+| 导航与清理 | Study 入口分散，设计文档与开发记录同在 `docs/` 根目录；正式 Study 与测试用声明混放 | 设计文档在 `docs/code/`，开发记录在 `docs/development/`；Study 指南是 `studies/README.md`；`studies/` 只留 `main_historical`、`main_reproduction`、`_template`，测试声明在 `tests/_data/studies/` | 第二节（一）、[Study 使用指南](../../studies/README.md) |
 
 ## （二）已经验证到哪一步
 
 | **验证对象** | **最新实际结果** |
 | --- | --- |
-| CPU unit / integration | 288 passed / 3 deselected；c1/c2，排除 external / gpu / slow，包含两个新测试入口回归 |
+| CPU unit / integration（2026-10-04） | 288 passed / 3 deselected；c1/c2，排除 external / gpu / slow，包含两个新测试入口回归。2026-10-10 清理后未按同一命令重跑 |
+| 2026-10-10 清理后本地门 | `tests/run.py --core` 为 268 passed / 23 deselected；CPU 的 integration 与 e2e（c1/c2，排除 external / gpu / slow）为 20 passed / 271 deselected。本机缺 `libiomp5md.dll`，两轮都设置了 `MKL_THREADING_LAYER=SEQUENTIAL` |
 | 安装后的 wheel / sdist | 各9条公开 CLI 命令退出0，各4个 Toy/Stub Run、2个 Experiment完整；配置不变，重复 launch 跳过成功任务 |
 | 远端发布准备 CI | PR #12 的四个 OS / Python 测试矩阵、两个 OS 包矩阵及 Unit tests / Build package 聚合门全部成功，绑定提交 `216e2b8`；实际运行链接见上表 |
 | 现代 main 计算对照 | 8组合、seed0、60-step；step30/60共16段参数最大差0，optimizer / RNG / scheduler与完整 test一致，独立 CPU 重载通过 |
@@ -52,19 +53,49 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 
 现代对照使用原 Stats 的全精度 profile 与统一确定性条件；原默认条件未通过的结果仍保留。历史图缺少原始逐点指标，长曲线结论限定于预先固定的图像估读门，前缀逐位对齐不扩称为全80000步权重逐位一致。
 
-本机包验收复用了已有科学依赖，Toy/Stub 只验证安装与产物合同。发布准备提交 `216e2b8` 的新跨平台 CI 已实际通过；后续提交的状态以其对应 Actions 为准。整理阶段的固定验收快照见 机器可读结果，发布验证与环境修复见 v0.2.0 说明。
+本机包验收复用了已有科学依赖，Toy/Stub 只验证安装与产物合同。发布准备提交 `216e2b8` 的新跨平台 CI 已实际通过；后续提交的状态以其对应 Actions 为准。2026-10-04 整理阶段的固定验收快照见 [机器可读结果](https://github.com/diaoenmao/RPipe/blob/71143ab/docs/REPOSITORY_CLEANUP_RESULT.json)，发布验证与环境修复见 [v0.2.0 说明](https://github.com/diaoenmao/RPipe/blob/71143ab/docs/releases/v0.2.0.md)。2026-10-10 的目录清理见第二节（一）。
 
 # 二、开发记录
 
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
-## （一）2026-10-04
+## （一）2026-10-10
+
+仓库清理在分支 `refactor/cleanup`，提交 `f534358`，[PR #19](https://github.com/diaoenmao/RPipe/pull/19) 合向 `dev`。分支从 `main` 的 `71143ab` 拉出；当时 `dev` 落后 `main` 三个发布提交，合并会一并带入。本轮只整理目录、文档和测试输入，不改 flow，也不把 Study 接到新的库接口。
+
+### 1. 文档
+
+- 设计文档移到 `docs/code/`：`concept.md`、`layout.md`、`code.md`、`structure.md`、`flow.md`
+- 开发记录移到 `docs/development/`：`brainstorm.md`、`bugs.md`、`testing.md`；`SUMMARY.md` 改名为 `report.md`
+- 文档文件名改为小写。目录入口用 `README.md`。Study 内的 `PLAN.md`、`STUDY_REPORT.md`、`NUMBERS.md` 保持原名
+- 原 Study 指南与 `studies/` 导航合并为 [studies/README.md](../../studies/README.md)
+- 删除整份过时文档：`HANDOVER.md`、`MAIN_MIGRATION.md`、`REPOSITORY_CLEANUP.md`、`REPOSITORY_CLEANUP_RESULT.json`、`STUDY_GUIDE.md`、`docs/releases/v0.1.0.md`、`docs/releases/v0.2.0.md`。这些文件仍在 [`71143ab`](https://github.com/diaoenmao/RPipe/tree/71143ab/docs)
+- `AGENTS.md` 与根 `README.md` 的入口和链接按新路径更新。Study 的计划、报告、图、正式数字和复跑代码只放在对应的 `studies/<name>/`；本文件只记开发事实，实验结论链接到 Study 报告
+
+### 2. Study 与测试输入
+
+- `studies/` 只保留 `main_historical`、`main_reproduction`、`_template`。删除 `mnist_train_size`、`mnist_native_vs_hf`、`cifar_grid`、`main_base`、`checkpoint_recovery`、`mnist_cnn_lr`、`mnist_cnn_budget`、`mnist_cnn_budget_repeat`、`local_model_matrix`、`support_data_smoke`、`support_model_smoke`，包括本机数据。计划与报告见 [`71143ab` 的 studies](https://github.com/diaoenmao/RPipe/tree/71143ab/studies)
+- 保留的 Study 带上各自代码。`main_reproduction/code/` 补入 24 个复跑脚本，按原内容入库，因为部分脚本会校验自己的 SHA-256。这些脚本不在 `code/` 里直接运行，复跑前要先复制到 `.tmp/main-reproduction-<date>/`，并放回它们依赖的原始数据缓存
+- 测试仍要用的 `mnist_train_size`、`mnist_native_vs_hf`、`cifar_grid` 声明移到 `tests/_data/studies/`，用例复制到临时目录再跑
+- `.gitignore` 按 GitHub Python 模板加上 RPipe 规则重建
+
+### 3. 验证与未做事项
+
+本机 Anaconda 的 `libiomp5md.dll` 曾被改名为 `libiomp5md.dll.bak-before-torch-cu130`，裸 `import numpy` 会以 `0xc06d007e` 退出。两轮测试都设置了 `MKL_THREADING_LAYER=SEQUENTIAL`，没有改 Anaconda 安装。
+
+- `tests/run.py --core`：268 passed / 23 deselected
+- CPU 的 integration 与 e2e，c1/c2，排除 external / gpu / slow：20 passed / 271 deselected
+- 相对链接检查后，仍打不开的是 Study 报告里指向本地 Run 日志和 `.tmp/` 证据的链接，以及模板占位图。这些文件本来不随 Git 提供
+
+远端结果以 PR #19 的 Checks 为准。Flow 重构、Study 改接到新库接口，以及只含 `.gitkeep` 的测试占位目录，都留到后续分支；改完后需要重新跑验证。
+
+## （二）2026-10-04
 
 最新远端 dev 基线为 `8bccbac`。本机完成 [历史 main 曲线复现](../../studies/main_historical/docs/STUDY_REPORT.md)：32 条四 seed 连续80000-step训练与32条自身best独立评测全部成功，每条400个完整test点。八组的终点、末50点均值、七锚点、末段波动及两数据集模型排序通过预先冻结的原图估读合同，最大终点差0.207502个百分点。
 
 [现代 main 本机对照](../../studies/main_reproduction/docs/CURRENT_DEVICE_RESULT.md) 在原Stats全精度profile与统一确定性配置下60-step八格通过，step30/60共16段参数最大差0；本机历史600-step八格前缀桥及两类独立CPU存档核验也通过。原默认条件的失败、旧设备结果和原图缺失运行记录的边界保留；不把前缀对齐扩称为80k权重逐位相同。
 
-本轮另整理全仓库导航、正式 Study 入口、冗余占位和事务标记，补充安装后 CLI 与 CPU 验收。完整变更与实际验证见 REPOSITORY_CLEANUP.md。
+本轮另整理全仓库导航、正式 Study 入口、冗余占位和事务标记，补充安装后 CLI 与 CPU 验收。完整变更与实际验证见 [REPOSITORY_CLEANUP.md](https://github.com/diaoenmao/RPipe/blob/71143ab/docs/REPOSITORY_CLEANUP.md)。该文件已在 2026-10-10 从当前树删除，链接指向删除前的提交。
 
 以下2026-10-03记录保留当时“仅探针、未执行长矩阵”的真实范围，不再代表最新完成状态。
 
@@ -75,13 +106,13 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | 历史候选同机计算桥 | 8组合、seed0、step200/400/600，24段参数/buffer逐位一致，SGD/scheduler/RNG/实际输入一致 | 600-step前缀，不能代替全80k原码/current权重证明 |
 | 历史四seed长曲线 | 32train × 80000step，每条400次完整test；32own-best eval；完整固定门通过 | PNG估读，未知原seed与环境，未验收原图阴影std及全400点逐位差 |
 | 现代main受控计算对照 | 8格seed0、60step/eval30、16段参数maxdiff0，独立完整test一致，CPU重载通过 | 原Stats B250全精度profile、deterministic条件；未覆盖原默认benchmark=true/无profile |
-| 本轮整理与迁移准备 | 首页与14个Study导航、专用Registry入口、旧接口迁移说明、CPU和安装交付门 | 具体执行结果及远端待执行项见整理报告；未实际合并main |
+| 本轮整理与迁移准备 | 首页与14个Study导航、专用Registry入口、旧接口迁移说明、CPU和安装交付门 | 具体执行结果及远端待执行项见 [整理报告](https://github.com/diaoenmao/RPipe/blob/71143ab/docs/REPOSITORY_CLEANUP.md)；未实际合并main |
 
 历史矩阵主控制器于2026-10-04 09:12:29 +08:00结束；完整曲线及独立审计于当日晚间收口。[最终结果](../../studies/main_historical/docs/FINAL_RESULT.json)与[执行审计](../../studies/main_historical/docs/FINAL_EXECUTION_AUDIT.json)保留真实来源。提前排班去重成功、无训练resume；CIFAR linear评测四worker成功，但记录控制器因WinError5退出1，仅恢复记录，没有重跑或改写原退出码。
 
 旧进度和前三组JSON快照保留原样。[Study 使用指南](../../studies/README.md)区分正式可交付成果与本机runs/shared/.tmp证据，清理没有删除数据、checkpoint或失败记录。旧main无扩展checkpoint与新的.pt/bundle、模型key和Stats对象存在实际格式差异，普通新CLI不直接resume旧任务。
 
-## （二）2026-10-03
+## （三）2026-10-03
 
 ### 阶段摘要
 
@@ -245,6 +276,6 @@ main原代码CPU探针以新输出目录重跑8/8，step2/4参数、train/test L
 
 发布前核对的旧 main 是 dev 的祖先，没有 main 独有提交。先通过受保护 dev 的 PR 与跨平台 CPU / 隔离安装门，再将通过验收的成果进入 main 并发布阶段版本；临时发布和已合并功能分支在确认提交已保留后清理。
 
-第二节、科学报告和 仓库整理验收 中的 refs 与“未合并”描述保留其记录时点；它们不是发布后 main 的动态引用。原 source SHA、数值与失败判定不随发布改写。
+第二节、科学报告和 [仓库整理验收](https://github.com/diaoenmao/RPipe/blob/71143ab/docs/REPOSITORY_CLEANUP.md) 中的 refs 与“未合并”描述保留其记录时点；它们不是发布后 main 的动态引用。原 source SHA、数值与失败判定不随发布改写。
 
-本次是公共接口和产物格式的迁移：旧脚本调用需要更新，旧 checkpoint 不能直接作为新 Run resume；旧提交和原产物保留用于读取与回退。具体命令、配置、Stats精度、std及恢复边界见 MAIN_MIGRATION.md。
+本次是公共接口和产物格式的迁移：旧脚本调用需要更新，旧 checkpoint 不能直接作为新 Run resume；旧提交和原产物保留用于读取与回退。具体命令、配置、Stats精度、std及恢复边界见 [MAIN_MIGRATION.md](https://github.com/diaoenmao/RPipe/blob/71143ab/docs/MAIN_MIGRATION.md)。该文件已在 2026-10-10 从当前树删除，链接指向删除前的提交。
