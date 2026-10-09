@@ -1,7 +1,7 @@
 # Flow 与 Study 重构交接
 
 **日期**：2026-10-10  
-**分支**：交接分支 `refactor/flow` 的 PR [#21](https://github.com/diaoenmao/RPipe/pull/21) 已合入 `dev`（`2917e3e`）；阶段接续在 `refactor/study-phases`
+**分支**：交接分支 `refactor/flow` 的 PR [#21](https://github.com/diaoenmao/RPipe/pull/21) 已合入 `dev`（`2917e3e`）；阶段接续 PR [#22](https://github.com/diaoenmao/RPipe/pull/22) 已合入 dev；探针接续在 `refactor/probe-flow`
 **维护者决定**：**本轮不再安排重跑 `main_exp` / `main_probe` 实验**；旧实测结论以提交 [`18cd76c`](https://github.com/diaoenmao/RPipe/tree/18cd76c/studies) 的 `main_historical`、`main_reproduction` 为准。
 
 ---
@@ -15,7 +15,7 @@
 | 集成 | PR #21 待合并 | 三个必需检查通过，已合入 dev |
 | 阶段链 | Study 阶段目录尚未实现 | `flow.study_phases: true` 显式启用；库先、Study 后；阶段源码进入 freeze；Run/Study process 分开 |
 | main_exp | 根 compare.py 做终验 | prepare 做来源检查，process 包在 Study 聚合后做终验；根脚本保留手动 partial 读取 |
-| main_probe | 只有同进程专用数值对照 | 保留受控计算，补两侧观测 artifact 投影和库 compare；投影不是新训练结果 |
+| main_probe | 独立 probe.py 与原生 16 Run 两个入口 | 删除独立脚本；八个成对 Run 接入完整 Flow，失败状态、证据与八组终验统一落盘 |
 | 本机目录 | main_historical 仍有未跟踪残留 | 按维护者要求删除；现行目录是 main_exp / main_probe |
 
 本地验证：新增回归 16 passed；完整 core 282 passed / 35 deselected，CPU integration/e2e 32 passed / 285 deselected。完整门首次因 kornia 缺失失败，复用已有隔离依赖后通过，原失败保留。**没有重跑任何正式实验。** 详情见 [record.md](record.md) §5，现行阶段合同见 [flow.md §14.0](../code/flow.md#140-study-阶段目录)。
@@ -29,6 +29,12 @@
 3. **不要做的事**：不要在本交接之后自动 `launch` 长矩阵或探针矩阵；不要恢复已删的 `studies/main_reproduction/code/` 或 `main_historical/run.py` 当作现行入口。
 
 ---
+
+### 探针接续结果
+
+main_probe 使用 recipe 注册 `main_probe` Data / Algorithm；每个 Run 只准备与计算自己的组合。当前侧复用库 prepare 的对象与 Tracker，初始化 RNG 在进入原版计算前记录、进入当前版时恢复。`flow.prepare_shared: false` 防止注册之前提前构造专用数据；阶段源码和 recipe 进入 freeze。数值比较与 artifact compare 失败在 execute 内报错；Study process 汇总当前 index 的八组证据。
+
+CPU 核心 286 项、集成 32 项及隔离合同检查通过。没有本版本正式数值结果，仍需获授权后重跑。以下保留原交接范围和当时的待办，已完成事项以本节和 Study 当前 README 为准。
 
 ## 二、代码分层（宏观）
 

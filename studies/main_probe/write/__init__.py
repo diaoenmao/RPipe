@@ -45,3 +45,12 @@ def write_observed_run(root, *, snapshots, best, data, model, implementation):
                                                     'model_prefixes': ['model.', 'net.'],
                                                     'source': 'observed snapshots; no computation replay'}})
     return root
+
+
+def run(ctx):
+    """Verify the artifact projections already written by the paired Algorithm."""
+    workspace = ctx.state['algorithm'].workspace
+    row = ctx.state['probe']['runs'][0]
+    evidence = workspace / 'matrix' / f"{row['data']}_{row['model']}" / 'RUN_COMPARISON.json'
+    if not evidence.is_file():
+        raise RuntimeError(f'missing library comparison evidence: {evidence}')
