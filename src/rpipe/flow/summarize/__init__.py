@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from rpipe.flow.context import FlowContext
+from rpipe.structure.artifact.provenance import capture_environment, load_provenance
 from rpipe.structure.artifact.result import STATUS_SUCCEEDED
 
 
@@ -50,4 +51,6 @@ def run(ctx: FlowContext) -> None:
             'checkpoints': str(ctx.layout.assets_dir / 'checkpoints'),
         },
         'study': str(ctx.study_dir),
+        'environment': capture_environment(),
+        'provenance': (load_provenance(ctx.study_dir) or {}).get('digest'),
     }

@@ -14,7 +14,7 @@ MNIST / CIFAR10 × linear / mlp / cnn / resnet18 × seeds 0–3：**32 条连续
 
 ![CIFAR10：本机四 seed test Accuracy，mean ± population std](asset/CIFAR10_Accuracy_mean.png)
 
-两图使用训练中的完整 test history，独立 eval 的 best 没有替代曲线终点。实验使用 Study 专用配方与固定环境；完整配置、数值、环境和验收范围见 [实测报告](studies/main_historical/docs/STUDY_REPORT.md)。
+两图使用训练中的完整 test history，独立 eval 的 best 没有替代曲线终点。实验使用 Study 专用配方与固定环境；完整配置、数值、环境和验收范围见 [实测报告](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_historical/docs/STUDY_REPORT.md)（2026-10-04，原 Study `main_historical`）。该 Study 已改名为 [main_exp](studies/main_exp/README.md)，按新流程待重跑。
 
 ## 核心模型
 
@@ -45,7 +45,7 @@ Agent 的文档导航与通用工作约定见 [AGENTS.md](AGENTS.md)。
 5. [studies/README.md](studies/README.md)：如何设计和运行一轮 Study，以及现有 Study 的计划、报告和代码
 6. [testing.md](docs/development/testing.md)：测试策略、标签和结果持久化
 
-已知缺陷见 [bugs.md](docs/development/bugs.md)，开发记录见 [record.md](docs/development/record.md)，阶段性想法见 [brainstorm.md](docs/development/brainstorm.md)。
+已知缺陷见 [bugs.md](docs/development/bugs.md)，开发记录见 [record.md](docs/development/record.md)，Flow/Study 重构交接见 [handover.md](docs/development/handover.md)，阶段性想法见 [brainstorm.md](docs/development/brainstorm.md)。
 
 ## 安装
 
@@ -98,11 +98,11 @@ python -m rpipe run studies/<name>
 
 | **内容** | **是否入库** | **原因** |
 |------|----------|------|
-| `study.yaml`、`experiment_config.yaml` | 是 | 可复现实验声明 |
+| `study.yaml`、`experiment_config.yaml`、`recipe.py` | 是 | 可复现实验声明与 Study 自己的注册配方 |
 | `docs/PLAN.md`、`docs/STUDY_REPORT.md`、报告图片 | 是 | 人写的研究计划与结论 |
 | `docs/NUMBERS.md` | 可以 | `rpipe report` 从 `process.json` 生成的数字表，不是结论 |
 | `runs/`、`shared/`、`scripts/` | 否 | 可重新生成或体积较大的运行产物 |
-| `index.json`、`process.json`、`activity.json` | 否 | make / process 重建；`activity.json` 只在 make 进行中存在 |
+| `index.json`、`process.json`、`activity.json`、`provenance.json` | 否 | make / process 重建；`activity.json` 只在 make 进行中存在 |
 | `.tmp/` | 否 | 本地测试、缓存和临时验证 |
 | `docs/*.tmp`、`docs/*.claim` | 否 | 本地事务暂存和执行占用标记；正式恢复/失败快照单独保留 |
 

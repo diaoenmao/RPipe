@@ -8,7 +8,14 @@ from pathlib import Path
 from typing import Any
 
 from rpipe.flow.process import process_path, run_study as process_study
+from rpipe.structure.artifact.provenance import (
+    ProvenanceChangedError,
+    check_frozen,
+    load_provenance,
+    provenance_changes,
+)
 from rpipe.structure.artifact.readout import format_logs, format_status, list_runs, write_numbers
+from rpipe.structure.artifact.readout.compare import compare_runs, format_compare, write_compare
 from rpipe.flow.context import FlowContext
 from rpipe.flow.runner import FlowRunner
 from rpipe.structure.artifact import artifact_layout, load_config
@@ -263,6 +270,8 @@ def _execute_launch(args: argparse.Namespace) -> int:
         print(f'{written["n_jobs"]} jobs', flush=True)
     jobs = written['job_list']
     study_dir = Path(written.get('expand', {}).get('study_dir') or args.study_dir).resolve()
+    if not _provenance_gate(study_dir):
+        return 2
     try:
         modes = _normalize_modes(getattr(args, 'modes', None))
     except ValueError as exc:
@@ -298,6 +307,40 @@ def _execute_launch(args: argparse.Namespace) -> int:
         print('process partial', flush=True)
     _print_launch_counts(study_dir)
     return 1 if still else 0
+
+
+def _provenance_gate(study_dir: Path) -> bool:
+    if not (study_dir / 'study.yaml').is_file():
+        return True
+    study = load_study_yaml(study_dir)
+    try:
+        check_frozen(study_dir, study)
+    except ProvenanceChangedError as exc:
+        print(exc, file=sys.stderr)
+        return False
+    if load_provenance(study_dir) is not None:
+        changed = provenance_changes(study_dir, study)
+        if changed:
+            print(f'provenance: {len(changed)} changed', flush=True)
+    return True
+
+
+def _execute_compare(args: argparse.Namespace) -> int:
+    try:
+        report = compare_runs(
+            args.run_a,
+            args.run_b,
+            atol=float(args.atol),
+            rtol=float(args.rtol),
+            checkpoints=list(args.checkpoints or ['latest']),
+        )
+    except (OSError, ValueError) as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    print(format_compare(report), end='')
+    if args.out is not None:
+        print(write_compare(args.out, report), flush=True)
+    return 0 if report['passed'] else 1
 
 
 def _print_launch_counts(study_dir: Path) -> None:
@@ -466,6 +509,20 @@ def main(argv: list[str] | None = None) -> int:
     data_p = sub.add_parser('data', help='write shared/data/<set>/stats.yaml for each dataset in the Study')
     data_p.add_argument('study_dir', type=Path, help='Path to studies/<name>/')
 
+    compare_p = sub.add_parser('compare', help='compare two Run dirs: metrics, tracker history, checkpoints')
+    compare_p.add_argument('run_a', type=Path, help='Path to studies/<name>/runs/<id>/')
+    compare_p.add_argument('run_b', type=Path)
+    compare_p.add_argument('--atol', default=0.0, type=float)
+    compare_p.add_argument('--rtol', default=0.0, type=float)
+    compare_p.add_argument(
+        '--checkpoint',
+        action='append',
+        dest='checkpoints',
+        metavar='NAME',
+        help='checkpoint name under assets/checkpoints (repeatable; default latest)',
+    )
+    compare_p.add_argument('--out', type=Path, default=None, help='write the full comparison JSON')
+
     args = parser.parse_args(argv)
     if args.cmd == 'run' or (args.cmd == 'study' and args.study_cmd == 'run'):
         return _execute_run(args)
@@ -485,6 +542,8 @@ def main(argv: list[str] | None = None) -> int:
         return _execute_status(args)
     if args.cmd == 'data':
         return _execute_data(args)
+    if args.cmd == 'compare':
+        return _execute_compare(args)
     return 2
 
 

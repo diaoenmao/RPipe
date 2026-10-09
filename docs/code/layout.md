@@ -14,11 +14,11 @@
 | --- | --- |
 | `src/rpipe/`、`pyproject.toml` | 可安装库、公共 CLI 与依赖声明 |
 | `docs/code/` | 设计：concept、layout、code，以及 structure / flow 分册 |
-| `docs/development/` | 开发记录：brainstorm、bugs、testing、cicd、record |
+| `docs/development/` | 开发记录：brainstorm、bugs、testing、cicd、record、handover |
 | `studies/` | [Study 使用指南](../../studies/README.md)、声明、复跑入口与正式报告；本地产物另按第四节管理 |
 | `tests/` | 统一测试入口、源码镜像测试与安装后 CLI 验收，见 [测试入口](../../tests/README.md) |
 | `.github/workflows/` | CPU 测试和 wheel / sdist 构建、安装验收 |
-| `asset/` | README 展示本次实测的 MNIST / CIFAR10 曲线；旧参考图与来源保存在 [历史图归档](../../studies/main_historical/docs/reference/README.md)，不作为新 Run 的资产根 |
+| `asset/` | README 展示本次实测的 MNIST / CIFAR10 曲线；旧参考图与来源保存在 [历史图归档](../../studies/main_exp/docs/reference/README.md)，不作为新 Run 的资产根 |
 | `.tmp/` | 本机运行环境、诊断与临时验证输出，不随 Git clone 提供 |
 
 | 概念 | 目录落点 |
@@ -149,6 +149,8 @@ studies/<study>/
 | `index.json` | make 写入的编排清单（每条 Run 含 `config` 与 `log`）；不入库 |
 | `process.json` | Study 级聚合信封；不入库 |
 | `activity.json` | 只在 make 进行中出现，成功后删除；不入库。`rpipe status` 在它还在时把第一行打成当前阶段 |
+| `provenance.json` | make 写入的来源清单：源码、声明、recipe 与计划的哈希，环境和 git 提交；不入库。规则见 [flow.md](flow.md) §14.2 |
+| `recipe.py` | 可选；Study 自己注册的 data / model / algorithm `source`，由 `study.yaml` 的 `recipe` 指向，入库。见 [flow.md](flow.md) §14.1 |
 | `shared/data/`、`shared/model/` | structure data / model 的落盘 |
 | `runs/<id>/assets/` | 本 Run 的 asset：`tracker/`（数字曲线）、`logs/`（文本）、checkpoint、样本等 |
 

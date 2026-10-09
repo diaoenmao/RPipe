@@ -38,7 +38,7 @@
 
 ### 2026-10-04
 
-持续目标已完成：历史32条80000-step四seed训练与32条own-best eval，八组完整曲线通过事先原图估读门；本机现代60-step受控八格和历史600-step前缀桥也通过。正式入口和独立CPU审计进入 [main_historical](../../studies/main_historical/README.md)。图像、原默认失败及原环境未知的证据边界保留，科学结论不扩称所有原始逐点数据一致。
+持续目标已完成：历史32条80000-step四seed训练与32条own-best eval，八组完整曲线通过事先原图估读门；本机现代60-step受控八格和历史600-step前缀桥也通过。正式入口和独立CPU审计进入 [main_historical](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_historical/README.md)。图像、原默认失败及原环境未知的证据边界保留，科学结论不扩称所有原始逐点数据一致。
 
 本轮整理全仓库导航、正式成果及事务标记，补充迁移文档和发布验收，见 整理报告。生产数值源和原存档没有改动，不再以临时脚本作为唯一重跑入口。
 
@@ -46,27 +46,27 @@
 
 以下保留当时的只探针授权和候选工作量；2026-10-04另获持续运行授权并完成长矩阵，不倒写旧记录。
 
-2026-10-03 main复现阶段已有结果，见 [main_reproduction报告](../../studies/main_reproduction/docs/STUDY_REPORT.md)：原默认60-step配方各16/16执行成功、严格数值门4/8；原代码重复也分歧，完整确定性控制则8/8对齐。两个历史PNG最后更新于`4ccb28d`，该提交为80000-step / eval200 / 4-seed候选配方，CNN含BN、梯度裁剪1、CPU增强和统计也不同。用户已选择历史图对应超参路线，随后明确**本轮只做到探针**；200-step/eval200、seed0的8格前缀对照和计时进入[执行计划](../../studies/main_reproduction/docs/PLAN.md#用户确认的历史超参前缀探针2026-10-03执行前)，不是长实验授权。
+2026-10-03 main复现阶段已有结果，见 [main_reproduction报告](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/STUDY_REPORT.md)：原默认60-step配方各16/16执行成功、严格数值门4/8；原代码重复也分歧，完整确定性控制则8/8对齐。两个历史PNG最后更新于`4ccb28d`，该提交为80000-step / eval200 / 4-seed候选配方，CNN含BN、梯度裁剪1、CPU增强和统计也不同。用户已选择历史图对应超参路线，随后明确**本轮只做到探针**；200-step/eval200、seed0的8格前缀对照和计时进入[执行计划](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/PLAN.md#用户确认的历史超参前缀探针2026-10-03执行前)，不是长实验授权。
 
 此前4-step/eval2短接入验证已经8/8通过，新200-step/eval200前缀探针及存档复核也8/8通过，见§4；候选旧运算可以复用现有Registry，暂不提生产模型兼容开关。本轮已结束；探针不能替代历史实际运行依据、4-seed长期曲线或独立eval证据。没有自动进入长实验的待执行任务。
 
-历史证据搜索已完成本地可达Git范围，未找到原始指标/权重；PNG绘图版本还与旧requirements不同。已生成供核对的64条原调度命令，未执行。单套完整候选即256万次更新、6.4亿train样本处理，两套对照翻倍。详细依据见 [历史审计](../../studies/main_reproduction/docs/HISTORICAL_AUDIT.md)。用户本轮限制为探针，后续是否制定长实验预算另行决定，不自动执行。
+历史证据搜索已完成本地可达Git范围，未找到原始指标/权重；PNG绘图版本还与旧requirements不同。已生成供核对的64条原调度命令，未执行。单套完整候选即256万次更新、6.4亿train样本处理，两套对照翻倍。详细依据见 [历史审计](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/HISTORICAL_AUDIT.md)。用户本轮限制为探针，后续是否制定长实验预算另行决定，不自动执行。
 
 ### 2026-10-03 实施记录
 
-历史超参前缀探针（2026-10-03）：按用户“只做到探针”的范围，MNIST / CIFAR10 × linear / mlp / cnn / resnet18，seed0、200 optimizer steps、eval200完整test10000，保留旧BN/CPU增强/常量统计/clip1及scheduler T_max80000。两边8/8通过，参数和buffer差值0、初始/最终RNG及50000个采样与增强输入相同；训练/test正确样本数相同，Loss差仅浮点累计。独立加载checkpoint/optimizer/tracker复核8/8，内部148.740s；91当前源文件及36历史归档文件不变。见[探针报告](../../studies/main_reproduction/docs/HISTORICAL_PREFIX_PROBE.md)。未发现新生产bug；BUGS清除已关闭项的重复说明，明确无开放缺陷。本轮结束，不执行80000-step/4-seed长实验，历史图仍未复现。
+历史超参前缀探针（2026-10-03）：按用户“只做到探针”的范围，MNIST / CIFAR10 × linear / mlp / cnn / resnet18，seed0、200 optimizer steps、eval200完整test10000，保留旧BN/CPU增强/常量统计/clip1及scheduler T_max80000。两边8/8通过，参数和buffer差值0、初始/最终RNG及50000个采样与增强输入相同；训练/test正确样本数相同，Loss差仅浮点累计。独立加载checkpoint/optimizer/tracker复核8/8，内部148.740s；91当前源文件及36历史归档文件不变。见[探针报告](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/HISTORICAL_PREFIX_PROBE.md)。未发现新生产bug；BUGS清除已关闭项的重复说明，明确无开放缺陷。本轮结束，不执行80000-step/4-seed长实验，历史图仍未复现。
 
-当前源码完整收口复核（2026-10-03）：B-018后的新临时Study完整8 train + 8 eval成功，与原main未修改的确定性存档数值门8/8，step30/60参数及test指标差值0，独立eval/best一致，launch86.176s。91个源文件与当前快照一致，286项本地回归有效，原默认4/8和历史图未复现结论保留。证据见 [最新GPU对照](../../studies/main_reproduction/docs/DETERMINISTIC_COMPARISON_AFTER_B018.json)；最终验收对象仍待用户选择，不继续追加无关bug或扩大实验来替代这个决定。
+当前源码完整收口复核（2026-10-03）：B-018后的新临时Study完整8 train + 8 eval成功，与原main未修改的确定性存档数值门8/8，step30/60参数及test指标差值0，独立eval/best一致，launch86.176s。91个源文件与当前快照一致，286项本地回归有效，原默认4/8和历史图未复现结论保留。证据见 [最新GPU对照](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/DETERMINISTIC_COMPARISON_AFTER_B018.json)；最终验收对象仍待用户选择，不继续追加无关bug或扩大实验来替代这个决定。
 
-历史依据搜索（2026-10-03）：本地13 refs / 150 commits、旧祖先39 commits / 61路径未找到原结果或权重；两张PNG记录Matplotlib3.7.1，旧requirements为3.7.0，不能据依赖文件认定历史实际环境。原make.py仅生成32 train + 32 test命令供核对，没有执行训练。工作量与搜索范围见 [HISTORICAL_EVIDENCE_SEARCH](../../studies/main_reproduction/docs/HISTORICAL_EVIDENCE_SEARCH.json)；目标选择仍待用户明确。
+历史依据搜索（2026-10-03）：本地13 refs / 150 commits、旧祖先39 commits / 61路径未找到原结果或权重；两张PNG记录Matplotlib3.7.1，旧requirements为3.7.0，不能据依赖文件认定历史实际环境。原make.py仅生成32 train + 32 test命令供核对，没有执行训练。工作量与搜索范围见 [HISTORICAL_EVIDENCE_SEARCH](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/HISTORICAL_EVIDENCE_SEARCH.json)；目标选择仍待用户明确。
 
 B-018零评测预算（2026-10-03）：eval_num_steps=0原本仍评第一批并生成指标，现由共享入口在读取数据前报错；缺省/负数完整test及正数限批保持。最小反例先失败，本地门286 passed / 3 deselected，main原代码CPU对照8/8、参数/指标差值0。修复与验证见 [record.md](record.md)，开放项已移除；该修复阶段先完成CPU验证，后续完整GPU复核见上方收口记录。
 
-历史候选短接入对照（2026-10-03）：临时Registry builder直接复用归档模型/dataset，旧CNN BN、CPU增强和clip1接入当前原生训练循环，真实8组合4-step/eval2数值门8/8。step2/4参数与buffer差值0、采样与增强后输入哈希一致。已有Registry足够承载候选旧运算，暂不增加生产CNN兼容开关。证据见 [历史审计](../../studies/main_reproduction/docs/HISTORICAL_AUDIT.md)；eval2不是历史eval200轨迹，未启动80000-step长实验，最终对照选择仍待明确。
+历史候选短接入对照（2026-10-03）：临时Registry builder直接复用归档模型/dataset，旧CNN BN、CPU增强和clip1接入当前原生训练循环，真实8组合4-step/eval2数值门8/8。step2/4参数与buffer差值0、采样与增强后输入哈希一致。已有Registry足够承载候选旧运算，暂不增加生产CNN兼容开关。证据见 [历史审计](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/HISTORICAL_AUDIT.md)；eval2不是历史eval200轨迹，未启动80000-step长实验，最终对照选择仍待明确。
 
-B-017与历史候选审计（2026-10-03）：修复Accuracy已有topk参数的样本轴丢失，最小反例先失败，本地门283 passed / 3 deselected；默认top1 CPU探针8/8，修复后新临时Study完整16次CUDA执行成功，对原main确定性存档数值门8/8，参数/test指标差值0。历史探针证明CNN需要旧版4层BN；旧Accuracy best比较还会用上一轮代替全程最佳，95→90→92会覆盖真正最佳。归档缺陷不改，候选历史路线不能只加步数。证据见 [main报告](../../studies/main_reproduction/docs/STUDY_REPORT.md) 与 [历史审计](../../studies/main_reproduction/docs/HISTORICAL_AUDIT.md)。B-017已从开放缺陷移除，未启动长实验。
+B-017与历史候选审计（2026-10-03）：修复Accuracy已有topk参数的样本轴丢失，最小反例先失败，本地门283 passed / 3 deselected；默认top1 CPU探针8/8，修复后新临时Study完整16次CUDA执行成功，对原main确定性存档数值门8/8，参数/test指标差值0。历史探针证明CNN需要旧版4层BN；旧Accuracy best比较还会用上一轮代替全程最佳，95→90→92会覆盖真正最佳。归档缺陷不改，候选历史路线不能只加步数。证据见 [main报告](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/STUDY_REPORT.md) 与 [历史审计](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/HISTORICAL_AUDIT.md)。B-017已从开放缺陷移除，未启动长实验。
 
-完整main源码对照（2026-10-03）：新 [main_reproduction Study](../../studies/main_reproduction/docs/STUDY_REPORT.md)，真实数据与原Stats完整精度、初始化/RNG/15000个采样索引核对通过；两套原默认60-step / eval30各16/16执行成功，数值门4/8。相同原代码的3条重复训练也出现分歧；在隔离目录同改CUDA确定性条件后，两套完整矩阵各16/16成功，数值门8/8，step30/60参数与test Loss/Accuracy差值为0；训练均值仅有约1e-16 / 1e-14的浮点累加差异。原默认失败判定保留，历史README图未复现。2402个可读旧Study文件与94个源码/声明文件保护检查通过；未改生产实现或扩大预算。
+完整main源码对照（2026-10-03）：新 [main_reproduction Study](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/STUDY_REPORT.md)，真实数据与原Stats完整精度、初始化/RNG/15000个采样索引核对通过；两套原默认60-step / eval30各16/16执行成功，数值门4/8。相同原代码的3条重复训练也出现分歧；在隔离目录同改CUDA确定性条件后，两套完整矩阵各16/16成功，数值门8/8，step30/60参数与test Loss/Accuracy差值为0；训练均值仅有约1e-16 / 1e-14的浮点累加差异。原默认失败判定保留，历史README图未复现。2402个可读旧Study文件与94个源码/声明文件保护检查通过；未改生产实现或扩大预算。
 
 B-016 于 2026-10-03 修复：native step 训练摘要按评测段收口，空段不覆盖最后有效均值。固定 main 原代码 CPU 探针 8/8 通过，step2 / 4 参数与指标差值均为 0；合并本地 unit + integration c1 / c2 回归 **282 passed / 3 deselected**。最小反例、原代码对照证据与完整 60-step 真实数据验收的剩余边界见 [record.md](record.md)。用户本轮确认仍只实施 §3.1 曲线进度，§3.2 / §3.3 不做。
 

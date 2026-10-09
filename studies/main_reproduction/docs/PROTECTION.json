@@ -1,7 +1,0 @@
-{
-  "prior_files_checked": 2402,
-  "prior_files_changed": [],
-  "source_files_checked": 94,
-  "source_files_changed": [],
-  "coverage_note": "Existing readable Study files; main_base CIFAR10 extracted directory could not be enumerated and was not accessed or modified."
-}

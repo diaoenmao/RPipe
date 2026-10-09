@@ -241,6 +241,7 @@ studies/**/scripts/
 studies/**/index.json
 studies/**/process.json
 studies/**/activity.json
+studies/**/provenance.json
 
 # Local transaction/ownership records are not research reports
 studies/**/docs/*.tmp
