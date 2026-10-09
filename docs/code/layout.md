@@ -1,8 +1,8 @@
 # Layout
 
-本文定义 **RPipe** 仓库目录约定（不含最底层叶文件）。前置阅读 [CONCEPT.md](concept.md)。模块细则见 [CODE_STRUCTURE.md](code.md)。
+本文定义 **RPipe** 仓库目录约定（不含最底层叶文件）。前置阅读 [concept.md](concept.md)。模块细则见 [code.md](code.md)。
 
-可安装包名 **`rpipe`**，源码根 `src/rpipe/`。目录只映射 CONCEPT。
+可安装包名 **`rpipe`**，源码根 `src/rpipe/`。目录只映射 concept。
 
 ---
 
@@ -21,7 +21,7 @@
 | `asset/` | README 展示本次实测的 MNIST / CIFAR10 曲线；旧参考图与来源保存在 [历史图归档](../../studies/main_exp/docs/reference/README.md)，不作为新 Run 的资产根 |
 | `.tmp/` | 本机运行环境、诊断与临时验证输出，不随 Git clone 提供 |
 
-| 概念 | 目录落点 |
+| **概念** | **目录落点** |
 |------|----------|
 | **Study** | `studies/<name>/` |
 | **Experiment** | 逻辑分组（**index** + process 里跨 seed 摘要）；无顶层文件夹 |
@@ -58,7 +58,7 @@ flowchart TB
   flow -->|阶段链读写 result 等| studies
 ```
 
-| 概念 | 路径 | 说明 |
+| **概念** | **路径** | **说明** |
 |------|------|------|
 | Study | `studies/<study>/` | 编排壳 + artifact 根 |
 | 基底配置 | Study 目录下的 experiment 基底文件 | Study 默认值 |
@@ -100,7 +100,7 @@ RPipe/
     rpipe/
 ```
 
-| flow 子包 | 阶段 |
+| **flow 子包** | **阶段** |
 |-----------|------|
 | `prepare/` | 读 config，落地 structure |
 | `execute/` | 计算 |
@@ -142,7 +142,7 @@ studies/<study>/
         checkpoints/           # 训练 checkpoint（有则写）
 ```
 
-| 成员 | 说明 |
+| **成员** | **说明** |
 |------|------|
 | `docs/` | 计划、人写的 `STUDY_REPORT.md`、图；可入库。`NUMBERS.md` 由 `rpipe report` 生成，也可以入库，它不是结论 |
 | `shared/` | Study 内共享 asset（data / model 文件）；默认不入库 |
@@ -180,9 +180,9 @@ studies/<name>/study.yaml
 
 ## 6. 测试镜像
 
-| 测试树 | 对应 |
+| **测试树** | **对应** |
 |--------|------|
 | `tests/rpipe/structure/` | `src/rpipe/structure/` |
 | `tests/rpipe/flow/` | `src/rpipe/flow/` |
 
-`unit` / `integration` / `e2e` 是标签，不是 `tests/` 下的一级目录。e2e 落在系统入口 `tests/rpipe/flow/`，指向包外 `studies/`。细则见 [TESTING.md](../development/testing.md) 与 [tests/README.md](../../tests/README.md)。
+`unit` / `integration` / `e2e` 是标签，不是 `tests/` 下的一级目录。e2e 落在系统入口 `tests/rpipe/flow/`，使用 `tests/_data/` 或用例内声明，在临时 Study 中执行，不依赖正式 Study 的数据或运行成果。细则见 [testing.md](../development/testing.md) 与 [tests/README.md](../../tests/README.md)。

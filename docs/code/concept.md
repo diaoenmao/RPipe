@@ -4,15 +4,15 @@ RPipe 是**可重复、可编排、可序列化的研究执行底座**。
 
 研究者用 **Study** 声明要比什么。structure 的 **make** 写出各 **Experiment** 与 **Run** 的 config，以及调度脚本。**Flow** 服务整个 Study：同一套执行，用参数选择阶段、顺序或按 `round` 并行。命令行入口是 flow 的 **cli**。产物落在该 Study 的 **artifact** 下。
 
-目录见 [LAYOUT.md](layout.md)；操作见 [README.md](../../studies/README.md)；structure 细节见 [structure.md](structure.md)。
+目录见 [layout.md](layout.md)；操作见 [README.md](../../studies/README.md)；structure 细节见 [structure.md](structure.md)。
 
 ---
 
 ## 1. 边界
 
-对照相邻系统是为了划界，不是行为基准。行为对照见 git **`main`** 与 [BRAINSTORM.md](../development/brainstorm.md)。DeepScientist：[ResearAI/DeepScientist](https://github.com/ResearAI/DeepScientist)，只借鉴契约与编排纪律。
+对照相邻系统是为了划界，不是行为基准。行为对照见 git **`main`** 与 [brainstorm.md](../development/brainstorm.md)。DeepScientist：[ResearAI/DeepScientist](https://github.com/ResearAI/DeepScientist)，只借鉴契约与编排纪律。
 
-| | **RPipe** | **DeepScientist** | **Hugging Face** | **autoresearch** |
+| **比较维度** | **RPipe** | **DeepScientist** | **Hugging Face** | **autoresearch** |
 |--|-----------|-------------------|------------------|------------------|
 | **定位** | 研究**执行底座**：可重复、可编排、可序列化 | local-first 研究 OS / 长程工作室 | 模型 / 数据 / 训练与推理**生态与库** | 包外**自动研究环**：选题、改实验、读产物、再决策 |
 | **编排对象** | Study → Experiment → Run | Quest | 无研究编排（repo、pipeline、Trainer） | 调用 RPipe 或同类的 Study / Run |
@@ -40,7 +40,7 @@ Study            一轮研究：编排壳 + artifact 根
       └── Run    该点下的一次实测，含 seed
 ```
 
-| | **Study** | **Experiment** | **Run** |
+| **层级属性** | **Study** | **Experiment** | **Run** |
 |--|-----------|----------------|---------|
 | **是什么** | 编排 + 落盘根 | 比较轴上的一个格子 | 该格子的一次抽样 |
 | **seed** | 声明 `seeds` | 不含 | 必须有 |
@@ -56,7 +56,7 @@ Study            一轮研究：编排壳 + artifact 根
 
 **Experiment 没有自己的文件夹。** 它在磁盘上的存在是两件事：index 里一组 `factors` + 指向各 Run 的清单；以及跨这些 Run（不同 seed）算出的统计摘要。那份摘要才是 Experiment 级产物。
 
-| 落点 | **Study** | **Experiment** | **Run** |
+| **落点** | **Study** | **Experiment** | **Run** |
 |------|-----------|----------------|---------|
 | **声明** | `study.yaml`（`axes` / `seeds`）；基底 `experiment_config.yaml` | `axes` 的一个取值组合（`factors`） | 合并后的 `runs/<id>/config.yaml`（含 seed） |
 | **编排** | `index.json`（整棵树的清单）；`scripts/` | index 里的一组：`factors` + 其下各 Run 的 `id` / `config` / `log` | index 里的一条 Run |
@@ -121,7 +121,7 @@ flowchart TB
   process --> result
 ```
 
-| 概念 | 定义 |
+| **概念** | **定义** |
 |------|------|
 | **Study** | 编排壳与 artifact 根 |
 | **Experiment** | 比较轴上一个点，不含 seed；无目录；产物是该点下各 Run 的 **mean / std / min / max** |
@@ -148,7 +148,7 @@ flowchart TB
 
 路径：`studies/<name>/`。持有声明、index、文档、共享数据、Study process 信封，以及各次 Run 产物。Experiment 的摘要嵌在信封里，不另开目录。
 
-| 轴 | 含义 | 结果 |
+| **轴** | **含义** | **结果** |
 |----|------|------|
 | **`axes`** | 有意比较的研究因素 | → Experiment |
 | **`seeds`** | 随机复测 | → 每个 Experiment 下的 Run |
@@ -161,7 +161,7 @@ flowchart TB
 
 **Experiment**：含研究因素，如 `train_size`、`lr`；不含 seed；无顶层目录。科学上它就是「这个格子重复几次 seed 之后的总结」：metrics 与曲线的 **mean / std / min / max**。这些摘要写在 Study `process.json` 的 `experiments[]` 里，不另开目录。
 
-**Run**：Experiment × seed；一 Run 对应一份 config 与 `runs/<id>/`。  
+**Run**：Experiment × seed；一 Run 对应一份 config 与 `runs/<id>/`。
 `id` 由 config 内容导出，含 tags、seed，不含 `id` 与 `description`。`baseline` 等是 **tags**。Run 只对自己负责，不算跨 seed。
 
 ### 5.1 Run 的 `version` 与 `run_id`
@@ -195,7 +195,7 @@ flowchart TB
   Structure --> make
 ```
 
-| 成员 | 职责 |
+| **成员** | **职责** |
 |------|------|
 | **api** | 对外门面 |
 | **control** | 本 Run 对四层的指派；一次 `RunConfig` |
@@ -206,7 +206,7 @@ flowchart TB
 | **system** | 设备、精度、并行、执行节奏；prepare 最先落地 seed / deterministic / cudnn。文本日志是 **Logger** |
 | **artifact** | IO 与路径：config / result / asset，以及 Study layout。`readout/` 读这些文件，不跑阶段链，不 import `flow` |
 
-同一 Study：不同 Experiment 差在实验变量；同一 Experiment 下不同 Run 差在 seed。  
+同一 Study：不同 Experiment 差在实验变量；同一 Experiment 下不同 Run 差在 seed。
 字段与 result 快照见 [structure.md](structure.md)。
 
 ---
@@ -226,7 +226,7 @@ flowchart LR
   prepare --> execute --> collect --> summarize --> write --> process
 ```
 
-| Phase | 做什么 |
+| **Phase** | **做什么** |
 |-------|--------|
 | **prepare** | 读 **config**，落地 structure；经 **artifact** 取用文件；保持 config 不变 |
 | **execute** | 按 structure 计算；每个 batch 更新 AlgorithmTracker；Logger 按间隔打终端（`时间 级别 Run id [事件]`，`[time]` 含 `elapsed` / `eta`）并 flush `run.log` |
@@ -265,9 +265,9 @@ flowchart TB
 
 ## 8. Artifact
 
-**artifact** 是该 Study 的持久化整体。路径见 [LAYOUT.md](layout.md)。
+**artifact** 是该 Study 的持久化整体。路径见 [layout.md](layout.md)。
 
-| 成员 | 说明 |
+| **成员** | **说明** |
 |------|------|
 | **docs** | Study 级：计划、报告、figures |
 | **config** | Run 级；make 写、prepare 读 |
@@ -282,7 +282,7 @@ flowchart TB
 ## 9. 编排生命周期
 
 1. 写基底配置与 study 声明：`axes` 与 `seeds`
-2. **make**：展开 Experiment × seed → 各 Run config 与 index；按 STUDY_GUIDE §3 同类装箱写出 `&` / `wait` 脚本。一组 `wait` 完才开下一组。默认一次 `launch` 有独立 eval 时先全部 train，再 eval。这不是唯一入口：`rpipe launch --mode eval` 只发 eval（已成功的加 `--include-done`）；缺 sibling `best` 仍失败。`jobs.json` 仍一次写全，不按 mode 改写。
+2. **make**：展开 Experiment × seed → 各 Run config 与 index；按 Study 指南 §3 同类装箱写出 `&` / `wait` 脚本。一组 `wait` 完才开下一组。默认一次 `launch` 有独立 eval 时先全部 train，再 eval。这不是唯一入口：`rpipe launch --mode eval` 只发 eval（已成功的加 `--include-done`）；缺 sibling `best` 仍失败。`jobs.json` 仍一次写全，不按 mode 改写。
 3. **Flow**：经 cli，按参数对 Study 下各 Run 跑阶段链；全部 wait 完后跑 Study 级 `process`
 4. 读 Experiment 的 mean / std / min / max 与图，写 Study 报告（按格子下结论，不要按单条 Run）。单条谁好了谁挂了用 `rpipe status`（index + 各条 result；`pending` / `failed` 的 `note` 来自 `run.log`）。`rpipe logs` 按时间把事件行打到终端。`rpipe report` 把数字表写到 `docs/NUMBERS.md`，不代替人写的结论。这三步的实现是 artifact 的 **readout**，不是 Flow 阶段。
 
@@ -290,13 +290,13 @@ flowchart TB
 
 ## 10. 相关文档
 
-| 文档 | 内容 |
+| **文档** | **内容** |
 |------|------|
-| [LAYOUT.md](layout.md) | 仓库目录 |
-| [CODE_STRUCTURE.md](code.md) | 库内树与依赖 |
+| [layout.md](layout.md) | 仓库目录 |
+| [code.md](code.md) | 库内树与依赖 |
 | [README.md](../../studies/README.md) | 怎么开一轮 Study |
 | [structure.md](structure.md) | 四层 / control / make / AlgorithmTracker / Logger / artifact |
 | [flow.md](flow.md) | Flow：cli 与阶段链 |
-| [TESTING.md](../development/testing.md) | 测试目录与标签 |
-| [BUGS.md](../development/bugs.md) | 已知缺陷与跟进项 |
-| [BRAINSTORM.md](../development/brainstorm.md) | 未拍板想法：对照 `main`，借鉴 DeepScientist |
+| [testing.md](../development/testing.md) | 测试目录与标签 |
+| [bugs.md](../development/bugs.md) | 已知缺陷与跟进项 |
+| [brainstorm.md](../development/brainstorm.md) | 未拍板想法：对照 `main`，借鉴 DeepScientist |

@@ -2,7 +2,7 @@ study: main_exp
 origin: foreign
 description: Historical main 4ccb28d recipe, four seeds, 80000-step curves with archived data/model and native RPipe training
 recipe: recipe.py
-flow: {study_phases: true}
+flow: {study_phases: true, prepare_shared: false}
 freeze: true
 provenance:
   include: [prepare_data.py, runtime-requirements.txt, docs/TARGET.md, docs/REFERENCE_CURVES.json, docs/EXPECTED_DATA.json]

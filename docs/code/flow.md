@@ -1,6 +1,6 @@
 # Code structure · Flow
 
-前置：[CONCEPT.md](concept.md) §7、[LAYOUT.md](layout.md)、[CODE_STRUCTURE.md](code.md)。
+前置：[concept.md](concept.md) §7、[layout.md](layout.md)、[code.md](code.md)。
 
 并列：[structure.md](structure.md)（含 artifact、make）。
 
@@ -33,7 +33,7 @@ flow/
 
 每阶段一个包，约定 `run(ctx: FlowContext) -> None`。`FlowRunner` 按 `PHASES` 动态 import 并调用。cli 解析参数后：`make` 调 `structure.make`；`launch` 优先读 `scripts/jobs.json`，没有或 `--remake` 才再 make，再对选定 Run 调 `FlowRunner`。
 
-| 符号 | 位置 | 职责 |
+| **符号** | **位置** | **职责** |
 |------|------|------|
 | `FlowContext` | `context.py` | 贯穿各阶段的上下文 |
 | `FlowRunner` / `PHASES` | `runner.py` | 对一个 Run 按序执行阶段；可裁剪阶段；失败时写 failed result |
@@ -45,7 +45,7 @@ flow/
 
 ## 2. `FlowContext`
 
-| 字段 | 含义 |
+| **字段** | **含义** |
 |------|------|
 | `study_dir` | Study 根（`docs/`、`shared/`、`runs/`、index） |
 | `layout` | 本 Run 的 `ArtifactLayout`（`runs/<id>/`） |
@@ -57,8 +57,10 @@ flow/
 
 ### 2.1 `state` 约定（谁写、谁读）
 
-| 键 | 写入阶段 | 读取阶段 | 内容 |
+| **键** | **写入阶段** | **读取阶段** | **内容** |
 |----|----------|----------|------|
+| `algorithm` | prepare | execute | 注册的 Algorithm 实例 |
+| `runtime` / `recipe` | prepare | summarize / Study hook | 运行时配置记录 / 是否应用 recipe |
 | `seed` | prepare | execute 等 | 已落地的 seed |
 | `data` / `model` / `system` | prepare | execute、summarize | 运行时对象（可含 Loader / Module） |
 | `tracker` | prepare 构造 AlgorithmTracker；execute 每个 batch 更新 | execute、collect、Logger.report | 数字；**不**整棵进 result |
@@ -89,20 +91,20 @@ flowchart TD
 - 失败：`_write_failed_result` 尽最大努力写入 `status: failed` + `error`（类型名 + 消息），补齐已知 `paths`；**不得吞掉原异常**。落盘自己再失败则静默，优先保证异常向上。
 - 失败时 **traceback 进该 Run 的 `run.log`**（与 stdout 同一套；每一行都是 `[error]`，并带时间和 Run `id`）。execute 失败由 execute 写；prepare 等阶段由 Runner 写。prepare 尚未挂 System 时 Runner 先打开同一路径的 Logger。
 - 失败时若已有 `control` / `collected.metrics`，写入 result，便于对照哪次 Run 挂了。
-- process 里的异常同样走失败路径；此时 result 往往已经 write 过，失败草稿不应无故覆盖 succeeded 正文——实现上宜：仅当尚未有合法 result 时才写 failed；或把 process 失败记到独立派生文件。文档约定：**process 失败不得毁掉已经 write 成功的 result**。
+- write 之后发生异常时，Runner 保留已有 `status: succeeded` 的 result，记录日志并重新抛出异常。影响本 Run 成功判定的门限须在 write 之前执行；process 的派生失败另行报告。
 
 ---
 
 ## 4. 读写总表
 
-| 阶段 | config | asset | result |
+| **阶段** | **config** | **asset** | **result** |
 |------|--------|-------|--------|
 | prepare | **只读**磁盘 config | 读写 `shared/` + 本 Run `assets/` | — |
 | execute | — | 读写（checkpoint、日志、生成物） | — |
 | collect | — | **不**动文件 | 内存 |
 | summarize | — | **不**动文件 | 内存草稿 |
 | write | — | 只列举/登记路径 | **定稿写入** |
-| process | **不改** | 可选读；可写派生文件（非 config） | 读定稿；可追加派生字段或旁路文件 |
+| process | **不改** | 可选读；可写派生文件（非 config） | 只读定稿；派生内容另写文件 |
 
 ---
 
@@ -112,15 +114,15 @@ flowchart TD
 
 **做：**
 
-1. `load_config(layout.config_path)` → `ctx.config`。文件不存在则失败（`MissingConfigError`）。
-2. `control_from_config`；可选 `validate` 契约。
-3. `layout.ensure()` / `ensure_assets`。
-4. **先** `system.apply_runtime(seed, system_config)`：python / numpy / torch seed，以及 `deterministic` / cudnn 开关（structure.md §7.9）。必须在建构 Data / Model **之前**。
-4.1. `study.yaml` 声明 `freeze: true` 时，先核对来源清单（§14.2），有变化则失败，不建构任何对象。
-4.2. `study.yaml` 声明 `recipe` 时，加载该模块并调用 `register(ctx)`（§14.1），之后才建构 Data / Model。
-5. 按 control 经 `structure.api` 建构：建议 **system → data → model**（设备与输出根先就绪）。`data_api.build(..., seed=)`，train DataLoader 的 shuffle generator 绑同一 seed。data 缓存进 `shared/data/`，可复用权重进 `shared/model/`。
-6. `data.source`：`stub` 不得下载；真数据必须显式（如 `torch`）。
-7. 把运行时对象放进 `state['data'|'model'|'system']`；构造 **AlgorithmTracker**（写 `assets/tracker/`）与 **Logger**（挂在 System 上：stdout **且** `assets/logs/run.log`，`时间 级别 Run id [事件]`）；初始化 `observations`。
+1. Runner 在进入阶段链前核对 freeze；prepare 读 `config.yaml`，构造并校验 control。
+2. 创建本 Run 的 assets，应用 Python / NumPy / Torch seed 与确定性配置。
+3. 经 system_api 构造 System，记录 runtime 元数据。
+4. prepare 再核对 freeze，调用可选 recipe 的 `register(ctx)`。必须在 Data / Model 构造前完成注册和必要的隔离准备。
+5. 经 data_api 构造 Data，将 seed 传给 train DataLoader 的 shuffle generator。普通 source 使用 `shared/data/`，专用 source 可使用自己的隔离缓存。
+6. 经 model_api 构造 Model，将 Data meta 传给模型，并将 module 放到 System 的设备。
+7. 经 algorithm_api 构造 Algorithm 与 AlgorithmTracker，保存 data/model/system/algorithm/tracker/logger 到 state，初始化 observations。
+
+真实数据使用已注册 source。stub 不下载。Logger 写本 Run 的 `assets/logs/run.log`，Tracker 写 `assets/tracker/`。
 
 **不做：** 改 config；跑训练循环；写 result。
 
@@ -130,7 +132,7 @@ flowchart TD
 
 ## 6. execute
 
-**目的：** 按本 Run 的 algorithm **做计算**。一次 Run 一个 mode（train / eval / inference）。`run()` **开头**走算法层 **resume**（structure.md §6.11.3）。周期 test / early stop 是 train 的 **AlgorithmHook**（§6.10），不是再跑一个 Flow mode。独立评测是另一次 `mode=eval` 的 Run。
+**目的：** 按本 Run 的 algorithm **做计算**。原生算法支持 train / eval。专用 Algorithm 可在同一 Run 内封装成对计算与评测，但不得隐式重复执行整轮 Study。原生算法的 `run()` 开头走算法层 **resume**（structure.md §6.11.3）。周期 test / early stop 是 train 的 **AlgorithmHook**（§6.10），不是再跑一个 Flow mode。独立评测是另一次 `mode=eval` 的 Run。
 
 **做：**
 
@@ -153,7 +155,7 @@ flowchart TD
 **做：**
 
 1. 若有 `state['tracker']`（AlgorithmTracker）：从 `mean` 抽出 `train_loss` 等；若本 Run 实际跑过 test/eval，再抽对应键（如 `accuracy` = 最后一段 test）。`state['execute'].best_accuracy` 有则写入 `metrics.best_accuracy`（过往最好 test，与 last-segment 不是同一个数）。
-2. 仍可扫 `state['observations']` 补零星键；同一键后写覆盖先写。
+2. 复制 `state['observations']`，保留零星观测；不将观测自动展开为 metrics。
 3. 写入 `state['collected'] = {metrics, observations}`。`paths.tracker` / `paths.logs` 留给 summarize/write 登记。
 
 **不做：** 改 tracker/log 文件；把 `history` 整棵拷进 metrics；读其他 Run。
@@ -168,7 +170,7 @@ flowchart TD
 
 **建议草稿键：**
 
-| 键 | 来源 |
+| **键** | **来源** |
 |----|------|
 | `status` | 成功路径先标 `succeeded`（write 前若 Runner 失败会改） |
 | `control` | `control.to_dict()` 或等价投影 |
@@ -204,7 +206,7 @@ flowchart TD
 
 **目的：** 在 **已经 write 的 result** 上做派生。可空。分两层，都在 `flow/process/`：
 
-| | **Run process**（阶段链最后一步） | **Study process**（单独进程） |
+| **比较项** | ****Run process**（阶段链最后一步）** | ****Study process**（单独进程）** |
 |--|-----------------------------------|------------------------------|
 | 入口 | `FlowRunner` 的 `process`；每条 `run-one` | `python -m rpipe process <study>`；`launch` / `run` 全部 wait 完再调一次 |
 | 写哪里 | `runs/<id>/process.json`，`scope: run` | Study 根 `process.json`，`scope: study`（**信封**） |
@@ -221,7 +223,7 @@ Study process 必须读取当前 `index.json`，不回退扫描 `runs/`。index 
 
 Accuracy 仍用当前百分制（0–100），纵轴标注 `Accuracy (%)`；Loss 保持原值，单点显示 marker。历史 0–1 数据不自动转换。process 不改变训练、result、指标收口或原始 tracker；不自动重绘历史 Study。
 
-Run process 仍排在该 Run 的 write 之后。Study process 排在整轮 launch 之后，与 git `main` 的 `process.py` 一样是单独进程。
+Run process 仍排在该 Run 的 write 之后。Study process 排在整轮 launch 之后，由 CLI 在当前进程调用；也可通过独立的 `rpipe process` 命令执行。
 
 ---
 
@@ -252,14 +254,14 @@ flowchart TB
 
 ## 12. 测试
 
-| 意图 | 做法 |
+| **意图** | **做法** |
 |------|------|
 | 全链 | stub data，跑满 PHASES，磁盘上有可加载 result |
 | 失败落盘 | execute 抛错 → result `failed` + `error`，异常仍抛出 |
 | 快照 | result 无 Loader / Module / AlgorithmTracker / Logger 对象 |
 | 不改 config | prepare 前后 config 字节一致 |
 | write vs index | index 在 Study 根；result 在 `runs/<id>/` |
-| process 可空 | 默认 no-op 仍退出 0 |
+| process | Run 派生文件与 Study 聚合分别落盘；派生失败保留成功 result |
 | AlgorithmTracker + Logger | 短训：`assets/tracker/` 有 train mean；终端与 `run.log` 有 Run `id` 和 `[metric] Loss=`；result 的 `train_loss` 为段均值而非 last-batch |
 
 测试树：`tests/rpipe/flow/` 镜像各阶段包。
@@ -288,7 +290,7 @@ conservative 墙钟只在 **make** 打印。本进程实测时间在 Logger 行�
 
 ## 14. Study 扩展：recipe、来源清单、Run 对比
 
-Study 只写声明（`study.yaml`、`experiment_config.yaml`）、自己特有的配方，以及结论报告。调度、阶段链、来源记录和 Run 之间的对比由库提供。Study 目录里不应再出现自写的 launch、run-one、哈希清单或比较脚本。
+Study 保存声明、专用配方、阶段扩展、研究证据与结论报告。库提供调度、阶段链、来源记录和通用 Run 对比。研究特有的数值门与外部实现适配放在 Study 阶段或注册的 Algorithm 内，复用库 artifact/compare；完整矩阵由统一 CLI 调度。
 
 ### 14.0 Study 阶段目录
 
@@ -312,7 +314,7 @@ def register(ctx) -> None: ...
 
 `ctx` 是 `RecipeContext`，只读：
 
-| 字段 | 含义 |
+| **字段** | **含义** |
 |------|------|
 | `study_dir` | Study 根 |
 | `run_id` | 本 Run id |
@@ -321,7 +323,7 @@ def register(ctx) -> None: ...
 | `shared_data_dir` / `shared_model_dir` | `shared/data`、`shared/model` |
 | `assets_dir` | 本 Run `assets/` |
 
-prepare 在 `apply_runtime` 之后、建构 Data / Model 之前调用 `register`（§5）。每个进程、每条 Run 都会调用一次，所以 `run-one`、`launch` 的子进程和顺序 `run` 行为一致。`register` 用来向 `DataRegistry` / `ModelRegistry` / `AlgorithmRegistry` 注册 Study 自己的 `source`，不建构对象，不写 result，不改 config。加载时 Study 根临时加入 `sys.path`，配方可以 import 同目录的模块。
+prepare 在 `apply_runtime` 之后、建构 Data / Model 之前调用 `register`（§5）。每个进程、每条 Run 都会调用一次，所以 `run-one`、`launch` 的子进程和顺序 `run` 行为一致。`register` 用来向 `DataRegistry` / `ModelRegistry` / `AlgorithmRegistry` 注册 Study 自己的 `source`，也可完成构造前必需的 CPU 检查、缓存准备与运行条件校验。最终运行时对象仍由库 prepare 经 Factory 构造。recipe 不执行正式训练，不写 result，不改 config。加载时 Study 根临时加入 `sys.path`，配方可以 import 同目录的模块。
 
 `recipe` 只写在 `study.yaml`，不进 Run config，所以不改变 Run id。配方文件进入来源清单（§14.2），内容改了能被发现。make 检查文件存在且定义了 `register`，不存在则失败。
 
@@ -329,9 +331,9 @@ prepare 在 `apply_runtime` 之后、建构 Data / Model 之前调用 `register`
 
 make 在 Study 根写 `provenance.json`（与 `index.json` 同级，不进 Git）：
 
-| 键 | 内容 |
+| **键** | **内容** |
 |----|------|
-| `files` | 库源码 `rpipe/**/*.py`、`study.yaml`、`experiment_config.yaml`、recipe 文件，以及 `study.yaml` 的 `provenance.include` 列出的 Study 内文件，各自 SHA-256 |
+| `files` | 库源码 `rpipe/**/*.py`、`study.yaml`、`experiment_config.yaml`、recipe 文件、已启用阶段目录下的全部 Python 文件，以及 `study.yaml` 的 `provenance.include` 列出的 Study 内文件，各自 SHA-256 |
 | `plan` | 当前 `index.json` 与其中各 Run `config.yaml` 的 SHA-256 |
 | `environment` | Python、平台、torch / torchvision / numpy 版本、CUDA、GPU 名称 |
 | `git` | 仓库 HEAD 与工作区是否有未提交改动；不在 Git 仓库内则为空 |
@@ -347,7 +349,7 @@ make 在 Study 根写 `provenance.json`（与 `index.json` 同级，不进 Git�
 
 `python -m rpipe compare <run_a> <run_b>` 只读，参数是两个 Run 目录（可跨 Study）。比较：
 
-| 项 | 规则 |
+| **项** | **规则** |
 |----|------|
 | `metrics` | 两边 result 都有的数值键，按 `atol` / `rtol` 判定 |
 | `history` | tracker 的 `history`，同一 split / metric 的长度与逐点数值 |
@@ -355,8 +357,8 @@ make 在 Study 根写 `provenance.json`（与 `index.json` 同级，不进 Git�
 
 缺失项记为 `missing`，不算通过。`--atol` 默认 `0`，`--rtol` 默认 `0`，即逐位一致。`--out <file>` 把完整结果写成 JSON；终端只打每项的通过与最大差。全部通过退出 0，任一不通过退出 1，参数或文件错误退出 2。
 
-compare 不重跑计算，不改任何 Run 文件。和外部实现（例如旧 `main` 代码）对比时，先让 Study 的 recipe 把外部结果写成同样的 Run 目录格式，再用 compare。
+compare 不重跑计算，不改任何 Run 文件。和外部实现（例如旧 `main` 代码）对比时，先让 Study 的适配逻辑把外部观测投影为同样的 Run 目录格式，再用 compare。
 
-### Study 专用数据准备
+### 14.4 Study 专用数据准备
 
 `flow.prepare_shared: false` 关闭 make/launch 的通用共享数据预构建（默认 true）。仅用于 recipe 必须在每个 Run 的 prepare 内先生成隔离数据或统计的 Study；此时 recipe / Data builder 负责准备并报告缺失原始数据。该字段必须是布尔值，不能因为未知 source 自动吞掉构造错误。main_probe 使用此选项，make 不加载探针，launch 的每个 Run 才准备一个组合。

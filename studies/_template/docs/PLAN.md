@@ -14,13 +14,13 @@
 
 ## 3. 变量轴
 
-| 轴 | 字段 | 取值 |
+| **轴** | **字段** | **取值** |
 |----|------|------|
 | （因素） | | |
 
 ## 4. 固定条件
 
-| 项 | 取值 |
+| **项** | **取值** |
 |----|------|
 | `seeds` | |
 | `system.device` | `cuda` |
@@ -39,11 +39,11 @@ python -m rpipe make studies/<name> --num-gpus 1 --init-gpu 0
 python -m rpipe launch studies/<name> --num-gpus 1 --init-gpu 0
 ```
 
-## 时长预估
+### 5.1 时长预估
 
 `make` 之后、`launch` 之前填。每一行是一条 Run 的预估秒数。同一 `wait` 并行，组墙钟取该组最慢的一条；整轮是各组相加。不含显存。
 
-| wait | factors | mode | seed | id | est |
+| **wait** | **factors** | **mode** | **seed** | **id** | **est** |
 |---:|---|---|---:|---|---:|
 |  |  |  |  |  |  |
 | | 整轮 | | | |  |
@@ -54,6 +54,6 @@ python -m rpipe launch studies/<name> --num-gpus 1 --init-gpu 0
 - `docs/figures/learning_curves.png`
 - `STUDY_REPORT.md` 嵌图，并写清实际 `pack` 排班
 
-## 7. 刻意不做什么
+## 7. 执行范围与验证边界
 
-- 不做 TensorBoard
+填写本轮允许执行的规模、资源和预算，列出未覆盖场景。说明失败证据与重复运行如何保留，短探针和长实验分别使用哪些验收条件。

@@ -1,6 +1,6 @@
 # Study 使用指南
 
-怎么用**现在的代码**开一轮可复现实验。概念以 [CONCEPT.md](../docs/code/concept.md) 为准，目录以 [LAYOUT.md](../docs/code/layout.md) 为准。高效率排班见 **§3**，命令与脚本见 **§4**。
+怎么用**现在的代码**开一轮可复现实验。概念以 [concept.md](../docs/code/concept.md) 为准，目录以 [layout.md](../docs/code/layout.md) 为准。高效率排班见 **§3**，命令与脚本见 **§4**。
 
 库内两柱：`structure` 与 `flow`。你要写的是包外的 **Study 目录**。入口是 `python -m rpipe`，即 flow 的 cli。
 
@@ -8,7 +8,7 @@
 
 ## 1. 三个词（决定你写什么）
 
-| | **Study** | **Experiment** | **Run** |
+| **比较项** | **Study** | **Experiment** | **Run** |
 |--|-----------|----------------|---------|
 | 是什么 | 这一轮研究的壳 + 磁盘根 | 研究因素的一个取值点 | 该点 × 一个 seed 的一次实测 |
 | 含 seed？ | 声明 `seeds` | **不含** | **至少**一个 |
@@ -92,7 +92,7 @@ PLAN 里写清：比什么、固定什么、几个 seed、同类怎么一组、e
 
 追求的是**这一轮 Study 的实验效率**：把 GPU **算力和显存都吃满**，墙钟更短，同时尽量不把进程打爆。并行是排班手段，写进 `docs/PLAN.md`，和「比什么、几个 seed」一起定。
 
-| 先分清 | 是什么 | 不是什么 |
+| **先分清** | **是什么** | **不是什么** |
 |--------|--------|----------|
 | `axes` | 研究因素，决定有几个 Experiment | 并发数 |
 | `seeds` | 每个点要复测几次 | 同时开几个进程 |
@@ -167,15 +167,15 @@ bash studies/mnist_train_size/scripts/launch.sh
 
 Windows / Conda 若报 `OMP: Error #15`，说明环境里加载了多份 OpenMP runtime。先用 `where.exe libiomp5md.dll` 检查来源，并在同一个包管理器中重装 PyTorch / NumPy，或改用干净虚拟环境。`KMP_DUPLICATE_LIB_OK=TRUE` 只能由使用者临时显式设置用于诊断；RPipe 不默认注入它。
 
-1. **make** 读 `study.yaml`，按 `axes` × `seeds` 展开  
-2. 每个补丁 ⊕ `experiment_config.yaml` → `runs/<id>/config.yaml`  
-3. 写 `index.json`（每条 Run 带 `log`）  
-4. 按 `data.name` + `source` 各准备一次共享数据到 `shared/data/`（忽略 `train_size`；只有成功后的 `.ready` 才跳过；半截压缩包会重下；下载不刷 tqdm）。数据地址和模型 hub 都看 Study 的 `origin`。  
-5. **launch** 读 `scripts/jobs.json` 跑未完成 Run（缺清单或 `--remake` 才再 make）；每个 Run：prepare → execute → collect → summarize → **write** → process  
+1. **make** 读 `study.yaml`，按 `axes` × `seeds` 展开
+2. 每个补丁 ⊕ `experiment_config.yaml` → `runs/<id>/config.yaml`
+3. 写 `index.json`（每条 Run 带 `log`）
+4. 按 `data.name` + `source` 各准备一次共享数据到 `shared/data/`（忽略 `train_size`；只有成功后的 `.ready` 才跳过；半截压缩包会重下；下载不刷 tqdm）。数据地址和模型 hub 都看 Study 的 `origin`。
+5. **launch** 读 `scripts/jobs.json` 跑未完成 Run（缺清单或 `--remake` 才再 make）；每个 Run：prepare → execute → collect → summarize → **write** → process
 
 常用参数：
 
-| 开关 | 作用 |
+| **开关** | **作用** |
 |------|------|
 | `--skip-launch` | 只写出 config 与 index（不下载共享数据、不 spawn） |
 | `--phases prepare,execute,...` | 只跑列出的阶段；相对顺序不变 |
@@ -302,7 +302,7 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 
 ### 字段约定
 
-| 字段 | 含义 |
+| **字段** | **含义** |
 |------|------|
 | `fixed` | 每次 Run 都带上的补丁（不要把研究因素只写在这里却期望它变成多个 Experiment） |
 | `axes` | 研究因素；每个取值组合 = 一个 Experiment。**不要把 seed 放这里** |
@@ -310,21 +310,23 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 | `tags` | `when` 匹配当前格子（可含 seed）则打标签；`baseline` 只是 tag |
 | `run_description` | 写入 config 的说明；**不进** `id` hash。占位符可用轴的末段名（如 `{train_size}`）以及 `{seed}`、`{experiment}` |
 | `recipe` | 可选，Study 内的 Python 文件（如 `recipe.py`），定义 `register(ctx)`，注册本 Study 自己的 data / model / algorithm `source`。prepare 在每条 Run 建构前调用；**不进** `id` hash。见 [flow.md](../docs/code/flow.md) §14.1 |
+| `flow.study_phases` | `true` 时加载六个同名阶段包，库先执行、Study hook 后执行；Python helper 自动纳入 provenance |
+| `flow.prepare_shared` | 默认 `true`；专用 recipe 在每条 Run 内准备隔离数据时设为 `false`，make 不提前构造 Data |
 | `freeze` | `true` 时，make 之后源码、声明、recipe 或计划有任何变化，`launch` / `run-one` 都拒绝运行，重新 make 才接受 |
 | `provenance.include` | 额外纳入来源清单的 Study 内文件（glob 列表），例如固定的参考数据或清单 |
 
-### Study 里只写声明
+### Study 声明与扩展逻辑
 
-调度、阶段链、来源记录和 Run 对比都由库提供，Study 不再自写：
+调度、阶段链、来源记录与通用 Run 对比由库提供。Study 在声明之外可包含 recipe、阶段包、专用 Algorithm、数据准备和研究终验：
 
-| 需要 | 用库里的 |
+| **需要** | **用库里的** |
 |------|----------|
 | 注册 Study 特有的数据、模型或算法 | `recipe` + `register(ctx)`，不要另写 `run.py one` / `launch` |
 | 记录源码、计划和环境，防止中途改代码 | make 写的 `provenance.json`，加 `freeze: true` |
 | 两条 Run 的指标、曲线、checkpoint 是否一致 | `python -m rpipe compare <run_a> <run_b> [--atol --rtol --checkpoint NAME --out FILE]` |
 | 聚合、数字表、曲线图 | `process` / `report` |
 
-Study 目录内的代码只剩 recipe 和必要的一次性数据准备；与外部实现对比时，先把外部结果写成同样的 Run 目录，再用 `compare`。
+recipe 负责构造前注册和必要准备，阶段包负责构造后的研究检查与派生逻辑。与外部实现对比时，将已有观测投影为 Run artifact 后复用 `compare`，研究特有的输入、RNG、样本计数和自身 best 等门继续保留。成对计算可通过注册的 Algorithm 执行，每条 Run 只负责自己的组合。
 
 `id` hash **包含** 实验变量、seed、tags，以及可选 `version`；**不含** `id`、`description`。Run 是最底层的一次实测。同内容、同 `version` 再跑仍落到同一 `runs/<id>/`，用于 skip / resume；需要避免相同实验参数与 seed 的不同实测发生 ID 冲突时，换一个 `version` 生成新 Run。timestamp 只是可选内容之一。
 
@@ -378,32 +380,32 @@ python -m rpipe status studies/<name> --mode eval
 
 `metrics.train_loss` 应是 AlgorithmTracker **最后一段 train mean**，不是最后一个 batch 的 CE。完整曲线在 `runs/<id>/assets/tracker/`；终端同款文本**必写** `assets/logs/run.log`（`时间 级别 Run id [事件] 内容`）。
 
-`process` 分三层含义，对应 CONCEPT §2.1：每条 Run 写 `runs/<id>/process.json`。整轮结束后 `rpipe process` 写根 `process.json`（Study **信封**）。信封里每个 Experiment 才是跨 seed 的 metrics / history **mean / std / min / max**。图在 `docs/figures/learning_curves.png`。**不**改 `STUDY_REPORT.md`。
+`process` 分三层含义，对应 concept §2.1：每条 Run 写 `runs/<id>/process.json`。整轮结束后 `rpipe process` 写根 `process.json`（Study **信封**）。信封里每个 Experiment 才是跨 seed 的 metrics / history **mean / std / min / max**。图在 `docs/figures/learning_curves.png`。**不**改 `STUDY_REPORT.md`。
 
 Study process 只聚合当前 index 列出的 Run，不扫描旧 version 目录。index 缺失或不可读取时会失败并提示 make，已有 process、图与 result 保留。重建前先确认当前 YAML 就是要分析的那一轮，再执行 make 和 process。
 
-`docs/STUDY_REPORT.md` **必须有图**，并且图和各次 `run.log` **可点开**（Markdown 预览，或源码里 Ctrl+点击）。图链到 `docs/figures/learning_curves.png`；log 链到 index 里的 `log`（`../runs/<id>/assets/logs/run.log`）。数字读 `process.json`。按 Experiment 写结论，不要把 18 行 Run 表当主结论。
+`docs/STUDY_REPORT.md` **必须有图**，并且图和各次 `run.log` **可点开**（Markdown 预览，或源码里 Ctrl+点击）。报告中的图链接用 `figures/learning_curves.png`；log 按 index 的 Study 相对路径转换为报告相对路径 `../runs/<id>/assets/logs/run.log`。数字读 `process.json`。按 Experiment 写结论，不要把 18 行 Run 表当主结论。
 
 ---
 
 ## 8. 新 Study 最小步骤
 
-1. 复制 `studies/_template/` 为 `studies/<name>/`，对照本指南 §1–§3。  
-2. 改 `experiment_config.yaml` 的基底；改 `study.yaml` 的 `axes` / `seeds` / `tags`。  
+1. 复制 `studies/_template/` 为 `studies/<name>/`，对照本指南 §1–§3。
+2. 改 `experiment_config.yaml` 的基底；改 `study.yaml` 的 `axes` / `seeds` / `tags`。
 3. 在 `docs/PLAN.md` 写清：比什么、什么固定、成功标准，以及 **§3 高效率排班**（同类一组、吃满 GPU、error 后在本波重试，成功后才放行依赖 eval）。`make` 之后、`launch` 之前，把每条 Run 的预估秒数写进 **时长预估** 表。同一 `wait` 的墙钟是组内最慢的一条，整轮是各组相加。不含显存。
-4. `python -m rpipe run studies/<name> --skip-launch`，核对 index。  
-5. `python -m rpipe make studies/<name>`，看打印的 `pack N waits`，再 `python -m rpipe launch studies/<name>`（launch 不应再印 pack）。  
+4. `python -m rpipe run studies/<name> --skip-launch`，核对 index。
+5. `python -m rpipe make studies/<name>`，看打印的 `pack N waits`，再 `python -m rpipe launch studies/<name>`（launch 不应再印 pack）。
 6. `python -m rpipe status studies/<name>` 看谁 `succeeded` / `failed` / `pending`。`python -m rpipe report studies/<name>` 把数字表写到 `docs/NUMBERS.md`。读 `process.json` + `docs/figures/learning_curves.png`，按 Experiment 写 `docs/STUDY_REPORT.md`：图做成可点链接，Run 表带各 `run.log` 链接。结论仍由人写。
 
 检查清单：
 
-- [ ] 目录最终有 `docs/`、`shared/`、`runs/`  
-- [ ] `axes` 与 `seeds` 分开  
-- [ ] 每个 Run 的 config 含 `seed`  
-- [ ] 结论按 Experiment 聚合，而不是按扁平 run 列表  
+- [ ] 目录最终有 `docs/`、`shared/`、`runs/`
+- [ ] `axes` 与 `seeds` 分开
+- [ ] 每个 Run 的 config 含 `seed`
+- [ ] 结论按 Experiment 聚合，而不是按扁平 run 列表
 - [ ] `PLAN.md` / `STUDY_REPORT.md` 写清本轮怎么并行（同类一组、error 后续跑）
-- [ ] `STUDY_REPORT.md` 的「怎么跑的」写整轮预估和实际；Runs 表每行有 `est` 和 `actual`。不另开时长记录，不含显存  
-- [ ] `STUDY_REPORT.md` 有可点开的 learning curve，以及各 Run 的 `run.log` 链接  
+- [ ] `STUDY_REPORT.md` 的「怎么跑的」写整轮预估和实际；Runs 表每行有 `est` 和 `actual`。不另开时长记录，不含显存
+- [ ] `STUDY_REPORT.md` 有可点开的 learning curve，以及各 Run 的 `run.log` 链接
 
 ---
 
@@ -413,16 +415,16 @@ Study 可在 `study.yaml` 写 `flow: {study_phases: true}`，添加 `prepare/`�
 
 `ctx.scope == 'run'` 时是单条 Run 上下文；整轮聚合后还会调用一次 `process.run(ctx)`，此时 `ctx.scope == 'study'`，使用 `ctx.study_dir` 和 `ctx.state['process']`，没有单条 Run 的 layout。只在 Study scope 做终验，避免每条 Run 重复执行矩阵或跨 seed 统计。make 前的下载、数据预检仍使用根目录显式入口。加载、失败和 freeze 的完整合同见 [flow.md §14.0](../docs/code/flow.md#140-study-阶段目录)。
 
-| 你想做的 | 怎么做 |
+| **你想做的** | **怎么做** |
 |----------|--------|
 | 扫已有字段（样本量、lr、seed…） | 只改 Study 的 yaml |
 | 换 MNIST 子集大小 / epoch | yaml 即可 |
-| 新数据集、新模型、新训练循环 | 改 `structure.data` / `model` / `algorithm`，再在 yaml 里点名 |
+| 新数据集、新模型、新训练循环 | Study 专用实现经 recipe 注册 source；通用能力在相应 structure 层实现，再在 YAML 中点名 |
 | 换 HF Trainer / Accelerate | 改 `algorithm.source`；`optimizer` / `scheduler` / `resume` 键不变（structure.md §6.11） |
 | 独立评测（加载 best） | 另一次 Run：`algorithm.mode: eval`，`resume: best`；不是 Flow 多一个阶段。整波重跑：`rpipe launch --mode eval`（已成功加 `--include-done`） |
 | 断点续训 | train 的 `resume: latest`（算法接口；system 只读文件） |
 | 改一次 Run 的阶段顺序 | 不要改；最多 `--phases` 裁剪，相对顺序不变 |
-| 自动出报告 / 跨 Run 对比表 | 人写 `STUDY_REPORT.md`（必须嵌图）。Study `process` 出 mean/std/min/max 和 `docs/figures/learning_curves.png`。`rpipe report` 把同一份数字写成 `docs/NUMBERS.md` |
+| 自动出报告 / 跨 Run 对比表 | 人写 `STUDY_REPORT.md`（必须嵌图）。库 Study process 出 mean/std/min/max 和 `docs/figures/learning_curves.png`。`rpipe report` 把同一份数字写成 `docs/NUMBERS.md` |
 | 训练曲线 | process 优先读 JSONL 的有效训练轨迹：显式 optimizer_step（优先）或 epoch；旧记录 / state history 回退仍用 observation。跨 seed 按坐标并集统计，缺失点不插值，逐点 n 见 process / 图；不同单位分开。原始日志保留回滚分支，恢复规则见 structure §6.9.2。不做 TensorBoard |
 | 终端 + 硬盘日志 | **Logger** 必写 `runs/<id>/assets/logs/run.log`（`时间 级别 Run id [事件]`）；失败时 traceback 每一行都是 `[error]`。`index.json` 的 `log` 指向它。没有 Study 级总 log |
 | 并行时日志挤在一起 | 文件按 Run 分开；终端每行带 Run `id`。Windows：`rpipe launch` 默认 `--console new`；`--console shared` 只混终端 |
