@@ -1,6 +1,6 @@
 # Flow 与 Study 重构交接
 
-更新日期：2026-10-10。当前集成基线为 `dev` 的 `22442f9`，来自 [PR #23](https://github.com/diaoenmao/RPipe/pull/23)。本轮未重跑正式 `main_exp` / `main_probe`，未发布版本。
+更新日期：2026-10-10。Flow / Study 代码接续通过 [PR #23](https://github.com/diaoenmao/RPipe/pull/23) 合入 dev `22442f9`，本文记录其职责与验证范围。本轮未重跑正式 `main_exp` / `main_probe`，未发布版本。
 
 ## 一、摘要
 
@@ -29,7 +29,7 @@ Run process 使用 `ctx.scope == 'run'`，读取本 Run 的结果。整轮 proce
 
 ### （一）main_exp
 
-[main_exp](../../studies/main_exp/README.md) 声明 32 条训练与 32 条自身 best 独立评测。recipe 使用固定历史来源 `4ccb28d`，检查 preflight，并拒绝中断训练的 checkpoint 续跑。`prepare_data.py` 负责 raw 下载及清单核对。
+[main_exp](../../studies/main_exp/README.md) 声明 32 条训练与 32 条自身 best 独立评测。recipe 使用固定历史来源 `4ccb28d`，检查 preflight，并拒绝中断训练的 checkpoint 续跑。`prepare_data.py` 负责 raw 下载及清单核对。声明中关闭通用共享 Data 预构造，专用 source 在 Run prepare 内注册。
 
 Study prepare 检查构造对象的历史来源。`process/curves.py` 保留曲线门限计算，Study process 在聚合后调用。根 `compare.py` 提供显式手动读取。完整性与数值门见 [PLAN.md](../../studies/main_exp/docs/PLAN.md) 和 [TARGET.md](../../studies/main_exp/docs/TARGET.md)。
 
