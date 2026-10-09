@@ -46,8 +46,13 @@ def save_json(path: Path, body: Any) -> None:
 
 
 def source_manifest() -> dict[str, str]:
-    files = sorted((ROOT / 'src').rglob('*.py')) + sorted(Path(__file__).resolve().parents[1].rglob('*.py'))
-    return {path.relative_to(ROOT).as_posix(): sha(path) for path in files}
+    from rpipe.structure.artifact.provenance import source_files
+    from rpipe.structure.make.expand import load_study_yaml
+
+    study = Path(__file__).resolve().parents[1]
+    # Reuse the canonical source contract: generated Run archives are artifacts.
+    # Their byte integrity is independently checked by MainArchive.verify_exports.
+    return source_files(study, load_study_yaml(study))
 
 
 @contextlib.contextmanager

@@ -112,6 +112,24 @@ def test_write_extension_artifacts_are_registered_before_commit(tmp_path):
         assert 'evidence.txt' in result['paths']['asset_files']
 
 
+def test_generated_run_archive_does_not_change_source_provenance(tmp_path):
+    from rpipe.structure.artifact.provenance import source_files
+
+    study = _study(tmp_path, freeze=True)
+    _hook(study, 'prepare', 'def run(ctx):\n    pass\n')
+    config = expand_study(study)['configs'][0]
+    declared = load_study_yaml(study)
+    before = source_files(study, declared)
+    archive = config.parent / 'assets' / 'probe' / 'source-main' / 'src' / 'model.py'
+    archive.parent.mkdir(parents=True)
+    archive.write_text('MODEL = "generated archive"\n', encoding='utf-8')
+    assert source_files(study, declared) == before
+    check_frozen(study, declared)
+    (study / 'prepare' / 'helper.py').write_text('NEW_SOURCE = True\n', encoding='utf-8')
+    with pytest.raises(ProvenanceChangedError):
+        check_frozen(study, declared)
+
+
 def test_study_prepare_failure_retains_original_error_and_failed_result(tmp_path):
     study = _study(tmp_path)
     _hook(study, 'prepare', 'def run(ctx):\n    raise RuntimeError("Study gate rejected")\n')
