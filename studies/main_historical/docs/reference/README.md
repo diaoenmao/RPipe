@@ -43,4 +43,4 @@ python -B studies/main_historical/compare.py --output .tmp/historical-comparison
 
 若旧临时图像提取程序或独立审计器只按 `asset/...` 读取像素，它将读到新实测图，不能继续把该路径视为历史原图。新增 `publish_figures.resolve_historical_reference(data)` 按冻结 reference 的原 SHA/Git blob 返回本目录归档，可供这类新核验包装使用；原提取参数、科学JSON、99个数值源与旧审核记录保持原样。
 
-整体科学结论及原图估读边界见 [完整报告](../STUDY_REPORT.md)，复跑历史训练的专用入口见 [Study README](../../README.md)。
+整体科学结论及原图估读边界见 [完整报告](../STUDY_REPORT.md)，复跑历史训练的专用入口见 [Study 使用指南](../../../README.md) 与 [本 Study 入口](../../README.md)。

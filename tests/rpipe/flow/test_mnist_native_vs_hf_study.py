@@ -27,7 +27,7 @@ def test_mnist_native_vs_hf_cpu_make_launches_both_sources_without_gpu(tmp_path:
     import shutil
 
     repo = Path(__file__).resolve().parents[3]
-    src = repo / 'studies' / 'mnist_native_vs_hf'
+    src = repo / 'tests' / '_data' / 'studies' / 'mnist_native_vs_hf'
     study = tmp_path / 'mnist_native_vs_hf'
     shutil.copytree(
         src,

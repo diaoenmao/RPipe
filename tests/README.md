@@ -1,10 +1,11 @@
 # Tests
 
-测试目录与标签遵循 [TESTING.md](../docs/TESTING.md)（2026-09-28），并与 [LAYOUT.md](../docs/LAYOUT.md) 一致。
+测试目录与标签遵循 [TESTING.md](../docs/development/testing.md)（2026-09-28），并与 [LAYOUT.md](../docs/code/layout.md) 一致。
 
 ## 原则
 
 - **镜像源码**：`tests/rpipe/` ↔ `src/rpipe/`。不设 `tests/unit/`、`tests/e2e/` 一级目录。
+- **公共数据**：`tests/_data/` 放测试输入，不镜像源码。当前是三份 Study 声明（`mnist_train_size`、`mnist_native_vs_hf`、`cifar_grid`），用例复制到临时目录再跑。
 - **层级是标签**：每项测试恰好一个 `unit` / `integration` / `e2e`。
 - **强制标签**：Level × Objective（`location`|`content`|`physical`）× Priority（`p1`|`p2`|`p3`）。
 - **成本与结果**：恰好一个 `cost(cost_class=...)`，恰好一个 `result_type(..., detail=...)`。缺则收集失败。
