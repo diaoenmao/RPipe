@@ -19,7 +19,7 @@
 | 测试与验证 | [testing.md](docs/development/testing.md)、[tests/README.md](tests/README.md) |
 | CI 与分支 | [cicd.md](docs/development/cicd.md) |
 | 已知问题与后续想法 | [bugs.md](docs/development/bugs.md)、[brainstorm.md](docs/development/brainstorm.md) |
-| 开发记录 | [record.md](docs/development/record.md) |
+| 开发记录 | [record.md](docs/development/record.md)、会话交接 [handover.md](docs/development/handover.md) |
 
 brainstorm 用于记录探索。具体工作以当前要求和已确认的设计为依据，不把建议自动当成实施决定。
 

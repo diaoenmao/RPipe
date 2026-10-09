@@ -45,7 +45,7 @@ Agent 的文档导航与通用工作约定见 [AGENTS.md](AGENTS.md)。
 5. [studies/README.md](studies/README.md)：如何设计和运行一轮 Study，以及现有 Study 的计划、报告和代码
 6. [testing.md](docs/development/testing.md)：测试策略、标签和结果持久化
 
-已知缺陷见 [bugs.md](docs/development/bugs.md)，开发记录见 [record.md](docs/development/record.md)，阶段性想法见 [brainstorm.md](docs/development/brainstorm.md)。
+已知缺陷见 [bugs.md](docs/development/bugs.md)，开发记录见 [record.md](docs/development/record.md)，Flow/Study 重构交接见 [handover.md](docs/development/handover.md)，阶段性想法见 [brainstorm.md](docs/development/brainstorm.md)。
 
 ## 安装
 

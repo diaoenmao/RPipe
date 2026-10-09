@@ -111,6 +111,11 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 
 随后按用户决定两个 Study 都将重跑，不再保留旧证据：`main_historical` 改名 `main_exp`，`main_reproduction` 改名 `main_probe`，Run 的 `experiment` 与 `version` 随之更新，Run ID 会变。`main_exp` 只留声明、`recipe.py`、`prepare_data.py`、终验 `compare.py`、`runtime-requirements.txt`、`TARGET.md`、`REFERENCE_CURVES.json`、原图归档，以及从 `main_reproduction` 移入的数据清单 `EXPECTED_DATA.json`；删除 `verify_group.py`、`verify_preflight.py`、`publish_figures.py` 和全部旧报告与证据。`main_probe` 只留声明和 `probe.py`（原 `current_device.py`，去掉对旧 dev 提交 `8bccbac` 的 HEAD 硬性检查），删除 `code/` 下 24 个脚本和全部旧证据；`study.yaml` 改为与探针一致的 deterministic=true、benchmark=false。两个 Study 重写了 README 与 PLAN。开发记录、brainstorm 与 `TARGET.md` 中指向旧文件的链接改为 `18cd76c` 永久链接。两个 Study 均未运行；`probe.py` 改为输出 Run 目录并用 `rpipe compare` 比较，计划在重跑前完成。
 
+### 6. 交接与后续授权
+
+- 会话交接文档：[handover.md](handover.md)（放在 `docs/development/`）
+- **2026-10-10 维护者要求：本轮不再重跑 `main_exp` / `main_probe` 实验**；旧实测以 [`18cd76c`](https://github.com/diaoenmao/RPipe/tree/18cd76c/studies) 为准。接续工作限于合并 PR #21、实现 Study 与 Flow 同构阶段目录、代码整理，不含未授权的 launch / 长训 / 探针矩阵。
+
 ## （二）2026-10-04
 
 最新远端 dev 基线为 `8bccbac`。本机完成 [历史 main 曲线复现](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_historical/docs/STUDY_REPORT.md)：32 条四 seed 连续80000-step训练与32条自身best独立评测全部成功，每条400个完整test点。八组的终点、末50点均值、七锚点、末段波动及两数据集模型排序通过预先冻结的原图估读合同，最大终点差0.207502个百分点。
