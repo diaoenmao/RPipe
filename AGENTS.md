@@ -18,7 +18,7 @@
 | 研究设计与执行 | [studies/README.md](studies/README.md)，以及目标 Study 的计划、配置和报告 |
 | 测试与验证 | [testing.md](docs/development/testing.md)、[tests/README.md](tests/README.md) |
 | 已知问题与后续想法 | [bugs.md](docs/development/bugs.md)、[brainstorm.md](docs/development/brainstorm.md) |
-| 开发记录 | [report.md](docs/development/report.md) |
+| 开发记录 | [record.md](docs/development/record.md) |
 
 brainstorm 用于记录探索。具体工作以当前要求和已确认的设计为依据，不把建议自动当成实施决定。
 
@@ -26,7 +26,7 @@ brainstorm 用于记录探索。具体工作以当前要求和已确认的设计
 
 - 修改前查看工作区状态，保留用户和其他任务的已有改动
 - 临时脚本、缓存和验证输出放 `.tmp/`，提交前检查 `.gitignore` 和变更范围
-- Study 的计划、报告、图、正式数字和复跑代码只放在对应的 `studies/<name>/` 下，不放进 `docs/` 或仓库根目录。`docs/development/report.md` 只记开发事实，实验结论链接到对应 Study 报告
+- Study 的计划、报告、图、正式数字和复跑代码只放在对应的 `studies/<name>/` 下，不放进 `docs/` 或仓库根目录。`docs/development/record.md` 只记开发事实，实验结论链接到对应 Study 报告
 - 测试公共输入放 `tests/_data/`，不放进 `tests/rpipe/` 镜像，也不依赖正式 Study 目录
 - 文档文件名用小写；目录入口统一用 `README.md`。Study 内的 `PLAN.md`、`STUDY_REPORT.md`、`NUMBERS.md` 保持原名
 - 按当前任务范围推进，清理、较大规模实验、提交推送和对外发布需符合当次授权

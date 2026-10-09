@@ -62,7 +62,7 @@ python -B .tmp/main-reproduction-20261003/verify_historical_prefix.py
 
 本探针没有发现新的当前生产缺陷，没有修改生产代码。当前91个源文件执行前后及存档复核时均与B-018快照一致；归档历史提交36个文件逐一git blob核对，0差异。16个复制原始数据文件SHA-256一致，旧Study与已有证据不改写。
 
-[BUGS](../../../docs/development/bugs.md)此前“开放”标题下是已关闭说明，不是真正open条目；已清除这些重复记录，现在明确“目前没有开放缺陷”，下个编号B-019。B-014～B-018修复证据及286项本地回归见[summary](../../../docs/development/report.md)；源码未变，本轮不重复执行同一回归。B-007属于维护关闭，不称根因修复；B-013原外部占用者仍未识别。归档旧best比较缺陷保留在[历史审计](HISTORICAL_AUDIT.md)，不移植到当前实现。
+[BUGS](../../../docs/development/bugs.md)此前“开放”标题下是已关闭说明，不是真正open条目；已清除这些重复记录，现在明确“目前没有开放缺陷”，下个编号B-019。B-014～B-018修复证据及286项本地回归见[record.md](../../../docs/development/record.md)；源码未变，本轮不重复执行同一回归。B-007属于维护关闭，不称根因修复；B-013原外部占用者仍未识别。归档旧best比较缺陷保留在[历史审计](HISTORICAL_AUDIT.md)，不移植到当前实现。
 
 ## 结论与边界
 

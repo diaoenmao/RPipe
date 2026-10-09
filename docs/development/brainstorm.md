@@ -60,7 +60,7 @@
 
 历史依据搜索（2026-10-03）：本地13 refs / 150 commits、旧祖先39 commits / 61路径未找到原结果或权重；两张PNG记录Matplotlib3.7.1，旧requirements为3.7.0，不能据依赖文件认定历史实际环境。原make.py仅生成32 train + 32 test命令供核对，没有执行训练。工作量与搜索范围见 [HISTORICAL_EVIDENCE_SEARCH](../../studies/main_reproduction/docs/HISTORICAL_EVIDENCE_SEARCH.json)；目标选择仍待用户明确。
 
-B-018零评测预算（2026-10-03）：eval_num_steps=0原本仍评第一批并生成指标，现由共享入口在读取数据前报错；缺省/负数完整test及正数限批保持。最小反例先失败，本地门286 passed / 3 deselected，main原代码CPU对照8/8、参数/指标差值0。修复与验证见 [SUMMARY.md](report.md)，开放项已移除；该修复阶段先完成CPU验证，后续完整GPU复核见上方收口记录。
+B-018零评测预算（2026-10-03）：eval_num_steps=0原本仍评第一批并生成指标，现由共享入口在读取数据前报错；缺省/负数完整test及正数限批保持。最小反例先失败，本地门286 passed / 3 deselected，main原代码CPU对照8/8、参数/指标差值0。修复与验证见 [record.md](record.md)，开放项已移除；该修复阶段先完成CPU验证，后续完整GPU复核见上方收口记录。
 
 历史候选短接入对照（2026-10-03）：临时Registry builder直接复用归档模型/dataset，旧CNN BN、CPU增强和clip1接入当前原生训练循环，真实8组合4-step/eval2数值门8/8。step2/4参数与buffer差值0、采样与增强后输入哈希一致。已有Registry足够承载候选旧运算，暂不增加生产CNN兼容开关。证据见 [历史审计](../../studies/main_reproduction/docs/HISTORICAL_AUDIT.md)；eval2不是历史eval200轨迹，未启动80000-step长实验，最终对照选择仍待明确。
 
@@ -68,7 +68,7 @@ B-017与历史候选审计（2026-10-03）：修复Accuracy已有topk参数的�
 
 完整main源码对照（2026-10-03）：新 [main_reproduction Study](../../studies/main_reproduction/docs/STUDY_REPORT.md)，真实数据与原Stats完整精度、初始化/RNG/15000个采样索引核对通过；两套原默认60-step / eval30各16/16执行成功，数值门4/8。相同原代码的3条重复训练也出现分歧；在隔离目录同改CUDA确定性条件后，两套完整矩阵各16/16成功，数值门8/8，step30/60参数与test Loss/Accuracy差值为0；训练均值仅有约1e-16 / 1e-14的浮点累加差异。原默认失败判定保留，历史README图未复现。2402个可读旧Study文件与94个源码/声明文件保护检查通过；未改生产实现或扩大预算。
 
-B-016 于 2026-10-03 修复：native step 训练摘要按评测段收口，空段不覆盖最后有效均值。固定 main 原代码 CPU 探针 8/8 通过，step2 / 4 参数与指标差值均为 0；合并本地 unit + integration c1 / c2 回归 **282 passed / 3 deselected**。最小反例、原代码对照证据与完整 60-step 真实数据验收的剩余边界见 [SUMMARY.md](report.md)。用户本轮确认仍只实施 §3.1 曲线进度，§3.2 / §3.3 不做。
+B-016 于 2026-10-03 修复：native step 训练摘要按评测段收口，空段不覆盖最后有效均值。固定 main 原代码 CPU 探针 8/8 通过，step2 / 4 参数与指标差值均为 0；合并本地 unit + integration c1 / c2 回归 **282 passed / 3 deselected**。最小反例、原代码对照证据与完整 60-step 真实数据验收的剩余边界见 [record.md](record.md)。用户本轮确认仍只实施 §3.1 曲线进度，§3.2 / §3.3 不做。
 
 B-014 / B-015 最终合并回归：unit + integration 的 c1 / c2 本地门 **264 passed / 3 deselected**（排除 external / slow / gpu），无警告；日志 `.tmp/bugs-final-9c5b65c635bd4d53bfd397214bf250c9/final.log`。wheel 构建及 scipy 声明核对通过，产物 `.tmp/bugs-package-f8f84b9bab544d81a18d954326c38db1/dist/rpipe-0.3.0-py3-none-any.whl`。以上证据不包含官方 SVHN 下载或全新环境完整安装。
 
