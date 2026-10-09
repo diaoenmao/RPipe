@@ -97,6 +97,16 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 
 受控失败：[PR #20](https://github.com/diaoenmao/RPipe/pull/20) 用 `tmp/branch-flow-probe` 直接向 `main` 开 PR。[Branch flow](https://github.com/diaoenmao/RPipe/actions/runs/37976079219) 失败，`mergeStateStatus` 为 BLOCKED。PR 已关闭，远端分支已删除。同一次的 Unit Tests 与 Package Check 在确认阻断后取消。
 
+### 5. Flow：Study 扩展点进库
+
+现有 Study 各自写了 launch、run-one、哈希清单和比较脚本，原因是库缺三样东西。设计见 [flow.md](../code/flow.md) §14，已在 `refactor/flow` 实现：
+
+1. recipe：`study.yaml` 写 `recipe: recipe.py`，prepare 在每条 Run 建构前调用其 `register(ctx)`，`run-one`、`launch` 子进程和顺序 `run` 行为一致；不进 Run id。
+2. 来源清单：make 写 `provenance.json`（库源码、声明、recipe、`provenance.include`、计划的哈希，环境与 git 提交）。`freeze: true` 时有变化则 launch 退出 2、prepare 失败；result 记录 `environment` 与清单摘要。
+3. `python -m rpipe compare <run_a> <run_b>`：比较 result 指标、tracker history 与 checkpoint 的 model / optimizer / scheduler，按 `--atol` / `--rtol` 判定。
+
+新增10个测试。本地 `tests/run.py --core` 为 272 passed / 29 deselected；CPU 的 integration 与 e2e（c1/c2，排除 external / gpu / slow）为 26 passed / 275 deselected，均设置 `MKL_THREADING_LAYER=SEQUENTIAL`。`main_historical` 与 `main_reproduction` 尚未改接新接口。
+
 ## （二）2026-10-04
 
 最新远端 dev 基线为 `8bccbac`。本机完成 [历史 main 曲线复现](../../studies/main_historical/docs/STUDY_REPORT.md)：32 条四 seed 连续80000-step训练与32条自身best独立评测全部成功，每条400个完整test点。八组的终点、末50点均值、七锚点、末段波动及两数据集模型排序通过预先冻结的原图估读合同，最大终点差0.207502个百分点。

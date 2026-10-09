@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
+import copy
+
 from rpipe.flow.context import FlowContext
 from rpipe.structure.api import algorithm_api, data_api, model_api, system_api
 from rpipe.structure.artifact.asset import ensure_assets
 from rpipe.structure.artifact.config import load_config
+from rpipe.structure.artifact.provenance import check_frozen
 from rpipe.structure.control import control_from_config, validate_control
 from rpipe.structure.control.layers import AlgorithmConfig, DataConfig, ModelConfig, SystemConfig
+from rpipe.structure.make.expand import load_study_yaml
+from rpipe.structure.make.recipe import RecipeContext, apply_recipe
 from rpipe.structure.origin import apply_model_origin, normalize_origin
 
 
@@ -26,6 +31,21 @@ def run(ctx: FlowContext) -> None:
         ctx.layout.assets_dir,
     )
     system.meta.update(ctx.state['runtime'])
+    study = load_study_yaml(ctx.study_dir) if (ctx.study_dir / 'study.yaml').is_file() else {}
+    check_frozen(ctx.study_dir, study)
+    ctx.state['recipe'] = apply_recipe(
+        ctx.study_dir,
+        study,
+        RecipeContext(
+            study_dir=ctx.study_dir,
+            run_id=str(ctx.control.id),
+            seed=int(ctx.control.seed),
+            config=copy.deepcopy(cfg),
+            shared_data_dir=ctx.layout.shared_data_dir,
+            shared_model_dir=ctx.layout.shared_model_dir,
+            assets_dir=ctx.layout.assets_dir,
+        ),
+    )
     origin = cfg.get('origin')
     if origin not in (None, ''):
         apply_model_origin(normalize_origin(origin))

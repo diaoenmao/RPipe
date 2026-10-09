@@ -37,7 +37,7 @@ flow/
 |------|------|------|
 | `FlowContext` | `context.py` | 贯穿各阶段的上下文 |
 | `FlowRunner` / `PHASES` | `runner.py` | 对一个 Run 按序执行阶段；可裁剪阶段；失败时写 failed result |
-| cli | `cli.py` | argv → 同一套 Flow；`make` / `launch`（复用 `jobs.json`）/ `--remake` / `--mode`、阶段子集、`round`、GPU、`--console`。`process` 不走单条 Run 的阶段链。`status` / `logs` / `report` 转给 `structure.artifact.readout` |
+| cli | `cli.py` | argv → 同一套 Flow；`make` / `launch`（复用 `jobs.json`）/ `--remake` / `--mode`、阶段子集、`round`、GPU、`--console`。`process` 不走单条 Run 的阶段链。`status` / `logs` / `report` / `compare` 转给 `structure.artifact.readout`。`launch` 先过来源清单核对（§14.2） |
 
 `PHASES = ('prepare', 'execute', 'collect', 'summarize', 'write', 'process')`。允许传入子集（例如只跑 prepare 做干检查），但不得打乱相对顺序。
 
@@ -116,6 +116,8 @@ flowchart TD
 2. `control_from_config`；可选 `validate` 契约。
 3. `layout.ensure()` / `ensure_assets`。
 4. **先** `system.apply_runtime(seed, system_config)`：python / numpy / torch seed，以及 `deterministic` / cudnn 开关（structure.md §7.9）。必须在建构 Data / Model **之前**。
+4.1. `study.yaml` 声明 `freeze: true` 时，先核对来源清单（§14.2），有变化则失败，不建构任何对象。
+4.2. `study.yaml` 声明 `recipe` 时，加载该模块并调用 `register(ctx)`（§14.1），之后才建构 Data / Model。
 5. 按 control 经 `structure.api` 建构：建议 **system → data → model**（设备与输出根先就绪）。`data_api.build(..., seed=)`，train DataLoader 的 shuffle generator 绑同一 seed。data 缓存进 `shared/data/`，可复用权重进 `shared/model/`。
 6. `data.source`：`stub` 不得下载；真数据必须显式（如 `torch`）。
 7. 把运行时对象放进 `state['data'|'model'|'system']`；构造 **AlgorithmTracker**（写 `assets/tracker/`）与 **Logger**（挂在 System 上：stdout **且** `assets/logs/run.log`，`时间 级别 Run id [事件]`）；初始化 `observations`。
@@ -281,3 +283,64 @@ conservative 墙钟只在 **make** 打印。本进程实测时间在 Logger 行�
 `launch` 每一组开始前打 `launch: wait i/n mode=`，失败再试打 `launch: retry`。全部 wait 完再打一行和 status 相同的计数。不改 `jobs.json`。
 
 失败重试属于本波：先结束 train 的初次执行与重试，再放行 eval。按 index 匹配的 sibling train 最终未成功时，其 eval 不启动且不算成功；重跑 train 前失效旧的 sibling eval 结果。后续 launch 对父结果较新的旧 eval 重新执行。具体匹配、独立 eval 的例外与手动改文件的边界见 [README.md](../../studies/README.md) §4。
+
+---
+
+## 14. Study 扩展：recipe、来源清单、Run 对比
+
+Study 只写声明（`study.yaml`、`experiment_config.yaml`）、自己特有的配方，以及结论报告。调度、阶段链、来源记录和 Run 之间的对比由库提供。Study 目录里不应再出现自写的 launch、run-one、哈希清单或比较脚本。
+
+### 14.1 recipe
+
+`study.yaml` 可写 `recipe: recipe.py`。路径相对 Study 根，必须落在 Study 目录内。模块必须定义：
+
+```python
+def register(ctx) -> None: ...
+```
+
+`ctx` 是 `RecipeContext`，只读：
+
+| 字段 | 含义 |
+|------|------|
+| `study_dir` | Study 根 |
+| `run_id` | 本 Run id |
+| `seed` | 本 Run seed |
+| `config` | 本 Run config 的副本 |
+| `shared_data_dir` / `shared_model_dir` | `shared/data`、`shared/model` |
+| `assets_dir` | 本 Run `assets/` |
+
+prepare 在 `apply_runtime` 之后、建构 Data / Model 之前调用 `register`（§5）。每个进程、每条 Run 都会调用一次，所以 `run-one`、`launch` 的子进程和顺序 `run` 行为一致。`register` 用来向 `DataRegistry` / `ModelRegistry` / `AlgorithmRegistry` 注册 Study 自己的 `source`，不建构对象，不写 result，不改 config。加载时 Study 根临时加入 `sys.path`，配方可以 import 同目录的模块。
+
+`recipe` 只写在 `study.yaml`，不进 Run config，所以不改变 Run id。配方文件进入来源清单（§14.2），内容改了能被发现。make 检查文件存在且定义了 `register`，不存在则失败。
+
+### 14.2 来源清单
+
+make 在 Study 根写 `provenance.json`（与 `index.json` 同级，不进 Git）：
+
+| 键 | 内容 |
+|----|------|
+| `files` | 库源码 `rpipe/**/*.py`、`study.yaml`、`experiment_config.yaml`、recipe 文件，以及 `study.yaml` 的 `provenance.include` 列出的 Study 内文件，各自 SHA-256 |
+| `plan` | 当前 `index.json` 与其中各 Run `config.yaml` 的 SHA-256 |
+| `environment` | Python、平台、torch / torchvision / numpy 版本、CUDA、GPU 名称 |
+| `git` | 仓库 HEAD 与工作区是否有未提交改动；不在 Git 仓库内则为空 |
+| `created_at` | UTC 时间 |
+
+文件键用相对路径：库源码相对 `rpipe` 包根，加前缀 `rpipe/`；Study 文件相对 Study 根。
+
+`launch` 开始前核对一次。`study.yaml` 写 `freeze: true` 时，`files` 或 `plan` 有任何差异就退出 2，不启动 Run；prepare 也做同样核对（§5 第 4.1 步），防止直接 `run-one` 绕过。没有 `freeze` 时只打印 `provenance: N changed`，照常运行。要接受改动，重新 make。
+
+每条 Run 的 result 写入 `environment`（同一份环境字段）和 `provenance`（`provenance.json` 中 `files` 与 `plan` 的整体摘要），便于事后核对这条 Run 是在哪份来源上跑的。
+
+### 14.3 Run 对比
+
+`python -m rpipe compare <run_a> <run_b>` 只读，参数是两个 Run 目录（可跨 Study）。比较：
+
+| 项 | 规则 |
+|----|------|
+| `metrics` | 两边 result 都有的数值键，按 `atol` / `rtol` 判定 |
+| `history` | tracker 的 `history`，同一 split / metric 的长度与逐点数值 |
+| `checkpoint` | 同名 checkpoint（默认 `latest`，可重复 `--checkpoint best`）的 `model`、`optimizer`、`scheduler`：键集合一致，张量形状一致，最大绝对差在容差内；非张量值要求相等 |
+
+缺失项记为 `missing`，不算通过。`--atol` 默认 `0`，`--rtol` 默认 `0`，即逐位一致。`--out <file>` 把完整结果写成 JSON；终端只打每项的通过与最大差。全部通过退出 0，任一不通过退出 1，参数或文件错误退出 2。
+
+compare 不重跑计算，不改任何 Run 文件。和外部实现（例如旧 `main` 代码）对比时，先让 Study 的 recipe 把外部结果写成同样的 Run 目录格式，再用 compare。

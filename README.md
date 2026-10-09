@@ -98,11 +98,11 @@ python -m rpipe run studies/<name>
 
 | **内容** | **是否入库** | **原因** |
 |------|----------|------|
-| `study.yaml`、`experiment_config.yaml` | 是 | 可复现实验声明 |
+| `study.yaml`、`experiment_config.yaml`、`recipe.py` | 是 | 可复现实验声明与 Study 自己的注册配方 |
 | `docs/PLAN.md`、`docs/STUDY_REPORT.md`、报告图片 | 是 | 人写的研究计划与结论 |
 | `docs/NUMBERS.md` | 可以 | `rpipe report` 从 `process.json` 生成的数字表，不是结论 |
 | `runs/`、`shared/`、`scripts/` | 否 | 可重新生成或体积较大的运行产物 |
-| `index.json`、`process.json`、`activity.json` | 否 | make / process 重建；`activity.json` 只在 make 进行中存在 |
+| `index.json`、`process.json`、`activity.json`、`provenance.json` | 否 | make / process 重建；`activity.json` 只在 make 进行中存在 |
 | `.tmp/` | 否 | 本地测试、缓存和临时验证 |
 | `docs/*.tmp`、`docs/*.claim` | 否 | 本地事务暂存和执行占用标记；正式恢复/失败快照单独保留 |
 

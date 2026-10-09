@@ -149,6 +149,8 @@ studies/<study>/
 | `index.json` | make 写入的编排清单（每条 Run 含 `config` 与 `log`）；不入库 |
 | `process.json` | Study 级聚合信封；不入库 |
 | `activity.json` | 只在 make 进行中出现，成功后删除；不入库。`rpipe status` 在它还在时把第一行打成当前阶段 |
+| `provenance.json` | make 写入的来源清单：源码、声明、recipe 与计划的哈希，环境和 git 提交；不入库。规则见 [flow.md](flow.md) §14.2 |
+| `recipe.py` | 可选；Study 自己注册的 data / model / algorithm `source`，由 `study.yaml` 的 `recipe` 指向，入库。见 [flow.md](flow.md) §14.1 |
 | `shared/data/`、`shared/model/` | structure data / model 的落盘 |
 | `runs/<id>/assets/` | 本 Run 的 asset：`tracker/`（数字曲线）、`logs/`（文本）、checkpoint、样本等 |
 

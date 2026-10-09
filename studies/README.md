@@ -314,6 +314,22 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 | `seeds` | 每个 Experiment 下的随机复测 |
 | `tags` | `when` 匹配当前格子（可含 seed）则打标签；`baseline` 只是 tag |
 | `run_description` | 写入 config 的说明；**不进** `id` hash。占位符可用轴的末段名（如 `{train_size}`）以及 `{seed}`、`{experiment}` |
+| `recipe` | 可选，Study 内的 Python 文件（如 `recipe.py`），定义 `register(ctx)`，注册本 Study 自己的 data / model / algorithm `source`。prepare 在每条 Run 建构前调用；**不进** `id` hash。见 [flow.md](../docs/code/flow.md) §14.1 |
+| `freeze` | `true` 时，make 之后源码、声明、recipe 或计划有任何变化，`launch` / `run-one` 都拒绝运行，重新 make 才接受 |
+| `provenance.include` | 额外纳入来源清单的 Study 内文件（glob 列表），例如固定的参考数据或清单 |
+
+### Study 里只写声明
+
+调度、阶段链、来源记录和 Run 对比都由库提供，Study 不再自写：
+
+| 需要 | 用库里的 |
+|------|----------|
+| 注册 Study 特有的数据、模型或算法 | `recipe` + `register(ctx)`，不要另写 `run.py one` / `launch` |
+| 记录源码、计划和环境，防止中途改代码 | make 写的 `provenance.json`，加 `freeze: true` |
+| 两条 Run 的指标、曲线、checkpoint 是否一致 | `python -m rpipe compare <run_a> <run_b> [--atol --rtol --checkpoint NAME --out FILE]` |
+| 聚合、数字表、曲线图 | `process` / `report` |
+
+Study 目录内的代码只剩 recipe 和必要的一次性数据准备；与外部实现对比时，先把外部结果写成同样的 Run 目录，再用 `compare`。
 
 `id` hash **包含** 实验变量、seed、tags，以及可选 `version`；**不含** `id`、`description`。Run 是最底层的一次实测。同内容、同 `version` 再跑仍落到同一 `runs/<id>/`，用于 skip / resume；需要避免相同实验参数与 seed 的不同实测发生 ID 冲突时，换一个 `version` 生成新 Run。timestamp 只是可选内容之一。
 
