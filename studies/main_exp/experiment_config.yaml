@@ -1,6 +1,6 @@
 experiment: main_exp
 description: README historical candidate recipe pinned to 4ccb28d
-version: main-exp-4ccb28d
+version: main-exp-flow-20261010-01
 historical_ref: 4ccb28d0496110253e9f8e3f3df658853f07996b
 data:
   name: MNIST

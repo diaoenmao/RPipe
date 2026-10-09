@@ -59,8 +59,8 @@ execute 内保留输入、RNG、样本计数、逐段参数、optimizer、schedu
 
 PR #24 的文档审校已合入 dev `37b9cef`。维护者在 2026-10-10 追加了后续顺序：
 
-1. 明确并重构 Flow 的阶段职责，完成必要的 CPU 合同与失败路径验证。阶段职责已在本地拆分：prepare 准备、execute 捕获、collect 比较、summarize 数值门、write 投影与定稿；CPU 核心 286 项、集成 36 项及三条探针隔离路径通过，尚待本次工作分支集成与正式实测
-2. Flow 重构与验证完成后，创建独立实验复跑目标，按现行计划复跑 main_probe 与 main_exp。先完成小范围准备和计划规定的前置门，再运行完整矩阵
+1. Flow 阶段职责已通过 [PR #25](https://github.com/diaoenmao/RPipe/pull/25) 合入 dev `d73b217`：prepare 准备、execute 捕获、collect 比较、summarize 数值门、write 投影与定稿。CPU 核心 286 项、集成 36 项及三条探针隔离路径通过，远端三项必需检查通过
+2. 当前持续目标覆盖 Flow 重构及实验复跑；已进入实验阶段，按现行计划复跑 main_probe 与 main_exp。原始数据 16/16 SHA-256 核对通过；新 version、环境、执行状态与失败分别见 [probe 复跑记录](../../studies/main_probe/docs/RERUN.md) 和 [exp 复跑记录](../../studies/main_exp/docs/RERUN.md)。先完成真实单组合和计划前置门，再运行完整矩阵
 3. 复跑使用新的 version / Run ID，记录实际源码基线、环境、预算与失败。代码问题记 bugs.md，开发修复记 record.md，实验数值与结论记各 Study 报告
 
 重跑授权在上述前置工作完成后执行。实验产物推送及发布按相应授权和仓库流程处理。发布仍按工作分支 → PR → dev → 发布 PR → main 流程。

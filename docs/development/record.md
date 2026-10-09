@@ -60,6 +60,8 @@ CPU 核心 286 项与集成 32 项通过。隔离 CPU 验证覆盖单组合调�
 
 CPU 核心 286 项、集成 36 项通过。隔离探针验证真实阶段链的成功、数值失败、库 compare 失败三条路径；伪计算和微小张量不代表正式数值复现。首轮集成 35 项通过、1 项失败，原因是新增旧结果 fixture 缺少 control / paths，修正后复验通过，失败记录保留。临时证据位于 `.tmp/flow-stages/` 与测试报告目录，不随 Git clone 提供。当前工作分支尚待远端检查与集成，正式八组合及长实验尚未启动。
 
+PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120290）、Package Check（37998120348）、Branch flow（37998120295）均通过。已进入新 version 的实验复跑准备，状态与数值分别见 [probe 记录](../../studies/main_probe/docs/RERUN.md)、[exp 记录](../../studies/main_exp/docs/RERUN.md)。
+
 ## （二）已经验证到哪一步
 
 | **验证对象与日期** | **实测结果与范围** |
@@ -164,6 +166,10 @@ CPU 核心 286 项、集成 36 项通过。隔离探针验证真实阶段链的�
 本次将构造前准备和写入前验收纳入库阶段合同，并拆开 main_probe 的实际阶段职责，变更对比见第一节（一）§5。main_exp 的构造后来源检查和 Study 终验继续使用原有入口。AGENTS.md 增加阶段职责验收、独立 Run 复跑和失败证据记录要求；Study 指南清除已删除 probe.py 的陈旧说明。
 
 本地 CPU 门通过，探针训练顺序、预算与固定门未调整。GPU 可用，但 main_exp/shared/data 当前不存在，需要恢复并按 EXPECTED_DATA.json 核对。后续在验证后的源码基线上使用新 version，先准备数据、执行计划前置门，再运行完整矩阵；当前暂无本版本正式数值结论。
+
+### 10. 正式复跑环境与数据
+
+PR #25 合入后新建 feature/study-rerun，使用 main-probe-flow-20261010-01 / main-exp-flow-20261010-01 的独立 Run ID。GPU 为 RTX 5090 D v2，Torch 2.11.0+cu130；原始数据 16/16 文件 SHA-256 匹配固定清单。CIFAR10 慢速下载进程主动停止并确认退出，随后复用本机完整 raw 缓存；未完成 part 不作为有效数据。训练配方、完整矩阵和固定门限未调整。当前尚未取得正式数值结果，实际执行进展记入各 Study 的 RERUN.md。
 
 ## （二）2026-10-04
 
