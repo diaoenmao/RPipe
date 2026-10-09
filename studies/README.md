@@ -60,21 +60,16 @@ studies/<name>/
 | **Study** | **研究或验收范围** | **计划 / 报告** | **本机原始产物** |
 |---|---|---|---|
 | `_template` | 新 Study 的配置与报告起点 | [计划](_template/docs/PLAN.md) / [报告模板](_template/docs/STUDY_REPORT.md) | 尚未执行 |
-| `main_reproduction` | 固定现代 main 的 60-step 计算对照、历史来源审计与 200-step 前缀探针；新机结果见 CURRENT_DEVICE | [计划](main_reproduction/docs/PLAN.md) / [原报告](main_reproduction/docs/STUDY_REPORT.md) / [本机结果](main_reproduction/docs/CURRENT_DEVICE_RESULT.md) | 原始 Run 与对照目录不随 Git 提供；产出结果的脚本在 `code/` |
-| `main_historical` | 历史 PNG 候选配方的四 seed、80000-step 完整曲线复现；使用专用入口 | [入口](main_historical/README.md) / [计划](main_historical/docs/PLAN.md) / [完整报告](main_historical/docs/STUDY_REPORT.md) | 完整 Run / data / preflight / 诊断证据留在执行长实验的机器上，不随 Git 提供 |
+| `main_exp` | 历史 main `4ccb28d` 配方的四 seed、80000-step 曲线复现，对原图估读门终验 | [入口](main_exp/README.md) / [计划](main_exp/docs/PLAN.md) | 待重跑 |
+| `main_probe` | 固定 main `98648f3` 原代码与当前 RPipe 的 60-step 同设备数值探针 | [入口](main_probe/README.md) / [计划](main_probe/docs/PLAN.md) | 待重跑 |
 
-阅读顺序：先 [main_historical 专用入口](main_historical/README.md)，再 [历史完整曲线报告](main_historical/docs/STUDY_REPORT.md)，再 [当前设备现代 main 结果](main_reproduction/docs/CURRENT_DEVICE_RESULT.md)。
+2026-10-10 两个 Study 由 `main_historical`、`main_reproduction` 改名，按 [flow.md](../docs/code/flow.md) §14 清理为只写声明和 recipe，旧结果与证据从当前树删除，见提交 [`18cd76c`](https://github.com/diaoenmao/RPipe/tree/18cd76c/studies)。
 
 2026-10-10 只保留以上三个 Study。其余 Study（`mnist_train_size`、`mnist_native_vs_hf`、`cifar_grid`、`main_base`、`checkpoint_recovery`、`mnist_cnn_lr`、`mnist_cnn_budget`、`mnist_cnn_budget_repeat`、`local_model_matrix`、`support_data_smoke`、`support_model_smoke`）已删除，计划与报告见提交 [`71143ab`](https://github.com/diaoenmao/RPipe/tree/71143ab/studies)。测试要用的 `mnist_train_size`、`mnist_native_vs_hf`、`cifar_grid` 声明在 [`tests/_data/studies/`](../tests/_data/studies/)。
 
-Study 代码：
+Study 代码只有声明、recipe 和 Study 特有的数据准备或终验脚本，调度一律用 `rpipe make / launch`。`main_exp` 的 `historical_4ccb28d` 由 `study.yaml` 的 `recipe` 注册，通用 launch 即可运行；`main_probe/probe.py` 是原代码与当前实现的同进程对照。各自的文件说明与命令见两个 Study 的 README。
 
-1. `main_historical/` 根目录：`run.py`（专用入口，子进程 prepare 前注册 `historical_4ccb28d`）、`recipe.py`、`prepare_data.py`、`verify_preflight.py`、`verify_group.py`、`compare.py`、`publish_figures.py`，以及 `docs/` 下的两份执行辅助脚本。报告里提到的部分审计脚本（如 `historical_group_audit.py`、`historical_controller_guard.py`、`final_historical_execution_audit.py`）当时留在执行机的 `.tmp/`，这台机器上没有，尚未入库。
-2. `main_reproduction/code/`：从 `.tmp/main-reproduction-20261003/` 原样复制的 24 个脚本，包括数据准备、原始 main 与当前 RPipe 运行、CPU/GPU parity、B-017/B-018 验证、历史桥接与前缀探针、比较、作图和写报告。部分脚本会校验自己的 SHA-256，因此不改内容。它们假设脚本目录下有 `reference/src`（固定 main 源码）、`deps/` 和 `original-evidence/`，并用 `parents[1]` / `parents[2]` 定位仓库根，所以不能在 `code/` 里直接运行。`prepare_real_data.py`、`prepare_stats.py` 和三个 parity 脚本读取原 `studies/main_base/shared/data` 与 `studies/support_model_smoke/shared/data/cifar10` 的缓存。这两个 Study 已删除，复跑前需要先把同样的原始数据和 `stats.yaml` 放回这些路径，或改成从官方源重新下载并核对 SHA-256。复跑时先复制到 `.tmp/main-reproduction-<date>/`，再按 [计划](main_reproduction/docs/PLAN.md) 与 [报告](main_reproduction/docs/STUDY_REPORT.md) 的顺序准备依赖和执行。`current_device.py` 是本机对照入口。
-
-声明、研究计划、报告、图、正式数字与来源清单随 Git 提供。`runs/`、`shared/`、`scripts/`、`index.json`、`process.json` 和 `.tmp/` 按仓库忽略规则留在本机；clone 只有报告，不自动拥有报告内引用的原始 checkpoint、日志和数据。旧报告及正式 JSON 保留自己的实际日期、来源和判定。不能用本机新结果补写旧实验的原始证据。
-
-`main_historical` 的 `historical_4ccb28d` Registry 必须由专用 `run.py` 在每个子进程 prepare 前注册；直接运行通用 `python -m rpipe run/launch studies/main_historical` 不会完成该注册。准备依赖、数据、同设备 preflight 和长矩阵的顺序以该 Study 专用入口为准。
+声明、研究计划、报告、图、正式数字随 Git 提供。`runs/`、`shared/`、`scripts/`、`index.json`、`process.json`、`provenance.json` 和 `.tmp/` 按仓库忽略规则留在本机；clone 只有报告，不自动拥有报告内引用的原始 checkpoint、日志和数据。
 
 ### 模版目录（`studies/_template/`）
 

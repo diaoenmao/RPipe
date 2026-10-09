@@ -18,7 +18,7 @@
 | `studies/` | [Study 使用指南](../../studies/README.md)、声明、复跑入口与正式报告；本地产物另按第四节管理 |
 | `tests/` | 统一测试入口、源码镜像测试与安装后 CLI 验收，见 [测试入口](../../tests/README.md) |
 | `.github/workflows/` | CPU 测试和 wheel / sdist 构建、安装验收 |
-| `asset/` | README 展示本次实测的 MNIST / CIFAR10 曲线；旧参考图与来源保存在 [历史图归档](../../studies/main_historical/docs/reference/README.md)，不作为新 Run 的资产根 |
+| `asset/` | README 展示本次实测的 MNIST / CIFAR10 曲线；旧参考图与来源保存在 [历史图归档](../../studies/main_exp/docs/reference/README.md)，不作为新 Run 的资产根 |
 | `.tmp/` | 本机运行环境、诊断与临时验证输出，不随 Git clone 提供 |
 
 | 概念 | 目录落点 |

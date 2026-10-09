@@ -33,11 +33,11 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 
 | **范围** | **改前** | **改后** | **依据** |
 | --- | --- | --- | --- |
-| 现代 main 本机对照 | 已有旧设备受控60-step结果，当前 cu130 设备尚缺同条件执行与存档核验 | 本机8组合、60-step受控对照通过，16段参数最大差0，并完成独立 CPU 重载；原默认条件失败仍保留 | [本机结果](../../studies/main_reproduction/docs/CURRENT_DEVICE_RESULT.md) |
-| 历史曲线复现 | 只完成 seed0、200-step前缀探针；接入主要在 `.tmp/`，四 seed 完整曲线未运行 | 新增正式历史 Study 与复跑入口；32条80000-step训练、32条自身 best 评测成功，固定图像估读门通过 | [历史复现](../../studies/main_historical/README.md) |
+| 现代 main 本机对照 | 已有旧设备受控60-step结果，当前 cu130 设备尚缺同条件执行与存档核验 | 本机8组合、60-step受控对照通过，16段参数最大差0，并完成独立 CPU 重载；原默认条件失败仍保留 | [本机结果](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/CURRENT_DEVICE_RESULT.md) |
+| 历史曲线复现 | 只完成 seed0、200-step前缀探针；接入主要在 `.tmp/`，四 seed 完整曲线未运行 | 新增正式历史 Study 与复跑入口；32条80000-step训练、32条自身 best 评测成功，固定图像估读门通过 | [历史复现](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_historical/README.md) |
 | 统一测试入口 | 子进程隐式继承环境与输出；当前沙箱曾有3项 Kornia 导入失败，正常本机原入口为286项通过 | 显式传递环境和 stdout/stderr，补2个真实子进程回归；当前统一 CPU 门288项通过，原失败记录保留 | [测试入口](../../tests/README.md) |
 | 包与 CI | Ubuntu / Python3.10 只跑 core；包门构建后仅对 wheel 做无依赖安装和轻量 import | Linux / Windows、Python3.10 / 3.13 的 CPU及本地 integration 全部通过；两种 OS 全新环境中的 wheel / sdist 安装和公开 CLI 全部通过 | [远端测试](https://github.com/diaoenmao/RPipe/actions/runs/37210453756)、[远端包验收](https://github.com/diaoenmao/RPipe/actions/runs/37210453815) |
-| 导航与清理 | Study 入口分散，设计文档与开发记录同在 `docs/` 根目录；正式 Study 与测试用声明混放 | 设计文档在 `docs/code/`，开发记录在 `docs/development/`；Study 指南是 `studies/README.md`；`studies/` 只留 `main_historical`、`main_reproduction`、`_template`，测试声明在 `tests/_data/studies/` | 第二节（一）、[Study 使用指南](../../studies/README.md) |
+| 导航与清理 | Study 入口分散，设计文档与开发记录同在 `docs/` 根目录；正式 Study 与测试用声明混放 | 设计文档在 `docs/code/`，开发记录在 `docs/development/`；Study 指南是 `studies/README.md`；`studies/` 只留 `main_exp`、`main_probe`（原 `main_historical`、`main_reproduction`，待按新流程重跑）、`_template`，测试声明在 `tests/_data/studies/` | 第二节（一）、[Study 使用指南](../../studies/README.md) |
 
 ## （二）已经验证到哪一步
 
@@ -107,13 +107,15 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 
 新增10个测试。本地 `tests/run.py --core` 为 272 passed / 29 deselected；CPU 的 integration 与 e2e（c1/c2，排除 external / gpu / slow）为 26 passed / 275 deselected，均设置 `MKL_THREADING_LAYER=SEQUENTIAL`。
 
-`main_historical` 已改接：`study.yaml` 加 `recipe: recipe.py`、`freeze: true` 和 `provenance.include`；`recipe.register(ctx)` 承担原 `run.py one` 的线程、CUBLAS、拒绝续跑中断训练和 preflight 检查，preflight 入口移到 `recipe.py preflight`；206 行的 `run.py` 删除，调度改用通用 `rpipe make / launch / status / report`。在 `.tmp/` 副本上展开，64 个 Run ID 与 `docs/COMPARISON.json` 记录的一致。`compare.py`、`verify_group.py`、`verify_preflight.py`、`publish_figures.py`、`prepare_data.py` 是本 Study 的终验与审计，保留；`verify_preflight.py` 的源码哈希改用库的 `source_files`。`docs/` 中既有清单记录验收时点的哈希，不再与当前文件逐字节一致，严格核验仍在快照 `b95873f` 进行。未重跑训练。`main_reproduction` 尚未改接。
+`main_historical` 已改接：`study.yaml` 加 `recipe: recipe.py`、`freeze: true` 和 `provenance.include`；`recipe.register(ctx)` 承担原 `run.py one` 的线程、CUBLAS、拒绝续跑中断训练和 preflight 检查，preflight 入口移到 `recipe.py preflight`；206 行的 `run.py` 删除，调度改用通用 `rpipe make / launch / status / report`。在 `.tmp/` 副本上展开，64 个 Run ID 与 `docs/COMPARISON.json` 记录的一致。`compare.py`、`verify_group.py`、`verify_preflight.py`、`publish_figures.py`、`prepare_data.py` 是本 Study 的终验与审计，保留；`verify_preflight.py` 的源码哈希改用库的 `source_files`。该状态保存在提交 `18cd76c`。
+
+随后按用户决定两个 Study 都将重跑，不再保留旧证据：`main_historical` 改名 `main_exp`，`main_reproduction` 改名 `main_probe`，Run 的 `experiment` 与 `version` 随之更新，Run ID 会变。`main_exp` 只留声明、`recipe.py`、`prepare_data.py`、终验 `compare.py`、`runtime-requirements.txt`、`TARGET.md`、`REFERENCE_CURVES.json`、原图归档，以及从 `main_reproduction` 移入的数据清单 `EXPECTED_DATA.json`；删除 `verify_group.py`、`verify_preflight.py`、`publish_figures.py` 和全部旧报告与证据。`main_probe` 只留声明和 `probe.py`（原 `current_device.py`，去掉对旧 dev 提交 `8bccbac` 的 HEAD 硬性检查），删除 `code/` 下 24 个脚本和全部旧证据；`study.yaml` 改为与探针一致的 deterministic=true、benchmark=false。两个 Study 重写了 README 与 PLAN。开发记录、brainstorm 与 `TARGET.md` 中指向旧文件的链接改为 `18cd76c` 永久链接。两个 Study 均未运行；`probe.py` 改为输出 Run 目录并用 `rpipe compare` 比较，计划在重跑前完成。
 
 ## （二）2026-10-04
 
-最新远端 dev 基线为 `8bccbac`。本机完成 [历史 main 曲线复现](../../studies/main_historical/docs/STUDY_REPORT.md)：32 条四 seed 连续80000-step训练与32条自身best独立评测全部成功，每条400个完整test点。八组的终点、末50点均值、七锚点、末段波动及两数据集模型排序通过预先冻结的原图估读合同，最大终点差0.207502个百分点。
+最新远端 dev 基线为 `8bccbac`。本机完成 [历史 main 曲线复现](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_historical/docs/STUDY_REPORT.md)：32 条四 seed 连续80000-step训练与32条自身best独立评测全部成功，每条400个完整test点。八组的终点、末50点均值、七锚点、末段波动及两数据集模型排序通过预先冻结的原图估读合同，最大终点差0.207502个百分点。
 
-[现代 main 本机对照](../../studies/main_reproduction/docs/CURRENT_DEVICE_RESULT.md) 在原Stats全精度profile与统一确定性配置下60-step八格通过，step30/60共16段参数最大差0；本机历史600-step八格前缀桥及两类独立CPU存档核验也通过。原默认条件的失败、旧设备结果和原图缺失运行记录的边界保留；不把前缀对齐扩称为80k权重逐位相同。
+[现代 main 本机对照](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/CURRENT_DEVICE_RESULT.md) 在原Stats全精度profile与统一确定性配置下60-step八格通过，step30/60共16段参数最大差0；本机历史600-step八格前缀桥及两类独立CPU存档核验也通过。原默认条件的失败、旧设备结果和原图缺失运行记录的边界保留；不把前缀对齐扩称为80k权重逐位相同。
 
 本轮另整理全仓库导航、正式 Study 入口、冗余占位和事务标记，补充安装后 CLI 与 CPU 验收。完整变更与实际验证见 [REPOSITORY_CLEANUP.md](https://github.com/diaoenmao/RPipe/blob/71143ab/docs/REPOSITORY_CLEANUP.md)。该文件已在 2026-10-10 从当前树删除，链接指向删除前的提交。
 
@@ -128,7 +130,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | 现代main受控计算对照 | 8格seed0、60step/eval30、16段参数maxdiff0，独立完整test一致，CPU重载通过 | 原Stats B250全精度profile、deterministic条件；未覆盖原默认benchmark=true/无profile |
 | 本轮整理与迁移准备 | 首页与14个Study导航、专用Registry入口、旧接口迁移说明、CPU和安装交付门 | 具体执行结果及远端待执行项见 [整理报告](https://github.com/diaoenmao/RPipe/blob/71143ab/docs/REPOSITORY_CLEANUP.md)；未实际合并main |
 
-历史矩阵主控制器于2026-10-04 09:12:29 +08:00结束；完整曲线及独立审计于当日晚间收口。[最终结果](../../studies/main_historical/docs/FINAL_RESULT.json)与[执行审计](../../studies/main_historical/docs/FINAL_EXECUTION_AUDIT.json)保留真实来源。提前排班去重成功、无训练resume；CIFAR linear评测四worker成功，但记录控制器因WinError5退出1，仅恢复记录，没有重跑或改写原退出码。
+历史矩阵主控制器于2026-10-04 09:12:29 +08:00结束；完整曲线及独立审计于当日晚间收口。[最终结果](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_historical/docs/FINAL_RESULT.json)与[执行审计](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_historical/docs/FINAL_EXECUTION_AUDIT.json)保留真实来源。提前排班去重成功、无训练resume；CIFAR linear评测四worker成功，但记录控制器因WinError5退出1，仅恢复记录，没有重跑或改写原退出码。
 
 旧进度和前三组JSON快照保留原样。[Study 使用指南](../../studies/README.md)区分正式可交付成果与本机runs/shared/.tmp证据，清理没有删除数据、checkpoint或失败记录。旧main无扩展checkpoint与新的.pt/bundle、模型key和Stats对象存在实际格式差异，普通新CLI不直接resume旧任务。
 
@@ -150,7 +152,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 - 本地回归：**286 passed / 3 deselected**，接续复核确认 91 个生产源文件与最新实验快照一致
 - 支持范围短验收：**12/12 执行成功**，严格 Accuracy 复算 5/6 一致。ResNet10 相差一个正确样本，保留未通过判定
 - 当前 main 对照：默认条件严格数值门 **4/8**，原代码重复也有分歧。统一 CUDA 确定性条件后 **8/8** 对齐
-- 历史超参探针：计算对照及存档复核均 **8/8**，参数差值为 0，内部耗时约 **149 秒**。[探针报告](../../studies/main_reproduction/docs/HISTORICAL_PREFIX_PROBE.md)保留完整原值与边界
+- 历史超参探针：计算对照及存档复核均 **8/8**，参数差值为 0，内部耗时约 **149 秒**。[探针报告](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/HISTORICAL_PREFIX_PROBE.md)保留完整原值与边界
 
 #### 3. 当前状态
 
@@ -168,14 +170,14 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | B-016 / B-017 / B-018 | 按评测段保存train均值；topk按样本计数；零评测预算在读取数据前报错 |
 | 用户选定3.1 | 曲线按optimizer step / epoch对齐，排除回滚分支，按共同坐标聚合并记录逐点n；3.2/3.3不做 |
 | 最新本地回归 | unit + integration、c1/c2：286 passed / 3 deselected，排除external/slow/gpu；[Codex 接续测试报告](../../.tmp/test-results/20261003T110214Z_95a976/report.md) |
-| 当前源码完整对照 | 8 train + 8 eval全部成功；确定性门8/8，step30/60参数与test指标差值0，独立eval/best一致；[逐格证据](../../studies/main_reproduction/docs/DETERMINISTIC_COMPARISON_AFTER_B018.json) |
-| 历史超参前缀探针 | seed0、200-step/eval200、scheduler T_max80000；原代码/当前链8/8，存档独立复核8/8，参数差值0，内部148.740s；[探针报告](../../studies/main_reproduction/docs/HISTORICAL_PREFIX_PROBE.md) |
+| 当前源码完整对照 | 8 train + 8 eval全部成功；确定性门8/8，step30/60参数与test指标差值0，独立eval/best一致；[逐格证据](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/DETERMINISTIC_COMPARISON_AFTER_B018.json) |
+| 历史超参前缀探针 | seed0、200-step/eval200、scheduler T_max80000；原代码/当前链8/8，存档独立复核8/8，参数差值0，内部148.740s；[探针报告](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/HISTORICAL_PREFIX_PROBE.md) |
 | 当前bug清单 | 没有开放缺陷；移除“开放”标题下的已关闭说明，本探针未发现新生产bug，不把维护关闭说成根因修复 |
-| 研究报告 | [main对照](../../studies/main_reproduction/docs/STUDY_REPORT.md)、[数据支持验收](https://github.com/diaoenmao/RPipe/blob/71143ab/studies/support_data_smoke/docs/STUDY_REPORT.md)、[模型支持验收](https://github.com/diaoenmao/RPipe/blob/71143ab/studies/support_model_smoke/docs/STUDY_REPORT.md)；各报告保留未通过门限和证据边界 |
+| 研究报告 | [main对照](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/STUDY_REPORT.md)、[数据支持验收](https://github.com/diaoenmao/RPipe/blob/71143ab/studies/support_data_smoke/docs/STUDY_REPORT.md)、[模型支持验收](https://github.com/diaoenmao/RPipe/blob/71143ab/studies/support_model_smoke/docs/STUDY_REPORT.md)；各报告保留未通过门限和证据边界 |
 
 探针收口时的交接位置：分支`feat/main-base`，HEAD `d938874`，当时后续改动尚未提交或推送，之后的 Git 交付见 §12。正式记录在本文件、[BRAINSTORM](brainstorm.md)与各Study的docs；原始日志、探针和固定源码副本在`.tmp/main-reproduction-20261003/`等临时目录，保留以供核对，不作为已提交成果。当前91个生产源文件与B-018快照一致；接续阶段新增的训练仅为用户明确要求的200-step前缀探针，没有长实验或重复相同回归。
 
-当前决定（2026-10-03）：用户选择README历史图对应的main超参路线，随后明确本轮只做到探针，并要求处理实际开放bug。200-step/eval200、seed0的8格前缀对照与计时已完成并收口；不跑80000-step/4-seed长实验。原默认4/8、确定性8/8及历史图未复现结论保留；原历史运行记录仍缺失。详细范围见[本轮计划](../../studies/main_reproduction/docs/PLAN.md#用户确认的历史超参前缀探针2026-10-03执行前)。
+当前决定（2026-10-03）：用户选择README历史图对应的main超参路线，随后明确本轮只做到探针，并要求处理实际开放bug。200-step/eval200、seed0的8格前缀对照与计时已完成并收口；不跑80000-step/4-seed长实验。原默认4/8、确定性8/8及历史图未复现结论保留；原历史运行记录仍缺失。详细范围见[本轮计划](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/PLAN.md#用户确认的历史超参前缀探针2026-10-03执行前)。
 
 ### 2. 目标与对照
 
@@ -209,9 +211,9 @@ main Git 中只有 README 的曲线图，没有对应的可读原始结果、权
 - 固定 main 原代码与新实现的 CPU 探针 8/8 通过：MNIST / CIFAR10 × linear / mlp / cnn / resnet18，合成固定输入、4 steps / eval2。初始化和采样顺序一致，step2 / 4 的参数、train / test Loss、Accuracy 差值均为 0，scheduler 状态一致。脚本与结果见 `.tmp/main-reproduction-20261003/cpu_parity.py`、`cpu-parity.json`、`cpu-parity.log`。这不是完整真实数据训练验收。
 - 原代码导出未修改；缺失依赖 evaluate / datasets / multiprocess / xxhash 仅安装到 `.tmp/main-reproduction-20261003/deps/`。Windows 启动时先导入 numpy 再导入 torch，以适配本机运行环境；未重建 main 的历史依赖版本。
 - 定向 algorithm / process 回归 110 passed；最终 unit + integration c1 / c2 本地门 282 passed / 3 deselected（排除 external / slow / gpu），[验证报告](../../.tmp/test-results/20261002T213434Z_f4a444/report.md)，临时工作目录 `.tmp/main-final-715e6cdaac9c49faa00315c0761604d0/`。
-- 完整 main 对照已进入 [main_reproduction 计划](../../studies/main_reproduction/docs/PLAN.md)：复制已缓存的真实原始数据，32 个文件副本 SHA-256 一致；旧 main_base CIFAR10 目录读取被拒绝，改用已有 support_model_smoke 的可读缓存副本，不改目录权限。原 main 的完整 train Stats 以 batch250、dim1 计算，完整精度写入新 Study；两套完整 train / test 像素和标签逐项一致。
+- 完整 main 对照已进入 [main_reproduction 计划](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/PLAN.md)：复制已缓存的真实原始数据，32 个文件副本 SHA-256 一致；旧 main_base CIFAR10 目录读取被拒绝，改用已有 support_model_smoke 的可读缓存副本，不改目录权限。原 main 的完整 train Stats 以 batch250、dim1 计算，完整精度写入新 Study；两套完整 train / test 像素和标签逐项一致。
 - 真实数据初始化预检8/8：当前Factory重建的初始参数与原main实际训练前存档相同，初始化后Torch CPU RNG相同；每个数据集的全部15000个训练采样索引一致。两套原默认60-step配方各16/16执行成功，严格数值门4/8（linear / mlp通过，CNN / ResNet18未通过）。原main子进程计时合计205.609s，Rpipe launch外部计时125.277s，计时边界不同，不作为算法加速结论。
-- 隔离重复原代码3条训练，发现同一源码、数据、seed在默认benchmark配方下也出现参数与指标分歧。额外完整确定性控制：两套同改deterministic=true / cudnn.deterministic=true / benchmark=false / CUBLAS_WORKSPACE_CONFIG=:4096:8，其余条件和门限不变；各16/16成功、数值门8/8，step30/60参数、test Loss、test Accuracy差值为0，scheduler一致、best均step60、独立eval与best一致。训练Loss最大差6.66e-16、训练Accuracy最大差1.42e-14个百分点，为浮点均值累加顺序差异。原默认4/8判定保留，未把控制条件改成原配方结论。所有数字、来源与图见 [main_reproduction报告](../../studies/main_reproduction/docs/STUDY_REPORT.md)。
+- 隔离重复原代码3条训练，发现同一源码、数据、seed在默认benchmark配方下也出现参数与指标分歧。额外完整确定性控制：两套同改deterministic=true / cudnn.deterministic=true / benchmark=false / CUBLAS_WORKSPACE_CONFIG=:4096:8，其余条件和门限不变；各16/16成功、数值门8/8，step30/60参数、test Loss、test Accuracy差值为0，scheduler一致、best均step60、独立eval与best一致。训练Loss最大差6.66e-16、训练Accuracy最大差1.42e-14个百分点，为浮点均值累加顺序差异。原默认4/8判定保留，未把控制条件改成原配方结论。所有数字、来源与图见 [main_reproduction报告](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/STUDY_REPORT.md)。
 - README历史图核对：两个PNG与最后修改它们的`4ccb28d`（2024-01-08）逐字节相同。该提交候选配方为80000 steps / eval200 / lr0.01 / batch250 / test250 / 4 seeds、梯度裁剪1、CNN含BN、torchvision CPU增强与旧常量统计；与当前main明显不同。旧图Epoch轴为评测段序号，不代表MNIST完整遍历400轮。没有历史原始运行配置或结果，旧提交配方仍为候选依据。已向用户说明最终对照选择，未启动长实验或擅自更改模型；当前main源码计算对齐与历史图复现分别记录。
 - 核对2402个可读历史Study文件size/mtime与当前源码/声明94文件哈希，均未改变；main_base的CIFAR10解压目录无法枚举，未访问或修改。生产代码本轮未新增改动，沿用已通过的282项本地回归。
 - 已取消的 1800-step 扩展、自动环境留档功能及独立 eval 数值诊断项目仍不作为本轮任务。此次手工记录复现环境只服务实际对照。
@@ -219,15 +221,15 @@ main Git 中只有 README 的曲线图，没有对应的可读原始结果、权
 ### 5. 后续历史审计与指标修复
 
 - 历史CPU模型探针核对8个组合：linear / mlp / resnet18初始化参数与固定输入logits一致；旧CNN有4层BN、当前无BN，两个数据集logits最大差0.64609 / 0.60425。只扩大预算不能复现历史结构。
-- 直接执行旧提交的Metric.compare，Accuracy序列95→90→92最终保存92%的第三个checkpoint，覆盖95%的全程最佳；原因是旧方法即使没有改善也更新比较基准。当前main与Rpipe均保留95%的第一个checkpoint。历史独立eval的权重来源必须考虑这个旧缺陷，归档代码不修改；见 [历史审计](../../studies/main_reproduction/docs/HISTORICAL_AUDIT.md)。
+- 直接执行旧提交的Metric.compare，Accuracy序列95→90→92最终保存92%的第三个checkpoint，覆盖95%的全程最佳；原因是旧方法即使没有改善也更新比较基准。当前main与Rpipe均保留95%的第一个checkpoint。历史独立eval的权重来源必须考虑这个旧缺陷，归档代码不修改；见 [历史审计](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/HISTORICAL_AUDIT.md)。
 - 当前工作树B-017已修复：`accuracy_value(topk=2)`原本将3个样本展开为6个索引并抛RuntimeError，现在保留候选轴，命中任一候选即计为该样本正确。没有增加配置入口；默认top1保留。最小回归修复前1 failed，`.tmp/metric-red-ab3d83106e99449eacd5d33ced97a9e1/`。
-- 修复后本地门283 passed / 3 deselected，[测试报告](../../.tmp/test-results/20261002T220008Z_f2b7db/report.md)；默认top1 CPU原代码探针8/8。当前源码以新临时Study重跑完整8 train + 8 eval，16/16成功、对照原main既有确定性存档数值门8/8，step30/60参数与test指标差值0，独立eval与best一致，launch86.401s。源码和逐格证据见 [报告后续章节](../../studies/main_reproduction/docs/STUDY_REPORT.md)。此前SOURCE_MANIFEST和所有原始Run保留，未覆盖旧证据。
+- 修复后本地门283 passed / 3 deselected，[测试报告](../../.tmp/test-results/20261002T220008Z_f2b7db/report.md)；默认top1 CPU原代码探针8/8。当前源码以新临时Study重跑完整8 train + 8 eval，16/16成功、对照原main既有确定性存档数值门8/8，step30/60参数与test指标差值0，独立eval与best一致，launch86.401s。源码和逐格证据见 [报告后续章节](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/STUDY_REPORT.md)。此前SOURCE_MANIFEST和所有原始Run保留，未覆盖旧证据。
 
 ### 6. 历史候选短接入对照
 
 - 现有DataRegistry / ModelRegistry的临时builder复用归档dataset/model，样本dict转tuple，`f(x)`返回logits；旧BN、CPU增强/常量归一化和clip1均保留，无生产源码或新配置改动。
 - MNIST / CIFAR10 × linear / mlp / cnn / resnet18，seed0、batch250/test250、SGD lr0.01、cosine T_max80000，两边仅运行4个optimizer steps，在step2/4各评测完整10000张test。数值门8/8通过；初始化/RNG、1000个实际训练索引、增强后输入哈希、scheduler相同，参数与buffer差值0。train指标差值0；test Loss最大差8.88e-16、Accuracy最大差3.55e-15个百分点，正确样本数一致。
-- 16个原始数据文件复制SHA256一致，旧dataset自行生成pickle缓存；原归档与既有证据不改写。进程内数据复制+对照36.841s，启动导入不计。91个当前源文件与2402个可读旧Study文件保护复核通过；归档历史36文件、当前main40文件逐字节相同。正式证据见 [HISTORICAL_BRIDGE](../../studies/main_reproduction/docs/HISTORICAL_BRIDGE.json) 与 [历史审计](../../studies/main_reproduction/docs/HISTORICAL_AUDIT.md)。
+- 16个原始数据文件复制SHA256一致，旧dataset自行生成pickle缓存；原归档与既有证据不改写。进程内数据复制+对照36.841s，启动导入不计。91个当前源文件与2402个可读旧Study文件保护复核通过；归档历史36文件、当前main40文件逐字节相同。正式证据见 [HISTORICAL_BRIDGE](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/HISTORICAL_BRIDGE.json) 与 [历史审计](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/HISTORICAL_AUDIT.md)。
 - 这支持继续复用Registry承载候选旧配方，不先给生产CNN增加BN开关。eval2改变了随机数消费，这不是历史完整运行的前4步；未执行eval200/80000-step/4-seed，未验证历史独立eval或复现旧best缺陷。该短对照未发现新的生产bug。最终对照选择及长实验仍待明确，已拒绝的两项功能仍不做。
 
 ### 7. 评测预算修复B-018
@@ -236,19 +238,19 @@ main Git 中只有 README 的曲线图，没有对应的可读原始结果、权
 
 最小回归修复前1 failed，[失败报告](../../.tmp/test-results/20261002T221547Z_b97619/report.md)；首次测试另有全局pytest缓存写入警告，最终验证改用独立临时cache。修复后unit + integration、c1/c2、排除external/slow/gpu：**286 passed / 3 deselected**，无警告，[通过报告](../../.tmp/test-results/20261002T221619Z_6a712b/report.md)。回归直接验证零预算报错且不访问数据，并验证完整split及1/2批上限。
 
-main原代码CPU探针以新输出目录重跑8/8，step2/4参数、train/test Loss与Accuracy差值0、scheduler一致。证据见 [CPU_PARITY_AFTER_B018](../../studies/main_reproduction/docs/CPU_PARITY_AFTER_B018.json)；脚本`.tmp/main-reproduction-20261003/cpu_parity_after_B018.py`，目录`.tmp/main-reproduction-20261003/cpu-after-B018/`。这是4-step固定合成输入对照，该修复阶段先完成CPU验证，后续完整GPU复核见下节。91个源文件中仅eval_hook.py相对B-017快照改变，[新快照](../../studies/main_reproduction/docs/SOURCE_AFTER_B018_MANIFEST.json)保留；2402个可读旧Study文件及两份归档逐字节/size/mtime保护核对通过。B-018已从开放缺陷移除，下个编号B-019；已拒绝的自动留档和独立eval诊断项目未实施。
+main原代码CPU探针以新输出目录重跑8/8，step2/4参数、train/test Loss与Accuracy差值0、scheduler一致。证据见 [CPU_PARITY_AFTER_B018](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/CPU_PARITY_AFTER_B018.json)；脚本`.tmp/main-reproduction-20261003/cpu_parity_after_B018.py`，目录`.tmp/main-reproduction-20261003/cpu-after-B018/`。这是4-step固定合成输入对照，该修复阶段先完成CPU验证，后续完整GPU复核见下节。91个源文件中仅eval_hook.py相对B-017快照改变，[新快照](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/SOURCE_AFTER_B018_MANIFEST.json)保留；2402个可读旧Study文件及两份归档逐字节/size/mtime保护核对通过。B-018已从开放缺陷移除，下个编号B-019；已拒绝的自动留档和独立eval诊断项目未实施。
 
 ### 8. 当前源码完整收口复核
 
 新的临时Study/version `main-98648f3-deterministic-after-B018`运行8 train + 8 eval，60-step/eval30、完整10000张test、原固定Stats及CUDA确定性控制。当前16/16执行成功，与已有原main确定性存档比较数值门8/8：step30/60全部参数和test Loss/Accuracy差值0、scheduler与best步数一致、独立eval与本实现best一致；train Loss/Accuracy仅约6.66e-16/1.42e-14的浮点均值累加差异。launch外部墙钟86.176s，make0.410s，无train恢复或retry，原代码存档不重复执行。
 
-逐格证据见 [DETERMINISTIC_COMPARISON_AFTER_B018](../../studies/main_reproduction/docs/DETERMINISTIC_COMPARISON_AFTER_B018.json)，[当前学习曲线](../../studies/main_reproduction/docs/figures/learning_curves_after_B018.png)已目检，test坐标30/60、n=1。91个源文件与B-018快照相同，2402个可读旧Study文件及两份归档保护核对通过；生产源码未再改动，沿用286项本地回归。历史候选长实验没有执行，原默认严格门4/8不改写。
+逐格证据见 [DETERMINISTIC_COMPARISON_AFTER_B018](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/DETERMINISTIC_COMPARISON_AFTER_B018.json)，[当前学习曲线](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/figures/learning_curves_after_B018.png)已目检，test坐标30/60、n=1。91个源文件与B-018快照相同，2402个可读旧Study文件及两份归档保护核对通过；生产源码未再改动，沿用286项本地回归。历史候选长实验没有执行，原默认严格门4/8不改写。
 
 ### 9. 历史依据与实验工作量核对
 
 本地非shallow仓库的13个可达refs包含150个提交；main祖先91个，图最后更新提交的祖先39个。旧历史曾跟踪61个路径，按原始结果/权重后缀及output/data路径检查，只找到`src/config.yml`，没有找回运行指标或权重；未fetch远端或搜索外部存储，不能宣称外部记录不存在。两张PNG的Software字段均为Matplotlib3.7.1，而旧requirements固定3.7.0，依赖文件不能证明实际绘图环境；这不提供训练Torch版本的证据。
 
-在隔离目录执行归档make.py的生成阶段，4seed、单GPU/round1，32条train + 32条test命令及wait数通过核对，生成命令未执行。一套80000-step候选需256万次optimizer更新、6.4亿train样本处理、1.28亿曲线test样本处理，双实现对照翻倍；不按短探针混合墙钟猜时长。正式证据见 [历史搜索与工作量](../../studies/main_reproduction/docs/HISTORICAL_EVIDENCE_SEARCH.json)、[历史审计](../../studies/main_reproduction/docs/HISTORICAL_AUDIT.md)。
+在隔离目录执行归档make.py的生成阶段，4seed、单GPU/round1，32条train + 32条test命令及wait数通过核对，生成命令未执行。一套80000-step候选需256万次optimizer更新、6.4亿train样本处理、1.28亿曲线test样本处理，双实现对照翻倍；不按短探针混合墙钟猜时长。正式证据见 [历史搜索与工作量](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/HISTORICAL_EVIDENCE_SEARCH.json)、[历史审计](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_reproduction/docs/HISTORICAL_AUDIT.md)。
 
 已再次以明确选项询问最终按当前main源码的60-step确定性对照验收，还是继续README历史图路线；答案未到。后者的条件下一步是先规划200-step/eval200前缀对照及分项计时，再制定完整预算；当前不执行依赖目标选择的实验。此次只有证据搜索、调度草稿与文档改动，没有新生产代码或bug修复。
 
