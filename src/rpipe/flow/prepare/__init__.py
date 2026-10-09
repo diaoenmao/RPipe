@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 
 from rpipe.flow.context import FlowContext
+from rpipe.flow.study import run_study_phase
 from rpipe.structure.api import algorithm_api, data_api, model_api, system_api
 from rpipe.structure.artifact.asset import ensure_assets
 from rpipe.structure.artifact.config import load_config
@@ -31,8 +32,11 @@ def run(ctx: FlowContext) -> None:
         ctx.layout.assets_dir,
     )
     system.meta.update(ctx.state['runtime'])
+    ctx.state['system'] = system
+    ctx.state['logger'] = system.logger
     study = load_study_yaml(ctx.study_dir) if (ctx.study_dir / 'study.yaml').is_file() else {}
     check_frozen(ctx.study_dir, study)
+    run_study_phase(ctx.study_dir, 'prepare', ctx, study, entry='before')
     ctx.state['recipe'] = apply_recipe(
         ctx.study_dir,
         study,

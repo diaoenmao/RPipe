@@ -10,12 +10,12 @@ MNIST / CIFAR10 × linear / mlp / cnn / resnet18，seed0；全量 train / test�
 
 ## 三、统一 Flow 入口
 
-`rpipe make / launch studies/main_probe` 展开八个成对 Run，每个 Run 只计算自己的 data/model 组合，包含两侧训练和各自 best 独立评测。Algorithm source 为 `main_probe`，recipe 注册本 Study 的 Data 和成对 Algorithm，并执行必要的 CPU 准备；CPU 准备在库 prepare 的 recipe 注册时完成，以便原版全 train Stats 在 Data / Model 构造之前落盘。工作区位于该 Run 的 `assets/probe/`，不得共享可变原版 config。
+`rpipe make / launch studies/main_probe` 展开八个成对 Run，每个 Run 只计算自己的 data/model 组合，包含两侧训练和各自 best 独立评测。Algorithm source 为 `main_probe`，recipe 注册本 Study 的 Data 和成对 Algorithm；CPU 准备由 Study `prepare.before(ctx)` 在库初始化后、recipe 注册前完成，以便原版全 train Stats 在 Data / Model 构造之前落盘。工作区位于该 Run 的 `assets/probe/`，不得共享可变原版 config。
 
 - prepare：归档固定原代码、复制该数据集 raw、重算 Stats，检查该模型 CPU 初始化与前向一致性；之后恢复本 Run 的运行时 seed。普通 make 仅展开声明，不执行探针准备。
 - execute：成对 Algorithm 先执行原版，再用库 prepare 构造的当前 Data / Model / System / Tracker 执行当前版；恢复准备时记录的初始化 RNG，保持原版先、当前版后及 seed0 语义。每个 Run 只处理一个组合，不调用独立脚本或启动全矩阵。
-- collect / summarize：普通库阶段产出当前训练指标、checkpoint 与结果，Study 附加门限状态与证据路径。
-- write：模块提供两侧观测的 artifact 投影。成对 Algorithm 在 execute 内调用投影及库 compare，使附加门失败先于成功 result 落盘；write hook 检查证据文件存在，不增加训练次数。
+- collect：从 execute 的 OBSERVATIONS.pt 收集输入、RNG、参数、optimizer、scheduler、完整样本计数及独立 eval 对比。summarize 拼接报告与证据路径，拒绝未通过的数值门，保留失败证据。
+- write：在库 result 定稿前投影两侧已有观测，调用库 compare，写完整比较报告；附加门失败写 failed，成功后库登记完整资产清单并定稿。不增加训练次数。
 - process：Run 阶段检查本组合；Study 阶段只汇总当前 index 中的八组证据。缺组、重复、失败或不同来源不能算完整通过。
 
 失败保留原始证据并交由 Flow 写 failed 状态。不接受 checkpoint resume；重试须使用新的 Run 目录，不能覆盖此前探针工作区。
@@ -26,4 +26,4 @@ step30 / 60 浮点参数与 SGD momentum 状态 atol1e-6 / rtol1e-5，整数 buf
 
 ## 五、验证边界
 
-本轮只重构并验证 CPU 流程和 artifact 合同，不执行正式八组探针。此前数值证据不能替代本版本重跑验收。完整数值通过仍需一次获授权的统一 CLI 运行。
+CPU 合同门使用伪计算与微小张量验证阶段职责、正常定稿、数值失败和库 compare 失败，不能证明正式数值一致性。维护者已授权在 Flow 重构验证后按计划运行八组探针及 main_exp；正式复跑使用新的 version / Run ID，保留当前基线、数据、设备与失败证据。此前数值证据不能替代本版本重跑验收。

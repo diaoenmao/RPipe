@@ -21,7 +21,7 @@
 prepare → execute → collect → summarize → write → process
 ```
 
-`flow.study_phases: true` 显式启用阶段包。每阶段先执行库，再执行 Study 的 `run(ctx)`。recipe 在 Data / Model 构造前调用，Study prepare 在构造后调用。阶段源码自动纳入 provenance。
+`flow.study_phases: true` 显式启用阶段包。prepare 初始化后调用 Study `before(ctx)`，再执行 recipe / Factory 构造，最后调用 Study `run(ctx)`；write 先执行 Study，再由库定稿；其他阶段先库后 Study。recipe 在 Data / Model 构造前注册。阶段源码自动纳入 provenance。
 
 Run process 使用 `ctx.scope == 'run'`，读取本 Run 的结果。整轮 process 在通用聚合后另调用一次 Study hook，使用 `ctx.scope == 'study'`，没有单条 Run 的 layout/control。需要让本 Run 的失败反映在 result 中的数值门，必须在 write 成功前执行。process 派生失败保留已写成功的 Run result，并向调用方报错。
 
@@ -35,7 +35,7 @@ Study prepare 检查构造对象的历史来源。`process/curves.py` 保留曲�
 
 ### （二）main_probe
 
-[main_probe](../../studies/main_probe/README.md) 声明八个成对 Run，每个只处理一个 data/model 组合。recipe 在库 prepare 内完成该组合的 CPU 准备，注册专用 Data / Algorithm，并恢复本 Run 的 seed。`flow.prepare_shared: false` 避免 recipe 注册前构造专用数据。
+[main_probe](../../studies/main_probe/README.md) 声明八个成对 Run，每个只处理一个 data/model 组合。Study prepare.before 完成该组合 CPU 准备，recipe 注册专用 Data / Algorithm，并恢复本 Run 的 seed。`flow.prepare_shared: false` 避免 recipe 注册前构造专用数据。
 
 成对 Algorithm 在同一进程先执行固定原版 `98648f3`，再用 Flow 构造的当前侧 Data / Model / System / Tracker 执行当前版，并分别评测自身 best。初始化 RNG 在构造后记录，进入当前侧计算时恢复。
 
@@ -57,7 +57,13 @@ execute 内保留输入、RNG、样本计数、逐段参数、optimizer、schedu
 
 ## 五、后续工作与入口
 
-当前没有待合并的 Flow 接续 PR。正式实验重跑、实验产物推送及发布需符合后续授权。重跑使用各 Study 的当前计划，区分执行成功、数值门通过与完整验收。发布仍按工作分支 → PR → dev → 发布 PR → main 流程。
+PR #24 的文档审校已合入 dev `37b9cef`。维护者在 2026-10-10 追加了后续顺序：
+
+1. 明确并重构 Flow 的阶段职责，完成必要的 CPU 合同与失败路径验证。阶段职责已在本地拆分：prepare 准备、execute 捕获、collect 比较、summarize 数值门、write 投影与定稿；CPU 核心 286 项、集成 36 项及三条探针隔离路径通过，尚待本次工作分支集成与正式实测
+2. Flow 重构与验证完成后，创建独立实验复跑目标，按现行计划复跑 main_probe 与 main_exp。先完成小范围准备和计划规定的前置门，再运行完整矩阵
+3. 复跑使用新的 version / Run ID，记录实际源码基线、环境、预算与失败。代码问题记 bugs.md，开发修复记 record.md，实验数值与结论记各 Study 报告
+
+重跑授权在上述前置工作完成后执行。实验产物推送及发布按相应授权和仓库流程处理。发布仍按工作分支 → PR → dev → 发布 PR → main 流程。
 
 | **内容** | **入口** |
 | --- | --- |

@@ -15,7 +15,6 @@ import importlib
 import json
 import os
 from pathlib import Path
-import shutil
 import subprocess
 import sys
 import time
@@ -301,109 +300,6 @@ def native_model(data: Any, name: str, assets: Path) -> Any:
                               assets, data_meta=data.meta)
 
 
-def prepare(workspace: Path, source_data: Path, pair: tuple[str, str]) -> dict[str, Any]:
-    """Copy isolated caches, recompute original Stats, and check CPU parity."""
-    bootstrap()
-    import numpy as np
-    import torch
-    import yaml
-    head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
-    source_before = source_manifest()
-    workspace.mkdir(parents=True, exist_ok=False)
-    (workspace / 'original').mkdir()
-    archive = MainArchive(workspace)
-    copied = []
-    for name in (pair[0],):
-        source = source_data / name / 'raw'
-        original_raw = workspace / 'original' / 'data' / name / 'raw'
-        native_raw = workspace / 'native-data' / name.lower() / ('MNIST' if name == 'MNIST' else '')
-        native_raw = native_raw / 'raw' if name == 'MNIST' else native_raw
-        for path in sorted(source.rglob('*')):
-            if not path.is_file():
-                continue
-            relative = path.relative_to(source)
-            destinations = (original_raw / relative, native_raw / relative)
-            expected = sha(path)
-            for destination in destinations:
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(path, destination)
-                if sha(destination) != expected:
-                    raise ValueError(f'copied raw file differs: {destination}')
-            copied.append({'dataset': name, 'relative': relative.as_posix(), 'sha256': expected})
-    prepared = {'prepared_at_utc': datetime.now(timezone.utc).isoformat(), 'main_commit': MAIN,
-                'dev_commit': head, 'device': 'cpu', 'raw_files': copied, 'data': [], 'models': []}
-    for name in (pair[0],):
-        archive.configure(name, 'linear')
-        original = archive.datasets(name)
-        loaders = archive.dataset.make_data_loader(original, {'train': 250, 'test': 1000}, shuffle=False)
-        stats = archive.module.Stats(dim=1)
-        with torch.no_grad():
-            for batch in loaders['train']:
-                stats.update(batch['data'])
-        stats_path = workspace / 'original' / 'output' / 'stats' / name
-        stats_path.parent.mkdir(parents=True, exist_ok=True)
-        with archive.aliases():
-            archive.module.save(stats, str(stats_path), 'torch')
-        stats_yaml = workspace / 'native-data' / name.lower() / 'stats.yaml'
-        stats_yaml.write_text(yaml.safe_dump({'mean': stats.mean.tolist(), 'std': stats.std.tolist()},
-                                            sort_keys=False), encoding='utf-8')
-        current = native_data(workspace, name, workspace / 'prepare-assets')
-        parity = []
-        expected_sizes = (60000, 10000) if name == 'MNIST' else (50000, 10000)
-        for split in ('train', 'test'):
-            dataset = current._train_set if split == 'train' else current._loaders['test'].dataset
-            old_data, new_data = original[split].data, dataset.data
-            if hasattr(new_data, 'numpy'):
-                new_data = new_data.numpy()
-            pixels = np.array_equal(old_data, new_data)
-            labels = np.array_equal(original[split].target, np.asarray(dataset.targets))
-            parity.append({'split': split, 'samples': len(original[split]), 'pixels_equal': pixels, 'labels_equal': labels})
-            if not pixels or not labels:
-                raise ValueError(f'{name}/{split}: complete original/native data differs')
-            if len(original[split]) != expected_sizes[0 if split == 'train' else 1] or len(dataset) != len(original[split]):
-                raise ValueError(f'{name}/{split}: sample count differs from complete official dataset')
-        prepared['data'].append({'name': name, 'mean': stats.mean.tolist(), 'std': stats.std.tolist(),
-                                 'stats_method': 'original Stats(dim=1), sequential complete train, batch250',
-                                 'split_parity': parity})
-        for model_name in (pair[1],):
-            archive.configure(name, model_name)
-            archive.dataset.process_dataset(original)
-            seed_runtime('cpu')
-            old_model = archive.model.make_model(archive.config.cfg['model'])
-            old_rng = rng('cpu')
-            old_state = model_state(old_model)
-            seed_runtime('cpu')
-            new_model = native_model(current, model_name, workspace / 'prepare-assets')
-            initial = state_compare(old_state, model_state(new_model.module))
-            initial_rng = rng_equal(old_rng, rng('cpu'))
-            size = tuple(current.meta['data_size'])
-            x = torch.linspace(0, 1, 2 * int(np.prod(size))).reshape(2, *size)
-            old_model.eval()
-            new_model.module.eval()
-            with torch.no_grad():
-                old_logits = old_model(data=x, target=torch.zeros(2, dtype=torch.int64))['pred']
-                new_logits = new_model.module(x)
-            difference = float((old_logits - new_logits).abs().max())
-            record = {'data': name, 'model': model_name, 'initial_state': initial,
-                      'initial_cpu_rng_equal': initial_rng, 'fixed_eval_logits_maximum_difference': difference,
-                      'passed': bool(initial['exact'] and initial_rng and difference <= 1e-6)}
-            prepared['models'].append(record)
-            print(f'CPU prepare {name}/{model_name}: {record["passed"]}', flush=True)
-    source_after = source_manifest()
-    prepared['source_unchanged'] = source_before == source_after
-    prepared['archive_verification'] = archive.verify_exports()
-    prepared['passed'] = bool(all(row['passed'] for row in prepared['models'])
-                             and prepared['source_unchanged'] and prepared['archive_verification']['unchanged'])
-    save_json(workspace / 'PREPARED.json', prepared)
-    save_json(workspace / 'SOURCE_MANIFEST.json', {'files': source_before, 'after_files': source_after,
-                                                'unchanged': prepared['source_unchanged']})
-    save_json(workspace / 'ENVIRONMENT.json', {'python': sys.version, 'torch': torch.__version__,
-              'numpy': np.__version__, 'cpu_threads': torch.get_num_threads(),
-              'CUDA_build': torch.version.cuda, 'gpu_execution_started': False,
-              'controls': {'deterministic': True, 'benchmark': False, 'CUBLAS_WORKSPACE_CONFIG': os.environ['CUBLAS_WORKSPACE_CONFIG']}})
-    return prepared
-
-
 def observe_native(data: Any, module: Any) -> tuple[dict[str, Observations], list[Any]]:
     observations = {'train': Observations(), 'test': Observations()}
     original_iter = data.iter_batches
@@ -448,7 +344,7 @@ def mapping() -> dict[str, Any]:
             'scheduler': 'cosine', 'T_max': 60, 'eta_min': 0., 'resume': False}
 
 
-def run_pair(workspace: Path, device: str, pair: tuple[str, str], native: tuple[Any, Any, Any, Any, Any], projector: Any) -> dict[str, Any]:
+def run_pair(workspace: Path, device: str, pair: tuple[str, str], native: tuple[Any, Any, Any, Any, Any]) -> dict[str, Any]:
     bootstrap()
     import torch
     from rpipe.structure.algorithm.config import AlgorithmConfig
@@ -501,7 +397,7 @@ def run_pair(workspace: Path, device: str, pair: tuple[str, str], native: tuple[
                                        'observations': {split: item.result() for split, item in self.observations.items()}}
                 torch.save(self.snapshots[step], cell / f'current_step_{step}.pt')
 
-    save_json(workspace / 'COMPARISON.json', result)
+    save_json(workspace / 'EXECUTION.json', result)
     for name in DATA:
         for model_name in MODELS:
             if (name, model_name) not in pairs:
@@ -558,8 +454,8 @@ def run_pair(workspace: Path, device: str, pair: tuple[str, str], native: tuple[
             torch.set_rng_state(initial_rng['cpu'])
             if device.startswith('cuda'):
                 torch.cuda.set_rng_state_all(initial_rng['cuda'])
-            init_check = state_compare(old_init, model_state(model.module))
-            init_rng_check = rng_equal(old_init_rng, rng(device))
+            current_init = model_state(model.module)
+            current_init_rng = rng(device)
             obs_new, handles = observe_native(data, model.module)
             algorithm = CapturedTrain(AlgorithmConfig.from_mapping(mapping()))
             algorithm.observations = obs_new
@@ -568,33 +464,6 @@ def run_pair(workspace: Path, device: str, pair: tuple[str, str], native: tuple[
                 handle.remove()
             new_best = cpu_tree(system.load_checkpoint('best'))
             current_best_path = str(system.checkpoint_dir() / 'best.pt')
-            segment_checks = []
-            for step in (30, 60):
-                previous, current = old_snaps[step], algorithm.snapshots[step]
-                parameters = state_compare(previous['model'], current['model'])
-                optimizer_check = optimizer_compare(previous['optimizer'], current['optimizer'])
-                sched_equal = previous['scheduler'] == current['scheduler']
-                rng_matches = rng_equal(previous['rng'], current['rng'])
-                loss_diffs = {split: abs(previous[split]['Loss'] - current[split]['Loss']) for split in ('train', 'test')}
-                counts = {split: {'original': round(previous[split]['Accuracy'] * size / 100),
-                                  'current': round(current[split]['Accuracy'] * size / 100), 'samples': size}
-                          for split, size in (('train', 7500), ('test', 10000))}
-                counts_equal = all(value['original'] == value['current'] for value in counts.values())
-                cumulative_counts = {version: {split: {key: snapshot['observations'][split][key]
-                                                      for key in ('samples', 'batches')}
-                                                       for split in ('train', 'test')}
-                                     for version, snapshot in (('original', previous), ('current', current))}
-                expected_counts = {'train': {'samples': step * 250, 'batches': step},
-                                   'test': {'samples': (step // 30) * 10000, 'batches': (step // 30) * 10}}
-                observed_full = all(value == expected_counts for value in cumulative_counts.values())
-                segment_checks.append({'step': step, 'parameters': parameters, 'scheduler_equal': sched_equal,
-                    'optimizer': optimizer_check,
-                    'rng_equal': rng_matches, 'loss_differences': loss_diffs, 'correct_counts': counts,
-                    'actual_cumulative_counts': cumulative_counts, 'expected_cumulative_counts': expected_counts,
-                    'actual_sample_count_gate_passed': observed_full,
-                    'original_metrics': {split: previous[split] for split in ('train','test')},
-                    'current_metrics': {split: current[split] for split in ('train','test')},
-                    'passed': bool(parameters['within_gate'] and optimizer_check['within_gate'] and sched_equal and rng_matches and counts_equal and observed_full and max(loss_diffs.values()) <= 1e-6)})
             del model, data, system, tracker
             release_memory(device)
             # Original independent eval reconstructs the model/DataLoader and
@@ -625,77 +494,29 @@ def run_pair(workspace: Path, device: str, pair: tuple[str, str], native: tuple[
             for handle in eval_handles:
                 handle.remove()
             new_eval = eval_tracker.segment_mean('test')
-            eval_weights = state_compare(old_best['model'], model_state(eval_model.module))
-            eval_diff = abs(old_eval['Loss'] - new_eval['Loss'])
-            eval_counts_equal = round(old_eval['Accuracy']*100) == round(new_eval['Accuracy']*100)
-            old_self_diff = abs(old_eval['Loss'] - old_best['test']['Loss'])
-            new_self_diff = abs(new_eval['Loss'] - algorithm.snapshots[int(new_best['step'])]['test']['Loss'])
-            old_self_counts = round(old_eval['Accuracy']*100) == round(old_best['test']['Accuracy']*100)
-            new_self_counts = round(new_eval['Accuracy']*100) == round(algorithm.snapshots[int(new_best['step'])]['test']['Accuracy']*100)
-            independent_eval_counts = {version: {key: item.result()[key] for key in ('samples', 'batches')}
-                                      for version, item in (('original', old_eval_observation), ('current', eval_observations['test']))}
-            independent_eval_full = all(value == {'samples': 10000, 'batches': 10} for value in independent_eval_counts.values())
-            row = {'data': name, 'model': model_name, 'initial_state': init_check, 'initial_rng_equal': init_rng_check,
-                'segments': segment_checks, 'original_inputs': {key: value.result() for key,value in obs_old.items()},
-                'current_inputs': {key: value.result() for key,value in obs_new.items()},
-                'input_core_train_equal': obs_old['train'].result()==obs_new['train'].result(),
-                # torchvision test tuples omit id; compare actual images,
-                # labels and normalized core inputs, not an invented id hash.
-                'input_core_test_equal': all(obs_old['test'].result()[key]==obs_new['test'].result()[key]
-                    for key in ('samples','batches','images_sha256','targets_sha256','core_inputs_sha256')),
-                'best': {'original_step': old_best['step'], 'current_step': new_best['step'],
-                         'selection_equal': old_best['step']==new_best['step'],
-                         'weights': state_compare(old_best['model'],new_best['model'])},
-                'independent_eval': {'original': old_eval, 'current': new_eval, 'weights': eval_weights,
-                                     'actual_counts': independent_eval_counts, 'full_sample_count_gate_passed': independent_eval_full,
-                                     'loss_difference': eval_diff, 'correct_counts_equal': eval_counts_equal,
-                                     'original_vs_own_best_loss_difference':old_self_diff,
-                                     'current_vs_own_best_loss_difference':new_self_diff,
-                                     'original_vs_own_best_correct_counts_equal':old_self_counts,
-                                     'current_vs_own_best_correct_counts_equal':new_self_counts,
-                                     'current_summary':eval_summary}, 'summary':summary,
+            raw = {'old_init': old_init, 'old_init_rng': old_init_rng,
+                'current_init': current_init, 'current_init_rng': current_init_rng,
+                'old_snaps': old_snaps, 'current_snaps': algorithm.snapshots,
+                'old_best': old_best, 'new_best': new_best,
+                'eval_model_state': model_state(eval_model.module),
+                'old_eval': old_eval, 'new_eval': new_eval,
+                'old_eval_observation': old_eval_observation.result(),
+                'eval_observations': {key: item.result() for key, item in eval_observations.items()},
+                'obs_old': {key: item.result() for key, item in obs_old.items()},
+                'obs_new': {key: item.result() for key, item in obs_new.items()},
+                'summary': summary, 'eval_summary': eval_summary,
                 'elapsed_seconds': time.monotonic() - cell_start,
                 'gpu_peak_allocated_bytes': torch.cuda.max_memory_allocated(torch.device(device)) if device.startswith('cuda') else None,
                 'gpu_peak_reserved_bytes': torch.cuda.max_memory_reserved(torch.device(device)) if device.startswith('cuda') else None}
-            row['full_sample_counts_equal'] = all(
-                observation[split].samples == size for observation in (obs_old, obs_new)
-                for split, size in (('train', 15000), ('test', 20000)))
-            row['passed'] = bool(init_check['exact'] and init_rng_check and all(x['passed'] for x in segment_checks)
-                and row['input_core_train_equal'] and row['input_core_test_equal'] and row['full_sample_counts_equal'] and row['best']['selection_equal']
-                and row['best']['weights']['within_gate'] and eval_weights['within_gate'] and eval_diff<=1e-6
-                and eval_counts_equal and independent_eval_full and old_self_diff<=1e-6 and new_self_diff<=1e-6 and old_self_counts and new_self_counts)
-            row['source_unchanged'] = source_before == source_manifest()
-            row['archive_verification'] = archive.verify_exports()
-            row['passed'] &= row['source_unchanged'] and row['archive_verification']['unchanged']
-            from rpipe.structure.artifact.readout.compare import compare_runs, write_compare
-
-            observed = cell / 'observed' / 'runs'
-            original_run = projector(observed / 'original', snapshots=old_snaps, best=old_best,
-                                             data=name, model=model_name, implementation='original main')
-            current_run = projector(observed / 'current', snapshots=algorithm.snapshots, best=new_best,
-                                            data=name, model=model_name, implementation='current RPipe')
-            comparison = compare_runs(original_run, current_run, atol=1e-6, rtol=1e-5, checkpoints=['latest', 'best'])
-            write_compare(cell / 'RUN_COMPARISON.json', comparison)
-            row['run_comparison'] = comparison
-            row['passed'] &= comparison['passed']
-            save_json(cell / 'COMPARISON.json', row)
-            result['runs'].append(row)
-            save_json(workspace / 'COMPARISON.json', result)
-            print(f'current-main {name}/{model_name}: {row["passed"]}',flush=True)
+            torch.save(raw, cell / 'OBSERVATIONS.pt')
+            result['runs'].append({'data': name, 'model': model_name, 'summary': summary,
+                                  'elapsed_seconds': raw['elapsed_seconds'],
+                                  'observations': str(cell / 'OBSERVATIONS.pt')})
+            save_json(workspace / 'EXECUTION.json', result)
             del algorithm, eval_model, eval_data, eval_system, eval_tracker, eval_old, new_best
             release_memory(device)
-    actual_pairs = {(row['data'], row['model']) for row in result['runs']}
-    selected_complete = actual_pairs == set(pairs) and len(result['runs']) == len(pairs)
-    full_complete = selected_complete and actual_pairs == {(name, model) for name in DATA for model in MODELS}
     result['source_unchanged'] = source_before == source_manifest()
     result['archive_after'] = archive.verify_exports()
-    provenance_ok = result['source_unchanged'] and result['archive_after']['unchanged']
-    selected_passed = all(row['passed'] for row in result['runs']) and selected_complete and provenance_ok
-    result.update(complete=full_complete and provenance_ok, passed=selected_passed if full_complete else None,
-                  selected_complete=selected_complete and provenance_ok, selected_passed=selected_passed,
-                  full_matrix_complete=full_complete and provenance_ok,
-                  full_matrix_passed=selected_passed if full_complete else None,
-                  finished_at_utc=datetime.now(timezone.utc).isoformat())
-    save_json(workspace / 'COMPARISON.json', result)
+    result['finished_at_utc'] = datetime.now(timezone.utc).isoformat()
+    save_json(workspace / 'EXECUTION.json', result)
     return result
-

@@ -91,7 +91,7 @@ flowchart TD
 - 失败：`_write_failed_result` 尽最大努力写入 `status: failed` + `error`（类型名 + 消息），补齐已知 `paths`；**不得吞掉原异常**。落盘自己再失败则静默，优先保证异常向上。
 - 失败时 **traceback 进该 Run 的 `run.log`**（与 stdout 同一套；每一行都是 `[error]`，并带时间和 Run `id`）。execute 失败由 execute 写；prepare 等阶段由 Runner 写。prepare 尚未挂 System 时 Runner 先打开同一路径的 Logger。
 - 失败时若已有 `control` / `collected.metrics`，写入 result，便于对照哪次 Run 挂了。
-- write 之后发生异常时，Runner 保留已有 `status: succeeded` 的 result，记录日志并重新抛出异常。影响本 Run 成功判定的门限须在 write 之前执行；process 的派生失败另行报告。
+- process 发生异常时，Runner 保留已有 `status: succeeded` 的 result，记录日志并重新抛出异常。影响本 Run 成功判定的门限须在 write 定稿之前执行；process 的派生失败另行报告。
 
 ---
 
@@ -103,7 +103,7 @@ flowchart TD
 | execute | — | 读写（checkpoint、日志、生成物） | — |
 | collect | — | **不**动文件 | 内存 |
 | summarize | — | **不**动文件 | 内存草稿 |
-| write | — | 只列举/登记路径 | **定稿写入** |
+| write | — | Study 写证据，库列举/登记路径 | **定稿写入** |
 | process | **不改** | 可选读；可写派生文件（非 config） | 只读定稿；派生内容另写文件 |
 
 ---
@@ -117,7 +117,7 @@ flowchart TD
 1. Runner 在进入阶段链前核对 freeze；prepare 读 `config.yaml`，构造并校验 control。
 2. 创建本 Run 的 assets，应用 Python / NumPy / Torch seed 与确定性配置。
 3. 经 system_api 构造 System，记录 runtime 元数据。
-4. prepare 再核对 freeze，调用可选 recipe 的 `register(ctx)`。必须在 Data / Model 构造前完成注册和必要的隔离准备。
+4. prepare 再核对 freeze，调用可选 Study `prepare.before(ctx)` 完成隔离准备，再调用可选 recipe 的 `register(ctx)`。必须在 Data / Model 构造前完成注册和必要的隔离准备。
 5. 经 data_api 构造 Data，将 seed 传给 train DataLoader 的 shuffle generator。普通 source 使用 `shared/data/`，专用 source 可使用自己的隔离缓存。
 6. 经 model_api 构造 Model，将 Data meta 传给模型，并将 module 放到 System 的设备。
 7. 经 algorithm_api 构造 Algorithm 与 AlgorithmTracker，保存 data/model/system/algorithm/tracker/logger 到 state，初始化 observations。
@@ -191,12 +191,12 @@ flowchart TD
 
 **做：**
 
-1. 取 `result_draft`；若为空应失败或写成明确的 failed（不要写半截）。
+1. Study write 先从 `result_draft` 与已收集观测写入证据、投影并验收，异常阻止成功定稿。库再取 `result_draft`；若为空应失败或写成明确的 failed（不要写半截）。
 2. 列举本 Run asset 文件名，把 `paths.result` / `paths.assets` / `paths.shared` / `paths.asset_files` 写进草稿。
 3. `write_result(layout.result_path, draft)`（原子写）。
 4. `state['result'] = draft`。
 
-**不做：** 改 config；改 asset 文件内容；读其他 Run 做对比（那是 process）。
+**不做：** 改 config；重复计算；跨 Run 汇总。Study 可投影本 Run 已捕获的两侧观测并对比，完整矩阵验收由 process 负责。
 
 与 **index** 的区别：index 由 **make** 写在 Study 根；write 在 Run **后**写 `runs/<id>/` 下的 result。
 
@@ -290,19 +290,27 @@ conservative 墙钟只在 **make** 打印。本进程实测时间在 Logger 行�
 
 ## 14. Study 扩展：recipe、来源清单、Run 对比
 
+### 阶段职责重构（2026-10-10）
+
+阶段扩展必须承载对应工作的输入、产出和失败条件。prepare 分为初始化与对象构造：库先读取并校验 config、应用运行时并构造 System，然后调用可选 `prepare.before(ctx)`，再调用 recipe 注册与 Factory 构造，最后调用 `prepare.run(ctx)` 检查已构造对象。before 接收已初始化的 control/system，可准备隔离数据、统计与归档；recipe 只注册适配器和校验构造条件。直接调用库 prepare 也执行相同准备入口。
+
+execute 只执行 Algorithm 并保存原始观测；collect 从这些观测计算研究指标、逐段对比与判定；summarize 收口可序列化结论并执行数值成功门。write 先调用 Study `run(ctx)` 写入证据、投影已有观测并校验产物，再由库原子写入最终 result，登记完整 asset 清单。Study write 失败须产生 failed result，不能留下本次成功定稿。已有 write 扩展须从读取定稿结果迁移到读取 `result_draft`。process 仍在成功定稿之后生成派生结果，失败不覆盖该成功结果。
+
+main_probe 对应迁移为：prepare 负责 CPU 隔离准备；execute 保存两侧训练、独立评测和 RNG/输入观测；collect 负责数值比较；summarize 拒绝失败数值；write 负责两侧 artifact 投影、库 compare 与最终证据；Study process 负责八组合齐全及同来源终验。训练顺序、预算、checkpoint 选择与固定门限保持原计划。
+
 Study 保存声明、专用配方、阶段扩展、研究证据与结论报告。库提供调度、阶段链、来源记录和通用 Run 对比。研究特有的数值门与外部实现适配放在 Study 阶段或注册的 Algorithm 内，复用库 artifact/compare；完整矩阵由统一 CLI 调度。
 
 ### 14.0 Study 阶段目录
 
 Study 在 `study.yaml` 显式声明 `flow: {study_phases: true}` 后，可添加与库同名的阶段包：`prepare/`、`execute/`、`collect/`、`summarize/`、`write/`、`process/`。缺省或 `false` 不加载这些目录；已存在的普通辅助目录不会自动执行。`flow` 必须是 mapping，`study_phases` 必须是 boolean。
 
-每个存在的阶段目录必须有 `__init__.py`，定义 `run(ctx) -> None`。对选中的阶段，Runner 先调用库的 `run(ctx)`，再调用 Study 的 `run(ctx)`；未选中的阶段不执行。阶段不能改变顺序。包支持相对导入，用独立的模块命名空间加载，调用后清理该命名空间，避免不同 Study 的同名 helper 串用。阶段路径及其源码必须留在 Study 根目录内。
+每个存在的阶段目录必须有 `__init__.py`，定义 `run(ctx) -> None`。对选中的阶段，prepare 在库初始化后、recipe / Factory 构造前调用可选 `before(ctx)`，构造后调用 Study `run(ctx)`。write 先调用 Study `run(ctx)`，再由库定稿；其余阶段先调用库 `run(ctx)`，再调用 Study `run(ctx)`。未选中的阶段不执行。阶段不能改变顺序。包支持相对导入，用独立的模块命名空间加载，调用后清理该命名空间，避免不同 Study 的同名 helper 串用。阶段路径及其源码必须留在 Study 根目录内。
 
 单条 Run 的 ctx 是 `FlowContext`，`scope == 'run'`。Study process 在库完成当前 index 的聚合后调用同一个 `process.run(ctx)` 一次，此时 ctx 是 `StudyProcessContext`，`scope == 'study'`、`study_dir` 是根路径，`state['process']` 是聚合正文；没有单条 Run 的 layout/control。终验必须判断 scope，只在 Study 聚合后执行，派生文件写入 Study 的 docs，不能修改已定稿 Run result。Study 阶段抛错时保留原异常和失败日志；write 后的成功 result 不因派生失败被覆盖。Study process 抛错时保留已完成的通用聚合，不报告终验成功。
 
 启用时，来源清单自动包含六个阶段目录下全部 Python 源码，新增、修改或删除 helper 都能被 freeze 检出。Runner 在执行任何阶段前、Study process 在聚合前核对 freeze。阶段代码不进入 Run ID，修改后需重新 make 接受新的来源清单；需要独立实测时仍使用新 version。
 
-recipe 继续负责 **Data/Model 建构前** 的注册、runtime 设置与必须提前拒绝的运行条件；Study prepare 是库 prepare **之后**的实验特有检查，不能承担建构前注册。数据下载、原代码导出和显式前缀预检等 make 前操作保留在 Study 根，不因加载阶段包自动启动。原训练循环、RNG 与数值门限不随目录拆分改变。
+recipe 继续负责 **Data/Model 建构前** 的注册、runtime 设置与必须提前拒绝的运行条件；Study `prepare.before` 承担构造前隔离准备，`prepare.run` 检查已构造对象；注册仍由 recipe 负责。数据下载、原代码导出和显式前缀预检等 make 前操作保留在 Study 根，不因加载阶段包自动启动。原训练循环、RNG 与数值门限不随目录拆分改变。
 
 ### 14.1 recipe
 
@@ -323,7 +331,7 @@ def register(ctx) -> None: ...
 | `shared_data_dir` / `shared_model_dir` | `shared/data`、`shared/model` |
 | `assets_dir` | 本 Run `assets/` |
 
-prepare 在 `apply_runtime` 之后、建构 Data / Model 之前调用 `register`（§5）。每个进程、每条 Run 都会调用一次，所以 `run-one`、`launch` 的子进程和顺序 `run` 行为一致。`register` 用来向 `DataRegistry` / `ModelRegistry` / `AlgorithmRegistry` 注册 Study 自己的 `source`，也可完成构造前必需的 CPU 检查、缓存准备与运行条件校验。最终运行时对象仍由库 prepare 经 Factory 构造。recipe 不执行正式训练，不写 result，不改 config。加载时 Study 根临时加入 `sys.path`，配方可以 import 同目录的模块。
+prepare 在 `apply_runtime` 之后、建构 Data / Model 之前调用 `register`（§5）。每个进程、每条 Run 都会调用一次，所以 `run-one`、`launch` 的子进程和顺序 `run` 行为一致。`register` 用来向 `DataRegistry` / `ModelRegistry` / `AlgorithmRegistry` 注册 Study 自己的 `source`，也可校验构造条件；隔离数据、归档与 CPU 对照准备优先由 Study `prepare.before` 承担。最终运行时对象仍由库 prepare 经 Factory 构造。recipe 不执行正式训练，不写 result，不改 config。加载时 Study 根临时加入 `sys.path`，配方可以 import 同目录的模块。
 
 `recipe` 只写在 `study.yaml`，不进 Run config，所以不改变 Run id。配方文件进入来源清单（§14.2），内容改了能被发现。make 检查文件存在且定义了 `register`，不存在则失败。
 
@@ -361,4 +369,4 @@ compare 不重跑计算，不改任何 Run 文件。和外部实现（例如旧 
 
 ### 14.4 Study 专用数据准备
 
-`flow.prepare_shared: false` 关闭 make/launch 的通用共享数据预构建（默认 true）。仅用于 recipe 必须在每个 Run 的 prepare 内先生成隔离数据或统计的 Study；此时 recipe / Data builder 负责准备并报告缺失原始数据。该字段必须是布尔值，不能因为未知 source 自动吞掉构造错误。main_probe 使用此选项，make 不加载探针，launch 的每个 Run 才准备一个组合。
+`flow.prepare_shared: false` 关闭 make/launch 的通用共享数据预构建（默认 true）。用于每个 Run 需先生成隔离数据、统计或注册专用 source 的 Study；此时 Study prepare / Data builder 负责准备并报告缺失原始数据。该字段必须是布尔值，不能因为未知 source 自动吞掉构造错误。main_probe 使用此选项，make 不加载探针，launch 的每个 Run 才准备一个组合。

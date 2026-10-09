@@ -40,11 +40,14 @@ class FlowRunner:
             for name in self.phases:
                 current = name
                 module = import_module(f'rpipe.flow.{name}')
+                if name == 'write':
+                    run_study_phase(ctx.study_dir, name, ctx, study)
                 module.run(ctx)
-                run_study_phase(ctx.study_dir, name, ctx, study)
+                if name != 'write':
+                    run_study_phase(ctx.study_dir, name, ctx, study)
         except Exception as exc:
             self._log_failure(ctx, current, exc)
-            self._write_failed_result(ctx, exc)
+            self._write_failed_result(ctx, exc, preserve_success=current == 'process')
             raise
         logger.info('succeeded')
         return ctx.layout.result_path
@@ -73,7 +76,7 @@ class FlowRunner:
                 return
         ctx.state['failure_logged'] = True
 
-    def _write_failed_result(self, ctx: FlowContext, exc: BaseException) -> None:
+    def _write_failed_result(self, ctx: FlowContext, exc: BaseException, *, preserve_success: bool = False) -> None:
         """Best-effort failed Result; must not hide the original error.
 
         process failure must not overwrite an already-written succeeded result.
@@ -81,7 +84,7 @@ class FlowRunner:
         try:
             from rpipe.structure.artifact.result import load_result
 
-            if ctx.layout.result_path.is_file():
+            if preserve_success and ctx.layout.result_path.is_file():
                 existing = load_result(ctx.layout.result_path)
                 if existing.get('status') == STATUS_SUCCEEDED:
                     return
