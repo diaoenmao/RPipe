@@ -38,6 +38,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | 统一测试入口 | 子进程隐式继承环境与输出；当前沙箱曾有3项 Kornia 导入失败，正常本机原入口为286项通过 | 显式传递环境和 stdout/stderr，补2个真实子进程回归；当前统一 CPU 门288项通过，原失败记录保留 | [测试入口](../../tests/README.md) |
 | 包与 CI | Ubuntu / Python3.10 只跑 core；包门构建后仅对 wheel 做无依赖安装和轻量 import | Linux / Windows、Python3.10 / 3.13 的 CPU及本地 integration 全部通过；两种 OS 全新环境中的 wheel / sdist 安装和公开 CLI 全部通过 | [远端测试](https://github.com/diaoenmao/RPipe/actions/runs/37210453756)、[远端包验收](https://github.com/diaoenmao/RPipe/actions/runs/37210453815) |
 | 导航与清理 | Study 入口分散，设计文档与开发记录同在 `docs/` 根目录；正式 Study 与测试用声明混放 | 设计文档在 `docs/code/`，开发记录在 `docs/development/`；Study 指南是 `studies/README.md`；`studies/` 只留 `main_exp`、`main_probe`（原 `main_historical`、`main_reproduction`，待按新流程重跑）、`_template`，测试声明在 `tests/_data/studies/` | 第二节（一）、[Study 使用指南](../../studies/README.md) |
+| Study 阶段接续 | Study 没有与库同名的阶段回调；main_exp 终验只由根脚本调用，probe 没有两侧标准 artifact 对比入口 | 显式 `flow.study_phases`：库阶段后执行 Study 阶段；区分 Run 与 Study process，阶段源码自动进入 freeze。main_exp 的来源检查与曲线终验入阶段目录；probe 保存观测 Run 投影并调用库 compare，原数值门保留 | [flow §14.0](../code/flow.md#140-study-阶段目录)、第二节（一）§5 |
 
 ## （二）已经验证到哪一步
 
@@ -60,6 +61,18 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## （一）2026-10-10
+
+### 5. Flow / Study 阶段接续
+
+- 从远端 `refactor/flow` 的 `0e3fec5` 读取交接。PR #21 的 Unit Tests、Package Check、Branch flow 全部通过后合入 dev（`2917e3e`），在 `refactor/study-phases` 接续；本轮不重跑 main_exp / main_probe，不发布新版本。
+- 在设计文档先明确显式启用、库先/Study 后、相对导入隔离、Run/Study scope、recipe 建构前注册与 prepare 建构后检查的分工。实现可选阶段加载、顺序校验，以及每条 Run 前和 Study 聚合前的 freeze 检查；阶段包全部 Python 源码自动记入 provenance。
+- main_exp 的完整曲线比较实现移入 `process/curves.py`；根 compare.py 保留手动完整/partial 入口。新增 prepare 来源检查、Study process 终验；不完整聚合只产生 partial，完整门失败报错，既有结果与通用聚合保留。
+- main_probe 保留同进程受控计算，用 write 模块把已观测的 step30/60、latest/best 写为两侧 artifact 投影，调用库 compare 并保存 RUN_COMPARISON.json。仅规范化已知模型包装前缀，投影来源写入 result；不改变输入/RNG/样本计数/逐段参数/自身 best 门，也不伪称投影为新训练 Run。
+- 按维护者明确要求删除本机 `studies/main_historical/` 残留目录（数据、Run、缓存与派生文件）；这些文件已不在当前分支 Git 跟踪中。保留现行 main_exp / main_probe；先前正式报告的 Git 提交链接仍可读取。
+- 新增 16 项回归通过。首次完整测试因当前 Python 缺 kornia，core 为 280 passed / 2 failed / 35 deselected，integration/e2e 为 31 passed / 1 failed / 285 deselected；失败记录保留在本机 `.tmp/test-results/`。设置 `MKL_THREADING_LAYER=SEQUENTIAL`、`MPLBACKEND=Agg` 并复用 `.tmp/runtime` 的 kornia 0.8.3 后，core **282 passed / 35 deselected**，CPU integration/e2e **32 passed / 285 deselected**。
+- CPU 小张量投影检查通过：相同快照及 latest/best 对比通过；修改 best 权重能检出；已有投影拒绝覆盖。该检查没有数据集、模型训练或 GPU 执行。本机临时检查及原始测试报告不随 Git clone 提供。
+
+以下 §1–§4 保留本次接续前的开发事实。
 
 仓库清理在分支 `refactor/cleanup`，提交 `f534358`，[PR #19](https://github.com/diaoenmao/RPipe/pull/19) 合向 `dev`。分支从 `main` 的 `71143ab` 拉出；当时 `dev` 落后 `main` 三个发布提交，合并会一并带入。本轮只整理目录、文档和测试输入，不改 flow，也不把 Study 接到新的库接口。
 

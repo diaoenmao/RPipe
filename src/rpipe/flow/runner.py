@@ -8,8 +8,12 @@ from pathlib import Path
 
 from rpipe.structure.artifact.result import STATUS_FAILED, STATUS_SUCCEEDED, write_result
 from rpipe.flow.context import FlowContext
+from rpipe.flow.study import run_study_phase
+from rpipe.structure.artifact.provenance import check_frozen
+from rpipe.structure.make.expand import load_study_yaml
+from rpipe.structure.make.recipe import STUDY_PHASES, study_phases_enabled
 
-PHASES = ('prepare', 'execute', 'collect', 'summarize', 'write', 'process')
+PHASES = STUDY_PHASES
 
 # Old callers may still pass ``index`` / ``persist``; map to ``write``.
 _PHASE_ALIASES = {'index': 'write', 'persist': 'write'}
@@ -22,16 +26,22 @@ class FlowRunner:
         unknown = [p for p in self.phases if p not in PHASES]
         if unknown:
             raise ValueError(f'unknown phases: {unknown}; allowed: {PHASES}')
+        if len(set(self.phases)) != len(self.phases) or tuple(sorted(self.phases, key=PHASES.index)) != self.phases:
+            raise ValueError('phases must be a unique subset in canonical order')
 
     def run(self, ctx: FlowContext) -> Path:
         logger = self._ensure_logger(ctx)
         logger.info(f'start phases={",".join(self.phases)} pid={os.getpid()}')
         current = None
         try:
+            study = load_study_yaml(ctx.study_dir) if (ctx.study_dir / 'study.yaml').is_file() else {}
+            if study_phases_enabled(study):
+                check_frozen(ctx.study_dir, study)
             for name in self.phases:
                 current = name
                 module = import_module(f'rpipe.flow.{name}')
                 module.run(ctx)
+                run_study_phase(ctx.study_dir, name, ctx, study)
         except Exception as exc:
             self._log_failure(ctx, current, exc)
             self._write_failed_result(ctx, exc)

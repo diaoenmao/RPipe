@@ -109,6 +109,8 @@ RPipe/
 | `write/` | 把 result 写入 artifact |
 | `process/` | write 后派生（可空） |
 
+Study 可按相同六阶段目录添加 `__init__.py` / `run(ctx)`，通过 `study.yaml` 的 `flow.study_phases: true` 显式启用。Study 根的 recipe 保留建构前注册，make 前准备也保留根目录显式入口。Run process 和整轮 Study process 使用不同 scope，详见 [flow.md §14.0](flow.md#140-study-阶段目录)。
+
 `rpipe status` / `logs` / `report` 的实现在 `structure/artifact/readout/`。cli 只调用它们。
 
 ---

@@ -38,6 +38,7 @@ def _inside(study_dir: Path, raw: str) -> Path:
 def source_files(study_dir: Path | str, study: dict[str, Any]) -> dict[str, str]:
     """Library sources plus Study declarations, recipe, and ``provenance.include``."""
     import rpipe
+    from rpipe.structure.make.recipe import study_phase_files
 
     study_dir = Path(study_dir).resolve()
     package = Path(rpipe.__file__).resolve().parent
@@ -46,6 +47,7 @@ def source_files(study_dir: Path | str, study: dict[str, Any]) -> dict[str, str]
         for path in sorted(package.rglob('*.py'))
     }
     names = list(DECLARATION_FILES)
+    names.extend(path.relative_to(study_dir).as_posix() for path in study_phase_files(study_dir, study))
     if study.get('recipe') not in (None, ''):
         names.append(str(study['recipe']))
     block = study.get('provenance') or {}
