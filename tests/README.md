@@ -1,6 +1,6 @@
 # Tests
 
-测试目录与标签遵循 [TESTING.md](../docs/development/testing.md)（2026-09-28），并与 [LAYOUT.md](../docs/code/layout.md) 一致。
+测试目录与标签遵循 [testing.md](../docs/development/testing.md)（2026-09-28），并与 [layout.md](../docs/code/layout.md) 一致。
 
 ## 原则
 
@@ -44,7 +44,7 @@ python tests/run.py --all
 
 每次运行写入 `.tmp/test-results/<run_id>/manifest.json`、`events.jsonl` 和 `report.md`。
 
-统一入口为pytest子进程显式传递当前环境和stdout/stderr；调用方捕获入口输出时，失败诊断与退出码仍可取得。该合同由 [test_run_entry.py](test_run_entry.py) 的真实轻量子进程回归覆盖。
+统一入口为 pytest 子进程显式传递当前环境和 stdout/stderr；调用方捕获入口输出时，失败诊断与退出码仍可取得。该合同由 [test_run_entry.py](test_run_entry.py) 的真实轻量子进程回归覆盖。
 
 `--core` 选择 C1/C2 的 unit，排除 `external`、`gpu`、`slow`。新增流程命令选择 C1/C2 的 integration/e2e，并应用同样的排除项；覆盖本地 Flow 执行、错误结果、Study 汇总和版本隔离。参数分隔符 `--` 后的选项直接传给 pytest。
 
@@ -54,7 +54,7 @@ python tests/run.py --all
 
 CI 安装 `.[dev]`，未安装 `hf` 可选依赖；HF 真实 Trainer 用例可能跳过。GPU、下载依赖与慢任务不属于此门。需要验证这些能力时，按对应 Study 计划单独执行；已有复现实验只证明各自声明的配方与预算。
 
-[Package Check](../.github/workflows/package-check.yml) 在 Ubuntu/Windows 构建 wheel / sdist，再分别创建环境、正常安装依赖和生成包，从源码目录之外运行 [package_smoke.py](package_smoke.py)：模块入口与 console script、离线 Toy/Stub Study 的 make→launch→process→status/logs/report、四个 Run 与两个 Experiment、已成功 Run 的重复 launch 跳过。Stub 验证的是安装及产物合同，不代表真实数据训练精度。这个新增门的远端结果以提交后的 Actions 为准。
+[Package Check](../.github/workflows/package-check.yml) 在 Ubuntu/Windows 构建 wheel / sdist，再分别创建环境、正常安装依赖和生成包，从源码目录之外运行 [package_smoke.py](package_smoke.py)：模块入口与 console script、离线 Toy/Stub Study 的 make→launch→process→status/logs/report、四个 Run 与两个 Experiment、已成功 Run 的重复 launch 跳过。Stub 验证的是安装及产物合同，不代表真实数据训练精度。各提交的远端结果以对应 Actions 为准。
 
 两种工作流均设置 `MPLBACKEND=Agg`，在无显示的 CI 环境中生成静态图，避免依赖运行器的 Tk / Tcl 安装；测试选择与绘图坐标、计数等断言保持不变。
 

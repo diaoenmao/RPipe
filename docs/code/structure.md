@@ -1,6 +1,6 @@
 # Code structure · Structure
 
-前置：[CONCEPT.md](concept.md) §6、[LAYOUT.md](layout.md)、[CODE_STRUCTURE.md](code.md)。  
+前置：[concept.md](concept.md) §6、[layout.md](layout.md)、[code.md](code.md)。
 并列分册：[flow.md](flow.md)。
 
 本文按层推进：**模块 → 类 → 叶文件**。data / model / algorithm / system / control 定到类（control 见 §8）。**artifact** IO 见 §9。**make** 见 §10。
@@ -13,9 +13,9 @@
 
 各层统一还有两类约定（字段名可微调，语义固定）：
 
-| 约定 | 落在哪 | 说明 |
+| **约定** | **落在哪** | **说明** |
 |------|--------|------|
-| **内容配置** `config` | 每一层 `*Config` | 可装入从 `path` 读出的超参/子配置，也可由 Control / 实验侧**覆写**；合并与优先级做到更下游细节时再定 |
+| **内容配置** `config` | 每一层 `*Config` | 可装入从 `path` 读出的超参/子配置，也可由 Control / 实验侧**覆写**；各 source 明确支持的字段、合并规则与优先级，不由 Factory 推断未声明字段 |
 | **向上兼容** | Model → Data；Algorithm → Model；System → Algorithm | **下一层声明对上一层的兼容**；Data 无更上一层，不设此项 |
 
 `path` 仍是资源/超参文件根；读出来的内容应能进入本层 `config`，并允许被覆写。
@@ -34,9 +34,9 @@
 - 经 **asset** 路径读写缓存、权重、checkpoint、样本、日志（data / model 落盘都在 asset）
 - 经 api 产出可序列化观测（loss、metric、路径等），供写入 result
 
-### 1.2 能力 vs 取值（对齐 CONCEPT §6）
+### 1.2 能力 vs 取值（对齐 concept §6）
 
-| 概念 | 谁声明 | 落在哪 |
+| **概念** | **谁声明** | **落在哪** |
 |------|--------|--------|
 | **能力** | Experiment + 各层 Registry（经 api 可查询） | 注册名解析到第三方实现 |
 | **取值** | **make**（`axes` × `seeds`）写入 | Artifact Config → prepare → `Control` |
@@ -62,7 +62,7 @@ make/                → 多实验：展开、写 config/index、调度脚本；
 
 ### 1.4 分册推进状态
 
-| 区域 | 状态 |
+| **区域** | **状态** |
 |------|------|
 | **api** | 门面已定 |
 | **data** | `Data` + `DataRegistry` + `DataFactory` + `DataConfig` |
@@ -93,7 +93,7 @@ structure/
 
 ## 3. `structure/api/`（门面）
 
-| 单元 | 职责 |
+| **单元** | **职责** |
 |------|------|
 | `data_api` | 暴露 `Data`、`DataFactory.build`、`DataConfig` |
 | `model_api` | 暴露 `Model`、`ModelFactory.build`、`ModelConfig` |
@@ -104,11 +104,11 @@ structure/
 
 ## 4. `structure/data/`（实现 + 类）
 
-把研究所需输入组织为可消费数据流（CONCEPT §6 **data**）。数据集本体由第三方提供；本层负责注册、建构与对外可消费的 **`Data`**。声明字段由 **`DataConfig`** 从 JSON / Config 加载。
+把研究所需输入组织为可消费数据流（concept §6 **data**）。数据集本体由第三方提供；本层负责注册、建构与对外可消费的 **`Data`**。声明字段由 **`DataConfig`** 从 JSON / Config 加载。
 
 ### 4.1 本层自有类型
 
-| 类型 | 职责 |
+| **类型** | **职责** |
 |------|------|
 | **`Data`** | 对上提供统一的数据消费能力（划分、batch 迭代、元信息等）；持有并使用第三方已建构的数据对象 / loader |
 | **`DataRegistry`** | name + source → 如何向第三方建构数据；`register` / `get` / `list` |
@@ -129,7 +129,7 @@ Factory 按注册的 `name` / `source` 精确匹配，未注册组合抛 `ValueE
 
 ### 4.3 下游来源（至少）
 
-| 来源 | 复用什么 |
+| **来源** | **复用什么** |
 |------|----------|
 | PyTorch Dataset | `torch.utils.data.Dataset`、`DataLoader`；transform 可用 torchvision 等 |
 | Hugging Face | `datasets.Dataset` / `DatasetDict` 及加载、格式化 API |
@@ -143,7 +143,7 @@ Factory 按注册的 `name` / `source` 精确匹配，未注册组合抛 `ValueE
 
 dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必须字段：**
 
-| 字段 | 说明 |
+| **字段** | **说明** |
 |------|------|
 | `name` | Registry 查找用的数据集标识 |
 | `source` | 下游来源（如 `torch` / `hf` / `modelscope`） |
@@ -154,7 +154,7 @@ Data 是兼容链最上游，**不设**对更上层的兼容字段。`batch_size
 
 ### 4.5 Registry / Factory
 
-| 类 | 能力 |
+| **类** | **能力** |
 |----|------|
 | `DataRegistry` | `register` / `get` / `list` |
 | `DataFactory` | `build(data_config: DataConfig, assets_dir) → Data` |
@@ -191,11 +191,11 @@ flowchart LR
 
 ## 5. `structure/model/`（实现 + 类）
 
-构建可调用模型能力（CONCEPT §6 **model**）。网络本体由第三方提供；本层负责注册、建构与对外可消费的 **`Model`**。声明字段由 **`ModelConfig`** 从 JSON / Config 加载。
+构建可调用模型能力（concept §6 **model**）。网络本体由第三方提供；本层负责注册、建构与对外可消费的 **`Model`**。声明字段由 **`ModelConfig`** 从 JSON / Config 加载。
 
 ### 5.1 本层自有类型
 
-| 类型 | 职责 |
+| **类型** | **职责** |
 |------|------|
 | **`Model`** | 对上提供 forward、模式切换、参数与权重协作等；持有并使用第三方已建构的模型 / 推理句柄 |
 | **`ModelRegistry`** | name + source → 如何向第三方建构模型 |
@@ -219,7 +219,7 @@ flowchart LR
 
 ### 5.3 下游来源（至少）
 
-| 来源 | 复用什么 |
+| **来源** | **复用什么** |
 |------|----------|
 | Custom PyTorch | 用户/实验侧 `torch.nn.Module`，经 Registry 注册 |
 | `torchvision.models` | torchvision 预置结构与权重接口 |
@@ -236,7 +236,7 @@ flowchart LR
 
 dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必须字段：**
 
-| 字段 | 说明 |
+| **字段** | **说明** |
 |------|------|
 | `name` | Registry 查找用的模型标识 |
 | `source` | 下游来源（如 `custom_torch` / `torchvision` / `timm` / `hf` / …） |
@@ -247,7 +247,7 @@ dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必
 
 ### 5.5 Registry / Factory
 
-| 类 | 能力 |
+| **类** | **能力** |
 |----|------|
 | `ModelRegistry` | `register` / `get` / `list` |
 | `ModelFactory` | `build(model_config: ModelConfig, assets_dir, data_meta=None) → Model` |
@@ -284,13 +284,13 @@ flowchart LR
 
 ## 6. `structure/algorithm/`（实现 + 类）
 
-在任务范式下定义怎么算（CONCEPT §6 **algorithm**）。本层用 **`mode`** 区分 **train / eval / inference**（一次配置一个 mode；要组合多种 mode 由 Study / 多次运行或 Control 切换）。**当前 native 只注册 train / eval**；`mode: inference` 会在 Factory 报错。经 `data_api` / `model_api` / `system_api` 使用已落地的 `Data` / `Model` / `System`。声明字段由 **`AlgorithmConfig`** 加载。
+在任务范式下定义怎么算（concept §6 **algorithm**）。本层用 **`mode`** 区分 **train / eval / inference**（一次配置一个 mode；要组合多种 mode 由 Study / 多次运行或 Control 切换）。**当前 native 只注册 train / eval**；`mode: inference` 会在 Factory 报错。经 `data_api` / `model_api` / `system_api` 使用已落地的 `Data` / `Model` / `System`。声明字段由 **`AlgorithmConfig`** 加载。
 
-更下层目录（若实现时按 mode 拆分）由本分册后续补，**不在 LAYOUT 展开**。
+更下层目录（若实现时按 mode 拆分）由本分册后续补，**不在 layout 展开**。
 
 ### 6.1 本层自有类型
 
-| 类型 | 职责 |
+| **类型** | **职责** |
 |------|------|
 | **`Algorithm`** | 按当前 `mode` 执行；**优化器 / 调度器 / resume** 接口（§6.11）；AlgorithmTracker；AlgorithmHook |
 | **`AlgorithmTracker`** | 本层数字观测（勿与 **Logger** 混淆）：每 batch `append`，周期 `save`/`reset`，曲线 jsonl / state 落盘 |
@@ -299,7 +299,7 @@ flowchart LR
 | **`AlgorithmFactory`** | 读 `AlgorithmConfig` → 经 registry 装配 → 得到 **`Algorithm`** |
 | **`AlgorithmConfig`** | dataclass；从 JSON / Config / Control 加载 |
 
-对外：`AlgorithmFactory.build(algorithm_config, …) → Algorithm`。  
+对外：`AlgorithmFactory.build(algorithm_config, …) → Algorithm`。
 execute 典型调用：`algorithm.run(data, model, system, tracker=…) → observations`。数字走 **AlgorithmTracker**；终端与 `run.log` 走 **`system.Logger.report(tracker, …)`**（§7.8）。
 
 ### 6.2 `Algorithm` 职责要点
@@ -316,7 +316,7 @@ execute 典型调用：`algorithm.run(data, model, system, tracker=…) → obse
 
 ### 6.3 `mode`
 
-| 取值 | 含义 |
+| **取值** | **含义** |
 |------|------|
 | `train` | 训练（可含循环内周期 test，仍是 train） |
 | `eval` | **独立评测算法**：另一次 Run、另一个 `Algorithm`；默认 resume `best` |
@@ -328,7 +328,7 @@ execute 典型调用：`algorithm.run(data, model, system, tracker=…) → obse
 
 循环、优化器、调度器、resume、metric、生成管线等**复用生态能力**，经 Registry 按 **mode + source** 挂接。**算法层接口统一**（§6.11）：各 source 映射到同一套 `optimizer` / `scheduler` / `resume` 语义，不在 system / model 另造一套。git `main` 只有 native；本树 **不**把对照收成「只做 `custom_torch`」。HF Trainer / Accelerate 等是并列 `source`，不是 native 的特例，也不把 Trainer 特有键抬成 Control 必须表。
 
-| 来源 | 典型用于 | 复用什么 |
+| **来源** | **典型用于** | **复用什么** |
 |------|----------|----------|
 | Custom PyTorch（native） | train / eval / inference | 手写 loop；本层 `make_optimizer` / `make_scheduler` / `resume`；手写 metric |
 | Transformers Trainer | train / eval | 真跑 `Trainer` + `TrainingArguments`：`optim` / `lr_scheduler_type` 映射到 §6.11；优化器 / cosine 仍可由算法接口给出（本实现如此，便于与 native 对齐 epoch 调度） |
@@ -348,7 +348,7 @@ execute 典型调用：`algorithm.run(data, model, system, tracker=…) → obse
 
 dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必须字段：**
 
-| 字段 | 说明 |
+| **字段** | **说明** |
 |------|------|
 | `mode` | `train` / `eval` / `inference`（一次一个；默认必须有） |
 | `source` | 执行实现来源（如 `custom_torch` / `transformers_trainer` / `accelerate` / `diffusers` / `vllm` / `sglang` / …） |
@@ -359,7 +359,7 @@ lr、步数、`optimizer` / `scheduler` / `resume`、**`metric`**、解码参数
 
 ### 6.6 Registry / Factory
 
-| 类 | 能力 |
+| **类** | **能力** |
 |----|------|
 | `AlgorithmRegistry` | 按 `mode` + `source` `register` / `get` / `list` |
 | `AlgorithmFactory` | `build(algorithm_config: AlgorithmConfig, …) → Algorithm` |
@@ -407,7 +407,7 @@ flowchart LR
 
 Metric 名与 git `main` 对齐，在 **algorithm** 算、不在 Flow 另起一套：`Loss`、`Accuracy`、`MSE`（batch）；`RMSE`、`GLUE`（full，在 `save()` 时收口）。配置键 `algorithm.metric`；缺省 train / test 都是 `Loss` + `Accuracy`。Accuracy 是 **0–100**。train 循环与独立 `mode=eval` 共用同一套名字。
 
-`accuracy_value` 的既有 `topk` 参数按样本判断：标签出现在该样本的任一候选中即计为正确，分母为样本数，不是候选数；MetricBundle仍使用默认top1，本轮不新增配置键。
+`accuracy_value` 的既有 `topk` 参数按样本判断：标签出现在该样本的任一候选中即计为正确，分母为样本数，不是候选数；MetricBundle 仍使用默认 top1，本轮不新增配置键。
 
 `evaluate(split, mode='batch', input, output)` 按该 split 登记的名字算 batch 指标。`mode='full'` 留给 RMSE / GLUE 这类要整段才有的量。默认 MNIST train 每个 batch 都 `append('train', n=batch_size)`；test 由 §6.10 的 `on_eval_period` 走同一套 `evaluate` / `append(..., split='test')`。
 
@@ -455,14 +455,14 @@ native train 日志的 `lr` 记录刚完成的 optimizer step 实际使用的第
 
 **已接线（train）：**
 
-| 方法 | 何时 | 做什么 |
+| **方法** | **何时** | **做什么** |
 |------|------|--------|
 | `on_eval_period(...)` | 每 `eval_period` 个 **进度单位**（默认 1；`0` = 只在训完评一次） | test：同一套 `evaluate` / `append(split='test')` / `Logger.report`；可选 `early_stop_patience` / `early_stop_min_delta`（看 test Accuracy）；记下 best |
 | `on_checkpoint(...)` | 要落盘权重时（见下） | 经 **system** 写 `assets/checkpoints/`；不写 `result.json` |
 
 **预留（有需要再接线，基类先留空）：**
 
-| 方法 | 典型何时 |
+| **方法** | **典型何时** |
 |------|----------|
 | `on_epoch_start` | 每个 epoch 训练 batch 之前 |
 | `on_batch_end` | 每个 train batch 的 append 之后（慎用：太密） |
@@ -474,13 +474,13 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 
 训练预算以 **`num_steps`** 为基准（对齐 main 的 `step` / `num_steps`），`num_epochs` 仅在有 epoch 概念时用于**推导并覆盖**步数：
 
-| 超参 | 默认 | 说明 |
+| **超参** | **默认** | **说明** |
 |------|------|------|
 | `num_steps` | `1` | optimizer step 预算（默认与主口径一致） |
 | `num_epochs` | 无 | 若能推导 `steps_per_epoch`（train loader 长度，或 `train_size`/`batch_size`），则 `num_steps = num_epochs * steps_per_epoch`，并覆盖显式 `num_steps` |
 | `progress_unit` | `step` | `eval_period` / `checkpoint_period` / 百分比按这个单位数；需要按 epoch 记周期时显式设 `epoch` |
 | `eval_period` | `1` | 每 N 个单位评一次 test；`0` = 只在训完评一次 |
-| `eval_num_steps` | 缺省 / `<0` | 正整数限定test batch数；缺省或负数 = 整个 split；`0` 报错，不能产生有效评测指标 |
+| `eval_num_steps` | 缺省 / `<0` | 正整数限定 test batch 数；缺省或负数 = 整个 split；`0` 报错，不能产生有效评测指标 |
 
 `progress_unit=epoch` 仍可用，但要求 `num_epochs`。对不具备稳定 epoch 语义的数据（如流式数据），只配 `num_steps` 即可。cosine 的 `T_max` 跟单位走（epoch 训用 epoch 数，step 训用 step 数），可用 `T_max` 覆写。
 
@@ -488,7 +488,7 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 
 #### 6.10.2 Checkpoint（经 system，对齐 main 的 latest + best）
 
-| 超参 | 默认 | 说明 |
+| **超参** | **默认** | **说明** |
 |------|------|------|
 | `checkpoint` | `latest` | 存法：`latest` = 只覆盖 `latest` 这一份；`percent` = 另按总预算百分比留命名快照 |
 | `checkpoint_period` | `1` | 每 N 个进度单位更新 `latest`；`0` = 只在训完写一次 latest |
@@ -511,15 +511,15 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 
 **读回来**不是 system 的职责：system 只提供 `load_checkpoint(name)`（与 `save_checkpoint` 对称）。**何时读、读哪份、恢复哪些对象**由算法的 **resume 接口**决定（§6.11.3）。
 
-#### 6.11 算法层接口：优化器、调度器、resume、独立 eval
+### 6.11 算法层接口：优化器、调度器、resume、独立 eval
 
 这些都挂在 **`Algorithm` 上**（与 `run` / hook 并列），**不是**新的 Flow 阶段，**不是** model / system 的必须字段。`source`（native / HF Trainer / Accelerate / Diffusers …）各自落实，对外名字一致。对照 main 只用来钉 native 行为；HF 等按同一接口映射，不要把 Trainer 特有键抬成 Control 必须表。
 
-##### 6.11.1 优化器
+#### 6.11.1 优化器
 
 `Algorithm.make_optimizer(model, …)`（名字可微调）：按 `algorithm.config` 构造可 step 的优化器句柄，交给本 `source` 的训练实现。
 
-| 超参（进 `config` / extras，非必须表） | 说明 |
+| **超参（进 `config` / extras，非必须表）** | **说明** |
 |----------------------------------------|------|
 | `optimizer` | 名字：`SGD` / `Adam` / `AdamW` / …；缺省由该 source 自定（native 可先 SGD） |
 | `lr` | 学习率 |
@@ -529,7 +529,7 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 
 映射（同一键，不同落实）：
 
-| source | 落到哪 |
+| **source** | **落到哪** |
 |--------|--------|
 | `custom_torch` | `getattr(torch.optim, name)` + `filter_args`；`clip_grad_norm_` 在累积结束、`step` 之前 |
 | Transformers Trainer | 优化器仍由算法接口给出；`TrainingArguments` 同样 `filter_args`（`lr`→`learning_rate`，`step_period`→`gradient_accumulation_steps`，`max_grad_norm`） |
@@ -537,11 +537,11 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 
 不要把优化器建在 model 层。
 
-##### 6.11.2 调度器
+#### 6.11.2 调度器
 
 `Algorithm.make_scheduler(optimizer, …)`：按预算（§6.10.1 的 `num_steps` / 推导后的 `T_max`）构造 LR 调度。
 
-| 超参 | 说明 |
+| **超参** | **说明** |
 |------|------|
 | `scheduler` | 名字：`cosine` → `CosineAnnealingLR` 等别名；也可直接写 torch 类名。`constant` / 缺省 = 不建调度器。其余键 `filter_args` 进该类构造函数 |
 | `warmup_ratio` / `warmup_steps` | `linear` 预热特例仍手写；与 `num_steps` / `T_max` 一起算 |
@@ -549,17 +549,17 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 
 映射：
 
-| source | 落到哪 |
+| **source** | **落到哪** |
 |--------|--------|
 | `custom_torch` | `torch.optim.lr_scheduler` 或等价（cosine / constant / linear+warmup） |
 | Transformers Trainer | `lr_scheduler_type` + `warmup_ratio` / `warmup_steps` + `max_steps` |
 | Accelerate | 调度器仍由本接口给出，再交给 Accelerator |
 
-##### 6.11.3 resume（train 与 eval 的特殊接口）
+#### 6.11.3 resume（train 与 eval 的特殊接口）
 
 `Algorithm.resume(…)`：在 `run()` **开头**调用。算法决定恢复什么；system 只负责从 `assets/checkpoints/` **读文件**。
 
-| 超参 | 默认 | 说明 |
+| **超参** | **默认** | **说明** |
 |------|------|------|
 | `resume` | train：`latest`（没有文件则从头）；eval：`best` | `false` / `latest` / `best` / 命名快照（如 `step_000100`） |
 | `resume_from` | 无 | 显式覆盖：本 Run 内 stem，其它 Run 的 `.pt` 路径，或 `sibling`（eval 按 index 找同 seed、同因素且 `mode=train` 的 checkpoint） |
@@ -572,7 +572,7 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 
 映射：
 
-| source | 落到哪 |
+| **source** | **落到哪** |
 |--------|--------|
 | `custom_torch` | `system.load_checkpoint(stem)` → `load_state_dict` |
 | Transformers Trainer | `resume_from_checkpoint=` 指向对应目录或文件 |
@@ -580,9 +580,9 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 
 resume **不**改 config，**不**自己 write `result.json`。
 
-##### 6.11.4 独立 `mode=eval` vs train 里的周期 test
+#### 6.11.4 独立 `mode=eval` vs train 里的周期 test
 
-| | train 的 `on_eval_period` | `mode=eval` |
+| **比较项** | **train 的 `on_eval_period`** | **`mode=eval`** |
 |--|---------------------------|-------------|
 | 是什么 | 同一 train **Algorithm** 的 hook | **另一个** Algorithm（另一次 Run） |
 | Flow | 仍是 `mode=train` 的 execute | 另一次 execute，`mode=eval` |
@@ -595,11 +595,11 @@ resume **不**改 config，**不**自己 write `result.json`。
 
 ## 7. `structure/system/`（实现 + 类）
 
-管理计算在硬件上的执行（CONCEPT §6 **system**）：设备、精度、并行、内存与 IO。prepare 确认设备与输出位置；checkpoint **文件**读写在本层，**resume 语义**在 algorithm（§6.11.3）。声明字段由 **`SystemConfig`** 从 JSON / Config 加载。
+管理计算在硬件上的执行（concept §6 **system**）：设备、精度、并行、内存与 IO。prepare 确认设备与输出位置；checkpoint **文件**读写在本层，**resume 语义**在 algorithm（§6.11.3）。声明字段由 **`SystemConfig`** 从 JSON / Config 加载。
 
 ### 7.1 本层自有类型
 
-| 类型 | 职责 |
+| **类型** | **职责** |
 |------|------|
 | **`System`** | 设备、精度、并行、输出路径、checkpoint **IO**；持有 **Logger** |
 | **`Logger`** | 本 Run 的文本日志：stdout + `assets/logs/`（必写）；`report(algorithm_tracker, split, extra)` 才能打出带 Loss 的行 |
@@ -624,7 +624,7 @@ resume **不**改 config，**不**自己 write `result.json`。
 
 执行环境与推理运行时；与 PyTorch 生态共轭、按需接入。**Accelerate 不在本层**（见 algorithm §6.4）。
 
-| 来源 | 复用什么 |
+| **来源** | **复用什么** |
 |------|----------|
 | Native PyTorch | `torch.device`、`.to(device)`、autocast / GradScaler、单进程 IO；分布式原语若直用也归在此，不单列 `torch.distributed` |
 | CUDA / MPS / CPU | 设备枚举与可用性探测 |
@@ -638,7 +638,7 @@ resume **不**改 config，**不**自己 write `result.json`。
 
 dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必须字段：**
 
-| 字段 | 说明 |
+| **字段** | **说明** |
 |------|------|
 | `source` | 执行环境来源（如 `native` / `llama_cpp` / `vllm` / `sglang`） |
 | `path` | system 超参等资源路径 |
@@ -648,7 +648,7 @@ dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必
 
 ### 7.5 Factory
 
-| 类 | 能力 |
+| **类** | **能力** |
 |----|------|
 | `SystemFactory` | `build(system_config: SystemConfig, assets_dir) → System` |
 
@@ -696,7 +696,7 @@ Logger **不**改 AlgorithmTracker 的 mean/history；**不**写 TensorBoard。
 
 `Control.seed` 是 Run 的随机源（`study.yaml` 的 `seeds`，不写进 system）。确定性 / cudnn 写在 **Study 的 `experiment_config.yaml` → `system`**（`study.yaml` 的 `fixed.system` 可覆写），进 Run `id` hash。**prepare 在建构 Data / Model 之前**调用 `system.apply_runtime(seed, system_config)`，一次落地：
 
-| 做的事 | 默认 | 配置（`system.config` / 扩展键） |
+| **做的事** | **默认** | **配置（`system.config` / 扩展键）** |
 |--------|------|----------------------------------|
 | `random` / `numpy` / `torch.manual_seed` / `torch.cuda.manual_seed(_all)` | 有 seed 就设 | `Control.seed`（不在 system 必须表） |
 | `torch.use_deterministic_algorithms` | 关（`warn_only=True`，避免个别算子直接炸） | `deterministic` |
@@ -710,9 +710,9 @@ Logger **不**改 AlgorithmTracker 的 mean/history；**不**写 TensorBoard。
 
 ## 8. `structure/control/`（实验侧控制器）
 
-编排层级与 CONCEPT §2 / §5 一致：
+编排层级与 concept §2 / §5 一致：
 
-| 层级 | 含义 |
+| **层级** | **含义** |
 |------|------|
 | **Study** | 一轮研究：编排壳 + artifact 根（`studies/<name>/`） |
 | **Experiment** | 研究因素的一个取值点（不含 seed；无顶层目录）。产物是该点下各 Run 的 **mean / std / min / max**（写在 Study `process.json` 的 `experiments[]`） |
@@ -720,12 +720,12 @@ Logger **不**改 AlgorithmTracker 的 mean/history；**不**写 TensorBoard。
 
 配置分两级：**Study 根上的 `experiment_config`** 是基底默认（类型 `ExperimentConfig`，名字沿用历史，不是「某一个 Experiment 实例」）；**`run_config`** 套在其上，作为本 Run 写入 artifact 的完整 Config。
 
-**Control** 是 Structure 内对象：持有本 Run 的 **`RunConfig`**（四层 + `seed` + `id` 等）。**不设 `control_api`**。  
+**Control** 是 Structure 内对象：持有本 Run 的 **`RunConfig`**（四层 + `seed` + `id` 等）。**不设 `control_api`**。
 库内不设顶层 `defaults/`；`experiment_config.yaml` 放在 **Study 根**（与 `study.yaml` 同级）。
 
 ### 8.1 本层类型
 
-| 类型 / 单元 | 职责 |
+| **类型 / 单元** | **职责** |
 |-------------|------|
 | **`DataConfig` / `ModelConfig` / `AlgorithmConfig` / `SystemConfig`** | 各层 dataclass（§4–§7） |
 | **`ExperimentConfig`** | dataclass；Study 基底（`experiment_config.yaml` 的类型化） |
@@ -753,7 +753,7 @@ flowchart TB
   runCfg --> control
 ```
 
-| 形态 | 落盘 / 位置 | 说明 |
+| **形态** | **落盘 / 位置** | **说明** |
 |------|-------------|------|
 | **`experiment_config`** | Study 根 `experiment_config.yaml` | 该 Study 的基底默认；类型 → `ExperimentConfig` |
 | **`run_config`** | `runs/<id>/config.yaml` | **套在**基底之上的本 Run 完整配置；类型 → `RunConfig`；含四层 + `seed` + tags + 可选 `version` 等；**`id` 由除 `id` / `description` 外的内容 hash 得出** |
@@ -769,7 +769,7 @@ flowchart TB
 
 ### 8.3 `RunConfig` 字段与 `id`（hash）
 
-| 字段 | 说明 |
+| **字段** | **说明** |
 |------|------|
 | `id` | **由除 `id` / `description` 以外的配置内容 hash 得到**；标识「这份配置内容」 |
 | `seed` | 本 Run 的 seed（参与 hash） |
@@ -787,7 +787,7 @@ flowchart TB
 
 因此：配置内容相同 → `id` 相同；内容一变 → `id` 变。编排侧 **不**人工指定 `id`。
 
-**落盘路径：** `studies/<name>/runs/<id>/`（见 LAYOUT）。Run 是最底层；相同内容复用该目录，新的 `version` 产生新的 Run 目录。
+**落盘路径：** `studies/<name>/runs/<id>/`（见 layout）。Run 是最底层；相同内容复用该目录，新的 `version` 产生新的 Run 目录。
 
 **`ExperimentConfig`** 与 `RunConfig` 在四层上同构，便于合并；基底里不带 `id`；`id` 只在合并成 `run_config` 后计算。
 
@@ -822,7 +822,7 @@ system:
   config: { ... }
 ```
 
-| API（名可微调） | 行为 |
+| **API（名可微调）** | **行为** |
 |----------------|------|
 | `experiment_config_from_json(path) → ExperimentConfig` | 读 Experiment 基底 |
 | `run_config_from_merge(exp, patch) → RunConfig` | 基底 ⊕ 补丁，并 **hash 生成 `id`** |
@@ -916,13 +916,13 @@ RunConfig 可选字段 `version` 参与 `id` hash，用于让相同实验配置�
 
 ### 9.2 `layout.py` / `paths.py` / `errors.py`
 
-| 符号 | 职责 |
+| **符号** | **职责** |
 |------|------|
 | `ArtifactLayout` | 一次 Run 的路径句柄（含 `study_dir`） |
 | `artifact_layout(study_dir, run_dir)` | 根为 `study_dir/runs/<run_dir>/` |
 | `ensure_study_layout(study_dir)` | 确保 `docs/`、`shared/`、`runs/` |
 
-| 成员 | 含义 |
+| **成员** | **含义** |
 |------|------|
 | `root` | `…/runs/<run_dir>/` |
 | `config_path` / `result_path` / `assets_dir` | 本 Run |
@@ -952,13 +952,13 @@ collect → summarize → Flow **write** 定稿。失败时 Runner 可直接 `wr
 
 **Runtime vs 快照（必守）：** `state` 里可有 Loader / Module / AlgorithmTracker / Logger 句柄；result 只接受可序列化投影。summarize 丢弃这些 runtime 对象。大对象走 **asset**，result 只记路径。
 
-`data.source`（`stub` / `torch`）须显式，避免 unit 误下真数据（见 STUDY_GUIDE）。
+`data.source`（`stub` / `torch`）须显式，避免 unit 误下真数据（见 Study 指南）。
 
 ### 9.5 `index.py`
 
 Study 编排清单。`rpipe.structure.artifact.index`，**不是** Flow 的 write 阶段。
 
-| 符号 | 职责 |
+| **符号** | **职责** |
 |------|------|
 | `build_index(...)` | 组装 Study + Experiment 分组 + 计划中的 Run |
 | `write_index` / `load_index` | 读写 Study 根下的 index |
@@ -972,7 +972,7 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 
 数据集、权重 / checkpoint、AlgorithmTracker 曲线、Logger 文本都是**文件**，所以走 asset，不进 result 正文。
 
-| 位置 | 内容 |
+| **位置** | **内容** |
 |------|------|
 | `shared/data/`、`shared/model/` | Study 内共享 |
 | `runs/<id>/assets/` | 本 Run |
@@ -983,7 +983,7 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 
 ### 9.7 阶段权限
 
-| Phase | config | asset | result |
+| **Phase** | **config** | **asset** | **result** |
 |-------|--------|-------|--------|
 | prepare | 读 | 读写 | — |
 | execute | — | 读写 | — |
@@ -994,7 +994,7 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 
 ### 9.8 与 control 契约
 
-| 层次 | 位置 | 做什么 |
+| **层次** | **位置** | **做什么** |
 |------|------|--------|
 | 字节 / 格式 | `artifact/*/format.py`、`io.py` | 解析 mapping、原子写 |
 | 业务契约 | `structure/control/contract.py` | 字段、result 必选键（含 `status`） |
@@ -1008,11 +1008,11 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 
 多实验管理与调度脚本化。与 **control** 并列：control 做**一次**合并；make **循环**调用 control 与 artifact。不直接 import 四层或 flow；调度时经 `algorithm_api` 复用 resume 的 sibling 依赖解析，避免另写一套匹配规则。
 
-| 职责 | 说明 |
+| **职责** | **说明** |
 |------|------|
 | 展开 | 读 Study 声明（`axes` × `seeds`）→ patch 列表 |
 | 写格子 | 每个 patch → `run_config_from_merge` → `runs/<id>/config.yaml`；写 **index**（`log` 指向该 Run 的 `run.log`） |
-| 共享数据 | 写格子之后、spawn 之前：经 `data_api` 按 `data.name`+`source` 各 materialize 一次到 `shared/data/`（忽略 `train_size`）。已有该数据集目录则跳过。下载把 tqdm 静音。`--skip-launch` 只写格子，不下载 |
+| 共享数据 | 写格子之后、spawn 之前：经 `data_api` 按 `data.name`+`source` 各 materialize 一次到 `shared/data/`（忽略 `train_size`）。只有 `.ready` 与当前 origin 一致才跳过。下载把 tqdm 静音。`run --skip-launch` 只写格子，不下载；`flow.prepare_shared: false` 的 Study 由 recipe 准备专用数据 |
 | 写脚本 | 默认 `--round auto`：先按 `system.device` 分流；CPU Run 不绑 GPU，CUDA Run 再把同类、相近耗时任务按显存装箱，组末 **`wait`**。手写 `--round N` 则按资源类型均匀切块。仅 CUDA Run 设置 `CUDA_VISIBLE_DEVICES`；可选 `--split-round`。清单在 `scripts/jobs.json`（含 device 与 wait 组） |
 | `wait` | 一组并发的内存闸门：本组进程全部退出、显存释放完，才启动下一组。不 `wait` 则下一组会挤进还在跑的进程，显存叠加，容易 OOM。eval 波次同样：全部 train `wait` 完再开 |
 | 墙钟估计 | 一组取组内最慢那条；整轮 conservative 墙钟 = 各组 max **再加总**。只供排班参考，不是实测。训练 Logger 的 `elapsed` 才是该进程实测 |
@@ -1028,6 +1028,6 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 ## 11. 演进
 
 1. 编排：Study → Experiment → Run；artifact 挂在 Study 下（`shared/` + `runs/<id>/`）。
-2. 配置：基底 ⊕ **make** → run config → control；`study.yaml` 声明 `axes` / `seeds`（见 STUDY_GUIDE）。
+2. 配置：基底 ⊕ **make** → run config → control；`study.yaml` 声明 `axes` / `seeds`（见 Study 指南）。
 3. result 快照契约（§9.4）先文档后单测固化。
 4. Flow：summarize 之后是 **write**（写 result），再 **process**。

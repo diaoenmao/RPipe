@@ -1,6 +1,6 @@
 # Bugs
 
-> 这里只保留尚未解决的缺陷。编号只增不复用；修复并验证后移除条目，历史证据留在 Git 与对应 Study 报告。正常差异或决定不修的事项不列为开放缺陷。权威仍是 [CONCEPT.md](../code/concept.md) → [LAYOUT.md](../code/layout.md) → 代码。
+> 这里只保留尚未解决的缺陷。编号只增不复用；修复并验证后移除条目，历史证据留在 Git 与对应 Study 报告。正常差异或决定不修的事项不列为开放缺陷。权威仍是 [concept.md](../code/concept.md) → [layout.md](../code/layout.md) → 代码。
 
 新增一条用下面的块，**一条一事**。
 
@@ -19,4 +19,4 @@
 
 目前没有开放缺陷。下次新增问题从 **B-019** 起编号。
 
-已关闭项不在此处重复列出；修复、验证及维护关闭的不同口径见 [record.md](record.md)、[BRAINSTORM.md](brainstorm.md) §4 和对应 Study 报告。没有开放条目不等于所有历史根因已查明或所有场景已验证。
+已关闭项不在此处重复列出；修复、验证及维护关闭的不同口径见 [record.md](record.md)、[brainstorm.md](brainstorm.md) §4 和对应 Study 报告。没有开放条目不等于所有历史根因已查明或所有场景已验证。

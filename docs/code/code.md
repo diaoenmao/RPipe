@@ -1,34 +1,34 @@
 # 代码结构
 
-前置：[CONCEPT.md](concept.md)、[LAYOUT.md](layout.md)。
+前置：[concept.md](concept.md)、[layout.md](layout.md)。
 
 库内两柱：**structure** + **flow**。artifact 在 `structure/artifact/`，make 在 `structure/make/`，cli 在 `flow/cli.py`。Study 声明在包外 `studies/`。
 
-| 柱 | 分册 |
+| **柱** | **分册** |
 |----|------|
 | structure（api / control / 四层 / artifact / **make**） | [structure.md](structure.md) |
 | flow | [flow.md](flow.md) |
 
-测试约定见 [TESTING.md](../development/testing.md)、LAYOUT。已知缺陷见 [BUGS.md](../development/bugs.md)。
+测试约定见 [testing.md](../development/testing.md)、layout。已知缺陷见 [bugs.md](../development/bugs.md)。
 
 ---
 
 ## 1. 依赖
 
-- `studies/` 只 import `rpipe`；库不反向依赖包外
+- Study 复用 `rpipe` 公共接口，专用实现可依赖相应第三方库或固定归档源码。库不静态依赖正式 Study；Flow 按声明加载 recipe / 阶段扩展
 - `flow` 可 import `structure`（含 `artifact`、`make`、`control`）
 - structure 跨层只经 `structure.api`；四层实现互不直接 import
-- `structure` 只被 flow 调用；**make** 调用 control 与 artifact，调度的 sibling 依赖解析经 algorithm_api 复用算法规则
+- `structure` 提供可由 Flow 或编程调用方使用的接口；**make** 调用 control 与 artifact，调度的 sibling 依赖解析经 algorithm_api 复用算法规则
 - 第三方运行时适配写在 structure 各层内部
 
-**编排：** Study → Experiment → Run。  
+**编排：** Study → Experiment → Run。
 **config：** 基底 ⊕ make 展开的补丁 → `runs/<id>/` 下的 config → prepare 读回构造 **control**。Flow 不改 config。
 
 ---
 
 ## 2. 库内树
 
-与 [LAYOUT.md](layout.md) 一致。`src/rpipe/` ↔ `tests/rpipe/`。
+与 [layout.md](layout.md) 一致。`src/rpipe/` ↔ `tests/rpipe/`。
 
 ```
 src/rpipe/
@@ -54,7 +54,7 @@ src/rpipe/
   __main__.py
 ```
 
-| 包 | 职责 |
+| **包** | **职责** |
 |----|------|
 | `structure.api` | 四层对外门面 |
 | `structure.control` | control 对象、config 合并、id hash、契约 |
@@ -67,7 +67,7 @@ src/rpipe/
 
 ## 3. 包外 studies
 
-见 LAYOUT。写 `study.yaml` 与基底；经 `python -m rpipe` 调用 make 与阶段链。
+见 layout。写 `study.yaml` 与基底；经 `python -m rpipe` 调用 make 与阶段链。
 
 ```
 studies/<study>/
@@ -85,7 +85,7 @@ studies/<study>/
 
 ## 4. 测试
 
-| 树 | 对应 |
+| **树** | **对应** |
 |----|------|
 | `tests/rpipe/structure/` | `src/rpipe/structure/` |
 | `tests/rpipe/flow/` | `src/rpipe/flow/` |
@@ -96,6 +96,6 @@ studies/<study>/
 
 ## 5. 读法
 
-1. [CONCEPT.md](concept.md) → [LAYOUT.md](layout.md) → **本总览**
+1. [concept.md](concept.md) → [layout.md](layout.md) → **本总览**
 2. 改某柱打开对应分册（structure / flow）
 3. 开实验看 [README.md](../../studies/README.md)；入口是 `python -m rpipe`
