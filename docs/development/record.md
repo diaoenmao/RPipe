@@ -93,7 +93,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 
 按《CI CD 执行规范》和《多人协作代码开发规范》写下 [cicd.md](cicd.md)。仓库只有一名维护者，合入 `dev` 和 `dev → main` 都不要求另一人 Approve，必需检查通过后自行合并。
 
-分支路径由 `.github/workflows/branch-flow.yml` 检查：工作分支的 PR 目标必须是 `dev`，`main` 只接受来自 `dev` 的 PR。`dev` Ruleset 与新建的 [main Ruleset](https://github.com/diaoenmao/RPipe/rules/24809015) 都要求 `Unit tests`、`Build package`、`Branch flow`，并禁止直接 push、force push 和删除。`main` 的旧版 branch protection 仍在，只要求 `Build package`；实际生效的是更严的 Ruleset。对外发布和安装包归档仍未接入。
+分支路径由 `.github/workflows/branch-flow.yml` 检查：工作分支的 PR 目标必须是 `dev`，`main` 只接受来自 `dev` 的 PR。`dev` Ruleset 与 [main Ruleset](https://github.com/diaoenmao/RPipe/rules/24809015) 都要求 `Unit tests`、`Build package`、`Branch flow`，并禁止直接 push、force push 和删除。`main` 的旧版 branch protection 已删除，Ruleset 是唯一闸门。仓库打开了 Auto-merge。不自动删除头分支，避免发布 PR 删掉 `dev`。对外发布和安装包归档仍未接入。
 
 受控失败：[PR #20](https://github.com/diaoenmao/RPipe/pull/20) 用 `tmp/branch-flow-probe` 直接向 `main` 开 PR。[Branch flow](https://github.com/diaoenmao/RPipe/actions/runs/37976079219) 失败，`mergeStateStatus` 为 BLOCKED。PR 已关闭，远端分支已删除。同一次的 Unit Tests 与 Package Check 在确认阻断后取消。
 

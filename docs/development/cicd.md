@@ -19,7 +19,9 @@ feature/* / fix/* / refactor/* → PR → dev → 发布 PR → main
 
 `dev` 和 `main` 都不能直接 push，不能 force push，也不能删除。合并由 GitHub 在必需检查通过后完成。冲突在工作分支上解决。
 
-当前维护者就是仓库所有者。合入 `dev` 和 `dev → main` 都不要求另一人 Approve，必需检查通过后自行合并。增加维护者之后，再按改动责任范围打开评审。
+当前维护者就是仓库所有者。合入 `dev` 和 `dev → main` 都不要求另一人 Approve。GitHub 不允许作者批准自己的 PR，仓库里又没有第二个人，所以发布 PR 的建议批准人数不启用。必需检查通过后自行合并，也可以打开 Auto-merge，等检查完成后由 GitHub 合并。增加维护者之后，再按改动责任范围打开评审。
+
+工作分支合并后由作者删除。不开启仓库级的自动删除头分支，因为 `dev → main` 的发布 PR 会把长期分支 `dev` 一起删掉。一人维护，暂不使用 CODEOWNERS。
 
 ## 二、触发
 
@@ -68,8 +70,6 @@ Package Check 在 Actions 里执行 `python -m build`，再在独立虚拟环境
 
 ## 五、当前状态
 
-`dev` 的 Ruleset 从 2026-09-22 起生效。[main Ruleset](https://github.com/diaoenmao/RPipe/rules/24809015) 于 2026-10-10 建立。两边都要求 PR，禁止 force push 和删除，没有人可以绕过，必需检查是 `Unit tests`、`Build package` 和 `Branch flow`，并且分支要包含目标分支的最新提交。
-
-`main` 上 2026-10-10 之前的旧版 branch protection 仍在。它只把 `Build package` 列为必需检查，也不要求分支对齐。实际合并必须同时满足旧规则和 Ruleset，所以生效条件是更严的 Ruleset。
+`dev` 的 Ruleset 从 2026-09-22 起生效。[main Ruleset](https://github.com/diaoenmao/RPipe/rules/24809015) 于 2026-10-10 建立，并成为 `main` 上唯一的分支规则。旧版 branch protection 已删除。两边都要求 PR，禁止 force push 和删除，没有人可以绕过，必需检查是 `Unit tests`、`Build package` 和 `Branch flow`，并且分支要包含目标分支的最新提交。仓库已打开 Auto-merge。
 
 受控失败见 [PR #20](https://github.com/diaoenmao/RPipe/pull/20)：`tmp/branch-flow-probe` 直接合向 `main` 时，[Branch flow](https://github.com/diaoenmao/RPipe/actions/runs/37976079219) 失败，合并状态为 BLOCKED。该 PR 已关闭，分支已删除。同一次打开的 Unit Tests 和 Package Check 在确认阻断后取消，不作为通过或失败依据。
