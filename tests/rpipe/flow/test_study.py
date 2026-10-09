@@ -59,3 +59,20 @@ def test_invalid_hook_does_not_leak_modules(tmp_path):
 def test_stage_order_and_duplicates_are_rejected(phases):
     with pytest.raises(ValueError, match='canonical order'):
         FlowRunner(phases)
+
+
+def test_recipe_owned_shared_preparation_is_not_called(tmp_path, monkeypatch):
+    from rpipe.flow.cli import _prepare_shared
+    (tmp_path / 'study.yaml').write_text('flow:\n  prepare_shared: false\n', encoding='utf-8')
+    def forbidden(*args):
+        raise AssertionError('must not build custom data before recipe registration')
+    monkeypatch.setattr('rpipe.flow.cli.data_api.prepare_shared', forbidden)
+    _prepare_shared(tmp_path, [])
+
+
+@pytest.mark.parametrize('value', ['null', '1', '"false"'])
+def test_shared_preparation_requires_boolean(tmp_path, value):
+    from rpipe.flow.cli import _prepare_shared
+    (tmp_path / 'study.yaml').write_text(f'flow:\n  prepare_shared: {value}\n', encoding='utf-8')
+    with pytest.raises(TypeError, match='prepare_shared'):
+        _prepare_shared(tmp_path, [])

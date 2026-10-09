@@ -356,3 +356,7 @@ make 在 Study 根写 `provenance.json`（与 `index.json` 同级，不进 Git�
 缺失项记为 `missing`，不算通过。`--atol` 默认 `0`，`--rtol` 默认 `0`，即逐位一致。`--out <file>` 把完整结果写成 JSON；终端只打每项的通过与最大差。全部通过退出 0，任一不通过退出 1，参数或文件错误退出 2。
 
 compare 不重跑计算，不改任何 Run 文件。和外部实现（例如旧 `main` 代码）对比时，先让 Study 的 recipe 把外部结果写成同样的 Run 目录格式，再用 compare。
+
+### Study 专用数据准备
+
+`flow.prepare_shared: false` 关闭 make/launch 的通用共享数据预构建（默认 true）。仅用于 recipe 必须在每个 Run 的 prepare 内先生成隔离数据或统计的 Study；此时 recipe / Data builder 负责准备并报告缺失原始数据。该字段必须是布尔值，不能因为未知 source 自动吞掉构造错误。main_probe 使用此选项，make 不加载探针，launch 的每个 Run 才准备一个组合。

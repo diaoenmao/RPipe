@@ -46,6 +46,13 @@ from rpipe.structure.make.capacity import (
 
 
 def _prepare_shared(study_dir: Path | str, config_paths: list[Path]) -> None:
+    study = load_study_yaml(study_dir)
+    flow = study.get('flow') or {}
+    enabled = flow.get('prepare_shared', True)
+    if not isinstance(enabled, bool):
+        raise TypeError('flow.prepare_shared must be a boolean')
+    if not enabled:
+        return
     names = data_api.prepare_shared(study_dir, config_paths)
     if names:
         print('shared data: ' + ', '.join(names), flush=True)

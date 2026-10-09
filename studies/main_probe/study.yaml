@@ -1,12 +1,13 @@
 study: main_probe
 origin: foreign
-description: 'Pinned main 98648f3 recipe: 60 optimizer steps, full test every 30 steps; native side of the original-code probe'
+description: Paired original/current 60-step numerical probe; one data/model pair
+  per Flow Run
 experiment:
   name: main_probe
 fixed:
   version: main-probe-98648f3
   data:
-    source: torch
+    source: main_probe
     config:
       batch_size: 250
       test_batch_ratio: 4
@@ -14,30 +15,29 @@ fixed:
       num_workers: 0
       augment: true
   algorithm:
-    source: custom_torch
+    source: main_probe
     mode: train
     num_steps: 60
     progress_unit: step
-    log_period: 7
     eval_period: 30
     eval_num_steps: -1
-    checkpoint: percent
+    log_period: 30
+    checkpoint: latest
     checkpoint_period: 30
     save_best: true
     best_metric: Loss
+    best_mode: min
     best_split: test
     optimizer: SGD
     lr: 0.1
     momentum: 0.9
-    weight_decay: 0.0005
     nesterov: true
-    max_grad_norm: 0
+    weight_decay: 0.0005
+    max_grad_norm: 0.0
     scheduler: cosine
+    T_max: 60
     eta_min: 0.0
-    checkpoint_percents:
-    - 0.5
-    - 1.0
-    step_period: 1
+    resume: false
   system:
     device: cuda
     deterministic: true
@@ -53,9 +53,6 @@ axes:
   - mlp
   - cnn
   - resnet18
-  algorithm.mode:
-  - train
-  - eval
 seeds:
 - 0
 tags:
@@ -65,3 +62,8 @@ tags:
   tags:
   - baseline
 run_description: data={data_name} model={model_name} mode={mode} seed={seed}
+recipe: recipe.py
+flow:
+  study_phases: true
+  prepare_shared: false
+freeze: true
