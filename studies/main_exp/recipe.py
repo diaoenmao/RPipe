@@ -190,6 +190,9 @@ def register(ctx: Any) -> None:
         raise RuntimeError('the same-device original/native preflight must pass before launch')
     if (report.get('environment') or {}).get('torch') != torch.__version__:
         raise RuntimeError('Torch environment changed after preflight')
+    for flag in ('cudnn_allow_tf32', 'matmul_allow_tf32'):
+        if ctx.config['system'].get(flag) is not False or report.get('controls', {}).get(flag) is not False:
+            raise RuntimeError(f'main_exp requires {flag}=false in both Run and preflight')
     install(ctx.shared_data_dir, seed=ctx.seed)
 
 
@@ -373,13 +376,15 @@ def preflight(data_root: Path | str, output_dir: Path | str, *, steps: int = 200
     output = Path(output_dir).resolve()
     output.mkdir(parents=True, exist_ok=False)
     system_config = SystemConfig.from_mapping({'device': device, 'deterministic': True,
-                                              'cudnn_benchmark': False, 'cudnn_deterministic': True})
+                                              'cudnn_benchmark': False, 'cudnn_deterministic': True,
+                                              'cudnn_allow_tf32': False, 'matmul_allow_tf32': False})
     pairs = list(combinations or [(d, m) for d in DATA_NAMES for m in MODEL_NAMES])
     result: dict[str, Any] = {'historical_commit': COMMIT, 'current_commit': subprocess.check_output(
         ['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip(),
         'steps': steps, 'sampler_steps': HORIZON, 'seed': seed, 'device': device,
         'torch': torch.__version__, 'controls': {'deterministic': True, 'benchmark': False,
-        'CUBLAS_WORKSPACE_CONFIG': os.environ['CUBLAS_WORKSPACE_CONFIG']},
+        'CUBLAS_WORKSPACE_CONFIG': os.environ['CUBLAS_WORKSPACE_CONFIG'],
+        'cudnn_allow_tf32': False, 'matmul_allow_tf32': False},
         'recipe_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(), 'runs': []}
     start = time.perf_counter()
 

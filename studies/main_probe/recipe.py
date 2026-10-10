@@ -29,6 +29,8 @@ def validate(config, seed, engine):
         raise ValueError('main_probe requires the pinned data recipe')
     if not config['system'].get('deterministic') or config['system'].get('cudnn_benchmark'):
         raise ValueError('main_probe requires deterministic execution without benchmark')
+    if any(config['system'].get(flag) is not False for flag in ('cudnn_allow_tf32', 'matmul_allow_tf32')):
+        raise ValueError('main_probe requires explicit cudnn_allow_tf32=false and matmul_allow_tf32=false')
     return pair
 
 

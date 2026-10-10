@@ -166,7 +166,8 @@ class MainArchive:
 def runtime_config(device: str) -> Any:
     from rpipe.structure.system.config import SystemConfig
     return SystemConfig.from_mapping({'device': device, 'deterministic': True,
-                                     'cudnn_benchmark': False, 'cudnn_deterministic': True})
+                                     'cudnn_benchmark': False, 'cudnn_deterministic': True,
+                                     'cudnn_allow_tf32': False, 'matmul_allow_tf32': False})
 
 
 def seed_runtime(device: str) -> Any:
@@ -373,7 +374,7 @@ def run_pair(workspace: Path, device: str, pair: tuple[str, str], native: tuple[
         'dev_commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(), 'device': device, 'torch': torch.__version__, 'seed': 0,
         'expected_combinations': pairs, 'full_eight_combination_matrix_selected': len(pairs) == 8,
         'scope': 'full_matrix' if len(pairs) == 8 else 'diagnostic_subset',
-        'recipe': mapping(), 'control_changed_from_main_default': ['deterministic=true', 'benchmark=false', 'CUBLAS_WORKSPACE_CONFIG=:4096:8'],
+        'recipe': mapping(), 'control_changed_from_main_default': ['deterministic=true', 'benchmark=false', 'CUBLAS_WORKSPACE_CONFIG=:4096:8', 'cudnn_allow_tf32=false', 'matmul_allow_tf32=false'],
         'gate': {'loss_atol': 1e-6, 'parameter_atol': 1e-6, 'parameter_rtol': 1e-5,
                  'integers_and_correct_sample_counts': 'equal'}, 'runs': [], 'complete': False, 'passed': None}
     result.update(selected_complete=False, selected_passed=None, full_matrix_complete=False, full_matrix_passed=None,
