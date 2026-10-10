@@ -24,4 +24,6 @@ main-exp-flow-20261010-02 已完成全部连续训练。CIFAR10 CNN seed0 首次
 4. 先完成 runtime 回归、同 checkpoint 的受控并发 FP32 诊断及 main_probe 八格复验，再通过 main_exp 同设备 600-step 八格前置门。通过后执行新基线完整矩阵，原始数据清单和固定门不变。
 5. 利用已确认的三重型任务并发经验，main_exp 以显式 `--round 3` 展开本轮计划；库已有配置入口，容量估算器 B-022 不在此处宣布修复。持续检查显存、唯一进程、完整预算及评测轨迹，不减少训练或 test 数量。
 
+2026-10-11 进一步核对原始诊断字段与源码，发现归档 train_model.py 在导入时执行 `cudnn.benchmark = True`。Run prepare 先应用配置，随后导入归档，实际开关被覆盖；诊断实际值为 true，不能写成 benchmark=false 条件下的反例。归档适配器须在导入前保存、在 finally 中恢复该全局开关，保持归档字节不变。Study prepare 完成对象构造后检查真实 deterministic、cuDNN 与 TF32 开关，保存实际值，不仅检查配置 / 元数据。recipe 同时核对 preflight 的源码 hash，拒绝在重新 make 后沿用旧源码的前置门。修复发生在正式 version03 长训启动前，64 个 Run 尚无 result；重新冻结未执行计划并重新做前置对照，旧前置证据另行保留。main_probe 已通过的源码清单不包含此 main_exp 专用适配器，数值证据不受这项专用改动影响。
+
 关闭 TF32 是此次受控数值环境方案，不是所有设备的逐位一致保证；B-023 需新基线完整独立评测验收后再决定关闭。

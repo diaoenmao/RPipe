@@ -89,6 +89,9 @@ class Archive:
 
     def __init__(self) -> None:
         bootstrap()
+        import torch
+
+        benchmark = torch.backends.cudnn.benchmark
         self.manifest = export_source()
         roots = ('config', 'module', 'dataset', 'model', 'metric', 'train_model')
         is_old = lambda name: any(name == root or name.startswith(root + '.') for root in roots)
@@ -117,6 +120,9 @@ class Archive:
             sys.modules.update(saved)
             sys.path[:] = old_path
             sys.argv = old_argv
+            # Archived train_model sets benchmark=True at import. Importing
+            # historical code must not override the current Run's controls.
+            torch.backends.cudnn.benchmark = benchmark
 
     def configure(self, data_name: str, model_name: str, seed: int, device: str = 'cpu') -> dict[str, Any]:
         if data_name not in DATA_NAMES or model_name not in MODEL_NAMES:
@@ -190,6 +196,11 @@ def register(ctx: Any) -> None:
         raise RuntimeError('the same-device original/native preflight must pass before launch')
     if (report.get('environment') or {}).get('torch') != torch.__version__:
         raise RuntimeError('Torch environment changed after preflight')
+    from rpipe.structure.artifact.provenance import source_files
+    from rpipe.structure.make import load_study_yaml
+
+    if report.get('source_hashes') != source_files(ctx.study_dir, load_study_yaml(ctx.study_dir)):
+        raise RuntimeError('main_exp preflight sources changed; rerun preflight before launch')
     for flag in ('cudnn_allow_tf32', 'matmul_allow_tf32'):
         if ctx.config['system'].get(flag) is not False or report.get('controls', {}).get(flag) is not False:
             raise RuntimeError(f'main_exp requires {flag}=false in both Run and preflight')
