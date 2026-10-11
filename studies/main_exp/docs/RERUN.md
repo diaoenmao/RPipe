@@ -2,11 +2,26 @@
 
 ## 一、摘要
 
+### 2026-10-12 当前短复验
+
+通过现有 `recipe.preflight` 完成 MNIST / linear、seed0、CUDA 的 200-step 原代码对照；参数及 Loss 差值为 0，完整 test Accuracy 两侧均为 91.3100%。验证 ID 为 `main-exp-flow-smoke-20261012-01`；不是正式 Flow Run，未覆盖八格 600-step 门。正式 PREFLIGHT、version03 声明及历史完整结果未改写，详见 [最新报告](STUDY_REPORT.md) 与 [短实验证据](flow_smoke_20261012.json)。
+
+### 2026-10-11 及此前的历史验收
+
+以下摘要、条件表与旧日期记录保留原实验事实，不作为当前目录重构后的完整验收。
+
 本次按 [PLAN.md](PLAN.md) 复跑 Flow 重构后的 32 条连续 80000-step 训练与 32 条自身 best 独立评测。main-exp-flow-20261010-02 全部执行成功且单体 checkpoint / tracker 审计通过，但 Study 终验 invalid：CIFAR10 CNN seed0 独立评测少一个正确样本。设备诊断证明相同输入 / 模型在默认 cuDNN TF32 条件下存在预测差异，串行五次也有一次失败，因此停止串行恢复，未替换正式结果。完整旧报告和来源证据保留在 [version02](versions/main-exp-flow-20261010-02/STUDY_REPORT.md)。
 
 当前声明 main-exp-flow-20261011-03，显式关闭 cuDNN / matmul TF32，两侧前置对照与正式链使用一致精度。runtime 针对性 13 passed，核心回归 295 passed / 40 deselected；归档导入副作用修复提交 09e495b 的 600-step 八格前置门已通过，完整矩阵于 2026-10-11 05:03 启动，round=3；全部 64 个 Run 的真实设备开关核验通过。19:48 全部 32 train / 32 eval 成功，原生 Flow exit 0，完整性核查与固定四 seed 终验通过。数据、预算、seed 与固定曲线门不变；旧训练不能充当新精度基线。方案与停止条件见 [eval_recovery.md](eval_recovery.md)。
 
-## 二、执行条件
+## 2026-10-12
+
+1. 实测基线为 `7eb16438` 加未提交重构，MNIST raw 8/8 文件匹配固定 hash；依赖从隔离 `.tmp/runtime` 使用，精度仍显式 FP32。
+2. 手动前置 API 只执行 MNIST / linear 200 steps，sampler / cosine horizon 保持 80000；完整 test10000、输入、RNG、scheduler、正确样本数与参数 / Loss 门通过。成对计算 7.005 s，不是长预算测速。
+3. 原始报告和 checkpoint 在本机 `shared/validation/main-exp-flow-smoke-20261012-01/`，不会随 clone 提供；正式数字、源码 hash、环境与预算写入短实验证据。没有 make / launch main_exp 全矩阵，没有改写旧前置门。
+4. 后续库 collect 入口的重复实现清理只改导出位置，函数 AST 相同；57 passed / 2 skipped 针对性回归通过。完整复验仍须新 version、新 make 和八格前置门。
+
+## 二、历史执行条件
 
 | **项目** | **本次值** |
 | --- | --- |

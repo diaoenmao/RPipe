@@ -884,6 +884,7 @@ structure/artifact/
   paths.py
   errors.py
   index.py
+  provenance.py
   config/
     io.py
     format.py
@@ -901,6 +902,8 @@ structure/artifact/
 ```
 
 `readout/` 只读 index、result、`run.log`、`process.json`，或把数字表写到 `docs/NUMBERS.md`。不跑阶段链，不 import `flow`。命令仍从 `flow/cli.py` 进来。
+
+`provenance.py` 记录来源 / 执行计划的哈希、环境与 Git 信息，并提供 freeze 检查。make 写入，Flow 在执行前核对；Study `flow/` 与 `structure/` 的 Python 源码自动发现，额外输入显式 include。完整范围、覆盖与迁移边界见 [flow.md §14.2](flow.md#142-来源清单)。
 
 ```
 studies/<study>/
@@ -1015,7 +1018,8 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 |------|------|
 | 展开 | 读 Study 声明（`axes` × `seeds`）→ patch 列表 |
 | 写格子 | 每个 patch → `run_config_from_merge` → `runs/<id>/config.yaml`；写 **index**（`log` 指向该 Run 的 `run.log`） |
-| 共享数据 | 写格子之后、spawn 之前：经 `data_api` 按 `data.name`+`source` 各 materialize 一次到 `shared/data/`（忽略 `train_size`）。只有 `.ready` 与当前 origin 一致才跳过。下载把 tqdm 静音。`run --skip-launch` 只写格子，不下载；`flow.prepare_shared: false` 的 Study 由 recipe 准备专用数据 |
+| 共享数据 | 写格子之后、spawn 之前：经 `data_api` 按 `data.name`+`source` 各 materialize 一次到 `shared/data/`（忽略 `train_size`）。只有 `.ready` 与当前 origin 一致才跳过。下载把 tqdm 静音。`run --skip-launch` 只写格子，不下载；`flow.prepare_shared: false` 的 Study 由显式手动入口或 Study prepare / Data builder 准备专用数据，recipe 负责注册 |
+| 来源清单 | 配置与 index 写入后生成 `provenance.json`；自动记录库源码和 Study 两柱源码，额外输入由 `provenance.include` 指定，不执行阶段 hook 或手动实验工具 |
 | 写脚本 | 默认 `--round auto`：先按 `system.device` 分流；CPU Run 不绑 GPU，CUDA Run 再把同类、相近耗时任务按显存装箱，组末 **`wait`**。手写 `--round N` 则按资源类型均匀切块。仅 CUDA Run 设置 `CUDA_VISIBLE_DEVICES`；可选 `--split-round`。清单在 `scripts/jobs.json`（含 device 与 wait 组） |
 | `wait` | 一组并发的内存闸门：本组进程全部退出、显存释放完，才启动下一组。不 `wait` 则下一组会挤进还在跑的进程，显存叠加，容易 OOM。eval 波次同样：全部 train `wait` 完再开 |
 | 墙钟估计 | 一组取组内最慢那条；整轮 conservative 墙钟 = 各组 max **再加总**。只供排班参考，不是实测。训练 Logger 的 `elapsed` 才是该进程实测 |

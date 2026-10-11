@@ -1,6 +1,17 @@
-# main_exp version03 实测报告
+# main_exp 实测报告
 
 ## 一、摘要
+
+### 2026-10-12 重构后单组 200-step 前缀复验
+
+- 目标：通过现有 `recipe.preflight` 对照原 main `4ccb28d` 与重构后的当前链；只做 MNIST / linear、seed0、CUDA、200 steps、完整 test10000，sampler 与 cosine horizon 仍为 80000。
+- 结果：参数与 Loss 最大差均为 0，输入、RNG、scheduler 和正确样本数门通过；两侧 test Accuracy 均为 91.3100%，成对计算 7.005 s。源码在计算期间未变化，详细条件和原始数字见 [短实验证据](flow_smoke_20261012.json)。
+- 当前状态：验证 ID 为 `main-exp-flow-smoke-20261012-01`，源码为 `7eb16438` 加未提交重构；产物在本机 `shared/validation/`，不随 clone 提供。正式 version03 声明、PREFLIGHT 和长实验结果未改写。
+- 边界：这是手动前置对照，不是正式 Flow Run，也不是八格 600-step 门；不能据此解锁长矩阵。实验后的 collect 入口重复实现清理已通过函数 AST 一致性及 57 passed / 2 skipped 针对性回归；本次实测来源仍是清理前快照，后续完整复验必须重新建立基线。
+
+### 2026-10-11 version03 历史完整验收
+
+以下摘要及第二节起记录重构前的完整验收，不作为本轮重构后完整矩阵通过的依据。
 
 main-exp-flow-20261011-03 的新源码八格 600-step 原代码 / 当前链前置对照全部通过，参数最大差均为 0。完整矩阵于 2026-10-11 05:03 启动，按 round=3 调度 32 条连续 80000-step train 与 32 条自身 best 独立 eval。已有 32 条训练正式成功，均完成 80000-step 连续训练及 400 个完整评测点，单体 checkpoint / tracker 核查通过；32 条自身 best 独立评估也全部成功，64 个 Run 的 checkpoint / tracker 合同核查通过。2026-10-11 19:48 原生 Flow 正常退出（exit 0），Study process 应用固定四 seed 曲线门后通过终验。
 

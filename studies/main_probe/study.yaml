@@ -5,7 +5,7 @@ description: Paired original/current 60-step numerical probe; one data/model pai
 experiment:
   name: main_probe
 fixed:
-  version: main-probe-flow-20261011-03
+  version: main-probe-flow-20261012-05
   data:
     source: main_probe
     config:

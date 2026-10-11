@@ -26,8 +26,10 @@ def _study(root, *, freeze=False):
 
 
 def _hook(study, phase, code):
-    path = study / phase / '__init__.py'
-    path.parent.mkdir(exist_ok=True)
+    path = study / 'flow' / phase / 'run.py'
+    path.parent.mkdir(parents=True, exist_ok=True)
+    exports = 'before, run' if 'def before(' in code else 'run'
+    (path.parent / '__init__.py').write_text(f'from .run import {exports}\n', encoding='utf-8')
     path.write_text(code, encoding='utf-8')
     return path
 
@@ -56,7 +58,8 @@ def test_full_cpu_chain_runs_library_then_study_and_aggregates_once(tmp_path):
         assert load_result(result_path)['study_extension'] is True
         assert (result_path.parent / 'assets' / 'study-phases.txt').read_text().splitlines() == list(PHASES)
     files = load_provenance(study)['files']
-    assert all(f'{phase}/__init__.py' in files for phase in PHASES)
+    assert all(f'flow/{phase}/__init__.py' in files for phase in PHASES)
+    assert all(f'flow/{phase}/run.py' in files for phase in PHASES)
 
 
 def test_prepare_before_runs_before_recipe_and_factory(tmp_path):
@@ -125,7 +128,7 @@ def test_generated_run_archive_does_not_change_source_provenance(tmp_path):
     archive.write_text('MODEL = "generated archive"\n', encoding='utf-8')
     assert source_files(study, declared) == before
     check_frozen(study, declared)
-    (study / 'prepare' / 'helper.py').write_text('NEW_SOURCE = True\n', encoding='utf-8')
+    (study / 'flow' / 'prepare' / 'helper.py').write_text('NEW_SOURCE = True\n', encoding='utf-8')
     with pytest.raises(ProvenanceChangedError):
         check_frozen(study, declared)
 
@@ -151,10 +154,13 @@ def test_study_process_failure_preserves_succeeded_runs_and_aggregation(tmp_path
 
 
 @pytest.mark.parametrize('change', ['edit', 'add', 'delete'])
-def test_freeze_includes_stage_helpers_and_blocks_before_selected_execute(tmp_path, monkeypatch, change):
+@pytest.mark.parametrize('filename', ['helper.py', 'run.py'])
+def test_freeze_includes_stage_helpers_and_blocks_before_selected_execute(tmp_path, monkeypatch, change, filename):
     study = _study(tmp_path, freeze=True)
     _hook(study, 'prepare', 'def run(ctx):\n    pass\n')
-    helper = study / 'prepare' / 'helper.py'
+    helper = study / 'flow' / 'prepare' / filename
+    if change == 'add' and filename == 'run.py':
+        helper.unlink()
     if change != 'add':
         helper.write_text('VALUE = 1\n', encoding='utf-8')
     config = expand_study(study)['configs'][0]
@@ -163,7 +169,7 @@ def test_freeze_includes_stage_helpers_and_blocks_before_selected_execute(tmp_pa
     else:
         helper.write_text('VALUE = 2\n', encoding='utf-8')
     declared = load_study_yaml(study)
-    assert 'prepare/helper.py' in provenance_changes(study, declared)
+    assert f'flow/prepare/{filename}' in provenance_changes(study, declared)
     with pytest.raises(ProvenanceChangedError):
         check_frozen(study, declared)
     import rpipe.flow.execute as execute

@@ -12,6 +12,8 @@ MNIST / CIFAR10 × linear / mlp / cnn / resnet18，seed0；全量 train / test�
 
 ## 三、统一 Flow 入口
 
+专用计算与注册在 `structure/algorithm/`，六阶段实现在 `flow/<phase>/run.py`；各 `__init__.py` 仅导出，不写阶段实现。collect 的数值比较 helper 在 `flow/collect/comparison.py`，prepare 的数据准备在 `flow/prepare/data.py`；recipe 只校验并注册专用 source。两柱 Python 源码自动进入 provenance，不再手列源码 include。
+
 `rpipe make / launch studies/main_probe` 展开八个成对 Run，每个 Run 只计算自己的 data/model 组合，包含两侧训练和各自 best 独立评测。Algorithm source 为 `main_probe`，recipe 注册本 Study 的 Data 和成对 Algorithm；CPU 准备由 Study `prepare.before(ctx)` 在库初始化后、recipe 注册前完成，以便原版全 train Stats 在 Data / Model 构造之前落盘。工作区位于该 Run 的 `assets/probe/`，不得共享可变原版 config。
 
 - prepare：归档固定原代码、复制该数据集 raw、重算 Stats，检查该模型 CPU 初始化与前向一致性；之后恢复本 Run 的运行时 seed。普通 make 仅展开声明，不执行探针准备。
@@ -28,4 +30,8 @@ step30 / 60 浮点参数与 SGD momentum 状态 atol1e-6 / rtol1e-5，整数 buf
 
 ## 五、验证边界
 
-CPU 合同门使用伪计算与微小张量验证阶段职责、正常定稿、数值失败和库 compare 失败，不能证明正式数值一致性。维护者已授权在 Flow 重构验证后按计划运行八组探针及 main_exp；正式复跑使用新的 version / Run ID，保留当前基线、数据、设备与失败证据。此前数值证据不能替代本版本重跑验收。
+CPU 合同门使用伪计算与微小张量验证阶段职责、正常定稿、数值失败和库 compare 失败，不能证明正式数值一致性。正式复跑使用新的 version / Run ID，保留当前基线、数据、设备与失败证据。此前数值证据不能替代本版本重跑验收；历史授权与当前限定范围分开，不能自动重启完整矩阵。
+
+### 2026-10-12 本轮短实验
+
+本轮仅运行 main-probe-flow-20261012-05 的 MNIST/linear 与 MNIST/cnn 两个 seed0 成对 Run，沿用上述 60-step 配方、完整 test、FP32 和固定数值门，不改预算或门限。先保存可取得的 version03 报告 / 声明快照，再重新 make；本工作区缺失旧 index / provenance / process，不重建历史记录。首次 version04 因缺 evaluate 在 prepare 失败，原 Run 与快照保留；补齐隔离依赖后换新 version05 复验。原计划第二组为 CIFAR10/cnn，但本机 raw 缺失且下载缓慢；完成 MNIST 校验后改用 MNIST/cnn 控制本轮成本，CIFAR10 不在本次实测覆盖内。使用 `rpipe run-one` 顺序执行这两个新 Run，不 launch 其余六组。随后显式 process 验证子集被判为 incomplete，预期该终验拒绝而非八组通过。原始证据保留在新 Run，逐段数字与本轮结论写入 Study 报告。

@@ -32,6 +32,8 @@ src/rpipe/
 - **flow** 是跑 Study 的入口：对每个 Run 执行固定阶段链，最后按 Experiment 跨 seed 聚合。`status` / `logs` / `report` 从 cli 进来，转给 readout。
 - **artifact** 是磁盘契约：Study 级 `docs/`、`shared/`、index、process，以及 Run 级 config、result、tracker、log、checkpoint。
 
+Flow 的默认阶段是实际执行代码，不是空骨架：普通阶段实现在 `flow/<phase>/run.py`，process 按 Run / Study 聚合拆成独立模块；`__init__.py` 只做导出。Study 的同名目录仅承载可选扩展，没有扩展时仍执行库默认链。展开到文件的目录见 [layout.md](docs/code/layout.md)、[flow.md](docs/code/flow.md)。
+
 ## 文档顺序
 
 Agent 的文档导航与通用工作约定见 [AGENTS.md](AGENTS.md)。

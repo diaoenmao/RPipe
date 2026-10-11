@@ -44,7 +44,7 @@ B-019 / B-020 已经 CPU 回归与 version02 八组合真实复验关闭，失�
 
 - 状态：investigating。2026-10-11 完整矩阵终验发现。
 - 看见：main-exp-flow-20261010-02 的 train 16ae89c5c90f7eca 与 eval 00597cc7bfc1fb1d，CIFAR10 / CNN / seed0 / test10000 / batch250 / CUDA。期望加载自身 best 后正确样本数一致；实际训练 step76800 best 为 8915，独立评测为 8914。加载路径、步数、40 个完整 test batch 和 result / tracker 一致性均通过，其余 31 个 best 对照通过。
-- 落点：[Study 终验](../../studies/main_exp/process/curves.py)、[EvalAlgorithm](../../src/rpipe/structure/algorithm/eval/__init__.py)、历史配方与设备运行条件。当前尚未确认是评测链、并发运行或数值环境问题，不能据此归因于 checkpoint 丢失。
+- 落点：[Study 终验](../../studies/main_exp/flow/process/curves.py)、[EvalAlgorithm](../../src/rpipe/structure/algorithm/eval/__init__.py)、历史配方与设备运行条件。当前尚未确认是评测链、并发运行或数值环境问题，不能据此归因于 checkpoint 丢失。
 - 证据：[version02 COMPARISON.json](../../studies/main_exp/docs/versions/main-exp-flow-20261010-02/COMPARISON.json) 的 best_source_audit；[复跑记录](../../studies/main_exp/docs/RERUN.md) 第 73 项。正式 Run 原始 result / tracker / 日志在本机 runs 下；只读 checkpoint 重评的 GPU topk 正确数为 8915，重复前向及训练前向 / 反向后恢复模型均一致，临时诊断不随 Git clone 提供。
 - 调查：原生 Flow 八进程默认精度两批分别有 5/8、4/8 重现 8914，其余为 8915；串行五次也有一次 8914，不能归因于并发调度。允许 cuDNN TF32 时逐样本 logits 差异定位到 test index4970。禁用 TF32 的 FP32 对照 8/8 为 8915，输入和模型 hash 与默认精度对照完全一致。详见 [EVAL_DIAGNOSTIC.json](../../studies/main_exp/docs/EVAL_DIAGNOSTIC.json)。证据指向设备数值执行，具体 kernel 选择仍待确认；FP32 诊断不替代原矩阵验收。
 - 方案：保留原失败，明确可复现的设备精度与并发契约，跟踪具体 kernel 选择；确认根因后明确修复边界与新版本复验方案。不放宽原有正确样本一致门，不用临时重评覆盖正式结果。

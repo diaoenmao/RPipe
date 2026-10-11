@@ -2,6 +2,14 @@
 
 ## 一、摘要
 
+### 2026-10-12 当前短复验
+
+version05 仅执行 MNIST / linear 与 MNIST / cnn 两组 60-step 六阶段链，全部数值门与库 compare 通过；当前 2 succeeded / 0 failed / 6 pending，Study process exit 1 为子集拒绝的预期结果。结果见 [最新报告](STUDY_REPORT.md) 与 [机器可读证据](flow_smoke_20261012.json)。实测后清除了库 collect 入口重复实现，最终针对性回归通过；旧 freeze 未改写，再次实测需新 version。
+
+### 2026-10-11 历史完整验收
+
+以下摘要、执行条件和旧日期记录属于 version03；历史完整结果不是本轮 version05 的结果。
+
 本次按 [PLAN.md](PLAN.md) 复跑 Flow 重构后的八组合 60-step 数值探针。2026-10-11 的 main-probe-flow-20261011-03 在实际提交 c9c782b5d5bb62da4e5e2292e96e842740c24f53 上全部通过，两侧显式 FP32。8 succeeded / 0 failed / 0 pending，Study complete / passed；16 段参数最大差 0、train / test Loss 最大差 4.44e-16、独立 eval Loss 差 0。运行实际 System 结果确认两个 TF32 开关均为 false，同源清单 hash 为 65bbec5ee797a557ae419df90c351723764ad9e0a54f3d15821a2b8121693658。正式结论见 [STUDY_REPORT.md](STUDY_REPORT.md) 与 [PAIR_RESULTS.json](PAIR_RESULTS.json)。旧 version02 报告已归档，不能替代新长实验；main_exp FP32 的 600-step 前置门在执行。
 
 ## 二、执行条件
@@ -15,6 +23,15 @@
 | seed / 预算 | seed0；每组合两侧 60 steps，step30 / 60 全 test，各自 best 独立 eval |
 | 数据 | 复用 main_exp 的 raw；[数据清单](../../main_exp/docs/DATA_MANIFEST.json) 的 16/16 文件匹配固定 SHA-256 |
 | 顺序 | 先真实单组合验收，再统一 CLI 完成八组合；不覆盖此前 Run |
+
+## 2026-10-12
+
+1. 两柱阶段及 `run.py` 入口合同自检再次通过。当前 HEAD 为 `7eb16438`，同时存在未提交重构；实测源码 hash 与环境分别落在短实验证据中。
+2. 保留可取得的 version03 声明、旧报告、图及终验快照；原 index / provenance / process 缺失，未伪造。MNIST 下载完成，raw 8/8 hash 匹配；CIFAR 下载速度不足，停止本次下载，部分文件留在忽略的 shared 下，未计入验收。
+3. version04 首个 Run `fa36d8dd34e2302e` 在 prepare 因缺少 evaluate 失败，没有训练；[失败快照](versions/main-probe-flow-20261012-04/snapshot_manifest.json) 保存真实 result、来源与声明。依赖仅补入 `.tmp/runtime`，未修改全局 Torch 或库配置。
+4. 使用新 version05、round1 make，再串行运行 `075534e416d6cc8d` 与 `aa502aa512c16e4b`。每侧 60 steps、完整 test、自身 best eval；两 Run 正式 succeeded。只运行两个组合，没有全矩阵 launch。
+5. Study process 检查八组合时按预期拒绝缺失的六组；已生成部分聚合、当前 NUMBERS 与两组图，成功 Run 未被覆盖。旧完整数字和图在 version03 快照保留。
+6. 实验后核查发现 collect 包入口仍重复定义 run，删除该实现，仅转导出既有 run.py。函数 AST 不变，最终针对性回归 57 passed / 2 skipped（符号链接权限）；数值实验来源保持清理前真实快照，不能宣称最终源码的完整实测验收。
 
 ## 2026-10-11
 

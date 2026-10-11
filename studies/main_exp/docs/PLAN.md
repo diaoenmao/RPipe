@@ -21,3 +21,9 @@
 ## 四、执行
 
 命令见 [Study 入口](../README.md)。同组并行数由 `rpipe launch` 按显存装箱，必要时用 `--round N`；train 全部结束后再跑 eval。报告写在 `docs/STUDY_REPORT.md`，数字表由 `rpipe report` 生成。
+
+专用 Data / Model 与归档支持放 `structure/`；`flow/prepare/run.py` 核对来源和实际运行条件，`flow/process/run.py` 只在 Study scope 调用 `curves.py`。`__init__.py` 仅导出。raw 准备使用 `flow/prepare_data.py`，速度校准使用 recipe 调用 `flow/execute/speed.py`；手动工具不自动作为 hook，两柱源码自动冻结。
+
+### 2026-10-12 本轮短实验
+
+仅用现有 `recipe.preflight` 做 MNIST/linear、seed0、200-step / 完整 test 的同设备原版与当前链前缀对照，保持 sampler / scheduler 总预算 80000、batch250、原精度与数值门。独立验证标识为 main-exp-flow-smoke-20261012-01，输出到本 Study `shared/validation/` 的新目录，逐段数字写入 `docs/`。这不是正式 64-Run 实验，不改 version03 的声明、index、provenance、Run 或 `PREFLIGHT.json`，也不触发正式 Flow launch；现有 loader / scope 合同检查另行复验。200-step 单组不满足 600-step 八格前置门，不能解锁长实验。以后正式复跑仍需新 version、重新 make 和完整前置门。

@@ -1,6 +1,6 @@
 # Layout
 
-本文定义 **RPipe** 仓库目录约定（不含最底层叶文件）。前置阅读 [concept.md](concept.md)。模块细则见 [code.md](code.md)。
+本文定义 **RPipe** 仓库目录约定；Flow 展开到可执行入口文件，避免只见目录、不见实现。前置阅读 [concept.md](concept.md)。模块细则见 [code.md](code.md)。
 
 可安装包名 **`rpipe`**，源码根 `src/rpipe/`。目录只映射 concept。
 
@@ -87,13 +87,32 @@ RPipe/
         artifact/
         make/
       flow/
+        __init__.py           # 只做包导出，不承载阶段实现
         cli.py
+        context.py
+        runner.py
+        study.py              # Study 扩展加载
         prepare/
+          __init__.py         # from .run import run
+          run.py
         execute/
+          __init__.py
+          run.py
         collect/
+          __init__.py
+          run.py
         summarize/
+          __init__.py
+          run.py
         write/
+          __init__.py
+          run.py
         process/
+          __init__.py         # 只导出以下模块的入口
+          individual.py       # 单条 Run 的 run(ctx)
+          study.py            # 整轮 Study 聚合
+          aggregate.py
+          curves.py
   studies/
   docs/
   tests/
@@ -107,9 +126,11 @@ RPipe/
 | `collect/` | 收观测 |
 | `summarize/` | result 草稿 |
 | `write/` | 把 result 写入 artifact |
-| `process/` | write 后派生（可空） |
+| `process/` | 本 Run 派生与整轮 Study 聚合；Study 的额外 hook 可省略 |
 
-Study 可按相同六阶段目录添加 `__init__.py` / `run(ctx)`，通过 `study.yaml` 的 `flow.study_phases: true` 显式启用。Study 根的 recipe 保留建构前注册，make 前准备也保留根目录显式入口。Run process 和整轮 Study process 使用不同 scope，详见 [flow.md §14.0](flow.md#140-study-阶段目录)。
+库与 Study 的 Flow 包统一约定：`__init__.py` 只保留说明、导入与公开符号导出，不写阶段函数、业务逻辑或执行流程。普通阶段的实现放 `run.py`；复杂阶段按职责拆模块（库 process 见上树），包入口仅转出函数。
+
+Study 在 `flow/<phase>/run.py` 定义 `run(ctx)`，通过同目录 `__init__.py` 导出，并由 `study.yaml` 的 `flow.study_phases: true` 显式启用。专用建构实现放 `structure/`，根 recipe 保留建构前注册，make 前准备使用显式手动入口。没有包入口的空目录或工具目录不作为 hook，但库默认阶段仍执行，不必复制默认实现或填入空函数。Run process 和整轮 Study process 使用不同 scope，迁移与来源规则见 [flow.md §14.0](flow.md#140-study-阶段目录)。
 
 `rpipe status` / `logs` / `report` 的实现在 `structure/artifact/readout/`。cli 只调用它们。
 
@@ -121,7 +142,15 @@ Study 可按相同六阶段目录添加 `__init__.py` / `run(ctx)`，通过 `stu
 studies/<study>/
   study.yaml
   experiment_config.yaml
+  recipe.py                  # 可选，注册 Study 专用 source
+  flow/                      # 可选阶段扩展；无扩展时仍执行库默认链
+    prepare/                 # 一个扩展示意，其他阶段按需添加
+      __init__.py            # from .run import before, run（before 可选）
+      run.py                 # 定义 before(ctx) / run(ctx)
+      helper.py              # 按需拆分，不自动作为 hook
+  structure/                 # 专用建构实现
   index.json                 # make 写入；不入库
+  provenance.json            # make 写入的来源清单；不入库
   process.json               # launch / process 写入；不入库
   docs/
     PLAN.md
@@ -151,8 +180,9 @@ studies/<study>/
 | `index.json` | make 写入的编排清单（每条 Run 含 `config` 与 `log`）；不入库 |
 | `process.json` | Study 级聚合信封；不入库 |
 | `activity.json` | 只在 make 进行中出现，成功后删除；不入库。`rpipe status` 在它还在时把第一行打成当前阶段 |
-| `provenance.json` | make 写入的来源清单：源码、声明、recipe 与计划的哈希，环境和 git 提交；不入库。规则见 [flow.md](flow.md) §14.2 |
+| `provenance.json` | make 写入的来源清单：源码、声明、recipe，以及 index / Run config 的哈希；另记录环境和 git 提交，不是源码备份。不入库，规则见 [flow.md](flow.md) §14.2 |
 | `recipe.py` | 可选；Study 自己注册的 data / model / algorithm `source`，由 `study.yaml` 的 `recipe` 指向，入库。见 [flow.md](flow.md) §14.1 |
+| `flow/`、`structure/` | Study 两柱源码；入库并自动纳入 provenance。阶段 hook 仅在显式启用时执行 |
 | `shared/data/`、`shared/model/` | structure data / model 的落盘 |
 | `runs/<id>/assets/` | 本 Run 的 asset：`tracker/`（数字曲线）、`logs/`（文本）、checkpoint、样本等 |
 

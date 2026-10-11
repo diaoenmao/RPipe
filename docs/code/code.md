@@ -15,7 +15,7 @@
 
 ## 1. 依赖
 
-- Study 复用 `rpipe` 公共接口，专用实现可依赖相应第三方库或固定归档源码。库不静态依赖正式 Study；Flow 按声明加载 recipe / 阶段扩展
+- Study 复用 `rpipe` 公共接口，专用实现可依赖相应第三方库或固定归档源码。库不静态依赖正式 Study；Flow 按声明加载 recipe / `flow/<phase>/` 阶段扩展
 - `flow` 可 import `structure`（含 `artifact`、`make`、`control`）
 - structure 跨层只经 `structure.api`；四层实现互不直接 import
 - `structure` 提供可由 Flow 或编程调用方使用的接口；**make** 调用 control 与 artifact，调度的 sibling 依赖解析经 algorithm_api 复用算法规则
@@ -42,15 +42,32 @@ src/rpipe/
     artifact/          # 含 readout/：status、logs、NUMBERS.md
     make/
   flow/
+    __init__.py       # 仅做公开导出
     cli.py
     context.py
     runner.py
+    study.py          # 加载 Study 扩展
     prepare/
+      __init__.py     # 仅导出 run
+      run.py
     execute/
+      __init__.py
+      run.py
     collect/
+      __init__.py
+      run.py
     summarize/
+      __init__.py
+      run.py
     write/
+      __init__.py
+      run.py
     process/
+      __init__.py     # 仅导出独立模块的入口
+      individual.py
+      study.py
+      aggregate.py
+      curves.py
   __main__.py
 ```
 
@@ -72,14 +89,20 @@ src/rpipe/
 ```
 studies/<study>/
   study.yaml
-  index.json
-  process.json
   experiment_config.yaml
+  recipe.py                # 可选，注册专用 source
+  structure/               # 专用建构与计算实现
+  flow/                    # 阶段 hook 与显式手动工具
+  index.json
+  provenance.json          # make 生成的来源清单
+  process.json
   docs/
   shared/{data,model}/     # asset
   runs/<id>/{config, result, assets}/
   scripts/
 ```
+
+两柱 Python 源码自动纳入 provenance。库和 Study 的 Flow `__init__.py` 仅做包导出：普通阶段在 `run.py` 实现 `run(ctx)`，复杂工作拆入独立模块，不能把函数或业务实现写在包入口。Study hook 由 `flow.study_phases` 显式启用，没有包入口的工具目录不自动执行；没有扩展时仍使用库默认阶段。其他需冻结的 Study 内输入通过 `provenance.include` 声明，详细合同见 [flow.md §14](flow.md#14-study-扩展recipe来源清单run-对比)。
 
 ---
 
