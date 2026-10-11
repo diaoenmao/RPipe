@@ -1,6 +1,6 @@
 # main_probe
 
-固定 main `98648f3` 原代码与当前 RPipe 的 60-step 同设备数值探针。目标、配方、门限见 [计划](docs/PLAN.md)。本版本尚未运行正式矩阵。
+固定 main `98648f3` 原代码与当前 RPipe 的 60-step 同设备数值探针。目标、配方、门限见 [计划](docs/PLAN.md)。当前 version03 在原代码与当前链显式关闭 cuDNN / matmul TF32，八组合实测与来源验收全部通过；实际提交 c9c782b，参数最大差 0、train / test Loss 最大差 4.44e-16。完整数字与验证边界见 [实测报告](docs/STUDY_REPORT.md)，进展见 [复跑记录](docs/RERUN.md)。
 
 ## 一、流程
 

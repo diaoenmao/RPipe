@@ -48,7 +48,7 @@ def export_source() -> dict[str, Any]:
     tree = subprocess.check_output(
         ['git', 'ls-tree', '-r', '-z', COMMIT], cwd=REPO
     )
-    rows = []
+    blobs = []
     for entry in tree.split(b'\0'):
         if not entry:
             continue
@@ -56,9 +56,30 @@ def export_source() -> dict[str, Any]:
         _, kind, oid = attributes.decode('ascii').split()
         if kind != 'blob':
             continue
-        name = raw_name.decode('utf-8')
+        blobs.append((raw_name.decode('utf-8'), oid))
+    # Windows process creation dominated archive preparation when every blob
+    # used its own cat-file process. Git's batch protocol preserves raw bytes.
+    request = ''.join(oid + '\n' for _, oid in blobs).encode('ascii')
+    stream = subprocess.check_output(['git', 'cat-file', '--batch'], input=request, cwd=REPO)
+    offset = 0
+    rows = []
+    for name, oid in blobs:
+        end = stream.find(b'\n', offset)
+        if end < 0:
+            raise ValueError('truncated Git batch header')
+        header = stream[offset:end].decode('ascii').split()
+        if len(header) != 3 or header[:2] != [oid, 'blob']:
+            raise ValueError(f'unexpected Git batch header for {name}: {header}')
+        size = int(header[2])
+        if size < 0:
+            raise ValueError(f'invalid Git blob size for {name}')
+        offset = end + 1
+        payload = stream[offset:offset + size]
+        offset += size
+        if len(payload) != size or stream[offset:offset + 1] != b'\n':
+            raise ValueError(f'truncated Git batch blob for {name}')
+        offset += 1
         target = ARCHIVE_ROOT / name
-        payload = subprocess.check_output(['git', 'cat-file', 'blob', oid], cwd=REPO)
         if target.exists():
             if target.read_bytes() != payload:
                 raise ValueError(f'archived source differs from Git: {target}')
@@ -67,6 +88,8 @@ def export_source() -> dict[str, Any]:
             target.write_bytes(payload)
         rows.append({'path': name, 'git_blob': oid,
                      'sha256': hashlib.sha256(payload).hexdigest(), 'bytes': len(payload)})
+    if offset != len(stream):
+        raise ValueError('unexpected trailing Git batch output')
     manifest = {'commit': COMMIT, 'root': str(ARCHIVE_ROOT), 'files': rows}
     (ARCHIVE_ROOT / 'SOURCE_MANIFEST.json').write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
@@ -543,6 +566,11 @@ def main(argv: list[str] | None = None) -> int:
     import argparse
     import uuid
     from datetime import datetime, timezone
+
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments and arguments[0] == 'calibrate':
+        import speed
+        return speed.main(sys.modules[__name__], arguments[1:])
 
     parser = argparse.ArgumentParser(description=main.__doc__)
     parser.add_argument('command', choices=['preflight'])
