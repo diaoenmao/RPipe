@@ -19,7 +19,7 @@
 
 ## 三、条件与固定门
 
-version 为 main-probe-flow-20261010-02，seed0；NVIDIA GeForce RTX 5090 D v2，Torch 2.11.0+cu130 / torchvision 0.26.0+cu130，Python 3.13.9，CPU 2 线程。完整 raw 文件匹配 [固定清单](../../main_exp/docs/DATA_MANIFEST.json)。运行使用仓库 src 与 .tmp/runtime 的 PYTHONPATH、MKL_THREADING_LAYER=SEQUENTIAL、MPLBACKEND=Agg，并固定 CUBLAS_WORKSPACE_CONFIG=:4096:8、cudnn_allow_tf32=false、matmul_allow_tf32=false。
+version 为 main-probe-flow-20261011-03，seed0；NVIDIA GeForce RTX 5090 D v2，Torch 2.11.0+cu130 / torchvision 0.26.0+cu130，Python 3.13.9，CPU 2 线程。完整 raw 文件匹配 [固定清单](../../main_exp/docs/DATA_MANIFEST.json)。运行使用仓库 src 与 .tmp/runtime 的 PYTHONPATH、MKL_THREADING_LAYER=SEQUENTIAL、MPLBACKEND=Agg，并固定 CUBLAS_WORKSPACE_CONFIG=:4096:8、cudnn_allow_tf32=false、matmul_allow_tf32=false。
 
 两侧连续 60 optimizer steps，train batch250 / test1000，step30 / 60 完整 test10000，各自 Loss-best 独立 eval。准备使用完整 train 的原 Stats(dim1)。配方与固定门见 [PLAN.md](PLAN.md)，未因结果调整：参数及 momentum atol1e-6 / rtol1e-5，Loss 差≤1e-6，整数和正确样本数严格一致。
 
@@ -63,4 +63,4 @@ version 为 main-probe-flow-20261010-02，seed0；NVIDIA GeForce RTX 5090 D v2�
 
 ## 七、执行记录
 
-2026-10-11：在精度修复提交 c9c782b 上通过统一 CLI 以 round3 完成 version03 的八格真实六阶段链，Study process 终验通过，rpipe report 生成 [NUMBERS.md](NUMBERS.md)。旧 version02 完整通过的证据保留在 [版本报告](versions/main-probe-flow-20261010-02/STUDY_REPORT.md)。详细过程见 [RERUN.md](RERUN.md)。main_exp FP32 前置门在执行，不能用本短探针代替长曲线验收。
+2026-10-11：在精度修复提交 c9c782b 上通过统一 CLI 以 round3 完成 version03 的八格真实六阶段链，Study process 终验通过，rpipe report 生成 [NUMBERS.md](NUMBERS.md)。旧 version02 完整通过的证据保留在 [版本报告](versions/main-probe-flow-20261010-02/STUDY_REPORT.md)。详细过程见 [RERUN.md](RERUN.md)。main_exp version03 的完整长曲线验收另已通过，见 [长实验报告](../../main_exp/docs/STUDY_REPORT.md)；本短探针本身不替代长预算验收。

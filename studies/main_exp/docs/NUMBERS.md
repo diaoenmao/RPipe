@@ -4,7 +4,7 @@ Generated from `process.json`. The conclusion stays in `STUDY_REPORT.md`.
 
 ## Experiments
 
-| factors | metric | mean | std | min | max | n |
+| **factors** | **metric** | **mean** | **std** | **min** | **max** | **n** |
 |---|---|---:|---:|---:|---:|---:|
 | algorithm.mode=train, data.name=MNIST, model.name=linear | accuracy | 92.6750 | 0.0173 | 92.6500 | 92.6900 | 4 |
 | algorithm.mode=train, data.name=MNIST, model.name=linear | best_accuracy | 92.7850 | 0.0173 | 92.7700 | 92.8000 | 4 |
@@ -113,7 +113,7 @@ Generated from `process.json`. The conclusion stays in `STUDY_REPORT.md`.
 
 ## Runs
 
-| factors | seed | id | metrics | log |
+| **factors** | **seed** | **id** | **metrics** | **log** |
 |---|---:|---|---|---|
 | algorithm.mode=train, data.name=MNIST, model.name=linear | 0 | `7cd22ce8f92311e3` | accuracy=92.6500, best_accuracy=92.8000, elapsed_seconds=1873.4782, test_accuracy=92.6500, test_loss=0.2654, train_accuracy=93.6540, train_loss=0.2306 | [run.log](../runs/7cd22ce8f92311e3/assets/logs/run.log) |
 | algorithm.mode=train, data.name=MNIST, model.name=linear | 1 | `cbd61fd5c36c10ad` | accuracy=92.6900, best_accuracy=92.7700, elapsed_seconds=1891.2067, test_accuracy=92.6900, test_loss=0.2654, train_accuracy=93.6880, train_loss=0.2299 | [run.log](../runs/cbd61fd5c36c10ad/assets/logs/run.log) |

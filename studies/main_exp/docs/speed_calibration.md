@@ -88,3 +88,5 @@ CNN / ResNet18 各三次独立进程，old-first / current-first 交替。每个
 归档导出当前每个 blob 启动一次 `git cat-file`。2026-10-11 同进程三次完整导出固定36个文件，分别耗时3.0772、2.9644、3.0156秒。下一步改为 Git 原生 `cat-file --batch` 一次读取所有 blob，逐条核对 oid、类型、长度和最终分隔，并保持已有文件字节比对、不同内容拒绝及 manifest 不变。该优化只减少准备阶段的进程创建，不改训练、数据、精度或调度容量系数。验收包括所有归档文件与 Git 字节相同、错误内容仍拒绝、真实导入开关回归及新进程计时；正式数值复验另用新版本，不覆盖 version03。
 
 批量读取已实现。同进程三次导出为0.1821、0.1786、0.1732秒，固定36个文件 manifest 完全相同，见 [ARCHIVE_EXPORT_TIMING.json](ARCHIVE_EXPORT_TIMING.json)。新空目录导出、不同内容拒绝且不覆盖、缺失 header / 错误对象类型 / 截断内容 / 多余尾部拒绝均通过，见 [ARCHIVE_EXPORT_REGRESSION.json](ARCHIVE_EXPORT_REGRESSION.json)。真实归档导入在 benchmark=true / false 两种条件下仍保存原开关，运行条件异常仍拒绝，见 [ARCHIVE_BATCH_RUNTIME_REGRESSION.json](ARCHIVE_BATCH_RUNTIME_REGRESSION.json)。这些是准备阶段回归与微基准，不是优化后的完整矩阵或端到端速度结果。
+
+20:23，新提交 `8c17d5dbe64d37cdfc09a154d29bb63d47597da8` 的独立八格600-step原代码 / 当前链回归完成，验证 ID 为 main-exp-batch-prefix-20261011-3e158abd。八组24个分段全部通过，参数最大差0，Loss最大差4.44e-16，输入、RNG、正确样本数与 scheduler 一致；源码清单前后未变。证据见 [BATCH_EXPORT_PREFLIGHT.json](BATCH_EXPORT_PREFLIGHT.json)。原 version03 前置报告与64个正式 Run 未覆盖；这份回归证明准备优化后的前缀数值合同，不宣称新的完整80000-step矩阵。
