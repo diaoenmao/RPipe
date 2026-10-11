@@ -102,7 +102,7 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 - 六组真实串行速度校准通过数值门，原始对照和阶段边界见 [速度报告](../../studies/main_exp/docs/speed_calibration.md)。接入 recipe calibrate，独立测量 ID 保留旧结果，不覆盖正式前置门。
 - 归档 blob 从逐文件 Git 子进程改为 cat-file --batch；固定来源字节和 manifest 不变，拒绝不同内容与损坏响应，真实归档导入及运行条件回归通过。容量安全系数未修改，准备优化不等于并发问题已经解决。
 - 当前核心回归 295 passed / 40 deselected。首次并行运行核心与集成测试共用默认 pytest 临时目录，集成产生 WinError5 / 随后 FileNotFoundError 的清理冲突（36 passed / 1 setup error），原日志 .tmp/batch-integration-tests.log 保留。改用独立 basetemp 后集成 / e2e 37 passed / 298 deselected；后续并行验证各自使用独立临时目录。日志仅本机提供。
-- 准备优化提交 `8c17d5d` 的新八格前缀回归已通过，旧完整矩阵与前置报告未覆盖；证据见 [独立回归](../../studies/main_exp/docs/BATCH_EXPORT_PREFLIGHT.json)。PR #26 首轮精确提交的 Unit tests、Build package、Branch flow 全部通过；补入回归证据后的最终提交仍需核对必需检查，不能沿用旧 HEAD 的绿灯。
+- 准备优化提交 `8c17d5d` 的新八格前缀回归已通过，旧完整矩阵与前置报告未覆盖；证据见 [独立回归](../../studies/main_exp/docs/BATCH_EXPORT_PREFLIGHT.json)。PR #26 首轮与补入证据后的最终提交31acb5b，其 Unit tests、Build package、Branch flow 均实际通过。PR于20:29合入 dev 51a4ce0，本机已快进同步，原实验工作分支已删除；main 未变。合并后提交的 CI 单独核对，不沿用旧 HEAD 的绿灯。
 
 ## （一）2026-10-10
 
