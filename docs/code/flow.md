@@ -20,18 +20,35 @@ flow 可 import `structure`。阶段保持 config 不变。四层业务在 struc
 
 ```
 flow/
+  __init__.py                # 包入口：只导出，不写流程实现
   cli.py
   context.py
   runner.py
+  study.py                   # 可选 Study hook 加载
   prepare/
+    __init__.py              # from .run import run
+    run.py                   # 读 config，构造对象
   execute/
+    __init__.py
+    run.py                   # 调用 Algorithm
   collect/
+    __init__.py
+    run.py                   # 收集指标
   summarize/
+    __init__.py
+    run.py                   # 生成可序列化草稿
   write/
+    __init__.py
+    run.py                   # 成功结果定稿
   process/
+    __init__.py              # 只导出以下模块的入口
+    individual.py            # 本 Run 派生结果
+    study.py                 # 整轮 Study 聚合
+    aggregate.py             # 结果 / 曲线聚合
+    curves.py                # 绘图
 ```
 
-每阶段一个包，约定 `run(ctx: FlowContext) -> None`。`FlowRunner` 按 `PHASES` 动态 import 并调用。cli 解析参数后：`make` 调 `structure.make`；`launch` 优先读 `scripts/jobs.json`，没有或 `--remake` 才再 make，再对选定 Run 调 `FlowRunner`。
+每阶段一个包，约定 `run(ctx: FlowContext) -> None`。实现放 `run.py` 或阶段内按职责命名的模块；所有 Flow `__init__.py` 只保留说明、导入和公开导出，不定义阶段函数或承载业务实现。`FlowRunner` 按 `PHASES` 动态 import 阶段包并调用其导出的 `run`，已有包级调用接口不变。cli 解析参数后：`make` 调 `structure.make`；`launch` 优先读 `scripts/jobs.json`，没有或 `--remake` 才再 make，再对选定 Run 调 `FlowRunner`。
 
 | **符号** | **位置** | **职责** |
 |------|------|------|
@@ -302,15 +319,33 @@ Study 保存声明、专用配方、阶段扩展、研究证据与结论报告�
 
 ### 14.0 Study 阶段目录
 
-Study 在 `study.yaml` 显式声明 `flow: {study_phases: true}` 后，可添加与库同名的阶段包：`prepare/`、`execute/`、`collect/`、`summarize/`、`write/`、`process/`。缺省或 `false` 不加载这些目录；已存在的普通辅助目录不会自动执行。`flow` 必须是 mapping，`study_phases` 必须是 boolean。
+Study 在 `study.yaml` 显式声明 `flow: {study_phases: true}` 后，可在 `flow/` 下添加与库同名的阶段包：`prepare/`、`execute/`、`collect/`、`summarize/`、`write/`、`process/`。缺省或 `false` 不加载这些目录；已存在的普通辅助目录不会自动执行。`flow` 必须是 mapping，`study_phases` 必须是 boolean。2026-10-12 起不加载旧的根目录阶段包；启用扩展且仍存在旧阶段 `__init__.py` 时明确报错，须将包搬到 `flow/<phase>/` 并调整相对导入，不能通过 fallback 混用两套路径。
 
-每个存在的阶段目录必须有 `__init__.py`，定义 `run(ctx) -> None`。对选中的阶段，prepare 在库初始化后、recipe / Factory 构造前调用可选 `before(ctx)`，构造后调用 Study `run(ctx)`。write 先调用 Study `run(ctx)`，再由库定稿；其余阶段先调用库 `run(ctx)`，再调用 Study `run(ctx)`。未选中的阶段不执行。阶段不能改变顺序。包支持相对导入，用独立的模块命名空间加载，调用后清理该命名空间，避免不同 Study 的同名 helper 串用。阶段路径及其源码必须留在 Study 根目录内。
+阶段目录中的 `__init__.py` 标识扩展包，只导出 `run.py` 定义的 `run(ctx) -> None` 和可选 `before(ctx)`，不能把实现写在包入口。没有该文件的空目录或手动工具目录不加载，但源码仍进入 provenance；这仅跳过 Study 扩展，不跳过库默认阶段。对选中的阶段，prepare 在库初始化后、recipe / Factory 构造前调用可选 `before(ctx)`，构造后调用 Study `run(ctx)`。write 先调用 Study `run(ctx)`，再由库定稿；其余阶段先调用库 `run(ctx)`，再调用 Study `run(ctx)`。未选中的阶段不执行。阶段不能改变顺序。包以独立的 `<study>.flow.<phase>` 命名空间加载，`run.py` 支持 `from .helper`、`from ..helper` 和 `from ...recipe` / `from ...structure...`，调用后清理该命名空间，避免不同 Study 的同名 helper 串用；`flow/__init__.py` 可选，存在时也只做包导出。阶段路径及其源码必须留在 Study 根目录内。
+
+最小扩展的职责分开写：
+
+```python
+# flow/prepare/run.py
+def run(ctx):
+    if ctx.state['data'].source != 'torch':
+        raise ValueError('this Study requires the torch data source')
+```
+
+```python
+# flow/prepare/__init__.py
+from .run import run
+
+__all__ = ['run']
+```
+
+没有研究特有检查时不添加这个 hook，直接复用库阶段。helper、投影与对比逻辑放阶段内独立模块，不塞回 `__init__.py`。此次搬迁保留包级导入和加载方式，不改变准备时机、write 定稿顺序或失败边界；新增 `run.py` 自动进入 provenance，已有冻结来源需按 §14.2 更新。
 
 单条 Run 的 ctx 是 `FlowContext`，`scope == 'run'`。Study process 在库完成当前 index 的聚合后调用同一个 `process.run(ctx)` 一次，此时 ctx 是 `StudyProcessContext`，`scope == 'study'`、`study_dir` 是根路径，`state['process']` 是聚合正文；没有单条 Run 的 layout/control。终验必须判断 scope，只在 Study 聚合后执行，派生文件写入 Study 的 docs，不能修改已定稿 Run result。Study 阶段抛错时保留原异常和失败日志；write 后的成功 result 不因派生失败被覆盖。Study process 抛错时保留已完成的通用聚合，不报告终验成功。
 
-启用时，来源清单自动包含六个阶段目录下全部 Python 源码，新增、修改或删除 helper 都能被 freeze 检出。Runner 在执行任何阶段前、Study process 在聚合前核对 freeze。阶段代码不进入 Run ID，修改后需重新 make 接受新的来源清单；需要独立实测时仍使用新 version。
+来源清单自动包含 Study 的 `flow/**/*.py` 和 `structure/**/*.py`，包括包入口、helper、手动工具与建构实现，不依赖 `provenance.include` 或阶段启用开关；新增、修改或删除源码都能被 freeze 检出，生成的 `runs/`、`shared/` 和缓存不纳入。Runner 在执行任何阶段前、Study process 在聚合前核对 freeze。阶段代码不进入 Run ID，迁移后旧来源清单会失效，须重新 make 接受；独立实测仍使用新 version，旧结果不能替代新链验收。
 
-recipe 继续负责 **Data/Model 建构前** 的注册、runtime 设置与必须提前拒绝的运行条件；Study `prepare.before` 承担构造前隔离准备，`prepare.run` 检查已构造对象；注册仍由 recipe 负责。数据下载、原代码导出和显式前缀预检等 make 前操作保留在 Study 根，不因加载阶段包自动启动。原训练循环、RNG 与数值门限不随目录拆分改变。
+recipe 继续负责 **Data/Model 建构前** 的注册、runtime 设置与必须提前拒绝的运行条件；Study `prepare.before` 承担构造前隔离准备，`prepare.run` 检查已构造对象；注册仍由 recipe 负责。数据下载、原代码导出和显式前缀预检等 make 前操作使用显式手动入口，不因加载阶段包自动启动。原训练循环、RNG 与数值门限不随目录拆分改变。
 
 ### 14.1 recipe
 
@@ -341,17 +376,22 @@ make 在 Study 根写 `provenance.json`（与 `index.json` 同级，不进 Git�
 
 | **键** | **内容** |
 |----|------|
-| `files` | 库源码 `rpipe/**/*.py`、`study.yaml`、`experiment_config.yaml`、recipe 文件、已启用阶段目录下的全部 Python 文件，以及 `study.yaml` 的 `provenance.include` 列出的 Study 内文件，各自 SHA-256 |
+| `files` | 库源码 `rpipe/**/*.py`、`study.yaml`、`experiment_config.yaml`、recipe 文件、Study 两柱 `flow/**/*.py` / `structure/**/*.py`，以及 `provenance.include` 列出的额外 Study 内文件，各自 SHA-256 |
 | `plan` | 当前 `index.json` 与其中各 Run `config.yaml` 的 SHA-256 |
 | `environment` | Python、平台、torch / torchvision / numpy 版本、CUDA、GPU 名称 |
 | `git` | 仓库 HEAD 与工作区是否有未提交改动；不在 Git 仓库内则为空 |
 | `created_at` | UTC 时间 |
+| `digest` | 仅对 `files` 与 `plan` 合并内容计算 SHA-256，取前 16 个十六进制字符 |
 
 文件键用相对路径：库源码相对 `rpipe` 包根，加前缀 `rpipe/`；Study 文件相对 Study 根。
 
-`launch` 开始前核对一次。`study.yaml` 写 `freeze: true` 时，`files` 或 `plan` 有任何差异就退出 2，不启动 Run；prepare 也做同样核对（§5 第 4.1 步），防止直接 `run-one` 绕过。没有 `freeze` 时只打印 `provenance: N changed`，照常运行。要接受改动，重新 make。
+`plan` 是执行清单与 Run 配置，不是人写的 `docs/PLAN.md`。根目录额外 helper、参考 JSON、依赖清单或计划等需要冻结时显式加入 `provenance.include`；模式未匹配任何路径会报错，解析后的文件必须留在 Study 内。原始数据、历史报告和 Run 产物不自动进入来源清单。库源码覆盖当前导入的整个 `rpipe` 包，非本 Study 使用的 Python 模块变化也会影响 freeze。
 
-每条 Run 的 result 写入 `environment`（同一份环境字段）和 `provenance`（`provenance.json` 中 `files` 与 `plan` 的整体摘要），便于事后核对这条 Run 是在哪份来源上跑的。
+`launch` 开始前核对一次。`study.yaml` 写 `freeze: true` 时，`files` 或 `plan` 有任何差异，或来源清单缺失，就退出 2，不启动 Run；prepare 也做同样核对（§5 第 4.1 步），防止直接 `run-one` 绕过。Runner 与 Study process 的检查时机见 §14.0。未启用 freeze 时，launch 对已有清单的变化打印 `provenance: N changed`，照常运行；没有清单则不作该提示。`environment`、`git` 和 `created_at` 只记录，不参与 freeze 比较，不能用 freeze 证明异机环境一致。
+
+重新 make 会覆盖当前 `provenance.json`，接受当前来源；它不是不可变源码快照，也不自动创建新 version 或清理旧 Run。独立实测须先使用新 `version` / Run ID，按 Study 计划保存旧证据并重新准备、make 和执行适用的前置门，不能仅重写清单后把旧成功结果当成新基线。
+
+每条 Run 的 result 写入 `environment`（summarize 时重新采集的执行环境）和 `provenance`（make 写入清单的 `digest`），便于事后核对来源与实际环境；两次环境采集不保证相同。实际计算精度开关另看 System 快照与 Study 的运行条件检查。
 
 ### 14.3 Run 对比
 

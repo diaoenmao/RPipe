@@ -38,7 +38,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | 统一测试入口 | 子进程隐式继承环境与输出；当前沙箱曾有3项 Kornia 导入失败，正常本机原入口为286项通过 | 显式传递环境和 stdout/stderr，补2个真实子进程回归；当前统一 CPU 门288项通过，原失败记录保留 | [测试入口](../../tests/README.md) |
 | 包与 CI | Ubuntu / Python3.10 只跑 core；包门构建后仅对 wheel 做无依赖安装和轻量 import | Linux / Windows、Python3.10 / 3.13 的 CPU 及本地 integration 全部通过；两种 OS 全新环境中的 wheel / sdist 安装和公开 CLI 全部通过 | [远端测试](https://github.com/diaoenmao/RPipe/actions/runs/37210453756)、[远端包验收](https://github.com/diaoenmao/RPipe/actions/runs/37210453815) |
 | 导航与清理 | Study 入口分散，设计文档与开发记录同在 `docs/` 根目录；正式 Study 与测试用声明混放 | 设计文档在 `docs/code/`，开发记录在 `docs/development/`；Study 指南是 `studies/README.md`；`studies/` 只留 `main_exp`、`main_probe`（原 `main_historical`、`main_reproduction`，待按新流程重跑）、`_template`，测试声明在 `tests/_data/studies/` | 第二节（一）、[Study 使用指南](../../studies/README.md) |
-| Study 阶段接续 | Study 没有与库同名的阶段回调；main_exp 终验只由根脚本调用，probe 没有两侧标准 artifact 对比入口 | 显式 `flow.study_phases`：库阶段后执行 Study 阶段；区分 Run 与 Study process，阶段源码自动进入 freeze。main_exp 的来源检查与曲线终验入阶段目录；probe 保存观测 Run 投影并调用库 compare，原数值门保留 | [flow §14.0](../code/flow.md#140-study-阶段目录)、第二节（一）§5 |
+| Study 阶段接续 | Study 没有与库同名的阶段回调；main_exp 终验只由根脚本调用，probe 没有两侧标准 artifact 对比入口 | 显式 `flow.study_phases` 加载 `flow/<phase>/`；prepare 有构造前 / 后入口，write 先 Study 后库定稿，其余阶段先库后 Study。专用实现放 `structure/`，两柱源码自动冻结；区分 Run 与 Study process，probe 投影观测并调用库 compare，原数值门保留 | [flow §14.0](../code/flow.md#140-study-阶段目录)、第二节 2026-10-12 |
 
 ### 4. 成对探针接入 Flow（2026-10-10）
 
@@ -46,7 +46,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | --- | --- | --- | --- |
 | 探针入口 | 独立 probe.py prepare/run，普通 CLI 只跑当前侧 16 Run | 删除脚本入口；统一 CLI 展开八个成对 Run，recipe + Algorithm 接入完整阶段链 | [main_probe](../../studies/main_probe/README.md) |
 | 准备与执行 | 临时工作区、脚本自建当前侧对象 | Run assets 内隔离准备；成对执行复用 Flow 的 Data / Model / System / Tracker，恢复初始化 RNG，原版先、当前版后 | [计划](../../studies/main_probe/docs/PLAN.md) |
-| 状态与终验 | 脚本退出码和矩阵 JSON | 数值失败由 Flow 写 failed，保留原始证据；process 只读当前 index，齐全八组且同来源、同设备、同 Torch 才完整通过 | [process](../../studies/main_probe/process/) |
+| 状态与终验 | 脚本退出码和矩阵 JSON | 数值失败由 Flow 写 failed，保留原始证据；process 只读当前 index，齐全八组且同来源、同设备、同 Torch 才完整通过 | [process](../../studies/main_probe/flow/process/) |
 
 CPU 核心 286 项与集成 32 项通过。隔离 CPU 验证覆盖单组合调度、真实 Flow 对象与 RNG 交接、两侧 artifact compare、保留已有证据、数值失败落盘、子集拒绝和八组终验（使用伪计算与微小张量，未训练正式模型）。本轮不重跑正式 main_probe/main_exp，尚无本版本数值验收。临时证据在 `.tmp/probe-flow/`，不随 Git clone 提供。
 
@@ -83,6 +83,46 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 # 二、开发记录
 
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
+
+## 2026-10-12
+
+### 5. 提交前修复与回归
+
+- 提交前重新检查发现 collect 包入口恢复为旧实现；原因未确认，不归因于杀毒软件或其他编辑器。重复定义与子模块同名，导入 `rpipe.flow.collect.run` 后包级 run 变为模块，两个导出回归失败。本轮重新删除旧实现，只导出既有 run.py；使用现有导出身份与行为测试验证，不添加新框架。
+- 首次审查回归因 basetemp 父目录未创建发生 setup 错误；补齐临时父目录后复测为 319 passed / 2 failed / 2 skipped，两项失败都指向 collect。修正入口后最终核心回归 321 passed / 2 skipped / 43 deselected，CPU integration/e2e 40 passed / 326 deselected；两项跳过仍为目录符号链接权限。科学实验未重跑，旧失败、result 和 freeze hash 保留。
+- 15 个库及 Study Flow 入口无业务实现，collect 函数 AST 未变；仅 collect 包入口 hash 与已完成短实验不同，历史快照 hash 全部通过。交接及 brainstorm 同步为实际基线 `7eb16438` 和已完成的有限短实测，原完整矩阵结论不扩称当前源码验收。
+- 在 `.tmp/precommit-review/` 的源码副本使用现有 setuptools 构建 wheel 与 sdist，分别在独立虚拟环境安装并运行现有 package_smoke：两次均完成九条 CLI 命令、四个 Toy/Stub CPU Run、两组聚合及重复 launch 跳过检查。安装模块确认为虚拟环境中的分发包，不是仓库 src；依赖复用本机 site-packages，因此不替代远端干净环境检查。初次 sdist 安装因默认 pip 缓存目录写入权限失败，缓存改到 `.tmp/` 后通过；构建准备中的错误许可证文件名 / 工作目录已修正，未改变正式源码或全局 Python 环境。
+- 本轮授权为整理这批重构、配套文档 / 测试 / 正式短实验证据，回归通过后创建工作分支、commit / push，再按 PR 必需检查合入 dev。临时验证与原始运行产物在忽略目录，不提交；不运行大规模实验，不直接 push dev，也不发布 main。实际提交与合并状态以 Git / GitHub 为准。
+
+### 4. Study 短复验与入口遗漏清理
+
+- 对齐两个 Study 的计划、README、累计报告与复跑记录，明确历史完整验收与当前短实验的范围。真实基线是 `7eb16438` 加未提交改动；实验过程和数字留在 [main_probe 报告](../../studies/main_probe/docs/STUDY_REPORT.md) 与 [main_exp 报告](../../studies/main_exp/docs/STUDY_REPORT.md)，没有扩大矩阵、提交或推送。
+- 保留原探针失败与可取得的历史快照。缺少 evaluate 导致 prepare 失败后，只在 `.tmp/runtime` 补齐归档导入依赖，并换新 version 复验；下载仅完成 MNIST，CIFAR 未完成，不视为全数据就绪。
+- 实验后复核发现上一轮 collect 的实现已复制到 `run.py`，但 `__init__.py` 仍有重复定义，之前“入口全清理”核查遗漏了这一处。本轮删除该重复实现，只导出 run；旧函数与既有 run.py 的 AST 一致，15 个库及 Study Flow 包入口重新核查均无业务实现。
+- 最终针对性回归 57 passed / 2 skipped，覆盖导出身份、collect 行为、Study loader / 阶段边界及 provenance。跳过项为本机目录符号链接权限限制；原始科学结果与 freeze hash 未改写，最终入口清理后的完整数值复验仍须新 version / make。
+
+### 1. 接通 Study 两柱与来源发现
+
+- Study 专用建构 / 成对 Algorithm 已收进 `structure/`，阶段检查收进 `flow/`；清理冗余根入口、旧缓存与重复回归结果，保留正式结果、失败证据和历史快照。具体目录与清理事实见两个 Study 的 README，不改旧实测数字。
+- 库加载改为 `flow/<phase>/__init__.py`，在独立 Study 命名空间中按正常包语义导入，支持跨两柱及根 recipe 的相对引用；空目录和没有包入口的手动工具不执行。旧根目录阶段包在显式启用时提示迁移，不静默漏跑。阶段顺序、prepare.before 时机、write 成功定稿及 process 失败边界不变。
+- provenance 自动记录两柱全部 Python 源码，不要求显式 include 或阶段启用；保留额外输入的 include、路径边界、生成产物隔离和 freeze。两个 Study 删除重复的源码 include，声明、库和设计文档同步。旧来源清单必须重新 make；后续正式复跑使用新 version，不能沿用 version03 的历史通过记录。
+- 针对性回归 44 passed / 2 skipped；CPU core 308 passed / 2 skipped / 40 deselected；本地 integration 门 37 passed / 313 deselected。两项跳过均为本机无目录符号链接创建权限，未宣称该边界已实际验收。首轮针对性运行因新 basetemp 的父目录未创建而发生 setup 错误（7 passed / 39 errors），补齐目录后复验通过，原失败事件保留。
+- 两个真实 Study 的隔离副本分别展开 64 / 8 个配置，自动来源覆盖和 freeze 变更检测通过；小型自检通过真实 loader 的来源 / runtime 门、缺失 raw 拒绝、成对计算后置门与 Run process scope。自检首轮新增 runtime 调用参数位置错误，仅属于临时验证脚本，按现有接口修正后通过。没有数据下载、实际训练、数值探针或正式矩阵，未覆盖原 Run / 前置报告；本轮未提交或推送。
+- 本机证据：`.tmp/test-results/20261011T192433Z_116ee5/`（首次 setup 失败）、`20261011T192442Z_cce0a1/`（针对性复验）、`20261011T192545Z_24e5b1/`（core）、`20261011T192629Z_521dd3/`（integration），每次保留 manifest / events / report；专用自检在 `.tmp/study-refactor/check.py`，不会随 Git clone 提供。测试 ID 采用 UTC 日期，开发记录按本机日期分组。
+
+### 2. 对齐设计与接续文档
+
+- 局部更新 concept / layout / code / structure / flow，说明 Study 两柱分工、hook 加载路径与手动入口；补清 provenance 的执行计划含义、摘要、覆盖行为、环境仅记录及非源码备份的边界。
+- 更新 [handover.md](handover.md) 和 [brainstorm.md](brainstorm.md)，把当前 CPU 合同验证与历史 version03 实测分开；接续建议为新 version 单组合短数值门，再按计划与授权扩大。修正 bugs 和本节摘要中搬迁后的源码链接，开放缺陷状态不变。
+- 本轮仅改文档，检查相对链接和 diff 空白；未新增代码验证、科学实测、提交或推送。上一轮 CPU 回归仍只覆盖当时的代码合同，不代表真实数值或异机验收。
+
+### 3. 将 Flow 阶段实现移出包入口
+
+- 文档原先只画阶段目录，且 Study 指南要求在 `__init__.py` 定义 `run`，不能清楚区分入口与实现。本轮先修订 layout / flow / code 与 Study 指南：库及 Study 的 Flow 包入口只做说明、导入和导出，普通阶段实现放 `run.py`，复杂阶段按职责拆模块；没有扩展不代表跳过库默认链。
+- 搬迁库 prepare / execute / collect / summarize / write 和 main_exp 两个、main_probe 六个阶段，共 13 个实现模块；库 process 原已拆分，保留 `individual.py` / `study.py` / aggregate / curves。包级调用接口、prepare.before、write 定稿时序、异常与原数值门保持不变。未改结构柱实现或历史结果。
+- 更新测试 fixture 为 `run.py` 实现与包入口导出，验证两层文件均进入 provenance，新增包入口结构及公开 callable 的回归，并覆盖 `run.py` 新增 / 修改 / 删除时的 freeze 拒绝。Flow 针对性 103 passed / 2 skipped，CPU core 321 passed / 2 skipped，CPU integration 40 passed；两个跳过项仍为本机目录符号链接权限限制。
+- 本机 AST 自检确认 13 个搬迁模块与搬迁前完全一致，15 个库 / Study Flow 包入口仅有说明、导入和公开导出；真实 Study 隔离副本的注册、来源发现、freeze、runtime / raw / 成对后置门和 process scope 自检再次通过，没有实际计算或训练。
+- 首轮 Flow 测试退出 0，但已有 pytest-cache 出现 WinError5 写缓存警告；随后 core 与 integration 使用本轮独立的 cache / basetemp，均通过。未修改共享缓存权限。证据在 `.tmp/flow-entries/` 和 `.tmp/test-results/20261011T194652Z_d22612/`（Flow）、`20261011T194723Z_1695df/`（core）、`20261011T194751Z_81b16b/`（integration）；临时证据不随 Git clone 提供。本轮未 make 正式 Study、未改 version、未提交或推送，后续实测仍须新 version / 来源冻结。
 
 ## 2026-10-11
 

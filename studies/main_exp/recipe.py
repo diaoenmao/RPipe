@@ -1,18 +1,9 @@
-"""Archived 2024 vision recipe, carried by the current RPipe training loop.
-
-The archive remains byte-for-byte equal to Git. Only live object adapters are
-used: the old dataset dict becomes a tuple, and ``model.f`` provides logits.
-``study.yaml`` names this file as ``recipe``; RPipe prepare calls ``register``
-in every Run's process. ``python -B recipe.py preflight`` explicitly runs the
-original/current prefix comparison; importing or registering never trains.
-"""
-
+"""Register historical builders; explicit preflight/calibrate commands never run on import."""
 from __future__ import annotations
 
-import contextlib
 import copy
 import hashlib
-import importlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -20,186 +11,25 @@ import subprocess
 import sys
 import time
 from typing import Any, Iterable
+import uuid
 
 
-STUDY = Path(__file__).resolve().parent
-REPO = STUDY.parents[1]
-COMMIT = '4ccb28d0496110253e9f8e3f3df658853f07996b'
-SOURCE = 'historical_4ccb28d'
-HORIZON = 80000
-DATA_NAMES = ('MNIST', 'CIFAR10')
-MODEL_NAMES = ('linear', 'mlp', 'cnn', 'resnet18')
-ARCHIVE_ROOT = REPO / '.tmp' / 'historical-source-4ccb28d'
-_ARCHIVE: Any = None
+def _load_structure():
+    name = '_main_exp_structure_' + uuid.uuid4().hex
+    path = Path(__file__).resolve().parent / 'structure' / '__init__.py'
+    spec = importlib.util.spec_from_file_location(name, path, submodule_search_locations=[str(path.parent)])
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
 
 
-def bootstrap() -> None:
-    """Load the repository and temporary dependencies without shell env setup."""
-    for path in (REPO / 'src', REPO / '.tmp' / 'runtime'):
-        value = str(path)
-        if value not in sys.path:
-            sys.path.insert(0, value)
-    # This import order is required by this Windows host's native runtimes.
-    import numpy  # noqa: F401
-
-
-def export_source() -> dict[str, Any]:
-    """Export tracked blobs, refusing to overwrite a different existing file."""
-    tree = subprocess.check_output(
-        ['git', 'ls-tree', '-r', '-z', COMMIT], cwd=REPO
-    )
-    blobs = []
-    for entry in tree.split(b'\0'):
-        if not entry:
-            continue
-        attributes, raw_name = entry.split(b'\t', 1)
-        _, kind, oid = attributes.decode('ascii').split()
-        if kind != 'blob':
-            continue
-        blobs.append((raw_name.decode('utf-8'), oid))
-    # Windows process creation dominated archive preparation when every blob
-    # used its own cat-file process. Git's batch protocol preserves raw bytes.
-    request = ''.join(oid + '\n' for _, oid in blobs).encode('ascii')
-    stream = subprocess.check_output(['git', 'cat-file', '--batch'], input=request, cwd=REPO)
-    offset = 0
-    rows = []
-    for name, oid in blobs:
-        end = stream.find(b'\n', offset)
-        if end < 0:
-            raise ValueError('truncated Git batch header')
-        header = stream[offset:end].decode('ascii').split()
-        if len(header) != 3 or header[:2] != [oid, 'blob']:
-            raise ValueError(f'unexpected Git batch header for {name}: {header}')
-        size = int(header[2])
-        if size < 0:
-            raise ValueError(f'invalid Git blob size for {name}')
-        offset = end + 1
-        payload = stream[offset:offset + size]
-        offset += size
-        if len(payload) != size or stream[offset:offset + 1] != b'\n':
-            raise ValueError(f'truncated Git batch blob for {name}')
-        offset += 1
-        target = ARCHIVE_ROOT / name
-        if target.exists():
-            if target.read_bytes() != payload:
-                raise ValueError(f'archived source differs from Git: {target}')
-        else:
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(payload)
-        rows.append({'path': name, 'git_blob': oid,
-                     'sha256': hashlib.sha256(payload).hexdigest(), 'bytes': len(payload)})
-    if offset != len(stream):
-        raise ValueError('unexpected trailing Git batch output')
-    manifest = {'commit': COMMIT, 'root': str(ARCHIVE_ROOT), 'files': rows}
-    (ARCHIVE_ROOT / 'SOURCE_MANIFEST.json').write_text(
-        json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
-    )
-    return manifest
-
-
-@contextlib.contextmanager
-def _working_directory(directory: Path):
-    previous = Path.cwd()
-    os.chdir(directory)
-    try:
-        yield
-    finally:
-        os.chdir(previous)
-
-
-class Archive:
-    """Keep old top-level imports out of the process's normal module namespace."""
-
-    def __init__(self) -> None:
-        bootstrap()
-        import torch
-
-        benchmark = torch.backends.cudnn.benchmark
-        self.manifest = export_source()
-        roots = ('config', 'module', 'dataset', 'model', 'metric', 'train_model')
-        is_old = lambda name: any(name == root or name.startswith(root + '.') for root in roots)
-        saved = {name: value for name, value in sys.modules.items() if is_old(name)}
-        for name in saved:
-            del sys.modules[name]
-        old_argv, old_path = sys.argv, list(sys.path)
-        try:
-            sys.path.insert(0, str(ARCHIVE_ROOT / 'src'))
-            sys.argv = ['train_model.py']
-            with _working_directory(ARCHIVE_ROOT / 'src'):
-                self.config = importlib.import_module('config')
-                self.module = importlib.import_module('module')
-                self.dataset = importlib.import_module('dataset')
-                self.model = importlib.import_module('model')
-                self.metric = importlib.import_module('metric')
-                self.train_model = importlib.import_module('train_model')
-            self.modules = {name: value for name, value in sys.modules.items() if is_old(name)}
-            self.defaults = copy.deepcopy(self.config.cfg)
-            for name, value in self.modules.items():
-                sys.modules['_rpipe_archive_4ccb28d.' + name] = value
-        finally:
-            for name in list(sys.modules):
-                if is_old(name):
-                    del sys.modules[name]
-            sys.modules.update(saved)
-            sys.path[:] = old_path
-            sys.argv = old_argv
-            # Archived train_model sets benchmark=True at import. Importing
-            # historical code must not override the current Run's controls.
-            torch.backends.cudnn.benchmark = benchmark
-
-    def configure(self, data_name: str, model_name: str, seed: int, device: str = 'cpu') -> dict[str, Any]:
-        if data_name not in DATA_NAMES or model_name not in MODEL_NAMES:
-            raise ValueError(f'unsupported historical combination: {data_name}/{model_name}')
-        cfg = self.config.cfg
-        cfg.clear()
-        cfg.update(copy.deepcopy(self.defaults))
-        cfg['control'] = {'data_name': data_name, 'model_name': model_name}
-        cfg['control_name'] = f'{data_name}_{model_name}'
-        cfg['model_tag'] = f'{seed}_{data_name}_{model_name}'
-        self.module.process_control()
-        cfg.update(seed=int(seed), iteration=0, device=device, num_samples=250 * HORIZON)
-        return cfg
-
-    def datasets(self, data_root: Path, data_name: str) -> dict[str, Any]:
-        # make_dataset has a literal data/<name> root. Construction eagerly
-        # loads arrays; afterwards all sample reads use those in-memory arrays.
-        if data_root.name != 'data':
-            raise ValueError('historical data_root must end in "data"')
-        with _working_directory(data_root.parent):
-            return self.dataset.make_dataset(data_name, verbose=False)
-
-
-def load_archive() -> Archive:
-    global _ARCHIVE
-    if _ARCHIVE is None:
-        _ARCHIVE = Archive()
-    return _ARCHIVE
-
-
-class Observation:
-    """Hash actual sampled and transformed inputs; used only in preflight."""
-
-    def __init__(self) -> None:
-        self.hashes = {key: hashlib.sha256() for key in ('indices', 'images', 'targets')}
-        self.samples = 0
-        self.batches = 0
-
-    def add(self, batch: dict[str, Any]) -> None:
-        for key, field in (('indices', 'id'), ('images', 'data'), ('targets', 'target')):
-            tensor = batch[field].detach().cpu().contiguous()
-            self.hashes[key].update(tensor.numpy().tobytes())
-        self.samples += len(batch['target'])
-        self.batches += 1
-
-    def result(self) -> dict[str, Any]:
-        return {'samples': self.samples, 'batches': self.batches,
-                **{key + '_sha256': value.hexdigest() for key, value in self.hashes.items()}}
-
-
-def _observed_dicts(loader: Iterable[Any], observation: Observation):
-    for batch in loader:
-        observation.add(batch)
-        yield batch
+_structure = _load_structure()
+STUDY, REPO = _structure.STUDY, _structure.REPO
+COMMIT, SOURCE, HORIZON = _structure.COMMIT, _structure.SOURCE, _structure.HORIZON
+DATA_NAMES, MODEL_NAMES = _structure.DATA_NAMES, _structure.MODEL_NAMES
+bootstrap, install, Observation = _structure.bootstrap, _structure.install, _structure.Observation
+_observed_dicts = _structure._observed_dicts
 
 
 def register(ctx: Any) -> None:
@@ -228,106 +58,6 @@ def register(ctx: Any) -> None:
         if ctx.config['system'].get(flag) is not False or report.get('controls', {}).get(flag) is not False:
             raise RuntimeError(f'main_exp requires {flag}=false in both Run and preflight')
     install(ctx.shared_data_dir, seed=ctx.seed)
-
-
-def install(data_root: Path | str, seed: int = 0, sampler_steps: int = HORIZON) -> Archive:
-    """Register the immutable archive as source ``historical_4ccb28d``.
-
-    Builders accept each Run's seed; the argument is a fallback for manual
-    callers. The sampler keeps the full 80k budget even in a prefix probe.
-    Exact resume is deliberately refused because RPipe does not persist the
-    original iterator and full RNG state.
-    """
-    bootstrap()
-    import numpy as np
-    import torch
-    from rpipe.structure.data.factory import Data, DataRegistry
-    from rpipe.structure.model.factory import Model, ModelRegistry
-
-    archive = load_archive()
-    data_root = Path(data_root).resolve()
-    if sampler_steps != HORIZON:
-        raise ValueError('historical sampler horizon must remain 80000')
-
-    class HistoricalData(Data):
-        def __init__(self, *, name: str, datasets: dict[str, Any], config: dict[str, Any], run_seed: int,
-                     assets_dir: Path) -> None:
-            self.datasets = datasets
-            self.observations: dict[str, Observation] = {}
-            self._run_seed = run_seed
-            super().__init__(name=name, source=SOURCE, loaders={}, meta={
-                'ready': True, 'assets_dir': str(assets_dir), 'config': config,
-                'seed': run_seed, 'train_size': len(datasets['train']), 'test_size': len(datasets['test']),
-                'batch_size': 250, 'test_batch_size': 250,
-                'data_size': [1, 28, 28] if name == 'MNIST' else [3, 32, 32], 'target_size': 10,
-                'historical_commit': COMMIT, 'sampler_steps': sampler_steps,
-                # Normalization is already in the original dataset transform.
-                'normalization_in_dataset': True,
-            })
-            self._loaders['test'] = torch.utils.data.DataLoader(
-                datasets['test'], batch_size=250, shuffle=False, pin_memory=True,
-                num_workers=0, collate_fn=archive.dataset.input_collate,
-                worker_init_fn=np.random.seed(run_seed),
-            )
-            self.rebind_train_steps(step=0, num_steps=sampler_steps)
-
-        def rebind_train_steps(self, *, step: int, num_steps: int, step_period: int = 1) -> None:
-            del num_steps
-            if step != 0 or step_period != 1:
-                raise ValueError('exact historical runs require an uninterrupted start at step 0, step_period 1')
-            generator = torch.Generator().manual_seed(self._run_seed)
-            sampler = torch.utils.data.RandomSampler(
-                self.datasets['train'], replacement=False, num_samples=250 * sampler_steps,
-                generator=generator,
-            )
-            self._loaders['train'] = torch.utils.data.DataLoader(
-                self.datasets['train'], batch_size=250, sampler=sampler, pin_memory=True,
-                num_workers=0, collate_fn=archive.dataset.input_collate,
-                worker_init_fn=np.random.seed(self._run_seed),
-            )
-
-        def iter_batches(self, split: str):
-            for batch in self._loaders[split]:
-                if split in self.observations:
-                    self.observations[split].add(batch)
-                yield batch['data'], batch['target']
-
-    def build_data(data_config: Any, assets_dir: Path, seed: int | None = None):
-        run_seed = int(seed if seed is not None else register_seed)
-        cfg = dict(data_config.config)
-        if int(cfg.get('batch_size', 250)) != 250 or float(cfg.get('test_batch_ratio', 1)) != 1:
-            raise ValueError('historical batch sizes must be train250/test250')
-        if cfg.get('train_size') is not None or int(cfg.get('num_workers', 0)) != 0:
-            raise ValueError('historical recipe uses full datasets and num_workers=0')
-        if cfg.get('pin_memory', True) is not True:
-            raise ValueError('historical recipe requires pin_memory=true')
-        archive.configure(data_config.name, 'linear', run_seed)
-        datasets = archive.datasets(data_root, data_config.name)
-        return HistoricalData(name=data_config.name, datasets=datasets, config=cfg,
-                              run_seed=run_seed, assets_dir=assets_dir)
-
-    def build_model(model_config: Any, assets_dir: Path, data_meta: dict[str, Any] | None = None):
-        if not data_meta:
-            raise ValueError('historical model requires dataset metadata')
-        shape = list(data_meta['data_size'])
-        data_name = 'MNIST' if shape == [1, 28, 28] else 'CIFAR10'
-        run_seed = int(data_meta.get('seed', register_seed))
-        archive.configure(data_name, model_config.name, run_seed)
-        module = archive.model.make_model(model_config.name)
-        # The original instance, weights, buffers and state_dict keys survive.
-        # Forward adapts the current loop's tensor input to its original f(x).
-        module.forward = module.f
-        return Model(name=model_config.name, source=SOURCE, module=module,
-                     meta={'ready': True, 'assets_dir': str(assets_dir), 'historical_commit': COMMIT,
-                           'data_size': shape, 'target_size': 10,
-                           'config': dict(model_config.config), 'logits_method': 'f'})
-
-    register_seed = int(seed)
-    for name in DATA_NAMES:
-        DataRegistry.register(name, SOURCE, build_data)
-    for name in MODEL_NAMES:
-        ModelRegistry.register(name, SOURCE, build_model)
-    return archive
 
 
 def _rng_state() -> dict[str, Any]:
@@ -569,7 +299,7 @@ def main(argv: list[str] | None = None) -> int:
 
     arguments = list(sys.argv[1:] if argv is None else argv)
     if arguments and arguments[0] == 'calibrate':
-        import speed
+        from flow.execute import speed
         return speed.main(sys.modules[__name__], arguments[1:])
 
     parser = argparse.ArgumentParser(description=main.__doc__)

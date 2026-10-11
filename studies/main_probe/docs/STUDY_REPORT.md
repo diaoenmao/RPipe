@@ -2,6 +2,24 @@
 
 ## 一、摘要
 
+### 2026-10-12 两柱与阶段入口短复验
+
+- 目标：确认 `structure/` 建构、`flow/<phase>/run.py` 编排在真实短训练中仍遵守原数值门。基线为 `7eb16438` 加未提交重构，version 为 `main-probe-flow-20261012-05`。
+- 结果：MNIST / linear、MNIST / cnn 各完成两侧 60 steps、完整 test 和自身 best 独立 eval；两个 Run 的六阶段链、逐段参数、Loss、输入、RNG、optimizer、scheduler、归档核验与库 compare 均通过。
+- 当前状态：2 succeeded / 0 failed / 6 pending；Study process 按预期 exit 1，报告 complete=false / passed=false，没有把子集当作八组合终验。正式数字见 [短实验证据](flow_smoke_20261012.json) 与 [当前数字](NUMBERS.md)。
+- 失败与边界：version04 因缺少 `evaluate` 在 prepare 失败，原失败 Run 保留；隔离目录补齐 evaluate 0.4.6 / datasets 5.1.0 后使用 version05 重跑。MNIST raw 8/8 hash 匹配；CIFAR 下载未完成，未验证另外六组。
+
+| **组合** | **Run ID** | **参数 / Loss 最大差** | **两侧独立 eval Accuracy** | **成对计算耗时** |
+| --- | --- | --- | --- | --- |
+| MNIST / linear | 075534e416d6cc8d | 0 / 0 | 90.7300% | 5.001 s |
+| MNIST / cnn | aa502aa512c16e4b | 0 / 0 | 11.3500% | 5.903 s |
+
+耗时不含完整 Flow 准备，不用于性能排名；低预算 CNN Accuracy 不是长预算结论。实验完成后发现库 collect 包入口尚有重复实现，已清除，只保留导出；`run.py` 函数 AST 与旧实现一致，最终针对性回归 57 passed / 2 skipped。实测 provenance 保留清理前的真实 hash，未重写成清理后的来源；再次实测必须使用新 version 和 make。
+
+### 2026-10-11 历史完整验收
+
+以下摘要及第二至第七节记录重构前 version03 的完整验收，不是本轮 version05 的结果。[可取得的历史快照](versions/main-probe-flow-20261011-03/README.md) 保留旧报告、数字、图与终验；旧 index / provenance / process 未在当前检出中取得，未补造。
+
 目标是确认固定 main `98648f3` 与当前 RPipe 在受控同设备 60-step 配方下的数值一致性。2026-10-11 的 FP32 version03 八组合完整通过；实际源码提交 `c9c782b5d5bb62da4e5e2292e96e842740c24f53`。Flow 阶段职责拆分后，真实 prepare → execute → collect → summarize → write → process 已完成，数值与库 artifact compare 同时通过。
 
 - 主要结果：16 个 step30 / 60 点参数最大差 0，train / test Loss 最大差 4.44e-16，独立 eval Loss 差 0；正确样本数、RNG、输入、optimizer、scheduler、best 选择及原归档完整性全部通过
@@ -25,7 +43,7 @@ version 为 main-probe-flow-20261011-03，seed0；NVIDIA GeForce RTX 5090 D v2�
 
 ## 四、原代码与当前侧对比
 
-下表是两侧自身 best 的独立 eval Accuracy（%）；曲线终点与 best 分别保留在 [逐对原始数字](PAIR_RESULTS.json)，不以 best 替代训练终点。
+下表是历史 version03 两侧自身 best 的独立 eval Accuracy（%）；曲线终点与 best 分别保留在 [逐对原始数字](versions/main-probe-flow-20261011-03/PAIR_RESULTS.json)，不以 best 替代训练终点。
 
 | **数据** | **模型** | **固定 main 原代码** | **当前 RPipe** | **差值（百分点）** |
 | --- | --- | --- | --- | --- |
@@ -38,13 +56,13 @@ version 为 main-probe-flow-20261011-03，seed0；NVIDIA GeForce RTX 5090 D v2�
 | CIFAR10 | cnn | 32.8900 | 32.8900 | 0.0000 |
 | CIFAR10 | resnet18 | 47.7300 | 47.7300 | 0.0000 |
 
-![当前侧实际 60-step test history](figures/learning_curves.png)
+![version03 当前侧实际 60-step test history](versions/main-probe-flow-20261011-03/figures/learning_curves.png)
 
 图由库 process 从当前 Run 的实际 tracker history 生成；只有 step30 / 60 两个完整 test 点，不能外推长预算收敛或作为八模型性能排名。
 
 ## 五、验证与失败依据
 
-每个 Run 的初始化参数与 RNG、完整 train / test 数据、实际索引与输入、step30 / 60 参数和 optimizer / scheduler / RNG、正确样本数、best 选择与权重、两侧各自 best 独立 eval 均通过。[Study 终验](../PROBE_COMPARISON.json) 只读取当前 index，核验八组齐全、无重复、seed0、同设备与同来源。[PAIR_RESULTS.json](PAIR_RESULTS.json) 保存正式数值摘要及逐段判定。
+历史 version03 每个 Run 的初始化参数与 RNG、完整 train / test 数据、实际索引与输入、step30 / 60 参数和 optimizer / scheduler / RNG、正确样本数、best 选择与权重、两侧各自 best 独立 eval 均通过。[历史 Study 终验](versions/main-probe-flow-20261011-03/PROBE_COMPARISON.json) 只读取当时 index，核验八组齐全、无重复、seed0、同设备与同来源。[历史逐对结果](versions/main-probe-flow-20261011-03/PAIR_RESULTS.json) 保存正式数值摘要及逐段判定。
 
 首轮失败为 [f6db09ee2f38fec9 日志](../runs/f6db09ee2f38fec9/assets/logs/run.log)。CPU 数据/模型数值检查通过，但总体 prepare 未通过；原始 SOURCE_MANIFEST.json 显示105→137文件，增加项均为自身生成的32个归档 Python 文件。修复补充 os 导入，并用库 provenance.source_files 排除生成产物；归档独立校验与全部数值门保留。修复后 CPU 集成37项通过，version02八组真实复验通过。
 
@@ -63,4 +81,4 @@ version 为 main-probe-flow-20261011-03，seed0；NVIDIA GeForce RTX 5090 D v2�
 
 ## 七、执行记录
 
-2026-10-11：在精度修复提交 c9c782b 上通过统一 CLI 以 round3 完成 version03 的八格真实六阶段链，Study process 终验通过，rpipe report 生成 [NUMBERS.md](NUMBERS.md)。旧 version02 完整通过的证据保留在 [版本报告](versions/main-probe-flow-20261010-02/STUDY_REPORT.md)。详细过程见 [RERUN.md](RERUN.md)。main_exp version03 的完整长曲线验收另已通过，见 [长实验报告](../../main_exp/docs/STUDY_REPORT.md)；本短探针本身不替代长预算验收。
+2026-10-11：在精度修复提交 c9c782b 上通过统一 CLI 以 round3 完成 version03 的八格真实六阶段链，Study process 终验通过，rpipe report 生成 [历史数字](versions/main-probe-flow-20261011-03/NUMBERS.md)。旧 version02 完整通过的证据保留在 [版本报告](versions/main-probe-flow-20261010-02/STUDY_REPORT.md)。详细过程见 [RERUN.md](RERUN.md)。main_exp version03 的完整长曲线验收另已通过，见 [长实验报告](../../main_exp/docs/STUDY_REPORT.md)；本短探针本身不替代长预算验收。

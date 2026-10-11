@@ -4,6 +4,8 @@
 
 库内两柱：`structure` 与 `flow`。你要写的是包外的 **Study 目录**。入口是 `python -m rpipe`，即 flow 的 cli。
 
+**2026-10-12 目录重构边界：** `main_exp` / `main_probe` 的阶段包位于 `flow/`，专用建构与成对计算位于 `structure/`。库已加载 `flow/<phase>/` 并自动将两柱 Python 源码纳入 provenance；空目录和没有 `__init__.py` 的手动工具目录不自动执行。旧根目录阶段包须迁移。小规模流程验证与正式数值验收分开，原 version03 的历史通过记录不能替代本次重构的验收；正式复跑前使用新 version、重新 make 和执行计划规定的前置门。
+
 ---
 
 ## 1. 三个词（决定你写什么）
@@ -32,6 +34,11 @@
 studies/<name>/
   study.yaml                 # 比什么：axes / seeds / tags
   experiment_config.yaml     # 基底：data / model / algorithm / system
+  flow/                      # 镜像 rpipe.flow：prepare … process
+    prepare/                 # 可选扩展示意；不复制库默认实现
+      __init__.py            # 仅导出
+      run.py                 # before(ctx) / run(ctx)
+  structure/                 # 镜像 rpipe.structure：api … make
   docs/
     PLAN.md                  # 研究问题（人写，可入库）
     STUDY_REPORT.md          # 跑完后写结论（人写）
@@ -61,13 +68,13 @@ studies/<name>/
 |---|---|---|---|
 | `_template` | 新 Study 的配置与报告起点 | [计划](_template/docs/PLAN.md) / [报告模板](_template/docs/STUDY_REPORT.md) | 尚未执行 |
 | `main_exp` | 历史 main `4ccb28d` 配方的四 seed、80000-step 曲线复现，对原图估读门终验 | [入口](main_exp/README.md) / [计划](main_exp/docs/PLAN.md) / [报告](main_exp/docs/STUDY_REPORT.md) | FP32 version03 的 32 train / 32 eval、完整性及固定曲线终验全部通过；串行历史速度校准已完成、容量调查继续，version02 失败保留 |
-| `main_probe` | 固定 main `98648f3` 原代码与当前 RPipe 的 60-step 同设备数值探针 | [入口](main_probe/README.md) / [计划](main_probe/docs/PLAN.md) / [报告](main_probe/docs/STUDY_REPORT.md) | 2026-10-11 FP32 version03 八组合及终验通过 |
+| `main_probe` | 固定 main `98648f3` 原代码与当前 RPipe 的 60-step 同设备数值探针 | [入口](main_probe/README.md) / [计划](main_probe/docs/PLAN.md) / [报告](main_probe/docs/STUDY_REPORT.md) | 历史 version03 八组合通过；2026-10-12 version05 仅 MNIST / linear、cnn 两组通过，其余六组未执行，子集未通过完整终验 |
 
 2026-10-10 两个 Study 由 `main_historical`、`main_reproduction` 改名，按 [flow.md](../docs/code/flow.md) §14 整理为声明、recipe 与同名阶段扩展，旧结果与证据从当前树删除，见提交 [`18cd76c`](https://github.com/diaoenmao/RPipe/tree/18cd76c/studies)。
 
 2026-10-10 只保留以上三个 Study。其余 Study（`mnist_train_size`、`mnist_native_vs_hf`、`cifar_grid`、`main_base`、`checkpoint_recovery`、`mnist_cnn_lr`、`mnist_cnn_budget`、`mnist_cnn_budget_repeat`、`local_model_matrix`、`support_data_smoke`、`support_model_smoke`）已删除，计划与报告见提交 [`71143ab`](https://github.com/diaoenmao/RPipe/tree/71143ab/studies)。测试要用的 `mnist_train_size`、`mnist_native_vs_hf`、`cifar_grid` 声明在 [`tests/_data/studies/`](../tests/_data/studies/)。
 
-Study 保存声明、recipe、阶段包、专用 Algorithm 及研究证据，调度一律用 `rpipe make / launch`。`main_exp` 的 `historical_4ccb28d` 由 `study.yaml` 的 `recipe` 注册，通用 launch 即可运行；`main_probe` 通过 prepare / execute / collect / summarize / write 执行两侧同进程对照与验收。各自的文件说明与命令见两个 Study 的 README。
+Study 保存声明、recipe、阶段包、专用 Algorithm 及研究证据，调度一律复用 `rpipe make / launch`。`main_exp` 的 `historical_4ccb28d` 由 `study.yaml` 的 `recipe` 注册；`main_probe` 由成对 Algorithm 计算、阶段扩展验收。库加载 `flow/<phase>/`，2026-10-12 已完成 main_probe 两组真实 60-step Run 与 main_exp 单组手动 200-step 前置对照；没有新完整矩阵验收。实测后 collect 重复入口清理通过针对性回归，后续真实复跑须新 version / make，按各自计划重新建立基线。文件说明、结果与边界见两个 Study 的 README。
 
 声明、研究计划、报告、图、正式数字随 Git 提供。`runs/`、`shared/`、`scripts/`、`index.json`、`process.json`、`provenance.json` 和 `.tmp/` 按仓库忽略规则留在本机；clone 只有报告，不自动拥有报告内引用的原始 checkpoint、日志和数据。
 
@@ -77,6 +84,9 @@ Study 保存声明、recipe、阶段包、专用 Algorithm 及研究证据，调
 studies/_template/
   study.yaml
   experiment_config.yaml
+  flow/
+    # 阶段目录可留空；需要 hook 时再添加 run.py 与仅导出的 __init__.py
+  structure/
   docs/
     PLAN.md          # 必须含 §3 高效率排班
     STUDY_REPORT.md  # 跑完再填；必须有图
@@ -310,7 +320,7 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 | `tags` | `when` 匹配当前格子（可含 seed）则打标签；`baseline` 只是 tag |
 | `run_description` | 写入 config 的说明；**不进** `id` hash。占位符可用轴的末段名（如 `{train_size}`）以及 `{seed}`、`{experiment}` |
 | `recipe` | 可选，Study 内的 Python 文件（如 `recipe.py`），定义 `register(ctx)`，注册本 Study 自己的 data / model / algorithm `source`。prepare 在每条 Run 建构前调用；**不进** `id` hash。见 [flow.md](../docs/code/flow.md) §14.1 |
-| `flow.study_phases` | `true` 时加载六个同名阶段包，库先执行、Study hook 后执行；Python helper 自动纳入 provenance |
+| `flow.study_phases` | 显式启用阶段包；`flow/<phase>/run.py` 实现 hook，`__init__.py` 仅导出。prepare.before 在构造前，write 在库定稿前，其余 hook 在库阶段后。旧根目录阶段包需迁移 |
 | `flow.prepare_shared` | 默认 `true`；每条 Run 内准备隔离数据或注册专用 source 时设为 `false`，make 不提前构造 Data |
 | `freeze` | `true` 时，make 之后源码、声明、recipe 或计划有任何变化，`launch` / `run-one` 都拒绝运行，重新 make 才接受 |
 | `provenance.include` | 额外纳入来源清单的 Study 内文件（glob 列表），例如固定的参考数据或清单 |
@@ -411,9 +421,9 @@ Study process 只聚合当前 index 列出的 Run，不扫描旧 version 目录�
 
 ## 9. 现成能力 vs 要改库
 
-Study 可在 `study.yaml` 写 `flow: {study_phases: true}`，添加 `prepare/`、`execute/`、`collect/`、`summarize/`、`write/`、`process/` 包，每包定义 `run(ctx)`。prepare 可定义 `before(ctx)`，在库初始化后、recipe / Factory 构造前准备；`run(ctx)` 检查已构造对象。write 先跑 Study 再由库定稿，其他阶段先跑库再跑 Study；未启用时不会自动加载目录。recipe 负责 Data/Model 建构前注册。阶段目录的 Python 源码自动记入 provenance；目录外的辅助源码须加入 `provenance.include`。
+Study 可在 `study.yaml` 写 `flow: {study_phases: true}`。库加载 `flow/` 下的 `prepare/`、`execute/`、`collect/`、`summarize/`、`write/`、`process/` 包；每包在 `run.py` 定义 `run(ctx)`，`__init__.py` 仅通过 `from .run import run` 导出，不能承载函数或业务实现。空目录或没有包入口的手动工具目录不加载，但库默认阶段仍执行，不需要在 Study 复制默认链或填入空 hook。专用建构代码放在 `structure/`。prepare 的 `run.py` 可定义 `before(ctx)`，由包入口一并导出，在库初始化后、recipe / Factory 构造前准备；`run(ctx)` 检查已构造对象。write 先跑 Study 再由库定稿，其他阶段先跑库再跑 Study；未启用时不会自动加载目录。recipe 负责 Data/Model 建构前注册。两柱全部 Python 源码自动进入来源清单，无须再写重复的 `provenance.include`；固定参考文件等额外输入仍需声明。
 
-`ctx.scope == 'run'` 时是单条 Run 上下文；整轮聚合后还会调用一次 `process.run(ctx)`，此时 `ctx.scope == 'study'`，使用 `ctx.study_dir` 和 `ctx.state['process']`，没有单条 Run 的 layout。只在 Study scope 做终验，避免每条 Run 重复执行矩阵或跨 seed 统计。make 前的下载、数据预检仍使用根目录显式入口。加载、失败和 freeze 的完整合同见 [flow.md §14.0](../docs/code/flow.md#140-study-阶段目录)。
+`ctx.scope == 'run'` 时是单条 Run 上下文；整轮聚合后还会调用一次 `process.run(ctx)`，此时 `ctx.scope == 'study'`，使用 `ctx.study_dir` 和 `ctx.state['process']`，没有单条 Run 的 layout。只在 Study scope 做终验，避免每条 Run 重复执行矩阵或跨 seed 统计。make 前的下载、数据预检使用显式手动入口（`main_exp` 为 `flow/prepare_data.py`），不接入阶段链。加载、失败和 freeze 的完整合同见 [flow.md §14.0](../docs/code/flow.md#140-study-阶段目录)。
 
 | **你想做的** | **怎么做** |
 |----------|--------|

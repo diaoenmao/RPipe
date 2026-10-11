@@ -148,6 +148,8 @@ flowchart TB
 
 路径：`studies/<name>/`。持有声明、index、文档、共享数据、Study process 信封，以及各次 Run 产物。Experiment 的摘要嵌在信封里，不另开目录。
 
+Study 可以复用库的两柱组织专用代码：`structure/` 放建构与计算实现，`flow/` 放研究特有的阶段准备、检查和终验；根 `recipe.py` 注册专用 source。声明展开、调度、阶段链与通用 artifact / compare 仍由库负责，不在 Study 内另建一套执行框架。加载与来源冻结见 [flow.md §14](flow.md#14-study-扩展recipe来源清单run-对比)。
+
 | **轴** | **含义** | **结果** |
 |----|------|------|
 | **`axes`** | 有意比较的研究因素 | → Experiment |

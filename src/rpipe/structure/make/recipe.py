@@ -26,13 +26,20 @@ def study_phase_files(study_dir: Path | str, study: dict[str, Any]) -> list[Path
     if not study_phases_enabled(study):
         return []
     root = Path(study_dir).resolve()
+    flow = root / 'flow'
+    if flow.exists() and (not flow.is_dir() or not flow.resolve().is_relative_to(root)):
+        raise ValueError(f'Study flow must be a directory inside the Study: {flow}')
     files = []
     for phase in STUDY_PHASES:
-        directory = root / phase
+        if (root / phase / '__init__.py').is_file():
+            raise ValueError(f'move legacy Study phase to flow/{phase}/: {root / phase}')
+        directory = flow / phase
         if not directory.exists():
             continue
-        if not directory.is_dir() or not (directory / '__init__.py').is_file():
-            raise ValueError(f'Study phase must be a package: {directory}')
+        if not directory.is_dir() or not directory.resolve().is_relative_to(root):
+            raise ValueError(f'Study phase must be a directory inside the Study: {directory}')
+        if not (directory / '__init__.py').is_file():
+            continue
         for path in sorted(directory.rglob('*.py')):
             if not path.resolve().is_relative_to(root):
                 raise ValueError(f'Study phase source must stay inside the Study: {path}')

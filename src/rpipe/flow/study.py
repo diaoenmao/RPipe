@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import importlib.util
+from importlib import import_module
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -21,7 +21,7 @@ def run_study_phase(study_dir: Path | str, phase: str, ctx: Any, study: dict[str
         return False
     root = Path(study_dir).resolve()
     study_phase_files(root, study)
-    path = root / phase / '__init__.py'
+    path = root / 'flow' / phase / '__init__.py'
     if not path.is_file():
         return False
     name = f'_rpipe_study_{uuid4().hex}'
@@ -30,14 +30,7 @@ def run_study_phase(study_dir: Path | str, phase: str, ctx: Any, study: dict[str
     package.__package__ = name
     sys.modules[name] = package
     try:
-        spec = importlib.util.spec_from_file_location(
-            f'{name}.{phase}', path, submodule_search_locations=[str(path.parent)],
-        )
-        if spec is None or spec.loader is None:
-            raise ImportError(f'cannot load Study phase: {path}')
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[spec.name] = module
-        spec.loader.exec_module(module)
+        module = import_module(f'{name}.flow.{phase}')
         hook = getattr(module, entry, None)
         if entry == 'before' and hook is None:
             return False
