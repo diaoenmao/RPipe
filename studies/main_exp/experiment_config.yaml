@@ -1,6 +1,6 @@
 experiment: main_exp
 description: README historical candidate recipe pinned to 4ccb28d
-version: main-exp-4ccb28d
+version: main-exp-flow-20261011-03
 historical_ref: 4ccb28d0496110253e9f8e3f3df658853f07996b
 data:
   name: MNIST
@@ -42,3 +42,5 @@ system:
   deterministic: true
   cudnn_benchmark: false
   cudnn_deterministic: true
+  cudnn_allow_tf32: false
+  matmul_allow_tf32: false

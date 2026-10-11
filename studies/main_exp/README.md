@@ -2,7 +2,9 @@
 
 历史 main `4ccb28d` 配方的四 seed、80000-step 曲线复现。目标、配方和门限见 [计划](docs/PLAN.md)，原图估读与固定门见 [TARGET.md](docs/TARGET.md)。
 
-本 Study 使用库调度、六阶段链与来源冻结，recipe 提供固定来源适配，prepare 和 process 提供研究检查与终验。当前重构版本尚未运行。先前版本的实测证据见 [`18cd76c` 的报告](https://github.com/diaoenmao/RPipe/tree/18cd76c/studies/main_historical)。
+本 Study 使用库调度、六阶段链与来源冻结，recipe 提供固定来源适配，prepare 和 process 提供研究检查与终验。当前 version03 显式关闭 cuDNN / matmul TF32，须通过同设备 600-step 八格前置门后执行完整矩阵；实测进展、设备数值边界与恢复方案见 [复跑记录](docs/RERUN.md) 和 [eval_recovery.md](docs/eval_recovery.md)。
+
+2026-10-11 version03 完整矩阵与固定曲线终验已通过，正式数字见 [NUMBERS.md](docs/NUMBERS.md)，结论边界见 [STUDY_REPORT.md](docs/STUDY_REPORT.md)。下一步按 [速度校准方案](docs/speed_calibration.md) 与早年版本做同设备、同条件计时。
 
 ## 一、文件
 
@@ -10,6 +12,7 @@
 |---|---|
 | `study.yaml`、`experiment_config.yaml` | 64 个 Run 的声明；`recipe`、`freeze`、`provenance.include` 见 [Study 指南](../README.md) |
 | `recipe.py` | `register(ctx)`：注册 `historical_4ccb28d` 数据与模型，设置确定性环境，拒绝续跑中断的 train，检查 preflight。`python -B recipe.py preflight` 跑同设备 600-step 原代码对照 |
+| `speed.py` | 由 `recipe.py calibrate` 调用的历史 / 当前链同条件阶段计时，独立测量 ID 与数值校验；见 [校准方案](docs/speed_calibration.md) |
 | `prepare_data.py` | 下载或复用 MNIST / CIFAR10 原始文件，逐文件核对 [EXPECTED_DATA.json](docs/EXPECTED_DATA.json)，写入 `shared/data/` |
 | `compare.py` | 终验：四 seed 均值曲线对原图估读的固定门，输出 `docs/COMPARISON.json` 与图 |
 | `prepare/` | 库 prepare 后核对实际 Data/Model 的配方来源；建构前注册和安全门仍在 recipe |

@@ -60,8 +60,8 @@ studies/<name>/
 | **Study** | **研究或验收范围** | **计划 / 报告** | **本机原始产物** |
 |---|---|---|---|
 | `_template` | 新 Study 的配置与报告起点 | [计划](_template/docs/PLAN.md) / [报告模板](_template/docs/STUDY_REPORT.md) | 尚未执行 |
-| `main_exp` | 历史 main `4ccb28d` 配方的四 seed、80000-step 曲线复现，对原图估读门终验 | [入口](main_exp/README.md) / [计划](main_exp/docs/PLAN.md) | 待重跑 |
-| `main_probe` | 固定 main `98648f3` 原代码与当前 RPipe 的 60-step 同设备数值探针 | [入口](main_probe/README.md) / [计划](main_probe/docs/PLAN.md) | 待重跑 |
+| `main_exp` | 历史 main `4ccb28d` 配方的四 seed、80000-step 曲线复现，对原图估读门终验 | [入口](main_exp/README.md) / [计划](main_exp/docs/PLAN.md) / [报告](main_exp/docs/STUDY_REPORT.md) | FP32 version03 的 32 train / 32 eval、完整性及固定曲线终验全部通过；串行历史速度校准已完成、容量调查继续，version02 失败保留 |
+| `main_probe` | 固定 main `98648f3` 原代码与当前 RPipe 的 60-step 同设备数值探针 | [入口](main_probe/README.md) / [计划](main_probe/docs/PLAN.md) / [报告](main_probe/docs/STUDY_REPORT.md) | 2026-10-11 FP32 version03 八组合及终验通过 |
 
 2026-10-10 两个 Study 由 `main_historical`、`main_reproduction` 改名，按 [flow.md](../docs/code/flow.md) §14 整理为声明、recipe 与同名阶段扩展，旧结果与证据从当前树删除，见提交 [`18cd76c`](https://github.com/diaoenmao/RPipe/tree/18cd76c/studies)。
 

@@ -702,9 +702,12 @@ Logger **不**改 AlgorithmTracker 的 mean/history；**不**写 TensorBoard。
 | `torch.use_deterministic_algorithms` | 关（`warn_only=True`，避免个别算子直接炸） | `deterministic` |
 | `cudnn.deterministic` | 跟 `deterministic` | `cudnn_deterministic`（可单开） |
 | `cudnn.benchmark` | `not cudnn.deterministic`（对齐 main：默认 benchmark 开） | `cudnn_benchmark` |
+| cuDNN / CUDA matmul 的 TF32 | 未配置时保留 Torch 当前值 | 可选布尔值 `cudnn_allow_tf32` / `matmul_allow_tf32`；配置 `false` 关闭对应低精度内部计算，实际值写入 runtime / System 结果 |
 | DataLoader shuffle | train：`Generator().manual_seed(seed)` + `worker_init_fn`（对齐 main `make_data_loader`）。`progress_unit=step` 时按剩余 `num_steps` 重建 `RandomSampler`（`num_samples = batch * (num_steps-step) * step_period`）；epoch 训仍按整 epoch shuffle | 经 `data_api.build(..., seed=)`；resume 后 algorithm 调 `rebind_train_steps` |
 
 不要把 seed 再抄一份进 algorithm / data 必须字段。DataLoader 的 generator **单独绑 seed**，不能只靠全局 `manual_seed`（shuffle 另有 RNG）。`num_workers>0` 时 worker 用 `torch.initial_seed()` 再种 numpy / python。
+
+确定性开关与 TF32 精度开关分别配置。改变精度可能改变训练轨迹，应记录设备、Torch 版本和实际精度值；严格数值 Study 要在原代码与当前链两侧统一，并以新 version 复验。TF32 配置非布尔值时拒绝，不能把字符串 `"false"` 当成开启。未配置不会强制改变已有 Torch 设置。
 
 ---
 

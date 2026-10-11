@@ -48,7 +48,7 @@ def export_source() -> dict[str, Any]:
     tree = subprocess.check_output(
         ['git', 'ls-tree', '-r', '-z', COMMIT], cwd=REPO
     )
-    rows = []
+    blobs = []
     for entry in tree.split(b'\0'):
         if not entry:
             continue
@@ -56,9 +56,30 @@ def export_source() -> dict[str, Any]:
         _, kind, oid = attributes.decode('ascii').split()
         if kind != 'blob':
             continue
-        name = raw_name.decode('utf-8')
+        blobs.append((raw_name.decode('utf-8'), oid))
+    # Windows process creation dominated archive preparation when every blob
+    # used its own cat-file process. Git's batch protocol preserves raw bytes.
+    request = ''.join(oid + '\n' for _, oid in blobs).encode('ascii')
+    stream = subprocess.check_output(['git', 'cat-file', '--batch'], input=request, cwd=REPO)
+    offset = 0
+    rows = []
+    for name, oid in blobs:
+        end = stream.find(b'\n', offset)
+        if end < 0:
+            raise ValueError('truncated Git batch header')
+        header = stream[offset:end].decode('ascii').split()
+        if len(header) != 3 or header[:2] != [oid, 'blob']:
+            raise ValueError(f'unexpected Git batch header for {name}: {header}')
+        size = int(header[2])
+        if size < 0:
+            raise ValueError(f'invalid Git blob size for {name}')
+        offset = end + 1
+        payload = stream[offset:offset + size]
+        offset += size
+        if len(payload) != size or stream[offset:offset + 1] != b'\n':
+            raise ValueError(f'truncated Git batch blob for {name}')
+        offset += 1
         target = ARCHIVE_ROOT / name
-        payload = subprocess.check_output(['git', 'cat-file', 'blob', oid], cwd=REPO)
         if target.exists():
             if target.read_bytes() != payload:
                 raise ValueError(f'archived source differs from Git: {target}')
@@ -67,6 +88,8 @@ def export_source() -> dict[str, Any]:
             target.write_bytes(payload)
         rows.append({'path': name, 'git_blob': oid,
                      'sha256': hashlib.sha256(payload).hexdigest(), 'bytes': len(payload)})
+    if offset != len(stream):
+        raise ValueError('unexpected trailing Git batch output')
     manifest = {'commit': COMMIT, 'root': str(ARCHIVE_ROOT), 'files': rows}
     (ARCHIVE_ROOT / 'SOURCE_MANIFEST.json').write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
@@ -89,6 +112,9 @@ class Archive:
 
     def __init__(self) -> None:
         bootstrap()
+        import torch
+
+        benchmark = torch.backends.cudnn.benchmark
         self.manifest = export_source()
         roots = ('config', 'module', 'dataset', 'model', 'metric', 'train_model')
         is_old = lambda name: any(name == root or name.startswith(root + '.') for root in roots)
@@ -117,6 +143,9 @@ class Archive:
             sys.modules.update(saved)
             sys.path[:] = old_path
             sys.argv = old_argv
+            # Archived train_model sets benchmark=True at import. Importing
+            # historical code must not override the current Run's controls.
+            torch.backends.cudnn.benchmark = benchmark
 
     def configure(self, data_name: str, model_name: str, seed: int, device: str = 'cpu') -> dict[str, Any]:
         if data_name not in DATA_NAMES or model_name not in MODEL_NAMES:
@@ -190,6 +219,14 @@ def register(ctx: Any) -> None:
         raise RuntimeError('the same-device original/native preflight must pass before launch')
     if (report.get('environment') or {}).get('torch') != torch.__version__:
         raise RuntimeError('Torch environment changed after preflight')
+    from rpipe.structure.artifact.provenance import source_files
+    from rpipe.structure.make import load_study_yaml
+
+    if report.get('source_hashes') != source_files(ctx.study_dir, load_study_yaml(ctx.study_dir)):
+        raise RuntimeError('main_exp preflight sources changed; rerun preflight before launch')
+    for flag in ('cudnn_allow_tf32', 'matmul_allow_tf32'):
+        if ctx.config['system'].get(flag) is not False or report.get('controls', {}).get(flag) is not False:
+            raise RuntimeError(f'main_exp requires {flag}=false in both Run and preflight')
     install(ctx.shared_data_dir, seed=ctx.seed)
 
 
@@ -373,13 +410,15 @@ def preflight(data_root: Path | str, output_dir: Path | str, *, steps: int = 200
     output = Path(output_dir).resolve()
     output.mkdir(parents=True, exist_ok=False)
     system_config = SystemConfig.from_mapping({'device': device, 'deterministic': True,
-                                              'cudnn_benchmark': False, 'cudnn_deterministic': True})
+                                              'cudnn_benchmark': False, 'cudnn_deterministic': True,
+                                              'cudnn_allow_tf32': False, 'matmul_allow_tf32': False})
     pairs = list(combinations or [(d, m) for d in DATA_NAMES for m in MODEL_NAMES])
     result: dict[str, Any] = {'historical_commit': COMMIT, 'current_commit': subprocess.check_output(
         ['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip(),
         'steps': steps, 'sampler_steps': HORIZON, 'seed': seed, 'device': device,
         'torch': torch.__version__, 'controls': {'deterministic': True, 'benchmark': False,
-        'CUBLAS_WORKSPACE_CONFIG': os.environ['CUBLAS_WORKSPACE_CONFIG']},
+        'CUBLAS_WORKSPACE_CONFIG': os.environ['CUBLAS_WORKSPACE_CONFIG'],
+        'cudnn_allow_tf32': False, 'matmul_allow_tf32': False},
         'recipe_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(), 'runs': []}
     start = time.perf_counter()
 
@@ -527,6 +566,11 @@ def main(argv: list[str] | None = None) -> int:
     import argparse
     import uuid
     from datetime import datetime, timezone
+
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments and arguments[0] == 'calibrate':
+        import speed
+        return speed.main(sys.modules[__name__], arguments[1:])
 
     parser = argparse.ArgumentParser(description=main.__doc__)
     parser.add_argument('command', choices=['preflight'])

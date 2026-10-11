@@ -8,6 +8,8 @@
 
 MNIST / CIFAR10 × linear / mlp / cnn / resnet18，seed0；全量 train / test，batch250 / test1000，连续 60 optimizer steps，step30 / 60 完整 test；SGD lr0.1、momentum0.9、Nesterov、wd0.0005，无梯度裁剪，cosine T_max60；当前无 BN CNN、原生 Factory 和 Kornia 模型前增强。全 train 统计由归档原 Stats(dim1) 按顺序 batch250 重算。两边都用 deterministic=true、benchmark=false、`CUBLAS_WORKSPACE_CONFIG=:4096:8`。
 
+2026-10-11 的 version03 另显式设置 cudnn_allow_tf32=false、matmul_allow_tf32=false。两侧共享精度配置，recipe 拒绝未声明的精度；门限不变。version02 的通过证据保留在 [版本报告](versions/main-probe-flow-20261010-02/STUDY_REPORT.md)，不能代替新源码 / 精度基线的八格实测。变更依据为 main_exp 的 [设备数值诊断](../../main_exp/docs/EVAL_DIAGNOSTIC.json)。
+
 ## 三、统一 Flow 入口
 
 `rpipe make / launch studies/main_probe` 展开八个成对 Run，每个 Run 只计算自己的 data/model 组合，包含两侧训练和各自 best 独立评测。Algorithm source 为 `main_probe`，recipe 注册本 Study 的 Data 和成对 Algorithm；CPU 准备由 Study `prepare.before(ctx)` 在库初始化后、recipe 注册前完成，以便原版全 train Stats 在 Data / Model 构造之前落盘。工作区位于该 Run 的 `assets/probe/`，不得共享可变原版 config。
