@@ -44,6 +44,71 @@ def _succeed(study: Path, run_id: str):
     })
 
 
+@pytest.mark.parametrize('device,top_level', [('cpu', 'cuda'), ('cuda', 'cpu')])
+def test_plan_and_capacity_use_nested_runtime_device(tmp_path, device, top_level):
+    from rpipe.structure.make.capacity import attach_estimates, requires_gpu
+    from rpipe.structure.system.config import SystemConfig
+
+    layout = artifact_layout(tmp_path, 'nested-device')
+    system = {'device': top_level, 'config': {'device': device}}
+    layout.config_path.write_text(json.dumps({'algorithm': {'mode': 'train'}, 'system': system}), encoding='utf-8')
+    jobs = schedule.plan_jobs(tmp_path, [layout.config_path], init_gpu=0, num_gpus=1)
+    assert jobs[0]['device'] == SystemConfig.from_mapping(system).setting('device') == device
+    attach_estimates(jobs)
+    assert jobs[0]['device'] == device
+    assert requires_gpu(jobs) == (device == 'cuda')
+    assert ('gpu' in jobs[0]) == (device == 'cuda')
+
+
+@pytest.mark.parametrize('device,stale_device', [('cpu', 'cuda'), ('cuda', 'cpu')])
+def test_reused_plan_rejects_stale_device_then_accepts_replanned_jobs(tmp_path, device, stale_device):
+    layout = artifact_layout(tmp_path, 'stale-device')
+    layout.config_path.write_text(json.dumps({'algorithm': {'mode': 'train'},
+        'system': {'device': stale_device, 'config': {'device': device}}}), encoding='utf-8')
+    old_jobs = [{'run_id': 'stale-device', 'config': str(layout.config_path), 'mode': 'train', 'device': stale_device}]
+    schedule.write_jobs_json(tmp_path, old_jobs, round_size=1, init_gpu=0, num_gpus=1)
+    assert schedule.load_launch_plan(tmp_path, init_gpu=0, num_gpus=1, round_size=0) is None
+    new_jobs = schedule.plan_jobs(tmp_path, [layout.config_path], init_gpu=0, num_gpus=1)
+    schedule.write_jobs_json(tmp_path, new_jobs, round_size=1, init_gpu=0, num_gpus=1)
+    plan = schedule.load_launch_plan(tmp_path, init_gpu=0, num_gpus=1, round_size=0)
+    assert plan is not None and plan['job_list'][0]['device'] == device
+
+
+def test_reused_plan_rejects_gpu_binding_on_cpu_job(tmp_path):
+    layout = artifact_layout(tmp_path, 'cpu-stale-gpu')
+    layout.config_path.write_text(json.dumps({'algorithm': {'mode': 'train'}, 'system': {'device': 'cpu'}}), encoding='utf-8')
+    jobs = [{'run_id': 'cpu-stale-gpu', 'config': str(layout.config_path), 'mode': 'train', 'device': 'cpu', 'gpu': '0'}]
+    schedule.write_jobs_json(tmp_path, jobs, round_size=1, init_gpu=0, num_gpus=1)
+    assert schedule.load_launch_plan(tmp_path, init_gpu=0, num_gpus=1, round_size=0) is None
+
+
+def test_cpu_launch_env_does_not_apply_stale_gpu_binding(monkeypatch):
+    monkeypatch.setenv('CUDA_VISIBLE_DEVICES', '7')
+    assert schedule.launch_job_env({'device': 'cpu', 'gpu': '2'})['CUDA_VISIBLE_DEVICES'] == '7'
+
+
+def test_cpu_launch_labels_match_actual_resource_despite_stale_gpu(tmp_path, monkeypatch, capsys):
+    jobs = _study(tmp_path)
+    for job in jobs:
+        job['gpu'] = '2'
+    _fake_processes(monkeypatch, tmp_path, {})
+    assert schedule.launch_jobs(tmp_path, jobs, console='shared') == [0, 0, 0, 0]
+    printed = capsys.readouterr().out
+    assert '+ cpu' in printed
+    assert '+ gpu=' not in printed
+
+
+@pytest.mark.parametrize('explicit_batches', [False, True])
+def test_launch_rejects_duplicate_run_before_starting_processes(tmp_path, monkeypatch, explicit_batches):
+    jobs = _study(tmp_path)
+    started = _fake_processes(monkeypatch, tmp_path, {})
+    supplied = [[jobs[0], jobs[0]]] if explicit_batches else None
+    rows = jobs if explicit_batches else [jobs[0], jobs[0]]
+    with pytest.raises(ValueError, match='duplicate Run'):
+        schedule.launch_jobs(tmp_path, rows, batches=supplied, console='shared')
+    assert started == []
+
+
 def _fake_processes(monkeypatch, study, failures):
     started = []
     counts = {}

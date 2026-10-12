@@ -46,6 +46,7 @@ class _Meter:
         return {
             'last': self.last,
             'mean': self.mean,
+            'weighted_sum': self.weighted_sum,
             'n': self.n,
             'history': list(self.history),
         }
@@ -214,7 +215,7 @@ class AlgorithmTracker:
                 meter.last = float(body.get('last') or 0.0)
                 meter.n = int(body.get('n') or 0)
                 mean = float(body.get('mean') or 0.0)
-                meter.weighted_sum = mean * meter.n
+                meter.weighted_sum = float(body.get('weighted_sum', mean * meter.n))
                 meter.history = list(body.get('history') or [])
                 self._meters[split][name] = meter
                 if 'segment_batches' not in state and meter.n > 0:

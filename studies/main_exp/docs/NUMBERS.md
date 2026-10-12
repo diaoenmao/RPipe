@@ -2,6 +2,8 @@
 
 Generated from `process.json`. The conclusion stays in `STUDY_REPORT.md`.
 
+本表保留2026-10-11 version03的完整长实验数字，不是2026-10-13 version04候选声明的结果。Run日志 / checkpoint属本机产物，不随Git clone提供；最新短校准与验证见STUDY_REPORT.md。
+
 ## Experiments
 
 | **factors** | **metric** | **mean** | **std** | **min** | **max** | **n** |

@@ -15,8 +15,8 @@ def install(data_root: Path | str, seed: int = 0, sampler_steps: int = HORIZON) 
 
     Builders accept each Run's seed; the argument is a fallback for manual
     callers. The sampler keeps the full 80k budget even in a prefix probe.
-    Exact resume is deliberately refused because RPipe does not persist the
-    original iterator and full RNG state.
+    Exact resume remains refused: this historical data adapter has not been
+    validated against RPipe's native RNG/cursor restoration contract.
     """
     bootstrap()
     archive = load_archive()

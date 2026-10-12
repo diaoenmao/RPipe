@@ -12,8 +12,10 @@ from typing import Any
 from rpipe.structure.api.algorithm_api import sibling_train_dependency
 from rpipe.structure.artifact import artifact_layout, load_config
 from rpipe.structure.artifact.index import load_index
+from rpipe.structure.artifact.layout import validate_run_directory
 from rpipe.structure.artifact.result import write_result
 from rpipe.structure.artifact.result.format import STATUS_SUCCEEDED, decode_result
+from rpipe.structure.control.mapping import get_setting
 
 SCRIPTS_DIRNAME = 'scripts'
 JOBS_NAME = 'jobs.json'
@@ -42,6 +44,7 @@ def bash_path(path: Path) -> str:
 
 
 def _run_result(study_dir: Path, run_id: str) -> dict[str, Any]:
+    validate_run_directory(run_id)
     result_path = Path(study_dir) / 'runs' / run_id / 'result.json'
     try:
         return decode_result(result_path.read_text(encoding='utf-8'))
@@ -79,7 +82,7 @@ def _job_fields(config_path: Path) -> tuple[str, str]:
     algo = cfg.get('algorithm')
     system = cfg.get('system')
     mode = str(algo.get('mode') or 'train') if isinstance(algo, dict) else 'train'
-    device = str(system.get('device') or 'cpu') if isinstance(system, dict) else 'cpu'
+    device = str(get_setting(system, 'device') or 'cpu') if isinstance(system, dict) else 'cpu'
     return mode, device.lower()
 
 
@@ -197,6 +200,15 @@ def load_launch_plan(
     stored_round = int(payload.get('round') or 1)
     if int(round_size) > 0 and stored_round != int(round_size):
         return None
+    for job in payload['jobs']:
+        if isinstance(job, dict) and not include_done and run_succeeded(study_dir, str(job.get('run_id') or '')):
+            continue
+        if isinstance(job, dict) and str(job.get('device') or '').lower() == 'cpu' and job.get('gpu') is not None:
+            return None
+        if isinstance(job, dict) and job.get('config') and Path(str(job['config'])).is_file():
+            mode, device = _job_fields(Path(str(job['config'])))
+            if mode != job_mode(job) or device != str(job.get('device') or 'cuda').lower():
+                return None
 
     def _keep(rows: list) -> list[dict[str, Any]]:
         kept = [job for job in rows if isinstance(job, dict)]
@@ -392,7 +404,7 @@ def resolve_console(mode: str = 'auto') -> str:
 def launch_job_env(job: dict[str, Any]) -> dict[str, str]:
     env = os.environ.copy()
     gpu = job.get('gpu')
-    if gpu is not None:
+    if gpu is not None and str(job.get('device') or 'cuda').lower() != 'cpu':
         env['CUDA_VISIBLE_DEVICES'] = str(gpu)
     return env
 
@@ -412,6 +424,12 @@ def launch_jobs(
         raise ValueError('round must be >= 1')
     py = python_exe or sys.executable
     root = cwd or repo_root_from(study_dir)
+    groups = wait_groups(jobs, round_size, batches)
+    run_ids = [str(job['run_id']) for group in groups for job in group]
+    for run_id in run_ids:
+        validate_run_directory(run_id)
+    if len(run_ids) != len(set(run_ids)):
+        raise ValueError('duplicate Run in launch plan; use a new version for repeated computation')
     codes: list[int] = []
     console_mode = resolve_console(console)
     popen_extra = job_popen_kwargs(console_mode)
@@ -429,7 +447,6 @@ def launch_jobs(
     for run_id, parent in dependencies.items():
         if _run_result(study_dir, run_id).get('status') == STATUS_SUCCEEDED and not run_succeeded(study_dir, run_id):
             _fail_result(study_dir, run_id, f'sibling train {parent} is unfinished or newer; re-evaluation required')
-    groups = wait_groups(jobs, round_size, batches)
     # A supplied batch must not bypass the train/eval barrier either.
     waves = [
         [kept for group in groups if (kept := [job for job in group if (job_mode(job) == 'eval') == is_eval])]
@@ -476,7 +493,7 @@ def launch_jobs(
                     _fail_result(study_dir, run_id, 'rerun started; no successful result from this execution yet')
                 cmd = [py, '-m', 'rpipe', 'run-one', str(study_dir), run_id]
                 where = 'window' if console_mode == 'new' and os.name == 'nt' else 'here'
-                resource = f'gpu={job["gpu"]}' if job.get('gpu') is not None else 'cpu'
+                resource = f'gpu={job["gpu"]}' if job.get('gpu') is not None and str(job.get('device') or 'cuda').lower() != 'cpu' else 'cpu'
                 print(f'+ {resource} {job["run_id"]} ({where})', flush=True)
                 procs.append(
                     (

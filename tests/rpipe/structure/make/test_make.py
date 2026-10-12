@@ -61,6 +61,16 @@ def test_expand_patches_train_size_baseline():
     assert patches[0]['description'] == 'size=500'
 
 
+def test_duplicate_expansion_is_rejected_before_writing(tmp_path):
+    from rpipe.structure.make import expand_study
+    (tmp_path / 'study.yaml').write_text('study: duplicate\nseeds: [0, 0]\n', encoding='utf-8')
+    (tmp_path / 'experiment_config.yaml').write_text('version: duplicate\n', encoding='utf-8')
+    with pytest.raises(ValueError, match='duplicate Run'):
+        expand_study(tmp_path)
+    assert not list((tmp_path / 'runs').glob('*/config.yaml'))
+    assert not (tmp_path / 'index.json').exists()
+
+
 def test_plan_jobs_trains_before_eval(tmp_path: Path):
     study = tmp_path / 'study'
     eval_path = artifact_layout(study, 'e1').config_path

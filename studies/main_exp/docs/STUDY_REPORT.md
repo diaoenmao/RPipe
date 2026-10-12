@@ -2,6 +2,19 @@
 
 ## 一、摘要
 
+### 2026-10-13 容量与精度复验
+
+- 目标：验证修复后的实际容量和严格数值边界，不重跑长矩阵。完整raw缓存已按16项历史hash校验。
+- 容量：27个800-step原生Flow Run通过；CNN、ResNet18、混合任务的round1/2/3严格checkpoint / test history一致，无OOM。代表性并发总体更快，main_exp后续fresh make使用显式4.5GiB预算和既有50%安全池。
+- 精度：同一新CNN best的16次FP32串行 / 并发全test逐样本一致；TF32对照取得不同kernel及两张图预测差异。旧B-023 checkpoint未找回，新权重不替代旧76800-step反例。
+- 状态与边界：最终候选源码[八格600-step前置复验](speed_measurements/main-ready-preflight-20261013-014911.json)全部通过，参数最大差0、Loss最大差4.44e-16，输入 / RNG / scheduler / 正确计数门一致，实测期间来源未变；此前[标签变更前一轮](speed_measurements/main-ready-preflight-20261013-013509.json)另行保留。未执行当前源码完整80000-step矩阵。旧失败、freeze中止、固定快照和原始JSON见[速度报告](speed_calibration.md#九2026-10-13-cifar10-容量与总体吞吐)；version03[历史长结果快照](versions/main-exp-flow-20261011-03/README.md)不替代本版本长曲线验收，旧PREFLIGHT保留，异机须fresh gate。
+
+### 2026-10-12 B-022 单组速度 / 显存接续
+
+- 通过现有校准入口完成 MNIST / ResNet18、seed0、两侧各800-step / 完整 test10000 的固定源码复验；初始与最终参数精确一致，四段正确样本数一致，Loss 差为0。
+- 当前链 peak reserved 为2472 MiB，未包含全部进程开销，不直接作为正式装箱预算。源码、实际精度、raw hash、阶段时间和三轮失败保留在 [速度报告第八节](speed_calibration.md#八2026-10-12-本机-mnist-短校准)。
+- 该结果不证明 CIFAR10 并发安全或速度排名，不替代八格前置门与完整矩阵。B-022 的整体容量 / 吞吐校准和 B-023 的默认精度根因仍开放，正式声明与旧结果未覆盖。
+
 ### 2026-10-12 重构后单组 200-step 前缀复验
 
 - 目标：通过现有 `recipe.preflight` 对照原 main `4ccb28d` 与重构后的当前链；只做 MNIST / linear、seed0、CUDA、200 steps、完整 test10000，sampler 与 cosine horizon 仍为 80000。
@@ -30,7 +43,7 @@ main-exp-flow-20261011-03 的新源码八格 600-step 原代码 / 当前链前�
 
 1. 前置证据：[PREFLIGHT.json](PREFLIGHT.json)。导入副作用与失败边界回归：[ARCHIVE_RUNTIME_REGRESSION.json](ARCHIVE_RUNTIME_REGRESSION.json)。正式 Flow 前缀辅助核查：[FLOW_PREFIX_AUDIT.json](FLOW_PREFIX_AUDIT.json)，当前已核对 8/8 组 seed0，step200 / 400 / 600 共 96 个 train/test Loss / Accuracy 值与通过的前置链完全一致；只覆盖这些前缀的指标，不代替参数或长预算终验。精度和恢复条件：[eval_recovery.md](eval_recovery.md)。
 2. 当前曲线证据：[COMPARISON.json](COMPARISON.json)，状态 passed，complete=true、final_gates_applied=true。八组均包含四个 seed；参考叉号为原图估读，不是恢复的原始指标。正式更新日期和执行细节见 [RERUN.md](RERUN.md)。
-3. 32 条训练、32 条各自 best 独立评估、完整性核查和固定曲线门均已完成；正式数字见 [NUMBERS.md](NUMBERS.md)。同设备 CNN / ResNet18 各三次串行历史速度校准已完成，见 [速度报告](speed_calibration.md)；B-022 的容量与并发吞吐调查及 B-021 的 checkpoint 精确续跑修复仍待完成。原图的实际 seed、环境及原始指标没有恢复，终验结论限于预先固定的估读门。
+3. 32 条训练、32 条各自 best 独立评估、完整性核查和固定曲线门均已完成；正式数字见 [NUMBERS.md](NUMBERS.md)。同设备 CNN / ResNet18 各三次串行历史速度校准已完成，见 [速度报告](speed_calibration.md)；B-022 的容量与并发吞吐调查仍未完成。B-021 已按通用原生单进程合同本机修复，本 Study 的自定义 sampler / 数据适配尚未验收精确恢复，继续拒绝中断续训。原图的实际 seed、环境及原始指标没有恢复，终验结论限于预先固定的估读门。
 4. 原始 Run 日志、数据和 checkpoint 保留在本机 runs / shared 下，不随 Git clone 提供。临时 launch 日志 .tmp/main-exp-flow-20261011-03-launch.log 和会话 13127 也仅为本机执行证据。
 
 ## 四、已完成训练

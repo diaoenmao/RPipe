@@ -22,9 +22,12 @@ def write_run_configs(study_dir: Path, patches: list[dict[str, Any]]) -> list[Pa
     if not base_path.is_file():
         raise FileNotFoundError(f'missing experiment_config.yaml: {base_path}')
     base = experiment_config_from_mapping(load_config(base_path))
+    runs = [run_config_from_merge(base, patch) for patch in patches]
+    ids = [run.id for run in runs]
+    if len(ids) != len(set(ids)):
+        raise ValueError('duplicate Run in Study expansion; use a new version for repeated computation')
     written: list[Path] = []
-    for patch in patches:
-        run = run_config_from_merge(base, patch)
+    for run in runs:
         cfg = run.to_mapping()
         layout = artifact_layout(study_dir, run.id)
         written.append(write_config(layout.config_path, cfg))

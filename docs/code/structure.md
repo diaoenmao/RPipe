@@ -486,6 +486,8 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 
 单位是 `step` 时，`eval_period` 仍默认 `1`（每步一评，很贵）——LLM 请自己改大。MNIST 这类「每个 epoch 记一次 test」的 Study 应显式写 `progress_unit: epoch`。epoch 边界仍 `save`/`reset` train tracker，方便画按 epoch 的曲线。
 
+显式 epoch 预算按声明轮数停止，不因每轮尾 batch 未形成完整梯度累积而增加 epoch；result.step 记录实际 optimizer 更新数，恢复已完成 epoch 不重复训练。维持当前尾 batch 不跨 epoch 累积的语义。若一整轮有输入但无法完成一次 optimizer 更新，明确拒绝 `step_period` 与迭代器长度不匹配，不能无限循环或报告零更新成功；从 checkpoint 恢复原轮剩余尾 batch 的收尾不误判成这种错误。
+
 #### 6.10.2 Checkpoint（经 system，对齐 main 的 latest + best）
 
 | **超参** | **默认** | **说明** |
@@ -495,7 +497,7 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 | `checkpoint_percents` | `[0.25, 0.5, 0.75, 1.0]` | `checkpoint: percent` 时生效；相对 **该单位的总预算**（epoch 训 = 总 epoch，step 训 = 总 step） |
 | `save_best` | `false` | `true` 时 best 口径创新高则写 `best`（跟 eval 走，不跟 period 绑死；口径见下） |
 
-文件都在 `assets/checkpoints/`：每个 stem 一份 **`<name>.pt` 整包**（恢复权威）外加 **`<name>/` 诊断镜像目录**（`model.pt` / `optimizer.pt` / `scheduler.pt` / `tracker.json` / `logger.json` / `meta.json`）。`save_best: true` 时另写 `best`。百分比时 `epoch_0005` / `step_000100`。result **不**塞权重。
+文件都在 `assets/checkpoints/`：每个 stem 一份 **`<name>.pt` 整包**（恢复权威）外加 **`<name>/` 诊断镜像目录**（`model.pt` / `optimizer.pt` / `scheduler.pt` / `tracker.json` / `logger.json` / `meta.json`，含 RNG / tensor 的元信息用 `meta.pt`）。`save_best: true` 时另写 `best`。百分比时 `epoch_0005` / `step_000100`。result **不**塞权重。
 
 **进度一致性：** native checkpoint 表示该 `step` / `epoch` 已完成。保存前必须完成对应的 scheduler 更新；model、optimizer、scheduler 的进度一致，恢复后 optimizer 中的 lr 用于下一次更新。日志中的 lr 仍是刚完成更新实际使用的值，不随保存顺序改成下一步 lr。周期 latest、best、百分比快照、early stop 和正常终态使用同一约定。
 
@@ -566,7 +568,7 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 
 **train 恢复（native 对齐 main）：** 有文件则恢复 `step` / epoch、model、optimizer、scheduler、**tracker**、**logger 文本不截断**。没有文件 = 从 step 0 开始，不算失败。
 
-当前承诺是从已发布的完整 checkpoint 继续计算，不承诺与不中断训练逐步等价：step 模式重建采样器时会从同 seed 的采样前缀重新开始，完整 RNG / 数据迭代位置及 early-stop 的 stall 计数未持久化。恢复后的指标不能直接当作无中断对照；研究报告应注明中断及恢复位置。旧 checkpoint 若已保存了落后的 scheduler 状态，不自动猜测修正，应保留历史证据并用新 version 验证新约定。
+旧 checkpoint 或未支持的数据 / Trainer 路径只恢复已发布的部分状态，不承诺与不中断训练逐步等价；旧 step 路径可能重放同 seed 的采样前缀，缺少完整 RNG / 数据位置及 early-stop stall。恢复后的指标不能直接当作无中断对照，研究报告须注明中断及恢复位置。新原生 checkpoint 的支持条件与完整状态见本节下方恢复合同；旧档若已保存落后的 scheduler 状态，不自动猜测修正，应保留历史证据并用新 version 验证。
 
 **eval 恢复：** 通常只要 **权重**（`best` 优先）；不建或不加载 optimizer。本 Run 没有目标文件时，eval 按 Study index 找 **sibling train** 的同名 checkpoint（默认 `best`）。两边都没有则失败（对齐 main `test_model.py`：先训出 best）。
 
@@ -579,6 +581,16 @@ eval / inference 以后按同样方式加自己的点（例如 `on_generate_batc
 | Accelerate | `Accelerator.load_state` / 其约定的 ckpt 目录 |
 
 resume **不**改 config，**不**自己 write `result.json`。
+
+**原生训练恢复合同（2026-10-12）：** 新 checkpoint 的 `training_state.version=1` 保存 Python / NumPy / Torch CPU 与已初始化 CUDA RNG、数据采样位置、预算、梯度累积周期、early-stop stall 和已命中的 percent 快照。原生 `custom_torch`、单进程、标准 RandomSampler / SequentialSampler、`num_workers=0` 支持 optimizer-step 边界的恢复；RandomSampler 必须有独立 generator。重建迭代器只重放采样索引，不执行已消费样本的 transform，恢复 RNG 在对象与优化器构造、数据绑定之后完成。epoch 内恢复不重复增加 epoch；epoch 边界从下一轮继续。
+
+数据对象通过 `training_state()` / `restore_training_state(state)` 保存和恢复 batch cursor、采样器与 loader generator；后者返回是否仍在原 epoch 内。仅标准 map-style loader 的数据访问走此协议；transform / collate 若还维护私有 RNG 或其他可变状态，必须另实现协议并验证，不在内建保证内。tracker 同时保存原始 weighted_sum，避免恢复半个统计段时由 mean × n 重建产生舍入差；旧 tracker 没有该字段时仍按原方式读取。已停止的 early-stop checkpoint 不再执行额外训练步。
+
+内建精确恢复只覆盖默认 MetricBundle 的 batch 指标（Loss / Accuracy / MSE）。RMSE / GLUE 的整段内部累积、以及自定义 metric 运行时未纳入恢复，不标记为完整数据恢复，续训明确警告；不能把默认分类指标的回归外推到这些指标。
+
+RNG 和采样位置恢复完整不等于所有算子数值确定。严格数值续训还要求经过验证的确定性运行条件、相同设备 / 依赖和实际精度；TF32 或其他设备 kernel 的重复前向差异仍按 B-023 的边界处理，不能通过本合同自动关闭。
+
+精确恢复要求预算、batch / sampler 和当前声明的训练算法设置一致；不允许把短预算 checkpoint 冒充原长预算前缀。改变环境、数据内容、精度或代码后是否仍等价需独立验证，本合同不跨设备保证数值一致。多 worker / 预取、自定义未实现恢复协议的数据、HF Trainer 不自动获得此能力。新 checkpoint 若缺少受支持的数据状态，续训明确警告仅为部分状态恢复；有完整状态但配置不匹配则拒绝，不能静默重放前缀。旧 checkpoint / 独立 eval 权重加载继续兼容；旧 checkpoint 训练恢复明确警告不保证连续等价。历史 Study 的拒绝续训门不会自动撤除。
 
 #### 6.11.4 独立 `mode=eval` vs train 里的周期 test
 
@@ -703,7 +715,7 @@ Logger **不**改 AlgorithmTracker 的 mean/history；**不**写 TensorBoard。
 | `cudnn.deterministic` | 跟 `deterministic` | `cudnn_deterministic`（可单开） |
 | `cudnn.benchmark` | `not cudnn.deterministic`（对齐 main：默认 benchmark 开） | `cudnn_benchmark` |
 | cuDNN / CUDA matmul 的 TF32 | 未配置时保留 Torch 当前值 | 可选布尔值 `cudnn_allow_tf32` / `matmul_allow_tf32`；配置 `false` 关闭对应低精度内部计算，实际值写入 runtime / System 结果 |
-| DataLoader shuffle | train：`Generator().manual_seed(seed)` + `worker_init_fn`（对齐 main `make_data_loader`）。`progress_unit=step` 时按剩余 `num_steps` 重建 `RandomSampler`（`num_samples = batch * (num_steps-step) * step_period`）；epoch 训仍按整 epoch shuffle | 经 `data_api.build(..., seed=)`；resume 后 algorithm 调 `rebind_train_steps` |
+| DataLoader shuffle | train：`Generator().manual_seed(seed)` + `worker_init_fn`（对齐 main `make_data_loader`）。step 新训练按完整预算建 RandomSampler；有完整恢复状态时重建原预算，再恢复 batch cursor / generator，只读取未见后缀；旧 checkpoint / 部分恢复才沿用剩余预算前缀并警告。epoch 训练恢复当前轮后缀或下一轮 shuffle | 经 `data_api.build(..., seed=)`；算法先绑定 loader，再恢复数据位置和 RNG，精确恢复范围见 §6.11.3 |
 
 不要把 seed 再抄一份进 algorithm / data 必须字段。DataLoader 的 generator **单独绑 seed**，不能只靠全局 `manual_seed`（shuffle 另有 RNG）。`num_workers>0` 时 worker 用 `torch.initial_seed()` 再种 numpy / python。
 
@@ -1023,6 +1035,20 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 | 写脚本 | 默认 `--round auto`：先按 `system.device` 分流；CPU Run 不绑 GPU，CUDA Run 再把同类、相近耗时任务按显存装箱，组末 **`wait`**。手写 `--round N` 则按资源类型均匀切块。仅 CUDA Run 设置 `CUDA_VISIBLE_DEVICES`；可选 `--split-round`。清单在 `scripts/jobs.json`（含 device 与 wait 组） |
 | `wait` | 一组并发的内存闸门：本组进程全部退出、显存释放完，才启动下一组。不 `wait` 则下一组会挤进还在跑的进程，显存叠加，容易 OOM。eval 波次同样：全部 train `wait` 完再开 |
 | 墙钟估计 | 一组取组内最慢那条；整轮 conservative 墙钟 = 各组 max **再加总**。只供排班参考，不是实测。训练 Logger 的 `elapsed` 才是该进程实测 |
+
+**容量与配置解释（2026-10-12）：** 原始 mapping 的 system / algorithm setting 与运行时一致：`config` 内设置优先于同名顶层扩展。调度读取实际 device，不能把 `system.config.device: cuda` 当 CPU。epoch 的训练样本基数与 test 基数分别记录；梯度累积按实际 batch 次数估算，不把一次 optimizer step 当一次前向。显存启发式取训练与周期 / 最终 test 的较大估计，独立 eval 使用实际 test batch，进程固定开销不乘 no-grad 折扣。保持原 safety=0.5 与模型系数；启发式不是显存实测，历史 allocated 峰值不自动成为新的装箱预算，也不证明并发吞吐。
+
+校准后可在 `system.config.vram_bytes`（或同名顶层扩展）显式声明单个 Run 进程的显存预算，单位 byte，必须为不小于固定开销的整数；嵌套配置优先。该值替代经验估算，仍由同一个装箱器按 safety=0.5 分配，不改变数值计算或强制并发数。预算应覆盖同设备、模型 / source、batch、精度下的训练、完整 test、checkpoint 峰值，包含 reserved、CUDA context / 驱动等进程开销，并保留余量；不能只填 allocated，也不能把其他数据 / 设备的测量直接套用。未配置保持启发式，不自动读取旧报告或学习历史结果；采用新预算须重新 make，正式实测换新 version。
+
+复用已有 jobs.json 时，存在的 config 所声明的 mode / 实际 device 必须与保存计划一致；不一致返回重建请求，不继续沿用错误 CPU / CUDA 分配。旧计划的显存与估时不会自动升级，使用新估算需重新 make；正式实测仍用新的 version，不能重写旧验收基线。
+
+CPU job 的旧计划若仍有 gpu 绑定须重新 make；直接调度 CPU job 也不应用残留 gpu 标签，不覆盖父环境的 GPU 可见性，启动文案使用 CPU。CUDA job 的显式 GPU 分配保持原行为。
+
+一次 launch 的实际 wait 分组不能重复同一 Run；在启动子进程或失效旧结果之前拒绝重复，维持 Run 单写者合同。计划内的失败重试是后续独立轮次，不算同一清单的重复任务；需要重复实测时使用新 version。
+
+Study 展开也在写入 Run config / index 前拒绝重复内容 ID，包括重复 seed / 轴值，防止顺序执行及聚合重复计入同一产物。Accuracy 按目标形状区分每个样本的标签与类别分数，样本数不一致时报错，不允许广播得到虚假准确率。正预算训练没有 batch 时失败，不定稿零步成功；合法的已恢复 epoch 尾段保持原语义。完整 RNG 恢复仅声明 CPU / CUDA，其他后端属于部分恢复。
+
+Run 目录名必须为非空单一目录组件，拒绝点 / 父目录、分隔符、盘符、控制字符和 Windows 保留 / 尾部别名。校验发生在任何目录写入之前，index读入也核对有效目录名；不影响明确提供的外部checkpoint路径。
 
 产物：N 份 config + index，以及 `studies/<name>/scripts/`（默认 gitignore）。`launch.sh` 用 Python heredoc 调同一 `launch_jobs`，保留分组并行 / wait / GPU 分配，并复用依赖检查和波内重试。`--split-round` 按 wait 组切片，最后一片执行 Study process；旧版裸 `run-one` 脚本须重新 make 后才有这些保护。
 

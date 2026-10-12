@@ -56,3 +56,25 @@ def test_segment_presence_includes_full_metrics_and_survives_checkpoint(tmp_path
     tracker.reset('train')
     assert not tracker.has_samples('train')
     assert tracker.segment_mean('train') == {'RMSE': 2.0}
+
+
+def test_checkpoint_preserves_accumulator_without_mean_round_trip(tmp_path):
+    tracker = AlgorithmTracker(tmp_path)
+    tracker.append('train', n=54, values={'Loss': 7.370161863460789e-09 / 54})
+    state = tracker.state_dict()
+    state['splits']['train']['Loss']['weighted_sum'] = 7.370161863460789e-09
+    state['splits']['train']['Loss']['mean'] = 7.370161863460789e-09 / 54
+    assert state['splits']['train']['Loss']['mean'] * 54 != state['splits']['train']['Loss']['weighted_sum']
+    restored = AlgorithmTracker(tmp_path / 'restored')
+    restored.load_state_dict(state)
+    assert restored.state_dict()['splits'] == state['splits']
+
+
+def test_legacy_tracker_without_accumulator_still_loads(tmp_path):
+    tracker = AlgorithmTracker(tmp_path)
+    tracker.append('train', n=3, values={'Loss': 2.0})
+    state = tracker.state_dict()
+    state['splits']['train']['Loss'].pop('weighted_sum')
+    restored = AlgorithmTracker(tmp_path / 'restored')
+    restored.load_state_dict(state)
+    assert restored.mean('train')['Loss'] == 2.0

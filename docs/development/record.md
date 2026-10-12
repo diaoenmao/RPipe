@@ -24,6 +24,8 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | train 均值（B-016） | step 模式跨评测段累计，反例最后一段应约10却报告约5 | 每个评测周期收口并重置 train 段，同一反例报告约10；空段不覆盖最后有效均值 | 第二节 §4 |
 | topk 计数（B-017） | topk=2 将3个样本的候选展平为6个索引，触发形状/计数错误 | 保留候选轴，每个样本命中任一候选只计一次；修复既有函数，未新增 CLI topk 配置 | 第二节 §5 |
 | 零评测预算（B-018） | `eval_num_steps=0` 仍读取并评测第一批 | 读取数据前报错；正数限批、缺省/负数完整 test 的语义保留 | 第二节 §7 |
+| 原生恢复（B-021） | checkpoint 缺少 RNG 与数据位置，续训样本后缀和最终权重可偏离连续运行 | 在单进程、受支持 sampler / batch metric 合同下保存并恢复完整训练状态；不匹配配置拒绝，其他路径明确提示部分恢复 | 第二节 2026-10-12 §6 |
+| epoch 停止（B-024） | 累积尾 batch 可导致多跑 epoch；整轮无 optimizer 更新时可能无限循环 | epoch 按声明轮数停止，已完成恢复不重训；整轮无法更新时报错，原尾 batch 丢弃语义保留 | 第二节 2026-10-12 §7 |
 | 曲线进度与回滚 | 横轴按 history 记录序号；记录频率变化不能直接解释为训练步数，恢复后的回滚分支未单独排除 | 按 optimizer_step / epoch 对齐；保留原始日志，聚合时排除回滚分支、处理重复坐标并记录逐点 n | [曲线修复记录](brainstorm.md#4-已经做的) |
 | Windows checkpoint 保存（B-013） | 文件占用时保存出现 WinError5，训练中断；原占用者未查明 | 原子替换对特定 Windows 错误有限重试，持续失败保留旧档并报错；真实句柄探针与训练补测通过，原占用者仍未查明 | [保存补测](https://github.com/diaoenmao/RPipe/blob/71143ab/studies/mnist_cnn_budget_repeat/docs/STUDY_REPORT.md) |
 
@@ -84,7 +86,70 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
+## 2026-10-13
+
+### 1. 缺陷修复与整仓检查
+
+基线为dev ce8b3e6与此前未提交的原生恢复修复。按文档检查公共入口、配置与持久化读写、调度、训练 / metric、compare及测试覆盖；不把未知功能或正常数值边界列成新缺陷，不引入跨会话锁 / 自动学习容量框架。
+
+| **编号** | **反例及根因** | **修复与验收范围** |
+| --- | --- | --- |
+| B-002（用户B2） | CPU旧计划仍有GPU绑定，直接CPU环境覆盖父CUDA_VISIBLE_DEVICES；两条反例先失败 | 缓存计划拒绝残留绑定，直接CPU调度不应用GPU标签，日志显示CPU；48项make / schedule专项通过 |
+| B-025 | 严格比较把2^53和2^53+1整数转double误判一致，复数虚部丢失；三条真实artifact反例先失败 | 整数标量保留精度，零容差整数tensor精确比较，复数保留虚部；普通浮点容差与CLI仍通过 |
+| B-026 | jobs / batches重复Run并发争写；重复seed的Study展开也覆写同ID config，顺序聚合重复计数；三条反例先失败 | 展开在写config / index前拒绝重复ID，launch在启动 / 旧状态失效前拒绝实际分组重复；正常重试及train/eval屏障保留 |
+| B-027 | Run名接受父目录、绝对路径或Windows别名；13条反例失败，外部路径尝试被沙箱阻止 | 任何创建前校验安全单目录组件；index的id与run_dir都校验，调度结果读入口复用；后续反例使用禁写替身，不再尝试外部写入 |
+| B-028 | float / int32标签向量按batch维topk，得到200%准确率；预测样本数不匹配被广播；三条反例先失败 | 按目标形状解释标签 / 类别分数，样本数不一致报错；int64、one-hot与top-k保持 |
+| B-029 | 正step / epoch预算的空train迭代器直接退出并定稿成功；两条反例先失败 | 空迭代器失败；已完成预算、恢复中的合法epoch尾段不误拒绝 |
+| B-021补充边界 | 非CPU/CUDA后端没有对应设备RNG采集，不应标为完整恢复 | 仅CPU/CUDA声明完整状态；其他设备按部分恢复。测试只在CPU模拟声明，不冒充真实MPS实测 |
+
+最初MPS声明测试漏替换eval阶段CPU传输，在无MPS的Windows失败；补齐测试替身后通过。重复展开修复首次回归99 passed / 1 failed，原因是expand_study按既有合同先建空目录；改验收为没有config / index写入，不改变正常布局。原红测和两次fixture失败保留于.tmp/test-results，不随clone提供。
+
+### 2. B-022 / B-023 实测收口
+
+恢复完整缓存后固定raw hash通过；B-022完成代表性串行 / 并发 / 混合的真实原生Flow容量、严格数值及总体吞吐验证，并用现有显式预算配置改进main_exp的后续自动装箱，默认safety / 系数不变。B-023完成同固定best的新进程串行 / 并发FP32验收及TF32负对照，取得实际CUDA kernel和逐样本预测差异。具体数字、条件与失败只留在[main_exp速度与精度报告](../../studies/main_exp/docs/speed_calibration.md#九2026-10-13-cifar10-容量与总体吞吐)。
+
+首次容量测量在两份库文件行尾字节变化后被freeze拒绝，工具随后未记录缺失产物并退出；固定工具后换新ID与独立字节快照重测，没有关闭freeze。源逻辑核对不等于旧来源字节未变化，首轮仍为中止，不改写为成功。旧B-023权重未找回，不能还原其literal kernel；已修复的benchmark导入覆盖 / 未固定精度合同与遗留设备考古分别记录，不把新checkpoint当旧反例。
+
+### 3. 回归与安装
+
+- 核心395 passed / 2 skipped / 55 deselected；两项skip是本机无法创建目录符号链接。证据为.tmp/test-results/20261012T173135Z_04d87d（UTC，对应本地2026-10-13）。
+- CPU integration/e2e 51 passed / 401 deselected，证据20261012T173226Z_9f21bc。legacy / HF部分恢复警告是兼容边界，不当作完整恢复通过。
+- wheel / sdist均构建成功，在两个新的.tmp虚拟环境安装，各9条公开CLI、4个Toy/Stub Run通过。环境复用本机科学依赖，不代替远端干净安装。构建前端仅装.tmp；首次构建工作目录 / 输出位置错误被沙箱阻止，生成的本仓库egg-info移入.tmp；sdist首次pip缓存写出权限失败，改用.tmp缓存和新工作区重测，失败保留。
+- 安装证据位于.tmp/main-ready/wheel-smoke/SMOKE_RESULT.json及sdist-smoke2/SMOKE_RESULT.json，不随clone提供。当前源码的八格600-step前置门、CUDA恢复和跨平台CI接续验证，不以旧长矩阵代替。
+
+CUDA跨进程恢复复验1 passed / 10 deselected，证据20261012T174629Z_407c95；末轮边界专项89 passed。main_probe新版八个真实60-step成对Run全部成功，Study完整终验通过；原version05子集清单逐字节保存，具体研究数字见[probe报告](../../studies/main_probe/docs/STUDY_REPORT.md)。main_exp第一次八格600-step门通过；随后候选version标签及手动工具参数校验变化，使用新验证ID再跑最终源码门，旧PREFLIGHT未覆盖。显式容量fresh planning的64任务均唯一，ResNet18训练自动wait分组为2/2/2/2，不启动长训。
+
+本轮不重跑32条80000-step矩阵，不改旧正式结果；main发布仍须工作PR进入dev、必需检查通过、dev发布PR检查通过，再到用户要求的main确认边界。
+
+最终候选源码的main_exp600-step八格门全部通过，源哈希不变；科学原始值见Study报告。最后core复验仍395 passed / 2 skipped（20261012T175336Z_111c00）。132份Python语法、68份JSON（新增快照前统计）及5份历史snapshot清单校验通过；正式文档缺失入库目标为0，84个历史本机产物链接和2个模板占位明确不随clone。旧probe图从未修改前Git blob补存快照，主图更新为本轮8组；main_exp旧完整证据原样归档，未重建缺失Run。提交仅源码、测试、文档与Study科学证据，.tmp / runs / shared / 安装包全部保持忽略。
+
 ## 2026-10-12
+
+### 8. B-022 校准预算接入与代表性短测
+
+- 沿用 dev `ce8b3e6` 加未提交修复；先同步容量合同，再通过现有 SystemConfig 扩展增加 `vram_bytes` 显式单进程预算。不增加校准数据库或自动学习机制，不调整默认经验系数、安全系数、正式 Study 声明或并发数。预算复用既有 jobs.json 与装箱器，严格校验整数、固定开销下限与嵌套优先级。
+- 复用 main_exp 的 `recipe calibrate`，增加数据选择、实际 raw hash / runtime、源码不变检查和 reserved 累计峰值。仅执行现有数据上的代表性短测；数值、阶段时间、显存与三轮失败全部留在 [速度报告第八节](../../studies/main_exp/docs/speed_calibration.md#八2026-10-12-本机-mnist-短校准)，有效复验使用新测量 ID，未覆盖旧失败或 PREFLIGHT。修正校准工具误把浮点汇总差异当预测分歧的判断，按原计划比较正确样本整数，Loss / 参数门保持不变。
+- make 针对性首轮71 passed；最终 core 363 passed / 2 skipped / 55 deselected，CPU integration/e2e 51 passed / 369 deselected，Study 计数门 doctest 与非有限 / 非整数拒绝自检通过。符号链接权限仍跳过，旧 checkpoint 的部分恢复警告仍保留。CPU CLI 合同同时核对显式预算进入清单且实际 System 仍采用嵌套 CPU 设置。
+- 测试证据在 `.tmp/test-results/20261012T153815Z_5d7cb1/`（首轮make）、`20261012T154640Z_10f59d/`（core）、`20261012T154652Z_6d6c8a/`（integration）；临时 checkpoint / 日志留在 `.tmp/speed-20261012-*/`，均不随 clone 提供。历史正式来源、结果及科学数字未改写，修复前 B-021 等未提交改动保留。
+- B-022 的预算入口已接通，但原 CIFAR10 任务的完整进程峰值、受控并发与总体吞吐未验证，不关闭。B-023 原 checkpoint 不在当前工作区、CIFAR10 raw 不齐，无法做原 kernel 反例重放；本轮没有改 GPU 数值策略来绕过问题。未执行长矩阵、跨平台 CI 或全新安装，尚未 commit / push。
+
+### 7. 容量配置修正与 B-024 停止条件修复
+
+- 基线仍为 dev `ce8b3e6` 加本机未提交的 B-021 修复。本轮不修改正式 Study 配方、旧结果或来源快照，不运行长矩阵；范围为 make 配置解释 / 估算、原生训练停止合同及对应回归。
+- make 与 runtime 使用相同的 config 优先于顶层 extras 语义，修正嵌套 algorithm 预算 / 评测设置和 system.device 的误读。训练行数不再借用 test 基数；估时计入梯度累积的实际 forward batch；显存估算计入实际 test batch，并保留固定开销。旧计划的 mode / device 与已有配置不一致时拒绝缓存、重新 make。安全系数 `0.5` 和模型经验系数不变，这些正确性修复不证明增加并发安全或更快。
+- 核对 epoch 估时发现独立 B-024：每轮5 batch、step_period=2、num_epochs=2 原本多跑至3轮；每轮2 batch、step_period=3 原本无法更新并持续循环。三条有界反例先失败。现按声明 epoch 停止并正确判断恢复已完成预算，整轮无更新明确失败；恢复旧轮的尾 batch 不误判为整轮失败，梯度尾部丢弃行为不变。新增随机 transform / Dropout 的跨进程 epoch-tail 对照，连续、保存中断和恢复的样本轨迹、最终参数、optimizer / scheduler / RNG / tracker 精确一致。B-024 修复验证后移出开放清单，编号不复用。
+- 最终 core 355 passed / 2 skipped / 54 deselected；最终 CPU integration/e2e 51 passed / 361 deselected；CUDA 新进程恢复 1 passed / 10 deselected。两项跳过仍为 Windows 目录符号链接权限。CPU 集成包括嵌套 CPU 配置的真实 CLI make / run-one，禁止 GPU 探测并核对实际 System；GPU 仅运行微小张量恢复回归，不是正式模型实验或吞吐校准。
+- 修复前失败证据：`.tmp/test-results/20261012T151120Z_351188/`（8条估算 / 设备反例）、`20261012T151335Z_8b0e9f/`（3条停止反例）、`20261012T152126Z_08266c/`（2条旧计划反例）。最终证据：`20261012T152128Z_3aafb6/`（core）、`20261012T152658Z_5866a0/`（CPU integration）、`20261012T152733Z_145191/`（CUDA）。临时证据和执行输出在 `.tmp/capacity-fix/` 及上述测试目录，不随 Git clone 提供。
+- B-022 只完成上述配置与估算修正，显存峰值、混合并发、总体吞吐和调度开销仍待受控校准；本机 CIFAR10 raw 下载未完成，不作为正式数据就绪。B-023 的默认精度 kernel 根因未追加诊断，两项继续 investigating。本轮尚未提交 / 推送，跨平台 CI、全新安装和当前源码的正式 Study 数值复验未执行。
+
+### 6. B-021：原生 checkpoint 保存 RNG 与数据位置
+
+- 基线为 dev `ce8b3e6` 加本机未提交修复。在 `.tmp/resume-fix/baseline/` 使用该提交的旧训练、Data、resume 与 tracker 实现做新进程反例：6-step 相同预算在 step2 保存后中断，续训的数据后缀和最终权重与连续运行不同；反例保留，不把旧 Study 中断归因于本缺陷。
+- 先明确 [恢复合同](../code/structure.md#6113-resumetrain-与-eval-的特殊接口)，再在 native checkpoint 增加 `training_state.version=1`：保存 Python / NumPy / Torch CPU / 已初始化 CUDA RNG、数据 batch cursor / generator、训练配置及预算、early-stop 状态和 percent 快照进度。对象 / 优化器和完整预算 loader 重建后恢复位置与 RNG，只重放索引，不再次执行已消费样本的 transform；epoch 内恢复不重复计数，最后一个 batch 的收尾和已停止状态有针对性回归。
+- tracker 新存 weighted_sum，避免半段恢复时 mean × n 的浮点舍入。旧 tracker / checkpoint 继续读取；旧 checkpoint、multi-worker、无独立 generator、自定义数据 / metric、整段 metric 和 HF 不宣称精确恢复，日志和 RuntimeWarning 明确提示部分恢复。有完整状态但预算 / 算法 / 数据 / 实际 runtime 不匹配时拒绝，不能换短预算充当前缀。
+- 新进程恢复专项 10 passed，包括八条 CPU 连续 / 中断 / 恢复对照、一条自定义 metric 不标记完整恢复、一条真实 CUDA 对照；默认分类路径对照实际样本 / 三种随机 transform、Dropout、参数、optimizer、scheduler、RNG、tracker 和 early-stop 收口，均精确一致。最终 core 335 passed / 2 skipped / 53 deselected；CPU integration/e2e 49 passed / 341 deselected。两项跳过仍是 Windows 目录符号链接权限，部分恢复警告是明确的兼容边界，不隐藏为已完整支持。
+- B-021 的原生恢复缺陷按上述支持合同本机修复并移出开放清单；multi-worker / 私有 transform RNG / HF / 整段 metric 扩展未实现，具体限制留在设计与 README，不外推短回归。B-022 / B-023 仍开放，本轮没有修改容量保护或 GPU kernel、没有重跑科学长实验，也没有修改 main_exp 的历史续训拒绝门。
+- 本机证据：`.tmp/test-results/20261012T061240Z_73ec58/`（恢复专项）、`20261012T061334Z_5e4536/`（最终 core）、`20261012T061452Z_50549c/`（最终 integration）。首次旧用例把预算从2改为4而失败，已改为明确拒绝预算变化的回归；临时输出与旧反例在 `.tmp/resume-fix/`，均不随 clone 提供。此轮尚未提交推送，跨平台 CI 和正式 Study 复验未执行。
 
 ### 5. 提交前修复与回归
 

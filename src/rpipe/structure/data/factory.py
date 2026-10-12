@@ -23,12 +23,66 @@ class Data:
         self._loaders = loaders
         self.meta = meta
         self._train_set = None
+        self._train_start = None
+        self._resume_data = None
 
     def iter_batches(self, split: str) -> Iterator[Any]:
         loader = self._loaders.get(split)
         if loader is None:
             return iter(())
+        if split == 'train':
+            from rpipe.structure.data.resume import (
+                BatchCursor, cursor_loader, generator_states, loader_spec, restore_generators,
+            )
+            if loader_spec(loader) is not None:
+                import torch
+
+                if not isinstance(loader.batch_sampler, BatchCursor):
+                    loader = cursor_loader(loader)
+                    self._loaders[split] = loader
+                cursor = loader.batch_sampler
+                pending = self._resume_data
+                self._resume_data = None
+                inside = pending is not None and not pending['exhausted']
+                if pending is not None:
+                    restore_generators(loader, pending['after'] if pending['exhausted'] else pending['start'])
+                cursor.consumed = pending['consumed'] if inside else 0
+                cursor.exhausted = False
+                self._train_start = generator_states(loader)
+                # A replacement iterator must not consume another global base-seed draw.
+                rng = torch.get_rng_state() if inside else None
+                iterator = iter(loader)
+                if rng is not None:
+                    torch.set_rng_state(rng)
+                return iterator
         return iter(loader)
+
+    def training_state(self) -> dict[str, Any] | None:
+        from rpipe.structure.data.resume import BatchCursor, generator_states, loader_spec
+
+        loader = self._loaders.get('train')
+        spec = loader_spec(loader)
+        if spec is None or not isinstance(loader.batch_sampler, BatchCursor) or self._train_start is None:
+            return None
+        cursor = loader.batch_sampler
+        return {'version': 1, 'spec': spec, 'seed': self.meta.get('seed'),
+                'identity': {'name': self.name, 'source': self.source, 'config': self.meta.get('config')},
+                'consumed': cursor.consumed, 'exhausted': cursor.exhausted,
+                'start': self._train_start, 'after': generator_states(loader)}
+
+    def restore_training_state(self, state: dict[str, Any]) -> bool:
+        from rpipe.structure.data.resume import loader_spec
+
+        loader = self._loaders.get('train')
+        if state.get('version') != 1 or state.get('spec') != loader_spec(loader) or state.get('seed') != self.meta.get('seed'):
+            raise ValueError('checkpoint data sampler/batch/seed does not match current data')
+        if state.get('identity') != {'name': self.name, 'source': self.source, 'config': self.meta.get('config')}:
+            raise ValueError('checkpoint data identity/config does not match current data')
+        consumed = state.get('consumed')
+        if type(consumed) is not int or not 0 <= consumed <= len(loader.batch_sampler) or type(state.get('exhausted')) is not bool:
+            raise ValueError('invalid checkpoint data cursor')
+        self._resume_data = state
+        return not state['exhausted']
 
     def steps_per_epoch(self, split: str = 'train') -> int | None:
         loader = self._loaders.get(split)
@@ -61,6 +115,8 @@ class Data:
         ``num_samples = batch_size * (num_steps - step) * step_period``. Generator is
         re-seeded from ``meta['seed']`` each time, so a mid-run resume sees the
         **prefix** of the same shuffle, not the unseen suffix (same as main).
+        Native exact resume instead binds the original full budget at step 0,
+        then applies ``restore_training_state`` to select the unseen suffix.
         """
         dataset = self._train_set
         if dataset is None:

@@ -76,7 +76,7 @@ def accuracy_value(packed: dict[str, Any], *, topk: int = 1) -> float:
     if target is None or pred is None:
         return 0.0
     with torch.no_grad():
-        if target.dtype != torch.int64:
+        if target.ndim > 1 and target.size(-1) > 1:
             target = target.topk(1, -1, True, True)[1].view(-1)
         if pred.ndim > 1 and pred.size(-1) > 1:
             pred = pred.topk(topk, -1, True, True)[1].reshape(-1, topk)
@@ -84,6 +84,8 @@ def accuracy_value(packed: dict[str, Any], *, topk: int = 1) -> float:
             pred = pred.reshape(-1, 1)
         target = target.reshape(-1, 1)
         n = int(target.numel())
+        if pred.size(0) != n:
+            raise ValueError('prediction and target sample counts differ')
         if n <= 0:
             return 0.0
         correct = (pred == target).any(dim=-1).float().sum()

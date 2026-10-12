@@ -30,6 +30,27 @@ def test_artifact_layout_creates_assets_dir(tmp_path: Path):
     assert layout.assets_dir.is_dir()
 
 
+@pytest.mark.parametrize('run_id', ['', '.', '..', '../outside', '..\\outside', 'nested/run', 'C:\\outside',
+                                    'C:alias', ' name', 'name ', 'name.', 'CON', 'NUL.txt'])
+def test_artifact_layout_rejects_unsafe_run_directory_before_writes(tmp_path, monkeypatch, run_id):
+    import rpipe.structure.artifact.layout as module
+
+    def no_write(*args):
+        raise AssertionError('invalid Run must be rejected before creating any directory')
+
+    monkeypatch.setattr(module, 'ensure_study_layout', no_write)
+    study = tmp_path / 'study'
+    with pytest.raises(ValueError, match='Run directory'):
+        artifact_layout(study, run_id)
+    assert not study.exists()
+
+
+def test_index_rejects_unsafe_run_directory_before_readout(tmp_path):
+    write_index(tmp_path, {'experiments': [{'runs': [{'id': 'safe', 'run_dir': '../outside'}]}]})
+    with pytest.raises(ValueError, match='Run directory'):
+        load_index(tmp_path)
+
+
 def test_write_config_roundtrip_preserves_slug(tmp_path: Path):
     layout = artifact_layout(tmp_path, 'seed_0')
     write_config(layout.config_path, {'slug': 'seed_0', 'seed': 0})
@@ -100,3 +121,10 @@ def test_index_groups_runs_by_experiment_factors(tmp_path: Path):
     loaded = load_index(study_dir)
     assert loaded['experiments'][0]['runs'][0]['id'] == 'a'
     assert not artifact_layout(study_dir, 'a').result_path.exists()
+
+
+@pytest.mark.parametrize('entry', [{'id': '../outside', 'run_dir': 'safe'}, {'id': 'safe', 'run_dir': '../outside'}])
+def test_index_rejects_unsafe_id_even_with_safe_directory(tmp_path, entry):
+    write_index(tmp_path, {'experiments': [{'runs': [entry]}]})
+    with pytest.raises(ValueError):
+        load_index(tmp_path)
