@@ -66,10 +66,20 @@ Package Check 在 Actions 里执行 `python -m build`，再在独立虚拟环境
 | 本地测试报告 | `.tmp/test-results/<run_id>/` 的 `manifest.json`、`events.jsonl`、`report.md`。不随 Git clone 提供 |
 | 安装包 | 只在 Package Check 的 runner 上构建并当场安装验收，不上传，也不作为 Release 分发 |
 
-对外发布、版本标签和安装包归档还没有接入。把 `dev` 合进 `main` 只表示这条提交通过了上面的必需检查，不等于已经向用户分发。
+没有自动发布标签 / Release、PyPI 或安装包归档的工作流。把 `dev` 合进 `main` 不自动发布版本；维护者明确授权后可按第六节手工创建标签与 GitHub Release。
 
 ## 五、当前状态
 
 `dev` 的 Ruleset 从 2026-09-22 起生效。[main Ruleset](https://github.com/diaoenmao/RPipe/rules/24809015) 于 2026-10-10 建立，并成为 `main` 上唯一的分支规则。旧版 branch protection 已删除。两边都要求 PR，禁止 force push 和删除，没有人可以绕过，必需检查是 `Unit tests`、`Build package` 和 `Branch flow`，并且分支要包含目标分支的最新提交。仓库已打开 Auto-merge。
 
 受控失败见 [PR #20](https://github.com/diaoenmao/RPipe/pull/20)：`tmp/branch-flow-probe` 直接合向 `main` 时，[Branch flow](https://github.com/diaoenmao/RPipe/actions/runs/37976079219) 失败，合并状态为 BLOCKED。该 PR 已关闭，分支已删除。同一次打开的 Unit Tests 和 Package Check 在确认阻断后取消，不作为通过或失败依据。
+
+## 六、维护者授权后的版本发布
+
+1. 以最近正式标签为基线核对完整差异，选择未使用的新版本号，在 `docs/releases/<version>.md` 编写完整报告，区分新增工作、迁移、验证与未覆盖范围。
+2. 同步 pyproject.toml、rpipe.__version__ 与 README；通过工作 PR 进入 dev，重新执行当前提交的必需检查。
+3. 更新或创建 dev → main 发布 PR，等待 Unit tests / Build package / Branch flow 全部成功再合并；不删除 dev，不直接 push main。
+4. 等待实际 main 集成提交的 CPU / 包 CI 通过，再在该确切提交上建立新 annotated tag，推送标签并创建 GitHub Release；不能移动或覆盖旧标签 / Release。
+5. Release 正文使用入库报告，仓库相对链接转换为指向发布提交的 GitHub 链接，并注明确切提交 / PR / CI。默认仅 GitHub 源码归档，不上传本机数据、Run、缓存或安装包；PyPI / 二进制分发需另行授权。
+
+当前正式报告入口：[v0.3.0](../releases/v0.3.0.md)。手工发布不引入自动发版工作流，历史实测源码与哈希不因包版本号改变而改写。
