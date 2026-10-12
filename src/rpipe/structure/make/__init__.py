@@ -4,7 +4,9 @@ from pathlib import Path
 from typing import Any
 
 from rpipe.structure.artifact.layout import ensure_study_layout
+from rpipe.structure.artifact.provenance import write_provenance
 from rpipe.structure.make.expand import expand_patches, load_study_yaml
+from rpipe.structure.make.recipe import RecipeContext, apply_recipe, load_recipe
 from rpipe.structure.make.capacity import (
     GpuInfo,
     attach_estimates,
@@ -33,6 +35,8 @@ from rpipe.structure.make.write import write_run_configs, write_study_index
 
 __all__ = [
     'GpuInfo',
+    'RecipeContext',
+    'apply_recipe',
     'attach_estimates',
     'capacity_report',
     'estimate_job_bytes',
@@ -45,6 +49,7 @@ __all__ = [
     'job_waves',
     'launch_jobs',
     'load_launch_plan',
+    'load_recipe',
     'load_study_yaml',
     'pack_jobs',
     'plan_jobs',
@@ -64,12 +69,15 @@ def expand_study(study_dir: Path | str) -> dict[str, Any]:
     """Write Run configs and index from ``study.yaml``."""
     study_dir = ensure_study_layout(Path(study_dir).resolve())
     study = load_study_yaml(study_dir)
+    load_recipe(study_dir, study)
     patches = expand_patches(study)
     configs = write_run_configs(study_dir, patches)
     index_file = write_study_index(study_dir, study, configs)
+    provenance_file = write_provenance(study_dir, study)
     return {
         'study_dir': study_dir,
         'index': index_file,
         'configs': configs,
+        'provenance': provenance_file,
         'study': study,
     }

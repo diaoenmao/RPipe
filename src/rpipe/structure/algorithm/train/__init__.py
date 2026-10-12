@@ -28,6 +28,8 @@ from rpipe.structure.algorithm.progress import (
     resolve_budget,
 )
 from rpipe.structure.algorithm.tracker import AlgorithmTracker
+from rpipe.structure.algorithm.resume import capture_rng, restore_rng, partial_resume_warning
+from rpipe.structure.algorithm.metric import BATCH_NAMES, MetricBundle
 
 due_eval_period = due_period
 
@@ -260,10 +262,43 @@ def _run_supervised(
     module.train()
     epoch = int(restored.get('epoch') or 0) if restored else 0
     steps = int(restored.get('step') or 0) if restored else 0
+    period = max(int(config.setting('step_period', 1) or 1), 1)
+    settings = config.to_mapping()
+    settings.pop('resume', None)
+    settings.pop('resume_from', None)
+    settings['config'] = {key: value for key, value in (settings.get('config') or {}).items()
+                          if key not in ('resume', 'resume_from')}
+    contract = {'unit': budget.unit, 'num_steps': budget.num_steps, 'num_epochs': budget.num_epochs,
+                'step_period': period, 'settings': settings, 'device': str(device), 'torch': str(torch.__version__),
+                'deterministic': torch.are_deterministic_algorithms_enabled(),
+                'cudnn_benchmark': torch.backends.cudnn.benchmark,
+                'cudnn_allow_tf32': torch.backends.cudnn.allow_tf32,
+                'matmul_allow_tf32': torch.backends.cuda.matmul.allow_tf32}
+    exact_metrics = (device.type in ('cpu', 'cuda') and type(tracker.metrics) is MetricBundle
+                     and set(tracker.metrics.names_for('train')) <= BATCH_NAMES)
+    contract['metrics'] = getattr(tracker.metrics, 'names', None)
+    training_state = (restored or {}).get('training_state')
+    resume_inside_epoch = False
+    if training_state is not None:
+        if training_state.get('version') != 1:
+            raise ValueError('unsupported checkpoint training_state version')
+        if training_state.get('data') is not None and training_state.get('contract') != contract:
+            raise ValueError('checkpoint training contract differs; keep budget/settings/runtime unchanged')
+        algo._stall = int(training_state.get('stall', 0))
+        already_percent = set(training_state.get('already_percent') or [])
     tracker.begin_run((restored or {}).get('tracker'))
-    bind_step_train_loader(data, config, step=steps, budget=budget)
+    bind_step_train_loader(data, config, step=0 if training_state and training_state.get('data') else steps, budget=budget)
+    if training_state is not None:
+        if training_state.get('data') is not None:
+            restore_data = getattr(data, 'restore_training_state', None)
+            if not callable(restore_data):
+                raise ValueError('data does not support checkpoint iterator restoration')
+            resume_inside_epoch = restore_data(training_state['data'])
+        else:
+            partial_resume_warning(logger)
+        restore_rng(training_state['rng'])
     clock = EtaClock(origin=steps if budget.unit == UNIT_STEP else epoch)
-    stop = False
+    stop = bool(training_state and training_state.get('stopped'))
     used_lr = _current_lr(optimizer, lr)
 
     def _timing() -> dict[str, str]:
@@ -306,13 +341,20 @@ def _run_supervised(
         extra = dict(extra)
         extra['checkpoint_names'] = names
         extra['payload'] = _build_payload(module, optimizer, scheduler, extra, tracker, logger)
+        data_state = getattr(data, 'training_state', None)
+        hits = crossed_percents(current, budget.total, percents, already_percent) if ckpt_mode == 'percent' else []
+        extra['payload']['training_state'] = {
+            'version': 1, 'rng': capture_rng(), 'data': data_state() if callable(data_state) and exact_metrics else None,
+            'contract': contract, 'stall': algo._stall, 'already_percent': sorted(already_percent | set(hits)),
+            'stopped': stop,
+        }
         algo.on_checkpoint(tracker, logger, data, model, system, extra)
         if ckpt_mode == 'percent':
             for hit in crossed_percents(current, budget.total, percents, already_percent):
                 already_percent.add(hit)
 
-    already_done = steps >= budget.num_steps
-    wrote_last_ckpt = False
+    already_done = budget.progress(epoch=epoch, step=steps) >= budget.total
+    wrote_last_ckpt = stop
     try:
         if already_done:
             extra = _hook_extra(epoch=epoch, lr=used_lr, step=steps)
@@ -322,8 +364,12 @@ def _run_supervised(
             while True:
                 if stop:
                     break
-                epoch += 1
+                finishing_restored_epoch = resume_inside_epoch
+                if not resume_inside_epoch:
+                    epoch += 1
+                resume_inside_epoch = False
                 batches_this_epoch = 0
+                steps_at_epoch_start = steps
                 accum = 0
                 step_period = max(int(config.setting('step_period', 1) or 1), 1)
                 optimizer.zero_grad()
@@ -365,8 +411,10 @@ def _run_supervised(
                         stop = True
                         break
                 optimizer.zero_grad()
-                if batches_this_epoch == 0:
-                    break
+                if batches_this_epoch == 0 and not finishing_restored_epoch:
+                    raise ValueError('empty train iterator cannot satisfy a positive training budget')
+                if batches_this_epoch and steps == steps_at_epoch_start and not finishing_restored_epoch:
+                    raise ValueError('train iterator has fewer batches than step_period; no optimizer update is possible')
                 extra = _hook_extra(epoch=epoch, lr=used_lr, step=steps)
                 extra.update(_timing())
                 finish_train_segment(extra)
@@ -383,6 +431,8 @@ def _run_supervised(
                     is_last = last_epoch or last_steps
                     if scheduler is not None:
                         scheduler.step()
+                    if is_last:
+                        stop = True
                     fire_ckpt(extra=extra, improved=improved, is_last=is_last)
                     if is_last:
                         wrote_last_ckpt = True

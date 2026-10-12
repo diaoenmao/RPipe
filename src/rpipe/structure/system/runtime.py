@@ -12,7 +12,7 @@ def apply_runtime(seed: int | None, system_config: SystemConfig | None = None) -
 
     Must run before Data / Model are built so shuffle generators and init see
     the same world. Flags live on ``SystemConfig`` (``deterministic``,
-    ``cudnn_benchmark``, ``cudnn_deterministic``).
+    ``cudnn_benchmark``, ``cudnn_deterministic`` and optional TF32 flags).
     """
     import random
 
@@ -21,6 +21,10 @@ def apply_runtime(seed: int | None, system_config: SystemConfig | None = None) -
 
     cfg = system_config or SystemConfig()
     applied: dict[str, Any] = {'seed': seed}
+    precision = {name: cfg.setting(name) for name in ('cudnn_allow_tf32', 'matmul_allow_tf32')}
+    for name, value in precision.items():
+        if value is not None and type(value) is not bool:
+            raise ValueError(f'system.{name} must be a boolean or omitted')
 
     if seed is not None:
         value = int(seed)
@@ -43,10 +47,16 @@ def apply_runtime(seed: int | None, system_config: SystemConfig | None = None) -
     torch.backends.cudnn.deterministic = bool(cudnn_deterministic)
     torch.backends.cudnn.benchmark = bool(benchmark)
     torch.use_deterministic_algorithms(deterministic, warn_only=True)
+    if precision['cudnn_allow_tf32'] is not None:
+        torch.backends.cudnn.allow_tf32 = precision['cudnn_allow_tf32']
+    if precision['matmul_allow_tf32'] is not None:
+        torch.backends.cuda.matmul.allow_tf32 = precision['matmul_allow_tf32']
 
     applied['deterministic'] = deterministic
     applied['cudnn_deterministic'] = bool(cudnn_deterministic)
     applied['cudnn_benchmark'] = bool(benchmark)
+    applied['cudnn_allow_tf32'] = bool(torch.backends.cudnn.allow_tf32)
+    applied['matmul_allow_tf32'] = bool(torch.backends.cuda.matmul.allow_tf32)
     return applied
 
 

@@ -183,7 +183,7 @@ def test_checkpoint_curve_progress_is_current_even_without_a_report(tmp_path):
     assert snapshot['tracker']['splits']['train']['Loss']['history']
 
 
-def test_resume_rebinds_remaining_train_loader(tmp_path: Path):
+def test_resume_rejects_changed_native_sampler_budget(tmp_path: Path):
     import torch
     from torch.utils.data import TensorDataset
 
@@ -228,9 +228,8 @@ def test_resume_rebinds_remaining_train_loader(tmp_path: Path):
     algo2 = TrainAlgorithm(AlgorithmConfig.from_mapping(mapping_full))
     tracker2 = AlgorithmTracker(tmp_path)
     system2 = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
-    second = algo2.run(_data(), _Model(), system2, tracker2)
-    assert second['steps'] == 4
-    assert second['epochs'] == 2
+    with pytest.raises(ValueError, match='training contract differs'):
+        algo2.run(_data(), _Model(), system2, tracker2)
 
 
 def test_resume_latest_skips_when_budget_already_done(tmp_path: Path):
@@ -309,6 +308,117 @@ def test_eval_algorithm_missing_checkpoint_fails(tmp_path: Path):
         EvalAlgorithm(AlgorithmConfig.from_mapping({'mode': 'eval'})).run(
             _Data(), _Model(), system, tracker
         )
+
+
+def test_legacy_training_resume_warns_but_loads_weights(tmp_path):
+    from types import SimpleNamespace
+    import torch
+    from rpipe.structure.algorithm.base import Algorithm
+
+    system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
+    original = torch.nn.Linear(2, 2)
+    system.save_checkpoint({'model': original.state_dict(), 'step': 1}, 'latest')
+    model = SimpleNamespace(module=torch.nn.Linear(2, 2))
+    with pytest.warns(RuntimeWarning, match='resume is partial'):
+        restored = Algorithm(AlgorithmConfig.from_mapping({'mode': 'train'})).resume(
+            None, model, system, AlgorithmTracker(tmp_path))
+    assert restored['step'] == 1
+    for key, value in model.module.state_dict().items():
+        assert torch.equal(value, original.state_dict()[key])
+
+
+def test_epoch_budget_stops_even_when_accumulation_drops_tail_batches(tmp_path):
+    from types import SimpleNamespace
+    import torch
+
+    class Batches:
+        meta = {'train_size': 10, 'batch_size': 2}
+        calls = 0
+
+        def iter_batches(self, split):
+            if split != 'train':
+                return
+            self.calls += 1
+            assert self.calls <= 3, 'unbounded epoch loop'
+            for _ in range(5):
+                yield torch.ones(2, 2), torch.zeros(2, dtype=torch.long)
+
+    data = Batches()
+    config = AlgorithmConfig.from_mapping({'mode': 'train', 'num_epochs': 2, 'progress_unit': 'epoch',
+                                          'step_period': 2, 'eval_period': 0, 'checkpoint_period': 1})
+    system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
+    model = SimpleNamespace(module=torch.nn.Linear(2, 2))
+    result = TrainAlgorithm(config).run(data, model, system, AlgorithmTracker(tmp_path))
+    assert result['epochs'] == data.calls == 2
+    assert result['steps'] == 4
+    with pytest.warns(RuntimeWarning, match='resume is partial'):
+        resumed = TrainAlgorithm(config).run(data, model, system, AlgorithmTracker(tmp_path))
+    assert data.calls == 2 and resumed['epochs'] == 2 and resumed['steps'] == 4
+
+
+@pytest.mark.parametrize('unit', ['step', 'epoch'])
+def test_training_rejects_iterator_too_short_for_any_optimizer_update(tmp_path, unit):
+    from types import SimpleNamespace
+    import torch
+
+    class Batches:
+        meta = {'train_size': 4, 'batch_size': 2}
+        calls = 0
+
+        def iter_batches(self, split):
+            if split != 'train':
+                return
+            self.calls += 1
+            assert self.calls <= 3, 'unbounded no-update loop'
+            for _ in range(2):
+                yield torch.ones(2, 2), torch.zeros(2, dtype=torch.long)
+
+    config = AlgorithmConfig.from_mapping({'mode': 'train', 'num_epochs': 2, 'progress_unit': unit,
+                                          'step_period': 3, 'eval_period': 0})
+    system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
+    with pytest.raises(ValueError, match='fewer batches than step_period'):
+        TrainAlgorithm(config).run(Batches(), SimpleNamespace(module=torch.nn.Linear(2, 2)), system, AlgorithmTracker(tmp_path))
+
+
+@pytest.mark.parametrize('unit', ['step', 'epoch'])
+def test_training_rejects_empty_iterator_before_successful_checkpoint(tmp_path, unit):
+    from types import SimpleNamespace
+    import torch
+
+    class Empty:
+        meta = {'train_size': 0, 'batch_size': 2}
+
+        def iter_batches(self, split):
+            return iter(())
+
+    config = AlgorithmConfig.from_mapping({'mode': 'train', 'num_steps': 2, 'num_epochs': 2,
+                                          'progress_unit': unit, 'eval_period': 0})
+    system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
+    with pytest.raises(ValueError, match='empty train iterator'):
+        TrainAlgorithm(config).run(Empty(), SimpleNamespace(module=torch.nn.Linear(2, 2)), system, AlgorithmTracker(tmp_path))
+    assert not (tmp_path / 'checkpoints/latest.pt').exists()
+
+
+def test_unrecorded_device_rng_is_not_marked_as_complete_resume(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    import torch
+    import rpipe.structure.algorithm.train as train
+    from rpipe.structure.data.factory import Data
+
+    dataset = torch.utils.data.TensorDataset(torch.ones(2, 2), torch.zeros(2, dtype=torch.long))
+    loader = torch.utils.data.DataLoader(dataset, batch_size=2)
+    data = Data(name='rng-boundary', source='custom', loaders={'train': loader, 'test': loader}, meta={'seed': 0})
+    real_system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
+    # CPU computation only: exercise the declaration guard, not real MPS execution.
+    declared = SimpleNamespace(device='mps', logger=real_system.logger, place_module=lambda module: module,
+                               load_checkpoint=real_system.load_checkpoint, save_checkpoint=real_system.save_checkpoint)
+    monkeypatch.setattr(train, 'prepare_tensors', lambda batch, module, device: batch)
+    import rpipe.structure.algorithm.eval_hook as eval_hook
+    monkeypatch.setattr(eval_hook, 'prepare_tensors', lambda batch, module, device: batch)
+    config = AlgorithmConfig.from_mapping({'mode': 'train', 'num_steps': 1, 'resume': False, 'eval_period': 0})
+    TrainAlgorithm(config).run(data, SimpleNamespace(module=torch.nn.Linear(2, 2)), declared, AlgorithmTracker(tmp_path))
+    payload = torch.load(tmp_path / 'checkpoints/latest.pt', weights_only=False)
+    assert payload['training_state']['data'] is None
 
 
 def test_cnn_trains_on_cifar_shaped_batches(tmp_path: Path):

@@ -15,10 +15,18 @@ from rpipe.flow.process.curves import write_learning_curves
 from rpipe.structure.artifact._atomic import atomic_write_text
 from rpipe.structure.artifact.index import index_path, load_index
 from rpipe.structure.artifact.result.format import encode_result
+from rpipe.flow.context import StudyProcessContext
+from rpipe.flow.study import run_study_phase
+from rpipe.structure.artifact.provenance import check_frozen
+from rpipe.structure.make.expand import load_study_yaml
+from rpipe.structure.make.recipe import study_phases_enabled
 
 
 def run_study(study_dir: Path | str) -> dict[str, Any]:
     study_dir = Path(study_dir)
+    study = load_study_yaml(study_dir) if (study_dir / 'study.yaml').is_file() else {}
+    if study_phases_enabled(study):
+        check_frozen(study_dir, study)
     try:
         index = load_index(study_dir)
         if not isinstance(index.get('experiments'), list):
@@ -41,4 +49,5 @@ def run_study(study_dir: Path | str) -> dict[str, Any]:
             'learning_curves': str(figure.relative_to(study_dir)).replace('\\', '/')
         }
     atomic_write_text(process_path(study_dir), encode_result(body))
+    run_study_phase(study_dir, 'process', StudyProcessContext(study_dir, {'process': body}), study)
     return body

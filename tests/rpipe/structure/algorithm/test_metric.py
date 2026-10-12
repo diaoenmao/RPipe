@@ -63,3 +63,19 @@ def test_metric_bundle_batch_defaults():
     assert 'Loss' in values
     assert 'Accuracy' in values
     assert values['Accuracy'] == 100.0
+
+
+@pytest.mark.parametrize('dtype', ['float32', 'int32', 'int64'])
+def test_accuracy_label_vector_keeps_one_target_per_sample(dtype):
+    import torch
+
+    labels = torch.tensor([0, 1], dtype=getattr(torch, dtype))
+    logits = torch.tensor([[0., 1.], [0., 1.]])
+    assert accuracy_value(pack_io((None, labels), logits)) == 50.0
+
+
+def test_accuracy_rejects_broadcasting_one_prediction_across_samples():
+    import torch
+
+    with pytest.raises(ValueError, match='sample counts'):
+        accuracy_value(pack_io((None, torch.tensor([0, 0])), torch.tensor([[1., 0.]])))

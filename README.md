@@ -2,7 +2,9 @@
 
 RPipe（Research Pipeline）是一个研究执行库，Python 包名为 `rpipe`。用 YAML 声明实验因素与 seed，展开并运行实验，再将配置、结果、日志、checkpoint 和跨 seed 汇总保存到同一 Study 中。
 
-当前包版本为 **0.2.0（阶段版）**，提供可安装的 CLI、原生 PyTorch / Hugging Face Trainer 通路、checkpoint/resume、运行日志与跨 seed 聚合。
+当前包版本为 **0.3.0（阶段版）**，提供可安装的 CLI、原生 PyTorch / Hugging Face Trainer 通路、checkpoint/resume、运行日志与跨 seed 聚合。上个版本以来的完整改动、迁移和验证边界见 [v0.3.0 发布报告](docs/releases/v0.3.0.md)。
+
+2026-10-13发布准备阶段完成恢复、设备调度及持久化 / 数值比较边界修复，详情见[开发记录](docs/development/record.md)。严格研究对照须两侧显式相同计算精度，不依赖Torch默认TF32；短探针和容量校准不替代新基线的完整长实验。
 
 ## 本机实测（2026-10-04）
 
@@ -14,7 +16,7 @@ MNIST / CIFAR10 × linear / mlp / cnn / resnet18 × seeds 0–3：**32 条连续
 
 ![CIFAR10：本机四 seed test Accuracy，mean ± population std](asset/CIFAR10_Accuracy_mean.png)
 
-两图使用训练中的完整 test history，独立 eval 的 best 没有替代曲线终点。实验使用 Study 专用配方与固定环境；完整配置、数值、环境和验收范围见 [实测报告](studies/main_historical/docs/STUDY_REPORT.md)。
+两图使用训练中的完整 test history，独立 eval 的 best 没有替代曲线终点。实验使用 Study 专用配方与固定环境；完整配置、数值、环境和验收范围见 [实测报告](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_historical/docs/STUDY_REPORT.md)（2026-10-04，原 Study `main_historical`）。该 Study 已改名为 [main_exp](studies/main_exp/README.md)，按新流程待重跑。
 
 ## 核心模型
 
@@ -32,24 +34,22 @@ src/rpipe/
 - **flow** 是跑 Study 的入口：对每个 Run 执行固定阶段链，最后按 Experiment 跨 seed 聚合。`status` / `logs` / `report` 从 cli 进来，转给 readout。
 - **artifact** 是磁盘契约：Study 级 `docs/`、`shared/`、index、process，以及 Run 级 config、result、tracker、log、checkpoint。
 
+Flow 的默认阶段是实际执行代码，不是空骨架：普通阶段实现在 `flow/<phase>/run.py`，process 按 Run / Study 聚合拆成独立模块；`__init__.py` 只做导出。Study 的同名目录仅承载可选扩展，没有扩展时仍执行库默认链。展开到文件的目录见 [layout.md](docs/code/layout.md)、[flow.md](docs/code/flow.md)。
+
 ## 文档顺序
 
 Agent 的文档导航与通用工作约定见 [AGENTS.md](AGENTS.md)。
 
 设计与代码冲突时，先更新文档，再更新实现。权威阅读顺序是：
 
-1. [CONCEPT.md](docs/CONCEPT.md)：概念、职责与边界
-2. [LAYOUT.md](docs/LAYOUT.md)：仓库和 Study 的目录契约
-3. [CODE_STRUCTURE.md](docs/CODE_STRUCTURE.md)：模块边界与依赖方向
-4. [structure.md](docs/code_structure/structure.md) / [flow.md](docs/code_structure/flow.md)：两柱的详细契约
-5. [STUDY_GUIDE.md](docs/STUDY_GUIDE.md)：如何设计和运行一轮 Study
-6. [TESTING.md](docs/TESTING.md)：测试策略、标签和结果持久化
+1. [concept.md](docs/code/concept.md)：概念、职责与边界
+2. [layout.md](docs/code/layout.md)：仓库和 Study 的目录契约
+3. [code.md](docs/code/code.md)：模块边界与依赖方向
+4. [structure.md](docs/code/structure.md) / [flow.md](docs/code/flow.md)：两柱的详细契约
+5. [studies/README.md](studies/README.md)：如何设计和运行一轮 Study，以及现有 Study 的计划、报告和代码
+6. [testing.md](docs/development/testing.md)：测试策略、标签和结果持久化
 
-已知缺陷与尚未兑现的设计见 [BUGS.md](docs/BUGS.md)。
-
-开发记录见 [SUMMARY.md](docs/SUMMARY.md)，阶段性方案见 [BRAINSTORM.md](docs/BRAINSTORM.md)。
-
-正式研究入口见 [Study 导航](studies/README.md)。
+已知缺陷见 [bugs.md](docs/development/bugs.md)，开发记录见 [record.md](docs/development/record.md)，Flow/Study 重构交接见 [handover.md](docs/development/handover.md)，阶段性想法见 [brainstorm.md](docs/development/brainstorm.md)。
 
 ## 安装
 
@@ -96,23 +96,23 @@ python -m rpipe report studies/<name>
 python -m rpipe run studies/<name>
 ```
 
-完整字段、并行排班、失败续跑和报告约定见 [STUDY_GUIDE.md](docs/STUDY_GUIDE.md)。
+完整字段、并行排班、失败续跑和报告约定见 [studies/README.md](studies/README.md)。
 
 ## Study 中什么进 Git
 
 | **内容** | **是否入库** | **原因** |
 |------|----------|------|
-| `study.yaml`、`experiment_config.yaml` | 是 | 可复现实验声明 |
+| `study.yaml`、`experiment_config.yaml`、`recipe.py`、阶段包源码 | 是 | 可复现实验声明与 Study 自己的注册配方 |
 | `docs/PLAN.md`、`docs/STUDY_REPORT.md`、报告图片 | 是 | 人写的研究计划与结论 |
 | `docs/NUMBERS.md` | 可以 | `rpipe report` 从 `process.json` 生成的数字表，不是结论 |
 | `runs/`、`shared/`、`scripts/` | 否 | 可重新生成或体积较大的运行产物 |
-| `index.json`、`process.json`、`activity.json` | 否 | make / process 重建；`activity.json` 只在 make 进行中存在 |
+| `index.json`、`process.json`、`activity.json`、`provenance.json` | 否 | make / process 重建；`activity.json` 只在 make 进行中存在 |
 | `.tmp/` | 否 | 本地测试、缓存和临时验证 |
 | `docs/*.tmp`、`docs/*.claim` | 否 | 本地事务暂存和执行占用标记；正式恢复/失败快照单独保留 |
 
-数据与运行产物保存在各自 Study 目录中。
+数据、运行产物、计划、报告和复跑代码都保存在各自 Study 目录中，不放到 `docs/` 或仓库根目录。
 
-`studies/` 保留正式研究和可复用验收案例。一次性的文件占用、环境开关等排错放 `.tmp/diagnostics/`，结论合并到相关 Study 报告；本地证据链接不会随 Git clone 提供。
+`studies/` 保留正式研究与模板，通用测试声明放在 `tests/_data/studies/`。一次性的文件占用、环境开关等排错放 `.tmp/diagnostics/`，结论合并到相关 Study 报告；本地证据链接不会随 Git clone 提供。
 
 ## 开发与 CI
 
@@ -130,14 +130,14 @@ python tests/run.py --all --cost-class c1 --cost-class c2 -- -m "(integration or
 python tests/run.py --all
 ```
 
-pytest 的 base temp、cache 和测试结果都写入 `.tmp/`。测试入口与标记约定见 [tests/README.md](tests/README.md)，本机验收证据见 [交付验收记录](docs/REPOSITORY_CLEANUP_RESULT.json)。
+pytest 的 base temp、cache 和测试结果都写入 `.tmp/`。测试入口与标记约定见 [tests/README.md](tests/README.md)。
 
 GitHub Actions 配置包括：
 
 - `Unit Tests`：Ubuntu/Windows × Python 3.10/3.13，安装 `.[dev]` 后执行 core 和本地 CPU 流程门；
 - `Package Check`：在 Ubuntu/Windows 构建 wheel / sdist，在源码目录之外的全新虚拟环境中安装两种分发包，验证模块入口、console script 与离线 Toy/Stub Study 的 make / launch / process / readout。
 
-各提交的检查状态见 [GitHub Actions](https://github.com/diaoenmao/RPipe/actions)。CPU 安装与流程验收不覆盖所有 GPU 或可选 HF 场景。
+各提交的检查状态见 [GitHub Actions](https://github.com/diaoenmao/RPipe/actions)。CPU 安装与流程验收不覆盖所有 GPU 或可选 HF 场景。分支顺序、必需检查和自行合并见 [cicd.md](docs/development/cicd.md)。
 
 ## 当前实现范围
 
@@ -146,6 +146,8 @@ GitHub Actions 配置包括：
 - 算法：原生 PyTorch train/eval，以及 `transformers_trainer`；
 - 运行：顺序执行、按 GPU/wait 组并行、checkpoint/resume、Run 日志与 Study 聚合。
 
-文档中列出的其他下游生态是扩展边界，不代表已经实现；以 Registry 和 [BUGS.md](docs/BUGS.md) 为准。
+原生精确续训支持单进程、`num_workers=0` 的标准采样器和相同训练预算 / 配置；新 checkpoint 保存 RNG 与数据位置。旧 checkpoint、HF 或未实现恢复协议的数据只保证部分状态加载，并明确警告，不保证等价于连续训练。具体条件见 [resume 合同](docs/code/structure.md#6113-resumetrain-与-eval-的特殊接口)，历史 Study 的续训拒绝门保持不变。
 
-上述清单表示已有实现，不代表全部模型与数据组合已完成真实运行验收。六个指定组合的 30-step 验收见 [数据报告](studies/support_data_smoke/docs/STUDY_REPORT.md) 与 [模型报告](studies/support_model_smoke/docs/STUDY_REPORT.md)，模型报告保留 ResNet10 的 Accuracy 复算差异；未解决缺陷见 BUGS。
+文档中列出的其他下游生态是扩展边界，不代表已经实现；以 Registry 和 [bugs.md](docs/development/bugs.md) 为准。
+
+上述清单表示已有实现，不代表全部模型与数据组合已完成真实运行验收。六个指定组合的 30-step 验收见 [数据报告](https://github.com/diaoenmao/RPipe/blob/71143ab/studies/support_data_smoke/docs/STUDY_REPORT.md) 与 [模型报告](https://github.com/diaoenmao/RPipe/blob/71143ab/studies/support_model_smoke/docs/STUDY_REPORT.md)，模型报告保留 ResNet10 的 Accuracy 复算差异；未解决缺陷见 [bugs.md](docs/development/bugs.md)。

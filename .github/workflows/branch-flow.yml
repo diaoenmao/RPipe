@@ -1,0 +1,33 @@
+name: Branch flow
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  branch-flow:
+    name: Branch flow
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check pull request direction
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          if [ "$BASE_REF" = "dev" ]; then
+            echo "PR targets dev from ${HEAD_REF}."
+            exit 0
+          fi
+          if [ "$BASE_REF" = "main" ] && [ "$HEAD_REF" = "dev" ]; then
+            echo "Release PR from dev to main."
+            exit 0
+          fi
+          echo "Rejected: base=${BASE_REF} head=${HEAD_REF}."
+          echo "Work branches merge into dev. main only accepts a PR from dev."
+          exit 1

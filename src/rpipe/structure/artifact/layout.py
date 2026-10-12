@@ -8,6 +8,15 @@ from pathlib import Path
 from rpipe.structure.artifact import paths
 
 
+def validate_run_directory(run_dir: str) -> None:
+    reserved = {'CON', 'PRN', 'AUX', 'NUL'} | {f'{prefix}{n}' for prefix in ('COM', 'LPT') for n in range(1, 10)}
+    if (not isinstance(run_dir, str) or not run_dir or run_dir in ('.', '..')
+            or run_dir != run_dir.strip() or run_dir.endswith('.')
+            or any(char in run_dir for char in '/\\:<>"|?*') or any(ord(char) < 32 for char in run_dir)
+            or run_dir.split('.')[0].upper() in reserved):
+        raise ValueError(f'invalid Run directory: {run_dir!r}')
+
+
 @dataclass(frozen=True)
 class ArtifactLayout:
     """Paths for one Run under ``<study>/runs/<run_dir>/``."""
@@ -66,6 +75,7 @@ def artifact_layout(study_dir: Path | str, run_dir: str) -> ArtifactLayout:
 
     ``run_dir`` is the content-derived Config ``id``.
     """
+    validate_run_directory(run_dir)
     study = ensure_study_layout(study_dir)
     layout = ArtifactLayout(root=study / paths.RUNS_DIRNAME / run_dir, study_dir=study)
     layout.ensure()

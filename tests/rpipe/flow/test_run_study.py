@@ -16,6 +16,35 @@ pytestmark = [
 ]
 
 
+@pytest.mark.cost(cost_class='c1')
+def test_nested_cpu_device_make_and_run_one_agree(tmp_path, monkeypatch):
+    """CLI make → saved plan → Run prepare/write: nested CPU setting bypasses GPU probe."""
+    import json
+    import rpipe.flow.cli as cli
+
+    study = tmp_path / 'nested_cpu'
+    study.mkdir()
+    (study / 'study.yaml').write_text('study: nested_cpu\nseeds: [0]\n', encoding='utf-8')
+    (study / 'experiment_config.yaml').write_text(
+        'version: nested-cpu-v1\ndata: {name: Toy, source: stub}\nmodel: {name: linear}\n'
+        'algorithm: {mode: train, config: {num_steps: 2}}\n'
+        'system: {device: cuda, config: {device: cpu, vram_bytes: 4294967296}}\n', encoding='utf-8')
+
+    def forbidden(*args):
+        raise AssertionError('CPU config must not probe GPU capacity')
+
+    monkeypatch.setattr(cli, 'probe_gpus', forbidden)
+    assert cli.main(['make', str(study), '--num-gpus', '1']) == 0
+    plan = json.loads((study / 'scripts/jobs.json').read_text(encoding='utf-8'))
+    job = plan['jobs'][0]
+    assert job['device'] == 'cpu' and 'gpu' not in job
+    assert job['vram_bytes'] == 4294967296
+    assert cli.main(['run-one', str(study), job['run_id']]) == 0
+    result = json.loads((study / 'runs' / job['run_id'] / 'result.json').read_text(encoding='utf-8'))
+    assert result['status'] == 'succeeded'
+    assert result['structure']['system']['device'] == 'cpu'
+
+
 @pytest.mark.external
 @pytest.mark.cost(cost_class='c2')
 def test_run_study_skip_launch_index_groups_train_eval_experiments(tmp_path: Path):
@@ -23,7 +52,7 @@ def test_run_study_skip_launch_index_groups_train_eval_experiments(tmp_path: Pat
     import shutil
 
     repo = Path(__file__).resolve().parents[3]
-    src = repo / 'studies' / 'mnist_train_size'
+    src = repo / 'tests' / '_data' / 'studies' / 'mnist_train_size'
     study = tmp_path / 'mnist_train_size'
     shutil.copytree(
         src,
