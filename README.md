@@ -2,7 +2,7 @@
 
 RPipe（Research Pipeline）是一个研究执行库，Python 包名为 `rpipe`。用 YAML 声明实验因素与 seed，展开并运行实验，再将配置、结果、日志、checkpoint 和跨 seed 汇总保存到同一 Study 中。
 
-当前包版本为 **0.2.0（阶段版）**，提供可安装的 CLI、原生 PyTorch / Hugging Face Trainer 通路、checkpoint/resume、运行日志与跨 seed 聚合。
+当前包版本为 **0.3.0（阶段版）**，提供可安装的 CLI、原生 PyTorch / Hugging Face Trainer 通路、checkpoint/resume、运行日志与跨 seed 聚合。上个版本以来的完整改动、迁移和验证边界见 [v0.3.0 发布报告](docs/releases/v0.3.0.md)。
 
 2026-10-13发布准备阶段完成恢复、设备调度及持久化 / 数值比较边界修复，详情见[开发记录](docs/development/record.md)。严格研究对照须两侧显式相同计算精度，不依赖Torch默认TF32；短探针和容量校准不替代新基线的完整长实验。
 
