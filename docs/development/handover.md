@@ -1,6 +1,20 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-13 接续摘要
+
+当前工作树以dev ce8b3e6为基线，已完成原生CPU/CUDA恢复、CPU设备分流及整仓检查发现的比较 / 写入 / 名称 / metric / 空训练边界修复。395项core、51项CPU integration、CUDA跨进程恢复及wheel / sdist公开CLI验证通过；详细失败与支持范围见[record.md](record.md)2026-10-13。
+
+main_exp已完成27次真实短容量Flow、固定best的32次精度诊断，以及最终候选源码的600-step八格前置对照；使用显式4.5GiB预算，库安全系数不变。新的正式候选声明为main-exp-flow-20261013-04；旧长矩阵声明与结果在版本快照保留，不声称新候选已长训。前置报告只绑定其中的实际来源；旧PREFLIGHT不自动升级，异机仍须同设备fresh gate。
+
+main_probe使用main-probe-flow-20261013-06执行八组合60-step短复验，原version05两组子集证据和生成清单逐字节保存。发布按工作PR→dev→main发布PR，main合并在用户要求的确认边界前不执行。下文2026-10-12条目保留当时状态，不作为本轮最新状态。
+
 更新日期：2026-10-12。本轮基线为 dev `7eb16438` 加两柱重构：两个 Study 已拆为 `structure/` 建构 / 计算与 `flow/` 阶段检查，库加载和 provenance 自动来源发现已接通。已完成 main_probe version05 两组真实 60-step Run 与 main_exp 单组手动 200-step 前置对照；未运行新完整矩阵，历史 version03 不作为新链验收。本次提交前复核发现 collect 包入口仍有重复实现，再次清除并重新回归；实测来源 hash 保留实验时状态，不改写成最终源码。提交、PR 和远端必需检查状态以 Git / GitHub 为准。当前接续顺序见第五节。
+
+最新接续：上述重构已通过 [PR #28](https://github.com/diaoenmao/RPipe/pull/28) 合入 dev `ce8b3e6`，PR 与 dev 提交后的必需测试 / 包检查均通过。随后本机修复 B-021 的 native checkpoint RNG / 数据位置恢复，专项 10 passed、core 335 passed / 2 skipped、CPU integration/e2e 49 passed，尚未提交；具体支持范围与证据见 [record.md](record.md) 2026-10-12 §6 和 [恢复合同](../code/structure.md#6113-resumetrain-与-eval-的特殊接口)。B-022 / B-023 仍开放；旧 Study 的拒绝续训门、旧来源和失败不改写。下文旧阶段表与旧“尚未提交”描述保留当时状态，不当作本轮最新状态。
+
+继续修复：make 的嵌套配置 / 设备优先级、训练行数、累积 batch 估时及 test 显存遗漏已修正，旧计划设备不符时重建；新发现 B-024 的 epoch 越界 / 零更新循环已修复并关闭。最新 core 355 passed / 2 skipped、CPU integration/e2e 51 passed、CUDA 恢复1 passed，包含累积尾 batch 的跨进程恢复；尚未提交推送。B-022 的配置正确性修复不替代峰值 / 并发吞吐校准，B-023 kernel 调查未扩大。具体失败和验证见 [record.md](record.md) 2026-10-12 §7，旧 Study 拒绝续训门继续保留。
+
+最新校准接续：显式 `system.config.vram_bytes` 预算已接入 make / 原装箱器，仍保留 safety=0.5；现有速度工具补齐 raw / 源码 / 实际 runtime 证据与 reserved 峰值，代表性 MNIST 短校准通过，失败保留在 [速度报告](../../studies/main_exp/docs/speed_calibration.md)。最终 core 363 passed / 2 skipped、CPU integration 51 passed，尚未提交。没有改正式预算或验证 CIFAR10 并发；原 B-023 checkpoint 缺失、数据不齐，kernel 反例不能在当前工作区重放。开发事实见 [record.md](record.md) 2026-10-12 §8，实验数字只见 Study 报告。
 
 2026-10-11 已合入基线：代码修复及完整复跑证据已通过 [PR #26](https://github.com/diaoenmao/RPipe/pull/26) 合入 dev 51a4ce0，最终 PR HEAD 31acb5b 的三项必需检查全部通过。Flow 职责重构通过 [PR #25](https://github.com/diaoenmao/RPipe/pull/25) 合入 dev `d73b217`，version02 真实复跑源码为 `e682f25`。main_probe 八组合通过；main_exp 32 train / 32 eval 执行成功但 best 一致性终验失败，旧版完整报告已在各 Study docs/versions/ 下归档。B-023 在默认 cuDNN TF32 的并发及串行条件下均复现；FP32 诊断八次一致。已实现显式精度配置并通过 runtime / core 回归，声明两个 version03，main_probe 八格真实探针通过（源码 c9c782b、参数最大差 0）；main_exp 归档导入覆盖 benchmark 的修复基线 09e495b 八格前置门通过，完整矩阵于 05:03 启动，round=3，实际设备开关核验通过，32 train / 32 eval 与固定曲线终验全部通过（19:48，原生 exit 0）。后续先查看 [长实验记录](../../studies/main_exp/docs/RERUN.md)、[恢复方案](../../studies/main_exp/docs/eval_recovery.md) 和 [探针记录](../../studies/main_probe/docs/RERUN.md)，不要复用旧版前置门或训练冒充新精度验收。B-021 / B-022 / B-023 均开放，尚未发布或合入 main。
 
@@ -72,7 +86,7 @@ Study `flow/prepare/` 检查构造对象的历史来源。`flow/process/curves.p
 1. 两柱设计、Study 文档和短实测已对齐。当前授权先修 collect 导出，重新回归，核对完整暂存范围，再通过工作分支提交、push 和 PR 合入 dev；不直接 push dev
 2. 已完成的短数值结果不重新覆盖：main_probe 两组完整六阶段链通过，子集 process 拒绝八组 complete；main_exp 单组 200-step 手动前置对照通过。实测后源码变化需新 version / make，再执行真实复验
 3. 后续八组合探针、main_exp 同设备 600-step 八格前置门及异机验收按计划另行授权。换机须重新 make 并核对依赖、数据、实际精度与设备；本机结果不能替代异机验收
-4. 完整四 seed / 80000-step 矩阵另行授权。保留历史 version 与失败，不重用旧 Run / 前置报告；B-021 / B-022 / 默认精度 kernel 调查不因目录重构自动关闭
+4. 完整四 seed / 80000-step 矩阵另行授权。保留历史 version 与失败，不重用旧 Run / 前置报告；B-021 后续已按原生单进程恢复合同本机修复，待提交和跨平台验收；B-022 / 默认精度 kernel 调查仍开放，不因目录重构自动关闭
 
 ### （二）2026-10-10—11 历史接续
 
@@ -94,7 +108,7 @@ PR #24 的文档审校已合入 dev `37b9cef`。维护者在 2026-10-10 追加�
 | CI 与分支 | [cicd.md](cicd.md) |
 | 开发事实与历史失败 | [record.md](record.md) |
 
-4. 维护者于 2026-10-11 要求在当前连续实验结束后，与早年版本做同条件速度校准。按 [B-022](bugs.md#b-022-gpu-容量估算与调度过于保守重型训练被串行安排) 核对旧版本提交和计时证据，拆分训练、完整评测、checkpoint 与调度耗时，分别比较串行和并发；保持数值条件可比，再据实测决定优化。当前长训期间不启动竞争 GPU 的速度实验。
+4. 维护者于 2026-10-11 要求在当前连续实验结束后，与早年版本做同条件速度校准。按 [B-022](bugs.md#b-022-重型任务并发容量与吞吐尚未校准) 核对旧版本提交和计时证据，拆分训练、完整评测、checkpoint 与调度耗时，分别比较串行和并发；保持数值条件可比，再据实测决定优化。长训期间不启动竞争 GPU 的速度实验；该历史长训已结束，最新短校准另记。
 
 19:57 已在正式长训结束后执行串行校准首轮，CNN 数值门通过；[测量报告](../../studies/main_exp/docs/speed_calibration.md) 保留原始 JSON 和对照条件。六组独立进程复测全部通过，原生会话 66360 已 exit 0，日志 `.tmp/speed-repeat-1.log` 至 `speed-repeat-5.log`（仅本机）。该批次已结束，不再轮询或重启。校准修改了 recipe 的命令入口，已完成正式 version03 的来源仍按 09e495b 与原 provenance 解释；后续正式复跑须新 version / make / preflight，不能在这套旧冻结来源上重新 launch。
 

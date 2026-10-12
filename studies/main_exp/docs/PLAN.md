@@ -10,7 +10,7 @@
 2. 连续 80000 optimizer steps，每 200 step 完整 test，共 400 个曲线点。train/test batch250，SGD lr0.01、momentum0.9、Nesterov、wd0.0005、clip1、cosine T_max80000，见 [experiment_config.yaml](../experiment_config.yaml)。
 3. best 按 RPipe 的全程 test Accuracy 选择；归档代码的旧 best 比较缺陷不移植。曲线取训练内 test history。
 4. 确定性条件：deterministic=true、benchmark=false、`CUBLAS_WORKSPACE_CONFIG=:4096:8`、CPU 2 线程。2026-10-11 的新 version03 显式设置 cudnn_allow_tf32=false、matmul_allow_tf32=false，两侧前置对照、训练与独立评测一致；version02 的精度未显式固定且独立评测一致性失败，完整证据保留。新旧精度基线不混用，变更与停止失败的恢复条件见 [eval_recovery.md](eval_recovery.md)。
-5. 训练必须连续。当前 resume 不保存完整 RNG 与迭代器位置，中断的 train 不续跑，换新 `version` 从头跑。
+5. 训练必须连续。通用原生 resume 已按单进程合同本机补齐 RNG / 数据位置，但本 Study 的自定义 sampler / 数据适配仍未验收精确恢复，继续拒绝中断 train 续跑，换新 `version` 从头跑。
 
 ## 三、门限
 
@@ -19,6 +19,12 @@
 3. 原图估读的误差和原始 seed 集合未知，结论限于这组固定估读门。
 
 ## 四、执行
+
+### 2026-10-13 校准与精度复验
+
+先用固定源码快照完成 CIFAR10 的 CNN / ResNet18 / 混合任务各三个 seed、800-step、round1/2/3 容量测量，再用新短程 CNN best 做16次显式 FP32和16次 TF32固定权重全 test，覆盖串行与并发；保留逐样本预测 / 输入 / 模型哈希及可取得的 kernel trace。新权重不冒充旧 B-023 的76800-step权重；旧 checkpoint 未找回，旧反例及其 JSON 不覆盖。
+
+容量采用既有 system.config.vram_bytes，库默认经验系数与 safety=0.5 不变。main_exp 的后续 fresh make 使用4.5GiB单进程预算，保守统一覆盖配方的模型；这限制轻型任务的自动并行数，也不保证其他设备 / 配方可沿用。重跑前仍须新的600-step八格前置门。此次只做前置门与短校准，不启动完整矩阵、不覆盖旧 version03。
 
 命令见 [Study 入口](../README.md)。同组并行数由 `rpipe launch` 按显存装箱，必要时用 `--round N`；train 全部结束后再跑 eval。报告写在 `docs/STUDY_REPORT.md`，数字表由 `rpipe report` 生成。
 

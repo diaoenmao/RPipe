@@ -101,4 +101,10 @@ def load_index(study_dir: Path | str) -> dict[str, Any]:
         data = json.load(f)
     if not isinstance(data, dict):
         raise TypeError('Study index must be an object')
+    from rpipe.structure.artifact.layout import validate_run_directory
+    for experiment in data.get('experiments') or []:
+        for run in experiment.get('runs') or []:
+            for key in ('run_dir', 'id'):
+                if run.get(key) is not None:
+                    validate_run_directory(run[key])
     return data

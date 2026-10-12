@@ -76,3 +76,21 @@ def test_cli_compare_exit_codes_and_json(tmp_path: Path, capsys):
     assert body['items']['metrics']['passed'] is False
     assert cli.main(['compare', str(a), str(tmp_path / 'missing')]) == 2
     assert 'FAIL  metrics' in capsys.readouterr().out
+
+
+@pytest.mark.parametrize('kind', ['integer', 'integer-tensor', 'complex-tensor'])
+def test_exact_checkpoint_comparison_preserves_integer_and_complex_differences(tmp_path, kind):
+    import torch
+
+    a, b = _run(tmp_path, 'a'), _run(tmp_path, 'b')
+    for run, delta in [(a, 0), (b, 1)]:
+        path = run / 'assets/checkpoints/latest.pt'
+        payload = torch.load(path, weights_only=False)
+        if kind == 'integer':
+            payload['scheduler'] = {'epoch': 2**53 + delta}
+        elif kind == 'integer-tensor':
+            payload['model']['counter'] = torch.tensor([2**53 + delta], dtype=torch.int64)
+        else:
+            payload['model']['complex'] = torch.tensor([1 + delta * 1j])
+        torch.save(payload, path)
+    assert compare_runs(a, b)['passed'] is False

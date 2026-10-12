@@ -1,6 +1,6 @@
 experiment: main_exp
 description: README historical candidate recipe pinned to 4ccb28d
-version: main-exp-flow-20261011-03
+version: main-exp-flow-20261013-04
 historical_ref: 4ccb28d0496110253e9f8e3f3df658853f07996b
 data:
   name: MNIST
@@ -38,6 +38,8 @@ algorithm:
   T_max: 80000
   eta_min: 0
 system:
+  config:
+    vram_bytes: 4831838208
   device: cuda
   deterministic: true
   cudnn_benchmark: false

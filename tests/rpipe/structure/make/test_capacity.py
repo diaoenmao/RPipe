@@ -242,3 +242,69 @@ def test_tiny_jobs_round_equals_pending_count():
         for i in range(9)
     ]
     assert suggest_round(jobs, [gpu]) == 9
+
+
+def test_estimate_nested_algorithm_settings_matches_runtime_precedence():
+    cfg = {'data': {'name': 'MNIST', 'config': {'batch_size': 64}}, 'model': {'name': 'linear'},
+           'algorithm': {'mode': 'train', 'num_steps': 1, 'config': {'num_steps': 1000, 'eval_period': 0}}}
+    equivalent = {**cfg, 'algorithm': {'mode': 'train', 'num_steps': 1000, 'eval_period': 0}}
+    assert estimate_job_seconds(cfg) == estimate_job_seconds(equivalent)
+
+
+@pytest.mark.parametrize('name,train_size', [('MNIST', 60000), ('FashionMNIST', 60000), ('SVHN', 73257)])
+def test_epoch_estimate_uses_training_not_test_cardinality(name, train_size):
+    cfg = {'data': {'name': name, 'config': {'batch_size': 250}}, 'model': {'name': 'linear'},
+           'algorithm': {'num_epochs': 1, 'progress_unit': 'epoch', 'eval_period': 0}}
+    explicit = {**cfg, 'data': {'name': name, 'config': {'batch_size': 250, 'train_size': train_size}}}
+    assert estimate_job_seconds(cfg) == estimate_job_seconds(explicit)
+
+
+def test_accumulation_counts_forward_batches_not_only_optimizer_steps():
+    cfg = {'data': {'name': 'MNIST', 'config': {'batch_size': 64}}, 'model': {'name': 'linear'},
+           'algorithm': {'num_steps': 1000, 'eval_period': 0}}
+    accumulated = {**cfg, 'algorithm': {**cfg['algorithm'], 'config': {'step_period': 2}}}
+    assert estimate_job_seconds(accumulated) - estimate_job_seconds(cfg) == 6
+
+
+def test_epoch_derived_step_budget_includes_full_accumulation_batches():
+    cfg = {'data': {'name': 'MNIST', 'config': {'batch_size': 64, 'train_size': 257}},
+           'model': {'name': 'linear'}, 'algorithm': {'num_epochs': 100, 'step_period': 2, 'eval_period': 0}}
+    steps = {**cfg, 'algorithm': {'num_steps': 300, 'step_period': 2, 'eval_period': 0}}
+    assert estimate_job_seconds(cfg) == estimate_job_seconds(steps)
+
+
+def test_eval_and_train_peaks_account_for_actual_test_batch():
+    cfg = {'data': {'name': 'CIFAR10', 'config': {'batch_size': 64, 'test_batch_ratio': 16}},
+           'model': {'name': 'resnet18'}, 'algorithm': {'mode': 'train'}}
+    train_small_test = {**cfg, 'data': {'name': 'CIFAR10', 'config': {'batch_size': 64, 'test_batch_ratio': 1}}}
+    evaluation = {**cfg, 'algorithm': {'mode': 'eval'}}
+    evaluation_small_test = {**train_small_test, 'algorithm': {'mode': 'eval'}}
+    assert estimate_job_bytes(evaluation) > estimate_job_bytes(evaluation_small_test)
+    assert estimate_job_bytes(cfg) == max(estimate_job_bytes(train_small_test), estimate_job_bytes(evaluation))
+
+
+def test_calibrated_budget_replaces_guess_but_keeps_safety():
+    budget = 4 * 1024**3
+    cfg = {'system': {'vram_bytes': 8 * 1024**3, 'config': {'vram_bytes': budget}}}
+    assert estimate_job_bytes(cfg) == budget
+    gpu = GpuInfo(index=0, name='measured-device', total_bytes=24 * 1024**3, free_bytes=20 * 1024**3)
+    jobs = [{'run_id': str(i), 'mode': 'train', 'device': 'cuda', 'vram_bytes': estimate_job_bytes(cfg)}
+            for i in range(4)]
+    assert [len(batch) for batch in pack_jobs(jobs, [gpu])] == [2, 2]
+
+
+@pytest.mark.parametrize('invalid', [True, '4294967296', 4294967296.0, -1, 0, 512 * 1024**2 - 1])
+def test_calibrated_budget_rejects_invalid_or_missing_overhead(invalid):
+    with pytest.raises(ValueError, match='system.vram_bytes'):
+        estimate_job_bytes({'system': {'config': {'vram_bytes': invalid}}})
+
+
+def test_attach_estimates_reads_calibrated_budget_from_run_config(tmp_path):
+    from rpipe.structure.artifact import write_config
+    from rpipe.structure.make.capacity import attach_estimates
+
+    path = tmp_path / 'config.json'
+    write_config(path, {'system': {'device': 'cuda', 'config': {'vram_bytes': 4 * 1024**3}}})
+    jobs = attach_estimates([{'config': str(path)}])
+    assert jobs[0]['vram_bytes'] == 4 * 1024**3
+    assert jobs[0]['estimate_device'] == 'cuda'

@@ -28,6 +28,8 @@
 
 ## 二、命令
 
+2026-10-13候选声明为main-exp-flow-20261013-04，按本机峰值采用system.config.vram_bytes=4.5GiB；库仍只用50%空闲显存自动装箱。该预算仅针对此处已测配方 / 设备，不是通用推荐。旧version03长结果保留在版本快照，新的声明尚未长训。容量与精度诊断入口及证据见[速度报告](docs/speed_calibration.md#九2026-10-13-cifar10-容量与总体吞吐)；变更源码 / version后重新前置验收，旧PREFLIGHT不能直接launch。
+
 以下是正式执行顺序，本轮未执行这些实验；先使用新 version，再完成准备、make 和前置门，不能沿用旧的前置报告直接 launch。命令在仓库根运行；归档源码按 Git blob 导出，需要完整 clone 中的提交 `4ccb28d`。
 
 ```powershell

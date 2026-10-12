@@ -2,6 +2,10 @@
 
 ## 一、摘要
 
+### 2026-10-13 version06 完整短复验
+
+先保存version05当前可取得的清单、报告与声明，旧Run不删除；在新version06执行make --round1、launch --round1 --console shared、report。八个60-step成对Run全部成功，Study process完整通过，实际代码基于ce8b3e6加未提交修复、两侧显式FP32，来源在实测期间不变。原始完整证据与数字见[本轮报告](STUDY_REPORT.md#2026-10-13-version06-完整短探针)和[机器记录](flow_validation_20261013.json)。旧日期中的缺数据 / 子集状态保留历史含义，当前raw完整已核对；没有启动main_exp长矩阵。
+
 ### 2026-10-12 当前短复验
 
 version05 仅执行 MNIST / linear 与 MNIST / cnn 两组 60-step 六阶段链，全部数值门与库 compare 通过；当前 2 succeeded / 0 failed / 6 pending，Study process exit 1 为子集拒绝的预期结果。结果见 [最新报告](STUDY_REPORT.md) 与 [机器可读证据](flow_smoke_20261012.json)。实测后清除了库 collect 入口重复实现，最终针对性回归通过；旧 freeze 未改写，再次实测需新 version。

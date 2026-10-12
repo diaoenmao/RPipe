@@ -4,6 +4,8 @@ RPipe（Research Pipeline）是一个研究执行库，Python 包名为 `rpipe`�
 
 当前包版本为 **0.2.0（阶段版）**，提供可安装的 CLI、原生 PyTorch / Hugging Face Trainer 通路、checkpoint/resume、运行日志与跨 seed 聚合。
 
+2026-10-13发布准备阶段完成恢复、设备调度及持久化 / 数值比较边界修复，详情见[开发记录](docs/development/record.md)。严格研究对照须两侧显式相同计算精度，不依赖Torch默认TF32；短探针和容量校准不替代新基线的完整长实验。
+
 ## 本机实测（2026-10-04）
 
 ### MNIST / CIFAR10 训练曲线
@@ -143,6 +145,8 @@ GitHub Actions 配置包括：
 - 模型：`custom_torch` 的 linear、MLP、CNN、ResNet、WideResNet；
 - 算法：原生 PyTorch train/eval，以及 `transformers_trainer`；
 - 运行：顺序执行、按 GPU/wait 组并行、checkpoint/resume、Run 日志与 Study 聚合。
+
+原生精确续训支持单进程、`num_workers=0` 的标准采样器和相同训练预算 / 配置；新 checkpoint 保存 RNG 与数据位置。旧 checkpoint、HF 或未实现恢复协议的数据只保证部分状态加载，并明确警告，不保证等价于连续训练。具体条件见 [resume 合同](docs/code/structure.md#6113-resumetrain-与-eval-的特殊接口)，历史 Study 的续训拒绝门保持不变。
 
 文档中列出的其他下游生态是扩展边界，不代表已经实现；以 Registry 和 [bugs.md](docs/development/bugs.md) 为准。
 

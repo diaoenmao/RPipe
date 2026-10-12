@@ -298,6 +298,12 @@ def main(argv: list[str] | None = None) -> int:
     from datetime import datetime, timezone
 
     arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments and arguments[0] == 'diagnose-precision':
+        from flow.execute import precision
+        return precision.main(sys.modules[__name__], arguments[1:])
+    if arguments and arguments[0] == 'calibrate-capacity':
+        from flow.execute import capacity
+        return capacity.main(sys.modules[__name__], arguments[1:])
     if arguments and arguments[0] == 'calibrate':
         from flow.execute import speed
         return speed.main(sys.modules[__name__], arguments[1:])

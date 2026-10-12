@@ -46,7 +46,13 @@ def _tree(a: Any, b: Any, atol: float, rtol: float, path: str, problems: list[st
             return math.inf
         if a.numel() == 0:
             return 0.0
-        left, right = a.detach().cpu().double(), b.detach().cpu().double()
+        if atol == rtol == 0 and not (a.is_floating_point() or a.is_complex() or b.is_floating_point() or b.is_complex()):
+            if torch.equal(a, b):
+                return 0.0
+            problems.append(f'{path}: integer/bool tensor values differ')
+            return math.inf
+        dtype = torch.complex128 if a.is_complex() or b.is_complex() else torch.float64
+        left, right = a.detach().cpu().to(dtype), b.detach().cpu().to(dtype)
         both_nan = torch.isnan(left) & torch.isnan(right)
         diff = (left - right).abs().masked_fill(both_nan, 0.0)
         worst = float(diff.max())
@@ -72,7 +78,7 @@ def _tree(a: Any, b: Any, atol: float, rtol: float, path: str, problems: list[st
             worst = max(worst, _tree(x, y, atol, rtol, f'{path}[{i}]', problems))
         return worst
     if _number(a) and _number(b):
-        ok, diff = _close(float(a), float(b), atol, rtol)
+        ok, diff = _close(a, b, atol, rtol)
         if not ok:
             problems.append(f'{path}: {a!r} != {b!r}')
         return diff

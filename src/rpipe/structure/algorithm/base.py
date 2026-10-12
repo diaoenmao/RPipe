@@ -14,6 +14,7 @@ from rpipe.structure.algorithm.resume import (
     resolve_checkpoint_ref,
     resume_stem,
     sibling_train_checkpoint,
+    partial_resume_warning,
 )
 from rpipe.structure.algorithm.tracker import AlgorithmTracker
 
@@ -63,6 +64,8 @@ class Algorithm(AlgorithmHook):
         apply_module_state(getattr(model, 'module', None), payload)
         extra['resume_payload'] = payload
         if self.mode == 'train':
+            if payload.get('training_state') is None or self.config.source == 'transformers_trainer':
+                partial_resume_warning(logger)
             tracker_state = payload.get('tracker')
             if tracker_state:
                 tracker.load_state_dict(tracker_state)

@@ -1,12 +1,12 @@
 # main_probe
 
-固定 main `98648f3` 原代码与当前 RPipe 的 60-step 同设备数值探针。目标、配方、门限见 [计划](docs/PLAN.md)。2026-10-12 version05 的 MNIST / linear、MNIST / cnn 两组短复验通过，其余六组未运行；重构前 version03 的八组合完整通过记录已保留在 [历史快照](docs/versions/main-probe-flow-20261011-03/README.md)。最新数字与边界见 [实测报告](docs/STUDY_REPORT.md)，进展见 [复跑记录](docs/RERUN.md)。
+固定 main `98648f3` 原代码与当前 RPipe 的 60-step 同设备数值探针。目标、配方、门限见 [计划](docs/PLAN.md)。2026-10-13 version06八组合全部通过完整Study终验，实际来源和数值见[实测报告](docs/STUDY_REPORT.md)。此前version05两组子集与version03历史完整证据均保留在[版本快照](docs/versions/)，进展见[复跑记录](docs/RERUN.md)。
 
 ## 一、流程
 
 本轮仅重构 Study 内部代码：成对 Algorithm 与计算实现放在 `structure/algorithm/`，`flow/` 保留准备、比较、判定、投影和整轮终验，`recipe.py` 只校验并注册专用 source。原计算顺序、精度和数值门限不变。
 
-**当前验证边界：** 库已加载 `flow/<phase>/`，包括构造前的 prepare.before；两柱 Python 源码自动进入 provenance。本轮完成合同回归及两个真实 60-step Run；Study process 正确拒绝子集完整验收。实测后清除了库 collect 入口的重复实现，当前源码不同于此次实测 freeze；再次实测须用新 version 重新 make，不能直接续跑 version05。
+**当前验证边界：** 库加载 `flow/<phase>/`，包括构造前的 prepare.before，两柱Python源码自动冻结。version06八组真实60-step Run覆盖prepare / 成对训练 / collect / 数值判定 / 库compare / Study终验；来源在计算期间不变。它不是长曲线验收；再次实测须新version / make，不能覆盖既有Run。
 
 [study.yaml](study.yaml) 声明八个成对 Run（两种数据集 × 四种模型，seed0）。设计上由 [flow/prepare/](flow/prepare/) 在对象构造前准备该组合，[recipe.py](recipe.py) 调用 [structure/algorithm/](structure/algorithm/) 注册成对 Algorithm。Algorithm 在同一进程先计算原版，再计算当前版并执行各自 best 独立评测，[flow/execute/](flow/execute/) 只确认一对计算已完成。当前侧直接使用库 prepare 的 Data / Model / System / Tracker，训练 checkpoint、history 和 result 使用普通 Run 合同。
 
@@ -18,7 +18,7 @@
 
 以下命令用于后续完整复跑，本轮未执行完整 launch；先使用新 version，不能复用旧 Run 或来源清单。在仓库根运行；原始数据复用 `main_exp/shared/data/`（先按 [main_exp](../main_exp/README.md) 准备 raw）。make 只展开配置；launch 才执行准备和计算。
 
-原归档即使跑视觉组合也会导入 `evaluate` / `datasets`；本轮缺依赖的 prepare 失败保留，隔离目录 `.tmp/runtime` 补齐 evaluate 0.4.6 / datasets 5.1.0 后重跑通过。MNIST raw 8/8 hash 匹配，CIFAR 下载未完成，完整矩阵前须重新核对数据与环境。
+原归档即使跑视觉组合也会导入 `evaluate` / `datasets`；此前缺依赖的prepare失败保留。隔离目录.tmp/runtime使用evaluate0.4.6 / datasets5.1.0；2026-10-13完整MNIST / CIFAR10缓存已按历史hash核对，见[数据清单](../main_exp/docs/capacity_data_20261012.json)。异机仍须重新准备依赖和核对raw，不把本机就绪外推到目标电脑。
 
 ```powershell
 python -m rpipe make studies/main_probe

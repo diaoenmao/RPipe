@@ -2,6 +2,24 @@
 
 ## 一、摘要
 
+### 2026-10-13 version06 完整短探针
+
+- 目标：验收缺陷修复后的真实六阶段成对流程，非长曲线。version为main-probe-flow-20261013-06，基于dev ce8b3e6加当时未提交修复，实际源码哈希随报告保存。
+- 结果：8 succeeded / 0 failed / 0 pending；Study complete=true / passed=true。16段参数最大差0，输入、RNG、optimizer、scheduler、计数、best选择与两侧独立评测均通过；8次库compare通过，原门不变。
+- 保全：旧version05两条Run和六条pending子集清单 / 报告已[逐字节保存](versions/main-probe-flow-20261012-05/README.md)，不是将旧子集改写为完整通过。本轮完整机器证据见[flow_validation_20261013.json](flow_validation_20261013.json)，最新数字表对应本次8组。
+- 边界：60-step短探针不替代main_exp80000-step验收；Run / 权重 / 日志仍在本机，不随clone提供。
+
+| **组合** | **Run ID** | **两侧独立 eval Accuracy** |
+| --- | --- | ---: |
+| MNIST / linear | c3daa91bd822de97 | 90.7300% |
+| MNIST / mlp | 926f3fea763bbb50 | 91.8200% |
+| MNIST / cnn | aeb45fd0052480a1 | 11.3500% |
+| MNIST / resnet18 | 2ce06ae7c0f1542c | 97.6300% |
+| CIFAR10 / linear | 5207b4b350d9e8bf | 29.5200% |
+| CIFAR10 / mlp | 94541f193540c92a | 40.3000% |
+| CIFAR10 / cnn | 039bb9486ec47aee | 32.8900% |
+| CIFAR10 / resnet18 | 94795d9bc81f9304 | 47.7300% |
+
 ### 2026-10-12 两柱与阶段入口短复验
 
 - 目标：确认 `structure/` 建构、`flow/<phase>/run.py` 编排在真实短训练中仍遵守原数值门。基线为 `7eb16438` 加未提交重构，version 为 `main-probe-flow-20261012-05`。

@@ -11,7 +11,7 @@
 | `dev` | 日常集成。工作分支只合到这里 |
 | `main` | 可发布状态。只接收来自 `dev` 的发布 PR |
 
-临时分支用 `feature/<scope>-<name>`、`fix/<scope>-<name>`、`refactor/<scope>-<name>`。合并后删除。
+临时分支用 `feature/<scope>-<name>`、`fix/<scope>-<name>`、`refactor/<scope>-<name>`，Codex工作分支默认 `codex/<name>`。合并后删除。
 
 ```text
 feature/* / fix/* / refactor/* → PR → dev → 发布 PR → main

@@ -9,6 +9,41 @@ from typing import Any
 from rpipe.structure.algorithm.config import AlgorithmConfig
 
 
+def capture_rng() -> dict[str, Any]:
+    import random
+    import numpy as np
+    import torch
+
+    return {'python': random.getstate(), 'numpy': np.random.get_state(),
+            'torch': torch.get_rng_state(),
+            'cuda': torch.cuda.get_rng_state_all() if torch.cuda.is_initialized() else None}
+
+
+def restore_rng(state: dict[str, Any]) -> None:
+    import random
+    import numpy as np
+    import torch
+
+    cuda = state['cuda']
+    if cuda is not None and (not torch.cuda.is_available() or len(cuda) != torch.cuda.device_count()):
+        raise ValueError('checkpoint CUDA RNG devices do not match current runtime')
+    random.setstate(state['python'])
+    np.random.set_state(state['numpy'])
+    torch.set_rng_state(state['torch'].cpu())
+    if cuda is not None:
+        torch.cuda.set_rng_state_all([value.cpu() for value in cuda])
+
+
+def partial_resume_warning(logger=None) -> None:
+    import warnings
+
+    message = ('checkpoint resume is partial: RNG/data iterator equivalence is not guaranteed '
+               'for legacy checkpoints or unsupported data/Trainer runtimes')
+    if logger is not None:
+        logger.warning(message)
+    warnings.warn(message, RuntimeWarning, stacklevel=2)
+
+
 def resume_stem(config: AlgorithmConfig, *, mode: str) -> str | None:
     """Return checkpoint stem/path to load, or None to skip resume."""
     explicit = config.setting('resume_from')
