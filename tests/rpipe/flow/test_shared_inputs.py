@@ -118,3 +118,44 @@ def test_shared_raw_does_not_share_study_normalization(tmp_path, monkeypatch):
         assert main(['run-one', str(study), run.name]) == 0
         means.append(json.loads((run / 'result.json').read_text())['structure']['data']['mean'])
     assert means == [[0.2], [0.1307]]
+    # A resolved input directory is an IO concern, not a new sampler identity.
+    # The implicit profile must not alter declared config or old restore contracts.
+    snapshot = json.loads((run / 'result.json').read_text())['structure']['data']
+    assert 'stats_path' not in snapshot['config']
+
+
+def test_profile_directory_move_keeps_native_sampler_restore_identity(tmp_path, monkeypatch):
+    """Shared vision Factory → saved cursor → new profile path: unseen batches stay equal."""
+    from PIL import Image
+    import torch
+    import torchvision.datasets
+    from rpipe.structure.data import DataConfig, DataFactory
+
+    class FakeMNIST:
+        def __init__(self, root, train=True, download=False, transform=None):
+            self.transform = transform
+        def __len__(self):
+            return 4
+        def __getitem__(self, index):
+            return self.transform(Image.new('L', (28, 28), color=index * 50)), 0
+
+    monkeypatch.setattr(torchvision.datasets, 'MNIST', FakeMNIST)
+    paths = [tmp_path / 'a' / 'stats.yaml', tmp_path / 'b' / 'stats.yaml']
+    for path in paths:
+        path.parent.mkdir()
+        path.write_text('mean: [0.2]\nstd: [0.3]\n')
+    config = DataConfig.from_mapping({'name': 'MNIST', 'source': 'torch',
+                                     'config': {'batch_size': 2, 'augment': False}})
+    first = DataFactory.build(config, tmp_path / 'shared' / 'data', seed=11, profile_path=paths[0])
+    first.rebind_train_steps(step=0, num_steps=3)
+    iterator = first.iter_batches('train')
+    next(iterator)
+    state = first.training_state()
+    expected = list(iterator)
+    second = DataFactory.build(config, tmp_path / 'shared' / 'data', seed=11, profile_path=paths[1])
+    second.rebind_train_steps(step=0, num_steps=3)
+    assert second.restore_training_state(state)
+    actual = list(second.iter_batches('train'))
+    assert len(actual) == len(expected) == 2
+    assert all(torch.equal(a[0], b[0]) and torch.equal(a[1], b[1]) for a, b in zip(actual, expected))
+    assert first.meta['config'] == second.meta['config'] == config.config

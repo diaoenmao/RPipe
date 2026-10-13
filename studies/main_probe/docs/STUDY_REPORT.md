@@ -8,6 +8,8 @@
 
 CUDA Run `1dd708dab35a7aaa` 的原声明曾被误标为CPU：基底device被fixed.system.device覆盖，生成配置和实测均为CUDA；保留实际事实。同步两个层级后CPU新Run `318c693057e54f70` 通过，execution_device=cpu、gpu_execution_started=false。原复制Study的prepare导出失败和临时脚本目录复用错误也保留，未覆盖旧Run。
 
+自动统计目录改为IO参数、保持sampler配置身份后，再以新version `shared-inputs-20261014-cpu04` / Run `25ae12161dec991a` 做CPU同一单格60-step完整test复验并通过。首轮CPU单格的Study process实际拒绝不完整矩阵，成功Run仍保全；不把单格结果写成完整八格Study通过。
+
 ### 2026-10-13 v0.3.0 正式八格本机复验
 
 - 软件基线：发布 `v0.3.0` / `804b3823ab6d2af46cbda1a65688ca8b76c60b22`；旧版固定 `98648f3`。独立 venv、完整 raw 16 项 hash、FP32、benchmark / 两项 TF32=false，数据、seed0、60-step / 完整 test 与门限不变。

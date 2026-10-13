@@ -57,6 +57,8 @@ shared:
 
 `study` 选项只影响该类资产，落在 `<study>/shared/<kind>`；选择原因写入 PLAN。公共目录不能保存某个 Run 的可变状态。自定义 builder 接收同一个共享根，应按数据版本 / 格式或模型 revision 分目录，复用下载工具原有缓存，不将不同资源覆盖成同名文件。profile 的统计留在 Study 私有目录，显式传给当前 Data，防止一个 Study 的统计改变另一个 Study 的归一化。
 
+Flow 通过 data_api / DataFactory 的可选 `profile_path` 传递自动解析的统计路径，不向实验 data.config 注入绝对目录，因而仅搬迁 profile 不改变 sampler 恢复身份。用户显式声明的 `config.stats_path` 优先于自动路径；改变实际输入 / 统计内容仍须按研究合同重新验证。
+
 迁移是独立操作：`rpipe shared <study>` 默认只列路径；`--migrate` 校验已有私有资产与公共资产的全部重名文件，冲突时拒绝，成功后保留旧路径的链接。不得重写已完成 Run / provenance。历史探针原版 / 当前版 raw 使用同一文件的硬链接，processed / Stats 因归档格式及状态隔离仍可私有；禁止静默复制 raw。迁移前保全来源与失败，迁移后独立实测用新 version / make。
 
 共享下载 / 发布受文件锁保护；进程退出释放锁，锁文件存在不代表下载成功。构造失败不写 ready。库不会自动下载未注册的 HF / ModelScope 模型；下游通过现有 ModelRegistry builder 使用共享根和相应 hub 的版本缓存。

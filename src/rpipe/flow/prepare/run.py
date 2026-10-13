@@ -54,17 +54,19 @@ def run(ctx: FlowContext) -> None:
     if origin not in (None, ''):
         apply_model_origin(normalize_origin(origin))
     data_config = DataConfig.from_mapping(ctx.control.data)
+    data_paths = {}
     if data_config.source in (None, 'torch'):
         from rpipe.structure.data.factory import vision_root
         name = vision_root(data_config.name)
         if name is not None:
             # Profiles are Study-owned; never borrow another Study's normalization.
-            data_config.config.setdefault('stats_path', str(ctx.study_dir / 'shared' / 'data' / name / 'stats.yaml'))
+            data_paths['profile_path'] = ctx.study_dir / 'shared' / 'data' / name / 'stats.yaml'
     data = data_api.build(
         data_config,
         ctx.layout.shared_data_dir,
         seed=ctx.control.seed,
         origin=origin,
+        **data_paths,
     )
     model = model_api.build(
         ModelConfig.from_mapping(ctx.control.model),

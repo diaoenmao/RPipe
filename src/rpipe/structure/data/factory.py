@@ -166,6 +166,8 @@ class DataFactory:
         assets_dir: Path | str,
         seed: int | None = None,
         origin: str | None = None,
+        *,
+        profile_path: Path | str | None = None,
     ) -> Data:
         name = data_config.name
         source = data_config.source if data_config.source is not None else 'torch'
@@ -174,7 +176,8 @@ class DataFactory:
             raise ValueError(f'unknown data name/source: {name!r}/{source!r}')
         with cache_lock(assets_dir):
             if builder is _build_torch_vision:
-                return _build_torch_vision(data_config, Path(assets_dir), seed=seed, origin=origin)
+                return _build_torch_vision(data_config, Path(assets_dir), seed=seed, origin=origin,
+                                           profile_path=profile_path)
             return builder(data_config, Path(assets_dir), seed=seed)
 
 
@@ -349,6 +352,7 @@ def _build_torch_vision(
     assets_dir: Path,
     seed: int | None = None,
     origin: str | None = None,
+    profile_path: Path | str | None = None,
 ) -> Data:
     import torch
     from torch.utils.data import DataLoader, Subset
@@ -370,7 +374,8 @@ def _build_torch_vision(
         reference_tree(canonical_raw, native_raw)
     ctor = getattr(datasets, str(spec['ctor']))
     augment = bool(cfg.get('augment', spec.get('train_aug') is not None))
-    spec = _with_recorded_stats(spec, Path(cfg['stats_path']) if 'stats_path' in cfg else root / 'stats.yaml')
+    stats = cfg.get('stats_path', profile_path if profile_path is not None else root / 'stats.yaml')
+    spec = _with_recorded_stats(spec, Path(stats))
     train_tf = _train_transforms(spec, augment=augment)
     test_tf = _eval_transforms(spec)
     endpoint = endpoint_for(name, origin)

@@ -2,7 +2,7 @@
 
 ## 2026-10-14 跨 Study 共享与持续缺陷目标
 
-当前工作分支 `codex/powershell-launch-boundaries`，基线6619edc已含 #36—#38 修复；新增项目级共享输入、私有例外、进程文件锁与显式迁移，见 [当前记录](record.md#35-跨-study-共享输入与本机缓存迁移b-053) / [共享合同](../code/layout.md#跨-study-共享资产2026-10-14)。core456 passed / 2 skipped、CPU integration65 passed、两个分发包各9 CLI / 4 Toy Run通过；跳过的是本机目录符号链接权限。
+当前工作分支 `codex/powershell-launch-boundaries`，基线6619edc已含 #36—#38 修复；新增项目级共享输入、私有例外、进程文件锁与显式迁移，见 [当前记录](record.md#35-跨-study-共享输入与本机缓存迁移b-053) / [恢复身份复查](record.md#36-共享统计路径与恢复身份复查) / [共享合同](../code/layout.md#跨-study-共享资产2026-10-14)。core456 passed / 2 skipped、CPU integration66 passed、两个分发包各9 CLI / 4 Toy Run通过；跳过的是本机目录符号链接权限。[草稿PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)首批ac909ec检查全绿，profile_path后续提交的最终CI须单独核对。
 
 本机公共 raw 已放在项目 shared/data，旧路径仍指向同一文件。历史result/index/process/provenance和数值来源保留；不能重新make这些已完成Study后冒充旧验收。新独立实测设置新version；probe仍需同时更新fixed.version与基底version。当前小验证只有MNIST/linear单格CPU及CUDA，详细来源和配置层覆盖错误保留在Study报告。
 
