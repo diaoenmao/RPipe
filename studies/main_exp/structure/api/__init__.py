@@ -156,9 +156,8 @@ class Archive:
         # loads arrays; afterwards all sample reads use those in-memory arrays.
         if data_root.name != 'data':
             raise ValueError('historical data_root must end in "data"')
-        from rpipe.structure.artifact.shared import cache_lock
-        with cache_lock(data_root), _working_directory(data_root.parent):
-            return self.dataset.make_dataset(data_name, verbose=False)
+        from ..data.cache import datasets
+        return datasets(self, data_root, data_name)
 
 
 def load_archive() -> Archive:

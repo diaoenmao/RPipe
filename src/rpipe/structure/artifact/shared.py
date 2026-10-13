@@ -5,10 +5,12 @@ from __future__ import annotations
 import contextlib
 import errno
 import hashlib
+import json
 import os
 from pathlib import Path
 import threading
 import time
+import uuid
 
 import yaml
 
@@ -127,6 +129,42 @@ def reference_tree(source: Path | str, target: Path | str) -> None:
             raise ValueError(f'conflicting raw input: {destination}')
     for path in files:
         link_input(path, target / path.relative_to(source))
+
+
+def prepared_resource(root: Path | str, definition: dict, files: list[str], build):
+    """Build immutable inputs once, publish atomically, validate every reuse.
+
+    The caller supplies version/format identity and a preparation callback, not
+    training. Interrupted staging is retained; no ready marker accepts it.
+    """
+    if (not files or len(set(files)) != len(files) or any(
+            Path(name).is_absolute() or '..' in Path(name).parts or name == 'manifest.json'
+            for name in files)):
+        raise ValueError('input files must be unique safe relative names, excluding manifest.json')
+    root = Path(root)
+    key = hashlib.sha256(json.dumps(definition, sort_keys=True).encode()).hexdigest()
+    container = root / key
+    cache = container / 'inputs'
+    with cache_lock(container):
+        if not cache.exists():
+            staging = container / ('.building-' + uuid.uuid4().hex)
+            staging.mkdir()
+            build(staging)
+            paths = [staging / name for name in files]
+            if not all(path.is_file() for path in paths):
+                raise RuntimeError(f'incomplete inputs retained: {staging}')
+            from rpipe.structure.artifact._atomic import atomic_write_text
+            atomic_write_text(staging / 'manifest.json', json.dumps(
+                {'definition': definition, 'files': {name: _digest(staging / name) for name in files}},
+                sort_keys=True, indent=2))
+            staging.rename(cache)
+        manifest = json.loads((cache / 'manifest.json').read_text(encoding='utf-8'))
+        recorded = manifest.get('files')
+        if (manifest.get('definition') != definition or not isinstance(recorded, dict)
+                or set(recorded) != set(files)
+                or any(_digest(cache / name) != digest for name, digest in recorded.items())):
+            raise ValueError(f'input cache differs; preserved for diagnosis: {cache}')
+        return cache, _digest(cache / 'manifest.json')
 
 
 def migrate_shared(study_dir: Path | str) -> dict[str, object]:

@@ -10,6 +10,8 @@
 
 最新接续：#36的未扩展prepare初始冻结拒绝也补齐成功保全，见 [B-054记录](record.md#37-issue-36-未开启扩展的初始冻结拒绝b-054)。定向32、core456 / 2 skip、CPU integration68通过，新CPU单格Run44492c0d8f5cf190通过。PR #39首批ac909ec全绿；后续最终提交的必需CI以GitHub当前head为准，不能据旧一次全绿合并。
 
+当前还将同版本processed / 固定Stats纳入项目级派生缓存，区别4ccb28d与98648f3格式，见[最新缓存验证](record.md#38-固定格式-processed--stats-也跨-run-复用)。当前core463 / 2 skip、CPU integration68及两分发包基本CLI通过；两个linear数据格只是新来源小门，不是新完整Study。共享公共输入与独立Dataset / 模型 / sampler状态不可混为一谈。最终PR检查须绑定最新head。
+
 ## 2026-10-14 工作分支异机交接
 
 用户已授权将当前收缩后的代码、测试和文档提交推送到 `codex/powershell-launch-boundaries`，在另一台机器继续；不合并 dev / main，不发布，不关闭 Issue #36 / #37 / #38。此前“未提交 / 不推送”是当时状态，以本节最新授权为准。实际交接提交以远端分支和 `git log -1` 为准。

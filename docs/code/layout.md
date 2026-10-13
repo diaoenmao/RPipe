@@ -59,7 +59,7 @@ shared:
 
 Flow 通过 data_api / DataFactory 的可选 `profile_path` 传递自动解析的统计路径，不向实验 data.config 注入绝对目录，因而仅搬迁 profile 不改变 sampler 恢复身份。用户显式声明的 `config.stats_path` 优先于自动路径；改变实际输入 / 统计内容仍须按研究合同重新验证。
 
-迁移是独立操作：`rpipe shared <study>` 默认只列路径；`--migrate` 校验已有私有资产与公共资产的全部重名文件，冲突时拒绝，成功后保留旧路径的链接。不得重写已完成 Run / provenance。历史探针原版 / 当前版 raw 使用同一文件的硬链接，processed / Stats 因归档格式及状态隔离仍可私有；禁止静默复制 raw。迁移前保全来源与失败，迁移后独立实测用新 version / make。
+迁移是独立操作：`rpipe shared <study>` 默认只列路径；`--migrate` 校验已有私有资产与公共资产的全部重名文件，冲突时拒绝，成功后保留旧路径的链接。不得重写已完成 Run / provenance。历史探针原版 / 当前版 raw 引用同一文件；同一归档版本、依赖和 raw hash 的 processed / 固定 Stats 也使用项目共享派生缓存，不逐 Run 重建。不同归档格式单独分版本存储，加载的 Dataset / Stats 对象仍独立。旧不同编码的历史缓存先保留，不以新序列化覆写旧证据。迁移前保全来源与失败，迁移后独立实测用新 version / make。
 
 共享下载 / 发布受文件锁保护；进程退出释放锁，锁文件存在不代表下载成功。构造失败不写 ready。库不会自动下载未注册的 HF / ModelScope 模型；下游通过现有 ModelRegistry builder 使用共享根和相应 hub 的版本缓存。
 

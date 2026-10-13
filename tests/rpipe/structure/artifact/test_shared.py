@@ -7,6 +7,7 @@ import pytest
 
 from rpipe.structure.artifact.layout import artifact_layout
 from rpipe.structure.artifact.shared import cache_lock, link_input, migrate_shared, shared_paths
+from rpipe.structure.artifact.shared import prepared_resource
 
 pytestmark = [pytest.mark.unit, pytest.mark.content, pytest.mark.p1,
               pytest.mark.structure_layer, pytest.mark.module_artifact,
@@ -173,3 +174,51 @@ with cache_lock(sys.argv[1]):
         process.communicate(timeout=10)
     with cache_lock(tmp_path, timeout=0):
         assert (tmp_path / '.rpipe.lock').is_file()
+
+
+def test_same_definition_reuses_input_and_changed_revision_builds_separately(tmp_path):
+    built = []
+    def build(staging):
+        built.append(staging)
+        (staging / 'weights').write_bytes(b'immutable')
+    first, digest = prepared_resource(tmp_path, {'revision': 'one'}, ['weights'], build)
+    second, same_digest = prepared_resource(tmp_path, {'revision': 'one'}, ['weights'], build)
+    other, _ = prepared_resource(tmp_path, {'revision': 'two'}, ['weights'], build)
+    assert first == second and digest == same_digest
+    assert other != first and len(built) == 2
+
+
+def test_partial_build_is_retained_without_publishing_ready(tmp_path):
+    def fail(staging):
+        (staging / 'data').write_bytes(b'partial')
+        raise OSError('injected prepare failure')
+    with pytest.raises(OSError, match='injected'):
+        prepared_resource(tmp_path, {'revision': 'one'}, ['data'], fail)
+    assert not list(tmp_path.glob('*/inputs'))
+    assert len(list(tmp_path.glob('*/.building-*/data'))) == 1
+
+
+def test_corrupt_payload_and_incomplete_manifest_are_not_rebuilt_or_accepted(tmp_path):
+    import json
+    def build(staging):
+        (staging / 'data').write_bytes(b'complete')
+    cache, _ = prepared_resource(tmp_path, {}, ['data'], build)
+    manifest = cache / 'manifest.json'
+    original = manifest.read_bytes()
+    (cache / 'data').write_bytes(b'corrupt')
+    with pytest.raises(ValueError, match='cache differs'):
+        prepared_resource(tmp_path, {}, ['data'], build)
+    assert (cache / 'data').read_bytes() == b'corrupt'
+    (cache / 'data').write_bytes(b'complete')
+    body = json.loads(original)
+    body['files'] = {}
+    manifest.write_text(json.dumps(body))
+    with pytest.raises(ValueError, match='cache differs'):
+        prepared_resource(tmp_path, {}, ['data'], build)
+
+
+@pytest.mark.parametrize('files', [[], ['../outside'], ['manifest.json'], ['data', 'data']])
+def test_invalid_resource_contract_is_rejected_before_writes(tmp_path, files):
+    with pytest.raises(ValueError, match='relative'):
+        prepared_resource(tmp_path, {}, files, lambda staging: None)
+    assert not list(tmp_path.iterdir())

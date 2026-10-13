@@ -12,6 +12,8 @@ CUDA Run `1dd708dab35a7aaa` 的原声明曾被误标为CPU：基底device被fixe
 
 补齐未扩展prepare初始冻结拒绝保全后，新version `shared-inputs-20261014-cpu05` / Run `44492c0d8f5cf190` 的同一CPU单格60-step / 完整test再通过，源及归档字节保持；之前的实测按各自来源保留。
 
+同版本processed / 固定Stats也改用项目派生缓存后，MNIST冷 / 热两Run引用相同文件并通过，CIFAR10单格也通过。最终来源再用独立version `shared-inputs-20261014-derived09` 的MNIST / CIFAR10 × linear两格CPU60-step完整test复验通过；实际Run、缓存manifest与全量比较见共享JSON。没有执行其余六格，不能宣称新完整Study。旧匹配processed和Stats只按完全相同字节改引用，保留旧路径与数值来源。
+
 ### 2026-10-13 v0.3.0 正式八格本机复验
 
 - 软件基线：发布 `v0.3.0` / `804b3823ab6d2af46cbda1a65688ca8b76c60b22`；旧版固定 `98648f3`。独立 venv、完整 raw 16 项 hash、FP32、benchmark / 两项 TF32=false，数据、seed0、60-step / 完整 test 与门限不变。

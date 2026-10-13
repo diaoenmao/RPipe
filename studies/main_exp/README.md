@@ -28,6 +28,8 @@
 
 原始输入默认放在项目根 `shared/data/`，与其他 Study 共用。已有本机缓存先运行 `python -m rpipe shared studies/main_exp --migrate`，按 hash 核对并保留旧路径引用，原正式 Run / 来源清单不改写。prepare_data、preflight 和容量 / 精度工具解析同一共享根；独立复验仍需新 version 与 fresh make。
 
+processed按固定4ccb28d格式、raw hash与依赖版本缓存在`shared/data/derived/`，与其他归档格式分开；对象、transform和sampler每次重新构造，不共享训练状态。缓存完整发布后才读取，失败或损坏保留诊断。
+
 本轮实测后采用 `system.config.vram_bytes=4.5 GiB`、原生自动两并发及 safety=0.5，推导和资源保护见 [资源选择](docs/resource_choice_v030.json)。预算只针对本轮设备和配方，不能直接套用到 main_probe 或其他电脑。模型、数据增强、CPU 2 线程、workers0、batch250、完整 test10000、评测 / 保存频率和总预算不变。
 
 以下为后续独立复跑的执行顺序。使用隔离环境安装仓库及归档依赖（本轮实际版本见 [环境清单](docs/environment_v030_20261013.json)），先验证 CUDA，核对已有 `.tmp/runtime` 不会遮蔽所选环境；设置新 version 后执行命令。CUBLAS 环境必须在 CUDA 初始化前设置。命令在仓库根运行，需要完整 clone 中的历史提交 `4ccb28d`；旧前置报告不能直接用于新来源 launch。

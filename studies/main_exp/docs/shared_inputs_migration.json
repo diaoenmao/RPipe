@@ -51,5 +51,9 @@
   "disk_free_space_delta": "not measured; logical bytes are not a measured storage saving",
   "failed_or_unrecognized_raw_files_preserved": [],
   "formal_80000_step_rerun": false,
-  "local_evidence_root": ".tmp/shared-inputs-20261014/; not shipped by clone"
+  "local_evidence_root": ".tmp/shared-inputs-20261014/; not shipped by clone",
+  "exact_processed_references": 162,
+  "exact_fixed_stats_references": 100,
+  "different_processed_encodings_preserved": 0,
+  "different_stats_encodings_preserved": 0
 }
