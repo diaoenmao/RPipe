@@ -23,6 +23,12 @@ feature/* / fix/* / refactor/* → PR → dev → 发布 PR → main
 
 工作分支合并后由作者删除。不开启仓库级的自动删除头分支，因为 `dev → main` 的发布 PR 会把长期分支 `dev` 一起删掉。一人维护，暂不使用 CODEOWNERS。
 
+### 下游项目的分支与可选 CI
+
+使用源码模板的研究项目沿用 `main` / `dev` 的职责：工作分支从 dev 建立，通过必要验证和 PR 合回 dev；稳定后再由 dev 通过发布 PR 进入 main。新仓库没有 dev 时，从新仓库的 main 建立，使两者拥有共同历史，不从无关模板分支拼接历史。
+
+GitHub Actions 可按项目需求启用，也可保持关闭。启用时配置真实有效的检查和资源边界；关闭时保留本地工程及研究验证、记录结果与失败，不自动恢复 workflow，也不把未执行说成通过。分支规则若仍要求不会上报的检查，会使 PR 等待；调整这些规则需要对应仓库的明确授权。RPipe 本仓库继续使用下文的已启用 Actions 和必需检查，不因下游选择而放宽。
+
 ## 二、触发
 
 两条验证工作流监听 `dev` 和 `main` 的 Pull Request，以及合入这两条分支之后的 push。分支方向检查只在 Pull Request 上运行。
@@ -35,6 +41,8 @@ feature/* / fix/* / refactor/* → PR → dev → 发布 PR → main
 
 工作分支直接向 `main` 开 PR 时，Branch flow 失败，合并被阻断。`main` 只接受 head 为 `dev` 的 PR。
 
+普通工作分支的 push 不触发这些工作流，不代表 Actions 已关闭。当前没有 `workflow_dispatch` 手动触发入口；表中的“手动”指本地测试。触发条件在 `.github/workflows/*.yml`，仓库总开关在 `Settings → Actions → General → Actions permissions`，单个工作流可在 Actions 页面停用。公开 / 私有不是启用开关，组织策略还可能限制仓库设置，见 [GitHub Actions 设置](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository)。
+
 ## 三、必需检查
 
 `dev` 与 `main` 使用同一组必需检查。分支必须包含目标分支的最新提交。检查名称与工作流里的聚合任务名一致。
@@ -45,7 +53,7 @@ feature/* / fix/* / refactor/* → PR → dev → 发布 PR → main
 | `Build package` | Ubuntu / Windows 的 wheel 与 sdist 构建、干净环境安装和 Toy/Stub 流程全部成功 |
 | `Branch flow` | PR 的目标是 `dev`，或是从 `dev` 合向 `main` |
 
-必需检查被跳过、取消或没有上报时，不能合并。流程跑完不等于质量通过；失败、超时和未收集到预期用例都阻断。重跑保留原来的失败记录。
+本项目的 `Unit tests` / `Build package` 聚合任务使用 `if: always()`，只接受依赖矩阵的结果为 `success`；矩阵失败、取消或被跳过时，聚合门失败。GitHub 本身可能接受检查的 `skipped` / `neutral` 状态，不能把“配置了必需检查”等同于“一定执行了全部用例”，见[必需检查说明](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks)。未触发、未上报或未完成的必需检查不能证明通过；本项目不以跳过聚合门绕过验证。流程跑完不等于质量通过，重跑保留原来的失败记录。
 
 本地对应命令：
 
@@ -62,7 +70,7 @@ Package Check 在 Actions 里执行 `python -m build`，再在独立虚拟环境
 
 | **结果** | **位置** |
 | --- | --- |
-| 远端检查 | [GitHub Actions](https://github.com/diaoenmao/RPipe/actions)，绑定触发该次运行的提交 |
+| 远端检查 | [GitHub Actions](https://github.com/DreamSoul-AI/RPipe/actions)，绑定触发该次运行的提交 |
 | 本地测试报告 | `.tmp/test-results/<run_id>/` 的 `manifest.json`、`events.jsonl`、`report.md`。不随 Git clone 提供 |
 | 安装包 | 只在 Package Check 的 runner 上构建并当场安装验收，不上传，也不作为 Release 分发 |
 
@@ -70,9 +78,19 @@ Package Check 在 Actions 里执行 `python -m build`，再在独立虚拟环境
 
 ## 五、当前状态
 
-`dev` 的 Ruleset 从 2026-09-22 起生效。[main Ruleset](https://github.com/diaoenmao/RPipe/rules/24809015) 于 2026-10-10 建立，并成为 `main` 上唯一的分支规则。旧版 branch protection 已删除。两边都要求 PR，禁止 force push 和删除，没有人可以绕过，必需检查是 `Unit tests`、`Build package` 和 `Branch flow`，并且分支要包含目标分支的最新提交。仓库已打开 Auto-merge。
+2026-10-13 复核：RPipe 是公开模板仓库，仓库级 Actions 已开启，`Unit Tests`、`Package Check` 和 `Branch flow` 均为 active。v0.3.0 的实际 main 提交 `804b3823` 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38293625374) 和 [Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38293625406) 均通过；这是该提交的 CPU / 安装包验证，不替代下游项目或异机实验验收。
 
-受控失败见 [PR #20](https://github.com/diaoenmao/RPipe/pull/20)：`tmp/branch-flow-probe` 直接合向 `main` 时，[Branch flow](https://github.com/diaoenmao/RPipe/actions/runs/37976079219) 失败，合并状态为 BLOCKED。该 PR 已关闭，分支已删除。同一次打开的 Unit Tests 和 Package Check 在确认阻断后取消，不作为通过或失败依据。
+`dev` 的 Ruleset 从 2026-09-22 起生效。[main Ruleset](https://github.com/DreamSoul-AI/RPipe/rules/24809015) 于 2026-10-10 建立，并成为 `main` 上唯一的分支规则。旧版 branch protection 已删除。两边都要求 PR，禁止 force push 和删除，没有人可以绕过，必需检查是 `Unit tests`、`Build package` 和 `Branch flow`，并且分支要包含目标分支的最新提交。仓库已打开 Auto-merge。
+
+受控失败见 [PR #20](https://github.com/DreamSoul-AI/RPipe/pull/20)：`tmp/branch-flow-probe` 直接合向 `main` 时，[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/37976079219) 失败，合并状态为 BLOCKED。该 PR 已关闭，分支已删除。同一次打开的 Unit Tests 和 Package Check 在确认阻断后取消，不作为通过或失败依据。
+
+### 模板派生仓库
+
+本文件描述 RPipe 的分支和 CI，不自动约束下游项目。从模板创建仓库会复制目录和文件，包括 `.github/workflows/` 的触发条件；仓库级 Actions 开关、单个工作流停用状态、Ruleset、Secrets 和 Auto-merge 不是这些文件的一部分，需要在新仓库单独核对。新仓库还受所属组织策略约束，原仓库关闭 Actions 不等于模板派生仓库也关闭。
+
+1. 新项目按自己的分支方案选择保留、调整或移除复制的 workflow。若沿用 dev → main，从新仓库的 main 建立 dev，使两者拥有共同历史；不要依靠模板的“Include all branches”，其分支历史互不相关，不能正常合 PR，见[模板说明](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template)。
+2. 分别配置 Actions 和分支规则。若明确关闭自动 CI，保留本地验证入口，并检查是否仍要求不会运行的必需检查，避免 PR 长期等待；规则调整需要该仓库的明确授权。
+3. 下游项目复制固定版本的 `src/rpipe/` 并沿用 structure/flow 架构，不需要复制整个仓库或 CI；接入步骤见 [README](../../README.md#在其他项目中使用-rpipe)。继续 RPipe 自身的历史对照则 clone 原仓库，保留 Study 需要的历史 Git 对象，不使用模板新建仓库替代。
 
 ## 六、维护者授权后的版本发布
 

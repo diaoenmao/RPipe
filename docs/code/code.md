@@ -121,4 +121,4 @@ studies/<study>/
 
 1. [concept.md](concept.md) → [layout.md](layout.md) → **本总览**
 2. 改某柱打开对应分册（structure / flow）
-3. 开实验看 [README.md](../../studies/README.md)；入口是 `python -m rpipe`
+3. 开实验看 [Study 指南](../../README.md#study-使用指南)；入口是 `python -m rpipe`

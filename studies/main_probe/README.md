@@ -1,12 +1,12 @@
 # main_probe
 
-固定 main `98648f3` 原代码与当前 RPipe 的 60-step 同设备数值探针。目标、配方、门限见 [计划](docs/PLAN.md)。2026-10-13 version06八组合全部通过完整Study终验，实际来源和数值见[实测报告](docs/STUDY_REPORT.md)。此前version05两组子集与version03历史完整证据均保留在[版本快照](docs/versions/)，进展见[复跑记录](docs/RERUN.md)。
+固定 main `98648f3` 原代码与当前 RPipe 的 60-step 同设备数值探针。目标、配方、门限见 [计划](docs/PLAN.md)。本轮固定发布 `v0.3.0` / `804b3823`，version 为 `main-probe-v030-20261013-final`；八组合成对数值门、库 compare 和完整 Study 终验均已通过，实际环境与证据见 [实测报告](docs/STUDY_REPORT.md) 和 [本轮执行记录](docs/v030_execution.md)。
 
 ## 一、流程
 
-本轮仅重构 Study 内部代码：成对 Algorithm 与计算实现放在 `structure/algorithm/`，`flow/` 保留准备、比较、判定、投影和整轮终验，`recipe.py` 只校验并注册专用 source。原计算顺序、精度和数值门限不变。
+Study 内部职责：成对 Algorithm 与计算实现放在 `structure/algorithm/`，`flow/` 保留准备、比较、判定、投影和整轮终验，`recipe.py` 只校验并注册专用 source。原计算顺序、精度和数值门限不变。
 
-**当前验证边界：** 库加载 `flow/<phase>/`，包括构造前的 prepare.before，两柱Python源码自动冻结。version06八组真实60-step Run覆盖prepare / 成对训练 / collect / 数值判定 / 库compare / Study终验；来源在计算期间不变。它不是长曲线验收；再次实测须新version / make，不能覆盖既有Run。
+**当前验证边界：** 库加载 `flow/<phase>/`，包括构造前的 prepare.before，两柱Python源码自动冻结。本轮八组真实 60-step Run 覆盖prepare / 成对训练 / collect / 数值判定 / 库compare / Study终验；来源在计算期间不变。它不是长曲线验收；再次实测须新version / make，不能覆盖既有Run。
 
 [study.yaml](study.yaml) 声明八个成对 Run（两种数据集 × 四种模型，seed0）。设计上由 [flow/prepare/](flow/prepare/) 在对象构造前准备该组合，[recipe.py](recipe.py) 调用 [structure/algorithm/](structure/algorithm/) 注册成对 Algorithm。Algorithm 在同一进程先计算原版，再计算当前版并执行各自 best 独立评测，[flow/execute/](flow/execute/) 只确认一对计算已完成。当前侧直接使用库 prepare 的 Data / Model / System / Tracker，训练 checkpoint、history 和 result 使用普通 Run 合同。
 
@@ -16,9 +16,11 @@
 
 ## 二、命令
 
-以下命令用于后续完整复跑，本轮未执行完整 launch；先使用新 version，不能复用旧 Run 或来源清单。在仓库根运行；原始数据复用 `main_exp/shared/data/`（先按 [main_exp](../main_exp/README.md) 准备 raw）。make 只展开配置；launch 才执行准备和计算。
+以下命令用于后续完整复跑；每轮先使用新 version，并同步 study.yaml 的 fixed.version 与 experiment_config.yaml 的 version，不能复用旧 Run 或来源清单。在仓库根运行；原始数据复用 `main_exp/shared/data/`（先按 [main_exp](../main_exp/README.md) 准备 raw）。make 只展开配置；launch 才执行准备和计算。
 
-原归档即使跑视觉组合也会导入 `evaluate` / `datasets`；此前缺依赖的prepare失败保留。隔离目录.tmp/runtime使用evaluate0.4.6 / datasets5.1.0；2026-10-13完整MNIST / CIFAR10缓存已按历史hash核对，见[数据清单](../main_exp/docs/capacity_data_20261012.json)。异机仍须重新准备依赖和核对raw，不把本机就绪外推到目标电脑。
+原归档即使跑视觉组合也会导入 `evaluate` / `datasets` / `transformers`。使用隔离环境，核对归档所需依赖，并先做真实 CUDA 运算；本轮完整依赖记录见 [环境清单](../main_exp/docs/environment_v030_20261013.json)，raw 核对见 [数据清单](../main_exp/docs/data_v030_20261013.json)。不要让已有 `.tmp/runtime` 优先遮蔽新 venv 的依赖。每个 Run 内两侧保持原版先、当前版后；不同 Run 使用独立工作区。
+
+本轮独立校准后使用 5 GiB 单进程显存预算、原生 auto 两并发和 safety=0.5。该配置只覆盖本轮设备与配方，换设备须重新校准。launch 前设置 `CUBLAS_WORKSPACE_CONFIG=:4096:8`，保持 FP32、确定性、benchmark / 两项 TF32 关闭。
 
 ```powershell
 python -m rpipe make studies/main_probe
