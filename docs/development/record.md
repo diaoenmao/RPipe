@@ -88,6 +88,16 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-14
 
+### 39. 共享与三个反馈修复合入 dev
+
+[PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)在最终工作提交`07bcf2eac9632166c9063c1412f764f1a6d516e3`的Unit tests / Build package / Branch flow全绿后，于2026-10-14 07:00（Asia/Shanghai）合入dev `614d0a6bc6dc99f82445a1566d41a0b6150c6b85`。Ubuntu / Windows × Python3.10 / 3.13实际CPU矩阵与两平台wheel/sdist安装检查全部成功；已核对dev与该工作提交的生产源码及Study实现没有差异。
+
+远端依据：[Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38480920352)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38480920322)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38480920341)。dev集成后的[Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38481509649)和[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38481509815)独立运行，状态须以实际任务为准，不能仅凭上述PR通过算已完成。
+
+本轮B-053 / B-054实现与必要回归完成，从开放bugs移除，详细反例 / 修复事实及实验限制仍保留§35—38和各Study证据。#36—#38公开反馈暂不关闭；main仍是原v0.3.1，未进入发布流程、未创建tag/Release。未来下游升级须明确固定dev提交或发布来源，不把旧冻结实验就地覆盖为新版本。
+
+合并后核对07bcf2e为dev祖先、工作区干净，再清理本任务已合并的本地 / 远端codex/powershell-launch-boundaries；本机dev快进后新开codex/shared-inputs-followup记录交接。未删除其他任务分支，原数据、Run、缓存和失败保持；没有重新执行长训练或改变数值门。持续目标继续关注三个下游对话与新Issues，没有新反馈时不扩大为无依据的边界改造。
+
 ### 38. 固定格式 processed / Stats 也跨 Run 复用
 
 进一步核对两份固定归档：4ccb28d的processed是NumPy pickle格式，98648f3格式不同，不能覆盖为同一目录；但同一归档与raw版本的文件可以跨Run共享，不能把全部processed一概当私有例外。已在项目shared/data/derived按归档commit、数据hash、Torch / NumPy版本及固定统计方法分目录，加载对象仍各自独立。

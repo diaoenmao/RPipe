@@ -1,5 +1,13 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-14 当前 dev 集成与持续维护
+
+共享及#36—#38修复已通过[PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)合入dev `614d0a6`，最终工作提交07bcf2e的三项必需检查及全部实际矩阵通过。B-053 / B-054从bugs开放区移除，详细依据见[集成记录](record.md#39-共享与三个反馈修复合入-dev)。dev集成CI独立核对；main仍为v0.3.1，不把dev修复描述成已发布。
+
+已合并的codex/powershell-launch-boundaries按规则清理；后续工作分支codex/shared-inputs-followup从该dev建立，只保留一个未合并工作分支。继续维护时先fetch并核对实际基线 / 工作区，读当前Issues；其他三个对话的vendor和运行中的实验不自动覆盖，新反馈依据实际最小复现处理。#36—#38暂仍open，不在缺少新问题时恢复早前撤回的人工探索。
+
+共享根默认项目shared/data与shared/model，raw及同版本processed / 固定Stats实际复用；Run模型对象、sampler、RNG、checkpoint和可变状态独立。已完成历史Run及来源保持；重新make / 实测必须新version，不能复用旧成功当新来源验收。下文待CI、未合并等记录保留其当时状态，以本节为接续入口。
+
 ## 2026-10-14 跨 Study 共享与持续缺陷目标
 
 当前工作分支 `codex/powershell-launch-boundaries`，基线6619edc已含 #36—#38 修复；新增项目级共享输入、私有例外、进程文件锁与显式迁移，见 [当前记录](record.md#35-跨-study-共享输入与本机缓存迁移b-053) / [恢复身份复查](record.md#36-共享统计路径与恢复身份复查) / [共享合同](../code/layout.md#跨-study-共享资产2026-10-14)。core456 passed / 2 skipped、CPU integration66 passed、两个分发包各9 CLI / 4 Toy Run通过；跳过的是本机目录符号链接权限。[草稿PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)首批ac909ec检查全绿，profile_path后续提交的最终CI须单独核对。
