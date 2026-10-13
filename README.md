@@ -20,7 +20,7 @@ MNIST / CIFAR10 × linear / mlp / cnn / resnet18 × seeds 0–3：**32 条连续
 
 两图使用训练中的完整 test history，独立 eval 的 best 没有替代曲线终点。实验使用 Study 专用配方与固定环境；完整配置、数值、环境和验收范围见 [实测报告](https://github.com/DreamSoul-AI/RPipe/blob/18cd76c/studies/main_historical/docs/STUDY_REPORT.md)（2026-10-04，原 Study `main_historical`）。该 Study 已改名为 [main_exp](studies/main_exp/README.md)。
 
-2026-10-13 的异机分支复验固定 v0.3.0 / `804b3823`，已报告 main_probe 八格 60-step 终验和 main_exp 的 32 train / 32 own-best eval、固定曲线门全部通过，见 [probe 报告](studies/main_probe/docs/STUDY_REPORT.md) / [长实验报告](studies/main_exp/docs/STUDY_REPORT.md)。两条长训练中断后以新身份从 step0 重跑，不能称一次连续 launch；报告与正式 JSON / 图已同步，原始 Run、checkpoint 和临时日志不随 Git 提供。上方两图仍保留为 2026-10-04 的实例，未替换成新一轮结果。新发现的报告来源缺陷 [B-030](docs/development/bugs.md) 仍未修复，本轮通过额外身份核对避免混入旧聚合。
+2026-10-13 的异机分支复验固定 v0.3.0 / `804b3823`，已报告 main_probe 八格 60-step 终验和 main_exp 的 32 train / 32 own-best eval、固定曲线门全部通过，见 [probe 报告](studies/main_probe/docs/STUDY_REPORT.md) / [长实验报告](studies/main_exp/docs/STUDY_REPORT.md)。两条长训练中断后以新身份从 step0 重跑，不能称一次连续 launch；报告与正式 JSON / 图已同步，原始 Run、checkpoint 和临时日志不随 Git 提供。上方两图仍保留为 2026-10-04 的实例，未替换成新一轮结果。该轮使用的 v0.3.0 有 B-030 报告来源缺陷，以额外身份核对避免混入旧聚合；后续修复与回归见[开发记录](docs/development/record.md#9-b-030-报告来源校验与分支清理)，旧实验来源与失败证据不回写。
 
 ## 核心模型
 
@@ -223,33 +223,6 @@ v0.3.0 提供上述 Data/Model/Algorithm Registry，没有 `SystemRegistry`；�
 并行复用 make/launch 的 wait 组，先按目标设备和配方校准显存、主存、线程及 I/O；不照搬示例并发数或显存预算，不让多个进程写同一个 Run。库的 train/eval 依赖保护不是通用 DAG，专项多步依赖需由项目明确处理。性能对照期间不并行运行竞争资源的任务。自定义采样器或专项 Algorithm 的精确恢复须单独验证，不能由库的 resume 能力直接推定。
 
 正式计划、报告、图和复跑代码放自己的 Study。将本 README 的 [Study 忽略项](#study-中什么进-git)落实到下游 `.gitignore`，临时输出放 `.tmp/`；复制 src 不会复制忽略规则或 GitHub 设置。新建项目可参考模板，但模板会复制 workflow 文件，不继承本仓库的开关和分支规则，详见[模板接入说明](docs/development/cicd.md#模板派生仓库)。继续运行 RPipe 自身的历史对照应 clone 原仓库，不能用只有新历史的模板替代。
-
-### 5. 给 Agent 的重构指令
-
-在目标研究项目中使用下面的 prompt，将 `<RPipe 参考路径或仓库链接>` 替换为可读取的 RPipe checkout 或 `https://github.com/DreamSoul-AI/RPipe`。按需指定模板版本与当次授权；不填写时先核对可用基线，记录确切提交，只重构和做小规模验证，不自动推送或启动大规模实验。本段是任务指令，不替代上面的接入与阶段合同。
-
-```text
-请实际将当前研究项目按 RPipe 的架构重构，不只给建议。
-参考：<RPipe 参考路径或仓库链接>。
-
-1. 先查看工作区状态和项目 AGENTS.md，保留已有修改。阅读本项目 README、相关设计、docs/research、Study 计划与报告；再读 RPipe README，重点遵循“在其他项目中使用 RPipe”“Study 使用指南”“开发与 CI”及其链接的 concept、layout、code、structure、flow 和测试文档。确认文档与代码差异，不把现状直接当成设计。参考资料无法取得时如实说明，不凭记忆编造接口。
-
-2. 按 README 采用源码模板，不以 pip / Git URL 外部依赖接入。将选定基线的完整源码放入本项目 src/rpipe/ 并长期保留，记录上游 commit、版本与本地差异；已有副本先比较，不覆盖或删除。src/<项目包名>/ 放本项目实现，研究包名从现有代码确认，优先复用原算法和 RPipe 的已有能力。
-
-3. 项目包和 studies/<name>/ 都按 RPipe 同名职责目录组织：structure 下为 api、control、data、model、algorithm、system、artifact、make；flow 下为 prepare、execute、collect、summarize、write、process。artifact 不独立于两柱。保持目录语义与依赖方向，不机械复制通用代码、不写无用空函数，业务实现不堆在 __init__.py。Study 只声明、导入和薄组装 src 中的实现，不再维护另一套算法、训练循环、调度或产物系统。
-
-4. 先写明旧代码到新职责的映射、复用点、接口与配置迁移、阶段输入输出、调用时机和成功条件，再修改实现。保留研究算法、数值口径、原始证据与必要兼容；确需改变行为时记录原因并做对照，不能只搬目录或靠 hook 存在宣布完成。项目可以按对应职责重构模板实现，但必须记录差异并回归验证。
-
-5. 从 docs/research 的宏观问题提取可独立验收的具体 Study，先写 PLAN：对照、变量、固定条件、来源、精度、seed、预算、指标、成功门与停止规则；宏观资料缺失时明确问题后补充，不编造来源。按 README 接通阶段、来源核验和 provenance，确认项目源码新增、删除、修改都能检出；独立复跑用新 version，不把旧成功结果算作新验收。
-
-6. 使用项目真实入口，不强制叫 python -m rpipe；先确认它复用或接通了哪些模板命令，不能照抄不存在的参数。先做源码导入、模板 smoke、真实项目最小 Study、关键失败边界与受影响回归。分别报告执行完成和研究质量通过，不把 Toy/Stub 通过当成真实数值验收。
-
-7. 并行运行先校准设备、显存、主存、线程和 I/O，显存系数可调整，不规定固定比例。复用已有调度，避免多个进程写同一 Run；并行 pytest 使用不同 basetemp，性能对照不混入竞争任务。大规模实验只在小验证通过且已有明确授权时执行。
-
-8. 同步项目 README、设计、Study 计划/报告、测试与 .gitignore。临时文件放 .tmp，正式实验材料放对应 Study。参考 RPipe CI/CD 使用 main/dev，工作分支从 dev 建立，经 PR 进入 dev，发布再由 dev 经 PR 进入 main；已有不同分支体系先明确迁移，不擅改远端规则。GitHub Actions 可选，关闭时仍要本地验证，未执行不能记为通过。
-
-在当前授权范围内持续完成文档、重构和验证，不停在方案阶段。提交、推送、合并、发布、清理旧证据及大规模实验遵循当次明确授权。最终简要交付结构映射、真实运行命令、验证结果、剩余风险和未执行事项。
-```
 
 ## 快速开始
 
@@ -651,7 +624,7 @@ python -m <project_entry> status studies/<name> --mode eval
 
 `launch` 每一组开始前打 `launch: wait i/n mode=train`（失败再试是 `launch: retry`）。结束时再打一行和 `status` 相同的 `planned` / `succeeded` / `failed` / `pending`。不改 `jobs.json`。
 
-`python -m <project_entry> logs studies/<name>` 把各 Run 的事件行按时间打到终端，不写 Study 级总 log。`python -m <project_entry> report studies/<name>` 从 `process.json` 写 `docs/NUMBERS.md`（Experiment 的 mean / std / min / max，以及 Run 表）。不改 `STUDY_REPORT.md` 里的结论。
+`python -m <project_entry> logs studies/<name>` 把各 Run 的事件行按时间打到终端，不写 Study 级总 log。`python -m <project_entry> report studies/<name>` 从 `process.json` 写 `docs/NUMBERS.md`（Experiment 的 mean / std / min / max，以及 Run 表）。模板 report 先核对当前 index 与聚合的 Study、全部计划 Run ID / seed / 因素归属；缺失、损坏或不匹配时退出 2，不覆盖已有数字表。换 version / fresh make 后先重新 process，再 report；合法部分聚合仍可导出，不要求所有 Run 已成功。不改 `STUDY_REPORT.md` 里的结论，不以清单匹配证明指标新鲜度或科学验收。
 
 `make` 进行中会立刻打出阶段（flush），并写 study 根上的 `activity.json`（不进 Git）：`make: origin <foreign|domestic> model <hub>`、`make: expand`、`make: shared <name> download <origin> <url>` / `ready` / `cached`、`make: pack`。另开一个终端跑上面的 `status`，有这份文件时第一行就是当前阶段；index 还没写出时只打这一行也退出 0。make 成功结束后删掉它。下载仍不刷 tqdm。`origin` 写在 `study.yaml` 顶层，不写在 `data` 下。`foreign` 用 torchvision 官方地址和 `https://huggingface.co`；`domestic` 用国内数据镜像和 `https://hf-mirror.com`。缺省 `foreign`，且不改本机已有的 `HF_ENDPOINT`。只有 `.ready` 才跳过；半截包会删掉再下。
 
@@ -775,3 +748,30 @@ GitHub Actions 配置包括：
 文档中列出的其他下游生态是扩展边界，不代表已经实现；以 Registry 和 [bugs.md](docs/development/bugs.md) 为准。
 
 上述清单表示已有实现，不代表全部模型与数据组合已完成真实运行验收。六个指定组合的 30-step 验收见 [数据报告](https://github.com/DreamSoul-AI/RPipe/blob/71143ab/studies/support_data_smoke/docs/STUDY_REPORT.md) 与 [模型报告](https://github.com/DreamSoul-AI/RPipe/blob/71143ab/studies/support_model_smoke/docs/STUDY_REPORT.md)，模型报告保留 ResNet10 的 Accuracy 复算差异；未解决缺陷见 [bugs.md](docs/development/bugs.md)。
+
+## 给 Agent 的重构指令
+
+在目标研究项目中直接复制下面的 prompt，参考仓库为 `https://github.com/DreamSoul-AI/RPipe/`；已有本地 checkout 时也可据此核对来源。按需指定模板版本与当次授权；不填写时先核对可用基线，记录确切提交，只重构和做小规模验证，不自动推送或启动大规模实验。本段是任务指令，不替代上面的接入与阶段合同。
+
+```text
+请实际将当前研究项目按 RPipe 的架构重构，不只给建议。
+参考：https://github.com/DreamSoul-AI/RPipe/
+
+1. 先查看工作区状态和项目 AGENTS.md，保留已有修改。阅读本项目 README、相关设计、docs/research、Study 计划与报告；再读 RPipe README，重点遵循“在其他项目中使用 RPipe”“Study 使用指南”“开发与 CI”及其链接的 concept、layout、code、structure、flow 和测试文档。确认文档与代码差异，不把现状直接当成设计。参考资料无法取得时如实说明，不凭记忆编造接口。
+
+2. 按 README 采用源码模板，不以 pip / Git URL 外部依赖接入。将选定基线的完整源码放入本项目 src/rpipe/ 并长期保留，记录上游 commit、版本与本地差异；已有副本先比较，不覆盖或删除。src/<项目包名>/ 放本项目实现，研究包名从现有代码确认，优先复用原算法和 RPipe 的已有能力。
+
+3. 项目包和 studies/<name>/ 都按 RPipe 同名职责目录组织：structure 下为 api、control、data、model、algorithm、system、artifact、make；flow 下为 prepare、execute、collect、summarize、write、process。artifact 不独立于两柱。保持目录语义与依赖方向，不机械复制通用代码、不写无用空函数，业务实现不堆在 __init__.py。Study 只声明、导入和薄组装 src 中的实现，不再维护另一套算法、训练循环、调度或产物系统。
+
+4. 先写明旧代码到新职责的映射、复用点、接口与配置迁移、阶段输入输出、调用时机和成功条件，再修改实现。保留研究算法、数值口径、原始证据与必要兼容；确需改变行为时记录原因并做对照，不能只搬目录或靠 hook 存在宣布完成。项目可以按对应职责重构模板实现，但必须记录差异并回归验证。
+
+5. 从 docs/research 的宏观问题提取可独立验收的具体 Study，先写 PLAN：对照、变量、固定条件、来源、精度、seed、预算、指标、成功门与停止规则；宏观资料缺失时明确问题后补充，不编造来源。按 README 接通阶段、来源核验和 provenance，确认项目源码新增、删除、修改都能检出；独立复跑用新 version，不把旧成功结果算作新验收。
+
+6. 使用项目真实入口，不强制叫 python -m rpipe；先确认它复用或接通了哪些模板命令，不能照抄不存在的参数。先做源码导入、模板 smoke、真实项目最小 Study、关键失败边界与受影响回归。分别报告执行完成和研究质量通过，不把 Toy/Stub 通过当成真实数值验收。
+
+7. 并行运行先校准设备、显存、主存、线程和 I/O，显存系数可调整，不规定固定比例。复用已有调度，避免多个进程写同一 Run；并行 pytest 使用不同 basetemp，性能对照不混入竞争任务。大规模实验只在小验证通过且已有明确授权时执行。
+
+8. 同步项目 README、设计、Study 计划/报告、测试与 .gitignore。临时文件放 .tmp，正式实验材料放对应 Study。参考 RPipe CI/CD 使用 main/dev，工作分支从 dev 建立，经 PR 进入 dev，发布再由 dev 经 PR 进入 main；已有不同分支体系先明确迁移，不擅改远端规则。GitHub Actions 可选，关闭时仍要本地验证，未执行不能记为通过。
+
+在当前授权范围内持续完成文档、重构和验证，不停在方案阶段。提交、推送、合并、发布、清理旧证据及大规模实验遵循当次明确授权。最终简要交付结构映射、真实运行命令、验证结果、剩余风险和未执行事项。
+```
