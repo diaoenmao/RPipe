@@ -6,6 +6,8 @@ RPipe 是**可重复、可编排、可序列化的研究执行底座**。
 
 目录见 [layout.md](layout.md)；操作见 [Study 指南](../../README.md#study-使用指南)；structure 细节见 [structure.md](structure.md)。
 
+下游采用源码模板：长期保留 `src/rpipe/`，研究实现放 `src/<项目包名>/` 的同名 structure / flow 职责层，Study 导入并薄组装；本仓库的专用 Study 配方是实例，不要求下游把可复用算法放进 Study。研究计划与证据要求见 [research.md](../development/research.md)，通用问题反馈见 [feedback.md](../development/feedback.md)。这些 Agent 工作指引不表示库内置研究决策器。
+
 ---
 
 ## 1. 边界

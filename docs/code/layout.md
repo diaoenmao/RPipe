@@ -2,7 +2,7 @@
 
 本文定义 **RPipe** 仓库目录约定；Flow 展开到可执行入口文件，避免只见目录、不见实现。前置阅读 [concept.md](concept.md)。模块细则见 [code.md](code.md)。
 
-可安装包名 **`rpipe`**，源码根 `src/rpipe/`。目录只映射 concept。
+参考包名 **`rpipe`**，源码根 `src/rpipe/`。下游以源码模板接入并保留该包，不以 pip 安装作为接入方式；本仓库的包构建用于验证分发合同。目录只映射 concept。
 
 ---
 
@@ -12,13 +12,14 @@
 
 | **仓库入口** | **用途与交付边界** |
 | --- | --- |
-| `src/rpipe/`、`pyproject.toml` | 可安装库、公共 CLI 与依赖声明 |
+| `src/rpipe/`、`pyproject.toml` | 基础源码模板、参考 CLI、依赖与包构建声明 |
 | `docs/code/` | 设计：concept、layout、code，以及 structure / flow 分册 |
-| `docs/development/` | 开发记录：brainstorm、bugs、testing、cicd、record、handover |
+| `docs/development/` | 研究与反馈要求：research、feedback；开发与验证：brainstorm、bugs、testing、cicd、record、handover |
+| `docs/releases/` | 各正式版本的完整差异、迁移、验证与未覆盖范围 |
 | `studies/` | [Study 导航](../../studies/README.md)、声明、复跑入口与正式报告；通用操作在 [README 的 Study 指南](../../README.md#study-使用指南)，本地产物另按第四节管理 |
 | `tests/` | 统一测试入口、源码镜像测试与安装后 CLI 验收，见 [测试入口](../../tests/README.md) |
 | `.github/workflows/` | CPU 测试和 wheel / sdist 构建、安装验收 |
-| `asset/` | README 展示本次实测的 MNIST / CIFAR10 曲线；旧参考图与来源保存在 [历史图归档](../../studies/main_exp/docs/reference/README.md)，不作为新 Run 的资产根 |
+| `asset/` | README 保留的 2026-10-04 MNIST / CIFAR10 实例曲线；参考图与来源保存在 [历史图归档](../../studies/main_exp/docs/reference/README.md)，不作为新 Run 的资产根 |
 | `.tmp/` | 本机运行环境、诊断与临时验证输出，不随 Git clone 提供 |
 
 | **概念** | **目录落点** |

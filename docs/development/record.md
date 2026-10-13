@@ -10,7 +10,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 
 | **范围** | **改前** | **改后** | **依据** |
 | --- | --- | --- | --- |
-| 调用方式 | 从 `src/` 运行 `train_model.py`、`test_model.py`、`make.py` 等独立脚本，共享全局 `cfg` | 安装 `rpipe` 包，以统一 CLI 执行 make / launch / process，源码集中到 `src/rpipe/` | [代码结构](../code/code.md) |
+| 调用方式 | 从 `src/` 运行 `train_model.py`、`test_model.py`、`make.py` 等独立脚本，共享全局 `cfg` | 源码集中到 `src/rpipe/`，提供参考 CLI；下游复制源码模板并使用自己的项目入口，包构建仍作分发合同验证 | [代码结构](../code/code.md)、[源码接入](../../README.md#在其他项目中使用-rpipe) |
 | 配置与编排 | `config.yml` 配合 `control_name` 解析；按 seed 与配置拼 tag，make 生成 Bash / wait 调度 | Study YAML 声明 axes / seeds，展开 Experiment × seed 的 Run；配置内容生成 Run ID，launch 执行固定阶段链 | [概念](../code/concept.md)、[Study 指南](../../README.md#study-使用指南) |
 | 运行产物 | 配置、脚本、实验、结果和图分别落到 `output/config`、`script`、`exp/<tag>`、`result`、`vis`；checkpoint / best 为旧分件格式 | 按 Study / Run 统一落盘 config、result、tracker、log 和新 checkpoint；index / process 支持 status / logs / report | [目录约定](../code/layout.md) |
 
@@ -87,6 +87,20 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-14
+
+### 10. 研究工作、下游反馈与 v0.3.1 发布准备
+
+维护者授权全面文档检查、当前工作分支经PR进入dev，再由dev发布PR进入main，出v0.3.1；不跑新大规模实验。按最小改动保留已有README修正、历史实测和失败，不把历史日期的状态批量改写为当前结论。
+
+完整读取指定飞书目录的研究计划规范 / 模板（均revision3），核对knowledge提交09078015的research-plan、literature-search、paper-analysis、pytorch-project正文和research-plan中文指南，适配为[研究工作要求](research.md)。宏观方案与具体Study分工不变，不增加运行依赖或安装skills；[下游反馈规范](feedback.md)明确归属、证据、公开脱敏、去重、授权提交与上游核验。README最后的prompt包含可删除的限范围Issue反馈授权，本轮没有实际对外报单。
+
+版本元数据与README同步0.3.1，接入示例改为标签核对并保存确切commit；完整版本区间、迁移和未覆盖范围见[发布报告](../releases/v0.3.1.md)。活动文档修正已移除的B-022锚点、Flow表头、库默认write / Study扩展权限和safety默认值的边界；补查后核对实际Config与SystemFactory，明确标准字段不等于YAML全部必填、生态表不代表已实现、没有SystemRegistry。导航接通AGENTS、layout、Studies与PLAN模板，不改研究计算源码或正式数字。
+
+本机core420 passed / 2 skipped（20261013T173200Z_03aa68，UTC），CPU integration52 passed（20261013T173211Z_8da839），使用独立basetemp。默认Conda / NumPy首次收集前因缺MKL runtime失败，采用既有MKL_THREADING_LAYER=SEQUENTIAL后复验；历史异机venv路径本机不存在，不能作为本机环境证据。两项skip为Windows符号链接权限，不计通过；未改代码掩盖环境缺失。
+
+wheel / sdist在.tmp源码副本构建并分别安装，均0.3.1、各9条CLI及4个CPU Toy/Stub Run通过，复用本机依赖不代替远端干净环境。sdist首次默认pip缓存写入被拒绝，改.tmp及禁用缓存后通过，失败与原输出保留。77份Markdown的编码、围栏及1186个相对链接 / 锚点扫描无活动失效目标；427个Run / 临时引用是本机产物，55个历史快照引用仍按原目录语境解释，不为嵌套路径改变快照字节。7份v030清单102个文件hash / 大小通过。
+
+本机证据位于.tmp/release-v0.3.1及上述test-results，不随Git提供；当前源码与旧804b3823的完整实验分别记录。提交、PR与main集成CI按现行门禁接续，实际发布URL、commit和检查链接补入GitHub Release，不把准备状态写成已发布。
 
 ### 9. B-030 报告来源校验与分支清理
 
