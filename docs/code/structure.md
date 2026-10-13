@@ -956,13 +956,15 @@ index 在 **Study 根**，不在 `runs/<id>/`。Run 目录直接使用 `id`，�
 
 错误：`ArtifactError`、`MissingConfigError`、`CorruptArtifactError`。
 
+原子文本写入的初始临时文件写入与替换处于同一 finally 清理范围；部分写入失败保留旧目标、原异常并清理本次临时文件，不删除其他写者的临时文件。
+
 ### 9.3 `config/`
 
 编排写入；Flow 不改。正文含 **`id`**（hash）及四层等字段。
 
 `load_config` / `write_config`；原子写为宜。读入纯 mapping，由 `control_from_config` 解释。业务校验在 `structure.control.contract`。
 
-写入方：`structure.make`。读取方：`flow.prepare`。
+写入方：`structure.make`。读取方：`flow.prepare`；status 在缺模式轴 / 已记录结果时只读查询 Run config 的模式。
 
 ### 9.4 `result/`
 

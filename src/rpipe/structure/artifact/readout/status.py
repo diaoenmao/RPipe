@@ -6,9 +6,13 @@ import re
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 from rpipe.structure.artifact.asset import kinds
+from rpipe.structure.artifact.config import load_config
+from rpipe.structure.artifact.errors import ArtifactError
 from rpipe.structure.artifact.index import index_path, load_index
-from rpipe.structure.artifact.paths import RESULT_NAME, RUNS_DIRNAME
+from rpipe.structure.artifact.paths import CONFIG_NAME, RESULT_NAME, RUNS_DIRNAME
 from rpipe.structure.artifact.result import STATUS_SUCCEEDED, load_result
 
 STATUS_PENDING = 'pending'
@@ -21,11 +25,11 @@ def _load_result(study_dir: Path, run_dir: str) -> dict[str, Any] | None:
         return None
     try:
         return load_result(path)
-    except (OSError, TypeError, ValueError):
+    except (OSError, TypeError, ValueError, ArtifactError):
         return None
 
 
-def _mode(factors: dict[str, Any], result: dict[str, Any] | None) -> str:
+def _mode(factors: dict[str, Any], result: dict[str, Any] | None, config_path: Path) -> str:
     raw = factors.get('algorithm.mode')
     if raw:
         return str(raw)
@@ -35,7 +39,17 @@ def _mode(factors: dict[str, Any], result: dict[str, Any] | None) -> str:
             algo = control.get('algorithm')
             if isinstance(algo, dict) and algo.get('mode'):
                 return str(algo['mode'])
-    return 'train'
+    algorithm = load_config(config_path).get('algorithm')
+    if algorithm is None:
+        return 'train'
+    if not isinstance(algorithm, dict):
+        raise ValueError('algorithm must be a mapping')
+    raw = algorithm.get('mode')
+    if raw is None:
+        return 'train'
+    if not isinstance(raw, str) or not raw:
+        raise ValueError('algorithm.mode must be a non-empty string')
+    return raw
 
 
 def _factor_label(factors: dict[str, Any]) -> str:
@@ -112,7 +126,13 @@ def list_runs(
         for run in exp.get('runs') or []:
             run_dir = str(run.get('run_dir') or run.get('id') or '')
             result = _load_result(study_dir, run_dir) if run_dir else None
-            mode = _mode(factors, result)
+            config_path = study_dir / RUNS_DIRNAME / run_dir / CONFIG_NAME
+            mode_error = None
+            try:
+                mode = _mode(factors, result, config_path)
+            except (OSError, TypeError, ValueError, ArtifactError, yaml.YAMLError) as exc:
+                mode = 'unknown'
+                mode_error = f'mode config unreadable ({type(exc).__name__}): {config_path}'
             if wanted and mode not in wanted:
                 continue
             status = STATUS_PENDING
@@ -128,6 +148,9 @@ def list_runs(
                 note = _note_from_log(log_path(study_dir, run, run_dir))
             elif status == 'failed':
                 note = _note_from_log(log_path(study_dir, run, run_dir), errors_only=True)
+            error = None if status == STATUS_SUCCEEDED else error
+            if mode_error:
+                error = f'{error}; {mode_error}' if error else mode_error
             rows.append(
                 {
                     'id': run.get('id') or run_dir,
@@ -136,7 +159,7 @@ def list_runs(
                     'status': status,
                     'factors': _factor_label(factors),
                     'metric': _metric_cell(metrics),
-                    'error': None if status == STATUS_SUCCEEDED else error,
+                    'error': error,
                     'note': note,
                     'log': run.get('log'),
                 }

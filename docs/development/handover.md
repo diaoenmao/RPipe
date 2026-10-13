@@ -1,5 +1,21 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-14 工作分支异机交接
+
+用户已授权将当前收缩后的代码、测试和文档提交推送到 `codex/powershell-launch-boundaries`，在另一台机器继续；不合并 dev / main，不发布，不关闭 Issue #36 / #37 / #38。此前“未提交 / 不推送”是当时状态，以本节最新授权为准。实际交接提交以远端分支和 `git log -1` 为准。
+
+新机器先保留当地改动，再执行 `git fetch origin`；尚无本地分支时执行 `git switch --track origin/codex/powershell-launch-boundaries`，已有分支则切换后用 `git pull --ff-only`。阅读[当前收缩记录](record.md#32-按用户要求收缩到本机适配与三个下游-issue)和[共享下载待设计要求](brainstorm.md#2026-10-14-数据与模型下载共享约定用户要求待设计)。共享下载仅记录要求，尚未实现。
+
+`.tmp/` 的 venv、MKL 激活脚本、缓存、备份和本机验证日志不随 Git 推送；正式 Study 生成的 Run / 数据 / checkpoint 也不作为本次异机传输内容。目标机器需检查自己的 Python / Conda / OpenMP 环境并按 README 的源码接入方式准备，再做小验证；不能把本机 SEQUENTIAL 绕过或本机通过当作异机环境已验收。
+
+## 2026-10-14 当前收缩范围（未提交）
+
+当前 Issue #36 / #37 / #38 均为 open / reopened：用户要求暂不关闭、后续再修，已撤回本轮关闭操作并复查状态。现有本机补丁保留但不继续修复 / 提交 / 发布，见[状态记录](record.md#33-issue-状态按用户最新要求恢复开放)。
+
+仅保留本机迁移 / MKL 和 Issue #36、#37、#38。公共源码差异为 runner.py、readout/status.py、_atomic.py 三个文件；四个对应测试文件保留。其他主动探索的公共改动已撤回，历史证据和完整撤回备份保留，见[收缩记录](record.md#32-按用户要求收缩到本机适配与三个下游-issue)。
+
+当前定向75 passed、core440 passed / 2 skipped；新PowerShell下两seed四个CPU Toy/Stub Run全链和重复跳过通过。正式Study / 数据保全，八调度只做清单与语法核对。未commit / push / 发布、未更新Issue；此前扩展边界不属于当前已修复范围，后续不再自动扩展。
+
 ## 2026-10-14 v0.3.1 文档与发布准备
 
 当前发布准备版本为0.3.1：B-030修复、源码模板接入与旧804b3823的实验材料均进入版本区间；新增研究 / knowledge skills与下游Issue反馈约定，入口见[README](../../README.md)和[发布报告](../releases/v0.3.1.md)。正式科学报告、数字、配方、旧失败与快照保持原来源；本次不训练或扩大矩阵。core420 passed / 2 skipped、CPU流程52 passed、两种分发包各9条CLI / 4个Toy/Stub Run通过，环境失败、skip、文档扫描与本机包边界见[开发记录](record.md#10-研究工作下游反馈与-v031-发布准备)。

@@ -109,6 +109,7 @@ flowchart TD
 - 失败时 **traceback 进该 Run 的 `run.log`**（与 stdout 同一套；每一行都是 `[error]`，并带时间和 Run `id`）。execute 失败由 execute 写；prepare 等阶段由 Runner 写。prepare 尚未挂 System 时 Runner 先打开同一路径的 Logger。
 - 失败时若已有 `control` / `collected.metrics`，写入 result，便于对照哪次 Run 挂了。
 - process 发生异常时，Runner 保留已有 `status: succeeded` 的 result，记录日志并重新抛出异常。影响本 Run 成功判定的门限须在 write 定稿之前执行；process 的派生失败另行报告。
+- Issue #36：Runner 尚未开始任何阶段且来源冻结检查抛出 `ProvenanceChangedError` 时，保留已有成功 result 的原始字节，仍记录失败日志并抛出异常；无旧成功结果仍写 failed。阶段内的实际执行失败沿用原写回规则。
 
 ---
 
@@ -293,7 +294,7 @@ conservative 墙钟只在 **make** 打印。本进程实测时间在 Logger 行�
 
 `--console`：Windows 默认 `new`（每条 `run-one` 一个控制台，并行 printout 分开）；`shared` 混在当前终端。不改变 wait 语义。
 
-`python -m rpipe status <study>` **不是** Flow 阶段。它只读 `index.json` 和各 `runs/<id>/result.json`，打 planned / succeeded / failed / pending 和一张表。没有 result 的格子是 `pending`。`note` 只填 `pending` 和 `failed`：`pending` 是 `run.log` 最后一条 `[epoch]` 或 `[error]`（没有就用最后一条 `[flow]`，跳过 `Traceback` / `File ` 续行）；`failed` 只取最后一条 `[error]`，`error` 列仍是 result。`succeeded` 的 `note` 是 `-`。`--mode` 只滤行。若存在 `activity.json`（make 进行中写入，成功后删除），第一行是当前阶段，例如 `make: shared CIFAR10 download`；这时还没有 index 也退出 0。缺 index 且没有 activity 则退出 2。读表在 `structure/artifact/readout/`。make 的活动行写入在 `structure/artifact/activity.py`。
+`python -m rpipe status <study>` **不是** Flow 阶段。它只读 `index.json`、各 `runs/<id>/result.json` 及必要的 Run config，打 planned / succeeded / failed / pending 和一张表。没有 result 的格子是 `pending`。mode 优先取轴值，再取 result 中记录；都没有时读取生成的 Run config，避免固定 eval 被误报 train。可读配置省略 mode / None 按默认 train；配置缺失 / 解析异常、模式类型错误或显式空字符串显示 unknown，并只给异常类型和配置路径，不改 Run 状态或文件。`note` 只填 `pending` 和 `failed`：`pending` 是 `run.log` 最后一条 `[epoch]` 或 `[error]`（没有就用最后一条 `[flow]`，跳过 `Traceback` / `File ` 续行）；`failed` 只取最后一条 `[error]`，`error` 列保留 result 错误，并可附加模式读取诊断。`succeeded` 的 `note` 是 `-`。`--mode` 只滤行。若存在 `activity.json`（make 进行中写入，成功后删除），第一行是当前阶段，例如 `make: shared CIFAR10 download`；这时还没有 index 也退出 0。缺 index 且没有 activity 则退出 2。读表在 `structure/artifact/readout/`。make 的活动行写入在 `structure/artifact/activity.py`。
 
 `python -m rpipe logs <study>` 只读，把各 Run 的事件行按行首时间打到终端，不写 Study 级总 log。缺 index 退出 2。
 
