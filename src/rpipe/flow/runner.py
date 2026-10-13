@@ -47,7 +47,8 @@ class FlowRunner:
                     run_study_phase(ctx.study_dir, name, ctx, study)
         except Exception as exc:
             self._log_failure(ctx, current, exc)
-            preserve_success = current == 'process' or (current is None and isinstance(exc, ProvenanceChangedError))
+            preserve_success = current == 'process' or (
+                current in (None, 'prepare') and isinstance(exc, ProvenanceChangedError))
             self._write_failed_result(ctx, exc, preserve_success=preserve_success)
             raise
         logger.info('succeeded')
@@ -80,7 +81,8 @@ class FlowRunner:
     def _write_failed_result(self, ctx: FlowContext, exc: BaseException, *, preserve_success: bool = False) -> None:
         """Best-effort failed Result; must not hide the original error.
 
-        Pre-stage freeze refusal and process failure preserve an existing success.
+        Initial freeze refusal (outer gate or prepare) and process failure
+        preserve an existing success; other phase failures still replace it.
         """
         try:
             from rpipe.structure.artifact.result import load_result

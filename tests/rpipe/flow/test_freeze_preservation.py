@@ -1,4 +1,4 @@
-"""Issue #36: preserve a successful Run only on pre-stage freeze refusal."""
+"""Issue #36: preserve a successful Run on initial freeze refusal."""
 
 from importlib import import_module
 import os
@@ -53,7 +53,7 @@ def test_freeze_refusal_preserves_success_or_creates_failure(tmp_path, monkeypat
     assert 'ProvenanceChangedError' in log and '[flow] succeeded' not in log
 
 
-@pytest.mark.parametrize('phase', ['execute', 'summarize', 'write', 'process'])
+@pytest.mark.parametrize('phase', ['prepare', 'execute', 'summarize', 'write', 'process'])
 def test_actual_phase_failure_keeps_failure_write_contract(tmp_path, monkeypatch, phase):
     """Actual phase failure still fails a prior success; process retains its existing preservation rule."""
     layout = artifact_layout(tmp_path, 'prior')
@@ -70,10 +70,11 @@ def test_actual_phase_failure_keeps_failure_write_contract(tmp_path, monkeypatch
         assert 'actual phase failed' in load_result(layout.result_path)['error']
 
 
-def test_native_run_one_preserves_real_cpu_success_on_freeze_refusal(tmp_path):
+@pytest.mark.parametrize('study_phases', [False, True])
+def test_native_run_one_preserves_real_cpu_success_on_freeze_refusal(tmp_path, study_phases):
     """CPU 2-step Toy success -> changed source -> native run-one refuses without replacing the result."""
     write_config(tmp_path / 'study.yaml', {'study': 'freeze_preservation', 'seeds': [0], 'freeze': True,
-                                         'flow': {'study_phases': True}})
+                                         'flow': {'study_phases': study_phases}})
     write_config(tmp_path / 'experiment_config.yaml', {
         'version': 'issue36-v1', 'data': {'name': 'Toy', 'source': 'stub'}, 'model': {'name': 'linear'},
         'algorithm': {'source': 'custom_torch', 'mode': 'train', 'num_steps': 2, 'progress_unit': 'step'},

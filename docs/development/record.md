@@ -88,6 +88,14 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-14
 
+### 37. Issue #36 未开启扩展的初始冻结拒绝（B-054）
+
+在现有真实CPU回归加入flow.study_phases=false对照，发现prepare初始check_frozen拒绝仍覆写成功result，开启扩展的对照通过；红测1 failed / 10 passed（`20261013T222059Z_35423a`）。先在bugs记录，再仅将ProvenanceChangedError的成功保全覆盖prepare阶段；冻结条件 / 时机不变，其他prepare异常和execute / summarize / write失败继续写failed，process保全规则保持。没有恢复此前撤回的额外冻结门或调度改造。
+
+定向32 passed（`20261013T222126Z_36f53c`），真实run-one拒绝非零退出、旧成功和非日志资产字节保持；普通prepare失败仍覆写为failed。当前core456 passed / 2 skipped（`20261013T222158Z_4f621f`）、CPU integration68 passed（`20261013T222209Z_ce9510`），8条历史partial-resume警告保留。首批共享提交ac909ec远端三门通过，3f7bf18及本次后续提交的CI分别核对，不互相替代。
+
+来源变化后新version `shared-inputs-20261014-cpu05` / Run `44492c0d8f5cf190` 的MNIST/linear CPU60-step完整test单格再次通过、执行源不变；依据追加在[Study证据](../../studies/main_probe/docs/shared_inputs_validation.json)。仍无新的八格或长矩阵验收，原红测和各CPU / CUDA重复结果保留。工作仍在同一草稿PR #39，#36保持open，未合并或发布。
+
 ### 36. 共享统计路径与恢复身份复查
 
 共享首批提交ac909ec已推至[草稿PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)，其Unit tests、Build package、Branch flow全部通过。进一步复查发现隐式统计目录被注入data.config，会令仅路径搬迁也改变native sampler的恢复身份；改用可选profile_path IO参数，不改变用户原实验配置，显式stats_path仍优先。

@@ -6,6 +6,13 @@
 
 ## 开放
 
+### B-054：Issue #36 在关闭 Study 扩展时仍覆写成功（investigating）
+
+- 复现：freeze=true、flow.study_phases=false 的新 CPU Toy/Stub 两步 Run 成功后改 study.yaml 注释，原生run-one因来源变化exit1，却把原成功result改成failed；同一测试的扩展开启对照通过。
+- 期望：prepare中的初始来源拒绝也应保留既有成功字节；真正的prepare / execute / summarize / write异常仍写failed。
+- 落点：FlowRunner当前只在current=None的冻结异常保全；未扩展的冻结检查在prepare初始段触发。方案只扩展该异常的保全范围，不改变冻结启用条件、时机或训练行为。
+- 红测：`.tmp/shared-inputs-20261014/issue36-hooks-red`，1 failed / 10 passed；原stdout、stderr与成功副本保留，不随clone提供。本地修复后定向32 passed、core456 passed / 2 skipped、CPU integration68 passed；等待PR最终CI / 集成，#36仍open，见 [修复记录](record.md#37-issue-36-未开启扩展的初始冻结拒绝b-054)。
+
 ### B-053：data / model 只在单个 Study 内共享（investigating）
 
 - 复现：`artifact_layout(project/studies/a, id)` 与 `artifact_layout(project/studies/b, id)` 返回不同的 shared data / model 根；相同下载在不同 Study 重复存储。main_probe.prepare 还为原版 / 当前版逐 Run copyfile 完整 raw。
@@ -17,6 +24,6 @@
 
 B-002、B-021 / B-024及B-025至B-029的既有修复证据仍在 [record.md](record.md)。B-022 / B-023 的代表性容量、精度合同与探索边界保留各自报告；本轮新的设备 / 并发结果见 [本轮执行记录](../../studies/main_exp/docs/v030_execution.md)。未实测支持范围不是已通过，缺环境依赖的导入失败也不自动列为库缺陷。
 
-B-031 至 B-052 已在此前探索中使用，编号不复用。下次新增问题从 **B-053** 起编号。
+B-031 至 B-054 已使用，编号不复用。下次新增问题从 **B-055** 起编号。
 
 新增条目一条一事，记录编号、open / investigating状态、复现条件、期望 / 实际、影响落点、方案和实际验证证据。

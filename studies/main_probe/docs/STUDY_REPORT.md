@@ -10,6 +10,8 @@ CUDA Run `1dd708dab35a7aaa` 的原声明曾被误标为CPU：基底device被fixe
 
 自动统计目录改为IO参数、保持sampler配置身份后，再以新version `shared-inputs-20261014-cpu04` / Run `25ae12161dec991a` 做CPU同一单格60-step完整test复验并通过。首轮CPU单格的Study process实际拒绝不完整矩阵，成功Run仍保全；不把单格结果写成完整八格Study通过。
 
+补齐未扩展prepare初始冻结拒绝保全后，新version `shared-inputs-20261014-cpu05` / Run `44492c0d8f5cf190` 的同一CPU单格60-step / 完整test再通过，源及归档字节保持；之前的实测按各自来源保留。
+
 ### 2026-10-13 v0.3.0 正式八格本机复验
 
 - 软件基线：发布 `v0.3.0` / `804b3823ab6d2af46cbda1a65688ca8b76c60b22`；旧版固定 `98648f3`。独立 venv、完整 raw 16 项 hash、FP32、benchmark / 两项 TF32=false，数据、seed0、60-step / 完整 test 与门限不变。
