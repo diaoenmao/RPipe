@@ -50,6 +50,7 @@ python -m rpipe launch studies/<name> --num-gpus 1 --init-gpu 0
 
 ## 6. 成功标准
 
+- 按本轮研究问题明确数值、质量或其他证据判据；下面的执行和产物条件不能单独证明研究质量通过
 - 计划的 Run 均 `status: succeeded`
 - `docs/figures/learning_curves.png`
 - `STUDY_REPORT.md` 嵌图，并写清实际 `pack` 排班

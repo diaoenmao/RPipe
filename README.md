@@ -647,7 +647,7 @@ python -m <project_entry> status studies/<name> --mode eval
 
 Study process 只聚合当前 index 列出的 Run，不扫描旧 version 目录。index 缺失或不可读取时会失败并提示 make，已有 process、图与 result 保留。重建前先确认当前 YAML 就是要分析的那一轮，再执行 make 和 process。
 
-`docs/STUDY_REPORT.md` **必须有图**，并且图和各次 `run.log` **可点开**（Markdown 预览，或源码里 Ctrl+点击）。报告中的图链接用 `figures/learning_curves.png`；log 按 index 的 Study 相对路径转换为报告相对路径 `../runs/<id>/assets/logs/run.log`。数字读 `process.json`。按 Experiment 写结论，不要把 18 行 Run 表当主结论。
+有训练曲线的 Study 在 `docs/STUDY_REPORT.md` 嵌入实际图，并保留可打开的图与 Run 日志链接。报告中的曲线链接用 `figures/learning_curves.png`；log 按 index 的 Study 相对路径转换为报告相对路径 `../runs/<id>/assets/logs/run.log`。数字读 `process.json`，按 Experiment 写结论，不把 Run 明细表当主结论。原始日志默认仅本机可取得，须明确不会随 clone 提供；纯文献、理论或没有训练曲线的研究按[研究工作要求](docs/development/research.md)提供适用证据，不伪造图、Run 或实测。
 
 ---
 
@@ -683,11 +683,11 @@ Study 可在 `study.yaml` 写 `flow: {study_phases: true}`。库加载 `flow/` �
 | 扫已有字段（样本量、lr、seed…） | 只改 Study 的 yaml |
 | 换 MNIST 子集大小 / epoch | yaml 即可 |
 | 新数据集、新模型、新训练循环 | 在 src 项目包的相应 structure 层实现，Study 导入并经项目建构接入，再在 YAML 中点名 |
-| 换 HF Trainer / Accelerate | 改 `algorithm.source`；`optimizer` / `scheduler` / `resume` 键不变（structure.md §6.11） |
+| 换 HF Trainer；或新增 Accelerate 适配 | 已注册的 `transformers_trainer` 可改 `algorithm.source`；Accelerate 尚无内建 source，需先在 src 实现并注册，不能只改 YAML。统一接口见 structure.md §6.11 |
 | 独立评测（加载 best） | 另一次 Run：`algorithm.mode: eval`，`resume: best`；不是 Flow 多一个阶段。整波重跑：`<project_entry> launch --mode eval`（已成功加 `--include-done`） |
 | 断点续训 | 在已验证的恢复合同内使用 train 的 `resume: latest`；自定义 Algorithm / 采样器不自动获得精确恢复 |
 | 调整项目执行链 | 直接复用模板时保持合同；需要重构时先更新设计，再验证调用方、状态和失败边界 |
-| 自动出报告 / 跨 Run 对比表 | 人写 `STUDY_REPORT.md`（必须嵌图）。库 Study process 出 mean/std/min/max 和 `docs/figures/learning_curves.png`。`report` 把同一份数字写成 `docs/NUMBERS.md` |
+| 自动出报告 / 跨 Run 对比表 | 人写 `STUDY_REPORT.md`，有实际曲线时嵌图。库 Study process 出 mean/std/min/max 和 `docs/figures/learning_curves.png`。`report` 把同一份数字写成 `docs/NUMBERS.md`，不能代写结论 |
 | 训练曲线 | process 优先读 JSONL 的有效训练轨迹：显式 optimizer_step（优先）或 epoch；旧记录 / state history 回退仍用 observation。跨 seed 按坐标并集统计，缺失点不插值，逐点 n 见 process / 图；不同单位分开。原始日志保留回滚分支，恢复规则见 structure §6.9.2。不做 TensorBoard |
 | 终端 + 硬盘日志 | **Logger** 必写 `runs/<id>/assets/logs/run.log`（`时间 级别 Run id [事件]`）；失败时 traceback 每一行都是 `[error]`。`index.json` 的 `log` 指向它。没有 Study 级总 log |
 | 并行时日志挤在一起 | 文件按 Run 分开；终端每行带 Run `id`。Windows：`launch` 默认 `--console new`；`--console shared` 只混终端 |
