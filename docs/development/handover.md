@@ -104,7 +104,7 @@ PR #24 的文档审校已合入 dev `37b9cef`。维护者在 2026-10-10 追加�
 | --- | --- |
 | Flow 阶段与扩展 | [flow.md](../code/flow.md) |
 | 目录约定 | [layout.md](../code/layout.md) |
-| Study 使用 | [studies/README.md](../../studies/README.md) |
+| Study 使用 | [README 的 Study 指南](../../README.md#study-使用指南)，现有研究见 [Study 导航](../../studies/README.md) |
 | CI 与分支 | [cicd.md](cicd.md) |
 | 开发事实与历史失败 | [record.md](record.md) |
 

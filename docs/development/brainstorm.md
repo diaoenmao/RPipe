@@ -1,6 +1,6 @@
 # Brainstorm
 
-> 未拍板的想法。**不**当合同。权威是 [concept.md](../code/concept.md) → [layout.md](../code/layout.md) → [README.md](../../studies/README.md)。缺陷进 [bugs.md](bugs.md)。
+> 未拍板的想法。**不**当合同。权威是 [concept.md](../code/concept.md) → [layout.md](../code/layout.md) → [Study 指南](../../README.md#study-使用指南)。缺陷进 [bugs.md](bugs.md)。
 
 本文件保留探索方向和按日期记录的实施证据。已确认的设计以 concept / layout / Study 计划为准，建议不会自动成为实施或实验授权。新想法写入 §3，确认后同步设计文档，并在这里注明状态。
 

@@ -1052,7 +1052,7 @@ Run 目录名必须为非空单一目录组件，拒绝点 / 父目录、分隔�
 
 产物：N 份 config + index，以及 `studies/<name>/scripts/`（默认 gitignore）。`launch.sh` 用 Python heredoc 调同一 `launch_jobs`，保留分组并行 / wait / GPU 分配，并复用依赖检查和波内重试。`--split-round` 按 wait 组切片，最后一片执行 Study process；旧版裸 `run-one` 脚本须重新 make 后才有这些保护。
 
-`algorithm.mode: eval` 在**默认整轮 launch**里是第二波：train 全部 `wait` 完再启动。`rpipe launch --mode eval` 只发 eval，不改 `jobs.json`。已成功的加 `--include-done`。`rpipe make` 打印 `pack N waits`。`rpipe launch` **复用** `scripts/jobs.json`（GPU / `round` 一致），不重做 make、不重印 pack；缺清单、参数变了或 `--remake` 才再 make。Windows 默认 `--console new`，组间仍 `wait`。默认 `--round auto` 按 [README.md](../../studies/README.md) §3 排班；脚本形状见 §4。
+`algorithm.mode: eval` 在**默认整轮 launch**里是第二波：train 全部 `wait` 完再启动。`rpipe launch --mode eval` 只发 eval，不改 `jobs.json`。已成功的加 `--include-done`。`rpipe make` 打印 `pack N waits`。`rpipe launch` **复用** `scripts/jobs.json`（GPU / `round` 一致），不重做 make、不重印 pack；缺清单、参数变了或 `--remake` 才再 make。Windows 默认 `--console new`，组间仍 `wait`。默认 `--round auto` 按 [Study 指南 §3](../../README.md#3-高效率实验设计) 排班；脚本形状见 [§4](../../README.md#4-一条命令怎么跑)。
 
 测试：`tests/rpipe/structure/make/`。
 
