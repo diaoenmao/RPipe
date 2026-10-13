@@ -50,3 +50,36 @@ def test_atomic_write_permanent_failure_preserves_target_and_cleans_stage(tmp_pa
     assert caught.value is error and len(calls) == expected_calls
     assert target.read_text(encoding='utf-8') == 'old'
     assert list(tmp_path.iterdir()) == [target]
+
+
+@pytest.mark.parametrize('existing', [False, True])
+def test_partial_text_write_failure_cleans_only_its_stage(tmp_path, monkeypatch, existing):
+    target = tmp_path / 'result.txt'
+    if existing:
+        target.write_text('old', encoding='utf-8')
+    peer = tmp_path / 'result.txt.other.tmp'
+    peer.write_text('another writer', encoding='utf-8')
+    original_write = Path.write_text
+    error = OSError('injected partial text write failure')
+    def partial_then_fail(path, text, *args, **kwargs):
+        original_write(path, 'partial', *args, **kwargs)
+        raise error
+    monkeypatch.setattr(Path, 'write_text', partial_then_fail)
+    with pytest.raises(OSError) as caught:
+        atomic_write_text(target, 'new')
+    assert caught.value is error
+    assert peer.read_text(encoding='utf-8') == 'another writer'
+    assert set(tmp_path.iterdir()) == ({target, peer} if existing else {peer})
+    if existing:
+        assert target.read_text(encoding='utf-8') == 'old'
+
+
+def test_atomic_text_success_replaces_target_and_keeps_peer_stage(tmp_path):
+    target = tmp_path / 'result.txt'
+    target.write_text('old', encoding='utf-8')
+    peer = tmp_path / 'result.txt.other.tmp'
+    peer.write_text('another writer', encoding='utf-8')
+    assert atomic_write_text(target, 'new') == target
+    assert target.read_text(encoding='utf-8') == 'new'
+    assert peer.read_text(encoding='utf-8') == 'another writer'
+    assert set(tmp_path.iterdir()) == {target, peer}

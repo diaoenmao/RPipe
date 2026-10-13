@@ -2,6 +2,14 @@
 
 ## 一、摘要
 
+### 2026-10-14 共享输入迁移验证
+
+原始数据默认迁至项目shared/data，并保留旧路径引用。完整MNIST60000/10000、CIFAR1050000/10000各由两个消费者读取，16项固定raw hash不变；归档格式与torchvision路径指向同一文件。本机main_exp的23个共享文件及旧probe的848个匹配raw路径完成引用适配，278份历史result/index/process/provenance字节不变。逻辑重复字节汇总不是实测磁盘释放量；不删除无法识别的输入或失败证据。见 [迁移证据](shared_inputs_migration.json)。
+
+本轮没有新80000-step长矩阵或当前源码八格600-step前置门，原v0.3.0正式结论保持原来源。
+
+固定归档processed改为来源分版共享后，MNIST / CIFAR10各linear的CPU200-step前缀诊断通过、参数最大差0，采样和scheduler总预算仍80000，完整test与原数值门保持；[正式精选证据](shared_inputs_prefix.json)保留实际源码与限制。两格200-step不能替代八格600-step。4ccb28d新缓存的六个processed文件与旧缓存字节相同，已保持旧路径同文件引用；与98648f3的不同格式分别存储。
+
 ### 2026-10-13 v0.3.0 本机完整复验
 
 - 完成：main_probe新正式八格60-step及Study终验通过；main_exp八格600-step前置门、32条各自连续80000-step训练、32条各自best独立评测、64条完整性及八组固定四seed曲线门 / 两组模型次序门均通过。每条训练有400个完整test10000点，未缩短预算或评测。

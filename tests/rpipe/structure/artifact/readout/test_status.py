@@ -6,6 +6,7 @@ from rpipe.flow.cli import main
 from rpipe.structure.artifact.readout import format_status, list_runs
 from rpipe.structure.artifact.index import write_index
 from rpipe.structure.artifact.result import write_result
+from rpipe.structure.artifact.config import write_config
 
 pytestmark = [
     pytest.mark.unit,
@@ -177,3 +178,85 @@ def test_status_cli_prints_activity_while_index_is_missing(tmp_path: Path, capsy
     )
     assert main(['status', str(study)]) == 0
     assert capsys.readouterr().out.strip() == 'make: shared CIFAR10 download'
+
+
+def _planned_run(study, config):
+    write_index(study, {'study': 'planned', 'experiments': [{'factors': {}, 'runs': [{'id': 'r0', 'seed': 0}]}]})
+    write_config(study / 'runs/r0/config.yaml', config)
+
+
+@pytest.mark.parametrize('mode', ['eval', 'inference'])
+def test_pending_mode_comes_from_config_without_mode_axis(tmp_path, mode):
+    _planned_run(tmp_path, {'algorithm': {'mode': mode}})
+    before = {p.relative_to(tmp_path): p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    row = list_runs(tmp_path)['runs'][0]
+    assert row['mode'] == mode and row['status'] == 'pending'
+    assert list_runs(tmp_path, modes=[mode])['counts']['planned'] == 1
+    assert list_runs(tmp_path, modes=['train'])['counts']['planned'] == 0
+    assert {p.relative_to(tmp_path): p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
+
+
+@pytest.mark.parametrize('bad', ['missing', 'yaml', 'mapping', 'algorithm', 'mode', 'empty-mode'])
+def test_missing_or_malformed_mode_config_is_unknown_with_diagnostic(tmp_path, bad):
+    _planned_run(tmp_path, {})
+    path = tmp_path / 'runs/r0/config.yaml'
+    if bad == 'missing':
+        path.unlink()
+    elif bad == 'yaml':
+        path.write_text('algorithm: [\nprivate-token: do-not-print\n', encoding='utf-8')
+    elif bad == 'mapping':
+        path.write_text('[1, 2]\n', encoding='utf-8')
+    elif bad == 'empty-mode':
+        write_config(path, {'algorithm': {'mode': ''}})
+    else:
+        write_config(path, {'algorithm': []} if bad == 'algorithm' else {'algorithm': {'mode': ['eval']}})
+    before = {p.relative_to(tmp_path): p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    row = list_runs(tmp_path)['runs'][0]
+    assert row['mode'] == 'unknown' and row['status'] == 'pending'
+    assert 'config' in row['error'] and 'config.yaml' in row['error']
+    assert 'do-not-print' not in format_status(list_runs(tmp_path))
+    assert list_runs(tmp_path, modes=['train'])['counts']['planned'] == 0
+    assert {p.relative_to(tmp_path): p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
+
+
+@pytest.mark.parametrize('config', [{}, {'algorithm': {}}, {'algorithm': {'mode': None}}])
+def test_readable_default_mode_still_means_train(tmp_path, config):
+    _planned_run(tmp_path, config)
+    assert list_runs(tmp_path)['runs'][0]['mode'] == 'train'
+
+
+@pytest.mark.parametrize('source', ['axis', 'result'])
+def test_known_mode_does_not_require_legacy_config(tmp_path, source):
+    _planned_run(tmp_path, {})
+    (tmp_path / 'runs/r0/config.yaml').unlink()
+    if source == 'axis':
+        write_index(tmp_path, {'study': 'planned', 'experiments': [
+            {'factors': {'algorithm.mode': 'eval'}, 'runs': [{'id': 'r0', 'seed': 0}]}]})
+    else:
+        write_result(tmp_path / 'runs/r0/result.json', {'status': 'succeeded',
+                     'control': {'algorithm': {'mode': 'eval'}}, 'metrics': {}, 'paths': {}})
+    row = list_runs(tmp_path)['runs'][0]
+    assert row['mode'] == 'eval' and row['error'] is None
+
+
+@pytest.mark.parametrize('broken', ['{bad json', '[]'])
+def test_unreadable_result_uses_planned_config_mode(tmp_path, broken):
+    _planned_run(tmp_path, {'algorithm': {'mode': 'eval'}})
+    (tmp_path / 'runs/r0/result.json').write_text(broken, encoding='utf-8')
+    row = list_runs(tmp_path)['runs'][0]
+    assert row['mode'] == 'eval' and row['status'] == 'pending'
+
+
+@pytest.mark.parametrize('status', ['failed', 'succeeded'])
+def test_mode_diagnostic_preserves_execution_state_and_real_failure(tmp_path, status):
+    _planned_run(tmp_path, {})
+    (tmp_path / 'runs/r0/config.yaml').unlink()
+    result_path = tmp_path / 'runs/r0/result.json'
+    write_result(result_path, {'status': status, 'control': {}, 'metrics': {'accuracy': 0.8},
+                              'paths': {}, 'error': 'RuntimeError: original failure'})
+    before = result_path.read_bytes()
+    row = list_runs(tmp_path)['runs'][0]
+    assert row['status'] == status and row['mode'] == 'unknown'
+    assert 'mode config unreadable' in row['error']
+    assert ('original failure' in row['error']) == (status == 'failed')
+    assert result_path.read_bytes() == before

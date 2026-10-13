@@ -24,8 +24,8 @@ def atomic_write_text(path: Path | str, text: str, encoding: str = 'utf-8') -> P
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     tmp = target.with_name(f'{target.name}.{os.getpid()}.{time.time_ns()}.tmp')
-    tmp.write_text(text, encoding=encoding)
     try:
+        tmp.write_text(text, encoding=encoding)
         return atomic_replace(tmp, target)
     finally:
         try:

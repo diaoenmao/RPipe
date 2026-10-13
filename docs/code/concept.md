@@ -62,7 +62,7 @@ Study            一轮研究：编排壳 + artifact 根
 |------|-----------|----------------|---------|
 | **声明** | `study.yaml`（`axes` / `seeds`）；基底 `experiment_config.yaml` | `axes` 的一个取值组合（`factors`） | 合并后的 `runs/<id>/config.yaml`（含 seed） |
 | **编排** | `index.json`（整棵树的清单）；`scripts/` | index 里的一组：`factors` + 其下各 Run 的 `id` / `config` / `log` | index 里的一条 Run |
-| **共享文件** | `shared/data/`、`shared/model/`（make 先准备，再 spawn） | 无 | 不各自下一份数据 |
+| **共享文件** | 项目根 `shared/data/`、`shared/model/`（make 先准备，再 spawn；跨 Study 共用） | 无 | 原始输入不各自下载；Run 可变状态仍独立 |
 | **执行摘要** | — | — | `result.json`（`status` / 本次 metrics / paths） |
 | **文本日志** | 无总 log | 无 | `assets/logs/run.log`（index.`log` 指向它） |
 | **数字曲线** | `docs/figures/`（按 Experiment 画 mean±std） | 跨 seed 对齐后的 history **mean / std / min / max** | `assets/tracker/`（这一次的 history / jsonl） |
@@ -276,7 +276,7 @@ flowchart TB
 | **docs** | Study 级：计划、报告、figures |
 | **config** | Run 级；make 写、prepare 读 |
 | **result** | Run 级；可序列化；含 `status` |
-| **asset** | Study 级共享在 `shared/`；Run 级 tracker / `run.log` / checkpoint 在 `runs/<id>/assets/` |
+| **asset** | 项目级不可变输入在 `shared/`；Study 私有派生输入显式声明，Run 级 tracker / `run.log` / checkpoint 在 `runs/<id>/assets/` |
 | **index** | Study 级编排清单；按 Experiment 列 Run（含每条 `log`） |
 | **process** | Run 一份旁路；Study 根一份信封，内嵌各 Experiment 的跨 seed 摘要 |
 | **readout** | `structure/artifact/readout/`。只读拼 `rpipe status` / `rpipe logs`；`rpipe report` 从信封写 `docs/NUMBERS.md`，不写结论 |

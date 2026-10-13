@@ -8,7 +8,7 @@ from ...recipe import validate
 def before(ctx):
     pair = validate(ctx.config, ctx.control.seed, paired)
     workspace = ctx.layout.assets_dir / 'probe'
-    source = ctx.study_dir.parent / 'main_exp' / 'shared' / 'data'
+    source = ctx.layout.shared_data_dir
     raw = source / pair[0] / 'raw'
     if not raw.is_dir() or not any(path.is_file() for path in raw.rglob('*')):
         raise FileNotFoundError(f'prepare the raw dataset before launch: {raw}')

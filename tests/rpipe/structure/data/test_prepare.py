@@ -12,8 +12,13 @@ pytestmark = [
 
 from pathlib import Path
 
+@pytest.fixture(autouse=True)
+def isolated_shared_root(tmp_path):
+    (tmp_path / 'study.yaml').write_text('shared: {root: project-shared}\n', encoding='utf-8')
+
 from rpipe.structure.artifact import artifact_layout, write_config
 from rpipe.structure.data.prepare import prepare_shared_data
+from rpipe.structure.artifact.shared import shared_paths
 
 
 def test_prepare_skips_stub(tmp_path: Path, monkeypatch):
@@ -43,7 +48,7 @@ def test_prepare_skips_existing_cache(tmp_path: Path, monkeypatch):
         layout.config_path,
         {'id': 'r0', 'data': {'name': 'MNIST', 'source': 'torch', 'config': {'batch_size': 64}}},
     )
-    cached = tmp_path / 'shared' / 'data' / 'mnist'
+    cached = shared_paths(tmp_path)['data'] / 'mnist'
     cached.mkdir(parents=True)
     (cached / '.ready').write_text('foreign\n', encoding='utf-8')
     assert prepare_shared_data(tmp_path, [layout.config_path]) == []
@@ -98,7 +103,7 @@ def test_prepare_announces_download_before_build(tmp_path: Path, monkeypatch, ca
     assert 'foreign' in out
     assert 'make: shared MNIST ready' in out
     assert 'download' in seen['during']
-    assert (tmp_path / 'shared' / 'data' / 'mnist' / '.ready').read_text(encoding='utf-8').strip() == 'foreign'
+    assert (shared_paths(tmp_path)['data'] / 'mnist' / '.ready').read_text(encoding='utf-8').strip() == 'foreign'
 
 
 def test_prepare_retries_partial_archive(tmp_path: Path, monkeypatch, capsys):
@@ -122,7 +127,7 @@ def test_prepare_retries_partial_archive(tmp_path: Path, monkeypatch, capsys):
             },
         },
     )
-    partial = tmp_path / 'shared' / 'data' / 'cifar10'
+    partial = shared_paths(tmp_path)['data'] / 'cifar10'
     partial.mkdir(parents=True)
     (partial / 'cifar-10-python.tar.gz').write_bytes(b'not-a-full-archive')
     assert prepare_shared_data(tmp_path, [layout.config_path]) == ['CIFAR10']

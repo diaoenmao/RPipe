@@ -16,7 +16,7 @@ Study 内部职责：成对 Algorithm 与计算实现放在 `structure/algorithm
 
 ## 二、命令
 
-以下命令用于后续完整复跑；每轮先使用新 version，并同步 study.yaml 的 fixed.version 与 experiment_config.yaml 的 version，不能复用旧 Run 或来源清单。在仓库根运行；原始数据复用 `main_exp/shared/data/`（先按 [main_exp](../main_exp/README.md) 准备 raw）。make 只展开配置；launch 才执行准备和计算。
+以下命令用于后续完整复跑；每轮先使用新 version，并同步 study.yaml 的 fixed.version 与 experiment_config.yaml 的 version，不能复用旧 Run 或来源清单。在仓库根运行；原始数据复用项目根 `shared/data/`（先按 [main_exp](../main_exp/README.md) 准备 raw）。原版 / 当前版 raw引用同一文件；固定processed / Stats按归档版本和raw hash放在`shared/data/derived/`中，各Run只引用文件，加载的对象、sampler与模型仍独立。make 只展开配置；launch 才执行准备和计算。
 
 原归档即使跑视觉组合也会导入 `evaluate` / `datasets` / `transformers`。使用隔离环境，核对归档所需依赖，并先做真实 CUDA 运算；本轮完整依赖记录见 [环境清单](../main_exp/docs/environment_v030_20261013.json)，raw 核对见 [数据清单](../main_exp/docs/data_v030_20261013.json)。不要让已有 `.tmp/runtime` 优先遮蔽新 venv 的依赖。每个 Run 内两侧保持原版先、当前版后；不同 Run 使用独立工作区。
 

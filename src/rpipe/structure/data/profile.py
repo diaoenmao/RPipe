@@ -13,6 +13,7 @@ from typing import Any
 import yaml
 
 from rpipe.structure.data.config import DataConfig
+from rpipe.structure.artifact.shared import shared_paths
 from rpipe.structure.data.factory import DataFactory, vision_root
 from rpipe.structure.make.expand import load_study_yaml
 from rpipe.structure.origin import normalize_origin
@@ -90,11 +91,11 @@ def profile_study(study_dir: Path | str) -> list[Path]:
     study = Path(study_dir)
     declared = load_study_yaml(study)
     origin = normalize_origin(declared.get('origin'))
-    shared = study / 'shared' / 'data'
+    shared = shared_paths(study)['data']
     written: list[Path] = []
     for name in _data_names(declared):
         root = vision_root(name) or name
-        folder = shared / root
+        folder = study / 'shared' / 'data' / root
         data = DataFactory.build(
             DataConfig.from_mapping(
                 {
