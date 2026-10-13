@@ -10,8 +10,8 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 
 | **范围** | **改前** | **改后** | **依据** |
 | --- | --- | --- | --- |
-| 调用方式 | 从 `src/` 运行 `train_model.py`、`test_model.py`、`make.py` 等独立脚本，共享全局 `cfg` | 安装 `rpipe` 包，以统一 CLI 执行 make / launch / process，源码集中到 `src/rpipe/` | [代码结构](../code/code.md) |
-| 配置与编排 | `config.yml` 配合 `control_name` 解析；按 seed 与配置拼 tag，make 生成 Bash / wait 调度 | Study YAML 声明 axes / seeds，展开 Experiment × seed 的 Run；配置内容生成 Run ID，launch 执行固定阶段链 | [概念](../code/concept.md)、[Study 指南](../../studies/README.md) |
+| 调用方式 | 从 `src/` 运行 `train_model.py`、`test_model.py`、`make.py` 等独立脚本，共享全局 `cfg` | 源码集中到 `src/rpipe/`，提供参考 CLI；下游复制源码模板并使用自己的项目入口，包构建仍作分发合同验证 | [代码结构](../code/code.md)、[源码接入](../../README.md#在其他项目中使用-rpipe) |
+| 配置与编排 | `config.yml` 配合 `control_name` 解析；按 seed 与配置拼 tag，make 生成 Bash / wait 调度 | Study YAML 声明 axes / seeds，展开 Experiment × seed 的 Run；配置内容生成 Run ID，launch 执行固定阶段链 | [概念](../code/concept.md)、[Study 指南](../../README.md#study-使用指南) |
 | 运行产物 | 配置、脚本、实验、结果和图分别落到 `output/config`、`script`、`exp/<tag>`、`result`、`vis`；checkpoint / best 为旧分件格式 | 按 Study / Run 统一落盘 config、result、tracker、log 和新 checkpoint；index / process 支持 status / logs / report | [目录约定](../code/layout.md) |
 
 ### 2. 计算与恢复修复
@@ -39,7 +39,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | 历史曲线复现 | 只完成 seed0、200-step 前缀探针；接入主要在 `.tmp/`，四 seed 完整曲线未运行 | 新增正式历史 Study 与复跑入口；32条80000-step 训练、32条自身 best 评测成功，固定图像估读门通过 | [历史复现](https://github.com/diaoenmao/RPipe/blob/18cd76c/studies/main_historical/README.md) |
 | 统一测试入口 | 子进程隐式继承环境与输出；当前沙箱曾有3项 Kornia 导入失败，正常本机原入口为286项通过 | 显式传递环境和 stdout/stderr，补2个真实子进程回归；当前统一 CPU 门288项通过，原失败记录保留 | [测试入口](../../tests/README.md) |
 | 包与 CI | Ubuntu / Python3.10 只跑 core；包门构建后仅对 wheel 做无依赖安装和轻量 import | Linux / Windows、Python3.10 / 3.13 的 CPU 及本地 integration 全部通过；两种 OS 全新环境中的 wheel / sdist 安装和公开 CLI 全部通过 | [远端测试](https://github.com/diaoenmao/RPipe/actions/runs/37210453756)、[远端包验收](https://github.com/diaoenmao/RPipe/actions/runs/37210453815) |
-| 导航与清理 | Study 入口分散，设计文档与开发记录同在 `docs/` 根目录；正式 Study 与测试用声明混放 | 设计文档在 `docs/code/`，开发记录在 `docs/development/`；Study 指南是 `studies/README.md`；`studies/` 只留 `main_exp`、`main_probe`（原 `main_historical`、`main_reproduction`，待按新流程重跑）、`_template`，测试声明在 `tests/_data/studies/` | 第二节（一）、[Study 使用指南](../../studies/README.md) |
+| 导航与清理 | Study 入口分散，设计文档与开发记录同在 `docs/` 根目录；正式 Study 与测试用声明混放 | 设计文档在 `docs/code/`，开发记录在 `docs/development/`；通用接入与 Study 指南在根 README，`studies/README.md` 只保留研究导航；正式 Study 与测试声明分开 | 第二节（一）、[Study 使用指南](../../README.md#study-使用指南)、[研究导航](../../studies/README.md) |
 | Study 阶段接续 | Study 没有与库同名的阶段回调；main_exp 终验只由根脚本调用，probe 没有两侧标准 artifact 对比入口 | 显式 `flow.study_phases` 加载 `flow/<phase>/`；prepare 有构造前 / 后入口，write 先 Study 后库定稿，其余阶段先库后 Study。专用实现放 `structure/`，两柱源码自动冻结；区分 Run 与 Study process，probe 投影观测并调用库 compare，原数值门保留 | [flow §14.0](../code/flow.md#140-study-阶段目录)、第二节 2026-10-12 |
 
 ### 4. 成对探针接入 Flow（2026-10-10）
@@ -86,7 +86,71 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
+## 2026-10-14
+
+### 10. 研究工作、下游反馈与 v0.3.1 发布准备
+
+维护者授权全面文档检查、当前工作分支经PR进入dev，再由dev发布PR进入main，出v0.3.1；不跑新大规模实验。按最小改动保留已有README修正、历史实测和失败，不把历史日期的状态批量改写为当前结论。
+
+完整读取指定飞书目录的研究计划规范 / 模板（均revision3），核对knowledge提交09078015的research-plan、literature-search、paper-analysis、pytorch-project正文和research-plan中文指南，适配为[研究工作要求](research.md)。宏观方案与具体Study分工不变，不增加运行依赖或安装skills；[下游反馈规范](feedback.md)明确归属、证据、公开脱敏、去重、授权提交与上游核验。README最后的prompt包含可删除的限范围Issue反馈授权，本轮没有实际对外报单。
+
+版本元数据与README同步0.3.1，接入示例改为标签核对并保存确切commit；完整版本区间、迁移和未覆盖范围见[发布报告](../releases/v0.3.1.md)。活动文档修正已移除的B-022锚点、Flow表头、库默认write / Study扩展权限和safety默认值的边界；补查后核对实际Config与SystemFactory，明确标准字段不等于YAML全部必填、生态表不代表已实现、没有SystemRegistry。导航接通AGENTS、layout、Studies与PLAN模板，不改研究计算源码或正式数字。
+
+本机core420 passed / 2 skipped（20261013T173200Z_03aa68，UTC），CPU integration52 passed（20261013T173211Z_8da839），使用独立basetemp。默认Conda / NumPy首次收集前因缺MKL runtime失败，采用既有MKL_THREADING_LAYER=SEQUENTIAL后复验；历史异机venv路径本机不存在，不能作为本机环境证据。两项skip为Windows符号链接权限，不计通过；未改代码掩盖环境缺失。
+
+wheel / sdist在.tmp源码副本构建并分别安装，均0.3.1、各9条CLI及4个CPU Toy/Stub Run通过，复用本机依赖不代替远端干净环境。sdist首次默认pip缓存写入被拒绝，改.tmp及禁用缓存后通过，失败与原输出保留。77份Markdown的编码、围栏及1186个相对链接 / 锚点扫描无活动失效目标；427个Run / 临时引用是本机产物，55个历史快照引用仍按原目录语境解释，不为嵌套路径改变快照字节。7份v030清单102个文件hash / 大小通过。
+
+本机证据位于.tmp/release-v0.3.1及上述test-results，不随Git提供；当前源码与旧804b3823的完整实验分别记录。提交、PR与main集成CI按现行门禁接续，实际发布URL、commit和检查链接补入GitHub Release，不把准备状态写成已发布。
+
+### 9. B-030 报告来源校验与分支清理
+
+本项于2026-10-13开始，跨日完成修复、回归与文档收口；下方实验来源仍是原日期与804b3823，不将旧实测重记为当天新增。
+
+复现来自804b3823：新version / fresh make产生新index，旧process保留；原report只把index当日志链接来源且吞掉读取异常，仍exit0导出64个旧ID。正式复现保留在[Study证据](../../studies/main_exp/docs/v030_stale_report_repro.json)。先明确报告合同，再补反例；首轮18 failed / 2 passed，覆盖旧聚合、索引缺失 / 损坏 / 非法形状、重复Run与写入失败。修复仅在readout/report核对Study名及全部计划Run ID、seed、因素归属，复用已有atomic writer；不引入新process格式或索引哈希字段，不修改make、聚合、算法或数值门。
+
+缺失或损坏索引、重复 / 缺少Run、身份不符均在导出前拒绝，旧process、NUMBERS和研究结论不变；旧格式清单、合法部分聚合和排列调整兼容。先前测试fixture漏写实际seed / 因素，已补齐；首次绿色复验19 passed / 1 failed因新增测试插在旧用例末段断言前，导致saved_figures越域，恢复原用例完整断言后31项通过，失败原样留在.tmp。清单匹配不证明同一Run再次执行后的指标新鲜度、运行期间索引未并发修改或研究质量；本次不扩展成并发快照 / 事务系统。
+
+维护者确认后，brainstorm按资源与调度、环境准备、历史记录与边界分组，旧待办记录转入按日期备查，保留原始事实与链接，不实施吞吐或滚动补位改造。README的重构prompt移到最后，参考地址固定为https://github.com/DreamSoul-AI/RPipe/。已验证PR #32合并且内容保全后删除远端 / 本地codex/v030-local-studies，以及PR #28对应的旧本地codex/study-flow-layout和已合入的codex/downstream-usage；仅保留main/dev与本次codex/fix-stale-report。后续验证与PR状态以实际结果补记。
+
+最终定向38 passed（20261013T155929Z_4aa95e）、core420 passed / 2 skipped（20261013T155957Z_df3f46）、CPU integration52 passed（20261013T160008Z_6384e0）；run_id使用UTC，integration实际本地日期为2026-10-14，两个批次使用独立basetemp。两项skip为Windows软链接创建受限用例，不计通过。复制正式新index与旧process的CLI复验exit2、原文件及旧表不变；匹配的当前聚合exit0，64个Run ID全部正确。7份v030清单的102个快照文件hash匹配，正式Studies相对dev无diff，证据为.tmp/b030-20261013/evidence-result.json；未训练、未改旧provenance或实测门限。
+
 ## 2026-10-13
+
+### 8. 本地模板文档与云端实验分支同步
+
+维护者指定 DreamSoul-AI/RPipe 的 codex/v030-local-studies 分支，将本地文档修正合入并经 PR 进入 dev。origin 已改为组织仓库；远端实验提交406d7a0基于发布804b3823，未修改库与测试源码。本地修改先提交为ef13595保全，再合入指定分支；唯一文本冲突为本文件同日新增记录，分别保留并区分章节，其他重叠文档自动合并。README 的源码模板、同名两柱、项目入口与可调整预算约定保留为接入规则，远端 safety=0.5 / 两并发仅为该次实验的实测条件，不转成通用要求。
+
+远端 Study 报告、JSON、图和快照保持原字节，不重写实际计算来源；B-030保留open。首页补充本轮报告入口，同时保留旧示例图与日期；README、CI/CD及项目元数据的仓库链接更新为组织地址。本次同步不重跑研究实验，验证与实际PR状态另记后续结果，不将远端训练记录称为本地新增实测。
+
+同步工作树的CPU core为395 passed / 2 skipped（20261013T153444Z_203e96），CPU integration为51 passed（20261013T153455Z_3ed556），两个进程使用不同basetemp；跳过不计通过。远端新增或修改的121个JSON可解析，7份v030快照清单的102个文件大小与SHA256匹配，两个正式Study相对于406d7a0无diff；根README等活动入口的93个相对链接 / 锚点、项目元数据组织地址和git diff --check通过。源码、测试和workflow均未变，临时检查及原始测试输出在.tmp，不随clone提供；本机未重新取得异机Run / checkpoint或执行GPU矩阵。
+
+### 7. 源码模板接入与 Study 指南迁移
+
+按维护者确认的接入方式，根 README 改为将固定 RPipe 源码复制到下游 `src/rpipe/` 并长期保留，研究包在 `src/<项目名>/` 下沿用相同 structure/flow 及层内职责，Study 导入项目实现。删除外部 pip / Git URL 依赖接入的推荐；通用 Study 指南从 studies/README.md 移至根 README，原目录入口保留导航和历史事实，设计、Agent 与模板的活动引用同步。
+
+README 与 CI/CD 明确下游 main/dev/工作分支流转，以及 Actions 可选、本地验证和实际分支规则核对的边界；RPipe 自身的 Actions、Ruleset 和 workflow 未修改。
+
+在 `.tmp/downstream-readme-20261013/` 隔离项目中从正式 main 提交804b3823导出并复制101个Python文件，逐文件字节核验；README 的复制命令拒绝覆盖已有src/rpipe，实际导入指向下游副本。四个CPU Toy/Stub Run成功，另一个Run通过recipe注册src项目算法并通过Study collect导入src项目阶段函数。验证仅证明源码接入、阶段和产物合同，不是新研究数值验收；原始检查与输出只在.tmp保留，不随clone提供。未测试网络clone、GPU或下游分发包，未提交推送或扩大实验。
+
+后续按维护者要求保留原有实例曲线，移除 README 的安装章节和 recipe 目录项/示例，artifact 只在 structure 内说明。项目与 Study 的结构图均展示完整同名目录，不展开阶段文件；Studies 入口补充从 docs/research 宏观方案提取具体问题、计划和验收的步骤。通用命令以项目实际入口为准，rpipe 仅作为本仓库实例入口；显存预算和系数按项目校准调整，不规定统一比例。
+
+隔离复验同时覆盖模板入口的四个 CPU Run 和研究项目自己的 my_project 入口；项目入口接入算法与 Study collect 的 Run 成功。容量 API 传入不同 safety 值时预算相应变化，仅证明参数可调整，不是 GPU 容量校准；原 CLI 未新增 safety 参数，库默认常量未改。原曲线图、生产源码和正式实验配置保持不变，证据为.tmp中的result-template-final.json。
+
+README 的项目接入章节补充可复制的 Agent 重构指令，明确先读项目与模板文档，再按同名两柱映射、源码复用、宏观问题拆分 Study、来源冻结、真实入口及小规模验收实施。指令保留并行校准、分支/可选 CI 和当次授权边界，不自动授权下游推送、清理证据或大规模实验；本次只新增文档指令，未执行下游重构。
+
+### 6. 本机接续编排与观察器修复
+
+原调度进程终止后，未取回原退出码或观察器trace；没有把过期running字段当运行证据。临时观察器首次接续时未处理psutil.disk_io_counters返回None，在任何正式Run / checkpoint启动前退出；失败日志保全后以null表示不可用指标，保留进程I/O，并使用授权隐藏后台启动。接续期间持续取到新鲜资源 / 阶段观测，启动失败与修复范围见[观察器记录](../../studies/main_exp/docs/v030_observer_repair.json)，不是已证实的RPipe训练算法缺陷。
+
+接续调用现有make接口，仅替换两个中断train及其配套eval的身份version；计算源码、声明、精度与科学预算一致，原已完成结果 / provenance未回写。原生launch和最终正式审计完成，来源、报告与中断证据见[Study报告](../../studies/main_exp/docs/STUDY_REPORT.md)。B-030仍open；本轮用额外来源核对避免错误导出，不把辅助核对当软件缺陷已经修复。没有实施brainstorm里的调度改造或发布新版本。
+
+### 5. 发布后本机环境与目录核对
+
+按维护者要求重新fetch并核对最新main：origin/main、本地main、工作分支HEAD及v0.3.0解引用提交均为 `804b3823`；本地main旧引用经祖先及worktree检查后快进，未切换正在实验的工作区。实际两Study计算源码无diff，来源冻结仍通过，见[来源核对](../../studies/main_exp/docs/v030_git_audit.json)。
+
+main_exp根prepare / process及main_probe旧根阶段目录仅残留被Git忽略的`.pyc`；核对无源码、无重解析点且目标路径在工作区后，全部移入`.tmp/v030-20261013/old-phase-cache/`并保留hash清单。正式flow / structure源码与运行资产保持原路径；AGENTS新增切换或迁移后核对实际目录及忽略缓存的通用约定。
+
+发现B-030的旧聚合报告来源缺陷，公开CLI独立元数据复现已保存，状态仍open，见[bugs.md](bugs.md)。细分预算、耗时均衡和归档依赖就绪检查记为[后续建议](brainstorm.md)，未自动实施。环境、数值门、校准及进行中的完整矩阵分别记录在[main_exp](../../studies/main_exp/docs/v030_execution.md)和[main_probe](../../studies/main_probe/docs/v030_execution.md)报告，开发记录不替代科学终验。
 
 ### 4. v0.3.0 发布准备
 

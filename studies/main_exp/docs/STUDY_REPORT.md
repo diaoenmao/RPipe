@@ -2,7 +2,19 @@
 
 ## 一、摘要
 
+### 2026-10-13 v0.3.0 本机完整复验
+
+- 完成：main_probe新正式八格60-step及Study终验通过；main_exp八格600-step前置门、32条各自连续80000-step训练、32条各自best独立评测、64条完整性及八组固定四seed曲线门 / 两组模型次序门均通过。每条训练有400个完整test10000点，未缩短预算或评测。
+- 来源：软件为核对过的最新main / 发布v0.3.0 / `804b3823ab6d2af46cbda1a65688ca8b76c60b22`，独立venv与16项raw hash已验证，FP32、benchmark / 两项TF32=false、CUBLAS=:4096:8、CPU2 / workers0保持不变。每条训练的实际浮点权重为torch.float32，committed scheduler进度与保存step一致。
+- 并发：两Study分别实测资源，main_exp采用4.5 GiB、main_probe采用5 GiB、原生auto两并发与safety=0.5。main_exp短校准round2总体吞吐约为串行1.35–1.54倍；main_probe auto约1.33倍。本轮长执行没有同条件完整串行对照，不把短校准比值当长矩阵加速比。
+- 执行与中断：原调度04:26开始，20:59左右在30条训练完成后中断；未完成两条旧轨迹保留。接续21:14–23:11重新从step0训练两个受影响seed并完成全部评测，接续观察墙钟1.956小时；从首次启动至接续结束的包络约18.756小时，含中断和接续准备。32条成功训练分别连续，不称一次连续launch。原30条结果与原provenance未改，四个受影响身份槽位使用recovery01，源码与科学配置一致。
+- 科学结果：八组终点均值最大原图估读差0.254999个百分点，所有预置曲线门通过；八格seed0最初600步的96个指标值精确一致，两条中断 / 重跑的已保留指标前缀精确一致。这些前缀证据不替代全预算验收，也不证明原图对应的全部历史权重逐位相同。
+- 资源与剩余问题：两段观察整卡峰值10.66 GiB、最少空闲12.82 GiB、主存最少可用4.81 GiB，含背景与驱动/context；精确allocator峰值限校准记录。B-030报告来源缺陷仍open，本次通过ID集合 / 真实provenance核对防止旧数字混入。历史原始seed / 指标 / 权重未恢复，历史自定义sampler的精确resume仍未验收；并发进一步改进只记brainstorm。
+- 证据：[64条审计](v030_long_audit.json)、[固定曲线终验](COMPARISON.json)、[数字](NUMBERS.md)、[接续身份与原来源](v030_recovery_plan.json)、[原中断](v030_interruption.json)、[完整重跑前缀](v030_interrupted_prefix_audit.json)、[执行记录](v030_execution.md)。原日志 / checkpoint / 逐次资源JSONL仅本机，随Git提供的正式JSON保留状态、数字、hash和验证边界。
+
 ### 2026-10-13 容量与精度复验
+
+以下记录发布准备阶段的候选源码与当时状态；发布后的本机完整复验以本节最上方摘要为准，历史“未执行”不代表当前状态。
 
 - 目标：验证修复后的实际容量和严格数值边界，不重跑长矩阵。完整raw缓存已按16项历史hash校验。
 - 容量：27个800-step原生Flow Run通过；CNN、ResNet18、混合任务的round1/2/3严格checkpoint / test history一致，无OOM。代表性并发总体更快，main_exp后续fresh make使用显式4.5GiB预算和既有50%安全池。
@@ -32,6 +44,8 @@ main-exp-flow-20261011-03 的新源码八格 600-step 原代码 / 当前链前�
 
 ## 二、改前与改后
 
+本节至第四节保留2026-10-11 version03历史结果与当时变更，证据指向对应快照；本轮完整结果在摘要和第五节。
+
 | **范围** | **改前** | **当前状态** |
 | --- | --- | --- |
 | 设备条件 | 归档导入把声明的 benchmark=false 覆盖为 true；TF32 未显式固定 | 导入前开关保存并恢复，TF32 显式关闭，实际值写入 runtime_validation.json；全部 64 个 Run 均通过实际值检查 |
@@ -41,14 +55,14 @@ main-exp-flow-20261011-03 的新源码八格 600-step 原代码 / 当前链前�
 
 ## 三、证据与未完成项
 
-1. 前置证据：[PREFLIGHT.json](PREFLIGHT.json)。导入副作用与失败边界回归：[ARCHIVE_RUNTIME_REGRESSION.json](ARCHIVE_RUNTIME_REGRESSION.json)。正式 Flow 前缀辅助核查：[FLOW_PREFIX_AUDIT.json](FLOW_PREFIX_AUDIT.json)，当前已核对 8/8 组 seed0，step200 / 400 / 600 共 96 个 train/test Loss / Accuracy 值与通过的前置链完全一致；只覆盖这些前缀的指标，不代替参数或长预算终验。精度和恢复条件：[eval_recovery.md](eval_recovery.md)。
-2. 当前曲线证据：[COMPARISON.json](COMPARISON.json)，状态 passed，complete=true、final_gates_applied=true。八组均包含四个 seed；参考叉号为原图估读，不是恢复的原始指标。正式更新日期和执行细节见 [RERUN.md](RERUN.md)。
-3. 32 条训练、32 条各自 best 独立评估、完整性核查和固定曲线门均已完成；正式数字见 [NUMBERS.md](NUMBERS.md)。同设备 CNN / ResNet18 各三次串行历史速度校准已完成，见 [速度报告](speed_calibration.md)；B-022 的容量与并发吞吐调查仍未完成。B-021 已按通用原生单进程合同本机修复，本 Study 的自定义 sampler / 数据适配尚未验收精确恢复，继续拒绝中断续训。原图的实际 seed、环境及原始指标没有恢复，终验结论限于预先固定的估读门。
+1. 前置证据：[PREFLIGHT.json](versions/main-exp-flow-20261011-03/PREFLIGHT.json)。导入副作用与失败边界回归：[ARCHIVE_RUNTIME_REGRESSION.json](versions/v030-before-local-20261013/docs/ARCHIVE_RUNTIME_REGRESSION.json)。正式 Flow 前缀辅助核查：[FLOW_PREFIX_AUDIT.json](versions/v030-before-local-20261013/docs/FLOW_PREFIX_AUDIT.json)，当前已核对 8/8 组 seed0，step200 / 400 / 600 共 96 个 train/test Loss / Accuracy 值与通过的前置链完全一致；只覆盖这些前缀的指标，不代替参数或长预算终验。精度和恢复条件：[eval_recovery.md](versions/v030-before-local-20261013/docs/eval_recovery.md)。
+2. 当前曲线证据：[COMPARISON.json](versions/v030-before-local-20261013/docs/COMPARISON.json)，状态 passed，complete=true、final_gates_applied=true。八组均包含四个 seed；参考叉号为原图估读，不是恢复的原始指标。正式更新日期和执行细节见 [RERUN.md](versions/v030-before-local-20261013/docs/RERUN.md)。
+3. 32 条训练、32 条各自 best 独立评估、完整性核查和固定曲线门均已完成；正式数字见 [NUMBERS.md](versions/main-exp-flow-20261011-03/NUMBERS.md)。同设备 CNN / ResNet18 各三次串行历史速度校准已完成，见 [速度报告](speed_calibration.md)；B-022 的容量与并发吞吐调查仍未完成。B-021 已按通用原生单进程合同本机修复，本 Study 的自定义 sampler / 数据适配尚未验收精确恢复，继续拒绝中断续训。原图的实际 seed、环境及原始指标没有恢复，终验结论限于预先固定的估读门。
 4. 原始 Run 日志、数据和 checkpoint 保留在本机 runs / shared 下，不随 Git clone 提供。临时 launch 日志 .tmp/main-exp-flow-20261011-03-launch.log 和会话 13127 也仅为本机执行证据。
 
 ## 四、已完成训练
 
-截至 2026-10-11 19:48，以下 32 条训练正式成功，完整性证据见 [CHECKPOINT_AUDIT.json](CHECKPOINT_AUDIT.json)。数字为各 seed 的训练末点与全程 best，全部矩阵与独立 best 评估已完成；各 seed 数字与完整四 seed 终验分开呈现。
+截至 2026-10-11 19:48，以下 32 条训练正式成功，完整性证据见 [CHECKPOINT_AUDIT.json](versions/v030-before-local-20261013/docs/CHECKPOINT_AUDIT.json)。数字为各 seed 的训练末点与全程 best，全部矩阵与独立 best 评估已完成；各 seed 数字与完整四 seed 终验分开呈现。
 
 | **数据** | **模型** | **seed** | **Run ID** | **末点 Accuracy** | **全程 best Accuracy** | **训练耗时** |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -85,4 +99,72 @@ main-exp-flow-20261011-03 的新源码八格 600-step 原代码 / 当前链前�
 | CIFAR10 | resnet18 | 2 | 8c413f14e3d8f742 | 93.1000% | 93.2600% | 2:03:14 |
 | CIFAR10 | resnet18 | 3 | 6b9fced9385ffbad | 93.2100% | 93.3200% | 2:03:14 |
 
-![完整四 seed 训练曲线与原图估读](figures/historical_comparison.png)
+![完整四 seed 训练曲线与原图估读](versions/v030-before-local-20261013/docs/figures/historical_comparison.png)
+
+## 五、本轮 v0.3.0 完整长结果与来源
+
+### （一）接续前后对照
+
+| **范围** | **接续前 / 既有状态** | **本轮完成后的实际状态** |
+| --- | --- | --- |
+| 本机环境与数据 | 历史环境和成功报告不能作为本轮证明 | 隔离venv、真实CUDA、完整16项hash、最终core / CPU门及两Study数值门实测通过 |
+| 调度资源 | 统一预算的设备适用性需验证，原生同模型静态wait分组存在优化空间 | 独立校准各Study，保留保护池；两并发通过数值及资源门，未修改调度实现或科学配方 |
+| 中断训练 | 最后两条在24400步附近中断，自定义sampler未验收精确恢复 | 两条新Run各自从step0连续80000步，原30条来源保留；未将旧checkpoint当续训入口 |
+| 结果身份 | 原root process可能仍为旧轮次，B-030可导出旧数字 | 本次index / process / COMPARISON全部对应当前64个Run，逐Run来源与实际配置核对；B-030软件缺陷仍open |
+| 长曲线证据 | 发布前version03的通过属于历史源码 | 最新已核对main的实际32条训练、32条评测、400点评测及全部固定门通过 |
+
+### （二）固定四 seed 曲线门
+
+下表均值±标准差为四seed末点的population描述，差值单位为百分点；参照列来自原图估读。终点 / 末50点均值 / 七锚点MAE与最大差 / 末段时间波动的预置门全部应用，两个数据集的末段模型次序也通过。逐门观察、门限与四条原始曲线在COMPARISON.json，没有按结果放宽门限。
+
+| **组合** | **末点均值 % ± population std pp** | **原图末点估读 %** | **末点差 pp** | **末50均值差 pp** | **锚点 MAE pp** | **整组门** |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| MNIST / linear | 92.6750 ± 0.0150 | 92.6700 | 0.005001 | 0.001349 | 0.009644 | 通过 |
+| MNIST / mlp | 98.1500 ± 0.0725 | 98.1600 | 0.009999 | 0.007649 | 0.014999 | 通过 |
+| MNIST / cnn | 99.4250 ± 0.0502 | 99.4100 | 0.015001 | 0.010701 | 0.018215 | 通过 |
+| MNIST / resnet18 | 99.5800 ± 0.0212 | 99.5900 | 0.009999 | 0.008399 | 0.016071 | 通过 |
+| CIFAR10 / linear | 40.3700 ± 0.1065 | 40.3500 | 0.020001 | 0.009401 | 0.037143 | 通过 |
+| CIFAR10 / mlp | 63.4675 ± 0.2038 | 63.2600 | 0.207501 | 0.233301 | 0.253573 | 通过 |
+| CIFAR10 / cnn | 88.7550 ± 0.1945 | 89.0100 | 0.254999 | 0.183298 | 0.244285 | 通过 |
+| CIFAR10 / resnet18 | 93.0350 ± 0.1464 | 92.9700 | 0.065002 | 0.097802 | 0.195715 | 通过 |
+
+![本轮完整四seed曲线及原图估读](figures/historical_comparison.png)
+
+### （三）32 条成功训练
+
+每条有400个完整test点，latest为80000步、best等于全程test Accuracy最大值；32条独立eval全部加载对应seed / 实际version的自身best并匹配正确样本数和保存step。final表示原调度完成的30条，recovery01表示从头连续重跑的两条；每条完整Run的实际version / provenance和eval来源均在v030_long_audit.json。日志链接依赖本机保留的Run资产，Git clone不包含它们。
+
+| **数据** | **模型** | **seed** | **训练 Run ID** | **执行身份** | **末点 Accuracy** | **best Accuracy** | **训练耗时** | **本机证据** |
+| --- | --- | ---: | --- | --- | ---: | ---: | --- | --- |
+| CIFAR10 | cnn | 0 | 8d9daf7916520731 | final | 88.8500% | 89.0700% | 1:26:41 | [日志](../runs/8d9daf7916520731/assets/logs/run.log) |
+| CIFAR10 | cnn | 1 | ababcab8f6d65c72 | final | 88.9000% | 89.1300% | 1:26:40 | [日志](../runs/ababcab8f6d65c72/assets/logs/run.log) |
+| CIFAR10 | cnn | 2 | c0c5d1936ad0da6c | final | 88.4200% | 88.6600% | 1:21:16 | [日志](../runs/c0c5d1936ad0da6c/assets/logs/run.log) |
+| CIFAR10 | cnn | 3 | f4a19e8da0eb7d90 | final | 88.8500% | 89.0700% | 1:21:13 | [日志](../runs/f4a19e8da0eb7d90/assets/logs/run.log) |
+| CIFAR10 | linear | 0 | e0810e7b3f071367 | final | 40.3900% | 40.6700% | 1:09:08 | [日志](../runs/e0810e7b3f071367/assets/logs/run.log) |
+| CIFAR10 | linear | 1 | eff5c8acf0c7dc88 | final | 40.5300% | 40.6600% | 1:08:59 | [日志](../runs/eff5c8acf0c7dc88/assets/logs/run.log) |
+| CIFAR10 | linear | 2 | 48e6cc671a2cd192 | final | 40.3200% | 40.6200% | 1:20:38 | [日志](../runs/48e6cc671a2cd192/assets/logs/run.log) |
+| CIFAR10 | linear | 3 | 54feef6b7d47e1bf | final | 40.2400% | 40.4400% | 1:20:50 | [日志](../runs/54feef6b7d47e1bf/assets/logs/run.log) |
+| CIFAR10 | mlp | 0 | 46c16a43bc5a7f58 | final | 63.6500% | 63.8500% | 1:21:42 | [日志](../runs/46c16a43bc5a7f58/assets/logs/run.log) |
+| CIFAR10 | mlp | 1 | 31e904af62d676e1 | final | 63.2400% | 63.4200% | 1:21:43 | [日志](../runs/31e904af62d676e1/assets/logs/run.log) |
+| CIFAR10 | mlp | 2 | 913ae66fe6c7ddd9 | final | 63.6900% | 63.8800% | 1:21:38 | [日志](../runs/913ae66fe6c7ddd9/assets/logs/run.log) |
+| CIFAR10 | mlp | 3 | 180355784b991302 | final | 63.2900% | 63.5000% | 1:21:33 | [日志](../runs/180355784b991302/assets/logs/run.log) |
+| CIFAR10 | resnet18 | 0 | 64bbf81249f98718 | final | 92.8100% | 93.0000% | 2:07:03 | [日志](../runs/64bbf81249f98718/assets/logs/run.log) |
+| CIFAR10 | resnet18 | 1 | 27a5b73a9ff05450 | final | 93.0200% | 93.2300% | 2:07:03 | [日志](../runs/27a5b73a9ff05450/assets/logs/run.log) |
+| CIFAR10 | resnet18 | 2 | 0572738bf48d6536 | recovery01 | 93.1000% | 93.2600% | 1:55:40 | [日志](../runs/0572738bf48d6536/assets/logs/run.log) |
+| CIFAR10 | resnet18 | 3 | 895601f2fbde8418 | recovery01 | 93.2100% | 93.3200% | 1:55:40 | [日志](../runs/895601f2fbde8418/assets/logs/run.log) |
+| MNIST | cnn | 0 | 8aeb38536c213eea | final | 99.4100% | 99.4900% | 0:35:40 | [日志](../runs/8aeb38536c213eea/assets/logs/run.log) |
+| MNIST | cnn | 1 | d0c852d1824dfbdc | final | 99.4600% | 99.5000% | 0:35:30 | [日志](../runs/d0c852d1824dfbdc/assets/logs/run.log) |
+| MNIST | cnn | 2 | 2fbd37f4280ca44e | final | 99.4800% | 99.5400% | 0:35:29 | [日志](../runs/2fbd37f4280ca44e/assets/logs/run.log) |
+| MNIST | cnn | 3 | 4720df1be1e1f821 | final | 99.3500% | 99.4300% | 0:35:40 | [日志](../runs/4720df1be1e1f821/assets/logs/run.log) |
+| MNIST | linear | 0 | 9eb2aa9c1ba6698d | final | 92.6500% | 92.8000% | 0:20:28 | [日志](../runs/9eb2aa9c1ba6698d/assets/logs/run.log) |
+| MNIST | linear | 1 | 9f8ba1e313f320d0 | final | 92.6900% | 92.7700% | 0:20:29 | [日志](../runs/9f8ba1e313f320d0/assets/logs/run.log) |
+| MNIST | linear | 2 | c0e6228390220324 | final | 92.6800% | 92.7700% | 0:20:28 | [日志](../runs/c0e6228390220324/assets/logs/run.log) |
+| MNIST | linear | 3 | b856c36b845f39a3 | final | 92.6800% | 92.8000% | 0:20:23 | [日志](../runs/b856c36b845f39a3/assets/logs/run.log) |
+| MNIST | mlp | 0 | 98b2d68f940214b6 | final | 98.0800% | 98.1300% | 0:30:28 | [日志](../runs/98b2d68f940214b6/assets/logs/run.log) |
+| MNIST | mlp | 1 | 566c5ffb78b2a815 | final | 98.2600% | 98.3100% | 0:30:20 | [日志](../runs/566c5ffb78b2a815/assets/logs/run.log) |
+| MNIST | mlp | 2 | 07f033dd0adf88f6 | final | 98.1700% | 98.2400% | 0:30:33 | [日志](../runs/07f033dd0adf88f6/assets/logs/run.log) |
+| MNIST | mlp | 3 | 51071324cba33354 | final | 98.0900% | 98.1500% | 0:30:27 | [日志](../runs/51071324cba33354/assets/logs/run.log) |
+| MNIST | resnet18 | 0 | 149a2c46c53d310a | final | 99.6000% | 99.6700% | 1:26:17 | [日志](../runs/149a2c46c53d310a/assets/logs/run.log) |
+| MNIST | resnet18 | 1 | d9a305205598356e | final | 99.5500% | 99.5900% | 1:26:16 | [日志](../runs/d9a305205598356e/assets/logs/run.log) |
+| MNIST | resnet18 | 2 | 2b8945d844b1658b | final | 99.5700% | 99.6200% | 1:26:30 | [日志](../runs/2b8945d844b1658b/assets/logs/run.log) |
+| MNIST | resnet18 | 3 | 9bcf24dee1442929 | final | 99.6000% | 99.6300% | 1:26:32 | [日志](../runs/9bcf24dee1442929/assets/logs/run.log) |

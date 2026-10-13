@@ -223,7 +223,7 @@ flowchart TD
 
 **目的：** 在 **已经 write 的 result** 上做派生。可空。分两层，都在 `flow/process/`：
 
-| **比较项** | ****Run process**（阶段链最后一步）** | ****Study process**（单独进程）** |
+| **比较项** | **Run process（阶段链最后一步）** | **Study process（单独进程）** |
 |--|-----------------------------------|------------------------------|
 | 入口 | `FlowRunner` 的 `process`；每条 `run-one` | `python -m rpipe process <study>`；`launch` / `run` 全部 wait 完再调一次 |
 | 写哪里 | `runs/<id>/process.json`，`scope: run` | Study 根 `process.json`，`scope: study`（**信封**） |
@@ -297,11 +297,11 @@ conservative 墙钟只在 **make** 打印。本进程实测时间在 Logger 行�
 
 `python -m rpipe logs <study>` 只读，把各 Run 的事件行按行首时间打到终端，不写 Study 级总 log。缺 index 退出 2。
 
-`python -m rpipe report <study>` 读 `process.json`，写 `docs/NUMBERS.md`（Experiment 的 mean / std / min / max，以及 Run 表）。不改 `STUDY_REPORT.md`。缺 `process.json` 退出 2。
+`python -m rpipe report <study>` 读 `process.json`，写 `docs/NUMBERS.md`（Experiment 的 mean / std / min / max，以及 Run 表）。导出前必须读取可用的当前 index，核对 Study 名以及所有计划 Run 的 ID、seed 与因素归属；包含未成功 Run 的合法部分聚合仍可导出，不要求 complete=true。不新增格式字段，旧 process 同样按其已有清单核对；Run / Experiment 的排列次序不影响身份。缺失、损坏的 index / process、重复或缺少 Run 以及身份不匹配时退出 2，提示检查并重新 process；保留旧 process、现有 NUMBERS、图和 Run 证据。数字表在校验成功后原子替换，不改 `STUDY_REPORT.md`。该校验只绑定当前计划，不证明同一 Run 重跑后的指标新鲜度或研究质量。
 
 `launch` 每一组开始前打 `launch: wait i/n mode=`，失败再试打 `launch: retry`。全部 wait 完再打一行和 status 相同的计数。不改 `jobs.json`。
 
-失败重试属于本波：先结束 train 的初次执行与重试，再放行 eval。按 index 匹配的 sibling train 最终未成功时，其 eval 不启动且不算成功；重跑 train 前失效旧的 sibling eval 结果。后续 launch 对父结果较新的旧 eval 重新执行。具体匹配、独立 eval 的例外与手动改文件的边界见 [README.md](../../studies/README.md) §4。
+失败重试属于本波：先结束 train 的初次执行与重试，再放行 eval。按 index 匹配的 sibling train 最终未成功时，其 eval 不启动且不算成功；重跑 train 前失效旧的 sibling eval 结果。后续 launch 对父结果较新的旧 eval 重新执行。具体匹配、独立 eval 的例外与手动改文件的边界见 [Study 指南 §4](../../README.md#4-一条命令怎么跑)。
 
 ---
 

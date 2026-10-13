@@ -9,7 +9,9 @@
 
 运行时类（`Data`、`Model`、`Algorithm`、`System`）与配置 dataclass 分开：前者供 prepare/execute 消费；后者为 **`DataConfig` / `ModelConfig` / `AlgorithmConfig` / `SystemConfig`**，专责从 JSON / Artifact Config 加载声明字段。
 
-**Config 字段约定：** 各 `*Config` **只规定必须字段**。其余键为可选扩展，由对应 `source` / 注册项解释。
+**Config 字段约定：** 各 `*Config` 规定标准声明字段，其余键为可选扩展，由对应 `source` / 注册项解释。下方字段表描述对象和接口，不表示 YAML 必须显式填写每个字段；`path` / `config` 等允许省略，实际默认值与业务必需条件以当前 Config / Factory / contract 为准，不能为补齐表格虚构路径。
+
+**实现与扩展边界：** 下方“下游来源”包含可复用生态和设计方向，不代表已注册或实测。当前实现见 [README](../../README.md#当前实现范围)和对应目录；不要仅设置 source 就推定未实现的后端已接通。
 
 各层统一还有两类约定（字段名可微调，语义固定）：
 
@@ -68,7 +70,7 @@ make/                → 多实验：展开、写 config/index、调度脚本；
 | **data** | `Data` + `DataRegistry` + `DataFactory` + `DataConfig` |
 | **model** | `Model` + `ModelRegistry` + `ModelFactory` + `ModelConfig` |
 | **algorithm** | `Algorithm` + **AlgorithmTracker** + Registry / Factory / `AlgorithmConfig` |
-| **system** | `System` + **Logger** + Registry / Factory / `SystemConfig` |
+| **system** | `System` + **Logger** + `SystemFactory` / `SystemConfig`；没有 `SystemRegistry` |
 | **control** | `ExperimentConfig` + `RunConfig` + `Control` + 四层 `*Config` + 合并/编解码/契约（§8） |
 | **artifact** | layout / config / result / asset / index（§9） |
 | **make** | 多实验 config 网格 + 调度脚本（§10） |
@@ -141,7 +143,7 @@ Factory 按注册的 `name` / `source` 精确匹配，未注册组合抛 `ValueE
 
 ### 4.4 `DataConfig`
 
-dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必须字段：**
+dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**标准字段：**
 
 | **字段** | **说明** |
 |------|------|
@@ -234,7 +236,7 @@ flowchart LR
 
 ### 5.4 `ModelConfig`
 
-dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必须字段：**
+dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**标准字段：**
 
 | **字段** | **说明** |
 |------|------|
@@ -326,7 +328,7 @@ execute 典型调用：`algorithm.run(data, model, system, tracker=…) → obse
 
 ### 6.4 下游来源（至少）
 
-循环、优化器、调度器、resume、metric、生成管线等**复用生态能力**，经 Registry 按 **mode + source** 挂接。**算法层接口统一**（§6.11）：各 source 映射到同一套 `optimizer` / `scheduler` / `resume` 语义，不在 system / model 另造一套。git `main` 只有 native；本树 **不**把对照收成「只做 `custom_torch`」。HF Trainer / Accelerate 等是并列 `source`，不是 native 的特例，也不把 Trainer 特有键抬成 Control 必须表。
+循环、优化器、调度器、resume、metric、生成管线等**复用生态能力**，经 Registry 按 **mode + source** 挂接。**算法层接口统一**（§6.11）：各 source 映射到同一套 `optimizer` / `scheduler` / `resume` 语义，不在 system / model 另造一套。历史对照 main `98648f3` 只有 native；当前模板还提供 Transformers Trainer，其他列表项属于扩展边界，不等于已实现。HF Trainer / Accelerate 等按对应 `source` 的职责组织，不把 Trainer 特有键抬成 Control 必须表。
 
 | **来源** | **典型用于** | **复用什么** |
 |------|----------|----------|
@@ -346,11 +348,11 @@ execute 典型调用：`algorithm.run(data, model, system, tracker=…) → obse
 
 ### 6.5 `AlgorithmConfig`
 
-dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必须字段：**
+dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**标准字段：**
 
 | **字段** | **说明** |
 |------|------|
-| `mode` | `train` / `eval` / `inference`（一次一个；默认必须有） |
+| `mode` | `train` / `eval` / `inference`（一次一个，须为当前 source 已支持的模式） |
 | `source` | 执行实现来源（如 `custom_torch` / `transformers_trainer` / `accelerate` / `diffusers` / `vllm` / `sglang` / …） |
 | `path` | 算法超参等资源路径 |
 | `config` | **内容配置**：可装入 `path` 内读出的配置，或由上层覆写；合并规则下游再定 |
@@ -644,11 +646,11 @@ RNG 和采样位置恢复完整不等于所有算子数值确定。严格数值�
 | **vLLM** | 推理服务 / 引擎侧的设备与批处理运行时 |
 | **SGLang** | 推理运行时与设备相关能力 |
 
-其它集群启动器等经 Registry 注册即可。
+当前没有 SystemRegistry，SystemFactory 只构造 native System；改变 `system.source` 不会切换引擎。其他运行时先由项目专用 Algorithm / 薄适配组合使用，确需改 System 时先明确对应职责、兼容与验证，不调用不存在的注册接口。
 
 ### 7.4 `SystemConfig`
 
-dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必须字段：**
+dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**标准字段：**
 
 | **字段** | **说明** |
 |------|------|
@@ -915,6 +917,8 @@ structure/artifact/
 
 `readout/` 只读 index、result、`run.log`、`process.json`，或把数字表写到 `docs/NUMBERS.md`。不跑阶段链，不 import `flow`。命令仍从 `flow/cli.py` 进来。
 
+report 导出前以当前 index 核对 process 的 Study 名、完整计划 Run ID / seed / 因素归属；无新格式字段，合法部分聚合兼容。当前索引不可用、重复 / 缺失 Run 或身份不匹配时拒绝导出，保留旧聚合与数字表；仅校验成功后用已有 atomic writer 替换 NUMBERS。完整边界见 [flow.md §13](flow.md#13-climake--launch-与-wait)。
+
 `provenance.py` 记录来源 / 执行计划的哈希、环境与 Git 信息，并提供 freeze 检查。make 写入，Flow 在执行前核对；Study `flow/` 与 `structure/` 的 Python 源码自动发现，额外输入显式 include。完整范围、覆盖与迁移边界见 [flow.md §14.2](flow.md#142-来源清单)。
 
 ```
@@ -986,7 +990,7 @@ Study 编排清单。`rpipe.structure.artifact.index`，**不是** Flow 的 writ
 
 ### 9.6 `asset/`
 
-prepare / execute 读写；collect / summarize / write **不改文件内容**（write 只登记路径）。
+库默认 prepare / execute 读写；默认 collect / summarize 不改 asset 文件内容，默认 write 只登记路径。Study write 扩展可以写研究证据、投影与对比，并在库成功定稿前完成验收；时机与失败边界见 [flow.md §14](flow.md#14-study-扩展recipe来源清单run-对比)。
 
 数据集、权重 / checkpoint、AlgorithmTracker 曲线、Logger 文本都是**文件**，所以走 asset，不进 result 正文。
 
@@ -1007,7 +1011,7 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 | execute | — | 读写 | — |
 | collect | — | — | 内存 |
 | summarize | — | — | 内存 |
-| write | — | 读路径列表 | 写定稿 |
+| write | — | Study 扩展写证据，库登记路径列表 | 写定稿 |
 | Runner（失败） | — | — | 尽量写 `failed` |
 
 ### 9.8 与 control 契约
@@ -1038,7 +1042,7 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 
 **容量与配置解释（2026-10-12）：** 原始 mapping 的 system / algorithm setting 与运行时一致：`config` 内设置优先于同名顶层扩展。调度读取实际 device，不能把 `system.config.device: cuda` 当 CPU。epoch 的训练样本基数与 test 基数分别记录；梯度累积按实际 batch 次数估算，不把一次 optimizer step 当一次前向。显存启发式取训练与周期 / 最终 test 的较大估计，独立 eval 使用实际 test batch，进程固定开销不乘 no-grad 折扣。保持原 safety=0.5 与模型系数；启发式不是显存实测，历史 allocated 峰值不自动成为新的装箱预算，也不证明并发吞吐。
 
-校准后可在 `system.config.vram_bytes`（或同名顶层扩展）显式声明单个 Run 进程的显存预算，单位 byte，必须为不小于固定开销的整数；嵌套配置优先。该值替代经验估算，仍由同一个装箱器按 safety=0.5 分配，不改变数值计算或强制并发数。预算应覆盖同设备、模型 / source、batch、精度下的训练、完整 test、checkpoint 峰值，包含 reserved、CUDA context / 驱动等进程开销，并保留余量；不能只填 allocated，也不能把其他数据 / 设备的测量直接套用。未配置保持启发式，不自动读取旧报告或学习历史结果；采用新预算须重新 make，正式实测换新 version。
+校准后可在 `system.config.vram_bytes`（或同名顶层扩展）显式声明单个 Run 进程的显存预算，单位 byte，必须为不小于固定开销的整数；嵌套配置优先。该值替代经验估算，仍由同一个装箱器分配，不改变数值计算或强制并发数。当前参考实现默认 safety=0.5，这是实现默认值，不是下游必须遵守的固定比例；容量函数允许调整 safety，项目须按实测接入，当前 CLI 没有独立 safety 开关。预算应覆盖同设备、模型 / source、batch、精度下的训练、完整 test、checkpoint 峰值，包含 reserved、CUDA context / 驱动等进程开销，并保留余量；不能只填 allocated，也不能把其他数据 / 设备的测量直接套用。未配置保持启发式，不自动读取旧报告或学习历史结果；采用新预算须重新 make，正式实测换新 version。
 
 复用已有 jobs.json 时，存在的 config 所声明的 mode / 实际 device 必须与保存计划一致；不一致返回重建请求，不继续沿用错误 CPU / CUDA 分配。旧计划的显存与估时不会自动升级，使用新估算需重新 make；正式实测仍用新的 version，不能重写旧验收基线。
 
@@ -1052,7 +1056,7 @@ Run 目录名必须为非空单一目录组件，拒绝点 / 父目录、分隔�
 
 产物：N 份 config + index，以及 `studies/<name>/scripts/`（默认 gitignore）。`launch.sh` 用 Python heredoc 调同一 `launch_jobs`，保留分组并行 / wait / GPU 分配，并复用依赖检查和波内重试。`--split-round` 按 wait 组切片，最后一片执行 Study process；旧版裸 `run-one` 脚本须重新 make 后才有这些保护。
 
-`algorithm.mode: eval` 在**默认整轮 launch**里是第二波：train 全部 `wait` 完再启动。`rpipe launch --mode eval` 只发 eval，不改 `jobs.json`。已成功的加 `--include-done`。`rpipe make` 打印 `pack N waits`。`rpipe launch` **复用** `scripts/jobs.json`（GPU / `round` 一致），不重做 make、不重印 pack；缺清单、参数变了或 `--remake` 才再 make。Windows 默认 `--console new`，组间仍 `wait`。默认 `--round auto` 按 [README.md](../../studies/README.md) §3 排班；脚本形状见 §4。
+`algorithm.mode: eval` 在**默认整轮 launch**里是第二波：train 全部 `wait` 完再启动。`rpipe launch --mode eval` 只发 eval，不改 `jobs.json`。已成功的加 `--include-done`。`rpipe make` 打印 `pack N waits`。`rpipe launch` **复用** `scripts/jobs.json`（GPU / `round` 一致），不重做 make、不重印 pack；缺清单、参数变了或 `--remake` 才再 make。Windows 默认 `--console new`，组间仍 `wait`。默认 `--round auto` 按 [Study 指南 §3](../../README.md#3-高效率实验设计) 排班；脚本形状见 [§4](../../README.md#4-一条命令怎么跑)。
 
 测试：`tests/rpipe/structure/make/`。
 

@@ -162,6 +162,42 @@ def test_study_process_aggregates_history_min_max(tmp_path: Path, monkeypatch):
             assert ax.lines[0].get_marker() not in (None, '', ' ', 'None')
 
 
+def test_report_rejects_old_process_after_fresh_make_and_accepts_reprocess(tmp_path):
+    """CLI make/process/report → new-version make/report: reject stale metadata, keep evidence."""
+    from rpipe.flow.cli import main
+    from rpipe.structure.artifact.index import load_index
+    from rpipe.structure.artifact.readout import numbers_path
+
+    study = tmp_path / 'fresh'
+    study.mkdir()
+    (study / 'study.yaml').write_text('study: fresh\nseeds: [0, 1]\n', encoding='utf-8')
+    config = ('version: {version}\ndata: {{name: Toy, source: stub}}\n'
+              'model: {{name: linear}}\nalgorithm: {{num_steps: 2}}\n'
+              'system: {{device: cpu}}\n')
+    (study / 'experiment_config.yaml').write_text(config.format(version='old'), encoding='utf-8')
+    assert main(['make', str(study), '--num-gpus', '0']) == 0
+    assert main(['process', str(study)]) == 0
+    assert main(['report', str(study)]) == 0
+    old_index = load_index(study)
+    old_process = (study / 'process.json').read_bytes()
+    old_numbers = numbers_path(study).read_bytes()
+    old_configs = {p: p.read_bytes() for p in (study / 'runs').glob('*/config.json')}
+
+    (study / 'experiment_config.yaml').write_text(config.format(version='new'), encoding='utf-8')
+    assert main(['make', str(study), '--num-gpus', '0']) == 0
+    assert load_index(study)['id'] != old_index['id']
+    assert main(['report', str(study)]) == 2
+    assert (study / 'process.json').read_bytes() == old_process
+    assert numbers_path(study).read_bytes() == old_numbers
+    assert {p: p.read_bytes() for p in old_configs} == old_configs
+
+    assert main(['process', str(study)]) == 0
+    assert main(['report', str(study)]) == 0
+    current_ids = {r['id'] for exp in load_index(study)['experiments'] for r in exp['runs']}
+    text = numbers_path(study).read_text(encoding='utf-8')
+    assert all(f'`{run_id}`' in text for run_id in current_ids)
+
+
 def test_process_does_not_rewrite_result(tmp_path: Path):
     """process reads result.json and leaves its bytes unchanged."""
     layout = artifact_layout(tmp_path, 'only')

@@ -1,11 +1,11 @@
 {
   "schema": "rpipe.historical_curve_comparison.v1",
-  "recorded_at_utc": "2026-10-11T11:48:09.640358+00:00",
+  "recorded_at_utc": "2026-10-13T15:11:25.926382+00:00",
   "study": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp",
   "source_sha": "4ccb28d0496110253e9f8e3f3df658853f07996b",
   "reference_evidence_type": "Digitized raster curve mean estimates, not original training metrics",
   "reference_file_sha256": "4f8ec3a2e0e2d39a62fa71f2563f00a454ab55e619ee2a817548fe520f896d11",
-  "comparison_script_sha256": "c1257402687291c57db9c0ff8f6fab95cc8eb156c6dd4f46d481fc70ef6659a0",
+  "comparison_script_sha256": "20fd012a0c5b5a747719ae46a9d5796210e9384669f5bf80b3e9240699ac501c",
   "partial_mode": false,
   "acceptance_contract": {
     "status": "predeclared recommendation; integrate into parent Study PLAN before judging training results",
@@ -67,13 +67,13 @@
   "missing_runs": [],
   "runs": [
     {
-      "id": "7cd22ce8f92311e3",
+      "id": "9eb2aa9c1ba6698d",
       "seed": 0,
       "data": "MNIST",
       "model": "linear",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\7cd22ce8f92311e3\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9eb2aa9c1ba6698d\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -889,8 +889,8 @@
         "test_accuracy": 92.65000114440917,
         "accuracy": 92.65000114440917,
         "best_accuracy": 92.80000114440918,
-        "elapsed_seconds": 1873.4782232998405,
-        "elapsed": "0:31:13"
+        "elapsed_seconds": 1228.1521429999266,
+        "elapsed": "0:20:28"
       },
       "errors": [],
       "audit": {
@@ -907,7 +907,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\7cd22ce8f92311e3\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9eb2aa9c1ba6698d\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 92.80000114440918,
@@ -1322,7 +1322,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\7cd22ce8f92311e3\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9eb2aa9c1ba6698d\\assets\\checkpoints\\best.pt",
         "step": 46800,
         "best_metric": "Accuracy",
         "best_value": 92.80000114440918,
@@ -1572,13 +1572,13 @@
       }
     },
     {
-      "id": "cbd61fd5c36c10ad",
+      "id": "9f8ba1e313f320d0",
       "seed": 1,
       "data": "MNIST",
       "model": "linear",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\cbd61fd5c36c10ad\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9f8ba1e313f320d0\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -2394,8 +2394,8 @@
         "test_accuracy": 92.69000129699707,
         "accuracy": 92.69000129699707,
         "best_accuracy": 92.77000179290772,
-        "elapsed_seconds": 1891.206743700197,
-        "elapsed": "0:31:31"
+        "elapsed_seconds": 1229.225891200127,
+        "elapsed": "0:20:29"
       },
       "errors": [],
       "audit": {
@@ -2412,7 +2412,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\cbd61fd5c36c10ad\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9f8ba1e313f320d0\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 92.77000179290772,
@@ -2827,7 +2827,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\cbd61fd5c36c10ad\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9f8ba1e313f320d0\\assets\\checkpoints\\best.pt",
         "step": 26800,
         "best_metric": "Accuracy",
         "best_value": 92.77000179290772,
@@ -2977,13 +2977,13 @@
       }
     },
     {
-      "id": "ccc82976e799fc4b",
+      "id": "c0e6228390220324",
       "seed": 2,
       "data": "MNIST",
       "model": "linear",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\ccc82976e799fc4b\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\c0e6228390220324\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -3799,8 +3799,8 @@
         "test_accuracy": 92.6800012588501,
         "accuracy": 92.6800012588501,
         "best_accuracy": 92.77000102996826,
-        "elapsed_seconds": 1864.886386499973,
-        "elapsed": "0:31:05"
+        "elapsed_seconds": 1228.4461070999969,
+        "elapsed": "0:20:28"
       },
       "errors": [],
       "audit": {
@@ -3817,7 +3817,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\ccc82976e799fc4b\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\c0e6228390220324\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 92.77000102996826,
@@ -4232,7 +4232,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\ccc82976e799fc4b\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\c0e6228390220324\\assets\\checkpoints\\best.pt",
         "step": 33000,
         "best_metric": "Accuracy",
         "best_value": 92.77000102996826,
@@ -4413,13 +4413,13 @@
       }
     },
     {
-      "id": "c9715d794ad3049b",
+      "id": "b856c36b845f39a3",
       "seed": 3,
       "data": "MNIST",
       "model": "linear",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\c9715d794ad3049b\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\b856c36b845f39a3\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -5235,8 +5235,8 @@
         "test_accuracy": 92.6800012588501,
         "accuracy": 92.6800012588501,
         "best_accuracy": 92.80000114440918,
-        "elapsed_seconds": 1883.5557938001584,
-        "elapsed": "0:31:24"
+        "elapsed_seconds": 1223.1229314999655,
+        "elapsed": "0:20:23"
       },
       "errors": [],
       "audit": {
@@ -5253,7 +5253,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\c9715d794ad3049b\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\b856c36b845f39a3\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 92.80000114440918,
@@ -5668,7 +5668,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\c9715d794ad3049b\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\b856c36b845f39a3\\assets\\checkpoints\\best.pt",
         "step": 59000,
         "best_metric": "Accuracy",
         "best_value": 92.80000114440918,
@@ -5979,13 +5979,13 @@
       }
     },
     {
-      "id": "c5a323530fd430a3",
+      "id": "8d6d85065edcfcbb",
       "seed": 0,
       "data": "MNIST",
       "model": "linear",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\c5a323530fd430a3\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8d6d85065edcfcbb\\result.json",
       "points": 1,
       "last_optimizer_step": 46800,
       "optimizer_steps": [
@@ -6001,14 +6001,14 @@
         "test_accuracy": 92.80000114440918,
         "accuracy": 92.80000114440918,
         "best_accuracy": 92.80000114440918,
-        "elapsed_seconds": 0.916977500077337,
+        "elapsed_seconds": 1.01577840000391,
         "elapsed": "0:00:01",
         "eval_accuracy": 92.80000114440918
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "7cd22ce8f92311e3",
+        "train_id": "9eb2aa9c1ba6698d",
         "best_step": 46800,
         "eval_step": 46800,
         "best_accuracy_pct": 92.80000114440918,
@@ -6017,20 +6017,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\7cd22ce8f92311e3\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9eb2aa9c1ba6698d\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "d84c5bb9ff1b4214",
+      "id": "0d79a86a57cdc373",
       "seed": 1,
       "data": "MNIST",
       "model": "linear",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\d84c5bb9ff1b4214\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\0d79a86a57cdc373\\result.json",
       "points": 1,
       "last_optimizer_step": 26800,
       "optimizer_steps": [
@@ -6046,14 +6046,14 @@
         "test_accuracy": 92.77000179290772,
         "accuracy": 92.77000179290772,
         "best_accuracy": 92.77000179290772,
-        "elapsed_seconds": 0.950401300098747,
+        "elapsed_seconds": 1.0149195999838412,
         "elapsed": "0:00:01",
         "eval_accuracy": 92.77000179290772
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "cbd61fd5c36c10ad",
+        "train_id": "9f8ba1e313f320d0",
         "best_step": 26800,
         "eval_step": 26800,
         "best_accuracy_pct": 92.77000179290772,
@@ -6062,20 +6062,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\cbd61fd5c36c10ad\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9f8ba1e313f320d0\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "aed69d4f8220582c",
+      "id": "3f1aecb74f6f57f1",
       "seed": 2,
       "data": "MNIST",
       "model": "linear",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\aed69d4f8220582c\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\3f1aecb74f6f57f1\\result.json",
       "points": 1,
       "last_optimizer_step": 33000,
       "optimizer_steps": [
@@ -6091,14 +6091,14 @@
         "test_accuracy": 92.77000102996826,
         "accuracy": 92.77000102996826,
         "best_accuracy": 92.77000102996826,
-        "elapsed_seconds": 0.842006100108847,
+        "elapsed_seconds": 0.9765945000108331,
         "elapsed": "0:00:01",
         "eval_accuracy": 92.77000102996826
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "ccc82976e799fc4b",
+        "train_id": "c0e6228390220324",
         "best_step": 33000,
         "eval_step": 33000,
         "best_accuracy_pct": 92.77000102996826,
@@ -6107,20 +6107,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\ccc82976e799fc4b\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\c0e6228390220324\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "6646b49c4b4c9f9f",
+      "id": "0c9f55500b96b508",
       "seed": 3,
       "data": "MNIST",
       "model": "linear",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\6646b49c4b4c9f9f\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\0c9f55500b96b508\\result.json",
       "points": 1,
       "last_optimizer_step": 59000,
       "optimizer_steps": [
@@ -6136,14 +6136,14 @@
         "test_accuracy": 92.80000114440918,
         "accuracy": 92.80000114440918,
         "best_accuracy": 92.80000114440918,
-        "elapsed_seconds": 0.877432500012219,
+        "elapsed_seconds": 0.9774753001984209,
         "elapsed": "0:00:01",
         "eval_accuracy": 92.80000114440918
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "c9715d794ad3049b",
+        "train_id": "b856c36b845f39a3",
         "best_step": 59000,
         "eval_step": 59000,
         "best_accuracy_pct": 92.80000114440918,
@@ -6152,20 +6152,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\c9715d794ad3049b\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\b856c36b845f39a3\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "614c69d396e317b9",
+      "id": "98b2d68f940214b6",
       "seed": 0,
       "data": "MNIST",
       "model": "mlp",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\614c69d396e317b9\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\98b2d68f940214b6\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -6981,8 +6981,8 @@
         "test_accuracy": 98.0800012588501,
         "accuracy": 98.0800012588501,
         "best_accuracy": 98.13000164031982,
-        "elapsed_seconds": 1948.3955473999958,
-        "elapsed": "0:32:28"
+        "elapsed_seconds": 1828.2249605001416,
+        "elapsed": "0:30:28"
       },
       "errors": [],
       "audit": {
@@ -6999,7 +6999,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\614c69d396e317b9\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\98b2d68f940214b6\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 98.13000164031982,
@@ -7414,7 +7414,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\614c69d396e317b9\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\98b2d68f940214b6\\assets\\checkpoints\\best.pt",
         "step": 36200,
         "best_metric": "Accuracy",
         "best_value": 98.13000164031982,
@@ -7611,13 +7611,13 @@
       }
     },
     {
-      "id": "3fa6abbc9027faad",
+      "id": "566c5ffb78b2a815",
       "seed": 1,
       "data": "MNIST",
       "model": "mlp",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\3fa6abbc9027faad\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\566c5ffb78b2a815\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -8433,8 +8433,8 @@
         "test_accuracy": 98.26000156402588,
         "accuracy": 98.26000156402588,
         "best_accuracy": 98.31000137329102,
-        "elapsed_seconds": 1952.7023358000442,
-        "elapsed": "0:32:33"
+        "elapsed_seconds": 1820.342844999861,
+        "elapsed": "0:30:20"
       },
       "errors": [],
       "audit": {
@@ -8451,7 +8451,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\3fa6abbc9027faad\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\566c5ffb78b2a815\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 98.31000137329102,
@@ -8866,7 +8866,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\3fa6abbc9027faad\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\566c5ffb78b2a815\\assets\\checkpoints\\best.pt",
         "step": 54400,
         "best_metric": "Accuracy",
         "best_value": 98.31000137329102,
@@ -9154,13 +9154,13 @@
       }
     },
     {
-      "id": "9d53348ea5c1165c",
+      "id": "07f033dd0adf88f6",
       "seed": 2,
       "data": "MNIST",
       "model": "mlp",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9d53348ea5c1165c\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\07f033dd0adf88f6\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -9976,8 +9976,8 @@
         "test_accuracy": 98.17000122070313,
         "accuracy": 98.17000122070313,
         "best_accuracy": 98.24000091552735,
-        "elapsed_seconds": 1969.9922060000245,
-        "elapsed": "0:32:50"
+        "elapsed_seconds": 1833.4574178999756,
+        "elapsed": "0:30:33"
       },
       "errors": [],
       "audit": {
@@ -9994,7 +9994,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9d53348ea5c1165c\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\07f033dd0adf88f6\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 98.24000091552735,
@@ -10409,7 +10409,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9d53348ea5c1165c\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\07f033dd0adf88f6\\assets\\checkpoints\\best.pt",
         "step": 35800,
         "best_metric": "Accuracy",
         "best_value": 98.24000091552735,
@@ -10604,13 +10604,13 @@
       }
     },
     {
-      "id": "787e4985f98a2e63",
+      "id": "51071324cba33354",
       "seed": 3,
       "data": "MNIST",
       "model": "mlp",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\787e4985f98a2e63\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\51071324cba33354\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -11426,8 +11426,8 @@
         "test_accuracy": 98.09000167846679,
         "accuracy": 98.09000167846679,
         "best_accuracy": 98.1500015258789,
-        "elapsed_seconds": 1979.2354131999891,
-        "elapsed": "0:32:59"
+        "elapsed_seconds": 1826.6943179999944,
+        "elapsed": "0:30:27"
       },
       "errors": [],
       "audit": {
@@ -11444,7 +11444,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\787e4985f98a2e63\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\51071324cba33354\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 98.1500015258789,
@@ -11859,7 +11859,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\787e4985f98a2e63\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\51071324cba33354\\assets\\checkpoints\\best.pt",
         "step": 13400,
         "best_metric": "Accuracy",
         "best_value": 98.1500015258789,
@@ -11942,13 +11942,13 @@
       }
     },
     {
-      "id": "2aa23e25dec6d6b6",
+      "id": "48e70b8b31e40b09",
       "seed": 0,
       "data": "MNIST",
       "model": "mlp",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\2aa23e25dec6d6b6\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\48e70b8b31e40b09\\result.json",
       "points": 1,
       "last_optimizer_step": 36200,
       "optimizer_steps": [
@@ -11964,14 +11964,14 @@
         "test_accuracy": 98.13000164031982,
         "accuracy": 98.13000164031982,
         "best_accuracy": 98.13000164031982,
-        "elapsed_seconds": 0.9283592000138015,
+        "elapsed_seconds": 0.8429266999009997,
         "elapsed": "0:00:01",
         "eval_accuracy": 98.13000164031982
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "614c69d396e317b9",
+        "train_id": "98b2d68f940214b6",
         "best_step": 36200,
         "eval_step": 36200,
         "best_accuracy_pct": 98.13000164031982,
@@ -11980,20 +11980,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\614c69d396e317b9\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\98b2d68f940214b6\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "e9b704a3c42358a7",
+      "id": "482cb0e86829d4b1",
       "seed": 1,
       "data": "MNIST",
       "model": "mlp",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\e9b704a3c42358a7\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\482cb0e86829d4b1\\result.json",
       "points": 1,
       "last_optimizer_step": 54400,
       "optimizer_steps": [
@@ -12009,14 +12009,14 @@
         "test_accuracy": 98.31000137329102,
         "accuracy": 98.31000137329102,
         "best_accuracy": 98.31000137329102,
-        "elapsed_seconds": 0.8666080001275986,
+        "elapsed_seconds": 0.8654219000600278,
         "elapsed": "0:00:01",
         "eval_accuracy": 98.31000137329102
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "3fa6abbc9027faad",
+        "train_id": "566c5ffb78b2a815",
         "best_step": 54400,
         "eval_step": 54400,
         "best_accuracy_pct": 98.31000137329102,
@@ -12025,20 +12025,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\3fa6abbc9027faad\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\566c5ffb78b2a815\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "712b2ba98a2617df",
+      "id": "29e23c722e195531",
       "seed": 2,
       "data": "MNIST",
       "model": "mlp",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\712b2ba98a2617df\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\29e23c722e195531\\result.json",
       "points": 1,
       "last_optimizer_step": 35800,
       "optimizer_steps": [
@@ -12054,14 +12054,14 @@
         "test_accuracy": 98.24000091552735,
         "accuracy": 98.24000091552735,
         "best_accuracy": 98.24000091552735,
-        "elapsed_seconds": 0.9484493001364172,
+        "elapsed_seconds": 0.7982021998614073,
         "elapsed": "0:00:01",
         "eval_accuracy": 98.24000091552735
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "9d53348ea5c1165c",
+        "train_id": "07f033dd0adf88f6",
         "best_step": 35800,
         "eval_step": 35800,
         "best_accuracy_pct": 98.24000091552735,
@@ -12070,20 +12070,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9d53348ea5c1165c\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\07f033dd0adf88f6\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "9c459a0d17d32c98",
+      "id": "3460d72f1fbbe356",
       "seed": 3,
       "data": "MNIST",
       "model": "mlp",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9c459a0d17d32c98\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\3460d72f1fbbe356\\result.json",
       "points": 1,
       "last_optimizer_step": 13400,
       "optimizer_steps": [
@@ -12099,14 +12099,14 @@
         "test_accuracy": 98.1500015258789,
         "accuracy": 98.1500015258789,
         "best_accuracy": 98.1500015258789,
-        "elapsed_seconds": 1.0219497999642044,
+        "elapsed_seconds": 0.8040986999403685,
         "elapsed": "0:00:01",
         "eval_accuracy": 98.1500015258789
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "787e4985f98a2e63",
+        "train_id": "51071324cba33354",
         "best_step": 13400,
         "eval_step": 13400,
         "best_accuracy_pct": 98.1500015258789,
@@ -12115,20 +12115,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\787e4985f98a2e63\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\51071324cba33354\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "f4133f0d7a248646",
+      "id": "8aeb38536c213eea",
       "seed": 0,
       "data": "MNIST",
       "model": "cnn",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\f4133f0d7a248646\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8aeb38536c213eea\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -12944,8 +12944,8 @@
         "test_accuracy": 99.41000061035156,
         "accuracy": 99.41000061035156,
         "best_accuracy": 99.49000034332275,
-        "elapsed_seconds": 2239.6680103000253,
-        "elapsed": "0:37:20"
+        "elapsed_seconds": 2139.793113199994,
+        "elapsed": "0:35:40"
       },
       "errors": [],
       "audit": {
@@ -12962,7 +12962,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\f4133f0d7a248646\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8aeb38536c213eea\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 99.49000034332275,
@@ -13377,7 +13377,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\f4133f0d7a248646\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8aeb38536c213eea\\assets\\checkpoints\\best.pt",
         "step": 40000,
         "best_metric": "Accuracy",
         "best_value": 99.49000034332275,
@@ -13593,13 +13593,13 @@
       }
     },
     {
-      "id": "2921357483f031cd",
+      "id": "d0c852d1824dfbdc",
       "seed": 1,
       "data": "MNIST",
       "model": "cnn",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\2921357483f031cd\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\d0c852d1824dfbdc\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -14415,8 +14415,8 @@
         "test_accuracy": 99.46000080108642,
         "accuracy": 99.46000080108642,
         "best_accuracy": 99.50000114440918,
-        "elapsed_seconds": 2345.2834201001097,
-        "elapsed": "0:39:05"
+        "elapsed_seconds": 2129.645756300073,
+        "elapsed": "0:35:30"
       },
       "errors": [],
       "audit": {
@@ -14433,7 +14433,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\2921357483f031cd\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\d0c852d1824dfbdc\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 99.50000114440918,
@@ -14848,7 +14848,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\2921357483f031cd\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\d0c852d1824dfbdc\\assets\\checkpoints\\best.pt",
         "step": 66400,
         "best_metric": "Accuracy",
         "best_value": 99.50000114440918,
@@ -15196,13 +15196,13 @@
       }
     },
     {
-      "id": "96c74c6b1e44e9cf",
+      "id": "2fbd37f4280ca44e",
       "seed": 2,
       "data": "MNIST",
       "model": "cnn",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\96c74c6b1e44e9cf\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\2fbd37f4280ca44e\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -16018,8 +16018,8 @@
         "test_accuracy": 99.48000068664551,
         "accuracy": 99.48000068664551,
         "best_accuracy": 99.54000072479248,
-        "elapsed_seconds": 2346.607560199918,
-        "elapsed": "0:39:07"
+        "elapsed_seconds": 2129.191365600098,
+        "elapsed": "0:35:29"
       },
       "errors": [],
       "audit": {
@@ -16036,7 +16036,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\96c74c6b1e44e9cf\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\2fbd37f4280ca44e\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 99.54000072479248,
@@ -16451,7 +16451,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\96c74c6b1e44e9cf\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\2fbd37f4280ca44e\\assets\\checkpoints\\best.pt",
         "step": 64800,
         "best_metric": "Accuracy",
         "best_value": 99.54000072479248,
@@ -16791,13 +16791,13 @@
       }
     },
     {
-      "id": "fd2727682e116c02",
+      "id": "4720df1be1e1f821",
       "seed": 3,
       "data": "MNIST",
       "model": "cnn",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\fd2727682e116c02\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\4720df1be1e1f821\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -17613,8 +17613,8 @@
         "test_accuracy": 99.35000114440918,
         "accuracy": 99.35000114440918,
         "best_accuracy": 99.43000087738037,
-        "elapsed_seconds": 2338.561425599968,
-        "elapsed": "0:38:59"
+        "elapsed_seconds": 2139.6678753001615,
+        "elapsed": "0:35:40"
       },
       "errors": [],
       "audit": {
@@ -17631,7 +17631,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\fd2727682e116c02\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\4720df1be1e1f821\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 99.43000087738037,
@@ -18046,7 +18046,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\fd2727682e116c02\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\4720df1be1e1f821\\assets\\checkpoints\\best.pt",
         "step": 39200,
         "best_metric": "Accuracy",
         "best_value": 99.43000087738037,
@@ -18258,13 +18258,13 @@
       }
     },
     {
-      "id": "27b7531f2e0cd82b",
+      "id": "5d882b54ac1c6cc1",
       "seed": 0,
       "data": "MNIST",
       "model": "cnn",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\27b7531f2e0cd82b\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\5d882b54ac1c6cc1\\result.json",
       "points": 1,
       "last_optimizer_step": 40000,
       "optimizer_steps": [
@@ -18280,14 +18280,14 @@
         "test_accuracy": 99.49000034332275,
         "accuracy": 99.49000034332275,
         "best_accuracy": 99.49000034332275,
-        "elapsed_seconds": 1.0939579999540001,
+        "elapsed_seconds": 0.9731014999561012,
         "elapsed": "0:00:01",
         "eval_accuracy": 99.49000034332275
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "f4133f0d7a248646",
+        "train_id": "8aeb38536c213eea",
         "best_step": 40000,
         "eval_step": 40000,
         "best_accuracy_pct": 99.49000034332275,
@@ -18296,20 +18296,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\f4133f0d7a248646\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8aeb38536c213eea\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "cb7ced2b320fe24a",
+      "id": "01c5d09719ae6e03",
       "seed": 1,
       "data": "MNIST",
       "model": "cnn",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\cb7ced2b320fe24a\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\01c5d09719ae6e03\\result.json",
       "points": 1,
       "last_optimizer_step": 66400,
       "optimizer_steps": [
@@ -18325,14 +18325,14 @@
         "test_accuracy": 99.50000114440918,
         "accuracy": 99.50000114440918,
         "best_accuracy": 99.50000114440918,
-        "elapsed_seconds": 1.1451852000318468,
+        "elapsed_seconds": 0.9526697997935116,
         "elapsed": "0:00:01",
         "eval_accuracy": 99.50000114440918
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "2921357483f031cd",
+        "train_id": "d0c852d1824dfbdc",
         "best_step": 66400,
         "eval_step": 66400,
         "best_accuracy_pct": 99.50000114440918,
@@ -18341,20 +18341,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\2921357483f031cd\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\d0c852d1824dfbdc\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "8400c9ef80747c87",
+      "id": "8e71e0d8d0b11a83",
       "seed": 2,
       "data": "MNIST",
       "model": "cnn",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8400c9ef80747c87\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8e71e0d8d0b11a83\\result.json",
       "points": 1,
       "last_optimizer_step": 64800,
       "optimizer_steps": [
@@ -18370,14 +18370,14 @@
         "test_accuracy": 99.54000072479248,
         "accuracy": 99.54000072479248,
         "best_accuracy": 99.54000072479248,
-        "elapsed_seconds": 1.2161675998941064,
+        "elapsed_seconds": 0.9817176000215113,
         "elapsed": "0:00:01",
         "eval_accuracy": 99.54000072479248
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "96c74c6b1e44e9cf",
+        "train_id": "2fbd37f4280ca44e",
         "best_step": 64800,
         "eval_step": 64800,
         "best_accuracy_pct": 99.54000072479248,
@@ -18386,20 +18386,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\96c74c6b1e44e9cf\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\2fbd37f4280ca44e\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "204393aa685fa3f2",
+      "id": "8f60fa50b5652d1c",
       "seed": 3,
       "data": "MNIST",
       "model": "cnn",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\204393aa685fa3f2\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8f60fa50b5652d1c\\result.json",
       "points": 1,
       "last_optimizer_step": 39200,
       "optimizer_steps": [
@@ -18415,14 +18415,14 @@
         "test_accuracy": 99.43000087738037,
         "accuracy": 99.43000087738037,
         "best_accuracy": 99.43000087738037,
-        "elapsed_seconds": 1.1747625998687,
+        "elapsed_seconds": 1.0119040999561548,
         "elapsed": "0:00:01",
         "eval_accuracy": 99.43000087738037
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "fd2727682e116c02",
+        "train_id": "4720df1be1e1f821",
         "best_step": 39200,
         "eval_step": 39200,
         "best_accuracy_pct": 99.43000087738037,
@@ -18431,20 +18431,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\fd2727682e116c02\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\4720df1be1e1f821\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "cf087b07765f4be4",
+      "id": "149a2c46c53d310a",
       "seed": 0,
       "data": "MNIST",
       "model": "resnet18",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\cf087b07765f4be4\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\149a2c46c53d310a\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -19260,8 +19260,8 @@
         "test_accuracy": 99.60000095367431,
         "accuracy": 99.60000095367431,
         "best_accuracy": 99.67000064849853,
-        "elapsed_seconds": 7759.055458599934,
-        "elapsed": "2:09:19"
+        "elapsed_seconds": 5176.920414299937,
+        "elapsed": "1:26:17"
       },
       "errors": [],
       "audit": {
@@ -19278,7 +19278,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\cf087b07765f4be4\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\149a2c46c53d310a\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 99.67000064849853,
@@ -19693,7 +19693,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\cf087b07765f4be4\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\149a2c46c53d310a\\assets\\checkpoints\\best.pt",
         "step": 30400,
         "best_metric": "Accuracy",
         "best_value": 99.67000064849853,
@@ -19861,13 +19861,13 @@
       }
     },
     {
-      "id": "977b2e85d87dcc31",
+      "id": "d9a305205598356e",
       "seed": 1,
       "data": "MNIST",
       "model": "resnet18",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\977b2e85d87dcc31\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\d9a305205598356e\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -20683,8 +20683,8 @@
         "test_accuracy": 99.55000114440918,
         "accuracy": 99.55000114440918,
         "best_accuracy": 99.5900011062622,
-        "elapsed_seconds": 7725.584329499863,
-        "elapsed": "2:08:46"
+        "elapsed_seconds": 5176.195039599901,
+        "elapsed": "1:26:16"
       },
       "errors": [],
       "audit": {
@@ -20701,7 +20701,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\977b2e85d87dcc31\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\d9a305205598356e\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 99.5900011062622,
@@ -21116,7 +21116,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\977b2e85d87dcc31\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\d9a305205598356e\\assets\\checkpoints\\best.pt",
         "step": 17200,
         "best_metric": "Accuracy",
         "best_value": 99.5900011062622,
@@ -21218,13 +21218,13 @@
       }
     },
     {
-      "id": "9d380eea53541fa8",
+      "id": "2b8945d844b1658b",
       "seed": 2,
       "data": "MNIST",
       "model": "resnet18",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9d380eea53541fa8\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\2b8945d844b1658b\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -22040,8 +22040,8 @@
         "test_accuracy": 99.57000064849854,
         "accuracy": 99.57000064849854,
         "best_accuracy": 99.62000064849853,
-        "elapsed_seconds": 7764.773009099998,
-        "elapsed": "2:09:25"
+        "elapsed_seconds": 5190.468625599984,
+        "elapsed": "1:26:30"
       },
       "errors": [],
       "audit": {
@@ -22058,7 +22058,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9d380eea53541fa8\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\2b8945d844b1658b\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 99.62000064849853,
@@ -22473,7 +22473,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9d380eea53541fa8\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\2b8945d844b1658b\\assets\\checkpoints\\best.pt",
         "step": 49200,
         "best_metric": "Accuracy",
         "best_value": 99.62000064849853,
@@ -22735,13 +22735,13 @@
       }
     },
     {
-      "id": "069305e87da05b12",
+      "id": "9bcf24dee1442929",
       "seed": 3,
       "data": "MNIST",
       "model": "resnet18",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\069305e87da05b12\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9bcf24dee1442929\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -23557,8 +23557,8 @@
         "test_accuracy": 99.60000114440918,
         "accuracy": 99.60000114440918,
         "best_accuracy": 99.63000087738037,
-        "elapsed_seconds": 4429.063908000011,
-        "elapsed": "1:13:49"
+        "elapsed_seconds": 5192.208378500072,
+        "elapsed": "1:26:32"
       },
       "errors": [],
       "audit": {
@@ -23575,7 +23575,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\069305e87da05b12\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9bcf24dee1442929\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 99.63000087738037,
@@ -23990,7 +23990,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\069305e87da05b12\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9bcf24dee1442929\\assets\\checkpoints\\best.pt",
         "step": 75600,
         "best_metric": "Accuracy",
         "best_value": 99.63000087738037,
@@ -24384,13 +24384,13 @@
       }
     },
     {
-      "id": "71bba1215f95650f",
+      "id": "457c09d7ca5c313f",
       "seed": 0,
       "data": "MNIST",
       "model": "resnet18",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\71bba1215f95650f\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\457c09d7ca5c313f\\result.json",
       "points": 1,
       "last_optimizer_step": 30400,
       "optimizer_steps": [
@@ -24406,14 +24406,14 @@
         "test_accuracy": 99.67000064849853,
         "accuracy": 99.67000064849853,
         "best_accuracy": 99.67000064849853,
-        "elapsed_seconds": 1.4857419999316335,
+        "elapsed_seconds": 1.2194591998122633,
         "elapsed": "0:00:01",
         "eval_accuracy": 99.67000064849853
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "cf087b07765f4be4",
+        "train_id": "149a2c46c53d310a",
         "best_step": 30400,
         "eval_step": 30400,
         "best_accuracy_pct": 99.67000064849853,
@@ -24422,20 +24422,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\cf087b07765f4be4\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\149a2c46c53d310a\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "0c02f89068ab1b65",
+      "id": "98074cbc7a9e9e46",
       "seed": 1,
       "data": "MNIST",
       "model": "resnet18",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\0c02f89068ab1b65\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\98074cbc7a9e9e46\\result.json",
       "points": 1,
       "last_optimizer_step": 17200,
       "optimizer_steps": [
@@ -24451,14 +24451,14 @@
         "test_accuracy": 99.5900011062622,
         "accuracy": 99.5900011062622,
         "best_accuracy": 99.5900011062622,
-        "elapsed_seconds": 1.4818641000892967,
+        "elapsed_seconds": 1.2359968998935074,
         "elapsed": "0:00:01",
         "eval_accuracy": 99.5900011062622
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "977b2e85d87dcc31",
+        "train_id": "d9a305205598356e",
         "best_step": 17200,
         "eval_step": 17200,
         "best_accuracy_pct": 99.5900011062622,
@@ -24467,20 +24467,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\977b2e85d87dcc31\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\d9a305205598356e\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "9efe72b14f325f36",
+      "id": "b228101a18f70969",
       "seed": 2,
       "data": "MNIST",
       "model": "resnet18",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9efe72b14f325f36\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\b228101a18f70969\\result.json",
       "points": 1,
       "last_optimizer_step": 49200,
       "optimizer_steps": [
@@ -24496,14 +24496,14 @@
         "test_accuracy": 99.62000064849853,
         "accuracy": 99.62000064849853,
         "best_accuracy": 99.62000064849853,
-        "elapsed_seconds": 1.4953037998639047,
+        "elapsed_seconds": 1.1451261998154223,
         "elapsed": "0:00:01",
         "eval_accuracy": 99.62000064849853
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "9d380eea53541fa8",
+        "train_id": "2b8945d844b1658b",
         "best_step": 49200,
         "eval_step": 49200,
         "best_accuracy_pct": 99.62000064849853,
@@ -24512,20 +24512,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9d380eea53541fa8\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\2b8945d844b1658b\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "d6e0ea96878a5cb9",
+      "id": "fdc58be7ecf80f55",
       "seed": 3,
       "data": "MNIST",
       "model": "resnet18",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\d6e0ea96878a5cb9\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\fdc58be7ecf80f55\\result.json",
       "points": 1,
       "last_optimizer_step": 75600,
       "optimizer_steps": [
@@ -24541,14 +24541,14 @@
         "test_accuracy": 99.63000087738037,
         "accuracy": 99.63000087738037,
         "best_accuracy": 99.63000087738037,
-        "elapsed_seconds": 1.4128316999413073,
+        "elapsed_seconds": 1.1739850998856127,
         "elapsed": "0:00:01",
         "eval_accuracy": 99.63000087738037
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "069305e87da05b12",
+        "train_id": "9bcf24dee1442929",
         "best_step": 75600,
         "eval_step": 75600,
         "best_accuracy_pct": 99.63000087738037,
@@ -24557,20 +24557,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\069305e87da05b12\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9bcf24dee1442929\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "fc085db588d295b4",
+      "id": "e0810e7b3f071367",
       "seed": 0,
       "data": "CIFAR10",
       "model": "linear",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\fc085db588d295b4\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\e0810e7b3f071367\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -25386,8 +25386,8 @@
         "test_accuracy": 40.390000629425046,
         "accuracy": 40.390000629425046,
         "best_accuracy": 40.67000093460083,
-        "elapsed_seconds": 5160.419491200009,
-        "elapsed": "1:26:00"
+        "elapsed_seconds": 4148.307694300078,
+        "elapsed": "1:09:08"
       },
       "errors": [],
       "audit": {
@@ -25404,7 +25404,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\fc085db588d295b4\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\e0810e7b3f071367\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 40.67000093460083,
@@ -25819,7 +25819,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\fc085db588d295b4\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\e0810e7b3f071367\\assets\\checkpoints\\best.pt",
         "step": 73000,
         "best_metric": "Accuracy",
         "best_value": 40.67000093460083,
@@ -26200,13 +26200,13 @@
       }
     },
     {
-      "id": "385bf2b1307b622f",
+      "id": "eff5c8acf0c7dc88",
       "seed": 1,
       "data": "CIFAR10",
       "model": "linear",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\385bf2b1307b622f\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\eff5c8acf0c7dc88\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -27022,8 +27022,8 @@
         "test_accuracy": 40.5300009727478,
         "accuracy": 40.5300009727478,
         "best_accuracy": 40.66000089645386,
-        "elapsed_seconds": 5148.011253000004,
-        "elapsed": "1:25:48"
+        "elapsed_seconds": 4138.97400139994,
+        "elapsed": "1:08:59"
       },
       "errors": [],
       "audit": {
@@ -27040,7 +27040,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\385bf2b1307b622f\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\eff5c8acf0c7dc88\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 40.66000089645386,
@@ -27455,7 +27455,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\385bf2b1307b622f\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\eff5c8acf0c7dc88\\assets\\checkpoints\\best.pt",
         "step": 74600,
         "best_metric": "Accuracy",
         "best_value": 40.66000089645386,
@@ -27844,13 +27844,13 @@
       }
     },
     {
-      "id": "dae98504b3fa274d",
+      "id": "48e6cc671a2cd192",
       "seed": 2,
       "data": "CIFAR10",
       "model": "linear",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\dae98504b3fa274d\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\48e6cc671a2cd192\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -28666,8 +28666,8 @@
         "test_accuracy": 40.320000886917114,
         "accuracy": 40.320000886917114,
         "best_accuracy": 40.620000553131106,
-        "elapsed_seconds": 5148.0612562999595,
-        "elapsed": "1:25:48"
+        "elapsed_seconds": 4838.1885269000195,
+        "elapsed": "1:20:38"
       },
       "errors": [],
       "audit": {
@@ -28684,7 +28684,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\dae98504b3fa274d\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\48e6cc671a2cd192\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 40.620000553131106,
@@ -29099,7 +29099,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\dae98504b3fa274d\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\48e6cc671a2cd192\\assets\\checkpoints\\best.pt",
         "step": 72200,
         "best_metric": "Accuracy",
         "best_value": 40.620000553131106,
@@ -29476,13 +29476,13 @@
       }
     },
     {
-      "id": "a9148272760d5180",
+      "id": "54feef6b7d47e1bf",
       "seed": 3,
       "data": "CIFAR10",
       "model": "linear",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\a9148272760d5180\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\54feef6b7d47e1bf\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -30298,8 +30298,8 @@
         "test_accuracy": 40.24000082015991,
         "accuracy": 40.24000082015991,
         "best_accuracy": 40.44000091552734,
-        "elapsed_seconds": 5161.7642691000365,
-        "elapsed": "1:26:02"
+        "elapsed_seconds": 4849.535690200049,
+        "elapsed": "1:20:50"
       },
       "errors": [],
       "audit": {
@@ -30316,7 +30316,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\a9148272760d5180\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\54feef6b7d47e1bf\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 40.44000091552734,
@@ -30731,7 +30731,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\a9148272760d5180\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\54feef6b7d47e1bf\\assets\\checkpoints\\best.pt",
         "step": 73400,
         "best_metric": "Accuracy",
         "best_value": 40.44000091552734,
@@ -31114,13 +31114,13 @@
       }
     },
     {
-      "id": "f598df30b55dc729",
+      "id": "1be19be19cde7091",
       "seed": 0,
       "data": "CIFAR10",
       "model": "linear",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\f598df30b55dc729\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\1be19be19cde7091\\result.json",
       "points": 1,
       "last_optimizer_step": 73000,
       "optimizer_steps": [
@@ -31136,14 +31136,14 @@
         "test_accuracy": 40.67000093460083,
         "accuracy": 40.67000093460083,
         "best_accuracy": 40.67000093460083,
-        "elapsed_seconds": 1.248072100104764,
+        "elapsed_seconds": 0.9351329000201076,
         "elapsed": "0:00:01",
         "eval_accuracy": 40.67000093460083
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "fc085db588d295b4",
+        "train_id": "e0810e7b3f071367",
         "best_step": 73000,
         "eval_step": 73000,
         "best_accuracy_pct": 40.67000093460083,
@@ -31152,20 +31152,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\fc085db588d295b4\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\e0810e7b3f071367\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "80ca696943bca5f5",
+      "id": "2449106ea723e507",
       "seed": 1,
       "data": "CIFAR10",
       "model": "linear",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\80ca696943bca5f5\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\2449106ea723e507\\result.json",
       "points": 1,
       "last_optimizer_step": 74600,
       "optimizer_steps": [
@@ -31181,14 +31181,14 @@
         "test_accuracy": 40.66000089645386,
         "accuracy": 40.66000089645386,
         "best_accuracy": 40.66000089645386,
-        "elapsed_seconds": 1.2132313000038266,
+        "elapsed_seconds": 0.9308980999048799,
         "elapsed": "0:00:01",
         "eval_accuracy": 40.66000089645386
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "385bf2b1307b622f",
+        "train_id": "eff5c8acf0c7dc88",
         "best_step": 74600,
         "eval_step": 74600,
         "best_accuracy_pct": 40.66000089645386,
@@ -31197,20 +31197,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\385bf2b1307b622f\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\eff5c8acf0c7dc88\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "874c582a7b686a9c",
+      "id": "2ea8cdd49b893d09",
       "seed": 2,
       "data": "CIFAR10",
       "model": "linear",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\874c582a7b686a9c\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\2ea8cdd49b893d09\\result.json",
       "points": 1,
       "last_optimizer_step": 72200,
       "optimizer_steps": [
@@ -31226,14 +31226,14 @@
         "test_accuracy": 40.620000553131106,
         "accuracy": 40.620000553131106,
         "best_accuracy": 40.620000553131106,
-        "elapsed_seconds": 1.2817901000380516,
+        "elapsed_seconds": 0.9059339000377804,
         "elapsed": "0:00:01",
         "eval_accuracy": 40.620000553131106
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "dae98504b3fa274d",
+        "train_id": "48e6cc671a2cd192",
         "best_step": 72200,
         "eval_step": 72200,
         "best_accuracy_pct": 40.620000553131106,
@@ -31242,20 +31242,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\dae98504b3fa274d\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\48e6cc671a2cd192\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "bc6ddd450387d590",
+      "id": "c765ff464ca9a7d6",
       "seed": 3,
       "data": "CIFAR10",
       "model": "linear",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\bc6ddd450387d590\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\c765ff464ca9a7d6\\result.json",
       "points": 1,
       "last_optimizer_step": 73400,
       "optimizer_steps": [
@@ -31271,14 +31271,14 @@
         "test_accuracy": 40.44000091552734,
         "accuracy": 40.44000091552734,
         "best_accuracy": 40.44000091552734,
-        "elapsed_seconds": 1.2761196999344975,
+        "elapsed_seconds": 0.9250471000559628,
         "elapsed": "0:00:01",
         "eval_accuracy": 40.44000091552734
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "a9148272760d5180",
+        "train_id": "54feef6b7d47e1bf",
         "best_step": 73400,
         "eval_step": 73400,
         "best_accuracy_pct": 40.44000091552734,
@@ -31287,20 +31287,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\a9148272760d5180\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\54feef6b7d47e1bf\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "d2b0e7f33699ecd4",
+      "id": "46c16a43bc5a7f58",
       "seed": 0,
       "data": "CIFAR10",
       "model": "mlp",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\d2b0e7f33699ecd4\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\46c16a43bc5a7f58\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -32116,8 +32116,8 @@
         "test_accuracy": 63.65000171661377,
         "accuracy": 63.65000171661377,
         "best_accuracy": 63.85000114440918,
-        "elapsed_seconds": 5170.579790499993,
-        "elapsed": "1:26:11"
+        "elapsed_seconds": 4902.11088380008,
+        "elapsed": "1:21:42"
       },
       "errors": [],
       "audit": {
@@ -32134,7 +32134,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\d2b0e7f33699ecd4\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\46c16a43bc5a7f58\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 63.85000114440918,
@@ -32549,7 +32549,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\d2b0e7f33699ecd4\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\46c16a43bc5a7f58\\assets\\checkpoints\\best.pt",
         "step": 71000,
         "best_metric": "Accuracy",
         "best_value": 63.85000114440918,
@@ -32920,13 +32920,13 @@
       }
     },
     {
-      "id": "6c2cda2cf02c2a9b",
+      "id": "31e904af62d676e1",
       "seed": 1,
       "data": "CIFAR10",
       "model": "mlp",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\6c2cda2cf02c2a9b\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\31e904af62d676e1\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -33742,8 +33742,8 @@
         "test_accuracy": 63.240001106262206,
         "accuracy": 63.240001106262206,
         "best_accuracy": 63.42000141143799,
-        "elapsed_seconds": 5191.350479899906,
-        "elapsed": "1:26:31"
+        "elapsed_seconds": 4902.569535299903,
+        "elapsed": "1:21:43"
       },
       "errors": [],
       "audit": {
@@ -33760,7 +33760,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\6c2cda2cf02c2a9b\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\31e904af62d676e1\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 63.42000141143799,
@@ -34175,7 +34175,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\6c2cda2cf02c2a9b\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\31e904af62d676e1\\assets\\checkpoints\\best.pt",
         "step": 74400,
         "best_metric": "Accuracy",
         "best_value": 63.42000141143799,
@@ -34563,13 +34563,13 @@
       }
     },
     {
-      "id": "28f2368d1634417c",
+      "id": "913ae66fe6c7ddd9",
       "seed": 2,
       "data": "CIFAR10",
       "model": "mlp",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\28f2368d1634417c\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\913ae66fe6c7ddd9\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -35385,8 +35385,8 @@
         "test_accuracy": 63.6900016784668,
         "accuracy": 63.6900016784668,
         "best_accuracy": 63.8800012588501,
-        "elapsed_seconds": 5190.119067799998,
-        "elapsed": "1:26:30"
+        "elapsed_seconds": 4897.98991740006,
+        "elapsed": "1:21:38"
       },
       "errors": [],
       "audit": {
@@ -35403,7 +35403,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\28f2368d1634417c\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\913ae66fe6c7ddd9\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 63.8800012588501,
@@ -35818,7 +35818,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\28f2368d1634417c\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\913ae66fe6c7ddd9\\assets\\checkpoints\\best.pt",
         "step": 61200,
         "best_metric": "Accuracy",
         "best_value": 63.8800012588501,
@@ -36140,13 +36140,13 @@
       }
     },
     {
-      "id": "8e5f67f6b365822f",
+      "id": "180355784b991302",
       "seed": 3,
       "data": "CIFAR10",
       "model": "mlp",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8e5f67f6b365822f\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\180355784b991302\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -36962,8 +36962,8 @@
         "test_accuracy": 63.2900013923645,
         "accuracy": 63.2900013923645,
         "best_accuracy": 63.50000123977661,
-        "elapsed_seconds": 5178.828316399828,
-        "elapsed": "1:26:19"
+        "elapsed_seconds": 4892.633151000133,
+        "elapsed": "1:21:33"
       },
       "errors": [],
       "audit": {
@@ -36980,7 +36980,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8e5f67f6b365822f\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\180355784b991302\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 63.50000123977661,
@@ -37395,7 +37395,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8e5f67f6b365822f\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\180355784b991302\\assets\\checkpoints\\best.pt",
         "step": 67800,
         "best_metric": "Accuracy",
         "best_value": 63.50000123977661,
@@ -37750,13 +37750,13 @@
       }
     },
     {
-      "id": "cd735a424d2cff72",
+      "id": "8ff3f317c2262f9c",
       "seed": 0,
       "data": "CIFAR10",
       "model": "mlp",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\cd735a424d2cff72\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8ff3f317c2262f9c\\result.json",
       "points": 1,
       "last_optimizer_step": 71000,
       "optimizer_steps": [
@@ -37772,14 +37772,14 @@
         "test_accuracy": 63.85000114440918,
         "accuracy": 63.85000114440918,
         "best_accuracy": 63.85000114440918,
-        "elapsed_seconds": 1.3015662000980228,
+        "elapsed_seconds": 0.9963253999594599,
         "elapsed": "0:00:01",
         "eval_accuracy": 63.85000114440918
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "d2b0e7f33699ecd4",
+        "train_id": "46c16a43bc5a7f58",
         "best_step": 71000,
         "eval_step": 71000,
         "best_accuracy_pct": 63.85000114440918,
@@ -37788,20 +37788,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\d2b0e7f33699ecd4\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\46c16a43bc5a7f58\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "efe8917288eecb39",
+      "id": "3538c25de9928c45",
       "seed": 1,
       "data": "CIFAR10",
       "model": "mlp",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\efe8917288eecb39\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\3538c25de9928c45\\result.json",
       "points": 1,
       "last_optimizer_step": 74400,
       "optimizer_steps": [
@@ -37817,14 +37817,14 @@
         "test_accuracy": 63.42000141143799,
         "accuracy": 63.42000141143799,
         "best_accuracy": 63.42000141143799,
-        "elapsed_seconds": 1.1668805999215692,
+        "elapsed_seconds": 1.0096356999129057,
         "elapsed": "0:00:01",
         "eval_accuracy": 63.42000141143799
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "6c2cda2cf02c2a9b",
+        "train_id": "31e904af62d676e1",
         "best_step": 74400,
         "eval_step": 74400,
         "best_accuracy_pct": 63.42000141143799,
@@ -37833,20 +37833,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\6c2cda2cf02c2a9b\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\31e904af62d676e1\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "5e7a86637f91d69a",
+      "id": "8708b83f6af78ab0",
       "seed": 2,
       "data": "CIFAR10",
       "model": "mlp",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\5e7a86637f91d69a\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8708b83f6af78ab0\\result.json",
       "points": 1,
       "last_optimizer_step": 61200,
       "optimizer_steps": [
@@ -37862,14 +37862,14 @@
         "test_accuracy": 63.8800012588501,
         "accuracy": 63.8800012588501,
         "best_accuracy": 63.8800012588501,
-        "elapsed_seconds": 1.1926238997839391,
+        "elapsed_seconds": 0.99038300011307,
         "elapsed": "0:00:01",
         "eval_accuracy": 63.8800012588501
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "28f2368d1634417c",
+        "train_id": "913ae66fe6c7ddd9",
         "best_step": 61200,
         "eval_step": 61200,
         "best_accuracy_pct": 63.8800012588501,
@@ -37878,20 +37878,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\28f2368d1634417c\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\913ae66fe6c7ddd9\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "b0890c6cddb9c78c",
+      "id": "50da63ca45a6dd0e",
       "seed": 3,
       "data": "CIFAR10",
       "model": "mlp",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\b0890c6cddb9c78c\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\50da63ca45a6dd0e\\result.json",
       "points": 1,
       "last_optimizer_step": 67800,
       "optimizer_steps": [
@@ -37907,14 +37907,14 @@
         "test_accuracy": 63.50000123977661,
         "accuracy": 63.50000123977661,
         "best_accuracy": 63.50000123977661,
-        "elapsed_seconds": 1.2116078999824822,
+        "elapsed_seconds": 1.0118480999954045,
         "elapsed": "0:00:01",
         "eval_accuracy": 63.50000123977661
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "8e5f67f6b365822f",
+        "train_id": "180355784b991302",
         "best_step": 67800,
         "eval_step": 67800,
         "best_accuracy_pct": 63.50000123977661,
@@ -37923,20 +37923,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8e5f67f6b365822f\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\180355784b991302\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "b99775641e1800c7",
+      "id": "8d9daf7916520731",
       "seed": 0,
       "data": "CIFAR10",
       "model": "cnn",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\b99775641e1800c7\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8d9daf7916520731\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -38752,8 +38752,8 @@
         "test_accuracy": 88.8500020980835,
         "accuracy": 88.8500020980835,
         "best_accuracy": 89.07000179290772,
-        "elapsed_seconds": 5538.898653800134,
-        "elapsed": "1:32:19"
+        "elapsed_seconds": 5200.57048460003,
+        "elapsed": "1:26:41"
       },
       "errors": [],
       "audit": {
@@ -38770,7 +38770,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\b99775641e1800c7\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8d9daf7916520731\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 89.07000179290772,
@@ -39185,7 +39185,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\b99775641e1800c7\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8d9daf7916520731\\assets\\checkpoints\\best.pt",
         "step": 68200,
         "best_metric": "Accuracy",
         "best_value": 89.07000179290772,
@@ -39542,13 +39542,13 @@
       }
     },
     {
-      "id": "48ee1a36f59ac74d",
+      "id": "ababcab8f6d65c72",
       "seed": 1,
       "data": "CIFAR10",
       "model": "cnn",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\48ee1a36f59ac74d\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\ababcab8f6d65c72\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -40364,8 +40364,8 @@
         "test_accuracy": 88.90000133514404,
         "accuracy": 88.90000133514404,
         "best_accuracy": 89.13000144958497,
-        "elapsed_seconds": 5532.80813489994,
-        "elapsed": "1:32:13"
+        "elapsed_seconds": 5199.721246700035,
+        "elapsed": "1:26:40"
       },
       "errors": [],
       "audit": {
@@ -40382,7 +40382,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\48ee1a36f59ac74d\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\ababcab8f6d65c72\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 89.13000144958497,
@@ -40797,7 +40797,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\48ee1a36f59ac74d\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\ababcab8f6d65c72\\assets\\checkpoints\\best.pt",
         "step": 72000,
         "best_metric": "Accuracy",
         "best_value": 89.13000144958497,
@@ -41173,13 +41173,13 @@
       }
     },
     {
-      "id": "30cc6a335b81cf34",
+      "id": "c0c5d1936ad0da6c",
       "seed": 2,
       "data": "CIFAR10",
       "model": "cnn",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\30cc6a335b81cf34\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\c0c5d1936ad0da6c\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -41995,8 +41995,8 @@
         "test_accuracy": 88.42000102996826,
         "accuracy": 88.42000102996826,
         "best_accuracy": 88.66000156402588,
-        "elapsed_seconds": 5533.247743899934,
-        "elapsed": "1:32:13"
+        "elapsed_seconds": 4876.269553000107,
+        "elapsed": "1:21:16"
       },
       "errors": [],
       "audit": {
@@ -42013,7 +42013,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\30cc6a335b81cf34\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\c0c5d1936ad0da6c\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 88.66000156402588,
@@ -42428,7 +42428,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\30cc6a335b81cf34\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\c0c5d1936ad0da6c\\assets\\checkpoints\\best.pt",
         "step": 70000,
         "best_metric": "Accuracy",
         "best_value": 88.66000156402588,
@@ -42794,13 +42794,13 @@
       }
     },
     {
-      "id": "6ce695c58b4b1f98",
+      "id": "f4a19e8da0eb7d90",
       "seed": 3,
       "data": "CIFAR10",
       "model": "cnn",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\6ce695c58b4b1f98\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\f4a19e8da0eb7d90\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -43616,8 +43616,8 @@
         "test_accuracy": 88.85000133514404,
         "accuracy": 88.85000133514404,
         "best_accuracy": 89.07000122070312,
-        "elapsed_seconds": 5802.690352000063,
-        "elapsed": "1:36:43"
+        "elapsed_seconds": 4873.244625299936,
+        "elapsed": "1:21:13"
       },
       "errors": [],
       "audit": {
@@ -43634,7 +43634,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\6ce695c58b4b1f98\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\f4a19e8da0eb7d90\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 89.07000122070312,
@@ -44049,7 +44049,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\6ce695c58b4b1f98\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\f4a19e8da0eb7d90\\assets\\checkpoints\\best.pt",
         "step": 76400,
         "best_metric": "Accuracy",
         "best_value": 89.07000122070312,
@@ -44447,13 +44447,13 @@
       }
     },
     {
-      "id": "2b057052a8a46a60",
+      "id": "862c84aa2db88dec",
       "seed": 0,
       "data": "CIFAR10",
       "model": "cnn",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\2b057052a8a46a60\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\862c84aa2db88dec\\result.json",
       "points": 1,
       "last_optimizer_step": 68200,
       "optimizer_steps": [
@@ -44469,14 +44469,14 @@
         "test_accuracy": 89.07000179290772,
         "accuracy": 89.07000179290772,
         "best_accuracy": 89.07000179290772,
-        "elapsed_seconds": 1.3071971000172198,
+        "elapsed_seconds": 1.0551789999008179,
         "elapsed": "0:00:01",
         "eval_accuracy": 89.07000179290772
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "b99775641e1800c7",
+        "train_id": "8d9daf7916520731",
         "best_step": 68200,
         "eval_step": 68200,
         "best_accuracy_pct": 89.07000179290772,
@@ -44485,20 +44485,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\b99775641e1800c7\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8d9daf7916520731\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "ffc911254af4471e",
+      "id": "4565696308d445a0",
       "seed": 1,
       "data": "CIFAR10",
       "model": "cnn",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\ffc911254af4471e\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\4565696308d445a0\\result.json",
       "points": 1,
       "last_optimizer_step": 72000,
       "optimizer_steps": [
@@ -44514,14 +44514,14 @@
         "test_accuracy": 89.13000144958497,
         "accuracy": 89.13000144958497,
         "best_accuracy": 89.13000144958497,
-        "elapsed_seconds": 1.3087293000426143,
+        "elapsed_seconds": 1.0419216000009328,
         "elapsed": "0:00:01",
         "eval_accuracy": 89.13000144958497
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "48ee1a36f59ac74d",
+        "train_id": "ababcab8f6d65c72",
         "best_step": 72000,
         "eval_step": 72000,
         "best_accuracy_pct": 89.13000144958497,
@@ -44530,20 +44530,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\48ee1a36f59ac74d\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\ababcab8f6d65c72\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "f40f71d17e2cbe9c",
+      "id": "b8ac2ffe8831b891",
       "seed": 2,
       "data": "CIFAR10",
       "model": "cnn",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\f40f71d17e2cbe9c\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\b8ac2ffe8831b891\\result.json",
       "points": 1,
       "last_optimizer_step": 70000,
       "optimizer_steps": [
@@ -44559,14 +44559,14 @@
         "test_accuracy": 88.66000156402588,
         "accuracy": 88.66000156402588,
         "best_accuracy": 88.66000156402588,
-        "elapsed_seconds": 1.3022693002130836,
+        "elapsed_seconds": 1.1692133001051843,
         "elapsed": "0:00:01",
         "eval_accuracy": 88.66000156402588
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "30cc6a335b81cf34",
+        "train_id": "c0c5d1936ad0da6c",
         "best_step": 70000,
         "eval_step": 70000,
         "best_accuracy_pct": 88.66000156402588,
@@ -44575,20 +44575,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\30cc6a335b81cf34\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\c0c5d1936ad0da6c\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "177ce903ecd85ad0",
+      "id": "7a04df8cca83fc4b",
       "seed": 3,
       "data": "CIFAR10",
       "model": "cnn",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\177ce903ecd85ad0\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\7a04df8cca83fc4b\\result.json",
       "points": 1,
       "last_optimizer_step": 76400,
       "optimizer_steps": [
@@ -44604,14 +44604,14 @@
         "test_accuracy": 89.07000122070312,
         "accuracy": 89.07000122070312,
         "best_accuracy": 89.07000122070312,
-        "elapsed_seconds": 1.391057699918747,
+        "elapsed_seconds": 1.1540501997806132,
         "elapsed": "0:00:01",
         "eval_accuracy": 89.07000122070312
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "6ce695c58b4b1f98",
+        "train_id": "f4a19e8da0eb7d90",
         "best_step": 76400,
         "eval_step": 76400,
         "best_accuracy_pct": 89.07000122070312,
@@ -44620,20 +44620,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\6ce695c58b4b1f98\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\f4a19e8da0eb7d90\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "5bd65c61c30c12d2",
+      "id": "64bbf81249f98718",
       "seed": 0,
       "data": "CIFAR10",
       "model": "resnet18",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\5bd65c61c30c12d2\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\64bbf81249f98718\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -45449,8 +45449,8 @@
         "test_accuracy": 92.81000118255615,
         "accuracy": 92.81000118255615,
         "best_accuracy": 93.00000190734863,
-        "elapsed_seconds": 8255.02781739994,
-        "elapsed": "2:17:35"
+        "elapsed_seconds": 7623.238755100174,
+        "elapsed": "2:07:03"
       },
       "errors": [],
       "audit": {
@@ -45467,7 +45467,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\5bd65c61c30c12d2\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\64bbf81249f98718\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 93.00000190734863,
@@ -45882,7 +45882,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\5bd65c61c30c12d2\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\64bbf81249f98718\\assets\\checkpoints\\best.pt",
         "step": 78600,
         "best_metric": "Accuracy",
         "best_value": 93.00000190734863,
@@ -46291,13 +46291,13 @@
       }
     },
     {
-      "id": "caf78c8d80ad9f10",
+      "id": "27a5b73a9ff05450",
       "seed": 1,
       "data": "CIFAR10",
       "model": "resnet18",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\caf78c8d80ad9f10\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\27a5b73a9ff05450\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -47113,8 +47113,8 @@
         "test_accuracy": 93.02000179290772,
         "accuracy": 93.02000179290772,
         "best_accuracy": 93.23000144958496,
-        "elapsed_seconds": 8254.474455799907,
-        "elapsed": "2:17:34"
+        "elapsed_seconds": 7622.946260399884,
+        "elapsed": "2:07:03"
       },
       "errors": [],
       "audit": {
@@ -47131,7 +47131,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\caf78c8d80ad9f10\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\27a5b73a9ff05450\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 93.23000144958496,
@@ -47546,7 +47546,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\caf78c8d80ad9f10\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\27a5b73a9ff05450\\assets\\checkpoints\\best.pt",
         "step": 66000,
         "best_metric": "Accuracy",
         "best_value": 93.23000144958496,
@@ -47892,13 +47892,13 @@
       }
     },
     {
-      "id": "8c413f14e3d8f742",
+      "id": "0572738bf48d6536",
       "seed": 2,
       "data": "CIFAR10",
       "model": "resnet18",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8c413f14e3d8f742\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\0572738bf48d6536\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -48714,8 +48714,8 @@
         "test_accuracy": 93.10000152587891,
         "accuracy": 93.10000152587891,
         "best_accuracy": 93.26000156402588,
-        "elapsed_seconds": 7393.58143920009,
-        "elapsed": "2:03:14"
+        "elapsed_seconds": 6940.333690099884,
+        "elapsed": "1:55:40"
       },
       "errors": [],
       "audit": {
@@ -48732,7 +48732,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8c413f14e3d8f742\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\0572738bf48d6536\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 93.26000156402588,
@@ -49147,7 +49147,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8c413f14e3d8f742\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\0572738bf48d6536\\assets\\checkpoints\\best.pt",
         "step": 66000,
         "best_metric": "Accuracy",
         "best_value": 93.26000156402588,
@@ -49493,13 +49493,13 @@
       }
     },
     {
-      "id": "6b9fced9385ffbad",
+      "id": "895601f2fbde8418",
       "seed": 3,
       "data": "CIFAR10",
       "model": "resnet18",
       "mode": "train",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\6b9fced9385ffbad\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\895601f2fbde8418\\result.json",
       "points": 400,
       "last_optimizer_step": 80000,
       "optimizer_steps": [
@@ -50315,8 +50315,8 @@
         "test_accuracy": 93.21000175476074,
         "accuracy": 93.21000175476074,
         "best_accuracy": 93.32000160217285,
-        "elapsed_seconds": 7394.093494700035,
-        "elapsed": "2:03:14"
+        "elapsed_seconds": 6940.2998019000515,
+        "elapsed": "1:55:40"
       },
       "errors": [],
       "audit": {
@@ -50333,7 +50333,7 @@
         "result_last_accuracy_matches_curve": true
       },
       "latest_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\6b9fced9385ffbad\\assets\\checkpoints\\latest.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\895601f2fbde8418\\assets\\checkpoints\\latest.pt",
         "step": 80000,
         "best_metric": "Accuracy",
         "best_value": 93.32000160217285,
@@ -50748,7 +50748,7 @@
         ]
       },
       "best_checkpoint": {
-        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\6b9fced9385ffbad\\assets\\checkpoints\\best.pt",
+        "path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\895601f2fbde8418\\assets\\checkpoints\\best.pt",
         "step": 78600,
         "best_metric": "Accuracy",
         "best_value": 93.32000160217285,
@@ -51157,13 +51157,13 @@
       }
     },
     {
-      "id": "ac12fdbfa9634f25",
+      "id": "e365412a6b81a27e",
       "seed": 0,
       "data": "CIFAR10",
       "model": "resnet18",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\ac12fdbfa9634f25\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\e365412a6b81a27e\\result.json",
       "points": 1,
       "last_optimizer_step": 78600,
       "optimizer_steps": [
@@ -51179,14 +51179,14 @@
         "test_accuracy": 93.00000190734863,
         "accuracy": 93.00000190734863,
         "best_accuracy": 93.00000190734863,
-        "elapsed_seconds": 1.841668999986723,
+        "elapsed_seconds": 1.658294300083071,
         "elapsed": "0:00:02",
         "eval_accuracy": 93.00000190734863
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "5bd65c61c30c12d2",
+        "train_id": "64bbf81249f98718",
         "best_step": 78600,
         "eval_step": 78600,
         "best_accuracy_pct": 93.00000190734863,
@@ -51195,20 +51195,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\5bd65c61c30c12d2\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\64bbf81249f98718\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "e00ce1befb41f243",
+      "id": "9f4345bb053c53e3",
       "seed": 1,
       "data": "CIFAR10",
       "model": "resnet18",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\e00ce1befb41f243\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\9f4345bb053c53e3\\result.json",
       "points": 1,
       "last_optimizer_step": 66000,
       "optimizer_steps": [
@@ -51224,14 +51224,14 @@
         "test_accuracy": 93.23000144958496,
         "accuracy": 93.23000144958496,
         "best_accuracy": 93.23000144958496,
-        "elapsed_seconds": 1.8369420999661088,
+        "elapsed_seconds": 1.6804609999526292,
         "elapsed": "0:00:02",
         "eval_accuracy": 93.23000144958496
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "caf78c8d80ad9f10",
+        "train_id": "27a5b73a9ff05450",
         "best_step": 66000,
         "eval_step": 66000,
         "best_accuracy_pct": 93.23000144958496,
@@ -51240,20 +51240,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\caf78c8d80ad9f10\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\27a5b73a9ff05450\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "5bf623b0dead64dc",
+      "id": "02704b3da5f81404",
       "seed": 2,
       "data": "CIFAR10",
       "model": "resnet18",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\5bf623b0dead64dc\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\02704b3da5f81404\\result.json",
       "points": 1,
       "last_optimizer_step": 66000,
       "optimizer_steps": [
@@ -51269,14 +51269,14 @@
         "test_accuracy": 93.26000156402588,
         "accuracy": 93.26000156402588,
         "best_accuracy": 93.26000156402588,
-        "elapsed_seconds": 1.8179616001434624,
+        "elapsed_seconds": 1.6148151000961661,
         "elapsed": "0:00:02",
         "eval_accuracy": 93.26000156402588
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "8c413f14e3d8f742",
+        "train_id": "0572738bf48d6536",
         "best_step": 66000,
         "eval_step": 66000,
         "best_accuracy_pct": 93.26000156402588,
@@ -51285,20 +51285,20 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\8c413f14e3d8f742\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\0572738bf48d6536\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true
       }
     },
     {
-      "id": "895bc60bfb7015ce",
+      "id": "1132a50030eb7192",
       "seed": 3,
       "data": "CIFAR10",
       "model": "resnet18",
       "mode": "eval",
       "status": "succeeded",
-      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\895bc60bfb7015ce\\result.json",
+      "result_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\1132a50030eb7192\\result.json",
       "points": 1,
       "last_optimizer_step": 78600,
       "optimizer_steps": [
@@ -51314,14 +51314,14 @@
         "test_accuracy": 93.32000160217285,
         "accuracy": 93.32000160217285,
         "best_accuracy": 93.32000160217285,
-        "elapsed_seconds": 1.816443799994886,
+        "elapsed_seconds": 1.610122699989006,
         "elapsed": "0:00:02",
         "eval_accuracy": 93.32000160217285
       },
       "errors": [],
       "audit": {},
       "best_source_audit": {
-        "train_id": "6b9fced9385ffbad",
+        "train_id": "895601f2fbde8418",
         "best_step": 78600,
         "eval_step": 78600,
         "best_accuracy_pct": 93.32000160217285,
@@ -51330,7 +51330,7 @@
         "eval_equals_best": true,
         "eval_step_equals_best": true,
         "logged_initial_resume_target": "best",
-        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\6b9fced9385ffbad\\assets\\checkpoints\\best.pt",
+        "reported_actual_resume_path": "D:\\GitHub\\diaoenmao\\RPipe\\studies\\main_exp\\runs\\895601f2fbde8418\\assets\\checkpoints\\best.pt",
         "single_resume_event_at_best_step": true,
         "eval_loads_matching_train_best": true,
         "passed": true

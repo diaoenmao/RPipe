@@ -4,7 +4,9 @@ RPipe 是**可重复、可编排、可序列化的研究执行底座**。
 
 研究者用 **Study** 声明要比什么。structure 的 **make** 写出各 **Experiment** 与 **Run** 的 config，以及调度脚本。**Flow** 服务整个 Study：同一套执行，用参数选择阶段、顺序或按 `round` 并行。命令行入口是 flow 的 **cli**。产物落在该 Study 的 **artifact** 下。
 
-目录见 [layout.md](layout.md)；操作见 [README.md](../../studies/README.md)；structure 细节见 [structure.md](structure.md)。
+目录见 [layout.md](layout.md)；操作见 [Study 指南](../../README.md#study-使用指南)；structure 细节见 [structure.md](structure.md)。
+
+下游采用源码模板：长期保留 `src/rpipe/`，研究实现放 `src/<项目包名>/` 的同名 structure / flow 职责层，Study 导入并薄组装；本仓库的专用 Study 配方是实例，不要求下游把可复用算法放进 Study。研究计划与证据要求见 [research.md](../development/research.md)，通用问题反馈见 [feedback.md](../development/feedback.md)。这些 Agent 工作指引不表示库内置研究决策器。
 
 ---
 
@@ -296,7 +298,7 @@ flowchart TB
 |------|------|
 | [layout.md](layout.md) | 仓库目录 |
 | [code.md](code.md) | 库内树与依赖 |
-| [README.md](../../studies/README.md) | 怎么开一轮 Study |
+| [README 的 Study 指南](../../README.md#study-使用指南) | 怎么开一轮 Study |
 | [structure.md](structure.md) | 四层 / control / make / AlgorithmTracker / Logger / artifact |
 | [flow.md](flow.md) | Flow：cli 与阶段链 |
 | [testing.md](../development/testing.md) | 测试目录与标签 |

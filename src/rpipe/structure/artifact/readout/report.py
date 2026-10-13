@@ -5,7 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from rpipe.structure.artifact.index import load_index
+from rpipe.structure.artifact._atomic import atomic_write_text
+from rpipe.structure.artifact.errors import CorruptArtifactError
+from rpipe.structure.artifact.index import index_path, load_index
 from rpipe.structure.artifact.paths import DOCS_DIRNAME, PROCESS_NAME
 from rpipe.structure.artifact.result import load_result
 
@@ -25,12 +27,28 @@ def _factors(factors: dict[str, Any]) -> str:
     return ', '.join(parts) or '-'
 
 
-def _log_links(study_dir: Path) -> dict[str, str]:
+def _planned_runs(body: dict[str, Any]) -> dict[str, Any]:
+    experiments = body.get('experiments')
+    if not isinstance(experiments, list):
+        raise ValueError('experiments must be a list')
+    planned: dict[str, Any] = {}
+    for exp in experiments:
+        if not isinstance(exp, dict) or not isinstance(exp.get('runs'), list):
+            raise ValueError('each experiment must contain a runs list')
+        factors = exp.get('factors', {})
+        if not isinstance(factors, dict):
+            raise ValueError('experiment factors must be an object')
+        for run in exp['runs']:
+            if not isinstance(run, dict) or not isinstance(run.get('id'), str) or not run['id']:
+                raise ValueError('each planned Run must have a nonempty string id')
+            if run['id'] in planned:
+                raise ValueError(f'duplicate planned Run: {run["id"]}')
+            planned[run['id']] = {'seed': run.get('seed'), 'factors': factors}
+    return planned
+
+
+def _log_links(index: dict[str, Any]) -> dict[str, str]:
     links: dict[str, str] = {}
-    try:
-        index = load_index(study_dir)
-    except (OSError, TypeError, ValueError):
-        return links
     for exp in index.get('experiments') or []:
         for run in exp.get('runs') or []:
             run_id = str(run.get('id') or '')
@@ -43,8 +61,24 @@ def _log_links(study_dir: Path) -> dict[str, str]:
 
 def render_numbers(study_dir: Path | str) -> str:
     study_dir = Path(study_dir)
-    body = load_result(study_dir / PROCESS_NAME)
-    links = _log_links(study_dir)
+    try:
+        body = load_result(study_dir / PROCESS_NAME)
+    except CorruptArtifactError as exc:
+        raise ValueError(f'Cannot report invalid process: {exc}') from exc
+    try:
+        index = load_index(study_dir)
+        planned = _planned_runs(index)
+    except (OSError, TypeError, ValueError, AttributeError) as exc:
+        raise ValueError(f'Cannot report without a usable current index: {index_path(study_dir)}; '
+                         f'check the plan and rebuild with make: {exc}') from exc
+    try:
+        if ((index.get('study') is not None and body.get('study') != index['study'])
+                or _planned_runs(body) != planned):
+            raise ValueError('Study name or planned Run identity differs')
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f'process does not match the current index: {exc}; '
+                         'check the plan and rerun process before report') from exc
+    links = _log_links(index)
     lines = [
         f'# Numbers: {body.get("study") or study_dir.name}',
         '',
@@ -103,8 +137,4 @@ def render_numbers(study_dir: Path | str) -> str:
 
 
 def write_numbers(study_dir: Path | str) -> Path:
-    study_dir = Path(study_dir)
-    path = numbers_path(study_dir)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(render_numbers(study_dir), encoding='utf-8')
-    return path
+    return atomic_write_text(numbers_path(study_dir), render_numbers(study_dir))

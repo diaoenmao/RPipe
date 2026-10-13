@@ -1,6 +1,6 @@
 # RPipe Agent 工作约定
 
-适用于本仓库及其子目录。本文件提供工作方式和文档入口。设计文档在 `docs/code/`，开发记录与测试规范在 `docs/development/`，Study 的指南、计划、报告和代码在 `studies/`。
+适用于本仓库及其子目录。本文件提供工作方式和文档入口。设计文档在 `docs/code/`，开发记录与测试规范在 `docs/development/`，通用接入与 Study 指南在根 `README.md`，具体研究的计划、报告和代码在 `studies/`。
 
 ## 1. 文档驱动的工作方式
 
@@ -15,9 +15,10 @@
 | --- | --- |
 | 项目概念与职责 | [concept.md](docs/code/concept.md) |
 | 目录与代码结构 | [layout.md](docs/code/layout.md)、[code.md](docs/code/code.md)，再读 [structure.md](docs/code/structure.md) / [flow.md](docs/code/flow.md) |
-| 研究设计与执行 | [studies/README.md](studies/README.md)，以及目标 Study 的计划、配置和报告 |
+| 研究设计与执行 | 先读 [研究工作要求](docs/development/research.md)，从项目 `docs/research/` 的宏观方案提取具体问题，见 [Studies 入口](studies/README.md#从宏观研究提取具体-study)、[README 的 Study 指南](README.md#study-使用指南)，再读目标 Study 的计划、配置和报告 |
 | 测试与验证 | [testing.md](docs/development/testing.md)、[tests/README.md](tests/README.md) |
 | CI 与分支 | [cicd.md](docs/development/cicd.md) |
+| 下游反馈与上游收纳 | [feedback.md](docs/development/feedback.md)；下游发现先记录，按授权脱敏、去重并向 RPipe 提 Issue，再由上游核验 |
 | 已知问题与后续想法 | [bugs.md](docs/development/bugs.md)、[brainstorm.md](docs/development/brainstorm.md) |
 | 开发记录 | [record.md](docs/development/record.md)、会话交接 [handover.md](docs/development/handover.md) |
 
@@ -26,11 +27,13 @@ brainstorm 用于记录探索。具体工作以当前要求和已确认的设计
 ## 3. 基本协作约定
 
 - 修改前查看工作区状态，保留用户和其他任务的已有改动
+- 分支切换或目录迁移后，核对实际目录与 Git 跟踪清单；忽略的旧缓存可能残留，不能只凭目录外观判断源码是否同步。确认失效的缓存可隔离到 `.tmp/`，保留 Run、数据和用户改动
 - 临时脚本、缓存和验证输出放 `.tmp/`，提交前检查 `.gitignore` 和变更范围
 - Study 的计划、报告、图、正式数字和复跑代码只放在对应的 `studies/<name>/` 下，不放进 `docs/` 或仓库根目录。`docs/development/record.md` 只记开发事实，实验结论链接到对应 Study 报告
 - 测试公共输入放 `tests/_data/`，不放进 `tests/rpipe/` 镜像，也不依赖正式 Study 目录
 - 文档文件名用小写；目录入口统一用 `README.md`。Study 内的 `PLAN.md`、`STUDY_REPORT.md`、`NUMBERS.md` 保持原名
 - 工作分支通过 PR 进入 `dev`，发布时再由 `dev` 通过 PR 进入 `main`。必需检查和自行合并见 [cicd.md](docs/development/cicd.md)
+- 同一任务只保留一个未合并工作分支；合并完成后核对提交已保全，再清理该任务的远端和本地分支，不删除其他任务或维护者的活动分支
 - 按当前任务范围推进，清理、较大规模实验、提交推送和对外发布需符合当次授权
 - 只把长期通用的工作约定放在这里，具体技术规则和阶段状态留在对应文档，避免重复维护
 
@@ -52,7 +55,7 @@ brainstorm 用于记录探索。具体工作以当前要求和已确认的设计
 
 ## 5. 研发、调研与验证
 
-以下原则提炼自 DreamSoul 的代码、协作、通用调研规范，以及测试、CI/CD 大纲和日志规范，结合文献调研的阅读与报告要求适配。具体执行仍以本仓库的设计、[测试规范](docs/development/testing.md)和 [Study 指南](studies/README.md)为准，不依赖外部本地目录。
+以下原则提炼自 DreamSoul 的代码、协作、通用调研规范，以及测试、CI/CD 大纲和日志规范，结合文献调研的阅读与报告要求适配。具体执行仍以本仓库的设计、[测试规范](docs/development/testing.md)和 [Study 指南](README.md#study-使用指南)为准，不依赖外部本地目录。
 
 - 开发先复用现有实现、标准库与原生能力，保持职责清晰和改动聚焦。抽象与依赖应服务于当前问题，不为假设的未来需求搭建框架
 - 修改公共接口、配置、持久化格式或跨模块行为时，先核对相关文档、调用方与已有成果的影响，明确兼容或迁移方案，再修改和验证

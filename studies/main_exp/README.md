@@ -2,15 +2,13 @@
 
 历史 main `4ccb28d` 配方的四 seed、80000-step 曲线复现。目标、配方和门限见 [计划](docs/PLAN.md)，原图估读与固定门见 [TARGET.md](docs/TARGET.md)。
 
-本 Study 使用库调度、六阶段链与来源冻结，recipe 提供固定来源适配，prepare 和 process 提供研究检查与终验。当前 version03 显式关闭 cuDNN / matmul TF32，须通过同设备 600-step 八格前置门后执行完整矩阵；实测进展、设备数值边界与恢复方案见 [复跑记录](docs/RERUN.md) 和 [eval_recovery.md](docs/eval_recovery.md)。
+本 Study 使用库调度、六阶段链与来源冻结，recipe 提供固定来源适配，prepare 和 process 提供研究检查与终验。本轮固定发布 `v0.3.0` / `804b3823`，version 为 `main-exp-v030-20261013-final`；完整八格 600-step 前置门通过，32 条连续 80000-step train、32 条自身 best eval、完整性及固定曲线终验均通过。当前状态、资源与完成边界见 [本轮执行记录](docs/v030_execution.md) 和 [实测报告](docs/STUDY_REPORT.md)。
 
-2026-10-11 version03 完整矩阵与固定曲线终验已通过，正式数字见 [NUMBERS.md](docs/NUMBERS.md)。2026-10-12 重构后只补跑 MNIST / linear 的 200-step 前置对照，参数及 Loss 差值为 0；它不替代八格 600-step 门或长矩阵。最新结果与边界见 [STUDY_REPORT.md](docs/STUDY_REPORT.md)；历史串行速度校准已记录在 [速度报告](docs/speed_calibration.md)。
+当前轮的进程中断与同源码接续已完成，真实Run身份和验证见[接续方案](docs/v030_recovery.md)及[64条审计](docs/v030_long_audit.json)。该接续index保留原30条来源及两条新训练；直接remake原声明会重新选择中断的旧ID。后续独立新轮按下方执行顺序使用新version。
 
 ## 一、文件
 
-本轮仅重构 Study 内部代码：历史建构实现放在 `structure/`，研究检查放在 `flow/`，根 `recipe.py` 保留注册、安全门和显式命令。训练循环、精度配置与数值门限不变。
-
-**当前验证边界：** 库已加载 `flow/<phase>/`，两柱 Python 源码自动进入 provenance；手动速度校准和空阶段目录不会自动执行。本轮完成合同回归及手动单组 200-step 前置对照，未执行新完整矩阵或正式 Flow Run。实测后清除了库 collect 入口重复实现，针对性回归通过；后续完整验收需使用新 version、重新 make 和计划规定的前置门。
+历史建构实现放在 `structure/`，研究检查放在 `flow/`，根 `recipe.py` 保留注册、安全门和显式命令。库加载 `flow/<phase>/`，两柱 Python 源码自动进入 provenance；手动速度校准和空阶段目录不会自动执行。换设备或重新实测须使用新 version、fresh make，并通过同设备八格前置门。
 
 | **文件** | **作用** |
 |---|---|
@@ -23,26 +21,23 @@
 | `flow/process/run.py` | 库 Study 聚合后调用 `curves.py` 执行曲线门；每条 Run 的 process 不重复执行终验。手动读取直接调用 `curves.py` |
 | `flow/<phase>/__init__.py` | 仅导出阶段函数，不写实现；没有额外检查的阶段复用库默认实现，不填写空 hook |
 | `structure/` | 注册编排调用现有 Registry；`api/` 保留固定 Git 归档与观测支持，`data/` 和 `model/` 分别提供历史建构适配。其余层暂留空，无新训练循环 |
-| `runtime-requirements.txt` | 归档代码需要的隔离依赖，装到 `.tmp/runtime` |
+| `runtime-requirements.txt` | 归档代码需要的固定依赖；在隔离环境准备，另核对归档导入所需的 HF 依赖 |
 | `docs/reference/` | 两张原图，逐字节保留 |
 
 ## 二、命令
 
-2026-10-13候选声明为main-exp-flow-20261013-04，按本机峰值采用system.config.vram_bytes=4.5GiB；库仍只用50%空闲显存自动装箱。该预算仅针对此处已测配方 / 设备，不是通用推荐。旧version03长结果保留在版本快照，新的声明尚未长训。容量与精度诊断入口及证据见[速度报告](docs/speed_calibration.md#九2026-10-13-cifar10-容量与总体吞吐)；变更源码 / version后重新前置验收，旧PREFLIGHT不能直接launch。
+本轮实测后采用 `system.config.vram_bytes=4.5 GiB`、原生自动两并发及 safety=0.5，推导和资源保护见 [资源选择](docs/resource_choice_v030.json)。预算只针对本轮设备和配方，不能直接套用到 main_probe 或其他电脑。模型、数据增强、CPU 2 线程、workers0、batch250、完整 test10000、评测 / 保存频率和总预算不变。
 
-以下是正式执行顺序，本轮未执行这些实验；先使用新 version，再完成准备、make 和前置门，不能沿用旧的前置报告直接 launch。命令在仓库根运行；归档源码按 Git blob 导出，需要完整 clone 中的提交 `4ccb28d`。
+以下为后续独立复跑的执行顺序。使用隔离环境安装仓库及归档依赖（本轮实际版本见 [环境清单](docs/environment_v030_20261013.json)），先验证 CUDA，核对已有 `.tmp/runtime` 不会遮蔽所选环境；设置新 version 后执行命令。CUBLAS 环境必须在 CUDA 初始化前设置。命令在仓库根运行，需要完整 clone 中的历史提交 `4ccb28d`；旧前置报告不能直接用于新来源 launch。
 
 ```powershell
-python -m pip install -e .
-python -m pip install tensorboard==2.21.0 evaluate==0.4.6
-python -m pip install --target .tmp/runtime --no-deps -r studies/main_exp/runtime-requirements.txt
+$env:CUBLAS_WORKSPACE_CONFIG = ':4096:8'
 python -B studies/main_exp/flow/prepare_data.py
 python -m rpipe make studies/main_exp
 python -B studies/main_exp/recipe.py preflight
-python -m rpipe launch studies/main_exp
+python -m rpipe launch studies/main_exp --round auto --num-gpus 1
 python -m rpipe status studies/main_exp
 python -m rpipe report studies/main_exp
-python -B studies/main_exp/flow/process/curves.py
 ```
 
 1. `flow.prepare_shared: false` 关闭通用 Data 预构造，raw 由 prepare_data.py 准备、专用 source 在 Run prepare 内注册。`make` 展开 64 个 Run，写 `provenance.json`。`freeze: true`，之后改任何源码、声明或计划，`launch` 都会拒绝，重新 make 才接受。

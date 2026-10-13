@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rpipe"
-version = "0.3.0"
+version = "0.3.1"
 description = "Research execution substrate: structure / flow"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -31,9 +31,9 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/diaoenmao/RPipe/tree/main/docs"
-Issues = "https://github.com/diaoenmao/RPipe/issues"
-Repository = "https://github.com/diaoenmao/RPipe"
+Documentation = "https://github.com/DreamSoul-AI/RPipe/tree/main/docs"
+Issues = "https://github.com/DreamSoul-AI/RPipe/issues"
+Repository = "https://github.com/DreamSoul-AI/RPipe"
 
 [project.scripts]
 rpipe = "rpipe.flow.cli:main"

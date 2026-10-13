@@ -1,5 +1,37 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-14 v0.3.1 文档与发布准备
+
+当前发布准备版本为0.3.1：B-030修复、源码模板接入与旧804b3823的实验材料均进入版本区间；新增研究 / knowledge skills与下游Issue反馈约定，入口见[README](../../README.md)和[发布报告](../releases/v0.3.1.md)。正式科学报告、数字、配方、旧失败与快照保持原来源；本次不训练或扩大矩阵。core420 passed / 2 skipped、CPU流程52 passed、两种分发包各9条CLI / 4个Toy/Stub Run通过，环境失败、skip、文档扫描与本机包边界见[开发记录](record.md#10-研究工作下游反馈与-v031-发布准备)。
+
+维护者已授权工作PR进入dev、dev发布PR进入main和手工v0.3.1标签 / Release；所有实际提交仍须通过必需检查，不直接push长期分支。下一阶段按[发布合同](cicd.md#六维护者授权后的版本发布)完成，最终状态以GitHub Release及其commit / PR / CI链接为准。下方按日期保留旧交接，不把其中“main不改动”或“尚未提交”视为本次授权边界。
+
+## 2026-10-14 B-030 修复接续
+
+report 已补充当前 index 与 process 的 Study / Run ID / seed / 因素归属校验；过期或不可用来源拒绝导出，旧数字表通过原子替换保全，不新增持久化字段、不删除旧聚合。下文及正式 Study 报告中的“B-030仍open”描述当时804b3823实验基线；当前修复与验证见[开发记录](record.md#9-b-030-报告来源校验与分支清理)。旧实验来源不变，新独立实验仍须新version与前置门，本次不跑大规模实验。
+
+PR #32 的实验 / 本地模板文档已合入 dev。已删除 codex/v030-local-studies 远端与本地分支，以及已核对完成的旧本地工作分支；后续工作仅保留当前单个工作分支，合并完成后再清理，main不改动。
+
+## 2026-10-13 v0.3.0 本机完整实验接续
+
+维护者新增授权本机环境、完整数据、小门、受控并发校准及门通过后的完整 Study。固定软件基线为发布标签 `v0.3.0` / `804b3823ab6d2af46cbda1a65688ca8b76c60b22`，工作分支 `codex/v030-local-studies`；没有跟随更新后的 main，也没有改库 / Study 计算源码或数值门。下面发布准备阶段的“只做短实验”及旧未完成状态保留其历史语境。
+
+隔离环境位于 `.tmp/v030-20261013/venv`，不继承系统 site-packages；旧 `.tmp/runtime` 原样保留为 `.tmp/runtime-before-v030-20261013`。完整 raw 16/16 hash、真实 CUDA FP32、397项core、51项CPU integration均通过。首次缺归档 transformers 的导入失败及初始 collection skip 保留；最终依赖门无 skip。实验与校准数字只在对应 Study 维护，见 [main_exp 本轮记录](../../studies/main_exp/docs/v030_execution.md)、[main_probe 本轮记录](../../studies/main_probe/docs/v030_execution.md)。
+
+两项 Study 的并发资源独立实测：main_exp 27个800-step原生容量Run通过；main_probe串行 / 手动round2及原生自动分组通过，round3因保护未执行。正式预算分别4.5 / 5GiB，原生自动两并发、safety=0.5。正式版本为 `main-exp-v030-20261013-final` / `main-probe-v030-20261013-final`，fresh make后的来源保持冻结，旧报告 / 声明 / 清单已逐字节归档，旧Run保留。
+
+本轮完整验收已完成：main_probe八格60-step及Study终验、main_exp八格600-step前置門、32条各自连续80000-step train、32条own-best eval、400点完整性及八曲线 / 两模型次序固定門全部通过。实际软件来源仍是最新已核对main / v0.3.0的804b3823，未改库 / Study计算源码或数值门。
+
+原调度20:59左右在30条train完成后终止，两条CIFAR10 / ResNet18 seeds2–3保留约24400步的中断证据，退出原因未取回。按[同源码接续方案](../../studies/main_exp/docs/v030_recovery.md)，仅为这两train及其配套eval新建recovery01身份；原30条结果hash / provenance保持原样，旧 / 新源码映射完全一致。21:14–23:11接续新两条从step0训练并执行全部32条评测，public launch exit0、source_unchanged=true。不能称一次连续launch，也不代表自定义sampler支持resume。
+
+[64条最终审计](../../studies/main_exp/docs/v030_long_audit.json)验证actual FP32权重、committed scheduler进度、400点、当前index / process / COMPARISON身份、32个自身best来源及两份真实provenance；原中断 / 新重跑976个已保留指标前缀精确一致。正式结论及图在[main_exp报告](../../studies/main_exp/docs/STUDY_REPORT.md)，数字由原生report生成。未复原历史原始seed / 逐点指标 / 权重，结论限预置PNG估读门。
+
+原会话97306与exec cell93已失效；接续使用隐藏后台观察器，现已正常结束。资源摘要为studies/main_exp/docs/v030_recovery_resources.json，原中断为v030_interruption.json；临时启动 / 观察输出和JSONL在.tmp/v030-20261013，仅本机。普通沙箱看不到外部后台进程，不能据此判定死亡；观察器可选磁盘计数缺失已容错并保留首次启动失败。当前接续index保留30个原train与4个新的身份槽位，直接rpipe make原声明会回到中断的旧ID；以后独立复跑使用新version / fresh make与新前置门。
+
+这轮提交 / 推送 / PR状态以Git和GitHub为准，不自动同步main或发布新版本。
+
+新发现B-030：新index与保留旧process不匹配时，report仍能exit0导出旧64个Run数字。独立复制元数据的公开CLI复现已保存，详见[bugs.md](bugs.md)与[Study证据](../../studies/main_exp/docs/v030_stale_report_repro.json)。尚未修复；本轮固定804b3823计算来源的长矩阵已终验，通过额外核对新index / process / COMPARISON的ID集合防止混用旧聚合。细分预算、耗时均衡与依赖就绪检查另记[brainstorm.md](brainstorm.md)，不在本轮自动实施。
+
 ## 2026-10-13 接续摘要
 
 当前工作树以dev ce8b3e6为基线，已完成原生CPU/CUDA恢复、CPU设备分流及整仓检查发现的比较 / 写入 / 名称 / metric / 空训练边界修复。395项core、51项CPU integration、CUDA跨进程恢复及wheel / sdist公开CLI验证通过；详细失败与支持范围见[record.md](record.md)2026-10-13。
@@ -104,11 +136,11 @@ PR #24 的文档审校已合入 dev `37b9cef`。维护者在 2026-10-10 追加�
 | --- | --- |
 | Flow 阶段与扩展 | [flow.md](../code/flow.md) |
 | 目录约定 | [layout.md](../code/layout.md) |
-| Study 使用 | [studies/README.md](../../studies/README.md) |
+| Study 使用 | [README 的 Study 指南](../../README.md#study-使用指南)，现有研究见 [Study 导航](../../studies/README.md) |
 | CI 与分支 | [cicd.md](cicd.md) |
 | 开发事实与历史失败 | [record.md](record.md) |
 
-4. 维护者于 2026-10-11 要求在当前连续实验结束后，与早年版本做同条件速度校准。按 [B-022](bugs.md#b-022-重型任务并发容量与吞吐尚未校准) 核对旧版本提交和计时证据，拆分训练、完整评测、checkpoint 与调度耗时，分别比较串行和并发；保持数值条件可比，再据实测决定优化。长训期间不启动竞争 GPU 的速度实验；该历史长训已结束，最新短校准另记。
+4. 维护者于 2026-10-11 要求在当前连续实验结束后，与早年版本做同条件速度校准。按 B-022 的历史问题核对旧版本提交和计时证据，拆分训练、完整评测、checkpoint 与调度耗时，分别比较串行和并发；保持数值条件可比，再据实测决定优化。该问题后续收口见 [开发记录](record.md#2-b-022--b-023-实测收口)，不再链接已移除的开放 bug 锚点。长训期间不启动竞争 GPU 的速度实验；该历史长训已结束，最新短校准另记。
 
 19:57 已在正式长训结束后执行串行校准首轮，CNN 数值门通过；[测量报告](../../studies/main_exp/docs/speed_calibration.md) 保留原始 JSON 和对照条件。六组独立进程复测全部通过，原生会话 66360 已 exit 0，日志 `.tmp/speed-repeat-1.log` 至 `speed-repeat-5.log`（仅本机）。该批次已结束，不再轮询或重启。校准修改了 recipe 的命令入口，已完成正式 version03 的来源仍按 09e495b 与原 provenance 解释；后续正式复跑须新 version / make / preflight，不能在这套旧冻结来源上重新 launch。
 

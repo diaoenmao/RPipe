@@ -3,60 +3,60 @@
   "passed": true,
   "runs": [
     {
-      "run": "c3daa91bd822de97",
+      "run": "e7d86f0d69b4c7bd",
       "data": "MNIST",
       "model": "linear",
       "passed": true,
-      "evidence": "runs\\c3daa91bd822de97\\assets\\probe\\COMPARISON.json"
+      "evidence": "runs\\e7d86f0d69b4c7bd\\assets\\probe\\COMPARISON.json"
     },
     {
-      "run": "926f3fea763bbb50",
+      "run": "74728c9fe0644092",
       "data": "MNIST",
       "model": "mlp",
       "passed": true,
-      "evidence": "runs\\926f3fea763bbb50\\assets\\probe\\COMPARISON.json"
+      "evidence": "runs\\74728c9fe0644092\\assets\\probe\\COMPARISON.json"
     },
     {
-      "run": "aeb45fd0052480a1",
+      "run": "b465aebb373aba20",
       "data": "MNIST",
       "model": "cnn",
       "passed": true,
-      "evidence": "runs\\aeb45fd0052480a1\\assets\\probe\\COMPARISON.json"
+      "evidence": "runs\\b465aebb373aba20\\assets\\probe\\COMPARISON.json"
     },
     {
-      "run": "2ce06ae7c0f1542c",
+      "run": "cc778f4da5862223",
       "data": "MNIST",
       "model": "resnet18",
       "passed": true,
-      "evidence": "runs\\2ce06ae7c0f1542c\\assets\\probe\\COMPARISON.json"
+      "evidence": "runs\\cc778f4da5862223\\assets\\probe\\COMPARISON.json"
     },
     {
-      "run": "5207b4b350d9e8bf",
+      "run": "402cc418c88df2ca",
       "data": "CIFAR10",
       "model": "linear",
       "passed": true,
-      "evidence": "runs\\5207b4b350d9e8bf\\assets\\probe\\COMPARISON.json"
+      "evidence": "runs\\402cc418c88df2ca\\assets\\probe\\COMPARISON.json"
     },
     {
-      "run": "94541f193540c92a",
+      "run": "c94251a081b0b074",
       "data": "CIFAR10",
       "model": "mlp",
       "passed": true,
-      "evidence": "runs\\94541f193540c92a\\assets\\probe\\COMPARISON.json"
+      "evidence": "runs\\c94251a081b0b074\\assets\\probe\\COMPARISON.json"
     },
     {
-      "run": "039bb9486ec47aee",
+      "run": "ef9e845bd80b849f",
       "data": "CIFAR10",
       "model": "cnn",
       "passed": true,
-      "evidence": "runs\\039bb9486ec47aee\\assets\\probe\\COMPARISON.json"
+      "evidence": "runs\\ef9e845bd80b849f\\assets\\probe\\COMPARISON.json"
     },
     {
-      "run": "94795d9bc81f9304",
+      "run": "09684e7b06ef2e19",
       "data": "CIFAR10",
       "model": "resnet18",
       "passed": true,
-      "evidence": "runs\\94795d9bc81f9304\\assets\\probe\\COMPARISON.json"
+      "evidence": "runs\\09684e7b06ef2e19\\assets\\probe\\COMPARISON.json"
     }
   ],
   "missing_runs": []
