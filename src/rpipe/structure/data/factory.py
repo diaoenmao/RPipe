@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Callable, Iterator
 
 from rpipe.structure.data.config import DataConfig
+from rpipe.structure.artifact.shared import cache_lock, reference_tree
 from rpipe.structure.origin import bind_endpoint, discard_bad_archive, endpoint_for
 
 
@@ -171,9 +172,10 @@ class DataFactory:
         builder = DataRegistry.get(name, source)
         if builder is None:
             raise ValueError(f'unknown data name/source: {name!r}/{source!r}')
-        if builder is _build_torch_vision:
-            return _build_torch_vision(data_config, Path(assets_dir), seed=seed, origin=origin)
-        return builder(data_config, Path(assets_dir), seed=seed)
+        with cache_lock(assets_dir):
+            if builder is _build_torch_vision:
+                return _build_torch_vision(data_config, Path(assets_dir), seed=seed, origin=origin)
+            return builder(data_config, Path(assets_dir), seed=seed)
 
 
 def _loader_options(cfg: dict[str, Any]) -> dict[str, Any]:
@@ -362,9 +364,13 @@ def _build_torch_vision(
     cfg = dict(data_config.config)
     root = assets_dir / str(spec['root'])
     root.mkdir(parents=True, exist_ok=True)
+    canonical_raw = assets_dir / name / 'raw'
+    native_raw = root / name / 'raw' if name in ('MNIST', 'FashionMNIST') else root
+    if canonical_raw.is_dir():
+        reference_tree(canonical_raw, native_raw)
     ctor = getattr(datasets, str(spec['ctor']))
     augment = bool(cfg.get('augment', spec.get('train_aug') is not None))
-    spec = _with_recorded_stats(spec, root / 'stats.yaml')
+    spec = _with_recorded_stats(spec, Path(cfg['stats_path']) if 'stats_path' in cfg else root / 'stats.yaml')
     train_tf = _train_transforms(spec, augment=augment)
     test_tf = _eval_transforms(spec)
     endpoint = endpoint_for(name, origin)
@@ -372,6 +378,7 @@ def _build_torch_vision(
     with bind_endpoint(ctor, endpoint):
         train_full = ctor(root=str(root), download=True, transform=train_tf, **dict(spec['train_kw']))
         test_ds = ctor(root=str(root), download=True, transform=test_tf, **dict(spec['test_kw']))
+    reference_tree(native_raw, canonical_raw)
     train_size = cfg.get('train_size')
     if train_size is not None:
         n = min(int(train_size), len(train_full))

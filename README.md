@@ -566,6 +566,8 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 
 #### 字段约定
 
+同一项目的 Study 默认共用项目根 `shared/data/` 与 `shared/model/`，原始数据和预训练权重只保存一份。训练对象、checkpoint、RNG 和报告仍按 Run 独立。已有缓存可用 `python -m rpipe shared studies/<name>` 检查路径，再用 `--migrate` 按 hash 校验并建立旧路径引用；冲突不会覆盖。确实不能共用的派生输入在 `study.yaml` 中显式选择 `shared.data: study` 或 `shared.model: study` 并在计划说明原因。详见 [共享路径与迁移合同](docs/code/layout.md#跨-study-共享资产2026-10-14)。
+
 | **字段** | **含义** |
 |------|------|
 | `fixed` | 每次 Run 都带上的补丁（不要把研究因素只写在这里却期望它变成多个 Experiment） |
@@ -575,6 +577,7 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 | `run_description` | 写入 config 的说明；**不进** `id` hash。占位符可用轴的末段名（如 `{train_size}`）以及 `{seed}`、`{experiment}` |
 | `flow.study_phases` | 显式启用阶段包；`flow/<phase>/run.py` 实现 hook，`__init__.py` 仅导出。prepare.before 在构造前，write 在库定稿前，其余 hook 在库阶段后。旧根目录阶段包需迁移 |
 | `flow.prepare_shared` | 默认 `true`；每条 Run 内准备隔离数据或注册专用 source 时设为 `false`，make 不提前构造 Data |
+| `shared` | `root` 为相对 Study 的可选公共根；`data` / `model` 默认 `project`，私有例外用 `study`。同项目的 Study 应指向同一公共根 |
 | `freeze` | 复用模板时，make 后已记录的源码、声明、注册适配或计划变化会被拒绝；项目重构后须验证实际冻结范围 |
 | `provenance.include` | 额外纳入来源清单的 Study 内文件（glob 列表），例如固定的参考数据或清单 |
 

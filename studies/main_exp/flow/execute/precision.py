@@ -1,6 +1,8 @@
 """Fresh-process checkpoint precision diagnosis; reuse native EvalAlgorithm."""
 from __future__ import annotations
 
+from rpipe.structure.artifact.shared import shared_paths
+
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 import hashlib
@@ -91,7 +93,7 @@ def _worker(recipe, args):
     from rpipe.structure.system.runtime import apply_runtime
     torch.set_num_threads(2)
     torch.set_num_interop_threads(1)
-    recipe.install(recipe.STUDY / 'shared/data', 0)
+    recipe.install(shared_paths(recipe.STUDY)['data'], 0)
     config = SystemConfig.from_mapping({'device': 'cuda', 'deterministic': True, 'cudnn_deterministic': True,
         'cudnn_benchmark': False, 'cudnn_allow_tf32': args.tf32, 'matmul_allow_tf32': False})
     runtime = apply_runtime(0, config)

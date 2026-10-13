@@ -137,7 +137,7 @@ Factory 按注册的 `name` / `source` 精确匹配，未注册组合抛 `ValueE
 | Hugging Face | `datasets.Dataset` / `DatasetDict` 及加载、格式化 API |
 | ModelScope | ModelScope 数据集加载 API |
 
-已注册 `source: torch`：`MNIST`、`FashionMNIST`、`CIFAR10`、`CIFAR100`、`SVHN`。数据侧只做 ToTensor，像素留在 0–1。`python -m rpipe data studies/<name>` 在 `shared/data/<数据集>/stats.yaml` 写下张数、形状、类别数量、像素最小/最大，以及 train 的 mean / std。有这份文件时 Normalize 用它，否则用代码里的常数。模型前面用 kornia：始终 Normalize；`augment` 为真时，训练态再加 CIFAR 的翻转+pad-4 crop，或 SVHN 的 pad-4 crop。`config.augment: false` 关掉随机增强。`config.pin_memory` / `config.num_workers` 传给 DataLoader（缺省 `false` / `0`）。
+已注册 `source: torch`：`MNIST`、`FashionMNIST`、`CIFAR10`、`CIFAR100`、`SVHN`。数据侧只做 ToTensor，像素留在 0–1。`python -m rpipe data studies/<name>` 在 `<study>/shared/data/<数据集>/stats.yaml` 写下张数、形状、类别数量、像素最小/最大，以及 train 的 mean / std。Flow 只显式读取本 Study 的这份统计（config.stats_path 可指定），否则用代码里的常数，不借用其他 Study 的 profile。模型前面用 kornia：始终 Normalize；`augment` 为真时，训练态再加 CIFAR 的翻转+pad-4 crop，或 SVHN 的 pad-4 crop。`config.augment: false` 关掉随机增强。`config.pin_memory` / `config.num_workers` 传给 DataLoader（缺省 `false` / `0`）。
 
 其它来源经 Registry 注册即可。
 
@@ -187,7 +187,7 @@ flowchart LR
 
 ### 4.7 落盘与测试
 
-本层会把数据集等文件写到 Study 的 **asset**（通常 `shared/data/` 下的缓存），不把整份数据塞进 result。单测在 `tests/rpipe/structure/data/` 与 `tests/rpipe/structure/api/`（`data_api`）：Config 往返、Registry、Factory→`Data`。
+本层会把可复用数据文件写到项目级 **asset**（默认项目根 `shared/data/`，跨 Study 共用），不把整份数据塞进 result。单测在 `tests/rpipe/structure/data/` 与 `tests/rpipe/structure/api/`（`data_api`）：Config 往返、Registry、Factory→`Data`。
 
 ---
 
@@ -942,13 +942,13 @@ RunConfig 可选字段 `version` 参与 `id` hash，用于让相同实验配置�
 |------|------|
 | `ArtifactLayout` | 一次 Run 的路径句柄（含 `study_dir`） |
 | `artifact_layout(study_dir, run_dir)` | 根为 `study_dir/runs/<run_dir>/` |
-| `ensure_study_layout(study_dir)` | 确保 `docs/`、`shared/`、`runs/` |
+| `ensure_study_layout(study_dir)` | 确保 Study 的 `docs/`、`runs/` 及配置指定的共享输入根 |
 
 | **成员** | **含义** |
 |------|------|
 | `root` | `…/runs/<run_dir>/` |
 | `config_path` / `result_path` / `assets_dir` | 本 Run |
-| `shared_dir` / `shared_data_dir` / `shared_model_dir` | Study 共享 asset |
+| `shared_dir` / `shared_data_dir` / `shared_model_dir` | 项目级共享输入根；data / model 可分别显式选 Study 私有例外，见 layout |
 | `docs_dir` | 人文文档 |
 | `ensure()` | 创建上述目录 |
 
@@ -998,7 +998,7 @@ Study 编排清单。`rpipe.structure.artifact.index`，**不是** Flow 的 writ
 
 | **位置** | **内容** |
 |------|------|
-| `shared/data/`、`shared/model/` | Study 内共享 |
+| `shared/data/`、`shared/model/` | 默认项目根，跨 Study 共享；可变 Run 状态不得写入 |
 | `runs/<id>/assets/` | 本 Run |
 | `runs/<id>/assets/tracker/` | AlgorithmTracker 数字（`tracker_state.json` / `scalars.jsonl`；TB 默认关） |
 | `runs/<id>/assets/logs/` | `system.Logger` 文本，**必写**，与终端同一套；`时间 级别 Run id [事件]` |
@@ -1066,7 +1066,7 @@ Run 目录名必须为非空单一目录组件，拒绝点 / 父目录、分隔�
 
 ## 11. 演进
 
-1. 编排：Study → Experiment → Run；artifact 挂在 Study 下（`shared/` + `runs/<id>/`）。
+1. 编排：Study → Experiment → Run；公共输入在项目级 `shared/`，Run artifact 挂在 Study 下（`runs/<id>/`）。
 2. 配置：基底 ⊕ **make** → run config → control；`study.yaml` 声明 `axes` / `seeds`（见 Study 指南）。
 3. result 快照契约（§9.4）先文档后单测固化。
 4. Flow：summarize 之后是 **write**（写 result），再 **process**。

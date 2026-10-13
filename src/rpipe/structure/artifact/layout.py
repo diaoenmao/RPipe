@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from rpipe.structure.artifact import paths
+from rpipe.structure.artifact.shared import shared_paths
 
 
 def validate_run_directory(run_dir: str) -> None:
@@ -38,15 +39,15 @@ class ArtifactLayout:
 
     @property
     def shared_dir(self) -> Path:
-        return self.study_dir / paths.SHARED_DIRNAME
+        return shared_paths(self.study_dir)['root']
 
     @property
     def shared_data_dir(self) -> Path:
-        return self.shared_dir / 'data'
+        return shared_paths(self.study_dir)['data']
 
     @property
     def shared_model_dir(self) -> Path:
-        return self.shared_dir / 'model'
+        return shared_paths(self.study_dir)['model']
 
     @property
     def docs_dir(self) -> Path:
@@ -61,11 +62,12 @@ class ArtifactLayout:
 
 
 def ensure_study_layout(study_dir: Path | str) -> Path:
-    """Ensure Study skeleton: ``docs/``, ``shared/{data,model}/``, ``runs/``."""
+    """Ensure Study outputs and project shared input roots."""
     study = Path(study_dir)
+    shared = shared_paths(study)
     (study / paths.DOCS_DIRNAME).mkdir(parents=True, exist_ok=True)
-    (study / paths.SHARED_DIRNAME / 'data').mkdir(parents=True, exist_ok=True)
-    (study / paths.SHARED_DIRNAME / 'model').mkdir(parents=True, exist_ok=True)
+    shared['data'].mkdir(parents=True, exist_ok=True)
+    shared['model'].mkdir(parents=True, exist_ok=True)
     (study / paths.RUNS_DIRNAME).mkdir(parents=True, exist_ok=True)
     return study
 

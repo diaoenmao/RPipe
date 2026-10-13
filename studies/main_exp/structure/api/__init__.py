@@ -37,7 +37,7 @@ def bootstrap() -> None:
 def export_source() -> dict[str, Any]:
     """Export tracked blobs, refusing to overwrite a different existing file."""
     tree = subprocess.check_output(
-        ['git', 'ls-tree', '-r', '-z', COMMIT], cwd=REPO
+        ['git', 'ls-tree', '--full-tree', '-r', '-z', COMMIT], cwd=REPO
     )
     blobs = []
     for entry in tree.split(b'\0'):
@@ -156,7 +156,8 @@ class Archive:
         # loads arrays; afterwards all sample reads use those in-memory arrays.
         if data_root.name != 'data':
             raise ValueError('historical data_root must end in "data"')
-        with _working_directory(data_root.parent):
+        from rpipe.structure.artifact.shared import cache_lock
+        with cache_lock(data_root), _working_directory(data_root.parent):
             return self.dataset.make_dataset(data_name, verbose=False)
 
 

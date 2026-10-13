@@ -232,6 +232,7 @@ __marimo__/
 
 # Agent scratch, test result folders, and local caches
 /.tmp/
+/shared/
 /.test-*/
 
 # Study artifacts: regenerate from the tracked declarations and docs

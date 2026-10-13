@@ -88,6 +88,19 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-14
 
+### 35. 跨 Study 共享输入与本机缓存迁移（B-053）
+
+用户在新持续目标中授权同步 `codex/powershell-launch-boundaries`、处理其他三个对话反馈的 Issues，并实现跨 Study data / model 共享。已 fetch 并切换到 `6619edc`，确认分支已有 #36—#38 三个修复；没有恢复此前撤回的广泛边界改造。本轮新增范围为 [共享路径合同](../code/layout.md#跨-study-共享资产2026-10-14)。
+
+- 改前：各 Study 返回自己的 shared/data、shared/model，probe 每个 Run 为两侧 copyfile raw。改后：默认项目级共享输入，data / model 独立显式私有例外；Factory 与 recipe 接收统一根，模型对象 / checkpoint / RNG / tracker 仍独立。统计 profile 留在 Study 并显式传入，避免跨 Study 归一化污染。
+- 公共准备受进程文件锁保护；终止进程后可重新取得锁。同卷旧缓存迁移先验证全部重名文件，再建立硬链接，原路径保持可读；冲突和链接失败保留原输入。raw 的归档 / torchvision 路径通过引用适配，不再复制。自定义 builder 仍须按版本 / revision 分目录；未新增 HF / ModelScope builder 或训练调度器。
+- main_exp 手动准备、preflight、容量 / 精度入口解析同一共享根；历史 processed 构造也受锁保护。探针的 processed / 原版 Stats 因归档格式和状态隔离仍私有。临时复制 Study 的首次原始导出得到空树；Git ls-tree 改为 --full-tree 后，固定历史提交的完整文件字节校验保持通过。
+- 当前 core **456 passed / 2 skipped**（`20261013T220345Z_df43db`，UTC），两项跳过为本机目录符号链接权限，8 条原有 partial-resume 警告保留；CPU integration **65 passed**（`20261013T220523Z_128a81`）。新增共享专项18 passed，覆盖跨 Study 文件 / 训练隔离、私有 profile、路径配置、冲突拒绝、链接失败与被终止写者。首次双 Study 测试误用 checkpoint 文件名 / key，按实际 latest.pt / model 合同修正，原失败留存。
+- wheel / sdist 在 `.tmp/` 源码副本构建、分别安装到新环境，复用已有科学依赖而非干净依赖安装；各9条 CLI、4个Toy/Stub Run通过。首次临时构建脚本误写 LICENSE 文件名，改为实际 LICENSE.md 后新目录成功，失败未删除。包仍为0.3.1开发来源，不发布版本。
+- 本机原始输入迁移和单格数值依据留在 [main_exp 迁移记录](../../studies/main_exp/docs/shared_inputs_migration.json)、[main_probe 小验证](../../studies/main_probe/docs/shared_inputs_validation.json)。不是新的八格 / 长矩阵验收，不改写旧来源。
+
+本机原始 stdout / 失败、迁移逐文件 hash 和安装验收在 `.tmp/shared-inputs-20261014/`，不随 clone 提供。#36—#38 继续保持 open，当前未回复或关闭；正式集成与远端 CI 以对应工作 PR 为准。持续目标保留，后续关注新 Issue 及三个下游对话的实际反馈，不把“目前没有新增项”当作所有后端已验收。
+
 ### 34. 工作分支提交推送交接
 
 用户授权 push 当前代码，以便在另一台机器继续。提交范围为收缩后保留的三个公共源码修复、四个对应测试文件、设计 / 历史开发 / 交接文档，以及跨 Study 共享下载的 brainstorm 要求；不恢复撤回的探索代码，不加入 `.tmp/`、环境、缓存、Run / 数据 / checkpoint。本次只推工作分支 `codex/powershell-launch-boundaries`，不合并 dev / main 或发布，Issue #36—#38 继续开放。

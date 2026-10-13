@@ -74,7 +74,7 @@ class MainArchive:
         self.original_root = workspace / 'original'
         self.archive = workspace / 'source-main-98648f3'
         manifest = []
-        for entry in subprocess.check_output(['git', 'ls-tree', '-r', '-z', MAIN], cwd=ROOT).split(b'\0'):
+        for entry in subprocess.check_output(['git', 'ls-tree', '--full-tree', '-r', '-z', MAIN], cwd=ROOT).split(b'\0'):
             if not entry:
                 continue
             attributes, filename = entry.split(b'\t', 1)

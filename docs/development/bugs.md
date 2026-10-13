@@ -6,6 +6,13 @@
 
 ## 开放
 
+### B-053：data / model 只在单个 Study 内共享（investigating）
+
+- 复现：`artifact_layout(project/studies/a, id)` 与 `artifact_layout(project/studies/b, id)` 返回不同的 shared data / model 根；相同下载在不同 Study 重复存储。main_probe.prepare 还为原版 / 当前版逐 Run copyfile 完整 raw。
+- 期望：项目内统一输入根；同版本 raw / 预训练权重一份，Run 状态独立；无法共用的派生格式显式私有。
+- 落点：artifact layout、data prepare / profile、Flow prepare、Study 手动准备和 probe raw 适配；方案见 [目录合同](../code/layout.md#跨-study-共享资产2026-10-14)。
+- 当前：本地修复与小验证已完成，等待工作 PR 的集成 / 跨平台 CI。共享专项18 passed、core456 passed / 2 skipped、CPU integration65 passed、两个安装包各9CLI / 4Toy Run通过；真实完整raw hash与旧来源保持。依据见 [当前记录](record.md#35-跨-study-共享输入与本机缓存迁移b-053)。旧实测不是改动后的完整 Study 验收。
+
 本轮按用户要求只保留本机适配及 Issue #36 / #37 / #38 的本机修复，见[当前范围与验证](record.md#32-按用户要求收缩到本机适配与三个下游-issue)。范围外人工反例的代码改动已撤回，不据此宣称这些问题不存在或当前已修复；历史事实留在开发记录，未升级为本轮待实施队列。B-030已补充report来源校验并完成定向 / CPU回归；原复现、修复与验证边界见[开发记录](record.md#9-b-030-报告来源校验与分支清理)。换version / fresh make后须重新process，不能导出身份不匹配的旧聚合。没有开放条目不等于所有后端、设备或研究条件均已实测。
 
 B-002、B-021 / B-024及B-025至B-029的既有修复证据仍在 [record.md](record.md)。B-022 / B-023 的代表性容量、精度合同与探索边界保留各自报告；本轮新的设备 / 并发结果见 [本轮执行记录](../../studies/main_exp/docs/v030_execution.md)。未实测支持范围不是已通过，缺环境依赖的导入失败也不自动列为库缺陷。

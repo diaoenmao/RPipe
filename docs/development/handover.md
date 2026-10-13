@@ -1,5 +1,13 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-14 跨 Study 共享与持续缺陷目标
+
+当前工作分支 `codex/powershell-launch-boundaries`，基线6619edc已含 #36—#38 修复；新增项目级共享输入、私有例外、进程文件锁与显式迁移，见 [当前记录](record.md#35-跨-study-共享输入与本机缓存迁移b-053) / [共享合同](../code/layout.md#跨-study-共享资产2026-10-14)。core456 passed / 2 skipped、CPU integration65 passed、两个分发包各9 CLI / 4 Toy Run通过；跳过的是本机目录符号链接权限。
+
+本机公共 raw 已放在项目 shared/data，旧路径仍指向同一文件。历史result/index/process/provenance和数值来源保留；不能重新make这些已完成Study后冒充旧验收。新独立实测设置新version；probe仍需同时更新fixed.version与基底version。当前小验证只有MNIST/linear单格CPU及CUDA，详细来源和配置层覆盖错误保留在Study报告。
+
+用户授权持续处理其他三个对话反馈的bug、关注Issues。当前#36—#38仍open；不得仅因本机回归就宣称已集成到dev/main或已发布。其他项目的vendored来源和正在运行的实验不由本目标自动覆盖；新反馈先核对实际Issue、源码及最小复现，再定向修复。下文收缩 / 仅待设计等文字属于早前状态，本节为当前接续入口。
+
 ## 2026-10-14 工作分支异机交接
 
 用户已授权将当前收缩后的代码、测试和文档提交推送到 `codex/powershell-launch-boundaries`，在另一台机器继续；不合并 dev / main，不发布，不关闭 Issue #36 / #37 / #38。此前“未提交 / 不推送”是当时状态，以本节最新授权为准。实际交接提交以远端分支和 `git log -1` 为准。

@@ -1,6 +1,8 @@
 """Manual historical/current stage calibration, invoked by recipe.py, not a hook."""
 from __future__ import annotations
 
+from rpipe.structure.artifact.shared import shared_paths
+
 import argparse
 import hashlib
 import json
@@ -79,7 +81,7 @@ def main(recipe, argv):
     ident = 'speed-' + time.strftime('%Y%m%d-%H%M%S') + '-' + uuid.uuid4().hex[:8]
     output = recipe.REPO / '.tmp' / ident
     output.mkdir()
-    archive = recipe.install(recipe.STUDY / 'shared/data', 0)
+    archive = recipe.install(shared_paths(recipe.STUDY)['data'], 0)
     report = {'measurement_id': ident, 'historical_commit': recipe.COMMIT,
         'current_commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=recipe.REPO, text=True).strip(),
         'script_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
@@ -121,7 +123,7 @@ def main(recipe, argv):
         apply_runtime(0, controls)
         torch.cuda.reset_peak_memory_stats()
         start = time.perf_counter()
-        datasets = archive.datasets(recipe.STUDY / 'shared/data', args.data)
+        datasets = archive.datasets(shared_paths(recipe.STUDY)['data'], args.data)
         module = archive.model.make_model(args.model).to('cuda')
         initial = recipe._state_cpu(module)
         optimizer = archive.model.make_optimizer(module.parameters(), args.model)

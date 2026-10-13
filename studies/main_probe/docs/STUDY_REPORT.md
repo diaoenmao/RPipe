@@ -2,6 +2,12 @@
 
 ## 一、摘要
 
+### 2026-10-14 共享 raw 的单格流程验证
+
+共享改动后使用两个新身份完成 MNIST/linear 的60-step、完整test10000成对验证，实际CUDA与CPU各一次，均通过输入 / RNG / 参数 / 整数样本计数 / best独立eval和库compare；仅单格，未执行新完整八格Study。原版 / 当前版raw引用项目共享文件，Stats和processed仍隔离。实际来源、版本、数值门及首轮失败见 [共享验证证据](shared_inputs_validation.json)。
+
+CUDA Run `1dd708dab35a7aaa` 的原声明曾被误标为CPU：基底device被fixed.system.device覆盖，生成配置和实测均为CUDA；保留实际事实。同步两个层级后CPU新Run `318c693057e54f70` 通过，execution_device=cpu、gpu_execution_started=false。原复制Study的prepare导出失败和临时脚本目录复用错误也保留，未覆盖旧Run。
+
 ### 2026-10-13 v0.3.0 正式八格本机复验
 
 - 软件基线：发布 `v0.3.0` / `804b3823ab6d2af46cbda1a65688ca8b76c60b22`；旧版固定 `98648f3`。独立 venv、完整 raw 16 项 hash、FP32、benchmark / 两项 TF32=false，数据、seed0、60-step / 完整 test 与门限不变。

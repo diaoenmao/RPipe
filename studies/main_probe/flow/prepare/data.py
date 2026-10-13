@@ -2,7 +2,6 @@
 from datetime import datetime, timezone
 from pathlib import Path
 import os
-import shutil
 import subprocess
 import sys
 from typing import Any
@@ -12,7 +11,8 @@ from ...structure.algorithm.paired import (
 )
 
 def prepare(workspace: Path, source_data: Path, pair: tuple[str, str]) -> dict[str, Any]:
-    """Copy isolated caches, recompute original Stats, and check CPU parity."""
+    """Reference immutable raw inputs, isolate derived caches, and check CPU parity."""
+    from rpipe.structure.artifact.shared import link_input
     bootstrap()
     import numpy as np
     import torch
@@ -36,7 +36,7 @@ def prepare(workspace: Path, source_data: Path, pair: tuple[str, str]) -> dict[s
             expected = sha(path)
             for destination in destinations:
                 destination.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(path, destination)
+                link_input(path, destination)
                 if sha(destination) != expected:
                     raise ValueError(f'copied raw file differs: {destination}')
             copied.append({'dataset': name, 'relative': relative.as_posix(), 'sha256': expected})

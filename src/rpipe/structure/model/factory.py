@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from rpipe.structure.model.config import ModelConfig
+from rpipe.structure.artifact.shared import cache_lock
 from rpipe.structure.model.init_param import init_param
 from rpipe.structure.model.shape import resolve_shape
 from rpipe.structure.origin import apply_model_origin, normalize_origin
@@ -64,7 +65,8 @@ class ModelFactory:
         builder = ModelRegistry.get(name, source)
         if builder is None:
             raise ValueError(f'unknown model name/source: {name!r}/{source!r}')
-        model = builder(model_config, Path(assets_dir), data_meta=data_meta)
+        with cache_lock(assets_dir):
+            model = builder(model_config, Path(assets_dir), data_meta=data_meta)
         model.module = _attach_input_norm(model.module, data_meta)
         if origin not in (None, ''):
             chosen = normalize_origin(origin)
