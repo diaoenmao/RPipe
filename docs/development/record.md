@@ -86,6 +86,20 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
+## 2026-10-14
+
+### 9. B-030 报告来源校验与分支清理
+
+本项于2026-10-13开始，跨日完成修复、回归与文档收口；下方实验来源仍是原日期与804b3823，不将旧实测重记为当天新增。
+
+复现来自804b3823：新version / fresh make产生新index，旧process保留；原report只把index当日志链接来源且吞掉读取异常，仍exit0导出64个旧ID。正式复现保留在[Study证据](../../studies/main_exp/docs/v030_stale_report_repro.json)。先明确报告合同，再补反例；首轮18 failed / 2 passed，覆盖旧聚合、索引缺失 / 损坏 / 非法形状、重复Run与写入失败。修复仅在readout/report核对Study名及全部计划Run ID、seed、因素归属，复用已有atomic writer；不引入新process格式或索引哈希字段，不修改make、聚合、算法或数值门。
+
+缺失或损坏索引、重复 / 缺少Run、身份不符均在导出前拒绝，旧process、NUMBERS和研究结论不变；旧格式清单、合法部分聚合和排列调整兼容。先前测试fixture漏写实际seed / 因素，已补齐；首次绿色复验19 passed / 1 failed因新增测试插在旧用例末段断言前，导致saved_figures越域，恢复原用例完整断言后31项通过，失败原样留在.tmp。清单匹配不证明同一Run再次执行后的指标新鲜度、运行期间索引未并发修改或研究质量；本次不扩展成并发快照 / 事务系统。
+
+维护者确认后，brainstorm按资源与调度、环境准备、历史记录与边界分组，旧待办记录转入按日期备查，保留原始事实与链接，不实施吞吐或滚动补位改造。README的重构prompt移到最后，参考地址固定为https://github.com/DreamSoul-AI/RPipe/。已验证PR #32合并且内容保全后删除远端 / 本地codex/v030-local-studies，以及PR #28对应的旧本地codex/study-flow-layout和已合入的codex/downstream-usage；仅保留main/dev与本次codex/fix-stale-report。后续验证与PR状态以实际结果补记。
+
+最终定向38 passed（20261013T155929Z_4aa95e）、core420 passed / 2 skipped（20261013T155957Z_df3f46）、CPU integration52 passed（20261013T160008Z_6384e0）；run_id使用UTC，integration实际本地日期为2026-10-14，两个批次使用独立basetemp。两项skip为Windows软链接创建受限用例，不计通过。复制正式新index与旧process的CLI复验exit2、原文件及旧表不变；匹配的当前聚合exit0，64个Run ID全部正确。7份v030清单的102个快照文件hash匹配，正式Studies相对dev无diff，证据为.tmp/b030-20261013/evidence-result.json；未训练、未改旧provenance或实测门限。
+
 ## 2026-10-13
 
 ### 8. 本地模板文档与云端实验分支同步

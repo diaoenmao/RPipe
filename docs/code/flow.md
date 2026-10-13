@@ -297,7 +297,7 @@ conservative 墙钟只在 **make** 打印。本进程实测时间在 Logger 行�
 
 `python -m rpipe logs <study>` 只读，把各 Run 的事件行按行首时间打到终端，不写 Study 级总 log。缺 index 退出 2。
 
-`python -m rpipe report <study>` 读 `process.json`，写 `docs/NUMBERS.md`（Experiment 的 mean / std / min / max，以及 Run 表）。不改 `STUDY_REPORT.md`。缺 `process.json` 退出 2。
+`python -m rpipe report <study>` 读 `process.json`，写 `docs/NUMBERS.md`（Experiment 的 mean / std / min / max，以及 Run 表）。导出前必须读取可用的当前 index，核对 Study 名以及所有计划 Run 的 ID、seed 与因素归属；包含未成功 Run 的合法部分聚合仍可导出，不要求 complete=true。不新增格式字段，旧 process 同样按其已有清单核对；Run / Experiment 的排列次序不影响身份。缺失、损坏的 index / process、重复或缺少 Run 以及身份不匹配时退出 2，提示检查并重新 process；保留旧 process、现有 NUMBERS、图和 Run 证据。数字表在校验成功后原子替换，不改 `STUDY_REPORT.md`。该校验只绑定当前计划，不证明同一 Run 重跑后的指标新鲜度或研究质量。
 
 `launch` 每一组开始前打 `launch: wait i/n mode=`，失败再试打 `launch: retry`。全部 wait 完再打一行和 status 相同的计数。不改 `jobs.json`。
 
