@@ -15,9 +15,10 @@
 | --- | --- |
 | 项目概念与职责 | [concept.md](docs/code/concept.md) |
 | 目录与代码结构 | [layout.md](docs/code/layout.md)、[code.md](docs/code/code.md)，再读 [structure.md](docs/code/structure.md) / [flow.md](docs/code/flow.md) |
-| 研究设计与执行 | 从项目 `docs/research/` 的宏观方案提取具体问题，见 [Studies 入口](studies/README.md#从宏观研究提取具体-study)、[README 的 Study 指南](README.md#study-使用指南)，再读目标 Study 的计划、配置和报告 |
+| 研究设计与执行 | 先读 [研究工作要求](docs/development/research.md)，从项目 `docs/research/` 的宏观方案提取具体问题，见 [Studies 入口](studies/README.md#从宏观研究提取具体-study)、[README 的 Study 指南](README.md#study-使用指南)，再读目标 Study 的计划、配置和报告 |
 | 测试与验证 | [testing.md](docs/development/testing.md)、[tests/README.md](tests/README.md) |
 | CI 与分支 | [cicd.md](docs/development/cicd.md) |
+| 下游反馈与上游收纳 | [feedback.md](docs/development/feedback.md)；下游发现先记录，按授权脱敏、去重并向 RPipe 提 Issue，再由上游核验 |
 | 已知问题与后续想法 | [bugs.md](docs/development/bugs.md)、[brainstorm.md](docs/development/brainstorm.md) |
 | 开发记录 | [record.md](docs/development/record.md)、会话交接 [handover.md](docs/development/handover.md) |
 

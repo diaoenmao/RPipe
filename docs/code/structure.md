@@ -988,7 +988,7 @@ Study 编排清单。`rpipe.structure.artifact.index`，**不是** Flow 的 writ
 
 ### 9.6 `asset/`
 
-prepare / execute 读写；collect / summarize / write **不改文件内容**（write 只登记路径）。
+库默认 prepare / execute 读写；默认 collect / summarize 不改 asset 文件内容，默认 write 只登记路径。Study write 扩展可以写研究证据、投影与对比，并在库成功定稿前完成验收；时机与失败边界见 [flow.md §14](flow.md#14-study-扩展recipe来源清单run-对比)。
 
 数据集、权重 / checkpoint、AlgorithmTracker 曲线、Logger 文本都是**文件**，所以走 asset，不进 result 正文。
 
@@ -1009,7 +1009,7 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 | execute | — | 读写 | — |
 | collect | — | — | 内存 |
 | summarize | — | — | 内存 |
-| write | — | 读路径列表 | 写定稿 |
+| write | — | Study 扩展写证据，库登记路径列表 | 写定稿 |
 | Runner（失败） | — | — | 尽量写 `failed` |
 
 ### 9.8 与 control 契约
@@ -1040,7 +1040,7 @@ prepare / execute 读写；collect / summarize / write **不改文件内容**（
 
 **容量与配置解释（2026-10-12）：** 原始 mapping 的 system / algorithm setting 与运行时一致：`config` 内设置优先于同名顶层扩展。调度读取实际 device，不能把 `system.config.device: cuda` 当 CPU。epoch 的训练样本基数与 test 基数分别记录；梯度累积按实际 batch 次数估算，不把一次 optimizer step 当一次前向。显存启发式取训练与周期 / 最终 test 的较大估计，独立 eval 使用实际 test batch，进程固定开销不乘 no-grad 折扣。保持原 safety=0.5 与模型系数；启发式不是显存实测，历史 allocated 峰值不自动成为新的装箱预算，也不证明并发吞吐。
 
-校准后可在 `system.config.vram_bytes`（或同名顶层扩展）显式声明单个 Run 进程的显存预算，单位 byte，必须为不小于固定开销的整数；嵌套配置优先。该值替代经验估算，仍由同一个装箱器按 safety=0.5 分配，不改变数值计算或强制并发数。预算应覆盖同设备、模型 / source、batch、精度下的训练、完整 test、checkpoint 峰值，包含 reserved、CUDA context / 驱动等进程开销，并保留余量；不能只填 allocated，也不能把其他数据 / 设备的测量直接套用。未配置保持启发式，不自动读取旧报告或学习历史结果；采用新预算须重新 make，正式实测换新 version。
+校准后可在 `system.config.vram_bytes`（或同名顶层扩展）显式声明单个 Run 进程的显存预算，单位 byte，必须为不小于固定开销的整数；嵌套配置优先。该值替代经验估算，仍由同一个装箱器分配，不改变数值计算或强制并发数。当前参考实现默认 safety=0.5，这是实现默认值，不是下游必须遵守的固定比例；容量函数允许调整 safety，项目须按实测接入，当前 CLI 没有独立 safety 开关。预算应覆盖同设备、模型 / source、batch、精度下的训练、完整 test、checkpoint 峰值，包含 reserved、CUDA context / 驱动等进程开销，并保留余量；不能只填 allocated，也不能把其他数据 / 设备的测量直接套用。未配置保持启发式，不自动读取旧报告或学习历史结果；采用新预算须重新 make，正式实测换新 version。
 
 复用已有 jobs.json 时，存在的 config 所声明的 mode / 实际 device 必须与保存计划一致；不一致返回重建请求，不继续沿用错误 CPU / CUDA 分配。旧计划的显存与估时不会自动升级，使用新估算需重新 make；正式实测仍用新的 version，不能重写旧验收基线。
 

@@ -1,6 +1,6 @@
 # Study Plan: my_study
 
-> 对照[根 README 的 Study 指南 §3](../../../README.md#3-高效率实验设计)。跑完后写同目录 `STUDY_REPORT.md`。
+> 按[研究工作要求](../../../docs/development/research.md)补齐本轮问题、假设、文献/数据/模型/算法/指标/实验设计；可引用已明确的宏观方案，不适用项说明理由。下方是执行骨架，不是完整研究计划。排班见[根 README 的 Study 指南 §3](../../../README.md#3-高效率实验设计)，跑完写同目录 `STUDY_REPORT.md`。
 
 ## 1. 研究问题
 

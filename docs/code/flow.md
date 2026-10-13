@@ -223,7 +223,7 @@ flowchart TD
 
 **目的：** 在 **已经 write 的 result** 上做派生。可空。分两层，都在 `flow/process/`：
 
-| **比较项** | ****Run process**（阶段链最后一步）** | ****Study process**（单独进程）** |
+| **比较项** | **Run process（阶段链最后一步）** | **Study process（单独进程）** |
 |--|-----------------------------------|------------------------------|
 | 入口 | `FlowRunner` 的 `process`；每条 `run-one` | `python -m rpipe process <study>`；`launch` / `run` 全部 wait 完再调一次 |
 | 写哪里 | `runs/<id>/process.json`，`scope: run` | Study 根 `process.json`，`scope: study`（**信封**） |
