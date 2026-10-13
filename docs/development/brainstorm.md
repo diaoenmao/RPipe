@@ -22,6 +22,19 @@ Registry 支持多个已注册 source。Trainer 特有字段由相应实现解�
 
 ## 3. 待执行想法
 
+### 2026-10-13 v0.3.0 本机复验后的改进建议
+
+以下为本轮实测支持的改进方向，尚未确认实施；本轮完整矩阵已验收，现有配方、预算、数值门、资源保护及真实历史证据保持原记录。实际状态以 [main_exp 本轮记录](../../studies/main_exp/docs/v030_execution.md) / [main_probe 本轮记录](../../studies/main_probe/docs/v030_execution.md) 为准；此前同日“只做短实验”指发布准备阶段，后续已获得完整复验授权。
+
+- **按模型 / 数据配置分别校准显存预算。** 本轮main_exp保守统一4.5 GiB、main_probe独立5 GiB，原生50%安全池下均为两并发。轻模型实际allocator明显更小，统一预算会限制整批吞吐；可在后续授权下沿用现有配置和装箱入口校准细分预算，保持context / 驱动余量、整卡 / RAM保护、数值门及train→eval屏障。尚未证明更高自动并发安全，不直接降低预算或safety。
+- **研究原生分组的耗时均衡。** main_probe相同八任务的手动round2墙钟141.75秒，原生auto同模型分组185.0秒；两组均有严格数值证据，但布局不同，不能把较快一次当稳定最优。可后续在既有调度里比较CPU与GPU开销、组内长短任务和尾部等待，使用相同任务量、资源保护与独立重复验证，保留一个Run仅一个执行者及成对原版先 / 当前版后；不另写调度器或训练循环。详见 [独立校准](../../studies/main_probe/docs/v030_capacity_auto.json)。 当前代码 `capacity.pack_jobs` 显式按模型类别分簇，`schedule.launch_jobs` 启动一组后逐个wait，再开下一组；有空槽也不补位。后续可在同一原生调度实现里研究资源足够时的滚动补位，并保持全train波完成后的eval屏障、失败 / 重试语义与单Run所有权。需针对不同CPU / GPU瓶颈做受控校准，不以“并发数增加”当作吞吐改善。
+
+- **补齐隔离环境的归档依赖就绪检查。** 本轮视觉组合的原归档也会导入evaluate / datasets / transformers，首次缺transformers在训练前失败，补依赖后的最终core / CPU门无skip。可在现有准备入口明确所需依赖和轻量import检查，减少目标电脑首次试跑的排错；这是准备体验改进，当前证据不足以将其当训练算法bug。实际依赖见 [环境清单](../../studies/main_exp/docs/environment_v030_20261013.json)。
+
+2026-10-13 约15:30运行观察：两条MNIST / ResNet18在推进，单次nvidia-smi的GPU利用率为97%，各训练进程CPU约199%（约两个逻辑CPU的用量）。这是瞬时资源证据，不是整批吞吐结论。当前make的保护池约10.2 GiB，统一预算4.5 GiB×3超过池容量；不能因整卡还有空闲显存就绕过安全合同。取舍与原始资源范围见 [资源配置](../../studies/main_exp/docs/resource_choice_v030.json)、[速度报告第十一节](../../studies/main_exp/docs/speed_calibration.md#十一2026-10-13-固定-v030-的新隔离环境复验)及[本机长资源观察](../../studies/main_exp/docs/v030_long_resources.json)。
+
+过期聚合被report导出的已复现问题单独作为 [B-030](bugs.md#b-030--新-index-建立后-report-仍可导出旧聚合open) 记录，不能仅放在探索建议中。上述吞吐观察限本轮短校准，不代表完整长矩阵或其他设备速度排名。
+
 ### 2026-10-13 当前收口与后续边界
 
 本轮用户已授权缺陷清理、整仓适配与main发布准备。容量真实受控矩阵、固定权重精度复验、原生恢复及边界回归已接续完成，最新状态见[record.md](record.md)2026-10-13。发布前完成当前源码的小门、干净安装与跨平台必需CI，不把旧长实验或正常默认TF32差异当新的严格基线。

@@ -2,6 +2,8 @@
 
 ## 一、目标与状态
 
+2026-10-13 发布后新一轮：固定 v0.3.0 / `804b3823`，独立环境串行六次与容量27次均通过；main_probe另行校准，最终采用各自显式预算、原生auto两并发与safety=0.5。完整证据与局限见第十一节，前文记录发布准备阶段的不同源码。
+
 2026-10-13：16项历史 raw 校验通过；固定源码容量测量27个原生 Flow Run 全部成功，round2/3在相同预算与严格 checkpoint / history 门下提高总体吞吐。16次 FP32逐样本一致；TF32对照观察到不同 kernel 和预测。见第九、十节。后续 fresh make 使用显式4.5GiB预算，库默认模型系数与 safety=0.5不变，不外推到未知设备或配方。
 
 ### 2026-10-13 受控并发验证计划
@@ -185,3 +187,43 @@ ResNet18每进程reserved峰值2998MiB；串行整卡从首样4016MiB至峰值79
 B-023按严格FP32合同的源码修复与实测复验收口：旧version03完整矩阵已验收，本次修复后固定best复验通过，原benchmark覆盖和TF32默认精度不明确的缺陷不再沿用。默认TF32的跨路径严格等同不是受支持合同；旧失效权重的kernel考古作为非发布阻断的研究边界保留。完整长矩阵本轮没有重跑，也不以32次短评测替代新长曲线验收。
 
 复跑入口为 `python studies/main_exp/recipe.py diagnose-precision --checkpoint <本机固定CNN best.pt>`；它会创建新的测量ID，不改变传入权重或旧正式结果。profiler trace、逐样本logits、worker日志在本Study的shared/validation，不随clone提供。
+
+## 十一、2026-10-13 固定 v0.3.0 的新隔离环境复验
+
+本节为发布之后维护者授权的独立一轮实测，软件固定 `804b3823ab6d2af46cbda1a65688ca8b76c60b22`；不沿用前述候选源码的成功报告。Windows 11 / RTX 5090 D v2、Torch 2.11.0+cu130、完整 raw 16/16 hash、CPU2 / workers0、FP32、benchmark / 两项 TF32=false、CUBLAS=:4096:8，详见 [实际环境](environment_v030_20261013.json) 和 [执行记录](v030_execution.md)。
+
+### （一）同条件历史 / 当前链串行速度
+
+CNN 与 ResNet18 各三次独立进程、两侧各800步 / eval200完整test，warmup第一段不参加阶段均值。全部初始 / 最终参数和完整 test Loss / 整数正确数门通过，来源未变。该计时入口不采集输入 hash 或 RNG 对照；这些门由本轮八格 600-step preflight 另行覆盖。首次缺归档 transformers 的导入失败发生在训练前，[原失败记录](speed_measurements/v030-speed-cnn-telemetry.json)保留；补齐隔离依赖后采用新测量 ID，没有用一次成功覆盖失败。
+
+| **CIFAR10 模型** | **历史 train200 及记账 s** | **当前 train200 及记账 s** | **当前相对历史** | **历史 / 当前完整 test s** | **历史 / 当前保存 s** |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| CNN | 8.6304 | 8.6819 | +0.60% | 0.6105 / 0.6100 | 0.0172 / 0.0758 |
+| ResNet18 | 14.9220 | 15.0610 | +0.93% | 1.0471 / 1.0453 | 0.1050 / 0.3264 |
+
+[六次原始 ID、逐进程均值和波动](speed_v030_summary.json)保留。这组短测没有出现成倍的训练段变慢；不能据此给未测模型或长矩阵速度排名。旧 / 新保存格式与策略不同，校准 latest200 也不同于正式 latest2000，因此保存时间不能直接外推为整批长实验开销。
+
+### （二）相同三任务的并发吞吐与资源
+
+复用现有 calibrate-capacity、原生六阶段 Flow 和调度；同一模型 seeds0–2，混合组为 CNN / ResNet18 / linear 各seed0。每组任务量、800步、eval200全test、FP32、CPU2及保存职责一致；GPU0 是本轮实际唯一设备。27/27 Run 成功，四点评测齐全，latest / best 参数、optimizer、scheduler 与完整 test history 对串行严格零容差通过，0 OOM / 0 failed。逐级空闲显存准入保护保留；计时期间没有并行回归。
+
+| **组** | **并发上限** | **整批墙钟 s** | **相对串行吞吐** | **单进程 allocated 最大 MiB** | **单进程 reserved 最大 MiB** | **采样整卡峰值 GiB** |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| cnn | 1 | 129.63 | 1.00× | 444.0 | 650.0 | 4.33 |
+| cnn | 2 | 84.38 | 1.54× | 444.0 | 650.0 | 5.54 |
+| cnn | 3 | 45.37 | 2.86× | 444.0 | 650.0 | 6.78 |
+| resnet18 | 1 | 209.41 | 1.00× | 2553.3 | 2998.0 | 6.63 |
+| resnet18 | 2 | 141.80 | 1.48× | 2553.3 | 2998.0 | 10.13 |
+| resnet18 | 3 | 109.15 | 1.92× | 2553.3 | 2998.0 | 13.68 |
+| mixed | 1 | 150.25 | 1.00× | 2553.3 | 2998.0 | 6.60 |
+| mixed | 2 | 111.05 | 1.35× | 2553.3 | 2998.0 | 7.85 |
+| mixed | 3 | 74.09 | 2.03× | 2553.3 | 2998.0 | 8.54 |
+
+[原生容量报告](speed_measurements/capacity-20261013-033729-c49faec2.json)含每个 Run 的实际 allocator 峰值、完整 GPU 利用率 / 空闲显存样本及严格对照；[外部观察](speed_measurements/v030-capacity-telemetry.json)含主存、CPU线程、进程 I/O 和整卡样本。WDDM 无可靠逐进程 GPU 使用值；整卡增量包含 CUDA context、驱动及背景活动，不能仅以 allocated 或利用率判断并发。CPU进程总线程数包含驱动 / 库线程，不等于科学配置的 Torch CPU2。
+
+### （三）正式选择与边界
+
+- main_exp 从本轮串行 reserved、整卡增量、已有512 MiB context开销下限、25%余量与256 MiB取整独立推导4.5 GiB预算。原生50%空闲显存池下采用auto两并发；round2整批吞吐改善约1.35–1.54倍。测得的round3较快结果保留，但没有以手动并发绕过正式保护池。
+- main_probe 单独完成同八成对任务的串行 / round2及原生auto分组校准。每对仍是原版先 / 当前版后，Run间隔离；采用5 GiB预算与safety=0.5。auto校准相对串行约1.33倍，严格checkpoint / history与完整成对门通过。round3因保护未执行，不能写成通过，详见 [独立校准](../../main_probe/docs/v030_execution.md)。
+- [最终配置与原生排班](resource_choice_v030.json)确定后重新fresh make，main_probe正式八格与main_exp新来源八格600步门均通过，再启动完整长矩阵。短校准不替代长曲线门，不改batch、增强、完整评测或80000步预算。
+- 本轮容量矩阵各级只执行一次，串行阶段另有三个独立进程重复；这些观察不能定义跨环境的稳定最快并发或置信区间。没有取消显存保护或修改库经验系数。正式长任务的资源见 [长矩阵观察](v030_long_resources.json)，其采样整卡峰值不冒充精确的长程 PyTorch allocator 峰值。

@@ -2,6 +2,27 @@
 
 ## 一、摘要
 
+### 2026-10-13 v0.3.0 正式八格本机复验
+
+- 软件基线：发布 `v0.3.0` / `804b3823ab6d2af46cbda1a65688ca8b76c60b22`；旧版固定 `98648f3`。独立 venv、完整 raw 16 项 hash、FP32、benchmark / 两项 TF32=false，数据、seed0、60-step / 完整 test 与门限不变。
+- 正式 version：`main-probe-v030-20261013-final`。资源配置确定后 fresh make，8 succeeded / 0 failed / 0 pending，成对门、8 次库 compare、Study complete / passed 与来源不变均通过。16 段参数最大差 0、train/test Loss 最大差 4.44e-16。
+- 并发：独立串行 / round2 同八任务为 246.60 / 141.75 秒，1.74×；round3 因保护未执行。最终采用原生 safety=0.5、5 GiB 预算的自动同模型两并发；校准 185.0 秒、1.33×，正式复验约171.20秒。不同分组与重复观测分开，不挑最快一次冒充稳定速度排名。
+- 证据：[正式逐 Run 数值及来源](v030_final_gate.json)、[校准](v030_capacity.json)、[自动分组](v030_capacity_auto.json)、[执行记录](v030_execution.md)、[数字](NUMBERS.md)。运行资产和临时日志留在本机，不随 clone 提供。
+- 边界：本次八格通过不替代 main_exp 的 80000-step 四 seed 长曲线；旧报告保留实际源码，不回填为本次运行。
+
+| **组合** | **正式 Run ID** | **原版自身 best eval** | **当前链自身 best eval** |
+| --- | --- | ---: | ---: |
+| MNIST / linear | e7d86f0d69b4c7bd | 90.7300% | 90.7300% |
+| MNIST / mlp | 74728c9fe0644092 | 91.8200% | 91.8200% |
+| MNIST / cnn | b465aebb373aba20 | 11.3500% | 11.3500% |
+| MNIST / resnet18 | cc778f4da5862223 | 97.6300% | 97.6300% |
+| CIFAR10 / linear | 402cc418c88df2ca | 29.5200% | 29.5200% |
+| CIFAR10 / mlp | c94251a081b0b074 | 40.3000% | 40.3000% |
+| CIFAR10 / cnn | ef9e845bd80b849f | 32.8900% | 32.8900% |
+| CIFAR10 / resnet18 | 09684e7b06ef2e19 | 47.7300% | 47.7300% |
+
+![本轮原生 process 生成的 60-step test history](figures/learning_curves.png)
+
 ### 2026-10-13 version06 完整短探针
 
 - 目标：验收缺陷修复后的真实六阶段成对流程，非长曲线。version为main-probe-flow-20261013-06，基于dev ce8b3e6加当时未提交修复，实际源码哈希随报告保存。

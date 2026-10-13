@@ -1,5 +1,25 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-13 v0.3.0 本机完整实验接续
+
+维护者新增授权本机环境、完整数据、小门、受控并发校准及门通过后的完整 Study。固定软件基线为发布标签 `v0.3.0` / `804b3823ab6d2af46cbda1a65688ca8b76c60b22`，工作分支 `codex/v030-local-studies`；没有跟随更新后的 main，也没有改库 / Study 计算源码或数值门。下面发布准备阶段的“只做短实验”及旧未完成状态保留其历史语境。
+
+隔离环境位于 `.tmp/v030-20261013/venv`，不继承系统 site-packages；旧 `.tmp/runtime` 原样保留为 `.tmp/runtime-before-v030-20261013`。完整 raw 16/16 hash、真实 CUDA FP32、397项core、51项CPU integration均通过。首次缺归档 transformers 的导入失败及初始 collection skip 保留；最终依赖门无 skip。实验与校准数字只在对应 Study 维护，见 [main_exp 本轮记录](../../studies/main_exp/docs/v030_execution.md)、[main_probe 本轮记录](../../studies/main_probe/docs/v030_execution.md)。
+
+两项 Study 的并发资源独立实测：main_exp 27个800-step原生容量Run通过；main_probe串行 / 手动round2及原生自动分组通过，round3因保护未执行。正式预算分别4.5 / 5GiB，原生自动两并发、safety=0.5。正式版本为 `main-exp-v030-20261013-final` / `main-probe-v030-20261013-final`，fresh make后的来源保持冻结，旧报告 / 声明 / 清单已逐字节归档，旧Run保留。
+
+本轮完整验收已完成：main_probe八格60-step及Study终验、main_exp八格600-step前置門、32条各自连续80000-step train、32条own-best eval、400点完整性及八曲线 / 两模型次序固定門全部通过。实际软件来源仍是最新已核对main / v0.3.0的804b3823，未改库 / Study计算源码或数值门。
+
+原调度20:59左右在30条train完成后终止，两条CIFAR10 / ResNet18 seeds2–3保留约24400步的中断证据，退出原因未取回。按[同源码接续方案](../../studies/main_exp/docs/v030_recovery.md)，仅为这两train及其配套eval新建recovery01身份；原30条结果hash / provenance保持原样，旧 / 新源码映射完全一致。21:14–23:11接续新两条从step0训练并执行全部32条评测，public launch exit0、source_unchanged=true。不能称一次连续launch，也不代表自定义sampler支持resume。
+
+[64条最终审计](../../studies/main_exp/docs/v030_long_audit.json)验证actual FP32权重、committed scheduler进度、400点、当前index / process / COMPARISON身份、32个自身best来源及两份真实provenance；原中断 / 新重跑976个已保留指标前缀精确一致。正式结论及图在[main_exp报告](../../studies/main_exp/docs/STUDY_REPORT.md)，数字由原生report生成。未复原历史原始seed / 逐点指标 / 权重，结论限预置PNG估读门。
+
+原会话97306与exec cell93已失效；接续使用隐藏后台观察器，现已正常结束。资源摘要为studies/main_exp/docs/v030_recovery_resources.json，原中断为v030_interruption.json；临时启动 / 观察输出和JSONL在.tmp/v030-20261013，仅本机。普通沙箱看不到外部后台进程，不能据此判定死亡；观察器可选磁盘计数缺失已容错并保留首次启动失败。当前接续index保留30个原train与4个新的身份槽位，直接rpipe make原声明会回到中断的旧ID；以后独立复跑使用新version / fresh make与新前置门。
+
+这轮提交 / 推送 / PR状态以Git和GitHub为准，不自动同步main或发布新版本。
+
+新发现B-030：新index与保留旧process不匹配时，report仍能exit0导出旧64个Run数字。独立复制元数据的公开CLI复现已保存，详见[bugs.md](bugs.md)与[Study证据](../../studies/main_exp/docs/v030_stale_report_repro.json)。尚未修复；本轮固定804b3823计算来源的长矩阵已终验，通过额外核对新index / process / COMPARISON的ID集合防止混用旧聚合。细分预算、耗时均衡与依赖就绪检查另记[brainstorm.md](brainstorm.md)，不在本轮自动实施。
+
 ## 2026-10-13 接续摘要
 
 当前工作树以dev ce8b3e6为基线，已完成原生CPU/CUDA恢复、CPU设备分流及整仓检查发现的比较 / 写入 / 名称 / metric / 空训练边界修复。395项core、51项CPU integration、CUDA跨进程恢复及wheel / sdist公开CLI验证通过；详细失败与支持范围见[record.md](record.md)2026-10-13。

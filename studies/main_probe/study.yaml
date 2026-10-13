@@ -5,7 +5,7 @@ description: Paired original/current 60-step numerical probe; one data/model pai
 experiment:
   name: main_probe
 fixed:
-  version: main-probe-flow-20261013-06
+  version: main-probe-v030-20261013-final
   data:
     source: main_probe
     config:
@@ -44,6 +44,8 @@ fixed:
     cudnn_benchmark: false
     cudnn_allow_tf32: false
     matmul_allow_tf32: false
+    config:
+      vram_bytes: 5368709120
   model:
     source: custom_torch
 axes:

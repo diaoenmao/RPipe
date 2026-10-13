@@ -6,7 +6,7 @@
 
 **2026-10-12 目录重构边界：** `main_exp` / `main_probe` 的阶段包位于 `flow/`，专用建构与成对计算位于 `structure/`。库已加载 `flow/<phase>/` 并自动将两柱 Python 源码纳入 provenance；空目录和没有 `__init__.py` 的手动工具目录不自动执行。旧根目录阶段包须迁移。小规模流程验证与正式数值验收分开，原 version03 的历史通过记录不能替代本次重构的验收；正式复跑前使用新 version、重新 make 和执行计划规定的前置门。
 
-2026-10-13接续：main_probe version06八组合60-step真实Flow已完整通过；main_exp完成短容量 / 精度验证，候选version04采用已测显式预算，未启动新长矩阵。研究数字和支持边界分别见各Study报告。相同seed / 轴值不得重复产生同一Run；重复实测使用新version。严格数值对照显式约定TF32 / 混合精度，不能只依靠seed和确定性开关。
+2026-10-13 发布后本机复验：软件固定为 v0.3.0 / `804b3823`。main_probe 新 version 八格真实 Flow 与完整数值终验通过；main_exp 独立并发校准与新来源八格 600-step 门通过，完整 32 train / 32 eval 及固定曲线终验均已通过，外部中断与同源码接续分开记录。两项使用各自实测预算、原生 auto 两并发与 safety=0.5；最新证据见 [main_probe](main_probe/docs/v030_execution.md) / [main_exp](main_exp/docs/v030_execution.md)。相同 seed / 轴值不得重复产生同一 Run，重复实测使用新 version。严格数值对照显式约定 TF32 / 混合精度，不能只依靠 seed 和确定性开关。
 
 ---
 
