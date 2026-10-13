@@ -4,7 +4,7 @@ RPipe 是**可重复、可编排、可序列化的研究执行底座**。
 
 研究者用 **Study** 声明要比什么。structure 的 **make** 写出各 **Experiment** 与 **Run** 的 config，以及调度脚本。**Flow** 服务整个 Study：同一套执行，用参数选择阶段、顺序或按 `round` 并行。命令行入口是 flow 的 **cli**。产物落在该 Study 的 **artifact** 下。
 
-目录见 [layout.md](layout.md)；操作见 [README.md](../../studies/README.md)；structure 细节见 [structure.md](structure.md)。
+目录见 [layout.md](layout.md)；操作见 [Study 指南](../../README.md#study-使用指南)；structure 细节见 [structure.md](structure.md)。
 
 ---
 
@@ -296,7 +296,7 @@ flowchart TB
 |------|------|
 | [layout.md](layout.md) | 仓库目录 |
 | [code.md](code.md) | 库内树与依赖 |
-| [README.md](../../studies/README.md) | 怎么开一轮 Study |
+| [README 的 Study 指南](../../README.md#study-使用指南) | 怎么开一轮 Study |
 | [structure.md](structure.md) | 四层 / control / make / AlgorithmTracker / Logger / artifact |
 | [flow.md](flow.md) | Flow：cli 与阶段链 |
 | [testing.md](../development/testing.md) | 测试目录与标签 |

@@ -1,6 +1,6 @@
 # RPipe Agent 工作约定
 
-适用于本仓库及其子目录。本文件提供工作方式和文档入口。设计文档在 `docs/code/`，开发记录与测试规范在 `docs/development/`，Study 的指南、计划、报告和代码在 `studies/`。
+适用于本仓库及其子目录。本文件提供工作方式和文档入口。设计文档在 `docs/code/`，开发记录与测试规范在 `docs/development/`，通用接入与 Study 指南在根 `README.md`，具体研究的计划、报告和代码在 `studies/`。
 
 ## 1. 文档驱动的工作方式
 
@@ -15,7 +15,7 @@
 | --- | --- |
 | 项目概念与职责 | [concept.md](docs/code/concept.md) |
 | 目录与代码结构 | [layout.md](docs/code/layout.md)、[code.md](docs/code/code.md)，再读 [structure.md](docs/code/structure.md) / [flow.md](docs/code/flow.md) |
-| 研究设计与执行 | [studies/README.md](studies/README.md)，以及目标 Study 的计划、配置和报告 |
+| 研究设计与执行 | 从项目 `docs/research/` 的宏观方案提取具体问题，见 [Studies 入口](studies/README.md#从宏观研究提取具体-study)、[README 的 Study 指南](README.md#study-使用指南)，再读目标 Study 的计划、配置和报告 |
 | 测试与验证 | [testing.md](docs/development/testing.md)、[tests/README.md](tests/README.md) |
 | CI 与分支 | [cicd.md](docs/development/cicd.md) |
 | 已知问题与后续想法 | [bugs.md](docs/development/bugs.md)、[brainstorm.md](docs/development/brainstorm.md) |
@@ -53,7 +53,7 @@ brainstorm 用于记录探索。具体工作以当前要求和已确认的设计
 
 ## 5. 研发、调研与验证
 
-以下原则提炼自 DreamSoul 的代码、协作、通用调研规范，以及测试、CI/CD 大纲和日志规范，结合文献调研的阅读与报告要求适配。具体执行仍以本仓库的设计、[测试规范](docs/development/testing.md)和 [Study 指南](studies/README.md)为准，不依赖外部本地目录。
+以下原则提炼自 DreamSoul 的代码、协作、通用调研规范，以及测试、CI/CD 大纲和日志规范，结合文献调研的阅读与报告要求适配。具体执行仍以本仓库的设计、[测试规范](docs/development/testing.md)和 [Study 指南](README.md#study-使用指南)为准，不依赖外部本地目录。
 
 - 开发先复用现有实现、标准库与原生能力，保持职责清晰和改动聚焦。抽象与依赖应服务于当前问题，不为假设的未来需求搭建框架
 - 修改公共接口、配置、持久化格式或跨模块行为时，先核对相关文档、调用方与已有成果的影响，明确兼容或迁移方案，再修改和验证

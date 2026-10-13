@@ -1,6 +1,6 @@
 # Study Plan: my_study
 
-> 对照 [README.md](../../README.md) §3。跑完后写同目录 `STUDY_REPORT.md`。
+> 对照[根 README 的 Study 指南 §3](../../../README.md#3-高效率实验设计)。跑完后写同目录 `STUDY_REPORT.md`。
 
 ## 1. 研究问题
 

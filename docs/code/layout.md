@@ -15,7 +15,7 @@
 | `src/rpipe/`、`pyproject.toml` | 可安装库、公共 CLI 与依赖声明 |
 | `docs/code/` | 设计：concept、layout、code，以及 structure / flow 分册 |
 | `docs/development/` | 开发记录：brainstorm、bugs、testing、cicd、record、handover |
-| `studies/` | [Study 使用指南](../../studies/README.md)、声明、复跑入口与正式报告；本地产物另按第四节管理 |
+| `studies/` | [Study 导航](../../studies/README.md)、声明、复跑入口与正式报告；通用操作在 [README 的 Study 指南](../../README.md#study-使用指南)，本地产物另按第四节管理 |
 | `tests/` | 统一测试入口、源码镜像测试与安装后 CLI 验收，见 [测试入口](../../tests/README.md) |
 | `.github/workflows/` | CPU 测试和 wheel / sdist 构建、安装验收 |
 | `asset/` | README 展示本次实测的 MNIST / CIFAR10 曲线；旧参考图与来源保存在 [历史图归档](../../studies/main_exp/docs/reference/README.md)，不作为新 Run 的资产根 |

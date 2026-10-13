@@ -301,7 +301,7 @@ conservative 墙钟只在 **make** 打印。本进程实测时间在 Logger 行�
 
 `launch` 每一组开始前打 `launch: wait i/n mode=`，失败再试打 `launch: retry`。全部 wait 完再打一行和 status 相同的计数。不改 `jobs.json`。
 
-失败重试属于本波：先结束 train 的初次执行与重试，再放行 eval。按 index 匹配的 sibling train 最终未成功时，其 eval 不启动且不算成功；重跑 train 前失效旧的 sibling eval 结果。后续 launch 对父结果较新的旧 eval 重新执行。具体匹配、独立 eval 的例外与手动改文件的边界见 [README.md](../../studies/README.md) §4。
+失败重试属于本波：先结束 train 的初次执行与重试，再放行 eval。按 index 匹配的 sibling train 最终未成功时，其 eval 不启动且不算成功；重跑 train 前失效旧的 sibling eval 结果。后续 launch 对父结果较新的旧 eval 重新执行。具体匹配、独立 eval 的例外与手动改文件的边界见 [Study 指南 §4](../../README.md#4-一条命令怎么跑)。
 
 ---
 
