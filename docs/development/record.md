@@ -94,7 +94,7 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 完整读取指定飞书目录的研究计划规范 / 模板（均revision3），核对knowledge提交09078015的research-plan、literature-search、paper-analysis、pytorch-project正文和research-plan中文指南，适配为[研究工作要求](research.md)。宏观方案与具体Study分工不变，不增加运行依赖或安装skills；[下游反馈规范](feedback.md)明确归属、证据、公开脱敏、去重、授权提交与上游核验。README最后的prompt包含可删除的限范围Issue反馈授权，本轮没有实际对外报单。
 
-版本元数据与README同步0.3.1，接入示例改为标签核对并保存确切commit；完整版本区间、迁移和未覆盖范围见[发布报告](../releases/v0.3.1.md)。活动文档修正已移除的B-022锚点、Flow表头、库默认write / Study扩展权限和safety默认值的边界；导航接通AGENTS、layout、Studies与PLAN模板，不改研究计算源码或正式数字。
+版本元数据与README同步0.3.1，接入示例改为标签核对并保存确切commit；完整版本区间、迁移和未覆盖范围见[发布报告](../releases/v0.3.1.md)。活动文档修正已移除的B-022锚点、Flow表头、库默认write / Study扩展权限和safety默认值的边界；补查后核对实际Config与SystemFactory，明确标准字段不等于YAML全部必填、生态表不代表已实现、没有SystemRegistry。导航接通AGENTS、layout、Studies与PLAN模板，不改研究计算源码或正式数字。
 
 本机core420 passed / 2 skipped（20261013T173200Z_03aa68，UTC），CPU integration52 passed（20261013T173211Z_8da839），使用独立basetemp。默认Conda / NumPy首次收集前因缺MKL runtime失败，采用既有MKL_THREADING_LAYER=SEQUENTIAL后复验；历史异机venv路径本机不存在，不能作为本机环境证据。两项skip为Windows符号链接权限，不计通过；未改代码掩盖环境缺失。
 

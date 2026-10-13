@@ -9,7 +9,9 @@
 
 运行时类（`Data`、`Model`、`Algorithm`、`System`）与配置 dataclass 分开：前者供 prepare/execute 消费；后者为 **`DataConfig` / `ModelConfig` / `AlgorithmConfig` / `SystemConfig`**，专责从 JSON / Artifact Config 加载声明字段。
 
-**Config 字段约定：** 各 `*Config` **只规定必须字段**。其余键为可选扩展，由对应 `source` / 注册项解释。
+**Config 字段约定：** 各 `*Config` 规定标准声明字段，其余键为可选扩展，由对应 `source` / 注册项解释。下方字段表描述对象和接口，不表示 YAML 必须显式填写每个字段；`path` / `config` 等允许省略，实际默认值与业务必需条件以当前 Config / Factory / contract 为准，不能为补齐表格虚构路径。
+
+**实现与扩展边界：** 下方“下游来源”包含可复用生态和设计方向，不代表已注册或实测。当前实现见 [README](../../README.md#当前实现范围)和对应目录；不要仅设置 source 就推定未实现的后端已接通。
 
 各层统一还有两类约定（字段名可微调，语义固定）：
 
@@ -68,7 +70,7 @@ make/                → 多实验：展开、写 config/index、调度脚本；
 | **data** | `Data` + `DataRegistry` + `DataFactory` + `DataConfig` |
 | **model** | `Model` + `ModelRegistry` + `ModelFactory` + `ModelConfig` |
 | **algorithm** | `Algorithm` + **AlgorithmTracker** + Registry / Factory / `AlgorithmConfig` |
-| **system** | `System` + **Logger** + Registry / Factory / `SystemConfig` |
+| **system** | `System` + **Logger** + `SystemFactory` / `SystemConfig`；没有 `SystemRegistry` |
 | **control** | `ExperimentConfig` + `RunConfig` + `Control` + 四层 `*Config` + 合并/编解码/契约（§8） |
 | **artifact** | layout / config / result / asset / index（§9） |
 | **make** | 多实验 config 网格 + 调度脚本（§10） |
@@ -141,7 +143,7 @@ Factory 按注册的 `name` / `source` 精确匹配，未注册组合抛 `ValueE
 
 ### 4.4 `DataConfig`
 
-dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必须字段：**
+dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**标准字段：**
 
 | **字段** | **说明** |
 |------|------|
@@ -234,7 +236,7 @@ flowchart LR
 
 ### 5.4 `ModelConfig`
 
-dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必须字段：**
+dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**标准字段：**
 
 | **字段** | **说明** |
 |------|------|
@@ -326,7 +328,7 @@ execute 典型调用：`algorithm.run(data, model, system, tracker=…) → obse
 
 ### 6.4 下游来源（至少）
 
-循环、优化器、调度器、resume、metric、生成管线等**复用生态能力**，经 Registry 按 **mode + source** 挂接。**算法层接口统一**（§6.11）：各 source 映射到同一套 `optimizer` / `scheduler` / `resume` 语义，不在 system / model 另造一套。git `main` 只有 native；本树 **不**把对照收成「只做 `custom_torch`」。HF Trainer / Accelerate 等是并列 `source`，不是 native 的特例，也不把 Trainer 特有键抬成 Control 必须表。
+循环、优化器、调度器、resume、metric、生成管线等**复用生态能力**，经 Registry 按 **mode + source** 挂接。**算法层接口统一**（§6.11）：各 source 映射到同一套 `optimizer` / `scheduler` / `resume` 语义，不在 system / model 另造一套。历史对照 main `98648f3` 只有 native；当前模板还提供 Transformers Trainer，其他列表项属于扩展边界，不等于已实现。HF Trainer / Accelerate 等按对应 `source` 的职责组织，不把 Trainer 特有键抬成 Control 必须表。
 
 | **来源** | **典型用于** | **复用什么** |
 |------|----------|----------|
@@ -346,11 +348,11 @@ execute 典型调用：`algorithm.run(data, model, system, tracker=…) → obse
 
 ### 6.5 `AlgorithmConfig`
 
-dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必须字段：**
+dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**标准字段：**
 
 | **字段** | **说明** |
 |------|------|
-| `mode` | `train` / `eval` / `inference`（一次一个；默认必须有） |
+| `mode` | `train` / `eval` / `inference`（一次一个，须为当前 source 已支持的模式） |
 | `source` | 执行实现来源（如 `custom_torch` / `transformers_trainer` / `accelerate` / `diffusers` / `vllm` / `sglang` / …） |
 | `path` | 算法超参等资源路径 |
 | `config` | **内容配置**：可装入 `path` 内读出的配置，或由上层覆写；合并规则下游再定 |
@@ -644,11 +646,11 @@ RNG 和采样位置恢复完整不等于所有算子数值确定。严格数值�
 | **vLLM** | 推理服务 / 引擎侧的设备与批处理运行时 |
 | **SGLang** | 推理运行时与设备相关能力 |
 
-其它集群启动器等经 Registry 注册即可。
+当前没有 SystemRegistry，SystemFactory 只构造 native System；改变 `system.source` 不会切换引擎。其他运行时先由项目专用 Algorithm / 薄适配组合使用，确需改 System 时先明确对应职责、兼容与验证，不调用不存在的注册接口。
 
 ### 7.4 `SystemConfig`
 
-dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**必须字段：**
+dataclass，从 JSON / Artifact Config 加载（经 Control 可覆写）。**标准字段：**
 
 | **字段** | **说明** |
 |------|------|
