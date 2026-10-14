@@ -8,7 +8,7 @@
 
 ### B-069：readout 的存在性查询未进入已有逐文件 I/O 容错
 
-- 状态：open；在 dev f9c6e90 隔离复现，[Issue #48](https://github.com/DreamSoul-AI/RPipe/issues/48) 已创建。先提交失败测试 31d1511，生产源码仍为原字节；13 项新增边界为 5 failed / 8 passed。
+- 状态：候选已修复且本机相关 81 项通过；实际 dev 集成待本任务 PR / CI 核对。在 dev f9c6e90 隔离复现，[Issue #48](https://github.com/DreamSoul-AI/RPipe/issues/48) 已创建。先提交失败测试 31d1511，生产源码仍为原字节；13 项新增边界为 5 failed / 8 passed。
 - 来源：按四类已修缺陷主动检查 status._load_result、status._note_from_log 和 logs.event_lines；三个函数对读取已有 OSError 容错，但前置 is_file 在 try 外。与 B-068 的 activity 读取和 #37 的模式误判是不同入口。
 - 期望 / 实际：单个结果或可选日志发生元数据 I/O 拒绝时，应沿用既有该文件读取失败策略、继续其他 Run；实际列表 API 抛 PermissionError，原生 status/logs 均退出 2，遮蔽有效 peer 输出。
 - 边界：PermissionError 是针对一个 Path 方法的隔离注入，未改主机 ACL。真实 index/result/log 字节前后核对；读操作拒绝和意外 RuntimeError 是控制组。没有正式结果损坏、GPU 或性能结论。

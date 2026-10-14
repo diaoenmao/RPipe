@@ -1,5 +1,11 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-15 四个 Issue 评论与 B-069 正确性接续
+
+四个旧 Issue 已按新授权各补一条真实修复提交、测试位置与 dev 验收评论，保持 open，链接见 [record §61](record.md#61-四个开放-issue-补齐修复与验收评论)。新缺陷 [#48 / B-069](https://github.com/DreamSoul-AI/RPipe/issues/48) 来自相邻 readout I/O 查询：红色测试提交31d1511为5 failed /8 passed，最小候选与相邻81项通过，实际PR/集成CI必须另核对。
+
+唯一新工作分支codex/status-readout-errors从已验收dev f9c6e90建立，旧两分支保留。生产只移动status/logs三个存在性查询到各自已有I/O边界；不恢复B-065性能去重，不测速/查超时，不改格式、算法或下游。接续先核对该分支PR的state/head/mergeCommit，若已经合入则不重复修复或派发；实际dev CI须与对应提交绑定，保留原5个失败。Issue48与旧四项均不自动关闭，main不变，数据/Run/provenance不删除。
+
 ## 2026-10-15 PR #46 已合 dev，四个 Issue 正确性接续
 
 PR #46 已 normal merge，实际 dev `5ee1214b7ce0dc28b65139ac7b3f9ca16eb8b2ac`；最终 head `90b7d75` 三门及实际矩阵全通过，实际 dev 的 Unit38622291540 / Package38622291406 全部实际矩阵和聚合门通过，见 [record §59–60](record.md#59-pr-46-实际合入-dev-与归档后状态)。不要重复合并 PR #46 或把下方历史草案限制当作当前指令。

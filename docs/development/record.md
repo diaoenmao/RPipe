@@ -103,7 +103,7 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 先在唯一新分支 codex/status-readout-errors 提交 portable 红色回归 31d1511；生产原字节 ZIP 与 SHA256 保存在 .tmp/phase069/before.zip / BEFORE.json，新增 13 项为 **5 failed / 8 passed**。五项失败分别定位 result stat、note stat、event stat、原生 status、原生 logs；内容读取拒绝与意外 RuntimeError 控制通过。新 [Issue #48](https://github.com/DreamSoul-AI/RPipe/issues/48) 已公开提交脱敏合成条件，未宣称真实系统 ACL 配置或正式数据损坏。
 
-设计只统一这三个函数各自已有的元数据/读取 I/O 边界；不创建 helper、改异常类、调整模式、改变不可读结果的原计划回退，亦不改 process/调度/科学条件。后续实际绿色回归、最终工作提交和集成提交 CI 分别核对，不预先当作通过。其他三类审查范围为 Runner 初始拒绝、checkpoint staging 的已有恢复合同以及 CLI 默认/本次参数；未把保留诊断 staging 或正常运行失败写回认作新缺陷，不因此追加改动。
+设计只统一这三个函数各自已有的元数据/读取 I/O 边界；不创建 helper、改异常类、调整模式、改变不可读结果的原计划回退，亦不改 process/调度/科学条件。候选仅移动三个 is_file 到原有 try，异常类别保持原样。新增 13 项均已在绿色批次执行；与 readout 全目录、活动提示及原生 status 相邻门联合 **81 passed，0 failed / error / skipped**。XML、源码前后 hash 和红/绿节点包含关系已核对，保存于 .tmp/phase069/LOCAL_CHECKED.json。最终工作提交和集成提交 CI 分别核对，不以本机通过代替。其他三类审查范围为 Runner 初始拒绝、checkpoint staging 的已有恢复合同以及 CLI 默认/本次参数；未把保留诊断 staging 或正常运行失败写回认作新缺陷，不因此追加改动。
 
 ### 61. 四个开放 Issue 补齐修复与验收评论
 
