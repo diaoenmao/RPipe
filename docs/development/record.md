@@ -113,7 +113,7 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 #### （二）可复现证据与正确性检查
 
-全部使用隔离合成库/Study 与独立 basetemp，不用正式输入、模型、Torch 或 GPU；prepare 仅对运行时/System 做轻量替身，冻结门和失败定稿使用真实实现。pytest 默认报告时间保留在原文件，本节不提取速度指标或比较耗时。
+新增定向用例使用隔离合成库/Study 与独立 basetemp，不执行模型或 CUDA 计算；prepare 仅对运行时/System 做轻量替身，冻结门和失败定稿使用真实实现。相邻 artifact 读出回归包含 PyTorch 微小 CPU 张量的 checkpoint 比较，不宣称整批未导入 Torch。没有正式输入、下载或训练。pytest 默认报告时间保留在原文件，本节不提取速度指标或比较耗时。
 
 | **证据** | **正确性结果** |
 | --- | --- |
