@@ -1,5 +1,11 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-15 v0.4.0 目录规范与发布准备
+
+本轮唯一工作分支 codex/v040-layout-release 从已验收dev5cff920建立，按Enmao授权准备0.4.0并经PR合dev后停止；实际PR/head/mergeCommit与CI以最新状态为准，避免重复建分支或用下方历史pending状态重派任务。项目根 shared/data、shared/model 不搬，layout.md补位置/内容/写入方与“先文档后路径”合同，新增真实默认路径与文档对照；生产仅版本号更新。pyproject、__version__、README为0.4.0候选，[发布材料](../releases/v0.4.0.md)包括0.3.x迁移命令、私有设置、三类正确性与已修Issue，见[record §76](record.md#76-v040-目录合同迁移材料与版本准备)。
+
+本机36项目录/版本、core662通过/1平台跳过、CPU流程157通过；初轮临时目录setup错误和两项漂移负控留证。最终head与实际dev CI另绑定，不拿旧结果替代。main仍已发布0.3.1，本任务不合main、不打tag、不发布；这些由监督助手接续。七个已修Issue保持open，全部分支/正式数据/Run/provenance保留，不测速、不跑GPU、不改磁盘布局或调查480秒。
+
 ## 2026-10-15 B-070 指标类型审计与收尾
 
 新用户要求审计readout/_atomic/launch参数与make/run-one边界；基于已验收dev b2390b0确认[B-070 / Issue50](https://github.com/DreamSoul-AI/RPipe/issues/50)，先开Issue、提交红色回归f15e067（10项7 failed/3 passed），记录设计3a198ff，再做一行修复0b51ee6：取消status提前dict强转，复用已有metric cell的非object占位，保留状态/模式/输入字节。候选与相邻91项通过，见[record §63](record.md#63-相邻正确性审计与-status-指标类型回退b-070--50)。
