@@ -28,6 +28,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | Git 来源失败（B-061，草案） | status 非零退出仍被写成 dirty 布尔值 | 失败返回空 Git 元数据；11 项新增边界、本机相关 87 项通过，尚未集成 | 第二节 2026-10-14 §48 |
 | 共享引用并发（B-062，草案） | 同字节引用发布临时名可被同 tick 写者共用 | 每个 staging 使用 UUID；6 项新增边界、本机相关 93 项通过，尚未集成 | 第二节 2026-10-15 §49 |
 | 可选 Git 元数据（B-063，草案） | 文件读取/格式错误可令 pytest 配置失败或误记 SHA | 错误归为可选 null，保留快速路径和 CI 优先级；本机相关 108 项通过，未集成 | 第二节 2026-10-15 §50 |
+| 长文件名 staging（B-064，草案） | 文本/迁移临时名追加完整目标名，合法245字符名失败 | 两处短 UUID-only 名；4 项真实反例修复，相关187通过、5未选中，未集成 | 第二节 2026-10-15 §51 |
 | 原生恢复（B-021） | checkpoint 缺少 RNG 与数据位置，续训样本后缀和最终权重可偏离连续运行 | 在单进程、受支持 sampler / batch metric 合同下保存并恢复完整训练状态；不匹配配置拒绝，其他路径明确提示部分恢复 | 第二节 2026-10-12 §6 |
 | epoch 停止（B-024） | 累积尾 batch 可导致多跑 epoch；整轮无 optimizer 更新时可能无限循环 | epoch 按声明轮数停止，已完成恢复不重训；整轮无法更新时报错，原尾 batch 丢弃语义保留 | 第二节 2026-10-12 §7 |
 | 曲线进度与回滚 | 横轴按 history 记录序号；记录频率变化不能直接解释为训练步数，恢复后的回滚分支未单独排除 | 按 optimizer_step / epoch 对齐；保留原始日志，聚合时排除回滚分支、处理重复坐标并记录逐点 n | [曲线修复记录](brainstorm.md#4-已经做的) |
@@ -91,6 +92,50 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-15
+
+### 51. 长文件名 staging 修复与小规模竞争分段诊断（B-064，草案）
+
+本轮主动审查得到 B-064：合法目标文件名在文本写入、共享迁移时因临时名拼接失败；两处改为已有短 UUID 名，未更改格式或实际文件名。本机相关 187 passed / 5 deselected，PR #46 保持草案，dev/main 不变。另完成两个小进程的准备竞争与分段计时；原量化 480 s 的调用内根因仍不可由保留证据唯一确定。
+
+#### （一）改前与改后
+
+| **检查** | **改前（870da1b）** | **改后** |
+| --- | --- | --- |
+| 245 字符合法 ASCII 目标名 | 原目标能创建，但文本 create/replace 的 staging 超过单组件上限；data/model 同字节迁移亦失败 | 两处使用独立 UUID-only staging；4 项真实文件系统反例通过 |
+| 发布失败与并发准备 | 拒绝发布时旧副本/peer 保全已有保证 | 保留保证；新增两线程 prepared_resource 同 revision 只构建一次、相同 manifest 与完整输入 |
+| 原 480 s 的解释范围 | 知道外部批次截止，不能从旧 SHA 还原全部 dirty 测试/CPU/栈 | 重新核对 1131 个完成 call 累计 469.527 s；到最后报告 479.017908 s，其余约 9.490908 s。调用外启动不能单独解释累计成本，调用内懒导入/fixture/计算/等待仍混合 |
+
+已核对 atomic_write_text 的 config/result/tracker/activity/provenance/process/readout/manifest 调用方及 CLI shared --migrate → migrate_shared。修复只改两个 staging basename 并删除不再使用的 os 导入，锁顺序、同目录原子 replace、冲突校验、清理、有界 Windows 重试、返回值与目标名保持。未改变 LongPathsEnabled、持久化格式、科学条件、Run 或正式输入；Windows 长名测试显式使用扩展路径，不承诺任意总路径长度。
+
+#### （二）复现、回归与来源
+
+首轮 .tmp/phase064/red.log 因我未先建立 basetemp 父目录而出现 5 setup errors，测试没有执行；保留该次错误，不用作库缺陷证据。建立新父目录后 red2.log / red2.xml 为 4 failed / 1 passed，0.22 s，真实失败为文本 Errno 22、迁移 WinError 123；发布拒绝保全通过。before.zip / BEFORE.json 保存原实现和当时五项测试的原字节与 SHA-256。
+
+首次局部修复后 67 passed / 1.68 s；补充实际 prepared_resource 并发用例后，统一入口对 artifact 镜像及 Git/真实 manifest 入口的最终相关门为 **187 passed / 5 deselected，7.19 s**。5 项 integration 未被 --core 选中，不计通过，远端 CPU Flow 另行验收。所有临时日志、JUnit、微场景和快照在 .tmp/phase064/，不随 Git clone 提供；便携回归为 tests/rpipe/structure/artifact/test_staging_names.py。
+
+#### （三）两个离线进程的分段诊断
+
+micro.py 调用实际本机 cache_lock / prepared_resource，4096 字节合成输入。两个子进程、一个 builder、两个相同 manifest/payload hash，均验证再次调用不重建；用 -X importtime 保留原始导入树，并逐段记录 wall/CPU。未导入 Torch、未触碰下游项目，不下载/训练。仅该诊断子进程设置 OPENBLAS_NUM_THREADS=1、OMP_NUM_THREADS=1；不修改系统或正式科学配置。
+
+| **阶段** | **owner** | **contender** |
+| --- | --- | --- |
+| import rpipe | 52.532 ms | 49.891 ms |
+| import shared | 28.600 ms | 27.558 ms |
+| 读取 4 KiB 输入 | 0.127 ms | 0.116 ms |
+| 初始化合成 SHA 状态 | 0.022 ms | 0.027 ms |
+| 首次合成 digest 操作 | 0.004 ms | 0.004 ms |
+| 首次锁获取 | 0.927 ms | 252.655 ms |
+| 同进程校验复用（包含再次获取锁） | 1.215 ms | 1.401 ms |
+
+owner 人为持锁 **206.030 ms**（握手及显式 200 ms sleep），builder 写入 **0.679 ms**；整组外层 **0.415655 s**。等待者锁开销因此是受控注入效果，不能叫自然瓶颈/死锁或外推为原 480 s 根因。prepare_first 包含锁与 builder，不能与嵌套阶段相加。短操作 CPU 读数 0 是计时粒度，不是零成本。此为活跃下游负载下的功能诊断，不作吞吐排名；未清 OS 缓存，新进程不称硬件冷启动；合成 digest 不称真实模型 first step。
+
+#### （四）当前可落地结论与合并前检查
+
+原批次 call 外约 9.491 s 只是由报告起止与舍入 call 耗时重建的近似；监控外层起点和最后未完成调用不同，不能拿这个残差反推每阶段成本。当前冻结两节点的已完成分段证据见 §48：首 call 约 7.9 s，内 fixture 约 6.8 s，package_sources 每节点 161 次累计约 2 s，以及依赖首次懒导入；这些包容计时不相加。原批次缺栈/CPU/部分 dirty 测试字节，不能通过继续生成合成负载补回。
+
+可操作优化方向仍是核验不可变夹具来源输入的复用；§49–50 已否证缓存活动源码字节/清单的直接替换，不部署缓存或减少来源检查。当前实做修复为 B-064 的文件名预算，不把它包装为性能修复。以后若原慢批再现，按完整来源、真正 call 起止和有界同步采样采集新现场；本轮不重跑大批次。
+
+合并前可执行检查须核对：最终提交仅声明的两处生产路径改动；保留首轮夹具错误、4 项真红与最终187通过；快照/原始导入栈/hash 完整；微场景 builder=1 和两侧 manifest 相等；PR Draft/open/no-auto-merge，dev/main 不变；最终提交三项必需 CI 与实际矩阵单独核对。原480归因和人类授权集成保持未完成，不自动合并。最新只读下游快照：dayan 28/216 对无失败；量化等待计算窗口；output-space 准备多 prompt/seed 审计，均无新增 RPipe 缺陷。
 
 ### 50. 可选 Git 元数据失败隔离与活动源码缓存否证（B-063，草案）
 

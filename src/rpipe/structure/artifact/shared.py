@@ -209,7 +209,7 @@ def migrate_shared(study_dir: Path | str) -> dict[str, object]:
             elif not source.samefile(target):
                 # Prepare the reference before replacing the duplicate. A failure
                 # leaves the old source intact, and successful replacement is atomic.
-                tmp = source.with_name(f'{source.name}.{os.getpid()}.{time.time_ns()}.link')
+                tmp = source.with_name(f'{uuid.uuid4().hex}.link')
                 try:
                     os.link(target, tmp)
                     from rpipe.structure.artifact._atomic import atomic_replace
