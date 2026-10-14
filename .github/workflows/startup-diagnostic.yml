@@ -1,0 +1,29 @@
+name: Temporary startup diagnostic
+on:
+  push:
+    branches: [codex/cache-lock-budget]
+permissions:
+  contents: read
+jobs:
+  diagnostic:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    env:
+      CUDA_VISIBLE_DEVICES: ''
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+          cache: pip
+      - run: python -m pip install -e ".[dev]"
+      - name: Measure unchanged RPipe on a separate CPU runner
+        run: |
+          git diff --exit-code 9324014985680a0d186863cd135faa53a2e7bcbf -- src
+          Get-CimInstance Win32_Processor | Select-Object Name,NumberOfLogicalProcessors,LoadPercentage
+          Get-CimInstance Win32_OperatingSystem | Select-Object Caption,FreePhysicalMemory,TotalVisibleMemorySize
+          python tests/_data/startup_diagnostic.py .tmp/startup-diagnostic-${{ github.run_id }}
