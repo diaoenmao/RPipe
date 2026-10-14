@@ -13,6 +13,7 @@ from rpipe.structure.api.algorithm_api import sibling_train_dependency
 from rpipe.structure.artifact import artifact_layout, load_config
 from rpipe.structure.artifact.index import load_index
 from rpipe.structure.artifact.layout import validate_run_directory
+from rpipe.structure.artifact._atomic import atomic_write_text
 from rpipe.structure.artifact.result import write_result
 from rpipe.structure.artifact.result.format import STATUS_SUCCEEDED, decode_result
 from rpipe.structure.control.mapping import get_setting
@@ -253,8 +254,7 @@ def write_jobs_json(
     if extra:
         payload.update(extra)
     dest = scripts_dir(study_dir) / JOBS_NAME
-    dest.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
-    return dest
+    return atomic_write_text(dest, json.dumps(payload, indent=2, ensure_ascii=False) + '\n')
 
 
 def wait_groups(
@@ -356,13 +356,13 @@ def write_launch_scripts(
     for k, text in enumerate(chunks, start=1):
         name = f'{stem}_{k}.sh' if len(chunks) > 1 else f'{stem}.sh'
         path = dest / name
-        path.write_text(text, encoding='utf-8', newline='\n')
+        atomic_write_text(path, text, newline='\n')
         sh_paths.append(path)
     ps1 = dest / 'launch.ps1'
     study_win = str(study_dir.resolve())
     py_win = str(Path(py).resolve())
-    ps1.write_text(
-        '\n'.join(
+    atomic_write_text(
+        ps1, '\n'.join(
             [
                 '$ErrorActionPreference = "Stop"',
                 f'Set-Location -LiteralPath {json.dumps(str(repo_root_from(study_dir)))}',

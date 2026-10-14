@@ -10,6 +10,7 @@ from rpipe.structure.artifact.activity import announce
 from rpipe.structure.artifact.config import load_config
 from rpipe.structure.artifact.layout import ensure_study_layout
 from rpipe.structure.artifact.shared import cache_lock, shared_paths
+from rpipe.structure.artifact._atomic import atomic_write_text
 from rpipe.structure.data.config import DataConfig
 from rpipe.structure.data.factory import DataFactory, vision_root
 from rpipe.structure.origin import endpoint_for, normalize_origin
@@ -61,8 +62,7 @@ def _prepare(study, shared, config_paths, seen, names):
         detail = f'shared {key[0]} download {origin} {endpoint.location}'
         announce(study, 'make', detail)
         DataFactory.build(DataConfig.from_mapping(mapping), shared, origin=origin)
-        marker.parent.mkdir(parents=True, exist_ok=True)
-        marker.write_text(f'{origin}\n', encoding='utf-8')
+        atomic_write_text(marker, f'{origin}\n')
         announce(study, 'make', f'shared {key[0]} ready')
         names.append(key[0])
     return names
