@@ -18,17 +18,18 @@ pytestmark = [
 
 
 @pytest.mark.parametrize('origin', ['base', 'fixed'])
-def test_native_status_finds_pending_fixed_eval_without_writes(tmp_path, origin):
-    """Native make -> unfiltered/eval/train status, fixed eval classified correctly and all bytes unchanged."""
+@pytest.mark.parametrize('mode', ['eval', 'inference'])
+def test_native_status_finds_pending_fixed_mode_without_writes(tmp_path, origin, mode):
+    """Native make -> status filters classify a fixed non-training mode without changing any bytes."""
     study = tmp_path / 'toy'
     study.mkdir()
     declaration = {'study': 'pending_eval', 'seeds': [0]}
     if origin == 'fixed':
-        declaration['fixed'] = {'algorithm': {'mode': 'eval'}}
+        declaration['fixed'] = {'algorithm': {'mode': mode}}
     write_config(study / 'study.yaml', declaration)
     write_config(study / 'experiment_config.yaml', {
         'version': 'pending-eval-v1', 'data': {'name': 'Toy', 'source': 'stub'}, 'model': {'name': 'linear'},
-        'algorithm': {'mode': 'eval' if origin == 'base' else 'train', 'source': 'custom_torch',
+        'algorithm': {'mode': mode if origin == 'base' else 'train', 'source': 'custom_torch',
                       'num_steps': 2, 'progress_unit': 'step'}, 'system': {'device': 'cpu'},
     })
     env = dict(os.environ, CUDA_VISIBLE_DEVICES='', MPLBACKEND='Agg')
@@ -43,12 +44,12 @@ def test_native_status_finds_pending_fixed_eval_without_writes(tmp_path, origin)
     experiment = index['experiments'][0]
     assert 'algorithm.mode' not in experiment['factors']
     run_id = experiment['runs'][0]['id']
-    assert load_config(study / 'runs' / run_id / 'config.yaml')['algorithm']['mode'] == 'eval'
+    assert load_config(study / 'runs' / run_id / 'config.yaml')['algorithm']['mode'] == mode
     assert not (study / 'runs' / run_id / 'result.json').exists()
     before = {p.relative_to(study): p.read_bytes() for p in study.rglob('*') if p.is_file()}
     all_rows = command('status-all', ['status', str(study)])
-    eval_rows = command('status-eval', ['status', str(study), '--mode', 'eval'])
+    selected_rows = command('status-selected', ['status', str(study), '--mode', mode])
     train_rows = command('status-train', ['status', str(study), '--mode', 'train'])
-    assert 'pending\teval\t' in all_rows and 'planned=1' in eval_rows
-    assert 'pending\teval\t' in eval_rows and 'planned=0' in train_rows
+    assert f'pending\t{mode}\t' in all_rows and 'planned=1' in selected_rows
+    assert f'pending\t{mode}\t' in selected_rows and 'planned=0' in train_rows
     assert {p.relative_to(study): p.read_bytes() for p in study.rglob('*') if p.is_file()} == before
