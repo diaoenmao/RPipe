@@ -217,8 +217,242 @@ def test_corrupt_payload_and_incomplete_manifest_are_not_rebuilt_or_accepted(tmp
         prepared_resource(tmp_path, {}, ['data'], build)
 
 
-@pytest.mark.parametrize('files', [[], ['../outside'], ['manifest.json'], ['data', 'data']])
+@pytest.mark.parametrize('files', [[], ['../outside'], ['manifest.json'], ['data', 'data'],
+                                 ['./manifest.json'], ['data', './data'], [''], ['.']])
 def test_invalid_resource_contract_is_rejected_before_writes(tmp_path, files):
     with pytest.raises(ValueError, match='relative'):
         prepared_resource(tmp_path, {}, files, lambda staging: None)
     assert not list(tmp_path.iterdir())
+
+@pytest.mark.parametrize('timeout', [float('nan'), float('inf'), float('-inf'), -1.0])
+def test_invalid_cache_lock_budget_is_rejected_before_creating_root(tmp_path, timeout):
+    root = tmp_path / 'invalid-budget'
+    with pytest.raises(ValueError, match='timeout'):
+        with cache_lock(root, timeout=timeout):
+            pass
+    assert not root.exists()
+
+
+def test_nan_cache_lock_budget_cannot_disable_contention_deadline(tmp_path, monkeypatch):
+    """A bounded busy-lock fixture exposes the old NaN loop without hanging pytest."""
+    import errno
+    import time
+    from types import SimpleNamespace
+    import rpipe.structure.artifact.shared as shared
+
+    sleeps = []
+    def busy(*args):
+        raise BlockingIOError(errno.EACCES, 'fixture lock held by another writer')
+    def watchdog(delay):
+        sleeps.append(delay)
+        if len(sleeps) == 3:
+            raise RuntimeError('bounded watchdog: NaN disabled the contention deadline')
+    if os.name == 'nt':
+        import msvcrt
+        monkeypatch.setattr(msvcrt, 'locking', busy)
+    else:
+        import fcntl
+        monkeypatch.setattr(fcntl, 'flock', busy)
+    monkeypatch.setattr(shared, 'time', SimpleNamespace(monotonic=time.monotonic, sleep=watchdog))
+    root = tmp_path / 'nan-budget'
+    with pytest.raises(ValueError, match='timeout'):
+        with cache_lock(root, timeout=float('nan')):
+            pytest.fail('invalid budget acquired a lock')
+    assert sleeps == [] and not root.exists()
+
+
+def test_interrupted_resource_retry_preserves_failed_staging_and_publishes_fresh(tmp_path):
+    def interrupted(staging):
+        (staging / 'data').write_bytes(b'partial')
+        raise OSError('fixture interrupted preparation')
+    with pytest.raises(OSError, match='interrupted'):
+        prepared_resource(tmp_path, {'revision': 'retry'}, ['data'], interrupted)
+    failed = list(tmp_path.glob('*/.building-*/data'))
+    assert len(failed) == 1 and failed[0].read_bytes() == b'partial'
+
+    def complete(staging):
+        (staging / 'data').write_bytes(b'complete')
+    cache, digest = prepared_resource(tmp_path, {'revision': 'retry'}, ['data'], complete)
+    assert (cache / 'data').read_bytes() == b'complete'
+    assert failed[0].read_bytes() == b'partial'
+    def no_rebuild(staging):
+        pytest.fail('published inputs must be reused')
+    assert prepared_resource(tmp_path, {'revision': 'retry'}, ['data'], no_rebuild) == (cache, digest)
+
+
+
+def test_zero_wait_busy_lock_preserves_cause_and_releases_handle(tmp_path, monkeypatch):
+    import errno
+    from types import SimpleNamespace
+    import rpipe.structure.artifact.shared as shared
+
+    error = BlockingIOError(errno.EACCES, 'fixture occupied lock')
+    def busy(*args):
+        raise error
+    def no_sleep(delay):
+        pytest.fail('zero budget must not sleep')
+    with monkeypatch.context() as patch:
+        if os.name == 'nt':
+            import msvcrt
+            patch.setattr(msvcrt, 'locking', busy)
+        else:
+            import fcntl
+            patch.setattr(fcntl, 'flock', busy)
+        patch.setattr(shared, 'time', SimpleNamespace(monotonic=lambda: 100, sleep=no_sleep))
+        with pytest.raises(TimeoutError, match='shared input preparation locked') as caught:
+            with cache_lock(tmp_path, timeout=0):
+                pytest.fail('occupied lock was acquired')
+        assert caught.value.__cause__ is error
+    with cache_lock(tmp_path, timeout=0):
+        pass
+
+
+def test_non_contention_lock_error_is_not_retried_or_wrapped(tmp_path, monkeypatch):
+    import errno
+    from types import SimpleNamespace
+    import rpipe.structure.artifact.shared as shared
+
+    error = OSError(errno.EBADF, 'fixture invalid descriptor')
+    calls = []
+    def broken(*args):
+        calls.append(args)
+        raise error
+    def no_sleep(delay):
+        pytest.fail('descriptor errors must not retry')
+    with monkeypatch.context() as patch:
+        if os.name == 'nt':
+            import msvcrt
+            patch.setattr(msvcrt, 'locking', broken)
+        else:
+            import fcntl
+            patch.setattr(fcntl, 'flock', broken)
+        patch.setattr(shared, 'time', SimpleNamespace(monotonic=lambda: 100, sleep=no_sleep))
+        with pytest.raises(OSError) as caught:
+            with cache_lock(tmp_path):
+                pytest.fail('broken descriptor was accepted')
+        assert caught.value is error and len(calls) == 1
+    with cache_lock(tmp_path, timeout=0):
+        pass
+
+
+def test_nested_lock_exception_keeps_outer_owner_then_releases_for_other_thread(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+
+    def acquire():
+        with cache_lock(tmp_path, timeout=0):
+            return 'acquired'
+    with ThreadPoolExecutor(max_workers=1) as worker:
+        with pytest.raises(RuntimeError, match='outer interrupted'):
+            with cache_lock(tmp_path, timeout=0):
+                with pytest.raises(ValueError, match='inner interrupted'):
+                    with cache_lock(tmp_path / '.', timeout=0):
+                        raise ValueError('inner interrupted')
+                with pytest.raises(TimeoutError):
+                    worker.submit(acquire).result(timeout=10)
+                raise RuntimeError('outer interrupted')
+        assert worker.submit(acquire).result(timeout=10) == 'acquired'
+
+
+
+def test_finite_lock_deadline_has_bounded_retry_timeline(tmp_path, monkeypatch):
+    import errno
+    from types import SimpleNamespace
+    import rpipe.structure.artifact.shared as shared
+
+    clock = iter([0.0, 0.0, 0.05, 0.1])
+    attempts, sleeps = [], []
+    error = BlockingIOError(errno.EAGAIN, 'fixture contention')
+    def busy(*args):
+        attempts.append(args)
+        raise error
+    with monkeypatch.context() as patch:
+        if os.name == 'nt':
+            import msvcrt
+            patch.setattr(msvcrt, 'locking', busy)
+        else:
+            import fcntl
+            patch.setattr(fcntl, 'flock', busy)
+        patch.setattr(shared, 'time', SimpleNamespace(monotonic=lambda: next(clock), sleep=sleeps.append))
+        with pytest.raises(TimeoutError) as caught:
+            with cache_lock(tmp_path, timeout=0.1):
+                pytest.fail('held lock was acquired')
+        assert caught.value.__cause__ is error
+        assert len(attempts) == 3 and sleeps == [0.05, 0.05]
+    with cache_lock(tmp_path, timeout=0):
+        pass
+
+
+def test_cancelled_wait_cleans_handle_before_next_acquisition(tmp_path, monkeypatch):
+    import errno
+    from types import SimpleNamespace
+    import rpipe.structure.artifact.shared as shared
+
+    cancelled = KeyboardInterrupt('fixture cancelled wait')
+    attempts = []
+    def busy(*args):
+        attempts.append(args)
+        raise BlockingIOError(errno.EACCES, 'fixture contention')
+    def cancel(delay):
+        assert delay == 0.05
+        raise cancelled
+    with monkeypatch.context() as patch:
+        if os.name == 'nt':
+            import msvcrt
+            patch.setattr(msvcrt, 'locking', busy)
+        else:
+            import fcntl
+            patch.setattr(fcntl, 'flock', busy)
+        patch.setattr(shared, 'time', SimpleNamespace(monotonic=lambda: 0, sleep=cancel))
+        with pytest.raises(KeyboardInterrupt) as caught:
+            with cache_lock(tmp_path):
+                pytest.fail('cancelled wait entered critical section')
+        assert caught.value is cancelled and len(attempts) == 1
+    with cache_lock(tmp_path, timeout=0):
+        pass
+
+
+def test_repeated_failed_acquisitions_do_not_release_other_thread_owner(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+
+    def acquire():
+        with cache_lock(tmp_path, timeout=0):
+            return 'acquired'
+    with ThreadPoolExecutor(max_workers=1) as worker:
+        with pytest.raises(KeyboardInterrupt, match='owner cancelled'):
+            with cache_lock(tmp_path, timeout=0):
+                for _ in range(3):
+                    with pytest.raises(TimeoutError):
+                        worker.submit(acquire).result(timeout=10)
+                raise KeyboardInterrupt('owner cancelled')
+        assert worker.submit(acquire).result(timeout=10) == 'acquired'
+
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='requires Windows Path equivalence and drive semantics')
+@pytest.mark.parametrize('files', [['MANIFEST.JSON'], ['DATA', 'data'], ['C:outside'], ['\\outside']])
+def test_windows_resource_aliases_rejected_before_builder_or_layout(tmp_path, files):
+    def no_build(staging):
+        pytest.fail('invalid contract called builder')
+    root = tmp_path / 'never-created'
+    with pytest.raises(ValueError, match='relative'):
+        prepared_resource(root, {}, files, no_build)
+    assert not root.exists()
+
+
+def test_valid_resource_names_keep_original_manifest_keys_and_reuse(tmp_path):
+    import json
+    files = ['./weights', 'nested/manifest.json']
+    def build(staging):
+        for name in files:
+            path = staging / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b'complete')
+    cache, digest = prepared_resource(tmp_path, {}, files, build)
+    manifest = cache / 'manifest.json'
+    original = manifest.read_bytes()
+    assert set(json.loads(original)['files']) == set(files)
+    def no_rebuild(staging):
+        pytest.fail('valid inputs must be reused')
+    assert prepared_resource(tmp_path, {}, files, no_rebuild) == (cache, digest)
+    assert manifest.read_bytes() == original
+    assert all((cache / name).read_bytes() == b'complete' for name in files)

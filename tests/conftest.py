@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import platform
+import subprocess
 import sys
 import uuid
 from datetime import datetime, timezone
@@ -122,16 +123,22 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 def _git_sha() -> str | None:
-    head = REPO / '.git' / 'HEAD'
-    if not head.is_file():
+    try:
+        metadata = REPO / '.git'
+        head = metadata / 'HEAD'
+        if head.is_file():
+            raw = head.read_text(encoding='utf-8').strip()
+            if raw.startswith('ref: '):
+                ref = metadata / raw[5:].strip()
+                raw = ref.read_text(encoding='utf-8').strip() if ref.is_file() else None
+            if raw is not None:
+                return raw if len(raw) in (40, 64) and all(c in '0123456789abcdefABCDEF' for c in raw) else None
+        if not metadata.exists():
+            return None
+        return subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=REPO, capture_output=True,
+                              text=True, check=True, timeout=5).stdout.strip() or None
+    except (OSError, UnicodeError, subprocess.SubprocessError):
         return None
-    raw = head.read_text(encoding='utf-8').strip()
-    if raw.startswith('ref:'):
-        ref = REPO / '.git' / raw.split(' ', 1)[1].strip()
-        if ref.is_file():
-            return ref.read_text(encoding='utf-8').strip()
-        return None
-    return raw
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -199,7 +206,7 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo):
         },
         'status': status,
         'duration_ms': duration_ms,
-        'started_at': datetime.now(timezone.utc).isoformat(),
+        'started_at': datetime.fromtimestamp(report.start, timezone.utc).isoformat(),
         'failure': failure,
         'artifacts': [],
     }

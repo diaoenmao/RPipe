@@ -6,6 +6,7 @@ import contextlib
 import errno
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import threading
@@ -43,6 +44,8 @@ def shared_paths(study_dir: Path | str) -> dict[str, Path]:
 @contextlib.contextmanager
 def cache_lock(root: Path | str, *, timeout: float = 120):
     """OS-owned lock; a killed writer cannot leave a permanently owned lock."""
+    if not math.isfinite(timeout) or timeout < 0:
+        raise ValueError('cache lock timeout must be finite and >= 0')
     root = Path(root).resolve()
     root.mkdir(parents=True, exist_ok=True)
     key = (os.getpid(), str(root))
@@ -102,7 +105,7 @@ def link_input(source: Path | str, target: Path | str) -> Path:
         if not target.samefile(source):
             if not target.is_file() or _digest(source) != _digest(target):
                 raise FileExistsError(f'different input reference already exists: {target}')
-            temporary = target.with_name(f'{target.name}.{os.getpid()}.{time.time_ns()}.link')
+            temporary = target.with_name(f'{uuid.uuid4().hex}.link')
             try:
                 link_input(source, temporary)
                 from rpipe.structure.artifact._atomic import atomic_replace
@@ -137,9 +140,10 @@ def prepared_resource(root: Path | str, definition: dict, files: list[str], buil
     The caller supplies version/format identity and a preparation callback, not
     training. Interrupted staging is retained; no ready marker accepts it.
     """
-    if (not files or len(set(files)) != len(files) or any(
-            Path(name).is_absolute() or '..' in Path(name).parts or name == 'manifest.json'
-            for name in files)):
+    names = [Path(name) for name in files]
+    if (not names or len(set(names)) != len(names) or any(
+            name.anchor or not name.name or '..' in name.parts or name == Path('manifest.json')
+            for name in names)):
         raise ValueError('input files must be unique safe relative names, excluding manifest.json')
     root = Path(root)
     key = hashlib.sha256(json.dumps(definition, sort_keys=True).encode()).hexdigest()
@@ -205,7 +209,7 @@ def migrate_shared(study_dir: Path | str) -> dict[str, object]:
             elif not source.samefile(target):
                 # Prepare the reference before replacing the duplicate. A failure
                 # leaves the old source intact, and successful replacement is atomic.
-                tmp = source.with_name(f'{source.name}.{os.getpid()}.{time.time_ns()}.link')
+                tmp = source.with_name(f'{uuid.uuid4().hex}.link')
                 try:
                     os.link(target, tmp)
                     from rpipe.structure.artifact._atomic import atomic_replace

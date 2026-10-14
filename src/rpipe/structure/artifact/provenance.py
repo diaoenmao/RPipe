@@ -64,7 +64,15 @@ def source_files(study_dir: Path | str, study: dict[str, Any]) -> dict[str, str]
     for name in names:
         path = _inside(study_dir, name)
         if path.is_file():
-            out[path.relative_to(study_dir).as_posix()] = _sha256(path)
+            key = path.relative_to(study_dir).as_posix()
+            if key.startswith('rpipe/'):
+                try:
+                    same_input = path.samefile(package / key.removeprefix('rpipe/'))
+                except OSError as exc:
+                    raise ProvenanceChangedError(f'Cannot verify library source for Study key: {key}') from exc
+                if not same_input:
+                    raise ProvenanceChangedError(f'Study source key collides with library: {key}; move the input and make again')
+            out[key] = _sha256(path)
     return out
 
 
@@ -115,6 +123,8 @@ def capture_git(study_dir: Path | str) -> dict[str, Any]:
         dirty = subprocess.run(
             ['git', 'status', '--porcelain'], cwd=study_dir, capture_output=True, text=True, timeout=30,
         )
+        if dirty.returncode != 0:
+            return {}
         return {'head': head.stdout.strip(), 'dirty': bool(dirty.stdout.strip())}
     except (OSError, subprocess.SubprocessError):
         return {}
@@ -145,7 +155,11 @@ def load_provenance(study_dir: Path | str) -> dict[str, Any] | None:
     path = provenance_path(study_dir)
     if not path.is_file():
         return None
-    return json.loads(path.read_text(encoding='utf-8'))
+    body = json.loads(path.read_text(encoding='utf-8'))
+    if not isinstance(body, dict) or any(
+            body.get(key) is not None and not isinstance(body[key], dict) for key in ('files', 'plan')):
+        raise ValueError('provenance must be a mapping with optional files/plan mappings')
+    return body
 
 
 def provenance_changes(study_dir: Path | str, study: dict[str, Any]) -> list[str]:
@@ -170,7 +184,10 @@ def check_frozen(study_dir: Path | str, study: dict[str, Any]) -> None:
     """Raise when ``freeze: true`` and any source or plan hash changed since make."""
     if study.get('freeze') is not True:
         return
-    changed = provenance_changes(study_dir, study)
+    try:
+        changed = provenance_changes(study_dir, study)
+    except (OSError, ValueError) as exc:
+        raise ProvenanceChangedError(f'Cannot verify frozen provenance: {exc}') from exc
     if changed:
         shown = ', '.join(changed[:5]) + (' …' if len(changed) > 5 else '')
         raise ProvenanceChangedError(

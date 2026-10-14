@@ -956,6 +956,8 @@ index 在 **Study 根**，不在 `runs/<id>/`。Run 目录直接使用 `id`，�
 
 错误：`ArtifactError`、`MissingConfigError`、`CorruptArtifactError`。
 
+原子文本的临时名按 PID 与随机 UUID nonce 区分写者，不使用墙钟读数充当唯一标识；同进程并发或相同 tick 仍须使用独立 staging。
+
 原子文本写入的初始临时文件写入与替换处于同一 finally 清理范围；部分写入失败保留旧目标、原异常并清理本次临时文件，不删除其他写者的临时文件。
 
 ### 9.3 `config/`
