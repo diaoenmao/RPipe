@@ -97,7 +97,13 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 工作提交 `b678802d54a509532cbca35e40223c889d1c369e` 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38556030997)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38556030922) 和 [Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38556031025) 全部成功。Windows 两个 Python 环境 core 各 464 passed / 2 skipped；Ubuntu 两个环境各 463 passed / 3 skipped；四个环境 CPU integration 各 72 passed / 2 skipped，均无失败。两项模块级 skip 对应未安装的 HF 可选依赖，Linux 另有 Windows 专用入口 skip，不计作通过。两平台 wheel/sdist 均完成独立安装验收。
 
-文档证据收尾后生产代码及测试保持与该工作提交相同；最终 head 必须重新通过全部必需检查，合入 dev 后再核对实际集成提交的 CI。未发布 main、未自动关闭 #41、未运行正式长实验、未更新其他项目 vendor。独立尝试历史仍为 brainstorm 候选。
+最终文档提交 `8269bff580eeb22d5050846d2452bbbc9b8f2b4b` 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38556840524)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38556840501)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38556840590) 全部通过，已单独核对 Windows / Python 3.13 为 success，没有将 pending 当作通过。生产代码及测试与上述首轮工作提交相同。
+
+[PR #42](https://github.com/DreamSoul-AI/RPipe/pull/42) 已合入 dev `8c15cd84f8a47d5bfeb80edfa69bc5c370998e74`，实际集成提交的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38557561151) / [Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38557561212) 也全部通过，覆盖四个 CPU 环境与两平台安装包。核对最终工作树与集成树一致、工作区干净后，已删除该修复的本地 / 远端 codex/launch-no-retry；其他活动分支保留。main 仍为 v0.3.1 / `7a15c46`，未进入发布流程。
+
+下游关于排他产物与自动重试的报告已核对，公开 #41 引用、固定 v0.3.1 来源和首个错误仍在日志的事实均正确；它记录的是原基线，不能改写为采用新 dev 后的验收。“尚未获得上游修复”属于当时记录，上游当前修复状态以上述确切提交与 CI 为准；未修改下游报告、vendor、锁或原 Run。
+
+本次再次逐项核对开放 #36 / #37 / #38 / #41 及评论，均为已在 dev 集成的修复，没有新增未处理条件。三个对话的新反馈没有提供新的 RPipe 反例；已完成的下游回归不因历史超时或领域数值门失败重标为库缺陷。未自动关闭 Issue、未运行正式长实验。独立尝试历史仍为 brainstorm 候选。
 
 ### 39. 共享与三个反馈修复合入 dev
 
