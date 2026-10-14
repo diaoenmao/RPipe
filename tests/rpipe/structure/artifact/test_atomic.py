@@ -98,3 +98,138 @@ def test_atomic_text_success_replaces_target_and_keeps_peer_stage(tmp_path):
     assert target.read_text(encoding='utf-8') == 'new'
     assert peer.read_text(encoding='utf-8') == 'another writer'
     assert set(tmp_path.iterdir()) == {target, peer}
+
+
+# Exact protocol exemptions: append offsets, checkpoint recovery and lock inode
+# ownership cannot use whole-file text replacement (design section 5.3).
+_TEXT_PROTOCOLS = {
+    ('structure/artifact/_atomic.py', 'atomic_write_text'): 'the common text publisher',
+    ('structure/system/logger.py', 'Logger.__init__'): 'create legacy append log',
+    ('structure/system/logger.py', 'Logger._emit'): 'append and flush log records',
+    ('structure/algorithm/tracker.py', 'AlgorithmTracker.__init__'): 'create legacy append ledger',
+    ('structure/algorithm/tracker.py', 'AlgorithmTracker.begin_run'): 'restore byte-offset prefix',
+    ('structure/algorithm/tracker.py', 'AlgorithmTracker.append_jsonl'): 'append curve records',
+}
+
+
+def _direct_text_writes(source):
+    import ast
+
+    tree = ast.parse(source)
+    aliases = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            aliases.update((a.asname or a.name, a.name) for a in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            aliases.update((a.asname or a.name, f'{node.module}.{a.name}') for a in node.names)
+    found, scope = [], []
+
+    class Writes(ast.NodeVisitor):
+        def visit_ClassDef(self, node):
+            self.visit_scope(node)
+
+        def visit_FunctionDef(self, node):
+            self.visit_scope(node)
+
+        visit_AsyncFunctionDef = visit_FunctionDef
+
+        def visit_scope(self, node):
+            scope.append(node.name)
+            self.generic_visit(node)
+            scope.pop()
+
+        def visit_Call(self, node):
+            name = ast.unparse(node.func)
+            root, _, rest = name.partition('.')
+            name = aliases.get(root, root) + ('.' + rest if rest else '')
+            direct = isinstance(node.func, ast.Attribute) and node.func.attr == 'write_text'
+            if name in ('json.dump', 'yaml.safe_dump', 'yaml.dump'):
+                direct = direct or len(node.args) > 1 or any(k.arg == 'stream' for k in node.keywords)
+            if name in ('open', 'builtins.open', 'io.open') or name.endswith('.open'):
+                index = 1 if name in ('open', 'builtins.open', 'io.open') else 0
+                mode = next((k.value for k in node.keywords if k.arg == 'mode'),
+                            node.args[index] if len(node.args) > index else None)
+                if isinstance(mode, ast.Constant) and isinstance(mode.value, str):
+                    direct = direct or ('b' not in mode.value and any(c in mode.value for c in 'wax+'))
+            if direct:
+                found.append(('.'.join(scope), node.lineno))
+            self.generic_visit(node)
+
+    Writes().visit(tree)
+    return found
+
+
+def test_replaceable_text_artifacts_only_use_atomic_publisher():
+    import rpipe
+
+    root = Path(rpipe.__file__).parent
+    found = [(p.relative_to(root).as_posix(), function, line)
+             for p in root.rglob('*.py')
+             for function, line in _direct_text_writes(p.read_text(encoding='utf-8'))
+             if (p.relative_to(root).as_posix(), function) not in _TEXT_PROTOCOLS]
+    assert not found, found
+
+
+@pytest.mark.parametrize('source,blocked', [
+    ('from pathlib import Path as P; P("out").write_text("x")', True),
+    ('from builtins import open as writer; writer("out", "w")', True),
+    ('import io as stream; stream.open("out", mode="a")', True),
+    ('import json as j; j.dump({}, handle)', True),
+    ('import yaml as y; y.safe_dump({}, stream=handle)', True),
+    ('path.open("rb"); text.replace("a", "b")', False),
+    ('atomic_write_text(path, "x"); yaml.safe_dump({})', False),
+])
+def test_text_architecture_guard_detects_aliases_without_banning_read_or_encoding(source, blocked):
+    assert bool(_direct_text_writes(source)) is blocked
+
+
+@pytest.mark.parametrize('leaf', ['index.json', 'scripts/jobs.json', 'scripts/launch.sh', 'scripts/launch.ps1'])
+def test_public_text_publishers_preserve_target_when_commit_is_refused(tmp_path, monkeypatch, leaf):
+    from rpipe.structure.artifact import _atomic
+    from rpipe.structure.artifact.index import write_index
+    from rpipe.structure.make.schedule import write_launch_scripts
+
+    target = tmp_path / leaf
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(b'old evidence')
+    peer = target.parent / 'peer.tmp'
+    peer.write_bytes(b'peer staging')
+    original = _atomic.atomic_replace
+    error = OSError('refused publication')
+
+    def refused(source, dest):
+        if Path(dest) == target:
+            assert target.read_bytes() == b'old evidence'
+            raise error
+        return original(source, dest)
+
+    monkeypatch.setattr(_atomic, 'atomic_replace', refused)
+    with pytest.raises(OSError) as caught:
+        if leaf == 'index.json':
+            write_index(tmp_path, {'study': 'new', 'experiments': []})
+        else:
+            write_launch_scripts(tmp_path, [], round_size=1, num_gpus=0)
+    assert caught.value is error
+    assert target.read_bytes() == b'old evidence'
+    assert peer.read_bytes() == b'peer staging'
+    assert set(target.parent.glob('*.tmp')) == {peer}
+
+
+def test_index_encoding_failure_does_not_truncate_existing_plan(tmp_path):
+    from rpipe.structure.artifact.index import write_index
+
+    target = tmp_path / 'index.json'
+    target.write_bytes(b'old plan')
+    with pytest.raises(TypeError):
+        write_index(tmp_path, {'id': 'known', 'study': 'new', 'bad': object()})
+    assert target.read_bytes() == b'old plan'
+
+
+@pytest.mark.parametrize('newline', [None, '\n'])
+def test_atomic_text_newline_option_preserves_native_and_script_bytes(tmp_path, newline):
+    import os
+
+    target = tmp_path / 'unicode.txt'
+    atomic_write_text(target, '中文\nsecond\n', newline=newline)
+    assert target.read_bytes() == ('中文' + (os.linesep if newline is None else '\n')
+                                  + 'second' + (os.linesep if newline is None else '\n')).encode('utf-8')
