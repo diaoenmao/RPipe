@@ -105,7 +105,7 @@ def link_input(source: Path | str, target: Path | str) -> Path:
         if not target.samefile(source):
             if not target.is_file() or _digest(source) != _digest(target):
                 raise FileExistsError(f'different input reference already exists: {target}')
-            temporary = target.with_name(f'{target.name}.{os.getpid()}.{time.time_ns()}.link')
+            temporary = target.with_name(f'{target.name}.{os.getpid()}.{uuid.uuid4().hex}.link')
             try:
                 link_input(source, temporary)
                 from rpipe.structure.artifact._atomic import atomic_replace

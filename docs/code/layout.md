@@ -65,6 +65,8 @@ Flow 通过 data_api / DataFactory 的可选 `profile_path` 传递自动解析�
 
 共享锁的 timeout 必须有限且非负；0 表示不等待竞争锁。非法预算在创建目录 / 锁文件前抛 ValueError；合法竞争到期仍抛 TimeoutError，不改变默认 120 秒或进程退出释放锁的语义。
 
+同字节副本转为不可变引用时，每个发布者使用独立随机 staging 名并只清理自己的临时文件；发布失败保留源与原副本，不共享 Run 的可变状态。
+
 共享下载 / 发布受文件锁保护；进程退出释放锁，锁文件存在不代表下载成功。构造失败不写 ready。库不会自动下载未注册的 HF / ModelScope 模型；下游通过现有 ModelRegistry builder 使用共享根和相应 hub 的版本缓存。
 
 ```mermaid

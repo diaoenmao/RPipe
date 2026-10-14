@@ -2,9 +2,19 @@
 
 > 这里只保留尚未解决的缺陷。编号只增不复用；修复并验证后移除条目，开发证据留在 [record.md](record.md)，实验依据留在对应 Study 报告。正常差异或决定不修的事项不列为开放缺陷。权威仍是 [concept.md](../code/concept.md) → [layout.md](../code/layout.md) → 代码。
 
-更新日期：2026-10-14。
+更新日期：2026-10-15。
 
 ## 开放
+
+### B-062：同字节共享引用发布的临时名仍依赖时钟，可被并发写者共用
+
+- 状态：open，原草案 c3b8cef 的 link_input 已本机复现；一行候选修复和相关 92 项通过，最终提交 CI 待核对；与 B-057 的 atomic_write_text 是不同发布入口，同属临时名唯一性边界，不重复登记旧文本写入反例。
+- 来源：主动审查 shared.link_input 的递归临时引用发布及 reference_tree 调用方。标准 DataFactory / 迁移有外层共享锁；本反例针对直接并发调用引用 helper，不声称现有锁保护流程或正式数据已经损坏。
+- 条件与期望：两个线程同时把同一已存在、内容相同的独立副本转为同一不可变源的引用。每个写者必须只发布/清理自己的 staging；两次调用均成功、最终 samefile、源字节和 peer 文件不变。固定 time_ns 读数是有效时钟语义，不能作为唯一性保证。
+- 实际：.link 临时名只含目标、PID、time_ns。冻结时钟后两个写者共用 staging，Windows 分别出现 PermissionError / FileExistsError，另一写者在用于同步发布的测试 barrier 退出；两种 backend 都失败。没有把 barrier 当生产锁死或原 480 s 根因。
+- 证据：.tmp/e062-red/ 的真实文件/线程回归为 2 failed / 3 passed，4.25 s；default 与强制 hardlink 的 frozen-clock 两项失败，正常时钟与发布拒绝保全通过。JUnit 和原日志保留，不随 clone 提供；只使用合成小文件。
+- 最小方案：临时名改用 shared.py 已导入的 uuid nonce，复用 B-057 的成熟模式，不新增锁/依赖或改变 symlink→hardlink fallback、原子 replace、冲突拒绝及 finally 清理。验证发布拒绝时源/旧副本/peer 完整；不扩展为可变 Run 多写者协议，也不宣称任意缺失目标的并发创建合同。
+
 
 ### B-061：Git status 查询失败被记为可靠的 dirty 布尔值
 
@@ -64,7 +74,7 @@
 - 方案：标准库 math.isfinite 提前校验，不新增调度、重试、锁所有者账本或缓存格式。已核对各 Factory、prepare、迁移使用默认 / 0 / 20 等有限非负值。
 - 验证：非法值与 watchdog 回归、既有零预算和退出释放锁均须通过。并发写、失败 staging 重建、Windows Unicode 路径的真实句柄拒绝在修复前已通过。最终工作提交 CI 另行核对，不把预期红色任务或未执行项算通过。见 [记录 §43](record.md#43-最小启动--缓存成本诊断与共享锁预算边界分步记录)。
 
-当前 dev 已确认 B-056 / B-057 / B-058 / B-059 / B-060 / B-061，修复候选在草案工作分支，尚未合入 dev；见对应条目。B-053（跨Study输入共享）和B-054（关闭扩展时的初始冻结拒绝保全）已通过[PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)合入dev `614d0a6`；工作提交07bcf2e的Unit tests / Build package / Branch flow及实际矩阵均通过，开发与实验依据见[集成记录](record.md#39-共享与三个反馈修复合入-dev)。实际dev集成提交的CI单独核对，不用PR通过替代。
+当前 dev 已确认 B-056 / B-057 / B-058 / B-059 / B-060 / B-061 / B-062，修复候选在草案工作分支，尚未合入 dev；见对应条目。B-053（跨Study输入共享）和B-054（关闭扩展时的初始冻结拒绝保全）已通过[PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)合入dev `614d0a6`；工作提交07bcf2e的Unit tests / Build package / Branch flow及实际矩阵均通过，开发与实验依据见[集成记录](record.md#39-共享与三个反馈修复合入-dev)。实际dev集成提交的CI单独核对，不用PR通过替代。
 
 B-055 的原生 launch 重试关闭入口已通过 [PR #42](https://github.com/DreamSoul-AI/RPipe/pull/42) 合入 dev `8c15cd84f8a47d5bfeb80edfa69bc5c370998e74`。最终工作提交 `8269bff` 的三项必需检查及实际 dev 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38557561151) / [Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38557561212) 均通过，包含 Windows / Python 3.13；开发证据见 [记录 §40](record.md#40-原生-launch-显式关闭失败重试41验证通过)。默认重试仍保留，#41 不自动关闭。
 
