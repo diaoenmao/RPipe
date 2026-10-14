@@ -112,7 +112,9 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 原始样本及选取的 importtime 行在上述 Actions 日志；完整本机下载和提取位于 .tmp/cache-lock-budget/startup-baseline.log、STARTUP_BASELINE.json（不随 clone），原始日志 SHA256 c54381bc90943ec088a05019e8ed0db4fe907aaaad62f13b65edc166af61770c。该次运行完整 importtime 树只在 runner 临时文件中，未声称已永久归档；复跑入口 tests/_data/startup_diagnostic.py 复用标准接口并拒绝覆盖已有工作区。临时分支工作流会在最终草案差异中移除。
 
 补充验证限制：第二步首个临时任务 [38569905344](https://github.com/DreamSoul-AI/RPipe/actions/runs/38569905344) 因 checkout 浅克隆没有基线 Git 对象，在核对步骤 bad object 后退出，测试 skipped，未作为缺陷复现或通过证据。首轮性能任务也有相同 git diff 错误，但 PowerShell 多命令步骤最终由 Python 成功退出而未阻断；不能仅凭任务绿色声称来源核对通过。已在本机独立比较 9324014:src 与 f3885c9:src 的 Git 树对象，二者相同；性能样本对应的生产文件未变。后续临时任务先显式 fetch 确切基线并检查每个 Git 退出码，再安装依赖和执行测试；原失败日志保留。
-下一步只做已识别薄弱边界的定向回归：并发原子写、失败 staging 后重新准备、Windows Unicode 路径上的真实共享拒绝，以及共享锁非有限预算的有界反例。此处是执行前范围，不计作已通过；通过 / 失败证据另行补记，再决定最小实现。
+第二步已完成修复前验证：[显式核对来源后的定向回归](https://github.com/DreamSoul-AI/RPipe/actions/runs/38570617049)，生产 src 仍为 9324014；31 项中 26 passed / 5 failed，1.51 s。五个失败分别为 NaN / ±inf / -1 未拒绝，以及 NaN 忙锁被三次 watchdog 截住；原始失败不计作通过。新并发替换、中断后重新准备和 Windows 真正不允许删除共享的句柄测试均通过；后者在 Unicode / 空格路径上经过 0.75 s 有界拒绝、保留旧字节与清理本次 staging，释放句柄后再次写入成功。两个写入线程只检查通用 atomic helper，不把单 Run checkpoint 宣称为支持多写入者。
+
+已先将 B-056 的来源、期望/实际、影响和证据写入 bugs.md，并在 layout.md 明确有限非负预算合同；brainstorm 收纳为本轮选定的低风险准备阶段草案。第三步方案为文件操作前的标准库数值校验；保留原签名、默认 120 秒、零预算、重入、退出释放和有效预算的竞争行为，不改数据/model 或科学门。实现后只开面向 dev 的草案 PR，当前 dev 上 B-056 仍开放；最终提交 CI 通过也不能写成已集成。
 
 ### 42. 失败终端输出回归与反馈归属边界
 
