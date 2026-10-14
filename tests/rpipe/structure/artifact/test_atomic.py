@@ -53,25 +53,40 @@ def test_atomic_write_permanent_failure_preserves_target_and_cleans_stage(tmp_pa
 
 
 @pytest.mark.parametrize('existing', [False, True])
-def test_partial_text_write_failure_cleans_only_its_stage(tmp_path, monkeypatch, existing):
+@pytest.mark.parametrize('error_type', [OSError, KeyboardInterrupt])
+def test_partial_text_write_failure_cleans_only_its_stage(tmp_path, monkeypatch, existing, error_type):
     target = tmp_path / 'result.txt'
     if existing:
         target.write_text('old', encoding='utf-8')
     peer = tmp_path / 'result.txt.other.tmp'
     peer.write_text('another writer', encoding='utf-8')
     original_write = Path.write_text
-    error = OSError('injected partial text write failure')
+    error = error_type('injected partial text write failure')
     def partial_then_fail(path, text, *args, **kwargs):
         original_write(path, 'partial', *args, **kwargs)
         raise error
     monkeypatch.setattr(Path, 'write_text', partial_then_fail)
-    with pytest.raises(OSError) as caught:
+    with pytest.raises(error_type) as caught:
         atomic_write_text(target, 'new')
     assert caught.value is error
     assert peer.read_text(encoding='utf-8') == 'another writer'
     assert set(tmp_path.iterdir()) == ({target, peer} if existing else {peer})
     if existing:
         assert target.read_text(encoding='utf-8') == 'old'
+
+
+@pytest.mark.parametrize('existing', [False, True])
+def test_text_encoding_failure_preserves_target_and_peer(tmp_path, existing):
+    target, peer = tmp_path / 'result.txt', tmp_path / 'peer.tmp'
+    if existing:
+        target.write_bytes(b'original')
+    peer.write_bytes(b'peer staging')
+    with pytest.raises(UnicodeEncodeError):
+        atomic_write_text(target, 'plain\u4e2d\u6587', encoding='ascii')
+    assert set(tmp_path.iterdir()) == ({target, peer} if existing else {peer})
+    assert peer.read_bytes() == b'peer staging'
+    if existing:
+        assert target.read_bytes() == b'original'
 
 
 def test_atomic_text_success_replaces_target_and_keeps_peer_stage(tmp_path):

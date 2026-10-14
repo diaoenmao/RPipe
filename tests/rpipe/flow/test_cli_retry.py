@@ -60,6 +60,15 @@ def test_native_launch_retry_policy_preserves_attempts_and_failure(tmp_path, no_
         assert (b'FileExistsError' in output) == (not no_retry)
     assert (b'launch: retry' in result.stdout) == (attempts == 2)
     assert jobs_path.read_bytes() == jobs_before
+    if fail and no_retry:
+        # The opt-out belongs to this invocation; a later explicit launch keeps its default retry.
+        later = subprocess.run(command[:-1], env=env, capture_output=True, timeout=45)
+        (tmp_path / 'later-default.stdout').write_bytes(later.stdout)
+        (tmp_path / 'later-default.stderr').write_bytes(later.stderr)
+        assert later.returncode == 1 and b'launch: retry' in later.stdout
+        assert (run / 'assets/attempts.txt').read_text().splitlines() == ['attempt'] * 3
+        assert 'FileExistsError' in json.loads((run / 'result.json').read_text(encoding='utf-8'))['error']
+        assert jobs_path.read_bytes() == jobs_before
     if not fail:
         prior = (run / 'result.json').read_bytes()
         skipped = subprocess.run(command, env=env, capture_output=True, timeout=30)

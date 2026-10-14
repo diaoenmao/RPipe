@@ -25,14 +25,14 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | topk 计数（B-017） | topk=2 将3个样本的候选展平为6个索引，触发形状/计数错误 | 保留候选轴，每个样本命中任一候选只计一次；修复既有函数，未新增 CLI topk 配置 | 第二节 §5 |
 | 零评测预算（B-018） | `eval_num_steps=0` 仍读取并评测第一批 | 读取数据前报错；正数限批、缺省/负数完整 test 的语义保留 | 第二节 §7 |
 | CLI 重试控制（B-055 / #41） | API 有关闭入口，CLI 始终默认重试一次；非恢复型任务的第二次错误可覆盖首个最终错误 | `launch --no-retry` 显式传递既有 API；默认重试和 train→eval 屏障保留，首个失败可由单次执行保留 | 第二节 2026-10-14 §40 |
-| Git 来源失败（B-061，草案） | status 非零退出仍被写成 dirty 布尔值 | 失败返回空 Git 元数据；11 项新增边界、本机相关 87 项通过，尚未集成 | 第二节 2026-10-14 §48 |
-| 共享引用并发（B-062，草案） | 同字节引用发布临时名可被同 tick 写者共用 | 每个 staging 使用 UUID；6 项新增边界、本机相关 93 项通过，尚未集成 | 第二节 2026-10-15 §49 |
-| 可选 Git 元数据（B-063，草案） | 文件读取/格式错误可令 pytest 配置失败或误记 SHA | 错误归为可选 null，保留快速路径和 CI 优先级；本机相关 108 项通过，未集成 | 第二节 2026-10-15 §50 |
-| 长文件名 staging（B-064，草案） | 文本/迁移临时名追加完整目标名，合法245字符名失败 | 两处短 UUID-only 名；4 项真实反例修复，相关187通过、5未选中，未集成 | 第二节 2026-10-15 §51 |
+| Git 来源失败（B-061，已合 dev） | status 非零退出仍被写成 dirty 布尔值 | 失败返回空 Git 元数据；11 项新增边界、本机相关 87 项通过，已由 PR #46 集成 | 第二节 2026-10-14 §48 |
+| 共享引用并发（B-062，已合 dev） | 同字节引用发布临时名可被同 tick 写者共用 | 每个 staging 使用 UUID；6 项新增边界、本机相关 93 项通过，已由 PR #46 集成 | 第二节 2026-10-15 §49 |
+| 可选 Git 元数据（B-063，已合 dev） | 文件读取/格式错误可令 pytest 配置失败或误记 SHA | 错误归为可选 null，保留快速路径和 CI 优先级；本机相关 108 项通过，已由 PR #46 集成 | 第二节 2026-10-15 §50 |
+| 长文件名 staging（B-064，已合 dev） | 文本/迁移临时名追加完整目标名，合法245字符名失败 | 两处短 UUID-only 名；4 项真实反例修复，相关187通过、5未选中，已由 PR #46 集成 | 第二节 2026-10-15 §51 |
 | 单次来源去重（B-065，暂缓） | 历史草案新增读取次数去重 | 已按最终只做正确性的要求撤回优化，历史证据保留 | 第二节 2026-10-15 §57 |
-| 可选活动读取（B-068，草案） | 非法UTF-8或存在性权限错误使status异常，遮蔽正式结果 | 忽略不可用提示、保留index退出合同；新13项与status联合34通过，未集成 | 第二节 2026-10-15 §56 |
-| 冻结采集错误（B-067，草案） | 文件缺失/拒读或坏JSON异常可覆盖旧成功，非法mapping还会抛AttributeError | 读取时校验mapping，冻结入口转现有拒绝异常并保留cause；34项定向及214相邻检查通过，未集成 | 第二节 2026-10-15 §54 |
-| 来源键遮蔽（B-066，草案） | Study同键可覆盖库hash，真实库修改仍被freeze放行 | 保留库键域并验证物理身份，14边界和202相邻core通过，未集成 | 第二节 2026-10-15 §53 |
+| 可选活动读取（B-068，已合 dev） | 非法UTF-8或存在性权限错误使status异常，遮蔽正式结果 | 忽略不可用提示、保留index退出合同；新13项与status联合34通过，已由 PR #46 集成 | 第二节 2026-10-15 §56 |
+| 冻结采集错误（B-067，已合 dev） | 文件缺失/拒读或坏JSON异常可覆盖旧成功，非法mapping还会抛AttributeError | 读取时校验mapping，冻结入口转现有拒绝异常并保留cause；34项定向及214相邻检查通过，已由 PR #46 集成 | 第二节 2026-10-15 §54 |
+| 来源键遮蔽（B-066，已合 dev） | Study同键可覆盖库hash，真实库修改仍被freeze放行 | 保留库键域并验证物理身份，14边界和202相邻core通过，已由 PR #46 集成 | 第二节 2026-10-15 §53 |
 | 原生恢复（B-021） | checkpoint 缺少 RNG 与数据位置，续训样本后缀和最终权重可偏离连续运行 | 在单进程、受支持 sampler / batch metric 合同下保存并恢复完整训练状态；不匹配配置拒绝，其他路径明确提示部分恢复 | 第二节 2026-10-12 §6 |
 | epoch 停止（B-024） | 累积尾 batch 可导致多跑 epoch；整轮无 optimizer 更新时可能无限循环 | epoch 按声明轮数停止，已完成恢复不重训；整轮无法更新时报错，原尾 batch 丢弃语义保留 | 第二节 2026-10-12 §7 |
 | 曲线进度与回滚 | 横轴按 history 记录序号；记录频率变化不能直接解释为训练步数，恢复后的回滚分支未单独排除 | 按 optimizer_step / epoch 对齐；保留原始日志，聚合时排除回滚分支、处理重复坐标并记录逐点 n | [曲线修复记录](brainstorm.md#4-已经做的) |
@@ -96,6 +96,29 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-15
+
+### 60. 四个开放 Issue 的当前 dev 逐项复验与边界补测
+
+以实际集成 `5ee1214` 为基线，在唯一后续分支 codex/open-issue-correctness 中按 Issue 分开提交。四个原始问题已由此前 PR39/40/42–45 修复，本轮没有发现需要修改生产代码的新反例，因此只补有意义的边界，不重复造修复或改公共合同。
+
+| **Issue** | **原报告行为 → dev 行为** | **本轮新增边界** |
+| --- | --- | --- |
+| [#36](https://github.com/DreamSoul-AI/RPipe/issues/36) | 初始 freeze 拒绝覆盖旧成功 → 保留旧成功，新的失败仍定稿 | 两次独立原生 run-one 连续拒绝；Study 扩展开/关均核对 result 和非日志 asset 字节不变 |
+| [#37](https://github.com/DreamSoul-AI/RPipe/issues/37) | 固定 eval 被显示/筛选为 train → 从实际计划配置读取模式 | base/fixed 的 inference 也经 make→status / 指定模式 / train 过滤核验；全部文件字节不变 |
+| [#38](https://github.com/DreamSoul-AI/RPipe/issues/38) | 初次部分写入抛错遗留 staging → finally 清理自己的临时文件 | KeyboardInterrupt 后清理；真实 ASCII 编码拒绝；目标存在/缺失均保留 peer 字节与旧目标 |
+| [#41](https://github.com/DreamSoul-AI/RPipe/issues/41) | CLI 无 API 既有重试关闭选项 → launch --no-retry 单次生效 | 一次 opt-out 失败后再显式默认 launch：总计三次尝试，默认重试恢复，jobs 原字节不变 |
+
+本机 Python 3.13.9，使用已有隔离环境，CUDA_VISIBLE_DEVICES 为空、MPLBACKEND=Agg，独立 basetemp `.tmp/e-issues4/p`。四个目标文件分别 11 / 4 / 13 / 4 项；相邻冻结采集 22 项、status 21 项，联合 **75 passed，0 failed / error / skipped**。XML SHA-256：551150e466463fe5a5cdedccc861591fa83ff73c27d5c80519539646704d4ce4。保存每次原生 stdout/stderr、原生 Run/result/log 与 pytest manifest/events；`.tmp/issue-audit-20261015` 和 `.tmp/e-issues4` 不随 clone 提供，回归代码入库。
+
+复验调用：[冻结保全](../../tests/rpipe/flow/test_freeze_preservation.py)、[计划模式](../../tests/rpipe/flow/test_status_planned_modes.py)、[原子文本](../../tests/rpipe/structure/artifact/test_atomic.py)、[CLI 重试](../../tests/rpipe/flow/test_cli_retry.py)。不从 pytest 运行时间作性能结论；没有 GPU、外部数据、下游 vendor 更新或正式 Study 重训。只读检查三个下游最新状态，未取得新的 RPipe 缺陷线索，未向其他对话发送消息。Issue 保持 open，后续 PR 最终提交和实际 dev 的 CI 单独验收，不把本机通过写成已发布。
+
+### 59. PR #46 实际合入 dev 与归档后状态
+
+最终工作提交 `90b7d75323d266c4d272f786c28f4c00959d0432` 的 [Unit](https://github.com/DreamSoul-AI/RPipe/actions/runs/38621366046)、[Package](https://github.com/DreamSoul-AI/RPipe/actions/runs/38621366077)、[Branch](https://github.com/DreamSoul-AI/RPipe/actions/runs/38621366320) 及每个实际子任务全部成功；本机执行清单 checks-90b7d75323d2.json SHA-256 为 f9c96f09ce605bf066255cb035a4a5652f788be5c3e7511182d7da37c3c46f24。核对 clean / 精确 head / 最新 dev 祖先 / MERGEABLE / CLEAN / 仓库不自动删分支后，按维护者最终授权 normal merge [PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46)。
+
+实际 mergeCommit 为 `5ee1214b7ce0dc28b65139ac7b3f9ca16eb8b2ac`。集成提交的 [Unit](https://github.com/DreamSoul-AI/RPipe/actions/runs/38622291540) / [Package](https://github.com/DreamSoul-AI/RPipe/actions/runs/38622291406) 全部实际矩阵和聚合门均成功；DEV_CHECKED.json SHA-256 为 e96bb11ef815777ef13378708ab666f6594be11ab70539bcb86995868aadebbe。未拿 PR 绿灯代替 dev 检查。B-056～B-064、B-066～B-068 已集成，B-065 次数去重在 70231ca 撤回，历史失败/候选和主题提交保留。
+
+origin/main 仍为 `7a15c46b75c5eb951cccd60ed7b9fc3463db90f5`，本地及远端 codex/cache-lock-budget 均保留在最终工作 head；没有删除分支、数据、Run 或来源，没有强推、发布、收费变更。归档快照的“待合入”仅描述记录当时，当前接续已进入四个开放 Issue 的复验。正式 Study 不重新签名，不把本批 CPU 检查称为新科学验收。
 
 ### 58. 正确性维护归档与授权进入dev
 

@@ -90,12 +90,13 @@ def test_native_run_one_preserves_real_cpu_success_on_freeze_refusal(tmp_path, s
               if p.is_file() and p.relative_to(layout.assets_dir).parts[0] != 'logs'}
     with (tmp_path / 'study.yaml').open('a', encoding='utf-8') as stream:
         stream.write('# source changed\n')
-    result = subprocess.run([sys.executable, '-m', 'rpipe', 'run-one', str(tmp_path), config.parent.name],
-                            env=dict(os.environ, CUDA_VISIBLE_DEVICES='', MPLBACKEND='Agg'),
-                            capture_output=True, timeout=30)
-    (tmp_path / 'refusal.stdout').write_bytes(result.stdout)
-    (tmp_path / 'refusal.stderr').write_bytes(result.stderr)
-    assert result.returncode == 1 and b'ProvenanceChangedError' in result.stderr
-    assert layout.result_path.read_bytes() == prior
-    assert {p.relative_to(layout.assets_dir): p.read_bytes() for p in layout.assets_dir.rglob('*')
-            if p.is_file() and p.relative_to(layout.assets_dir).parts[0] != 'logs'} == assets
+    for attempt in range(2):
+        result = subprocess.run([sys.executable, '-m', 'rpipe', 'run-one', str(tmp_path), config.parent.name],
+                                env=dict(os.environ, CUDA_VISIBLE_DEVICES='', MPLBACKEND='Agg'),
+                                capture_output=True, timeout=30)
+        (tmp_path / f'refusal-{attempt}.stdout').write_bytes(result.stdout)
+        (tmp_path / f'refusal-{attempt}.stderr').write_bytes(result.stderr)
+        assert result.returncode == 1 and b'ProvenanceChangedError' in result.stderr
+        assert layout.result_path.read_bytes() == prior
+        assert {p.relative_to(layout.assets_dir): p.read_bytes() for p in layout.assets_dir.rglob('*')
+                if p.is_file() and p.relative_to(layout.assets_dir).parts[0] != 'logs'} == assets
