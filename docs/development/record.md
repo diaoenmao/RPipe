@@ -101,7 +101,9 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 修复后本机通过 tests/run.py 运行三个 artifact 模块与事件时间戳回归，.tmp/e059-green/ 的新短 basetemp / JUnit / 日志记录 **58 passed，1.50 s，无跳过**。每次执行前只读核对没有 --worker / watch_idle_batch 性能校准；保留旧红色和所有此前失败，不占用下游 GPU、不改外部线程设置或原实验预算。临时证据及 .tmp/test-results/ 不随 clone；正式链接以草案最新 head CI 和正文为准。
 
-b20a034 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38579687816)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38579687789)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38579687760) 是前一轮验收，不能替代 B-059 新提交。可执行清单沿用 §45 命令和 .tmp/cache-lock-budget/check_draft.py，补充核对 B-059 的红色 JUnit / 本地 58 项，并允许本次共享入口的明确修复差异；最终提交必须单独绑定必需 CI。B-056–B-059 都只在草案，不转 ready、不启用自动合并、不合并、不清理活动分支，不关闭现有 Issue；不触碰 dev/main、发布、系统长路径策略或正式研究来源。
+b20a034 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38579687816)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38579687789)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38579687760) 是前一轮验收，不能替代 B-059 新提交。可执行清单沿用 §45 命令和 .tmp/cache-lock-budget/check_draft.py，补充核对 B-059 的红色 JUnit / 本地 58 项，并允许本次共享入口的明确修复差异；最终提交必须单独绑定必需 CI。初次提交 0bf77af 意外把 shared.py 从 LF 转为 CRLF，静态 diff 核对发现后恢复原 LF；语义差异仍为 4 行新增 / 3 行替换。其 Unit Tests 38581784650 与 Package Check 38581784564 在新最终提交前取消，保留记录，不计为验收通过；Branch flow 38581784662 已通过。最终提交重新绑定必需 CI，未 force push。
+
+B-056–B-059 都只在草案，不转 ready、不启用自动合并、不合并、不清理活动分支，不关闭现有 Issue；不触碰 dev/main、发布、系统长路径策略或正式研究来源。
 
 ### 45. 原超时时间线、取消边界与本机验收
 
