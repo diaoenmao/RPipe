@@ -350,3 +350,77 @@ def test_nested_lock_exception_keeps_outer_owner_then_releases_for_other_thread(
                     worker.submit(acquire).result(timeout=10)
                 raise RuntimeError('outer interrupted')
         assert worker.submit(acquire).result(timeout=10) == 'acquired'
+
+
+
+def test_finite_lock_deadline_has_bounded_retry_timeline(tmp_path, monkeypatch):
+    import errno
+    from types import SimpleNamespace
+    import rpipe.structure.artifact.shared as shared
+
+    clock = iter([0.0, 0.0, 0.05, 0.1])
+    attempts, sleeps = [], []
+    error = BlockingIOError(errno.EAGAIN, 'fixture contention')
+    def busy(*args):
+        attempts.append(args)
+        raise error
+    with monkeypatch.context() as patch:
+        if os.name == 'nt':
+            import msvcrt
+            patch.setattr(msvcrt, 'locking', busy)
+        else:
+            import fcntl
+            patch.setattr(fcntl, 'flock', busy)
+        patch.setattr(shared, 'time', SimpleNamespace(monotonic=lambda: next(clock), sleep=sleeps.append))
+        with pytest.raises(TimeoutError) as caught:
+            with cache_lock(tmp_path, timeout=0.1):
+                pytest.fail('held lock was acquired')
+        assert caught.value.__cause__ is error
+        assert len(attempts) == 3 and sleeps == [0.05, 0.05]
+    with cache_lock(tmp_path, timeout=0):
+        pass
+
+
+def test_cancelled_wait_cleans_handle_before_next_acquisition(tmp_path, monkeypatch):
+    import errno
+    from types import SimpleNamespace
+    import rpipe.structure.artifact.shared as shared
+
+    cancelled = KeyboardInterrupt('fixture cancelled wait')
+    attempts = []
+    def busy(*args):
+        attempts.append(args)
+        raise BlockingIOError(errno.EACCES, 'fixture contention')
+    def cancel(delay):
+        assert delay == 0.05
+        raise cancelled
+    with monkeypatch.context() as patch:
+        if os.name == 'nt':
+            import msvcrt
+            patch.setattr(msvcrt, 'locking', busy)
+        else:
+            import fcntl
+            patch.setattr(fcntl, 'flock', busy)
+        patch.setattr(shared, 'time', SimpleNamespace(monotonic=lambda: 0, sleep=cancel))
+        with pytest.raises(KeyboardInterrupt) as caught:
+            with cache_lock(tmp_path):
+                pytest.fail('cancelled wait entered critical section')
+        assert caught.value is cancelled and len(attempts) == 1
+    with cache_lock(tmp_path, timeout=0):
+        pass
+
+
+def test_repeated_failed_acquisitions_do_not_release_other_thread_owner(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+
+    def acquire():
+        with cache_lock(tmp_path, timeout=0):
+            return 'acquired'
+    with ThreadPoolExecutor(max_workers=1) as worker:
+        with pytest.raises(KeyboardInterrupt, match='owner cancelled'):
+            with cache_lock(tmp_path, timeout=0):
+                for _ in range(3):
+                    with pytest.raises(TimeoutError):
+                        worker.submit(acquire).result(timeout=10)
+                raise KeyboardInterrupt('owner cancelled')
+        assert worker.submit(acquire).result(timeout=10) == 'acquired'

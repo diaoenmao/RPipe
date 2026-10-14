@@ -89,6 +89,41 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-14
 
+### 45. 原超时时间线、取消边界与本机验收
+
+改前：480 秒记录只有整批归属与后续分批成功，草案缺正预算截止时间线、等待取消及连续获取失败后的所有权断言。改后：只读重建原 1131 个事件并与后续相同节点对齐；补三个锁回归，使用原 tests/run.py 在本机运行相关模块。生产源码、科学门、下游 vendor 和调度保持不变；PR #46 继续草案，不合并。
+
+原记录 started_at 字段在 pytest_runtest_makereport 完成 call 时写入，不能当作真正调用起点。pytest session 开始到最后一项完成为 479.017908 s，已完成 call 的毫秒取整耗时累计 469.527 s；相邻报告时间差扣除后一个 call 耗时，最大余量约 33.835 ms、累计约 3.681223 s。末尾两项仍分别完成 3.037 s、2.452 s 的业务 trace 用例。可确认大部分时间落在已完成的调用区间，未看到一个发生在调用之间的分钟级空洞；调用内部可能包含计算、I/O、子进程或等待，这些汇总不能区分。外部监视器按 0.1 s 轮询整批 480 s 墙钟并终止进程树，实际 480.087342 s / 退出 15；不是 RPipe launch 的超时策略。
+
+后续分批 JUnit 中，原已完成的 1131 个节点全部存在，耗时合计 318.303 s，差异分散在多个业务模块；累计差异最多的模块原 107.780 s、后续 69.829 s。JUnit 包含 setup/teardown，原 events 是 call 毫秒取整；进程、顺序、缓存和负载也未受控，不能将差值直接定义为加速或根因。更关键的是，manifest 的 Git SHA 6afad2b 不包含至少 test_reduction_nll.py、test_dot.py 两个慢用例文件；该 SHA 单独不足以还原当时含新增/未提交测试的工作树。当前源码只作路径参考，不冒充原始字节。监视器也没有记录每线程 CPU、锁 acquire/release、线程栈或创建时间序列。因此直接原因是批次预算耗尽；为何原调用更慢、是否含锁等待仍未闭环，没有可宣称复现的上游死锁。
+
+本机只读分析脚本与 TIMEOUT_TIMELINE.json 放 .tmp/cache-lock-budget/（不随 clone），包含原 events、resource、监视器与两份 JUnit 的 hash。分析自检断言 1131 个成功节点、1491 个分批节点无重名且原节点全部可匹配；未启动原大批次、真实模型或下游训练。旧失败不改写。后续可验证路径：先恢复/冻结完整当时测试字节与环境，再按原 pytest 选择及新 basetemp 复跑；使用 pytest 自带 faulthandler_timeout 和监视器记录进程创建时间、CPU/线程与等待栈。只有获得具体共享调用的可重复等待反例后，才将其缩成公开合成输入并登记缺陷；当前三个锁用例只复现库合同，不是原 480 秒事件的复现。
+
+新增可执行回归位于 test_shared.py：有限 0.1 s 预算用可控 monotonic 验证三次竞争、两次 0.05 s 等待和 TimeoutError cause；等待中的 KeyboardInterrupt 原对象传播，失败句柄关闭后可再获取；另一线程连续三次真实零预算获取失败不释放所有者，所有者 KeyboardInterrupt 后该线程可获取。取消在这里指同步中断，不声称支持跨线程强行退出 context 或异步任务取消。
+
+本地首次选择过长的新 basetemp，47 项中 3 failed / 44 passed，1.65 s；新增三项均通过。失败为缓存 manifest 的路径 291 字符，本机 LongPathsEnabled=0；原 PID/time_ns 格式在同一目录也需 278 字符。保留 .tmp/cache-lock-budget/local-e3500747ec6c4b258fab918064d64e30/ 的日志与 JUnit，没有归因为新 nonce 修复或隐藏失败。缩短到新的 .tmp/l078cf7cf/p 后，同三模块 **47 passed，1.56 s**，无跳过；JUnit 与日志保留 .tmp/l078cf7cf/，原生 events/manifest 在 .tmp/test-results/。执行前检查没有活动 --worker / watch_idle_batch 校准；其他项目 CPU 回归使用各自临时目录，未修改其进程。
+
+可重执行的本机检查（先创建全新短 .tmp 父目录，每次替换示例路径；保留失败，不删除旧目录）：
+
+```powershell
+$env:PYTHONPATH = Join-Path (Get-Location) 'src'
+$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD = '1'
+$env:OMP_NUM_THREADS = '1'
+$env:MKL_NUM_THREADS = '1'
+$env:CUDA_VISIBLE_DEVICES = ''
+New-Item -ItemType Directory .tmp/l-new-check
+& .tmp/v030-20261013/venv/Scripts/python.exe tests/run.py --core -- tests/rpipe/structure/artifact/test_shared.py tests/rpipe/structure/artifact/test_atomic.py tests/rpipe/structure/artifact/test_atomic_boundaries.py --basetemp .tmp/l-new-check/p --junitxml .tmp/l-new-check/junit.xml
+if ($LASTEXITCODE -ne 0) { throw 'local boundary regression failed' }
+git diff --check
+if ($LASTEXITCODE -ne 0) { throw 'invalid diff' }
+git merge-base --is-ancestor origin/dev HEAD
+if ($LASTEXITCODE -ne 0) { throw 'dev advanced; reconcile before acceptance' }
+```
+
+本机 Python 路径仅描述本次隔离环境，不是异机环境要求。静态检查及远端验收的可执行核对保存在 .tmp/cache-lock-budget/check_draft.py：核对实际 head、工作区、dev 祖先、生产差异、PR 草案/禁用自动合并、最新 head 各项必需 CI 和历史红色任务。最终结果写独立 checks-<head>.json；进行中 CI 不会返回通过。该脚本只读 Git/GitHub，不合并或清理分支，正式依据同时保留 PR 与 Actions 链接。
+
+上轮 b03cf7a 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38576170751)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38576170986)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38576170759) 全部通过。本轮新增三个用例后的最终 CI 以 PR 最新 head 为准，本机 47 项不能替代四环境与安装包门。剩余项分开标记：原慢调用原因需新现场证据；长路径通用兼容方案仅 brainstorm；草案集成人类决策未执行，dev/main 未包含 B-056/B-057。
+
 ### 44. 草案 #46 的锁错误边界与合并前检查
 
 本轮先核对工作区并 fetch origin；继续使用 codex/cache-lock-budget，不新建分支。开放 #36 / #37 / #38 / #41 及评论均为已修复条件，没有新的复现。只读复查 dayan、quantization 和 denoising speculative decoding（output_space Study 所在会话）：当前分别在比例控制、固定坐标对照和代理舍入研究阶段，没有新的上游 KeyError、锁或调度反例。旧业务 KeyError、外部 480 秒预算耗尽仍按 §40–§43 区分归属，不重复登记为新缺陷；没有向下游发消息或更换 vendor。
