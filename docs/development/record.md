@@ -97,6 +97,24 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 71. 第二类候选：安全读取复用与类型边界验证
+
+先红合同39d8a22，再补 seed 合同 d0d2fe2；生产仅改既有 readout/status.py 和 logs.py：私有 _read_optional 返回 available / missing / unreadable，日志沿现有依赖方向复用；删除分散的 result / note / event I/O try。activity 的现有可选读取协议与故障回归保留，不反向依赖 readout；严格 load_config / load_result 不变，未新增模块或持久化字段。
+
+_mode 在一次 config 读取后核对 mode / id / seed，以可用计划为先；仅缺失时保留 axes/result 的历史 fallback。冲突或坏配置只降级对应 mode 并在原 error 字段提示，已执行状态、真实 failure、其他格和 peer 不变。其余指标继续用旧 guard，无强转或 schema 放宽。日志正则、排序和 CLI 表头不变，读取不写盘、不清理文件。
+
+首候选102项通过后，新增3项 seed 边界出现2 failed /1 passed（null seed 遮蔽计划0、False 被等同0），修正后最终相邻105 passed /0failed/error/skip。原11项红例、首轮绿和 seed 红例均留在 .tmp/consolidation2，before.zip / XML / LOCAL_CHECKED 不随 clone；原 #37/#48/#50/B068 回归全部在最终批次，不重开旧 Issue。新增三态 helper 的缺失是提炼合同，不冒称原行为回归缺陷。
+
+补充自审发现首候选把日志 TypeError 也带入公共 fallback，会扩大原日志仅 I/O 容错的范围。先补 d4473ed 两项 note / event 编程错误回归，候选2 failed；移除公共 TypeError 捕获后新批次107 passed /0failed/error/skip。原105通过、两项失败和最终 verified.xml 全保留，不拿旧批次掩盖集中处理的反例；RuntimeError 等意外错误仍传播。
+
+正式计划 / 结果 / 数据 / provenance 未改，未运行 GPU 或性能测试。此为第二类独立 PR，最终 head 与实际 dev 必需 CI 尚须逐项验收；第一类未实施，不扩大旧成功保留范围。
+
+### 70. 第二类：三态读取与计划 config 优先合同
+
+第三类 PR52 最终 head eb52c65 全部实际矩阵/聚合通过：Unit38638301970、Package38638301989、Branch38638301958，正常合入 dev ea2210bc27e5456062bdef0ffb331e208c64f838；实际 dev 独立 CI 另验收。PR 汇总 Unit tests 尚 IN_PROGRESS 时拒绝的 ROLLUP_PENDING.json 保留，不拿实际任务已绿提前合并。
+
+从 ea2210b 建立 codex/safe-readout-contracts，按批准设计先补第二类11项合同，基线11 failed：6项为 config 与旧 axes/result 冲突或非法配置 / 身份仍被忽略，5项为计划新增的私有三态 helper 尚不存在。后者是接口提炼合同，不登记为旧代码 bug；config 优先是本设计明确批准的读出规则变更，不把它冒称旧 #37 未修。旧模式 fallback、peer / 原字节保全与严格 loader 均保留回归。
+
 ### 69. 第三类：替换文本共用原子发布（B-071 / #53）
 
 先提交红色合同 a7277c1，再补 POSIX script mode 合同 1c56b31，之后生产改动仅五个原文件：index、jobs / scripts、profile / ready marker 改用现有 atomic_write_text；helper 只适配可选 newline 并保留已有 mode，继续调用原 atomic_replace。移除重复 mkdir；不搬模块、不新增产物或布局，不引入 producer 框架。脚本仍 LF，普通文本仍系统原生换行；JSON 字段和默认编码不改。

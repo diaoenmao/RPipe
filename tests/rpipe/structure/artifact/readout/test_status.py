@@ -322,3 +322,93 @@ def test_metric_shape_fallback_preserves_run_state_and_peer(tmp_path, metrics, e
     assert rows['bad']['metric'] == expected
     assert rows['ok']['metric'] == 'accuracy=0.8000'
     assert {p: p.read_bytes() for p in files} == before
+
+
+@pytest.mark.parametrize('state,payload', [('available', b'{"value": 1}'), ('missing', None),
+                                        ('unreadable', b'bad json'), ('unreadable', b'\xff')])
+def test_optional_read_states_keep_input_bytes_and_strict_loader(tmp_path, state, payload):
+    from rpipe.structure.artifact.readout.status import _read_optional
+    from rpipe.structure.artifact.result import load_result
+
+    path = tmp_path / 'result.json'
+    if payload is not None:
+        path.write_bytes(payload)
+    actual, value = _read_optional(path, load_result)
+    assert actual == state
+    assert value == ({'value': 1} if state == 'available' else None)
+    if payload is not None:
+        assert path.read_bytes() == payload
+        if state == 'unreadable':
+            with pytest.raises((ValueError, UnicodeError)):
+                load_result(path)
+    else:
+        assert not path.exists()
+
+
+@pytest.mark.parametrize('source', ['axis', 'result'])
+def test_planned_mode_conflict_is_local_and_not_silently_coerced(tmp_path, source):
+    study = _write_study(tmp_path)
+    path = study / 'runs/bad/config.yaml'
+    write_config(path, {'algorithm': {'mode': 'train'}})
+    # Both legacy sources say eval; config is now present and must be checked.
+    if source == 'result':
+        import json
+        index = json.loads((study / 'index.json').read_text(encoding='utf-8'))
+        index['experiments'][1]['factors'].pop('algorithm.mode')
+        write_index(study, index)
+    before = {p: p.read_bytes() for p in study.rglob('*') if p.is_file()}
+    rows = {r['id']: r for r in list_runs(study)['runs']}
+    assert rows['bad']['mode'] == 'unknown'
+    assert 'conflict' in rows['bad']['error']
+    assert rows['bad']['status'] == 'failed' and 'RuntimeError: boom' in rows['bad']['error']
+    assert rows['ok']['mode'] == 'train' and rows['ok']['metric'] == 'accuracy=0.8000'
+    assert [r['id'] for r in list_runs(study, modes=['eval'])['runs']] == []
+    assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('field,value', [('id', 'another'), ('seed', 7), ('seed', True)])
+def test_config_identity_conflict_does_not_change_disk_result_or_hide_peer(tmp_path, field, value):
+    study = _write_study(tmp_path)
+    cfg = {'id': 'bad', 'seed': 0, 'algorithm': {'mode': 'eval'}}
+    cfg[field] = value
+    write_config(study / 'runs/bad/config.yaml', cfg)
+    before = {p: p.read_bytes() for p in study.rglob('*') if p.is_file()}
+    rows = {r['id']: r for r in list_runs(study)['runs']}
+    assert rows['bad']['mode'] == 'unknown' and 'conflict' in rows['bad']['error']
+    assert rows['bad']['status'] == 'failed'
+    assert rows['ok']['status'] == 'succeeded'
+    assert {p: p.read_bytes() for p in before} == before
+
+
+def test_unreadable_config_cannot_be_hidden_by_legacy_mode(tmp_path):
+    study = _write_study(tmp_path)
+    (study / 'runs/bad/config.yaml').write_bytes(b'algorithm: [')
+    row = next(r for r in list_runs(study)['runs'] if r['id'] == 'bad')
+    assert row['mode'] == 'unknown' and 'config' in row['error']
+
+
+def test_optional_directory_is_unreadable_not_missing_and_programming_error_propagates(tmp_path):
+    from rpipe.structure.artifact.readout.status import _read_optional
+
+    assert _read_optional(tmp_path, lambda p: p.read_text()) == ('unreadable', None)
+    def broken(path):
+        raise RuntimeError('decoder bug')
+    path = tmp_path / 'exists'
+    path.write_bytes(b'value')
+    with pytest.raises(RuntimeError, match='decoder bug'):
+        _read_optional(path, broken)
+
+
+@pytest.mark.parametrize('seed', [None, 0])
+def test_unspecified_config_seed_keeps_planned_integer_seed(tmp_path, seed):
+    _planned_run(tmp_path, {'seed': seed, 'algorithm': {'mode': 'eval'}})
+    row = list_runs(tmp_path)['runs'][0]
+    assert row['seed'] == 0 and type(row['seed']) is int and row['mode'] == 'eval'
+
+
+def test_boolean_recorded_seed_is_not_equal_to_planned_zero(tmp_path):
+    _planned_run(tmp_path, {'seed': 0, 'algorithm': {'mode': 'eval'}})
+    write_result(tmp_path / 'runs/r0/result.json', {'status': 'succeeded',
+                 'control': {'seed': False, 'algorithm': {'mode': 'eval'}}, 'metrics': {}, 'paths': {}})
+    row = list_runs(tmp_path)['runs'][0]
+    assert row['mode'] == 'unknown' and 'conflict' in row['error']
