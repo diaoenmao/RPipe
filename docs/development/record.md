@@ -30,6 +30,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | 可选 Git 元数据（B-063，草案） | 文件读取/格式错误可令 pytest 配置失败或误记 SHA | 错误归为可选 null，保留快速路径和 CI 优先级；本机相关 108 项通过，未集成 | 第二节 2026-10-15 §50 |
 | 长文件名 staging（B-064，草案） | 文本/迁移临时名追加完整目标名，合法245字符名失败 | 两处短 UUID-only 名；4 项真实反例修复，相关187通过、5未选中，未集成 | 第二节 2026-10-15 §51 |
 | 单次来源去重（B-065，草案） | 重叠扫描/recipe/include令同文件反复读和hash | 小场景100→35次读取，mapping一致；相关192通过、5未选中，未集成 | 第二节 2026-10-15 §52 |
+| 可选活动读取（B-068，草案） | 非法UTF-8或存在性权限错误使status异常，遮蔽正式结果 | 忽略不可用提示、保留index退出合同；新13项与status联合34通过，未集成 | 第二节 2026-10-15 §56 |
 | 冻结采集错误（B-067，草案） | 文件缺失/拒读或坏JSON异常可覆盖旧成功，非法mapping还会抛AttributeError | 读取时校验mapping，冻结入口转现有拒绝异常并保留cause；34项定向及214相邻检查通过，未集成 | 第二节 2026-10-15 §54 |
 | 来源键遮蔽（B-066，草案） | Study同键可覆盖库hash，真实库修改仍被freeze放行 | 保留库键域并验证物理身份，14边界和202相邻core通过，未集成 | 第二节 2026-10-15 §53 |
 | 原生恢复（B-021） | checkpoint 缺少 RNG 与数据位置，续训样本后缀和最终权重可偏离连续运行 | 在单进程、受支持 sampler / batch metric 合同下保存并恢复完整训练状态；不匹配配置拒绝，其他路径明确提示部分恢复 | 第二节 2026-10-12 §6 |
@@ -95,6 +96,25 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-15
+
+### 56. 可选活动提示不能遮蔽正式状态（B-068，草案）
+
+只读复查开放Issues与三个下游对话后，未取得新的RPipe根因反例；dayan的重复配对/归档恢复属于该对话已确认的编排失误，量化在整理本项目结果，output-space仍按研究计划运行，未干预它们。随后主动审查status读取边界，复现可选activity文件使正式状态无法展示的问题。性能与耗时工作继续暂停。
+
+| **条件** | **85d6070 改前** | **候选改后** |
+| --- | --- | --- |
+| activity.json包含真实非法UTF-8字节 | UnicodeDecodeError直接外溢，CLI即使有成功result也崩溃 | 忽略不可用活动提示，继续读取index/result，旧成功可展示 |
+| 查询activity是否存在时PermissionError | is_file在try外，未进入既有IO容错 | 与读取放入同一可选IO错误边界，继续原状态流程 |
+| 不存在index且没有有效提示 | 异常遮蔽missing-index诊断 | 保持退出2与missing index提示，不伪报成功 |
+| 有效Unicode提示/其他编程错误 | 原有读取或异常行为 | 有效字段与原字节保留，意外RuntimeError仍暴露 |
+
+生产改动仅read_activity：把is_file纳入既有try，增加UnicodeError捕获。已核对唯一生产调用方CLI _execute_status、只读list_runs与既有活动提示用例；announce/clear_activity、索引、来源、Run状态写入和共享输入均不改。沿用坏JSON被忽略的既有合同，不增加重试、警告系统、调度器或依赖。
+
+新增9个unit与4个真实CLI集成，修复前13项中6 failed /7 passed；修复后连同既有status回归共34 passed，无跳过。真实编码坏文件与精准方法替身的存在性/读取拒绝分开记录：非法编码是实际文件读解码，权限边界是隔离故障注入，不改变主机权限。每个集成条件比较index/result/activity原字节及目录成员，无写入或清理；有index显示原成功，无index仍退出2。全部是小型正确性检查，不运行模型、CUDA、下载或训练，不从pytest时间导出速度结论。
+
+.tmp/phase068/before.zip /BEFORE_INDEX.json保存修复前源码和测试，逐字节核对85d6070；red.xml /red.log保留真实失败；green.xml /green.log、final-source.zip与CHECKED.json记录最终源码hash及正确性结果。临时证据不随clone提供；可复现测试为[活动读取单元](../../tests/rpipe/structure/artifact/test_activity.py)与[原生status集成](../../tests/rpipe/flow/test_activity_status.py)。正式Study无已证实受影响记录，未改写既有结果或下游vendor。
+
+本次仍沿用PR #46草案，绑定最终工作提交检查必需CI及所有实际矩阵；最终链接与执行清单放PR正文，不用85d6070旧绿灯替代。dev9324014/main7a15c46不变，不转ready、不合并、不发布。B-058～B-067的逐项集成汇总仍见§55；新增B-068同样只在草案。
 
 ### 55. B-058 至 B-067 修复汇总与并发补验
 

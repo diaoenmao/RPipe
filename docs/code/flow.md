@@ -296,6 +296,8 @@ conservative 墙钟只在 **make** 打印。本进程实测时间在 Logger 行�
 
 `python -m rpipe status <study>` **不是** Flow 阶段。它只读 `index.json`、各 `runs/<id>/result.json` 及必要的 Run config，打 planned / succeeded / failed / pending 和一张表。没有 result 的格子是 `pending`。mode 优先取轴值，再取 result 中记录；都没有时读取生成的 Run config，避免固定 eval 被误报 train。可读配置省略 mode / None 按默认 train；配置缺失 / 解析异常、模式类型错误或显式空字符串显示 unknown，并只给异常类型和配置路径，不改 Run 状态或文件。`note` 只填 `pending` 和 `failed`：`pending` 是 `run.log` 最后一条 `[epoch]` 或 `[error]`（没有就用最后一条 `[flow]`，跳过 `Traceback` / `File ` 续行）；`failed` 只取最后一条 `[error]`，`error` 列保留 result 错误，并可附加模式读取诊断。`succeeded` 的 `note` 是 `-`。`--mode` 只滤行。若存在 `activity.json`（make 进行中写入，成功后删除），第一行是当前阶段，例如 `make: shared CIFAR10 download`；这时还没有 index 也退出 0。缺 index 且没有 activity 则退出 2。读表在 `structure/artifact/readout/`。make 的活动行写入在 `structure/artifact/activity.py`。
 
+`activity.json` 仅为可选提示：不可读、存在性查询失败、UTF-8解码失败或JSON无效时忽略提示，继续按index/result展示权威状态，不删除或重写该文件。忽略提示不会把缺少index改成成功；缺index且无有效提示仍退出2。非预期编程异常不归为可选IO失败。
+
 `python -m rpipe logs <study>` 只读，把各 Run 的事件行按行首时间打到终端，不写 Study 级总 log。缺 index 退出 2。
 
 `python -m rpipe report <study>` 读 `process.json`，写 `docs/NUMBERS.md`（Experiment 的 mean / std / min / max，以及 Run 表）。导出前必须读取可用的当前 index，核对 Study 名以及所有计划 Run 的 ID、seed 与因素归属；包含未成功 Run 的合法部分聚合仍可导出，不要求 complete=true。不新增格式字段，旧 process 同样按其已有清单核对；Run / Experiment 的排列次序不影响身份。缺失、损坏的 index / process、重复或缺少 Run 以及身份不匹配时退出 2，提示检查并重新 process；保留旧 process、现有 NUMBERS、图和 Run 证据。数字表在校验成功后原子替换，不改 `STUDY_REPORT.md`。该校验只绑定当前计划，不证明同一 Run 重跑后的指标新鲜度或研究质量。
