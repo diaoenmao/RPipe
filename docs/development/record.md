@@ -89,6 +89,16 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-14
 
+### 47. 当前源码采栈诊断与 Git 元数据候选（分步记录）
+
+按用户本轮要求，准备新的本地受控诊断，原 480 秒事件的事实和缺口不变。只读扫描 Issues 和三个会话仍无新的上游反例；dayan 已完成 parallel-2 六对并进入 threads-1，量化 1629 项回归通过后推进下一路径，output-space 是领域数值研究。发现本地测试记录的另一候选：_git_sha 只读取 .git/HEAD 和松散 ref，不能读取 packed refs / worktree，待真实 Git 回归验证后再登记 B-060；未把候选直接当作确认缺陷。
+
+.tmp/trace480/trace_case.py 采用原生 tests/run.py 的 CI core 或 C1/C2 integration/e2e 选择参数，限定相关节点；只增加采样 plugin、新 basetemp 和 JUnit。冻结当前 src/tests/config 及命名的历史 SOURCE.zip，不含数据/模型权重；逐文件 hash、Git HEAD/dirty 状态、完整字节、诊断脚本均保留。源码和测试快照只在本机，未公开下游代码。R​​Pipe 快照 .tmp/tpipe061/SOURCE_TESTS.zip 共186文件（82个 tests 文件），SHA256 3216207c9c0d97e48760f1e0f8fb049700a832ea4660a1f9b54a3cc0c68dda96；量化 .tmp/tquant061/SOURCE_TESTS.zip 共342文件（73个 tests 文件），SHA256 f78647113564e6780db5e785928583e89ab4610995cc9fce5692b5597e364d59。每份 SNAPSHOT.json 记录每个文件摘要；源在复制期间和 ZIP 内容逐项核对，脚本运行时再次验证。量化仍是6afad2b加实际dirty/新增文件，不能用这个HEAD单独声称恢复旧现场。
+
+诊断会记录0.25s重复 faulthandler 原始栈、逐call真实monotonic起止/进程CPU、导入模块实际路径/线程数、依赖、PID/创建时间、子进程资源采样及完整日志。每批外层180s预算、禁用GPU但不改变原测试的计算/质量断言。相关core为前轮58个artifact/事件用例；量化选择原超时中两个合成慢节点（reduction NLL与五视图trace），两次均使用新Python和新basetemp。缓存不清空、采样有开销，不能作为原480s的等条件复现或训练吞吐排名。
+
+本机 threads-1 校准仍在运行；诊断 guard 已实际在创建批次/启动pytest前拒绝两次，.tmp/trace480/guard-rejected.log 保留第一份证据，不计作测试执行。期间仅准备字节快照、静态解析和测试代码，不执行竞争计算。准备 Git 元数据的8项边界（loose/packed/detached/worktree、无Git快照、可选Git失败/缺失/超时），先提交仅测试及设计合同，沿现有独立CI验证候选，库及测试记录实现尚未修改；红色验证不能算通过。正式本地诊断等待本机空闲保护通过，既不干预校准，也不将未执行记为完成。PR46保持草案。
+
 ### 46. 共享输入文件别名校验（B-059，草案）
 
 接续用户反馈的限流失败后，先核对干净工作区、DreamSoul-AI origin 并 fetch；本轮 GitHub Issues / PR 查询均成功，没有继续出现 429。#36–#38 / #41 仍为已修复反馈，PR #46 仍 Draft、自动合并关闭；b20a034 的所有必需 CI 已通过。只读复查三个下游会话，没有新的 RPipe 反例；量化 1629 项回归已通过。原 480 秒缺少完整测试字节与调用内栈的缺口仍见 §45，不重复造根因结论或启动大批次。
