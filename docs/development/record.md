@@ -119,6 +119,7 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 草案首轮 CI 发现第二个真实边界 B-057：[ebcdb8b 的 Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38571738491) 在 Windows/Python 3.10 的新增并发原子写用例报 WinError 2（临时源文件不存在），core 1 failed / 471 passed / 2 skipped，流程门未执行；其他三个环境以及两平台包门通过。B-056 五个新预算用例在四环境 core 中均通过；不将整轮质量写成通过。
 
 原子 helper 仍为 dev 的 PID+time_ns 临时名，不能区分同进程同一读数的两线程；这与旧 #38 的初始写失败清理不同，已单独登记 B-057。按 [Python 时钟文档](https://docs.python.org/3.13/library/time.html#time.time_ns)，纳秒单位与实际时钟实现/精度有别，不能当写者身份。保留自然时钟反例，再给相同测试增加固定读数条件，明确检查 staging 独立性；不通过改成串行、跳过 Windows/Python 3.10 或重跑挑通过规避失败。已核对 atomic_write_text 的 config、result、provenance、readout、activity、缓存 manifest 和 checkpoint 分件调用方；改动只涉及临时 nonce，不改变正式 artifact 名、字节或单 Run 单写者合同。
+B-057 工作分支采用项目已有的 UUID staging 模式：atomic_write_text 保留 PID / .tmp 后缀与原 finally、replace 和 Windows 重试，只将时钟部分换为随机 uuid4 nonce。来源依据见 [标准库 uuid4](https://docs.python.org/3.13/library/uuid.html#uuid.uuid4)。这与三行 B-056 预算校验组成当前草案的两项生产修复；自然/冻结时钟两个并发条件使本轮新增边界共九项。原 ebcdb8b 的失败和其他环境通过都保留，后续最终提交须完整重新通过必需 CI；草案保持未合并，dev 上 B-056 / B-057 均开放。
 ### 42. 失败终端输出回归与反馈归属边界
 
 再次核对实际 dev 509a089 的四环境测试及两平台包检查，均为 success，已将 §41 的运行前说明替换为最终工作提交和实际集成提交的完整验收证据，包括最后完成的 Windows/Python 3.10 流程门；没有重新运行旧实验冒充新验收。

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import time
+import uuid
 from pathlib import Path
 
 
@@ -23,7 +24,7 @@ def atomic_replace(source: Path | str, target: Path | str) -> Path:
 def atomic_write_text(path: Path | str, text: str, encoding: str = 'utf-8') -> Path:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
-    tmp = target.with_name(f'{target.name}.{os.getpid()}.{time.time_ns()}.tmp')
+    tmp = target.with_name(f'{target.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp')
     try:
         tmp.write_text(text, encoding=encoding)
         return atomic_replace(tmp, target)
