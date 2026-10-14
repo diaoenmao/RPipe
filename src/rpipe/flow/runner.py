@@ -19,6 +19,11 @@ PHASES = STUDY_PHASES
 _PHASE_ALIASES = {'index': 'write', 'persist': 'write'}
 
 
+def _preserve_success(phase: str | None, exc: BaseException) -> bool:
+    return phase == 'process' or (
+        phase in (None, 'prepare') and isinstance(exc, ProvenanceChangedError))
+
+
 class FlowRunner:
     def __init__(self, phases: tuple[str, ...] | list[str] | None = None):
         raw = tuple(phases) if phases else PHASES
@@ -47,9 +52,7 @@ class FlowRunner:
                     run_study_phase(ctx.study_dir, name, ctx, study)
         except Exception as exc:
             self._log_failure(ctx, current, exc)
-            preserve_success = current == 'process' or (
-                current in (None, 'prepare') and isinstance(exc, ProvenanceChangedError))
-            self._write_failed_result(ctx, exc, preserve_success=preserve_success)
+            self._write_failed_result(ctx, exc, preserve_success=_preserve_success(current, exc))
             raise
         logger.info('succeeded')
         return ctx.layout.result_path

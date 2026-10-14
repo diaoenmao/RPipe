@@ -6,7 +6,7 @@
 
 ## 开放
 
-B-071（[Issue #53](https://github.com/DreamSoul-AI/RPipe/issues/53)）已完成第三类本机129通过 /1平台跳过的修复，生产提交 a3f21d443b03；原始反例及编码/发布保全见 [record §69](record.md)。最终 head 与实际 dev 的必需 CI 尚须逐项验收，Issue保持open，不称已发布。
+B-071（[Issue #53](https://github.com/DreamSoul-AI/RPipe/issues/53)）已通过[PR #52](https://github.com/DreamSoul-AI/RPipe/pull/52)合入 dev ea2210bc27e5456062bdef0ffb331e208c64f838；最终 head eb52c65 与实际 dev 的全部实际 CI 通过。真实旧 index 截断与红绿合同见 [record §69 / §73](record.md)。Issue53保持open，main未发布该修复。
 
 B-070（[#50](https://github.com/DreamSoul-AI/RPipe/issues/50)）已通过[PR #51](https://github.com/DreamSoul-AI/RPipe/pull/51)合入 dev d294c1b5aa99b4d7148f991f9a4ac8903fe23374，最终工作提交及实际 dev 的必需 CI 全部实际矩阵和聚合通过；原始条目保留在[修复前记录](https://github.com/DreamSoul-AI/RPipe/blob/3a198ff4e04d25999a895b131f0c01ab964b5e0a/docs/development/bugs.md)和[record §63–64](record.md)。Issue50保持open，main尚未包含该修复。后续归纳方案见[产物一致性设计](artifact_consistency_design.md)，待审阅、未实施，不属于新增反例。
 
