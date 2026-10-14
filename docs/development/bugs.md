@@ -6,16 +6,9 @@
 
 ## 开放
 
-### B-069：readout 的存在性查询未进入已有逐文件 I/O 容错
+B-069（[#48](https://github.com/DreamSoul-AI/RPipe/issues/48)）已在当前工作分支修复并通过本机 81 项回归，按本文件规则将原始条目转入历史；详细期望、实际、红例与最小方案见 [record §62](record.md#62-readout-存在性查询与内容读取的错误边界b-069--48) 和 [修复前条目](https://github.com/DreamSoul-AI/RPipe/blob/1046452/docs/development/bugs.md)。实际 dev 集成尚须核对 [PR #49](https://github.com/DreamSoul-AI/RPipe/pull/49) 的最终 head、mergeCommit 和对应 CI，不以本机通过代替；Issue 保持 open。当前工作代码暂无缺少修复的已确认软件条目。
 
-- 状态：候选已修复且本机相关 81 项通过；实际 dev 集成待本任务 PR / CI 核对。在 dev f9c6e90 隔离复现，[Issue #48](https://github.com/DreamSoul-AI/RPipe/issues/48) 已创建。先提交失败测试 31d1511，生产源码仍为原字节；13 项新增边界为 5 failed / 8 passed。
-- 来源：按四类已修缺陷主动检查 status._load_result、status._note_from_log 和 logs.event_lines；三个函数对读取已有 OSError 容错，但前置 is_file 在 try 外。与 B-068 的 activity 读取和 #37 的模式误判是不同入口。
-- 期望 / 实际：单个结果或可选日志发生元数据 I/O 拒绝时，应沿用既有该文件读取失败策略、继续其他 Run；实际列表 API 抛 PermissionError，原生 status/logs 均退出 2，遮蔽有效 peer 输出。
-- 边界：PermissionError 是针对一个 Path 方法的隔离注入，未改主机 ACL。真实 index/result/log 字节前后核对；读操作拒绝和意外 RuntimeError 是控制组。没有正式结果损坏、GPU 或性能结论。
-- 方案：仅把三个 is_file 查询移入各自现有 I/O 边界，保留异常类别、不可读结果回退、note/event 规则、模式、只读职责和输出格式，不改 process/训练/调度或引入通用 helper。
-- 证据：portable 回归见 readout/test_status.py、readout/test_logs.py 和 flow/test_readout_io.py；本机 .tmp/phase069/before.zip / BEFORE.json、red.xml / red.log 保留原字节和真实红例，不随 clone 提供。见 record §62。
-
-除上列 B-069 外暂无新确认的开放软件条目。B-056～B-064、B-066～B-068 已通过 [PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46) 合入 dev `5ee1214b7ce0dc28b65139ac7b3f9ca16eb8b2ac`；原始期望、实际、来源和失败证据保留在 [合入前条目快照](https://github.com/DreamSoul-AI/RPipe/blob/90b7d75323d266c4d272f786c28f4c00959d0432/docs/development/bugs.md) 与 [record §43–60](record.md)。B-065 性能去重已经撤回，不算本轮修复。
+B-056～B-064、B-066～B-068 已通过 [PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46) 合入 dev `5ee1214b7ce0dc28b65139ac7b3f9ca16eb8b2ac`；原始期望、实际、来源和失败证据保留在 [合入前条目快照](https://github.com/DreamSoul-AI/RPipe/blob/90b7d75323d266c4d272f786c28f4c00959d0432/docs/development/bugs.md) 与 [record §43–60](record.md)。B-065 性能去重已经撤回，不算本轮修复。
 
 GitHub #36 / #37 / #38 / #41 仍保持 open，不自动关闭。它们在 dev 已有修复，本轮逐项补边界与复验，没有新根因反例；已发布 main/v0.3.1 尚不含这些修复。当前 CPU 验证不代表 GPU 或全部 Study 的数值验收。
 
