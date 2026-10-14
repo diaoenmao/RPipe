@@ -117,7 +117,7 @@ B-069实际dev执行清单SHA256为636268155bb4d6d185868d539634b0fe9376dd33c1f92
 
 先创建[Issue #50](https://github.com/DreamSoul-AI/RPipe/issues/50)，再提交10项portable回归f15e067；旧代码 **7 failed /3 passed**，三个控制为None、空mapping和合法数值mapping。新增原生CLI用例覆盖eval过滤、Run成功状态/peer显示及全部输入字节不变。修复前status.py原字节ZIP/hash、红色XML/日志保留在.tmp/audit070，不随clone提供。
 
-方案仅取消list_runs调用方的dict强转，把原值交给既有_metric_cell的mapping/numeric guard；不改生产者、结果校验/格式、Run状态、mode、聚合或科学门，也不新增schema/解析器/重试/依赖。生产修复0b51ee6仅一行；10项新增节点全包含于绿色批次，与readout全目录/活动提示/原生status相邻门联合 **91 passed，0 failed / error / skipped**。红/绿节点、b2390b0到当前源码逐行仅该处变更与XML/SHA256已核对（Git原字节CRLF与工作区LF保留各自hash；首次直接比较因此拒绝，NEWLINE_CHECK.json明确记录，不当库失败），保存于.tmp/audit070/LOCAL_CHECKED.json。最终提交及实际集成CI仍分别核对，不以本机通过代替。
+方案仅取消list_runs调用方的dict强转，把原值交给既有_metric_cell的mapping/numeric guard；不改生产者、结果校验/格式、Run状态、mode、聚合或科学门，也不新增schema/解析器/重试/依赖。生产修复0b51ee6仅一行；10项新增节点全包含于绿色批次，与readout全目录/活动提示/原生status相邻门联合 **91 passed，0 failed / error / skipped**。红/绿节点、b2390b0到当前源码逐行仅该处变更与XML/SHA256已核对（Git与工作区原字节均为CRLF，read_text读取后规范化为LF；首次未统一文本比较因此拒绝，原字节hash与NEWLINE_CHECK.json分别保留，不当库失败），保存于.tmp/audit070/LOCAL_CHECKED.json。最终提交及实际集成CI仍分别核对，不以本机通过代替。
 
 ### 62. readout 存在性查询与内容读取的错误边界（B-069 / #48）
 
