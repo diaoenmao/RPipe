@@ -397,3 +397,18 @@ def test_optional_directory_is_unreadable_not_missing_and_programming_error_prop
     path.write_bytes(b'value')
     with pytest.raises(RuntimeError, match='decoder bug'):
         _read_optional(path, broken)
+
+
+@pytest.mark.parametrize('seed', [None, 0])
+def test_unspecified_config_seed_keeps_planned_integer_seed(tmp_path, seed):
+    _planned_run(tmp_path, {'seed': seed, 'algorithm': {'mode': 'eval'}})
+    row = list_runs(tmp_path)['runs'][0]
+    assert row['seed'] == 0 and type(row['seed']) is int and row['mode'] == 'eval'
+
+
+def test_boolean_recorded_seed_is_not_equal_to_planned_zero(tmp_path):
+    _planned_run(tmp_path, {'seed': 0, 'algorithm': {'mode': 'eval'}})
+    write_result(tmp_path / 'runs/r0/result.json', {'status': 'succeeded',
+                 'control': {'seed': False, 'algorithm': {'mode': 'eval'}}, 'metrics': {}, 'paths': {}})
+    row = list_runs(tmp_path)['runs'][0]
+    assert row['mode'] == 'unknown' and 'conflict' in row['error']
