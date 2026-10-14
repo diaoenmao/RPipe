@@ -8,7 +8,7 @@
 
 ### B-060：本地测试 manifest 遗漏 packed refs / worktree 的 Git 提交
 
-- 状态：open；dev 9324014 与草案 f162eb6 的真实 Git 回归在四环境复现，尚未集成修复。
+- 状态：open，候选修复在草案 PR #46 / 394a068；最终代码四环境 CI 与本机66项通过，dev 9324014 尚未集成。原 f162eb6 红色回归保留。
 - 来源：本轮采栈要求完整来源时审查 tests/conftest.py::_git_sha，当前只读 .git/HEAD 和松散 ref。不是原 480 秒性能根因，也不等同于包含 dirty 字节的完整来源冻结。
 - 期望：本地 manifest 可识别 packed refs / worktree 的实际 HEAD，同时保留普通松散 ref / detached HEAD；无 .git 的复制快照不能搜索并误记父仓库。缺 Git、命令失败或查询超时仍允许 null，不阻断测试。
 - 实际：git pack-refs --all 后分支 ref 不再是单文件，返回 null；worktree 的 .git 为指针文件，.git/HEAD 不存在，也返回 null。真实提交存在、Git可读，记录却丢失身份。
@@ -17,7 +17,7 @@
 
 ### B-059：共享输入文件合同按原始字符串比较，可绕过保留名与唯一性
 
-- 状态：open，Windows/Python 3.13.9 本机已复现；dev 9324014 与草案 b20a034 均尚未修复。
+- 状态：open，Windows/Python 3.13.9 本机已复现并在草案 PR #46 修复；dev 9324014 尚未集成，原 b20a034 反例保留。
 - 来源：继续审查 prepared_resource 文件清单入口，已核对 main_exp / main_probe 两个正式调用方，均使用正常相对文件名。
 - 期望：创建缓存根或调用 builder 前拒绝控制 manifest 本身及按本机 Path 语义等价的重复路径；空文件名、目录本身或带锚点的路径也不能作为相对文件输入。
 - 实际：files=['./manifest.json'] 进入 builder，随后覆盖作为输入的 manifest 并发布 inputs，校验才失败；下次仍复用这个不一致目录而拒绝。Windows 上 MANIFEST.JSON 同样触发。files=['data','./data'] 被当作不同文件接受。合成缓存复现 .tmp/a51d92a07/repro.json 保留，未触碰真实数据。
@@ -26,7 +26,7 @@
 
 ### B-058：测试事件 started_at 记录的是完成后时间
 
-- 状态：open；当前 dev 9324014 和草案 f3eb08b 均存在，尚未集成修复。
+- 状态：open，候选修复在草案 PR #46；dev 9324014 尚未集成。f3eb08b 是原复现基线，不能当作当前草案状态。
 - 来源：本轮追查原量化 480 秒批次，核对上游 tests/conftest.py 的 pytest_runtest_makereport；不是导致原超时的根因结论。
 - 期望：events.jsonl 的 started_at 对应其实际记录阶段的起点（正常 call 或失败 setup），duration_ms 保持 pytest 报告的实际耗时。
 - 实际：写事件时调用 datetime.now，发生在报告完成以后；长用例的起点因此被推迟约该阶段耗时，误导逐项等待时间线。原日志保留，不回填或重新签收。
@@ -45,7 +45,7 @@
 
 ### B-056：共享准备锁接受非法超时预算，NaN 可绕过竞争截止
 
-- 状态：open，已复现；当前 dev 9324014 尚未修复。按本轮授权准备修复草案，不自动合并。
+- 状态：open，已复现并在草案 PR #46 修复；当前 dev 9324014 尚未集成，不自动合并。
 - 来源：本轮审查 shared.cache_lock 的等待边界，不是量化 480 秒事件或下游 KeyError 的根因结论。
 - 条件：Windows Server 2025 / Python 3.13.15，生产 src 与 dev 9324014 相同。直接调用 cache_lock(root, timeout=NaN / ±inf / -1)；NaN 忙锁通过固定 EACCES 和三次循环 watchdog 注入，避免真实无限挂起。
 - 期望：timeout 有限且非负，非法值在创建目录、锁文件或等待前抛 ValueError；合法 0 不等待竞争，默认 120 秒不变。

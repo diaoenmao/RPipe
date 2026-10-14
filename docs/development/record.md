@@ -89,23 +89,68 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-14
 
-### 47. 当前源码采栈诊断与 Git 元数据候选（分步记录）
+### 47. 当前源码采栈与测试 Git 来源记录（B-060，草案）
 
-按用户本轮要求，准备新的本地受控诊断，原 480 秒事件的事实和缺口不变。只读扫描 Issues 和三个会话仍无新的上游反例；dayan 已完成 parallel-2 六对并进入 threads-1，量化 1629 项回归通过后推进下一路径，output-space 是领域数值研究。发现本地测试记录的另一候选：_git_sha 只读取 .git/HEAD 和松散 ref，不能读取 packed refs / worktree，待真实 Git 回归验证后再登记 B-060；未把候选直接当作确认缺陷。
+本轮已完成：完整当前源码/测试快照、原生CI过滤参数的本地诊断、B-060最小修复和对应回归。RPipe相关诊断58项通过；量化两个合成节点的无watchdog控制通过，同步采样的两次独立运行各2项通过；两次C watchdog原生失败完整保留。最新代码/测试提交394a068的四环境CPU、两平台安装包及Branch flow均通过，本机最终相关联合回归66项通过。所有修复仍只在PR46草案，dev/main不变。原480秒的历史原因仍不能由这些新样本倒推。
 
-.tmp/trace480/trace_case.py 采用原生 tests/run.py 的 CI core 或 C1/C2 integration/e2e 选择参数，限定相关节点；只增加采样 plugin、新 basetemp 和 JUnit。冻结当前 src/tests/config 及命名的历史 SOURCE.zip，不含数据/模型权重；逐文件 hash、Git HEAD/dirty 状态、完整字节、诊断脚本均保留。源码和测试快照只在本机，未公开下游代码。RPipe 快照 .tmp/tpipe061/SOURCE_TESTS.zip 共186文件（82个 tests 文件），SHA256 3216207c9c0d97e48760f1e0f8fb049700a832ea4660a1f9b54a3cc0c68dda96；量化 .tmp/tquant061/SOURCE_TESTS.zip 共342文件（73个 tests 文件），SHA256 f78647113564e6780db5e785928583e89ab4610995cc9fce5692b5597e364d59。每份 SNAPSHOT.json 记录每个文件摘要；源在复制期间和 ZIP 内容逐项核对，脚本运行时再次验证。量化仍是6afad2b加实际dirty/新增文件，不能用这个HEAD单独声称恢复旧现场。
+#### （1）范围、快照与复跑入口
 
-诊断会记录0.25s重复 faulthandler 原始栈、逐call真实monotonic起止/进程CPU、导入模块实际路径/线程数、依赖、PID/创建时间、子进程资源采样及完整日志。每批外层180s预算、禁用GPU但不改变原测试的计算/质量断言。相关core为前轮58个artifact/事件用例；量化选择原超时中两个合成慢节点（reduction NLL与五视图trace），两次均使用新Python和新basetemp。缓存不清空、采样有开销，不能作为原480s的等条件复现或训练吞吐排名。
+只读扫描Issues和三个会话无新RPipe反例：dayan依次完成parallel-2、threads-1、ratio-one计时，量化1629项回归通过后推进新对照，output-space为领域数值研究。未给其他会话发消息，不改下游vendor、数据或运行中实验。HTTP504查询失败单独退避，未当作库缺陷。
 
-本机 threads-1 校准仍在运行；诊断 guard 已实际在创建批次/启动pytest前拒绝两次，.tmp/trace480/guard-rejected.log 保留第一份证据，不计作测试执行。期间仅准备字节快照、静态解析和测试代码，不执行竞争计算。准备 Git 元数据的8项边界（loose/packed/detached/worktree、无Git快照、可选Git失败/缺失/超时），先提交仅测试及设计合同，沿现有独立CI验证候选，库及测试记录实现尚未修改；红色验证不能算通过。正式本地诊断等待本机空闲保护通过，既不干预校准，也不将未执行记为完成。PR46保持草案。
+.tmp/trace480/trace_case.py及其v3/v4版本使用原生tests/run.py，core或C1/C2 integration/e2e的CI过滤参数保持不变，只限定相关节点、添加诊断plugin、新basetemp与JUnit。0.5s资源采样记录PID/创建时间、进程树CPU/RSS/线程；逐call记录真正monotonic起止、进程CPU和模块实际路径。外层180s，CUDA_VISIBLE_DEVICES为空、MPLBACKEND=Agg；OMP/MKL/OpenBLAS未额外覆盖，测试原精度、输入、调用量与断言不改。实际环境Windows11/Python3.13.9、NumPy2.4.4、torch2.11.0+cu130、PyYAML6.0.3；RPipe隔离环境pytest9.1.1，量化环境pytest8.4.2，不是GitHub runner的同一依赖环境。
 
-B-060 已经由 f162eb6 的[四环境红色回归](https://github.com/DreamSoul-AI/RPipe/actions/runs/38586121972)确认：packed/worktree 两项均返回 null，其余六个新边界通过；Windows 2 failed/496 passed/2 skipped，Ubuntu 2 failed/490 passed/8 skipped，Flow未执行。正式登记 bugs.md 后才应用准备的最小补丁。原日志保留 .tmp/trace480/b060-baseline-ci.log；Package/Branch结果分别核对，不将单项或红色任务写成整轮通过。
+快照包含完整当前src/tests/config及两个被测用例所需的历史SOURCE.zip，不含数据集/预训练权重。Git HEAD、dirty状态、删除项、逐文件hash、诊断脚本字节和归档校验均保留；文件在捕获前后、运行前后及ZIP内容逐项核对。量化快照是6afad2b加实际dirty/新增源码，不能用HEAD单独冒充旧现场；所有采样变体的342个源文件hash完全相同。下游源码归档不公开，下面的临时材料仅本机保管，不随Git clone提供；本节数字、环境、失败和结论独立入库。
 
-B-060 实现保留松散ref/detached文件快路径，只有 .git 存在而未解出HEAD时调用 git rev-parse HEAD，超时5秒并捕获可选失败；无 .git 快照不向父仓库查找。首轮本地 .tmp/e060-green/ 为3 failed/7 passed（0.82s），原因是新测试的模块替身缺 SubprocessError 类型，而非真实 subprocess 模块缺陷；补全替身的真实异常类型后 .tmp/e060-green2/ **10 passed，0.81s**。原断言与失败证据保留，没有修改生产运行库或旧manifest。
+| **材料** | **内容** | **SHA256** |
+| --- | --- | --- |
+| .tmp/tpipe061/SOURCE_TESTS.zip | 186文件，含82个tests文件；诊断基线8daebb5及当时新增元数据测试 | 3216207c9c0d97e48760f1e0f8fb049700a832ea4660a1f9b54a3cc0c68dda96 |
+| .tmp/tquant061/SOURCE_TESTS.zip | 342文件，含73个tests文件；0.25s watchdog脚本 | f78647113564e6780db5e785928583e89ab4610995cc9fce5692b5597e364d59 |
+| .tmp/tquant063/SOURCE_TESTS.zip | 同342文件；同步采样脚本v4 | ca10c8ac4bf04c6be765e6013daef5c8c3b0be4403b1e78e30cd2a2b6cc41f05 |
+| .tmp/trace480/trace_case_v4.py | 原始采样脚本；同字节副本也在上述归档diagnostic/内 | 803a8bd21d7aa1efa3f63a3d3d34dce692ca165059021b4b0985f3be2ab0df6c |
 
-本地首次采栈已执行：冻结RPipe相关core **58 passed，1.65s**，外层3.171462s，原始栈27802B，SHA256 b998c31344145c9703c29c4baae3650f90c059329e897c58240c2ec21d80dc55，.tmp/tpipe061/r1/保存raw stack、calls、RESOURCE和JUnit。量化0.25s watchdog在收集期原生退出3221225477（9.851128s）；将采样移到收集后1s的同字节快照又原生退出相同码（12.948206s），栈分别在DLL加载/pytest重写，以及transformers动态导入/typing，未完成首个test call。两次失败和raw stack分别保留 .tmp/tquant061/r1、.tmp/tquant062/r1；它们是诊断失败，不是完整测试通过或旧480s重现。关闭周期watchdog的同字节控制 .tmp/tquant061/control-no-watchdog 为 **2 passed，11.85s**（外层14.070022s）；只能报告这些观测差异，尚不能将原生崩溃归因到RPipe或某个运行时根因。
+脚本prepare生成完整快照，run拒绝覆盖批次；SNAPSHOT.json保留spec、源hash及脚本hash。每批启动前查已知校准watcher/worker；若中途出现校准，只终止自己的诊断进程树。两次准备期guard拒绝未启动pytest，证据在.tmp/trace480/guard-rejected.log；后续新增ratio-one批次期间也拒绝。没有暂停/终止下游。这个保护只覆盖已识别的校准进程，不证明排除了所有外部负载。
 
-准备第三版采样：保留fatal handler，以Python线程每1秒调用同步dump_traceback替代C watchdog；GIL长期被占用时采样线程可能延迟，不能排除未捕获等待。复制的342文件逐项hash与前两次完全一致，新归档 .tmp/tquant063/SOURCE_TESTS.zip SHA256 ca10c8ac4bf04c6be765e6013daef5c8c3b0be4403b1e78e30cd2a2b6cc41f05，脚本 .tmp/trace480/trace_case_v4.py 的hash在SNAPSHOT.json。新的dayan ratio-one计时批次启动，guard再度在pytest前拒绝，两个正式同步采样尚未执行；不能将准备好的采样算完成。该阶段先提交B-060已通过的最小修复并验证CI，继续在安全空闲窗口采集，不覆盖旧失败或干预其他项目。
+```powershell
+# 本机已冻结的输入；每次换一个不存在的批次名，先确认无活动校准。
+& .tmp/v030-20261013/venv/Scripts/python.exe .tmp/trace480/trace_case.py run .tmp/tpipe061 new-core
+& .tmp/v030-20261013/venv/Scripts/python.exe .tmp/trace480/trace_case_v4.py run .tmp/tquant063 new-quant
+```
+
+这些路径只描述本机隔离环境；异机须恢复相同快照、依赖与可用的Python路径，不能照抄。量化两节点是原慢批次中的reduction NLL完整评分/collect和五视图trace完整评分/collect，均为合成CPU用例、不训练，不替代完整旧批次、真实模型或科学验收。
+
+#### （2）真实执行、失败与采样边界
+
+| **条件与新批次** | **实际结果** | **原始证据** |
+| --- | --- | --- |
+| RPipe core，0.25s dump_traceback_later | 58 passed，pytest1.65s/外层3.171462s，栈27802B | .tmp/tpipe061/r1/ |
+| 量化收集期即启动0.25s watchdog | 原生退出3221225477，9.851128s；未执行test call，不计通过 | .tmp/tquant061/r1/ |
+| 同字节量化、关闭周期watchdog，保留fatal handler | 2 passed，pytest11.85s/外层14.070022s | .tmp/tquant061/control-no-watchdog/ |
+| 同字节量化，收集后1s watchdog | 首个call中原生退出相同码，12.948206s；未完成call，不计通过 | .tmp/tquant062/r1/ |
+| 同字节量化，同步线程每1s dump_traceback，独立重复1 | 2 passed，pytest13.74s/外层17.633124s，11次栈采样、64994B | .tmp/tquant063/r1/ |
+| 同字节量化，同步线程每1s dump_traceback，独立重复2 | 2 passed，pytest13.30s/外层16.164850s，11次栈采样、61810B | .tmp/tquant063/r2/ |
+
+两个watchdog失败的原始栈分别涉及DLL加载/pytest断言改写和transformers动态导入/typing；没有据此认定RPipe或CPython的具体根因。同步版本不调用周期C watchdog，保留前两次失败、控制和每个脚本版本。Python采样线程在GIL长期被占用时可能延迟，1s采样也会漏掉更短等待；它不是无扰动或全覆盖分析。其实际观测仍有CPU/文件写入开销，不能按一次更快的结果挑选验收。
+
+两次量化call墙钟/进程CPU：reduction NLL为9.146471/9.062500s和8.810846/8.843750s，trace为3.029232/2.953125s和3.219571/3.203125s。进程CPU包含采样线程、不含其他子进程；Windows计时粒度可使短差值或CPU略大于墙钟，不能强行解释为收益。call收尾观察torch线程数为1。采样进程树RSS峰值851603456/851677184B，可能重复计算共享页，不是独占物理内存。
+
+原始栈观察到transformers/huggingface导入、业务fixture/算法、文件open/mkdir、归档读写/CRC和Linear.forward；分类是采样出现的路径，不是独占耗时百分比。两次call CPU与墙钟接近，支持这组新样本主要在执行本地导入/处理/评分，而不是分钟级空闲。冻结量化v0.3.1副本没有新dev的artifact/shared.py，不能将B-056的新共享锁当作这组调用的原因；仍不能因此排除所有旧代码内等待。RPipe控制中真实Windows句柄拒绝约0.757671s、低CPU，栈定位到已有有界原子替换等待，说明采样能看到该受控等待，并非所有等待都被当作计算。
+
+同步重复1/2的raw stack SHA256分别fe1604172867925513c0a9ab2c2f6b502bec7e49d99376191c88d2786de6ea9c、61b6618b17c5b19b927464b380ebb7503fa957dd5d0b8c713b0327ab70a1775d；RPipe栈为b998c31344145c9703c29c4baae3650f90c059329e897c58240c2ec21d80dc55。RESOURCE.json、pytest.log、calls.jsonl、runtime.json、stacks.txt、JUnit以及.tmp/trace480/SYNC_TRACE_SUMMARY.json保留完整材料与hash。原480s未补录的当时CPU/栈/dirty测试仍缺失；新样本只排查当前路径，不倒推其历史慢因，也不把小样本称作完整性能校准。
+
+#### （3）B-060修复与最终检查
+
+测试先行提交f162eb6的[Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38586121972)在四环境均仅packed/worktree两项失败；Windows2 failed/496 passed/2 skipped，Ubuntu2 failed/490 passed/8 skipped，Flow未执行；[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38586122003)与[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38586122146)通过，不把红色整轮算通过。先登记bugs.md和测试合同，再修helper：保留松散ref/detached文件快路径，仅已有.git且未读出HEAD时采用5s有界Git查询；Git不可用/失败/超时返回null，无.git快照不搜索父仓库，GITHUB_SHA优先级不变。
+
+首轮本地.tmp/e060-green/为3 failed/7 passed，0.82s，是新测试替身缺少真实SubprocessError类型；补全替身、不改原断言后.tmp/e060-green2/为10 passed，0.81s。最终结合三个artifact模块、事件和Git元数据的本机联合回归.tmp/e060-all/为66 passed，2.39s，无跳过。原失败和每批独立basetemp/JUnit均保留，不混成一次成功。
+
+代码/测试提交394a068c7fcf7fbb95a7dae8530ca122b2d10da4的[Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38588043099)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38588043105)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38588043112)全部通过。Windows core各498 passed/2 skipped，Ubuntu各492 passed/8 skipped，四环境CPU Flow各74 passed/2 skipped；平台/HF skip不计通过。基线红日志SHA256 e8dbc830498dccb0bbd536d140f5738f1113ed1a08e7263b5e1041594e0a09d7，修复日志496669be96f177082f0e04f410c0ddba78abceda22ad79c9dba0831a5b66df8d，位于.tmp/trace480/。后续整理提交不再改代码/测试，最新PR head仍须单独核对必需CI，不用这个旧head替代。
+
+合并前可执行清单更新：
+
+1. 取PR最新head，对照工作区和origin/dev，确认所有必需检查实际success；运行.tmp/cache-lock-budget/check_draft.py，拒绝旧head/未完成/跳过冒充通过。
+2. 检查真实packed/worktree红色、可选Git错误边界及66项本地JUnit；源码只含声明的runtime与测试记录修复，不改预算、RNG、重试默认和正式数据/Run。
+3. 核对完整快照、实际模块路径、前后源hash与两次采样的JUnit/call/栈；两次原生失败、无watchdog控制、fixture失败与guard拒绝均保留，互不替代。
+4. 原480s性能归因保持未确认；同步采样/GIL限制与不同依赖环境明示，不用这些工程诊断替代研究门。PR46继续Draft/open、无auto-merge，集成待人类另行授权，不发布、不删数据、不改计费配置。
 
 ### 46. 共享输入文件别名校验（B-059，草案）
 
