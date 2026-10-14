@@ -6,6 +6,15 @@
 
 ## 开放
 
+### B-055 原生 launch 缺少失败重试关闭入口（#41）
+
+- 状态：investigating。
+- 来源：[Issue #41](https://github.com/DreamSoul-AI/RPipe/issues/41)，dayan 的非恢复型推理执行；已核对 v0.3.1 与当前 dev 的相同调用路径。
+- 复现：CPU Toy/Stub、无模型计算的自定义 Algorithm 创建排他目录后抛 ORIGINAL_FAILURE；默认 launch 同 Run 重试，第二次 FileExistsError 成为最终 result.error。默认重试是已有文档行为，不记作数值算法缺陷；缺口是 CLI 无法使用 API 已有的 retry_failed=False。
+- 期望 / 实际：需要单次执行的调用方可显式关闭重试；当前 launch 拒绝对应参数，且未传递已有 API 开关。首个错误仍在日志，不能说全部原始证据丢失。
+- 方案：仅增加 launch --no-retry，默认保持一次重试；不改变调度器、Run 身份、保存格式或 train→eval 屏障。
+- 验证：下游已提供真实最小复现；本轮补默认 / 关闭重试、原错误保留、成功及空计划的原生 CLI 回归。当前本机有性能校准，回归交由远端 CI，尚未计为通过。
+
 当前dev中没有尚未修复的已复现软件缺陷。B-053（跨Study输入共享）和B-054（关闭扩展时的初始冻结拒绝保全）已通过[PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)合入dev `614d0a6`；工作提交07bcf2e的Unit tests / Build package / Branch flow及实际矩阵均通过，开发与实验依据见[集成记录](record.md#39-共享与三个反馈修复合入-dev)。实际dev集成提交的CI单独核对，不用PR通过替代。
 
 GitHub #36—#38仍保持open，原v0.3.1/main尚未发布这些修复；当前dev修复与已发布版本必须区分。没有开放软件条目不代表所有后端、设备或研究条件均已验收。

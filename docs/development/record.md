@@ -88,6 +88,12 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-14
 
+### 40. 原生 launch 显式关闭失败重试（#41，验证中）
+
+来源为 [Issue #41](https://github.com/DreamSoul-AI/RPipe/issues/41) 的 CPU 合成复现与当前 dev 调用链。改前：API 支持 retry_failed=False，但 CLI 只能采用默认重试；排他产物任务的第二次 FileExistsError 可成为最终错误。改后方案：launch --no-retry 仅投影现有 API，默认保持重试一次，不改变计算、Run ID、jobs 清单或依赖屏障；原始失败日志仍保留。更大的尝试历史设计只记 brainstorm。
+
+新增真实 CLI 四格回归：默认 / 关闭重试 × 失败 / 成功，检查实际调用次数、最终错误、原日志、jobs 字节、成功后空计划跳过。使用测试公共合成输入，不接触正式 Study 或下游 vendor。本机此时存在 dayan 性能校准，因此未并行运行本地回归；远端必需 CI 和实际结果待核对，不以源码修改当作验证通过。
+
 ### 39. 共享与三个反馈修复合入 dev
 
 [PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)在最终工作提交`07bcf2eac9632166c9063c1412f764f1a6d516e3`的Unit tests / Build package / Branch flow全绿后，于2026-10-14 07:00（Asia/Shanghai）合入dev `614d0a6bc6dc99f82445a1566d41a0b6150c6b85`。Ubuntu / Windows × Python3.10 / 3.13实际CPU矩阵与两平台wheel/sdist安装检查全部成功；已核对dev与该工作提交的生产源码及Study实现没有差异。
