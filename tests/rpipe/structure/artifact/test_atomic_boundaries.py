@@ -1,7 +1,6 @@
 """Real concurrent publication and Windows handle-denial boundaries."""
 from concurrent.futures import ThreadPoolExecutor
 import os
-from pathlib import Path
 import threading
 
 import pytest

@@ -6,6 +6,7 @@ import contextlib
 import errno
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import threading
@@ -43,6 +44,8 @@ def shared_paths(study_dir: Path | str) -> dict[str, Path]:
 @contextlib.contextmanager
 def cache_lock(root: Path | str, *, timeout: float = 120):
     """OS-owned lock; a killed writer cannot leave a permanently owned lock."""
+    if not math.isfinite(timeout) or timeout < 0:
+        raise ValueError('cache lock timeout must be finite and >= 0')
     root = Path(root).resolve()
     root.mkdir(parents=True, exist_ok=True)
     key = (os.getpid(), str(root))
