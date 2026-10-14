@@ -20,9 +20,9 @@ def event_lines(study_dir: Path | str) -> list[str]:
         for run in exp.get('runs') or []:
             run_dir = str(run.get('run_dir') or run.get('id') or '')
             path = log_path(study_dir, run, run_dir)
-            if path is None or not path.is_file():
-                continue
             try:
+                if path is None or not path.is_file():
+                    continue
                 text = path.read_text(encoding='utf-8', errors='replace')
             except OSError:
                 continue

@@ -21,9 +21,9 @@ _EVENT = re.compile(r'\[(epoch|error|flow)\]\s*(.*)$')
 
 def _load_result(study_dir: Path, run_dir: str) -> dict[str, Any] | None:
     path = study_dir / RUNS_DIRNAME / run_dir / RESULT_NAME
-    if not path.is_file():
-        return None
     try:
+        if not path.is_file():
+            return None
         return load_result(path)
     except (OSError, TypeError, ValueError, ArtifactError):
         return None
@@ -75,9 +75,9 @@ def _note_from_log(path: Path | None, *, errors_only: bool = False) -> str:
 
     ``errors_only`` keeps the last ``[error]`` summary and ignores later epochs.
     """
-    if path is None or not path.is_file():
-        return '-'
     try:
+        if path is None or not path.is_file():
+            return '-'
         lines = path.read_text(encoding='utf-8', errors='replace').splitlines()
     except OSError:
         return '-'
