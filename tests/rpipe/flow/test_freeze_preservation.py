@@ -100,3 +100,41 @@ def test_native_run_one_preserves_real_cpu_success_on_freeze_refusal(tmp_path, s
         assert layout.result_path.read_bytes() == prior
         assert {p.relative_to(layout.assets_dir): p.read_bytes() for p in layout.assets_dir.rglob('*')
                 if p.is_file() and p.relative_to(layout.assets_dir).parts[0] != 'logs'} == assets
+
+
+@pytest.mark.parametrize('phase', [None, 'prepare', 'execute', 'collect', 'summarize', 'write', 'process'])
+@pytest.mark.parametrize('kind', [RuntimeError, ProvenanceChangedError])
+@pytest.mark.parametrize('prior', ['missing', 'failed', 'succeeded'])
+def test_existing_failure_preservation_decision_table(tmp_path, monkeypatch, phase, kind, prior):
+    """Runner entry -> each failure boundary -> unchanged legacy result policy, log and peer."""
+    write_config(tmp_path / 'study.yaml', {'flow': {'study_phases': phase is None}})
+    layout = artifact_layout(tmp_path, 'policy')
+    layout.assets_dir.mkdir(parents=True, exist_ok=True)
+    peer = layout.assets_dir / 'evidence.bin'
+    peer.write_bytes(b'peer evidence')
+    before = None
+    if prior == 'succeeded':
+        before = _success(layout)
+    elif prior == 'failed':
+        write_result(layout.result_path, {'status': 'failed', 'error': 'previous error'})
+        before = layout.result_path.read_bytes()
+    error = kind('original policy failure')
+    def boom(*args, **kwargs):
+        raise error
+    if phase is None:
+        monkeypatch.setattr('rpipe.flow.runner.check_frozen', boom)
+    else:
+        monkeypatch.setattr(import_module(f'rpipe.flow.{phase}'), 'run', boom)
+    with pytest.raises(kind) as caught:
+        FlowRunner([phase or 'execute']).run(FlowContext(tmp_path, layout, {}))
+    assert caught.value is error
+    preserve = prior == 'succeeded' and (phase == 'process' or
+                   (phase in (None, 'prepare') and kind is ProvenanceChangedError))
+    if preserve:
+        assert layout.result_path.read_bytes() == before
+    else:
+        result = load_result(layout.result_path)
+        assert result['status'] == 'failed' and 'original policy failure' in result['error']
+    assert peer.read_bytes() == b'peer evidence'
+    log = (layout.assets_dir / 'logs/run.log').read_text(encoding='utf-8')
+    assert 'original policy failure' in log and '[flow] succeeded' not in log

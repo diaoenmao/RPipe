@@ -97,6 +97,12 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 72. 第一类：现有保全决策等价提炼，先锁定基线
+
+第二类最终 head 41982bf 的 Unit38640332309 / Package38640332160 / Branch38640332279 全部实际矩阵/聚合通过，经 PR54 正常合入 dev 945c9925c8657b50a7f0906c5cd4fd00b238f1a1，实际 dev CI 独立验收。第三类实际 dev ea2210b 的 Unit38639077019 / Package38639076858 已全部实际通过，DEV_CHECKED 的 SHA256为 e6682607bb41db7ccd5ce6cf6c0298c8d0aef1194d9e2f188edc60e1b48d970e；PR52和Issue53正文已补确切验收链接并保持open，不重复原六 Issue 评论。
+
+第一类从945c992建立唯一分支 codex/failure-preservation-policy，在既有 test_freeze_preservation.py 先补42格合同：7个阶段位置（含外门）×普通/冻结异常×无旧结果/旧失败/旧成功。基线42 passed，符合此类是等价提炼而非新缺陷的预期；不制造应失败的假反例。保留原错误对象、日志、peer和结果字节；只有 process 或初始/prepare 冻结拒绝且旧结果成功才保全，普通执行失败仍写failed。
+
 ### 71. 第二类候选：安全读取复用与类型边界验证
 
 先红合同39d8a22，再补 seed 合同 d0d2fe2；生产仅改既有 readout/status.py 和 logs.py：私有 _read_optional 返回 available / missing / unreadable，日志沿现有依赖方向复用；删除分散的 result / note / event I/O try。activity 的现有可选读取协议与故障回归保留，不反向依赖 readout；严格 load_config / load_result 不变，未新增模块或持久化字段。
