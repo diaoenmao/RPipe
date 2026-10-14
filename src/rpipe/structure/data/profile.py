@@ -12,6 +12,7 @@ from typing import Any
 
 import yaml
 
+from rpipe.structure.artifact._atomic import atomic_write_text
 from rpipe.structure.data.config import DataConfig
 from rpipe.structure.artifact.shared import shared_paths
 from rpipe.structure.data.factory import DataFactory, vision_root
@@ -123,8 +124,7 @@ def profile_study(study_dir: Path | str) -> list[Path]:
             'splits': splits,
         }
         path = folder / STATS_NAME
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(yaml.safe_dump(body, sort_keys=False, allow_unicode=True), encoding='utf-8')
+        atomic_write_text(path, yaml.safe_dump(body, sort_keys=False, allow_unicode=True))
         written.append(path)
     return written
 

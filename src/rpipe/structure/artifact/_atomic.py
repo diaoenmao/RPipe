@@ -20,12 +20,18 @@ def atomic_replace(source: Path | str, target: Path | str) -> Path:
             time.sleep(0.05 * (attempt + 1))
 
 
-def atomic_write_text(path: Path | str, text: str, encoding: str = 'utf-8') -> Path:
+def atomic_write_text(path: Path | str, text: str, encoding: str = 'utf-8', *, newline: str | None = None) -> Path:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     tmp = target.with_name(f'{uuid.uuid4().hex}.tmp')
     try:
-        tmp.write_text(text, encoding=encoding)
+        try:
+            mode = target.stat().st_mode
+        except FileNotFoundError:
+            mode = None
+        tmp.write_text(text, encoding=encoding, newline=newline)
+        if mode is not None:
+            tmp.chmod(mode)
         return atomic_replace(tmp, target)
     finally:
         try:
