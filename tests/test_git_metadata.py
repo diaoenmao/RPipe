@@ -57,3 +57,46 @@ def test_git_fallback_unavailable_is_optional_metadata(tmp_path, monkeypatch, er
         raise error
     monkeypatch.setattr(records, 'subprocess', SimpleNamespace(run=unavailable, SubprocessError=subprocess.SubprocessError), raising=False)
     assert records._git_sha() is None
+
+
+@pytest.mark.parametrize('location', ['HEAD', 'refs/heads/main'])
+@pytest.mark.parametrize('payload', [b'\xff', b'not-a-sha', b'ref:'])
+def test_corrupt_direct_metadata_is_optional(tmp_path, monkeypatch, location, payload):
+    metadata = tmp_path / '.git'
+    (metadata / 'refs/heads').mkdir(parents=True)
+    (metadata / 'objects').mkdir()
+    if location != 'HEAD':
+        (metadata / 'HEAD').write_text('ref: refs/heads/main\n')
+    (metadata / location).write_bytes(payload)
+    monkeypatch.setattr(records, 'REPO', tmp_path)
+    assert records._git_sha() is None
+
+
+@pytest.mark.parametrize('location', ['HEAD', 'refs/heads/main'])
+@pytest.mark.parametrize('error', [PermissionError('metadata denied'), FileNotFoundError('metadata removed')])
+def test_direct_metadata_read_failure_is_optional(tmp_path, monkeypatch, location, error):
+    metadata = tmp_path / '.git'
+    (metadata / 'refs/heads').mkdir(parents=True)
+    leaf = metadata / location
+    leaf.write_text('a' * 40)
+    if location != 'HEAD':
+        (metadata / 'HEAD').write_text('ref: refs/heads/main\n')
+    original = type(leaf).read_text
+    def unavailable(path, *args, **kwargs):
+        if path == leaf:
+            raise error
+        return original(path, *args, **kwargs)
+    monkeypatch.setattr(type(leaf), 'read_text', unavailable)
+    monkeypatch.setattr(records, 'REPO', tmp_path)
+    assert records._git_sha() is None
+
+
+@pytest.mark.parametrize('sha', ['a' * 40, 'A' * 64])
+def test_detached_sha_formats_keep_file_fast_path(tmp_path, monkeypatch, sha):
+    (tmp_path / '.git').mkdir()
+    (tmp_path / '.git/HEAD').write_text(sha + '\n')
+    monkeypatch.setattr(records, 'REPO', tmp_path)
+    def forbidden(*args, **kwargs):
+        pytest.fail('valid direct commit metadata must keep the file fast path')
+    monkeypatch.setattr(records, 'subprocess', SimpleNamespace(run=forbidden, SubprocessError=subprocess.SubprocessError))
+    assert records._git_sha() == sha

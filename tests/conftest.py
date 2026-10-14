@@ -123,21 +123,21 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 def _git_sha() -> str | None:
-    metadata = REPO / '.git'
-    head = metadata / 'HEAD'
-    if head.is_file():
-        raw = head.read_text(encoding='utf-8').strip()
-        if not raw.startswith('ref:'):
-            return raw
-        ref = metadata / raw.split(' ', 1)[1].strip()
-        if ref.is_file():
-            return ref.read_text(encoding='utf-8').strip()
-    if not metadata.exists():
-        return None
     try:
+        metadata = REPO / '.git'
+        head = metadata / 'HEAD'
+        if head.is_file():
+            raw = head.read_text(encoding='utf-8').strip()
+            if raw.startswith('ref: '):
+                ref = metadata / raw[5:].strip()
+                raw = ref.read_text(encoding='utf-8').strip() if ref.is_file() else None
+            if raw is not None:
+                return raw if len(raw) in (40, 64) and all(c in '0123456789abcdefABCDEF' for c in raw) else None
+        if not metadata.exists():
+            return None
         return subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=REPO, capture_output=True,
                               text=True, check=True, timeout=5).stdout.strip() or None
-    except (OSError, subprocess.SubprocessError):
+    except (OSError, UnicodeError, subprocess.SubprocessError):
         return None
 
 

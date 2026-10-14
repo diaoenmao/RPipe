@@ -1049,6 +1049,6 @@ Fast / Core / Extended / Full 可继续作为项目已有计划名称，但不�
 
 `events.jsonl` 记录 `cost_class`、`result_type`、`result_detail`、`verdict`、`attempt` 和 `cost.actual_wall_time_ms`。预计耗时未逐条测量时为 `null`。
 
-本地测试 manifest 的 Git 提交应兼容松散 ref、packed refs、detached HEAD 和 worktree 的 .git 指针；非 Git 快照不向父目录查找仓库。Git 不可用、调用失败或查询超时时允许记录 null，不能伪造 SHA 或因此阻断测试。GITHUB_SHA 的显式 CI 来源继续优先；这个字段不能代替包含未提交测试字节的完整快照。
+本地测试 manifest 的 Git 提交应兼容松散 ref、packed refs、detached HEAD 和 worktree 的 .git 指针；非 Git 快照不向父目录查找仓库。Git 不可用、调用失败或查询超时时允许记录 null，不能伪造 SHA 或因此阻断测试。直接 HEAD / loose ref 读取被拒绝、文件消失、解码失败或格式损坏时同样记录 null；文件快速路径只接受 40 / 64 位十六进制 SHA 形状，不验证 Git 对象是否存在。GITHUB_SHA 的显式 CI 来源继续优先；这个字段不能代替包含未提交测试字节的完整快照。
 
 事件的 `started_at` 使用 pytest TestReport.start 转为 UTC，表示被记录阶段的开始：正常用例为 call，setup 失败为 setup；不代表整个 setup/call/teardown 的总起点。duration_ms 继续取该报告的 duration。B-058 修复前的历史事件在报告完成后生成该字段，分析时须区分旧语义，不能就地回填或混用时间线。manifest 的 started_at 仍为 session 开始时间。
