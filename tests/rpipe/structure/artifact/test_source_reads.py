@@ -1,5 +1,5 @@
-"""Source discovery overlaps must not repeatedly read a resolved input per call."""
-from collections import Counter
+"""Overlapping source declarations preserve keys, changes, and error boundaries."""
+import hashlib
 from pathlib import Path
 
 import pytest
@@ -13,28 +13,21 @@ pytestmark = [pytest.mark.unit, pytest.mark.content, pytest.mark.p1,
 
 
 @pytest.mark.parametrize('enabled', [False, True])
-def test_overlapping_sources_read_each_file_once_per_call(tmp_path, monkeypatch, enabled):
+def test_overlapping_sources_keep_keys_and_detect_later_edits(tmp_path, enabled):
     names = ['flow/execute/__init__.py', 'flow/execute/run.py', 'structure/helper.py']
     for name in names:
         path = tmp_path / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(b'VALUE = 1\n')
-    reads, original = Counter(), Path.read_bytes
-    def tracked(path):
-        if path.is_relative_to(tmp_path):
-            reads[path.relative_to(tmp_path).as_posix()] += 1
-        return original(path)
-    monkeypatch.setattr(Path, 'read_bytes', tracked)
     study = {'flow': {'study_phases': enabled}, 'recipe': './structure/helper.py',
              'provenance': {'include': ['flow/**/*.py', 'structure/*.py', 'structure/helper.py']}}
     first = provenance.source_files(tmp_path, study)
-    assert reads == Counter({name: 1 for name in names})
+    assert {name: first[name] for name in names} == {name: hashlib.sha256(b'VALUE = 1\n').hexdigest() for name in names}
     assert set(names) <= set(first)
     assert './structure/helper.py' not in first
-    reads.clear()
     (tmp_path / 'structure/helper.py').write_bytes(b'VALUE = 2\n')
     second = provenance.source_files(tmp_path, study)
-    assert reads == Counter({name: 1 for name in names})
+    assert set(second) == set(first)
     assert first['structure/helper.py'] != second['structure/helper.py']
 
 

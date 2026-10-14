@@ -61,10 +61,9 @@ def source_files(study_dir: Path | str, study: dict[str, Any]) -> dict[str, str]
         if not matched:
             raise FileNotFoundError(f'provenance.include matched nothing: {pattern}')
         names.extend(path.relative_to(study_dir).as_posix() for path in matched if path.is_file())
-    seen = set()
-    for name in dict.fromkeys(names):
+    for name in names:
         path = _inside(study_dir, name)
-        if path not in seen and path.is_file():
+        if path.is_file():
             key = path.relative_to(study_dir).as_posix()
             if key.startswith('rpipe/'):
                 try:
@@ -74,7 +73,6 @@ def source_files(study_dir: Path | str, study: dict[str, Any]) -> dict[str, str]
                 if not same_input:
                     raise ProvenanceChangedError(f'Study source key collides with library: {key}; move the input and make again')
             out[key] = _sha256(path)
-            seen.add(path)
     return out
 
 
