@@ -30,6 +30,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | 可选 Git 元数据（B-063，草案） | 文件读取/格式错误可令 pytest 配置失败或误记 SHA | 错误归为可选 null，保留快速路径和 CI 优先级；本机相关 108 项通过，未集成 | 第二节 2026-10-15 §50 |
 | 长文件名 staging（B-064，草案） | 文本/迁移临时名追加完整目标名，合法245字符名失败 | 两处短 UUID-only 名；4 项真实反例修复，相关187通过、5未选中，未集成 | 第二节 2026-10-15 §51 |
 | 单次来源去重（B-065，草案） | 重叠扫描/recipe/include令同文件反复读和hash | 小场景100→35次读取，mapping一致；相关192通过、5未选中，未集成 | 第二节 2026-10-15 §52 |
+| 冻结采集错误（B-067，草案） | 文件缺失/拒读或坏JSON异常可覆盖旧成功，非法mapping还会抛AttributeError | 读取时校验mapping，冻结入口转现有拒绝异常并保留cause；34项定向及214相邻检查通过，未集成 | 第二节 2026-10-15 §54 |
 | 来源键遮蔽（B-066，草案） | Study同键可覆盖库hash，真实库修改仍被freeze放行 | 保留库键域并验证物理身份，14边界和202相邻core通过，未集成 | 第二节 2026-10-15 §53 |
 | 原生恢复（B-021） | checkpoint 缺少 RNG 与数据位置，续训样本后缀和最终权重可偏离连续运行 | 在单进程、受支持 sampler / batch metric 合同下保存并恢复完整训练状态；不匹配配置拒绝，其他路径明确提示部分恢复 | 第二节 2026-10-12 §6 |
 | epoch 停止（B-024） | 累积尾 batch 可导致多跑 epoch；整轮无 optimizer 更新时可能无限循环 | epoch 按声明轮数停止，已完成恢复不重训；整轮无法更新时报错，原尾 batch 丢弃语义保留 | 第二节 2026-10-12 §7 |
@@ -94,6 +95,46 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-15
+
+### 54. 暂停性能调查与冻结采集错误保全（B-067，草案）
+
+按最新人类指示，暂停所有速度、耗时、480 秒插桩、profiler、缓存与资源竞争测量。本轮只验证代码正确性；GPU 争用保留为未证实假设，不据此归因或新增全局 GPU 互斥。旧证据保留，后续速度验证另行恢复。未向下游发送消息或干预实验。
+
+#### （一）改前与改后
+
+| **条件** | **80fdce1 / 首候选** | **最终候选** |
+| --- | --- | --- |
+| 冻结 include 文件消失、读取被拒绝、来源 JSON 损坏 | 普通 FileNotFoundError / PermissionError / JSONDecodeError 越过冻结拒绝合同；实际 Runner 把旧成功改写为 failed | check_frozen 将 OSError / ValueError 转为现有 ProvenanceChangedError，保留 cause；CLI 拒绝，不执行计算，旧成功原字节保全 |
+| 合法 JSON 但根、files 或 plan 为列表 | 首候选仍抛 AttributeError，可再次绕过保全 | load_provenance 验证 mapping；结构错误以 ValueError 进入同一冻结拒绝路径 |
+| make / freeze 关闭 / 非预期编程异常 | 原输入错误、关闭时不查来源、RuntimeError 直接暴露 | 保留原合同；不改 make 接受行为，不捕获任意异常，不重写旧来源 |
+| Study 扩展关闭后的 prepare | 同类采集失败仍可覆盖旧成功 | 真实 prepare 冻结门拒绝；运行时和 System 在测试中隔离，不构造 Data/Model |
+
+只改 provenance.py 的 load_provenance 与 check_frozen；已核对 source_files、write_provenance、provenance_changes、CLI、Runner、prepare、Study process 及 summarize 调用。磁盘根必须是 mapping，files/plan 缺省或 null 沿用旧空映射语义，其余须为 mapping；不改变持久化格式、digest、Run ID、Runner 保全条件或共享输入。异常栈保留原始 cause，非预期 RuntimeError 不被归类为来源变更。
+
+#### （二）可复现证据与正确性检查
+
+全部使用隔离合成库/Study 与独立 basetemp，不用正式输入、模型、Torch 或 GPU；prepare 仅对运行时/System 做轻量替身，冻结门和失败定稿使用真实实现。pytest 默认报告时间保留在原文件，本节不提取速度指标或比较耗时。
+
+| **证据** | **正确性结果** |
+| --- | --- |
+| before.zip / source-index.json | 实施前 80fdce1 源码与最初 19 项测试原字节及 SHA-256 |
+| red.xml / red.log / red-results.json | 15 failed /4 passed；真实旧成功覆盖为 failed 的三类反例均保留 |
+| green.xml / boundary.xml | 首候选19通过；追加关闭扩展的真实prepare后21通过，仅为当时范围 |
+| first-candidate.zip / candidate-index.json / shape-red.xml | 追加合法JSON非法结构后7 failed /21 passed；没有用早期绿灯覆盖缺口 |
+| final.xml | 34 passed：B-067 的12单元、18真实门/Runner/prepare，加B-066的4个原生门控制 |
+| final-core.xml | 214 passed /5 deselected；artifact、Git来源及真实manifest入口的相邻unit content检查；未选中不计通过 |
+| final-results.json | 14份B-067实际落盘结果：9份旧成功保留相同字节，5份无旧成功的Runner写failed；CLI无旧结果时不新增结果 |
+| CHECKED.json / final-source.zip | 原字节、ZIP CRC、各阶段结果/日志hash、最终生产与测试字节、结果合同核对通过 |
+
+临时证据均在 .tmp/phase067，不随 Git clone 提供；便携回归为 tests/rpipe/structure/artifact/test_freeze_capture.py 与 tests/rpipe/flow/test_capture_refusal.py。没有正式 Study 受影响的已证实事故，不迁移数据、不重签旧 provenance、不重训或修改科学预算。
+
+#### （三）最终提交、验收边界与待合入清单
+
+B-066 的工作提交 80fdce1773fc4510548912661acab8ea058cbc8c：[Unit](https://github.com/DreamSoul-AI/RPipe/actions/runs/38611789823)、[Package](https://github.com/DreamSoul-AI/RPipe/actions/runs/38611789983)、[Branch](https://github.com/DreamSoul-AI/RPipe/actions/runs/38611789914)及实际矩阵最终均成功。早先聚合绿但Ubuntu3.10实际子任务仍IN_PROGRESS时，执行清单正确拒绝；first-check-pr-status.log保留，未靠聚合绿灯签收。最终补报的job116016715215和PR状态快照保存到本轮 prior-matrix-final.json / prior-head-ci.json。因本轮B-067已有工作区修改，没有把旧清单在脏工作区运行并伪报通过；最终提交另核对全部证据与其自身CI。
+
+合入前依次检查：生产差异仅两处边界处理；红例/候选/最终快照与hash可核验；最终本机行为门、实际落盘结果与原生CPU流程/安装矩阵全部成功；绑定最新工作提交核对Unit tests / Build package / Branch flow及所有子任务；PR仍Draft OPEN且无auto-merge；dev9324014、main7a15c46不变。PR #46按人类要求保持草案，不执行合并或发布。
+
+只读复查：开放Issues仍为36/37/38/41，无新增；dayan仍在自己的研究执行，量化正补本项目占用守卫识别范围，output-space正在FP32质量检查，这些反馈未提供新的RPipe根因反例。不将下游自有守卫或研究结果登记为库缺陷。
 
 ### 53. 来源键域遮蔽与冻结拒绝保全（B-066，草案）
 

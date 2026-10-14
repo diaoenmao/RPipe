@@ -390,6 +390,10 @@ make 在 Study 根写 `provenance.json`（与 `index.json` 同级，不进 Git�
 
 单次来源采集先按首次出现去重相同声明，同一个解析后 Study 文件只读取/哈希一次；各候选仍须通过 Study 内路径边界验证。去重集合仅存活于当前调用，不复用上一次的路径清单或 hash，后续每次冻结检查继续重新发现并读取文件，检测新增、修改、删除。
 
+来源JSON根必须是mapping，已有files/plan若非null须为mapping；缺省/null映射沿用旧空清单语义。格式不合法时load_provenance抛ValueError，不把磁盘结构错误留给调用方的AttributeError。
+
+freeze开启时，证据读取失败（含include匹配文件消失、权限拒绝）或来源JSON解析失败均以现有ProvenanceChangedError拒绝，原始异常保留在cause与日志中；初始冻结拒绝保留旧成功结果。make仍报告原输入/解析错误，freeze关闭不执行该检查，不将任意编程错误归为来源变更。
+
 `launch` 开始前核对一次。`study.yaml` 写 `freeze: true` 时，`files` 或 `plan` 有任何差异，或来源清单缺失，就退出 2，不启动 Run；prepare 也做同样核对（§5 第 4.1 步），防止直接 `run-one` 绕过。Runner 与 Study process 的检查时机见 §14.0。未启用 freeze 时，launch 对已有清单的变化打印 `provenance: N changed`，照常运行；没有清单则不作该提示。`environment`、`git` 和 `created_at` 只记录，不参与 freeze 比较，不能用 freeze 证明异机环境一致。
 
 重新 make 会覆盖当前 `provenance.json`，接受当前来源；它不是不可变源码快照，也不自动创建新 version 或清理旧 Run。独立实测须先使用新 `version` / Run ID，按 Study 计划保存旧证据并重新准备、make 和执行适用的前置门，不能仅重写清单后把旧成功结果当成新基线。
