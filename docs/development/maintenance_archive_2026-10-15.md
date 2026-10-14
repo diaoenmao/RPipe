@@ -37,3 +37,7 @@
 ## 四、接续入口
 
 工程事实见[record.md](record.md) §43–58，原始失败与限定范围不删；当前缺陷看[bugs.md](bugs.md)，流程看[cicd.md](cicd.md)，本地测试看[testing.md](testing.md)。临时归档输入、源码/结果hash与执行清单在.tmp/archive-20261015及此前phase目录，不随Git clone提供。
+
+## 五、归档后的集成状态（2026-10-15 补记）
+
+上文保留合入前快照；PR #46 现已按最终授权 normal merge 到 dev `5ee1214b7ce0dc28b65139ac7b3f9ca16eb8b2ac`，最终工作 head `90b7d75` 的全部必需检查与实际矩阵通过。实际 dev CI 和四个 Issue 的逐项复验见 [record §59–60](record.md#59-pr-46-实际合入-dev-与归档后状态)，后续 PR / CI 当前状态不由上文历史“未完成”推断。main、历史分支与数据保留，性能工作仍暂停。

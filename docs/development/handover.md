@@ -1,5 +1,11 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-15 PR #46 已合 dev，四个 Issue 正确性接续
+
+PR #46 已 normal merge，实际 dev `5ee1214b7ce0dc28b65139ac7b3f9ca16eb8b2ac`；最终 head `90b7d75` 三门及实际矩阵全通过，实际 dev 的 Unit38622291540 / Package38622291406 全部实际矩阵和聚合门通过，见 [record §59–60](record.md#59-pr-46-实际合入-dev-与归档后状态)。不要重复合并 PR #46 或把下方历史草案限制当作当前指令。
+
+后续分支 codex/open-issue-correctness 从该 dev 建立，四个 Issue 已逐项补回归，本机 75 项通过；没有新增生产改动或新的根因反例。合入后仍需核对该 PR 最新 head 和实际 dev CI。#36 / #37 / #38 / #41 不自动关闭，main 不变，两个工作分支和全部数据保留。只做正确性，不测速、改性能、查超时或干预下游实验；B-065 优化已撤回，不恢复。
+
 ## 2026-10-15 归档、dev集成与四个Issue正确性接续
 
 最终授权以本节为准：PR #46可转ready并在最终head全部必需检查/实际矩阵通过后合dev；main不改，不强推，不删除任何分支/数据，不发布或花钱。此前“保持草案/不合dev”为历史阶段要求。先核对[PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46)当前state/mergeCommit和origin/dev；若已经合入，直接核对实际dev CI，不重复派发合并。
