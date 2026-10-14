@@ -89,6 +89,16 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-14
 
+### 42. 失败终端输出回归与反馈归属边界
+
+再次核对实际 dev 509a089 的四环境测试及两平台包检查，均为 success，已将 §41 的运行前说明替换为最终工作提交和实际集成提交的完整验收证据，包括最后完成的 Windows/Python 3.10 流程门；没有重新运行旧实验冒充新验收。
+
+#41 原有四格真实 CLI 回归已经验证默认/关闭重试的失败/成功、调用次数、最终错误、日志、jobs 字节和空计划跳过。本轮只扩展原失败用例的终端断言：共享 console 捕获 stdout/stderr 必须包含原始 RuntimeError；关闭重试时不出现二次 FileExistsError，默认重试时该二次错误仍可见。复用现有用例，不增加独立进程或修改生产代码。实际调用链为 CLI → launch_jobs → run-one → Logger.exception，同一错误还须按既有断言保存在 result 与 run.log。
+
+[反馈指南](feedback.md#四归属核验示例)补充三类边界：#38 原子写入清理、#41 CLI 重试入口与业务重复读取的区别、外部 pytest 批次超时的证据要求。量化 480 秒事件不是 #38；业务缓存的重复读取 KeyError 也不是 #41 的上游根因。未为未证实问题新建 B 编号或公开 Issue，未修改下游缓存/调度/监视器。
+
+逐项复查开放 #36 / #37 / #38 / #41 与评论，均已有 dev 修复；src / tests 搜索 TODO / FIXME / XXX 无标记。brainstorm 的尝试历史等候选仍是建议，未自动纳入实施。当前没有新的可本地复现上游缺陷；本轮交付为终端可观察性回归和记录缺口修补。本机性能校准继续，远端必需 CI 负责当前提交的实际执行，未完成的检查不计通过。
+
 ### 41. 量化 480 秒超时归属核验与 #38 写入边界补测
 
 本轮只读核对量化项目固定 v0.3.1 模板、原始资源记录、逐项 events 和后续两批 JUnit XML。原 CPU pytest 批次在 480.087342 s 被下游外部资源监视器终止，退出 15；1131 个已完成用例均为量化项目，均 passed，记录耗时合计 469.527 s。当时尚未执行到 tests/rpipe，最后两项仍在完成量化 trace 的计算/采集用例（3.037 s、2.452 s）。这是整批预算耗尽的证据，不能据此归因为 RPipe 调度卡死，也不能把 1131 项局部通过写成完整回归通过。
@@ -101,7 +111,9 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 #41 的最终工作提交 8269bff、集成 8c15cd8 及 Windows/Python 3.13 证据已由 [PR #43](https://github.com/DreamSoul-AI/RPipe/pull/43) 补齐（[§40](#40-原生-launch-显式关闭失败重试41验证通过)），PR #43 实际 dev a1e5b797ca6733dd73cf458f796f85c84d3d76ac 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38560337078) / [Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38560337260) 均通过。未重写原始 v0.3.1 下游报告，也未将其标为新 dev 验收。
 
-验证：本机存在持续的下游性能校准，不并行执行 pytest；新增用例的实际执行及跨平台必需门由本工作 PR 的远端 CI 核对，未完成前不计通过。未修改 main、版本、数据、Study 预算或下游 vendor，未关闭 Issue。
+[PR #44](https://github.com/DreamSoul-AI/RPipe/pull/44) 最终工作提交 0b3ce37d286c484623791190dece9f7b28469358 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38562868705)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38562868844) 和 [Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38562868704) 全部成功，已合入 dev 509a0894c68076571f7d75cc7747707465092026；实际集成提交的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38563652457) / [Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38563651571) 也全部成功。四个环境 CPU integration 各 74 passed / 2 skipped，Windows core 各 464 passed / 2 skipped，Ubuntu core 各 463 passed / 3 skipped；HF 可选依赖和平台专用 skip 不计通过。最后的实际 dev Windows/Python 3.10 流程门已核对为 success，74 passed / 2 skipped，耗时 137.10 s；不是仍待运行。两平台 wheel/sdist 独立安装验收成功。
+
+旧工作提交 296aa59 的两个工作流在静态检查发现测试模块重名、改为唯一名称后取消，保留原记录，不计作通过；最终 0b3ce37 及实际 dev 509a089 的所有必需门均重新执行。核对最终工作树与集成树一致后，仅清理本任务已合并分支。该轮本机没有并行执行 pytest 或干预下游性能校准；未修改 main、版本、数据、Study 预算或下游 vendor，未关闭 Issue。
 
 ### 40. 原生 launch 显式关闭失败重试（#41，验证通过）
 

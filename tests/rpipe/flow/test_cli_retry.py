@@ -55,6 +55,9 @@ def test_native_launch_retry_policy_preserves_attempts_and_failure(tmp_path, no_
     if fail:
         assert ('ORIGINAL_FAILURE' if no_retry else 'FileExistsError') in body['error']
         assert 'ORIGINAL_FAILURE' in (run / 'assets/logs/run.log').read_text(encoding='utf-8')
+        output = result.stdout + result.stderr
+        assert b'RuntimeError: ORIGINAL_FAILURE' in output
+        assert (b'FileExistsError' in output) == (not no_retry)
     assert (b'launch: retry' in result.stdout) == (attempts == 2)
     assert jobs_path.read_bytes() == jobs_before
     if not fail:
