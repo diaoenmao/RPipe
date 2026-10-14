@@ -1,5 +1,13 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-15 B-070 指标类型审计与收尾
+
+新用户要求审计readout/_atomic/launch参数与make/run-one边界；基于已验收dev b2390b0确认[B-070 / Issue50](https://github.com/DreamSoul-AI/RPipe/issues/50)，先开Issue、提交红色回归f15e067（10项7 failed/3 passed），记录设计3a198ff，再做一行修复0b51ee6：取消status提前dict强转，复用已有metric cell的非object占位，保留状态/模式/输入字节。候选与相邻91项通过，见[record §63](record.md#63-相邻正确性审计与-status-指标类型回退b-070--50)。
+
+当前唯一新分支codex/status-metric-shape；先核对该分支PR最新head/state/mergeCommit，若已合dev则接续实际集成CI，不重复修复/新建分支。最终head的三门及所有实际矩阵、实际dev的两门分别验收；没有新验证前不拿旧B-069绿灯替代。原三个分支和全部数据保留，main7a15c46未变，六个Issue均不自动关闭，等Enmao决定main。
+
+B-069/PR49已在dev b2390b0完成全部实际CI（含此前未完成包门的拒绝与最终全绿保全），下方“待验收”为历史阶段；B-065性能优化仍撤回。不测速、不改性能、不跑GPU或查480s，不覆盖下游vendor/实验，原科学结果不重签。
+
 ## 2026-10-15 四个 Issue 评论与 B-069 正确性接续
 
 四个旧 Issue 已按新授权各补一条真实修复提交、测试位置与 dev 验收评论，保持 open，链接见 [record §61](record.md#61-四个开放-issue-补齐修复与验收评论)。新缺陷 [#48 / B-069](https://github.com/DreamSoul-AI/RPipe/issues/48) 来自相邻 readout I/O 查询：红色测试提交31d1511为5 failed /8 passed，最小候选与相邻81项通过，实际PR/集成CI必须另核对。

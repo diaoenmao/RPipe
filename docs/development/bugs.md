@@ -6,19 +6,13 @@
 
 ## 开放
 
-### B-070：status 提前强转 metrics，绕过已有单元格类型回退
+B-070（[#50](https://github.com/DreamSoul-AI/RPipe/issues/50)）已在当前工作分支以一行修复并通过本机91项回归；原始条目保留在[修复前记录](https://github.com/DreamSoul-AI/RPipe/blob/3a198ff4e04d25999a895b131f0c01ab964b5e0a/docs/development/bugs.md)和[record §63](record.md)。实际dev合入身份与CI须从该工作分支的PR核对，不能把本机通过当已发布。Issue50保持open。
 
-- 状态：open；在实际 dev b2390b0 上真实 public write_result→list_runs/CLI 复现，[Issue #50](https://github.com/DreamSoul-AI/RPipe/issues/50) 已先创建，随后失败回归提交 f15e067；生产代码仍未修改。
-- 期望 / 实际：非 object 指标沿用 _metric_cell 的已有 '-' 回退、保留 Run 状态和正常 peer，不改输入。实际 metrics=[1] /标量/字符串使整张列表异常，CLI退出2；列表对还能被强转为accuracy=0.9000，误展示未按object记录的值。
-- 来源与范围：list_runs 是 _metric_cell 的唯一调用方，其 dict(...) 提前执行使非mapping guard不可达。公共 validate_result/write_result 仅要求成功记录含metrics键，接受上述值；此次不加强写入合同或重新签名旧结果。
-- 证据：新10项回归7 failed /3 passed，覆盖None/空mapping/有效mapping控制、非法list/scalar、列表对、原生eval过滤和输入逐字节保全。.tmp/audit070/REPRO.json、before.zip/BEFORE.json、red.xml/red.log保留原反例，不随clone。
-- 最小方案：取消调用方的dict强转，复用既有_metric_cell mapping/numeric guard；不新增schema/parser、异常吞错或格式迁移。见record §63。
-
-B-069（[#48](https://github.com/DreamSoul-AI/RPipe/issues/48)）已在当前工作分支修复并通过本机 81 项回归，按本文件规则将原始条目转入历史；详细期望、实际、红例与最小方案见 [record §62](record.md#62-readout-存在性查询与内容读取的错误边界b-069--48) 和 [修复前条目](https://github.com/DreamSoul-AI/RPipe/blob/1046452/docs/development/bugs.md)。实际 dev 集成尚须核对 [PR #49](https://github.com/DreamSoul-AI/RPipe/pull/49) 的最终 head、mergeCommit 和对应 CI，不以本机通过代替；Issue 保持 open。除上列 B-070 外，当前工作代码暂无缺少修复的已确认软件条目。
+B-069（[#48](https://github.com/DreamSoul-AI/RPipe/issues/48)）已经由[PR #49](https://github.com/DreamSoul-AI/RPipe/pull/49)合入dev b2390b0，最终head与实际dev Unit38629909667 / Package38629909697全部实际矩阵和聚合通过；来源/红例和包门未完成拒绝保留于record §62–63与Issue正文。该条不再属于待修缺陷，Issue仍保持open。
 
 B-056～B-064、B-066～B-068 已通过 [PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46) 合入 dev `5ee1214b7ce0dc28b65139ac7b3f9ca16eb8b2ac`；原始期望、实际、来源和失败证据保留在 [合入前条目快照](https://github.com/DreamSoul-AI/RPipe/blob/90b7d75323d266c4d272f786c28f4c00959d0432/docs/development/bugs.md) 与 [record §43–60](record.md)。B-065 性能去重已经撤回，不算本轮修复。
 
-GitHub #36 / #37 / #38 / #41 仍保持 open，不自动关闭。它们在 dev 已有修复，本轮逐项补边界与复验，没有新根因反例；已发布 main/v0.3.1 尚不含这些修复。当前 CPU 验证不代表 GPU 或全部 Study 的数值验收。
+GitHub #36 / #37 / #38 / #41 / #48 / #50 仍保持 open，不自动关闭。它们在 dev 已有修复，本轮逐项补边界与复验，没有新根因反例；已发布 main/v0.3.1 尚不含这些修复。当前 CPU 验证不代表 GPU 或全部 Study 的数值验收。
 
 ## 暂缓（不进入正确性修复队列）
 
