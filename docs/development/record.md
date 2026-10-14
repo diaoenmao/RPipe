@@ -89,6 +89,30 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-14
 
+### 43. 最小启动 / 缓存成本诊断与共享锁预算边界（分步记录）
+
+第一步已完成工程诊断：[独立 Windows CPU 任务](https://github.com/DreamSoul-AI/RPipe/actions/runs/38568650365)，诊断提交 f3885c958b6dde7f4a983f1ece3d4244e1c886f4，生产 src 与 dev 9324014985680a0d186863cd135faa53a2e7bcbf 无差异。Windows Server 2025 / Python 3.13、AMD EPYC 7763、4 个逻辑 CPU；torch 2.14.1、NumPy 2.5.4、PyYAML 6.0.3。CUDA_VISIBLE_DEVICES 为空，OMP / MKL / OpenBLAS 均 1 线程；无 GPU、外部数据、预训练权重或训练。原量化设备为另一硬件和 torch 2.11，不能直接速度校准或推断旧现场根因。
+
+三对新进程采用控制/RPipe、RPipe/控制、控制/RPipe 顺序；“冷”只表示新 Python 进程/尚未导入的模块，不清空 OS 页缓存。每个 RPipe 进程复用原生 main / make / run-one，两个独立 Toy/Stub、module=None 的完整 Flow 分别使用新的临时 Study / version / Run ID，六个 Run 均 succeeded；没有用重复覆盖同一个 Run 冒充热启动。所有计时均包含 -X importtime 观测成本，数据只作诊断，无速度质量门。
+
+| **部件** | **三次或逐调用范围** | **口径与观察** |
+| --- | --- | --- |
+| CLI 模块首次导入 | 0.1213–0.2575 s | 进程 CPU 0.1250–0.2344 s；不包含后续 make |
+| 同进程 help | 2.55–4.75 ms，9 次 | 只测已经导入后的参数入口，不与包含 Flow 的整个新进程作等量速度排名 |
+| 同进程首次 / 再次 make | 2.8404–3.6010 s / 0.1028–0.1089 s | 两次都是新 Study，准备量相同；首次进程 CPU 2.7500–3.0938 s。capture_environment 按合同导入 torch / torchvision；首个 importtime 样本中 torch 累计 1.8723 s，不能将嵌套累计时间相加 |
+| 首次 / 再次 run-one | 48.32–68.00 ms / 42.54–43.23 ms | 准备环境已在 make 导入，完整六阶段的空模型合同执行，不是训练速度 |
+| 2 KiB 原子替换，50 次 | 整批 22.79–25.32 ms | 约每次 0.456–0.506 ms，批次前后句柄均 165 |
+| 无竞争共享锁，50 次 | 整批 17.30–21.24 ms | 约每次 0.346–0.425 ms，句柄均 165；不代表竞争等待成本 |
+| 64 KiB prepared_resource 初建 / 复用 | 3.54–3.88 ms / 1.60–4.69 ms | 复用包含完整文件 hash 校验；4.69 ms 反例保留，不声称每次都更快 |
+
+空 Python 控制进程 0.0954–0.1036 s；RPipe 整个诊断进程 3.8444–4.8088 s，后者包含两次 make、两次完整 Flow 和所有 I/O，二者工作量不同，不能把差值叫作纯启动开销。首次 make 后句柄从 118 增至 165，此后 help、Flow、写入、加锁和缓存复用没有继续增长；有限样本不证明所有路径无泄漏。Windows process_time 约 15.625 ms 粒度，短项显示 0 不等于没有 CPU 成本；它不含 git 子进程。整机忙率包含本探针，短项有 null / 100% 粗采样，不作为外部负载归因。
+
+结论：本路径可定位的首轮成本主要出现在环境来源捕获触发的真实依赖导入；无竞争文件写入和锁在本样本为毫秒级。未发现分钟级卡住或持续句柄增长。原 480 秒批次最后仍在完成量化用例，缺少当时调用栈、CPU 及进程身份时间序列；本次不同设备的最小诊断不能还原外部负载，也不能宣称已查明该批次变慢原因。本机下游全程未暂停、抢占或执行竞争基准。
+
+原始样本及选取的 importtime 行在上述 Actions 日志；完整本机下载和提取位于 .tmp/cache-lock-budget/startup-baseline.log、STARTUP_BASELINE.json（不随 clone），原始日志 SHA256 c54381bc90943ec088a05019e8ed0db4fe907aaaad62f13b65edc166af61770c。该次运行完整 importtime 树只在 runner 临时文件中，未声称已永久归档；复跑入口 tests/_data/startup_diagnostic.py 复用标准接口并拒绝覆盖已有工作区。临时分支工作流会在最终草案差异中移除。
+
+下一步只做已识别薄弱边界的定向回归：并发原子写、失败 staging 后重新准备、Windows Unicode 路径上的真实共享拒绝，以及共享锁非有限预算的有界反例。此处是执行前范围，不计作已通过；通过 / 失败证据另行补记，再决定最小实现。
+
 ### 42. 失败终端输出回归与反馈归属边界
 
 再次核对实际 dev 509a089 的四环境测试及两平台包检查，均为 success，已将 §41 的运行前说明替换为最终工作提交和实际集成提交的完整验收证据，包括最后完成的 Windows/Python 3.10 流程门；没有重新运行旧实验冒充新验收。

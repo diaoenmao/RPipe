@@ -155,7 +155,7 @@ def main():
             (root / 'result.json').write_text(json.dumps(report, indent=2, allow_nan=False), encoding='utf-8')
             print(json.dumps(sample, allow_nan=False), flush=True)
             assert result.returncode == 0, sample['failure']
-    print(json.dumps({'completed': True, 'report': str(root / 'result.json')}))
+    print(json.dumps({'completed': True, 'report': str(root / 'result.json'), 'evidence': report}, allow_nan=False))
 
 
 if __name__ == '__main__':
