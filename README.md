@@ -2,7 +2,7 @@
 
 RPipe（Research Pipeline）是研究项目的代码架构与执行模板，本仓库的参考实现使用 Python 包名 `rpipe`。用 YAML 声明实验因素与 seed，展开并运行实验，再将配置、结果、日志、checkpoint 和跨 seed 汇总保存到同一 Study 中。
 
-当前模板版本为 **0.3.1（阶段版）**，提供项目入口参考、原生 PyTorch / Hugging Face Trainer 通路、checkpoint/resume、运行日志与跨 seed 聚合。本次小版本包含 B-030 报告来源修复、源码模板接入与研究/反馈规范，以及保留原基线的发布后实验记录；完整差异、迁移与验证边界见 [v0.3.1 发布报告](docs/releases/v0.3.1.md)。前一版本见 [v0.3.0](docs/releases/v0.3.0.md)。
+当前模板版本为 **0.4.0（发布准备，尚未打标签）**，提供源码模板接入、跨 Study 不可变输入共享、原生 PyTorch / Hugging Face Trainer 通路、checkpoint/resume、运行日志与跨 seed 汇总。项目级输入固定在 `shared/data/`、`shared/model/`，Run 状态独立；完整目录合同见 [layout.md](docs/code/layout.md)，迁移与正确性修复见 [v0.4.0 发布材料](docs/releases/v0.4.0.md)。main / tag / GitHub Release 的发布由维护者另行执行。
 
 其他项目接入从[在其他项目中使用 RPipe](#在其他项目中使用-rpipe)开始：将固定版本的源码复制到项目的 `src/rpipe/`，按 structure / flow 两柱组织自己的代码，在自己的仓库声明和运行 Study。
 
@@ -60,12 +60,12 @@ Agent 的文档导航与通用工作约定见 [AGENTS.md](AGENTS.md)。
 
 ### 1. 将固定版本源码复制到 src
 
-当前固定模板标签为 `v0.3.1`。先取得标签对应的 checkout 并记录其确切提交，以下命令在下游仓库根执行；已有该版本 checkout 时可直接使用，不必重新 clone。历史实验使用的 v0.3.0 / `804b3823` 不因此改写：
+本轮准备的固定模板版本为 `v0.4.0`，该标签尚未建立；以下示例须等维护者完成发布后再执行，发布前继续使用已发布的 `v0.3.1` 固定来源，不把 dev 当作发布标签。先取得目标标签对应的 checkout 并记录其确切提交，以下命令在下游仓库根执行；已有该版本 checkout 时可直接使用，不必重新 clone。历史实验来源不因此改写：
 
 ```bash
-git clone --branch v0.3.1 https://github.com/DreamSoul-AI/RPipe.git .tmp/rpipe-v0.3.1
-git -C .tmp/rpipe-v0.3.1 rev-parse HEAD
-git -C .tmp/rpipe-v0.3.1 rev-parse "v0.3.1^{commit}"
+git clone --branch v0.4.0 https://github.com/DreamSoul-AI/RPipe.git .tmp/rpipe-v0.4.0
+git -C .tmp/rpipe-v0.4.0 rev-parse HEAD
+git -C .tmp/rpipe-v0.4.0 rev-parse "v0.4.0^{commit}"
 ```
 
 确认 HEAD 与标签解析出的提交一致，并将完整 SHA 写入来源记录后，复制完整 `src/rpipe/` 包和许可证。Windows PowerShell 示例：
@@ -73,8 +73,8 @@ git -C .tmp/rpipe-v0.3.1 rev-parse "v0.3.1^{commit}"
 ```powershell
 if (Test-Path -LiteralPath src/rpipe) { throw 'src/rpipe already exists; compare before updating' }
 New-Item -ItemType Directory -Force src | Out-Null
-Copy-Item -LiteralPath .tmp/rpipe-v0.3.1/src/rpipe -Destination src -Recurse
-Copy-Item -LiteralPath .tmp/rpipe-v0.3.1/LICENSE.md -Destination src/rpipe/LICENSE.md
+Copy-Item -LiteralPath .tmp/rpipe-v0.4.0/src/rpipe -Destination src -Recurse
+Copy-Item -LiteralPath .tmp/rpipe-v0.4.0/LICENSE.md -Destination src/rpipe/LICENSE.md
 ```
 
 不要覆盖已有副本：升级时先比较上游差异和本地修改，再迁移及回归。只复制受 Git 管理的源码，不带 `__pycache__`、本地缓存或运行产物。保持包名 `rpipe` 与内部导入；记录 `src/rpipe/ORIGIN`，至少包含上游仓库、确切 commit、release 和本地差异，不能只记 `main` 或包版本号。

@@ -10,17 +10,27 @@
 
 库内两柱：`structure/`、`flow/`。artifact 在 `structure/artifact/`，make 在 `structure/make/`。cli 在 `flow/cli.py`。Study 在包外 `studies/`。
 
-| **仓库入口** | **用途与交付边界** |
-| --- | --- |
-| `src/rpipe/`、`pyproject.toml` | 基础源码模板、参考 CLI、依赖与包构建声明 |
-| `docs/code/` | 设计：concept、layout、code，以及 structure / flow 分册 |
-| `docs/development/` | 研究与反馈要求：research、feedback；开发与验证：brainstorm、bugs、testing、cicd、record、handover |
-| `docs/releases/` | 各正式版本的完整差异、迁移、验证与未覆盖范围 |
-| `studies/` | [Study 导航](../../studies/README.md)、声明、复跑入口与正式报告；通用操作在 [README 的 Study 指南](../../README.md#study-使用指南)，本地产物另按第四节管理 |
-| `tests/` | 统一测试入口、源码镜像测试与安装后 CLI 验收，见 [测试入口](../../tests/README.md) |
-| `.github/workflows/` | CPU 测试和 wheel / sdist 构建、安装验收 |
-| `asset/` | README 保留的 2026-10-04 MNIST / CIFAR10 实例曲线；参考图与来源保存在 [历史图归档](../../studies/main_exp/docs/reference/README.md)，不作为新 Run 的资产根 |
-| `.tmp/` | 本机运行环境、诊断与临时验证输出，不随 Git clone 提供 |
+### 项目顶层目录合同（v0.4.0）
+
+`<project>` 是项目仓库根；`<study>` 是 Study 名，`<run_id>` 是配置内容导出的身份。以下表格规定位置、内容和写入责任，不只是目录示例。**以后改默认路径必须先改本文合同，再改实现与路径回归**；同一 PR 明确兼容与迁移方案，不因本机旧缓存外观改变约定。默认运行不得另建根级 data / model / output / res / tmp 保存研究产物。
+
+| **固定位置** | **内容与边界** | **写入方** |
+| --- | --- | --- |
+| `<project>/.git/` | Git 元数据；worktree 可为 .git 文件，源码归档可没有它；不存研究产物 | Git |
+| `<project>/.github/` | workflows 与仓库协作配置 | 维护者；Actions 执行配置而不将 Run 写入此处 |
+| `<project>/.tmp/` | 隔离环境、缓存、临时脚本、测试报告与诊断；不随 clone 提供 | Agent、测试入口、开发工具 |
+| `<project>/asset/` | README 使用的已登记静态实例图；不作为新 Study 图目录 | 维护者按已有来源维护 |
+| `<project>/docs/` | code 设计、development 记录、releases 发布材料、research 通用方案；具体 Study 数字和结论不放这里 | 维护者 / Agent |
+| `<project>/shared/` | **供 studies 下各 Study 共用的不可变输入**；不得存训练中的模型对象或 Run 可变状态 | 受锁保护的 data / model 准备入口、显式迁移命令 |
+| `<project>/shared/data/` | 原始数据、按格式和版本区分的可复用派生输入；不共享可变 Dataset / sampler | DataFactory / 注册 data builder、prepare_shared_data、显式迁移 |
+| `<project>/shared/model/` | 固定 revision 的预训练权重 / tokenizer 输入；不放训练 checkpoint | ModelFactory / 注册 model builder、显式迁移 |
+| `<project>/src/` | 基础包 src/rpipe 与下游自己的项目包源码；运行不在此写资产 | 维护者 / Agent，源码模板复制 |
+| `<project>/studies/` | 每个 Study 的声明、专用源码、正式报告和独立运行产物；_template 是声明模板 | Study 作者；库只在对应 Study 范围写产物 |
+| `<project>/tests/` | 源码镜像测试、tests/_data 公共输入与包验收入口；不依赖正式 Run | 维护者 / Agent；测试运行输出到 .tmp 或独立临时工作区 |
+| `<project>/build/` | 构建工具临时中间产物，忽略，不作实验数据根 | setuptools / build |
+| `<project>/dist/` | 构建默认 wheel / sdist 输出，忽略；本地验证优先用 .tmp 下显式 outdir | build；本任务不上传发布 |
+
+`src/rpipe.egg-info/` 等安装元数据由打包工具生成并忽略；.venv、编辑器缓存和 __pycache__ 不是新项目业务目录，应保持隔离/忽略。根级 README.md、AGENTS.md、LICENSE.md、pyproject.toml、.gitignore 是声明文件，不是产物目录。项目共享输入沿用 dev 的现有位置，本版不搬目录或自动迁移任何正式数据。
 
 | **概念** | **目录落点** |
 |------|----------|
@@ -197,20 +207,52 @@ studies/<study>/
         checkpoints/           # 训练 checkpoint（有则写）
 ```
 
-| **成员** | **说明** |
-|------|------|
-| `docs/` | 计划、人写的 `STUDY_REPORT.md`、图；可入库。`NUMBERS.md` 由 `rpipe report` 生成，也可以入库，它不是结论 |
-| `<project>/shared/` | 跨 Study 的 data / model 输入；默认不入库。`<study>/shared/` 仅留私有派生输入、profile 或旧路径引用 |
-| `runs/` | 每次 Run；默认不入库 |
-| `scripts/` | make 生成的调度脚本与 `jobs.json`；默认不入库 |
-| `index.json` | make 写入的编排清单（每条 Run 含 `config` 与 `log`）；不入库 |
-| `process.json` | Study 级聚合信封；不入库 |
-| `activity.json` | 只在 make 进行中出现，成功后删除；不入库。`rpipe status` 在它还在时把第一行打成当前阶段 |
-| `provenance.json` | make 写入的来源清单：源码、声明、recipe，以及 index / Run config 的哈希；另记录环境和 git 提交，不是源码备份。不入库，规则见 [flow.md](flow.md) §14.2 |
-| `recipe.py` | 可选；Study 自己注册的 data / model / algorithm `source`，由 `study.yaml` 的 `recipe` 指向，入库。见 [flow.md](flow.md) §14.1 |
-| `flow/`、`structure/` | Study 两柱源码；入库并自动纳入 provenance。阶段 hook 仅在显式启用时执行 |
-| `<project>/shared/data/`、`<project>/shared/model/` | structure data / model 可复用输入的默认落盘 |
-| `runs/<id>/assets/` | 本 Run 的 asset：`tracker/`（数字曲线）、`logs/`（文本）、checkpoint、样本等 |
+### Study 级固定路径、内容与写入方
+
+默认 Study 位于 `<project>/studies/<study>/`。下表是与代码默认路径对照的合同；可选输入文件/扩展只在显式声明时存在，不要求创建空目录。自定义基底文件由 study.yaml 的实际声明指定，experiment_config.yaml 是默认基底。
+
+| **固定位置** | **内容与边界** | **写入方** |
+| --- | --- | --- |
+| `<project>/studies/<study>/` | 一个研究的编排与证据边界 | Study 作者创建；make / Flow 在下列职责内写入 |
+| `<project>/studies/<study>/study.yaml` | 因素、seed、shared 与阶段配置 | Study 作者；make / Flow 读取 |
+| `<project>/studies/<study>/experiment_config.yaml` | 默认实验基底；可声明其他基底文件 | Study 作者；make 展开后不在此存 Run 结果 |
+| `<project>/studies/<study>/recipe.py` | 可选建构前注册入口 | Study 作者 |
+| `<project>/studies/<study>/structure/` | Study 专用 data / model / algorithm / system 建构源码 | Study 作者 |
+| `<project>/studies/<study>/flow/` | 显式启用的阶段组合扩展 | Study 作者；库按声明加载 |
+| `<project>/studies/<study>/docs/` | 计划、报告、正式数字、图与研究证据 | Study 作者与对应 report / process 入口 |
+| `<project>/studies/<study>/docs/PLAN.md` | 研究计划与不可变输入的私有例外理由 | Study 作者 |
+| `<project>/studies/<study>/docs/STUDY_REPORT.md` | 正式研究结论、执行/失败边界 | Study 作者 / 获授权的 Agent |
+| `<project>/studies/<study>/docs/NUMBERS.md` | 从当前 Study process 导出的数字表，不等于结论 | rpipe report / write_numbers |
+| `<project>/studies/<study>/docs/figures/` | 本 Study 正式图 | Study 作者、process / 绘图入口 |
+| `<project>/studies/<study>/docs/figures/learning_curves.png` | 库默认学习曲线图；有可用观测时生成 | Study process / write_learning_curves |
+| `<project>/studies/<study>/shared/` | 仅私有例外、profile 和保留的旧输入引用；不是默认公共输入根 | 对应私有 builder、profile、显式迁移保留引用 |
+| `<project>/studies/<study>/shared/data/` | shared.data: study 的私有输入，或默认仍私有的 profile；无真实不兼容依据不复制 raw | Study 私有 data builder / profile；迁移不搬 stats.yaml |
+| `<project>/studies/<study>/shared/data/<dataset>/stats.yaml` | 当前 Study 的归一化统计；不污染其他 Study | rpipe data / profile_study，或显式指定的既有统计 |
+| `<project>/studies/<study>/shared/model/` | shared.model: study 的私有模型输入；不存训练中状态 | Study 私有 model builder |
+| `<project>/studies/<study>/scripts/` | 调度产物；默认不入库 | make / schedule |
+| `<project>/studies/<study>/scripts/jobs.json` | launch 原生调度清单 | make / schedule |
+| `<project>/studies/<study>/scripts/launch.ps1` | PowerShell 调度入口；Bash 脚本按 stem / 分块命名也在 scripts 内 | make / schedule |
+| `<project>/studies/<study>/runs/` | 所有独立 Run；默认不入库 | make / artifact layout |
+| `<project>/studies/<study>/runs/<run_id>/` | 单次实测；没有额外 version / attempt 层 | make / Flow |
+| `<project>/studies/<study>/runs/<run_id>/config.yaml` | 已展开的 Run 配置 | make；prepare 读取 |
+| `<project>/studies/<study>/runs/<run_id>/result.json` | 原有含义的 Run 结果摘要，不是历史账本或指针 | write / 既有失败定稿入口；语义和位置不改 |
+| `<project>/studies/<study>/runs/<run_id>/process.json` | 仅此 Run 的派生观测与曲线摘要 | Run process |
+| `<project>/studies/<study>/runs/<run_id>/assets/` | 该 Run 的可变资产；不得混入项目共享输入 | Algorithm / System / Study 阶段 |
+| `<project>/studies/<study>/runs/<run_id>/assets/tracker/` | 状态、曲线 | AlgorithmTracker |
+| `<project>/studies/<study>/runs/<run_id>/assets/tracker/tracker_state.json` | tracker 状态 | AlgorithmTracker |
+| `<project>/studies/<study>/runs/<run_id>/assets/tracker/scalars.jsonl` | 追加数值曲线 | AlgorithmTracker |
+| `<project>/studies/<study>/runs/<run_id>/assets/logs/` | 本 Run 文本日志 | Logger / System |
+| `<project>/studies/<study>/runs/<run_id>/assets/logs/run.log` | 阶段、异常与恢复诊断，index.log 指向此处 | Logger / System 追加 |
+| `<project>/studies/<study>/runs/<run_id>/assets/checkpoints/` | 本 Run 的 checkpoint / best 与恢复状态 | Algorithm 的保存 / 恢复协议 |
+| `<project>/studies/<study>/runs/<run_id>/assets/samples/` | 可选观测样本 | Algorithm / Study 扩展 |
+| `<project>/studies/<study>/runs/<run_id>/assets/cache/` | 可选 Run 私有可变缓存 | Algorithm / Study 扩展 |
+| `<project>/studies/<study>/runs/<run_id>/assets/weights/` | 可选 Run 权重产物，与共享预训练输入区分 | Algorithm / Study 扩展 |
+| `<project>/studies/<study>/index.json` | 编排清单，含 Run config / log 引用 | make |
+| `<project>/studies/<study>/provenance.json` | 来源、计划、index / config hash、环境与 Git；不等于源码备份 | make / provenance 冻结入口 |
+| `<project>/studies/<study>/process.json` | Study 聚合信封 | Study process / launch 的既有聚合链 |
+| `<project>/studies/<study>/activity.json` | 可选当前阶段提示，成功 make 后清除；不替代正式结果 | make / activity；status 只读 |
+
+路径回归在 [test_layout.py](../../tests/rpipe/test_layout.py) 中调用真实 layout / shared / schedule / process / readout 路径入口，与本文固定位置逐项比较；不从本文生成运行配置。既有 [共享与迁移回归](../../tests/rpipe/structure/artifact/test_shared.py) 继续保证输入共用与 Run 状态隔离。非 studies 布局默认使用 `<study-parent>/shared`，显式 shared.root 相对 Study 解析；这两个兼容入口不改变上述规范布局。
 
 上表也是目标布局：Run 已是最底层。不同实测使用不同 `version` 导出不同 `run_id`，各自保存在独立的 `runs/<id>/`。
 

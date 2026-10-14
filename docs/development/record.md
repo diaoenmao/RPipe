@@ -97,6 +97,30 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 76. v0.4.0 目录合同、迁移材料与版本准备
+
+按 Enmao 本次指令，从已验收 dev 5cff920 建唯一工作分支 codex/v040-layout-release。项目根 shared/data、shared/model 沿用现有实现与位置，作为 studies 下各 Study 共用的不可变输入；Run 的模型对象、checkpoint、sampler、RNG 及可变状态不共享。未迁移正式数据、未重训 Study、未修改产物格式或运行路径。
+
+先以 d55461b 在 [layout.md](../code/layout.md) 固定项目顶层和 Study 级目录的位置、内容与写入方，明确以后先更新文档再改路径；在现有 test_layout.py 新增默认路径、私有 data/model、profile 与版本一致性回归。31个默认路径参数调用真实 layout / shared / schedule / process / readout 入口，与文档表格直接比较。已有镜像测试加35个新节点共36项；两项内存负控分别改文档和改实现路径，均被断言拒绝，不修改正式实现。
+
+后以 fccc45c 准备 [v0.4.0 发布材料](../releases/v0.4.0.md)，说明0.3.x的旧 Study 私有缓存到项目根 shared 的显式迁移、rpipe shared --migrate、同卷硬链接/冲突/中途I/O失败限制及 study.yaml 两类独立私有设置；列出三类收敛与 #36/#37/#38/#41/#48/#50（另含#53）修复。pyproject、__version__、README 同步0.4.0，README明确标签尚未建立，未来标签命令仅发布后执行；不把本次候选叫成已发布版本。生产源码相对5cff920仅__init__.py的一行版本号变化，路径和迁移实现不改。
+
+本机实际验证：
+
+| **入口** | **结果与边界** |
+| --- | --- |
+| pytest tests/rpipe/test_layout.py | 新独立basetemp下36 passed；当前core再次包含全部36节点 |
+| tests/run.py --core | 662 passed /1 skipped /161 deselected；跳过为Windows不适用POSIX脚本执行位，8条既有partial-resume警告保留 |
+| tests/run.py --all --cost-class c1 --cost-class c2，筛选CPU integration/e2e | 157 passed /667 deselected，无失败或跳过；未选中的GPU/外部/slow不算通过 |
+| 文档/实现路径漂移负控 | 两项均触发预期AssertionError；原文档/代码保持不变 |
+| 编码、版本、链接与变更范围 | UTF-8、CRLF、新相对文件链接与版本一致；无运行路径、结果schema或正式Study变更 |
+
+首轮PowerShell创建临时父目录的参数错误，导致pytest 2 passed /34 setup errors；原 .tmp/v040/layout-before-version.xml 保留，不当作库缺陷或合同通过。补建父目录后用 layout-verified 新目录重跑，全部实际执行。普通只读沙箱曾令git diff报告非工作树，真实checkout的只读复核确认worktree正常、core.bare=false；未改Git配置。本机隔离环境无build/wheel，不为本任务添加依赖；包构建/独立安装/CLI交由本PR真实CI，不冒充本机完成。
+
+本机XML、manifest/events、CONTRACT_MUTATIONS及LOCAL_CHECKED在 .tmp/v040 与 .tmp/test-results，不随clone；便携回归与发布说明随PR。最后提交、三项PR检查和实际dev检查以本次PR正文精确链接为准，旧5cff920的绿灯不替代本次版本验收。
+
+本任务仅合dev后停下报告；main仍v0.3.1/7a15c46，合main、v0.4.0 tag和Release交监督助手。开放Issue不自动关，现有分支/数据/Run/provenance保留，不开收费资源，不弹提问窗。后续无新增授权不开展相邻审计或性能工作。
+
 ### 75. 三类收敛完成与维护待命边界
 
 本次先同步 origin/dev，确认三类已全部按批准顺序合入 dev `34e95069a3a2814d0fabf4879b1584f1bdbd0758`；分支生命周期规则已随 PR #55 合入 [cicd.md](cicd.md#分支管理2026-10-15)，原工作分支没有未纳入 dev 的提交，无需重复开同题 PR。下表是已完成验收，前文“待 CI / 待集成”为各自记录时点事实。
