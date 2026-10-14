@@ -97,6 +97,29 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 78. v0.4.0 正式发布完成与六项 Issue 关闭
+
+按Enmao本次明确发版授权完成发布，不再沿用§76的“仅准备/监督助手接续”旧边界。发布状态文档经[PR #58](https://github.com/DreamSoul-AI/RPipe/pull/58)正常合dev300308a，最终head b49fed6及实际dev全部实际CI分别通过；[发布PR #59](https://github.com/DreamSoul-AI/RPipe/pull/59)由dev→main正常merge，两个父提交为旧main7a15c46和dev300308a，未squash/rebase/强推。材料与目录合同来源[PR #57](https://github.com/DreamSoul-AI/RPipe/pull/57)及实际dev79bcce0也已独立全绿。
+
+- **发布提交：** `54f8d31c0f5505742677dd2ce6dec323ee114c61`；main树与已验收dev一致。
+- **实际main验收：** [Unit Tests 38654268816](https://github.com/DreamSoul-AI/RPipe/actions/runs/38654268816)、[Package Check 38654268693](https://github.com/DreamSoul-AI/RPipe/actions/runs/38654268693)，全部实际矩阵和聚合成功后才建立tag。
+- **Annotated tag：** [v0.4.0](https://github.com/DreamSoul-AI/RPipe/tree/v0.4.0)，Git对象 `4b3f70ba2fed5cb19288b6f99b0d50f838e112c7`，本地类型tag，远端peeled commit与发布提交完全一致；普通推送，未覆盖旧标签。
+- **GitHub Release：** [v0.4.0](https://github.com/DreamSoul-AI/RPipe/releases/tag/v0.4.0)，ID413273894，published_at为2026-10-14T23:35:48Z（本地2026-10-15），非draft/prerelease，无二进制或本机数据附件。
+- **正文来源：** 发布提交内docs/releases/v0.4.0.md，转换16个仓库相对引用为精确提交链接并附PR/commit/main CI；实际Release正文SHA256 `e90f95c11e50dd639111fc0df599b92c94e61d0e9a35e7942fe0c80a76bc4f20` 与生成正文逐字节一致。连接无Release创建接口，按记录使用已认证gh的GitHub API正式创建并回读验证，未修改计费或安装额外插件。
+
+Release实际发布后，六个Issue各自留言注明“已在v0.4.0修复”、回归位置与精确发布来源，再经GitHub连接以completed关闭；评论与状态回读确认如下。#53不在明确关闭清单，仍保持open，不扩大处置范围。
+
+| **Issue** | **发布验收评论** | **状态** |
+| --- | --- | --- |
+| [#36](https://github.com/DreamSoul-AI/RPipe/issues/36) | [注明v0.4.0修复](https://github.com/DreamSoul-AI/RPipe/issues/36#issuecomment-6180860574) | closed / completed |
+| [#37](https://github.com/DreamSoul-AI/RPipe/issues/37) | [注明v0.4.0修复](https://github.com/DreamSoul-AI/RPipe/issues/37#issuecomment-6180861076) | closed / completed |
+| [#38](https://github.com/DreamSoul-AI/RPipe/issues/38) | [注明v0.4.0修复](https://github.com/DreamSoul-AI/RPipe/issues/38#issuecomment-6180861608) | closed / completed |
+| [#41](https://github.com/DreamSoul-AI/RPipe/issues/41) | [注明v0.4.0修复](https://github.com/DreamSoul-AI/RPipe/issues/41#issuecomment-6180862310) | closed / completed |
+| [#48](https://github.com/DreamSoul-AI/RPipe/issues/48) | [注明v0.4.0修复](https://github.com/DreamSoul-AI/RPipe/issues/48#issuecomment-6180862843) | closed / completed |
+| [#50](https://github.com/DreamSoul-AI/RPipe/issues/50) | [注明v0.4.0修复](https://github.com/DreamSoul-AI/RPipe/issues/50#issuecomment-6180863455) | closed / completed |
+
+本机TAG_CHECKED、RELEASE_CHECKED、ISSUES_CLOSED及完整CI核对在.tmp/v040，不随clone；便携证据为上述公开PR/commit/CI/tag/Release/评论链接。实际main核对文件SHA256 `7ba9692e617d5b830d5f6f0c2580e8973eb44a04bfce50ac7be393b595710e20`。旧失败、Run、provenance、所有工作分支及dev保留，未删数据/分支；未测速、跑GPU、更新下游vendor、重训或重签科学验收。本节为发布后dev文档补记，不移动v0.4.0标签或改写已发布正文；后续只按明确任务或可复现新反馈推进。
+
 ### 77. v0.4.0 发布授权接续（准备阶段）
 
 Enmao明确更正“合dev后停止”，授权由本任务继续：dev→main发布PR、普通merge（不squash/强推/删分支）、实际main验收后 annotated tag v0.4.0、GitHub Release正文使用入库报告，发布后分别留言并关闭#36/#37/#38/#41/#48/#50。此授权取代§76及旧handover的“交监督助手”执行边界；不扩大到#53、数据/分支删除、PyPI或二进制发布。
