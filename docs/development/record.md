@@ -24,6 +24,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | train 均值（B-016） | step 模式跨评测段累计，反例最后一段应约10却报告约5 | 每个评测周期收口并重置 train 段，同一反例报告约10；空段不覆盖最后有效均值 | 第二节 §4 |
 | topk 计数（B-017） | topk=2 将3个样本的候选展平为6个索引，触发形状/计数错误 | 保留候选轴，每个样本命中任一候选只计一次；修复既有函数，未新增 CLI topk 配置 | 第二节 §5 |
 | 零评测预算（B-018） | `eval_num_steps=0` 仍读取并评测第一批 | 读取数据前报错；正数限批、缺省/负数完整 test 的语义保留 | 第二节 §7 |
+| CLI 重试控制（B-055 / #41） | API 有关闭入口，CLI 始终默认重试一次；非恢复型任务的第二次错误可覆盖首个最终错误 | `launch --no-retry` 显式传递既有 API；默认重试和 train→eval 屏障保留，首个失败可由单次执行保留 | 第二节 2026-10-14 §40 |
 | 原生恢复（B-021） | checkpoint 缺少 RNG 与数据位置，续训样本后缀和最终权重可偏离连续运行 | 在单进程、受支持 sampler / batch metric 合同下保存并恢复完整训练状态；不匹配配置拒绝，其他路径明确提示部分恢复 | 第二节 2026-10-12 §6 |
 | epoch 停止（B-024） | 累积尾 batch 可导致多跑 epoch；整轮无 optimizer 更新时可能无限循环 | epoch 按声明轮数停止，已完成恢复不重训；整轮无法更新时报错，原尾 batch 丢弃语义保留 | 第二节 2026-10-12 §7 |
 | 曲线进度与回滚 | 横轴按 history 记录序号；记录频率变化不能直接解释为训练步数，恢复后的回滚分支未单独排除 | 按 optimizer_step / epoch 对齐；保留原始日志，聚合时排除回滚分支、处理重复坐标并记录逐点 n | [曲线修复记录](brainstorm.md#4-已经做的) |
@@ -88,11 +89,15 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-14
 
-### 40. 原生 launch 显式关闭失败重试（#41，验证中）
+### 40. 原生 launch 显式关闭失败重试（#41，验证通过）
 
 来源为 [Issue #41](https://github.com/DreamSoul-AI/RPipe/issues/41) 的 CPU 合成复现与当前 dev 调用链。改前：API 支持 retry_failed=False，但 CLI 只能采用默认重试；排他产物任务的第二次 FileExistsError 可成为最终错误。改后方案：launch --no-retry 仅投影现有 API，默认保持重试一次，不改变计算、Run ID、jobs 清单或依赖屏障；原始失败日志仍保留。更大的尝试历史设计只记 brainstorm。
 
-新增真实 CLI 四格回归：默认 / 关闭重试 × 失败 / 成功，检查实际调用次数、最终错误、原日志、jobs 字节、成功后空计划跳过。使用测试公共合成输入，不接触正式 Study 或下游 vendor。本机此时存在 dayan 性能校准，因此未并行运行本地回归；远端必需 CI 和实际结果待核对，不以源码修改当作验证通过。
+新增真实 CLI 四格回归：默认 / 关闭重试 × 失败 / 成功，检查实际调用次数、最终错误、原日志、jobs 字节、成功后空计划跳过；另有显式关闭重试时的失败 train→eval 屏障回归。使用测试公共合成输入，不接触正式 Study 或下游 vendor。本机此时存在 dayan 性能校准，因此未并行运行本地回归。
+
+工作提交 `b678802d54a509532cbca35e40223c889d1c369e` 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38556030997)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38556030922) 和 [Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38556031025) 全部成功。Windows 两个 Python 环境 core 各 464 passed / 2 skipped；Ubuntu 两个环境各 463 passed / 3 skipped；四个环境 CPU integration 各 72 passed / 2 skipped，均无失败。两项模块级 skip 对应未安装的 HF 可选依赖，Linux 另有 Windows 专用入口 skip，不计作通过。两平台 wheel/sdist 均完成独立安装验收。
+
+文档证据收尾后生产代码及测试保持与该工作提交相同；最终 head 必须重新通过全部必需检查，合入 dev 后再核对实际集成提交的 CI。未发布 main、未自动关闭 #41、未运行正式长实验、未更新其他项目 vendor。独立尝试历史仍为 brainstorm 候选。
 
 ### 39. 共享与三个反馈修复合入 dev
 
