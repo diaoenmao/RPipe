@@ -65,7 +65,15 @@ def source_files(study_dir: Path | str, study: dict[str, Any]) -> dict[str, str]
     for name in dict.fromkeys(names):
         path = _inside(study_dir, name)
         if path not in seen and path.is_file():
-            out[path.relative_to(study_dir).as_posix()] = _sha256(path)
+            key = path.relative_to(study_dir).as_posix()
+            if key.startswith('rpipe/'):
+                try:
+                    same_input = path.samefile(package / key.removeprefix('rpipe/'))
+                except OSError as exc:
+                    raise ProvenanceChangedError(f'Cannot verify library source for Study key: {key}') from exc
+                if not same_input:
+                    raise ProvenanceChangedError(f'Study source key collides with library: {key}; move the input and make again')
+            out[key] = _sha256(path)
             seen.add(path)
     return out
 

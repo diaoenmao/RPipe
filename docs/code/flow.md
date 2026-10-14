@@ -384,7 +384,7 @@ make 在 Study 根写 `provenance.json`（与 `index.json` 同级，不进 Git�
 | `created_at` | UTC 时间 |
 | `digest` | 仅对 `files` 与 `plan` 合并内容计算 SHA-256，取前 16 个十六进制字符 |
 
-文件键用相对路径：库源码相对 `rpipe` 包根，加前缀 `rpipe/`；Study 文件相对 Study 根。
+文件键用相对路径：库源码相对 `rpipe` 包根，加前缀 `rpipe/`；Study 文件相对 Study 根。 rpipe/是库来源保留键域；Study输入使用该前缀时，必须能核验为对应库路径的同一物理文件（包括硬链接），否则以既有ProvenanceChangedError拒绝采集/冻结。即使当前库尚无同名文件或副本字节相同，也不能占用该键域，避免后续库新增/删除被掩盖。身份查询OSError保留cause并转为冻结拒绝；初始拒绝沿用旧成功结果保全。旧歧义清单不自动改写，须恢复对应库身份或将Study输入移到无冲突路径（如rpipe_inputs/），保留旧证据并按计划使用新version/fresh make。
 
 `plan` 是执行清单与 Run 配置，不是人写的 `docs/PLAN.md`。根目录额外 helper、参考 JSON、依赖清单或计划等需要冻结时显式加入 `provenance.include`；模式未匹配任何路径会报错，解析后的文件必须留在 Study 内。原始数据、历史报告和 Run 产物不自动进入来源清单。库源码覆盖当前导入的整个 `rpipe` 包，非本 Study 使用的 Python 模块变化也会影响 freeze。
 

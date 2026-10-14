@@ -30,6 +30,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | 可选 Git 元数据（B-063，草案） | 文件读取/格式错误可令 pytest 配置失败或误记 SHA | 错误归为可选 null，保留快速路径和 CI 优先级；本机相关 108 项通过，未集成 | 第二节 2026-10-15 §50 |
 | 长文件名 staging（B-064，草案） | 文本/迁移临时名追加完整目标名，合法245字符名失败 | 两处短 UUID-only 名；4 项真实反例修复，相关187通过、5未选中，未集成 | 第二节 2026-10-15 §51 |
 | 单次来源去重（B-065，草案） | 重叠扫描/recipe/include令同文件反复读和hash | 小场景100→35次读取，mapping一致；相关192通过、5未选中，未集成 | 第二节 2026-10-15 §52 |
+| 来源键遮蔽（B-066，草案） | Study同键可覆盖库hash，真实库修改仍被freeze放行 | 保留库键域并验证物理身份，14边界和202相邻core通过，未集成 | 第二节 2026-10-15 §53 |
 | 原生恢复（B-021） | checkpoint 缺少 RNG 与数据位置，续训样本后缀和最终权重可偏离连续运行 | 在单进程、受支持 sampler / batch metric 合同下保存并恢复完整训练状态；不匹配配置拒绝，其他路径明确提示部分恢复 | 第二节 2026-10-12 §6 |
 | epoch 停止（B-024） | 累积尾 batch 可导致多跑 epoch；整轮无 optimizer 更新时可能无限循环 | epoch 按声明轮数停止，已完成恢复不重训；整轮无法更新时报错，原尾 batch 丢弃语义保留 | 第二节 2026-10-12 §7 |
 | 曲线进度与回滚 | 横轴按 history 记录序号；记录频率变化不能直接解释为训练步数，恢复后的回滚分支未单独排除 | 按 optimizer_step / epoch 对齐；保留原始日志，聚合时排除回滚分支、处理重复坐标并记录逐点 n | [曲线修复记录](brainstorm.md#4-已经做的) |
@@ -93,6 +94,51 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-15
+
+### 53. 来源键域遮蔽与冻结拒绝保全（B-066，草案）
+
+本轮主动审查source_files，确认Study输入可覆盖库的同名来源键，导致真实库修改/删除被掩盖。候选保留rpipe/库键域，仅允许与对应库路径可核验为同一物理文件的输入复用；不同副本、缺失或不可核验身份均以现有ProvenanceChangedError拒绝。10项新增单元、4项真实冻结门/Runner边界通过，相邻core为202 passed /5 deselected。PR #46继续草案，dev/main未变，不发布或改写旧来源。
+
+#### （一）改前与改后
+
+| **条件** | **296fac5 / 首候选** | **最终候选** |
+| --- | --- | --- |
+| Study include rpipe/__init__.py是独立文件 | 覆盖库哈希；即使初始字节相同也会隐藏后续库修改 | 拒绝占用库键域，不按相同字节冒充同一输入 |
+| 库文件修改后检查旧歧义清单 | legacy-bypass.json实测check_frozen仍放行，记录哈希等于Study副本 | 冻结拒绝，保留旧清单和成功结果，无计算阶段执行 |
+| 同一实际文件或硬链接 | 初始用例通过；首候选仍漏掉库路径被删除、Study硬链接保留的反例 | 对应库身份存在且samefile才可复用；修改能检测，删除或身份查询失败拒绝 |
+| 尚无对应库文件的Study rpipe/extra.py | 首候选允许，未来库成员变动可能仍被混合键来源掩盖 | 整个rpipe/逻辑键域保留；rpipe_inputs/extra.py等非保留键仍可使用 |
+
+库源码键相对包根加rpipe/，Study键相对Study根，本来共用一个flat mapping。只在已存在键上判断冲突不能保留来源成员身份：库路径删除后，Study硬链接可继续提供相同键/hash，因此最终必须声明保留键域，而不只拒绝当前字典重名。未改schema、digest算法或持久化键格式；无歧义Study的mapping保持。旧歧义Study须将独立输入移至不同相对路径（如rpipe_inputs/）或恢复真实库身份，保留旧证据，按计划用新version/fresh make；不批量迁移正式输入或重签旧Run。
+
+#### （二）真实复现与候选收缩
+
+隔离库/Study各有自己的__init__.py，只在诊断进程调整rpipe.__file__以定位合成库，并以显式synthetic环境/Git stub避免Torch采集；不导入或修改下游vendor，不执行模型。legacy-bypass.json记录库hash从a0e974...变为e3d2db...，check_frozen仍成功，清单值b02cf1...等于Study副本而非库。完整hash、原始字节与诊断路径均保留，不声称正式实验受过该反例影响。
+
+| **阶段证据（均保留）** | **结果与边界** |
+| --- | --- |
+| 初始单元红 .tmp/phase066/red.xml | 5 failed /2 passed，0.20s；两个同文件控制已通过 |
+| 首次混合收集 red-final.xml | 两个新测试basename相同导致1 collection error，0.19s；重命名Flow测试，不删缓存或旧日志；不当库缺陷证据 |
+| 实际冻结门/Runner反例 red-gates.xml | 9 failed /2 passed，0.31s；旧launch gate返回True，Runner进入禁止执行的合成阶段 |
+| 首候选 green.xml | 11 passed，0.23s；仅说明初始条件，不是最终验收 |
+| 追加删除/保留键边界 boundary-red.xml | 2 failed /11 passed，0.27s；库路径真实删除仍被Study硬链接掩盖 |
+| 身份拒绝 identity-red.xml | 1 failed /9 deselected，0.14s；PermissionError直接外溢，需保留cause转冻结拒绝 |
+| 最终候选首次 final-gates.xml | 1 failed /13 passed，0.29s；实际已正确拒绝缺失身份，但测试只匹配collid文本，调整为library消息断言；保留原失败 |
+| 最终 final-gates2.xml | 14 passed，0.25s；10单元+4真实gate/Runner，不启动计算 |
+| 相邻 final-core.xml | 202 passed /5 deselected，6.93s；artifact镜像、Git及真实manifest入口，未选integration不计通过 |
+
+实施前的pre-fix-acceptance.zip / acceptance-source-index.json含296fac5源码与当时11项冻结/门测试的原字节和hash；后续扩展边界另有首候选快照；更早pre-fix.zip、收集失败快照、first-candidate.zip和pre-final-boundary.zip均保留。使用互不别名的索引/结果文件名，不重演§52的大小写覆盖。临时证据在.tmp/phase066，不随Git clone提供；便携回归在tests/rpipe/structure/artifact/test_source_keys.py与tests/rpipe/flow/test_source_key_gate.py。
+
+#### （三）最小实现与流程合同
+
+变更仅在source_files写入Study键前检查rpipe/来源身份。相同键域但不同物理文件拒绝；samefile的OSError以cause保留并转为现有ProvenanceChangedError，无新异常或依赖。正常两柱发现、B-065每次调用内去重及跨调用重读、路径边界不变。额外身份IO仅针对保留键输入，不改变共享data/model或Run可变状态。
+
+已核对write_provenance、provenance_changes/check_frozen以及CLI _provenance_gate、prepare、FlowRunner、Study process调用方。复用现有异常使原生launch gate返回False、打印来源冲突；Runner在阶段前拒绝时沿用#36的旧成功字节保全，无旧成功时保留failed/日志合同。4个集成条件覆盖gate/Runner×有无旧成功，验证未进入phase、旧provenance原字节不改、必要日志/错误类型存在；不以退出码代替结果检查。make拒绝时也不覆写已有来源。
+
+最终提交必需CI与实际矩阵在[PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46)绑定核对，不能拿296fac5旧绿灯替代。执行清单检查所有红/候选/收集失败留存、原字节/hash、最终202 core及14门、运行差异只限本函数、PR Draft/open/no-auto-merge、dev/main不变。原480s根因仍未确认；此次是来源完整性修复，不作速度归因。
+
+#### （四）只读下游检查
+
+Issues #36–38/#41无新增反馈，仍按要求open。dayan按该对话用户要求结束当前pair并停止全量扫描，74/216为部分结果，不写成完整通过；其PowerShell/自有停止脚本失败不是RPipe新缺陷。量化的占用守卫因4个活动进程拒绝计算是预期资源边界。output-space新增结论属于研究结果，无新RPipe缺陷。未向其他对话发消息，不干预它们的停止、计时或运行。
 
 ### 52. 调用内来源扫描拆解与单次去重（B-065，草案）
 
