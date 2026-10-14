@@ -1074,3 +1074,7 @@ Run 目录名必须为非空单一目录组件，拒绝点 / 父目录、分隔�
 2. 配置：基底 ⊕ **make** → run config → control；`study.yaml` 声明 `axes` / `seeds`（见 Study 指南）。
 3. result 快照契约（§9.4）先文档后单测固化。
 4. Flow：summarize 之后是 **write**（写 result），再 **process**。
+
+### 只读读取合同收敛（2026-10-15）
+
+readout 在既有 status.py 内用私有三态读取区分可用、缺失和不可读，logs 复用相同边界。计划 config 可用时先核对 mode / id / seed，冲突按原诊断字段显示，坏格不遮蔽 peer；仅缺 config 时回退历史 axes / result 信息。严格 loader、执行状态、CLI 表头和磁盘格式不变；activity 继续原可选读取合同。实施和验收见 [record §71](../development/record.md)。
