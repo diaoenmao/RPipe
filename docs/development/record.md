@@ -105,6 +105,8 @@ _mode 在一次 config 读取后核对 mode / id / seed，以可用计划为先�
 
 首候选102项通过后，新增3项 seed 边界出现2 failed /1 passed（null seed 遮蔽计划0、False 被等同0），修正后最终相邻105 passed /0failed/error/skip。原11项红例、首轮绿和 seed 红例均留在 .tmp/consolidation2，before.zip / XML / LOCAL_CHECKED 不随 clone；原 #37/#48/#50/B068 回归全部在最终批次，不重开旧 Issue。新增三态 helper 的缺失是提炼合同，不冒称原行为回归缺陷。
 
+补充自审发现首候选把日志 TypeError 也带入公共 fallback，会扩大原日志仅 I/O 容错的范围。先补 d4473ed 两项 note / event 编程错误回归，候选2 failed；移除公共 TypeError 捕获后新批次107 passed /0failed/error/skip。原105通过、两项失败和最终 verified.xml 全保留，不拿旧批次掩盖集中处理的反例；RuntimeError 等意外错误仍传播。
+
 正式计划 / 结果 / 数据 / provenance 未改，未运行 GPU 或性能测试。此为第二类独立 PR，最终 head 与实际 dev 必需 CI 尚须逐项验收；第一类未实施，不扩大旧成功保留范围。
 
 ### 70. 第二类：三态读取与计划 config 优先合同
