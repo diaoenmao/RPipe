@@ -1048,3 +1048,5 @@ Fast / Core / Extended / Full 可继续作为项目已有计划名称，但不�
 | `--all` | 全部收集到的用例 |
 
 `events.jsonl` 记录 `cost_class`、`result_type`、`result_detail`、`verdict`、`attempt` 和 `cost.actual_wall_time_ms`。预计耗时未逐条测量时为 `null`。
+
+事件的 `started_at` 使用 pytest TestReport.start 转为 UTC，表示被记录阶段的开始：正常用例为 call，setup 失败为 setup；不代表整个 setup/call/teardown 的总起点。duration_ms 继续取该报告的 duration。B-058 修复前的历史事件在报告完成后生成该字段，分析时须区分旧语义，不能就地回填或混用时间线。manifest 的 started_at 仍为 session 开始时间。

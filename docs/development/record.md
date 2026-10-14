@@ -101,6 +101,8 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 新增可执行回归位于 test_shared.py：有限 0.1 s 预算用可控 monotonic 验证三次竞争、两次 0.05 s 等待和 TimeoutError cause；等待中的 KeyboardInterrupt 原对象传播，失败句柄关闭后可再获取；另一线程连续三次真实零预算获取失败不释放所有者，所有者 KeyboardInterrupt 后该线程可获取。取消在这里指同步中断，不声称支持跨线程强行退出 context 或异步任务取消。
 
+进一步核对上游测试记录确认 B-058：hook 在阶段完成后调用 datetime.now 写 started_at，字段并非阶段起点。已先登记 bugs.md 和 testing.md 的纠偏合同，新增固定 start=2000-01-01T00:00:00.5Z、duration=1.25 s 的成功 call / 失败 setup 两格，调用真实记录 hook 并检查落盘事件。修复前 .tmp/e058-red/ 两格均 failed（0.05 s），实际记录本次生成时间而非给定起点；原失败保留。最小修复仅将事件字段换为 datetime.fromtimestamp(report.start, timezone.utc)，manifest session 时间、耗时、错误和旧日志均不改。已搜索所有读写方；该修复纠正工程记录，不解释旧调用变慢，也不修改 RPipe 运行时。草案 B-058 未合入 dev。
+
 本地首次选择过长的新 basetemp，47 项中 3 failed / 44 passed，1.65 s；新增三项均通过。失败为缓存 manifest 的路径 291 字符，本机 LongPathsEnabled=0；原 PID/time_ns 格式在同一目录也需 278 字符。保留 .tmp/cache-lock-budget/local-e3500747ec6c4b258fab918064d64e30/ 的日志与 JUnit，没有归因为新 nonce 修复或隐藏失败。缩短到新的 .tmp/l078cf7cf/p 后，同三模块 **47 passed，1.56 s**，无跳过；JUnit 与日志保留 .tmp/l078cf7cf/，原生 events/manifest 在 .tmp/test-results/。执行前检查没有活动 --worker / watch_idle_batch 校准；其他项目 CPU 回归使用各自临时目录，未修改其进程。
 
 可重执行的本机检查（先创建全新短 .tmp 父目录，每次替换示例路径；保留失败，不删除旧目录）：
@@ -112,7 +114,7 @@ $env:OMP_NUM_THREADS = '1'
 $env:MKL_NUM_THREADS = '1'
 $env:CUDA_VISIBLE_DEVICES = ''
 New-Item -ItemType Directory .tmp/l-new-check
-& .tmp/v030-20261013/venv/Scripts/python.exe tests/run.py --core -- tests/rpipe/structure/artifact/test_shared.py tests/rpipe/structure/artifact/test_atomic.py tests/rpipe/structure/artifact/test_atomic_boundaries.py --basetemp .tmp/l-new-check/p --junitxml .tmp/l-new-check/junit.xml
+& .tmp/v030-20261013/venv/Scripts/python.exe tests/run.py --core -- tests/rpipe/structure/artifact/test_shared.py tests/rpipe/structure/artifact/test_atomic.py tests/rpipe/structure/artifact/test_atomic_boundaries.py tests/test_event_timing.py --basetemp .tmp/l-new-check/p --junitxml .tmp/l-new-check/junit.xml
 if ($LASTEXITCODE -ne 0) { throw 'local boundary regression failed' }
 git diff --check
 if ($LASTEXITCODE -ne 0) { throw 'invalid diff' }
@@ -120,9 +122,11 @@ git merge-base --is-ancestor origin/dev HEAD
 if ($LASTEXITCODE -ne 0) { throw 'dev advanced; reconcile before acceptance' }
 ```
 
+B-058 修复后将元数据两格与三个 artifact 模块一起执行，.tmp/lafdc49a8/ 保留独立 basetemp、JUnit 与日志，**49 passed，1.49 s，无跳过**。本次未更改旧日志；对应新 events 使用真正 report.start，旧事件按上述完成后时间语义解释。
+
 本机 Python 路径仅描述本次隔离环境，不是异机环境要求。静态检查及远端验收的可执行核对保存在 .tmp/cache-lock-budget/check_draft.py：核对实际 head、工作区、dev 祖先、生产差异、PR 草案/禁用自动合并、最新 head 各项必需 CI 和历史红色任务。最终结果写独立 checks-<head>.json；进行中 CI 不会返回通过。该脚本只读 Git/GitHub，不合并或清理分支，正式依据同时保留 PR 与 Actions 链接。
 
-上轮 b03cf7a 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38576170751)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38576170986)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38576170759) 全部通过。本轮新增三个用例后的最终 CI 以 PR 最新 head 为准，本机 47 项不能替代四环境与安装包门。剩余项分开标记：原慢调用原因需新现场证据；长路径通用兼容方案仅 brainstorm；草案集成人类决策未执行，dev/main 未包含 B-056/B-057。
+上轮 b03cf7a 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38576170751)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38576170986)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38576170759) 全部通过。锁边界提交 f3eb08b 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38578735158)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38578735164)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38578735162) 全部通过。加入 B-058 后的最终 CI 仍以 PR 最新 head 为准，本机 49 项不能替代四环境与安装包门。剩余项分开标记：原慢调用原因需新现场证据；长路径通用兼容方案仅 brainstorm；草案集成人类决策未执行，dev/main 未包含 B-056/B-057/B-058。
 
 ### 44. 草案 #46 的锁错误边界与合并前检查
 

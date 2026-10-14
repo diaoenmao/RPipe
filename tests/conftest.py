@@ -199,7 +199,7 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo):
         },
         'status': status,
         'duration_ms': duration_ms,
-        'started_at': datetime.now(timezone.utc).isoformat(),
+        'started_at': datetime.fromtimestamp(report.start, timezone.utc).isoformat(),
         'failure': failure,
         'artifacts': [],
     }
