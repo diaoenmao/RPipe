@@ -55,5 +55,5 @@ def test_git_fallback_unavailable_is_optional_metadata(tmp_path, monkeypatch, er
     def unavailable(*args, **kwargs):
         assert kwargs['timeout'] == 5
         raise error
-    monkeypatch.setattr(records, 'subprocess', SimpleNamespace(run=unavailable), raising=False)
+    monkeypatch.setattr(records, 'subprocess', SimpleNamespace(run=unavailable, SubprocessError=subprocess.SubprocessError), raising=False)
     assert records._git_sha() is None

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import platform
+import subprocess
 import sys
 import uuid
 from datetime import datetime, timezone
@@ -122,16 +123,22 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 def _git_sha() -> str | None:
-    head = REPO / '.git' / 'HEAD'
-    if not head.is_file():
-        return None
-    raw = head.read_text(encoding='utf-8').strip()
-    if raw.startswith('ref:'):
-        ref = REPO / '.git' / raw.split(' ', 1)[1].strip()
+    metadata = REPO / '.git'
+    head = metadata / 'HEAD'
+    if head.is_file():
+        raw = head.read_text(encoding='utf-8').strip()
+        if not raw.startswith('ref:'):
+            return raw
+        ref = metadata / raw.split(' ', 1)[1].strip()
         if ref.is_file():
             return ref.read_text(encoding='utf-8').strip()
+    if not metadata.exists():
         return None
-    return raw
+    try:
+        return subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=REPO, capture_output=True,
+                              text=True, check=True, timeout=5).stdout.strip() or None
+    except (OSError, subprocess.SubprocessError):
+        return None
 
 
 @pytest.hookimpl(hookwrapper=True)

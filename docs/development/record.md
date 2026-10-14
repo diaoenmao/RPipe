@@ -93,11 +93,19 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 按用户本轮要求，准备新的本地受控诊断，原 480 秒事件的事实和缺口不变。只读扫描 Issues 和三个会话仍无新的上游反例；dayan 已完成 parallel-2 六对并进入 threads-1，量化 1629 项回归通过后推进下一路径，output-space 是领域数值研究。发现本地测试记录的另一候选：_git_sha 只读取 .git/HEAD 和松散 ref，不能读取 packed refs / worktree，待真实 Git 回归验证后再登记 B-060；未把候选直接当作确认缺陷。
 
-.tmp/trace480/trace_case.py 采用原生 tests/run.py 的 CI core 或 C1/C2 integration/e2e 选择参数，限定相关节点；只增加采样 plugin、新 basetemp 和 JUnit。冻结当前 src/tests/config 及命名的历史 SOURCE.zip，不含数据/模型权重；逐文件 hash、Git HEAD/dirty 状态、完整字节、诊断脚本均保留。源码和测试快照只在本机，未公开下游代码。R​​Pipe 快照 .tmp/tpipe061/SOURCE_TESTS.zip 共186文件（82个 tests 文件），SHA256 3216207c9c0d97e48760f1e0f8fb049700a832ea4660a1f9b54a3cc0c68dda96；量化 .tmp/tquant061/SOURCE_TESTS.zip 共342文件（73个 tests 文件），SHA256 f78647113564e6780db5e785928583e89ab4610995cc9fce5692b5597e364d59。每份 SNAPSHOT.json 记录每个文件摘要；源在复制期间和 ZIP 内容逐项核对，脚本运行时再次验证。量化仍是6afad2b加实际dirty/新增文件，不能用这个HEAD单独声称恢复旧现场。
+.tmp/trace480/trace_case.py 采用原生 tests/run.py 的 CI core 或 C1/C2 integration/e2e 选择参数，限定相关节点；只增加采样 plugin、新 basetemp 和 JUnit。冻结当前 src/tests/config 及命名的历史 SOURCE.zip，不含数据/模型权重；逐文件 hash、Git HEAD/dirty 状态、完整字节、诊断脚本均保留。源码和测试快照只在本机，未公开下游代码。RPipe 快照 .tmp/tpipe061/SOURCE_TESTS.zip 共186文件（82个 tests 文件），SHA256 3216207c9c0d97e48760f1e0f8fb049700a832ea4660a1f9b54a3cc0c68dda96；量化 .tmp/tquant061/SOURCE_TESTS.zip 共342文件（73个 tests 文件），SHA256 f78647113564e6780db5e785928583e89ab4610995cc9fce5692b5597e364d59。每份 SNAPSHOT.json 记录每个文件摘要；源在复制期间和 ZIP 内容逐项核对，脚本运行时再次验证。量化仍是6afad2b加实际dirty/新增文件，不能用这个HEAD单独声称恢复旧现场。
 
 诊断会记录0.25s重复 faulthandler 原始栈、逐call真实monotonic起止/进程CPU、导入模块实际路径/线程数、依赖、PID/创建时间、子进程资源采样及完整日志。每批外层180s预算、禁用GPU但不改变原测试的计算/质量断言。相关core为前轮58个artifact/事件用例；量化选择原超时中两个合成慢节点（reduction NLL与五视图trace），两次均使用新Python和新basetemp。缓存不清空、采样有开销，不能作为原480s的等条件复现或训练吞吐排名。
 
 本机 threads-1 校准仍在运行；诊断 guard 已实际在创建批次/启动pytest前拒绝两次，.tmp/trace480/guard-rejected.log 保留第一份证据，不计作测试执行。期间仅准备字节快照、静态解析和测试代码，不执行竞争计算。准备 Git 元数据的8项边界（loose/packed/detached/worktree、无Git快照、可选Git失败/缺失/超时），先提交仅测试及设计合同，沿现有独立CI验证候选，库及测试记录实现尚未修改；红色验证不能算通过。正式本地诊断等待本机空闲保护通过，既不干预校准，也不将未执行记为完成。PR46保持草案。
+
+B-060 已经由 f162eb6 的[四环境红色回归](https://github.com/DreamSoul-AI/RPipe/actions/runs/38586121972)确认：packed/worktree 两项均返回 null，其余六个新边界通过；Windows 2 failed/496 passed/2 skipped，Ubuntu 2 failed/490 passed/8 skipped，Flow未执行。正式登记 bugs.md 后才应用准备的最小补丁。原日志保留 .tmp/trace480/b060-baseline-ci.log；Package/Branch结果分别核对，不将单项或红色任务写成整轮通过。
+
+B-060 实现保留松散ref/detached文件快路径，只有 .git 存在而未解出HEAD时调用 git rev-parse HEAD，超时5秒并捕获可选失败；无 .git 快照不向父仓库查找。首轮本地 .tmp/e060-green/ 为3 failed/7 passed（0.82s），原因是新测试的模块替身缺 SubprocessError 类型，而非真实 subprocess 模块缺陷；补全替身的真实异常类型后 .tmp/e060-green2/ **10 passed，0.81s**。原断言与失败证据保留，没有修改生产运行库或旧manifest。
+
+本地首次采栈已执行：冻结RPipe相关core **58 passed，1.65s**，外层3.171462s，原始栈27802B，SHA256 b998c31344145c9703c29c4baae3650f90c059329e897c58240c2ec21d80dc55，.tmp/tpipe061/r1/保存raw stack、calls、RESOURCE和JUnit。量化0.25s watchdog在收集期原生退出3221225477（9.851128s）；将采样移到收集后1s的同字节快照又原生退出相同码（12.948206s），栈分别在DLL加载/pytest重写，以及transformers动态导入/typing，未完成首个test call。两次失败和raw stack分别保留 .tmp/tquant061/r1、.tmp/tquant062/r1；它们是诊断失败，不是完整测试通过或旧480s重现。关闭周期watchdog的同字节控制 .tmp/tquant061/control-no-watchdog 为 **2 passed，11.85s**（外层14.070022s）；只能报告这些观测差异，尚不能将原生崩溃归因到RPipe或某个运行时根因。
+
+准备第三版采样：保留fatal handler，以Python线程每1秒调用同步dump_traceback替代C watchdog；GIL长期被占用时采样线程可能延迟，不能排除未捕获等待。复制的342文件逐项hash与前两次完全一致，新归档 .tmp/tquant063/SOURCE_TESTS.zip SHA256 ca10c8ac4bf04c6be765e6013daef5c8c3b0be4403b1e78e30cd2a2b6cc41f05，脚本 .tmp/trace480/trace_case_v4.py 的hash在SNAPSHOT.json。新的dayan ratio-one计时批次启动，guard再度在pytest前拒绝，两个正式同步采样尚未执行；不能将准备好的采样算完成。该阶段先提交B-060已通过的最小修复并验证CI，继续在安全空闲窗口采集，不覆盖旧失败或干预其他项目。
 
 ### 46. 共享输入文件别名校验（B-059，草案）
 

@@ -6,6 +6,15 @@
 
 ## 开放
 
+### B-060：本地测试 manifest 遗漏 packed refs / worktree 的 Git 提交
+
+- 状态：open；dev 9324014 与草案 f162eb6 的真实 Git 回归在四环境复现，尚未集成修复。
+- 来源：本轮采栈要求完整来源时审查 tests/conftest.py::_git_sha，当前只读 .git/HEAD 和松散 ref。不是原 480 秒性能根因，也不等同于包含 dirty 字节的完整来源冻结。
+- 期望：本地 manifest 可识别 packed refs / worktree 的实际 HEAD，同时保留普通松散 ref / detached HEAD；无 .git 的复制快照不能搜索并误记父仓库。缺 Git、命令失败或查询超时仍允许 null，不阻断测试。
+- 实际：git pack-refs --all 后分支 ref 不再是单文件，返回 null；worktree 的 .git 为指针文件，.git/HEAD 不存在，也返回 null。真实提交存在、Git可读，记录却丢失身份。
+- 证据：[测试先行 Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38586121972)，f162eb60e1cd3f3faba04ea848e32aaa872bd6c6；四个环境各仅上述两项 failed，Windows core 2 failed / 496 passed / 2 skipped，Ubuntu core 2 failed / 490 passed / 8 skipped；CPU Flow 因 core 失败未执行。原失败日志 .tmp/trace480/b060-baseline-ci.log 保留，不计通过。
+- 方案与验证：保留现有松散 ref / detached HEAD 文件读取；仅 .git 存在而直接读取未解决时，采用现有项目 subprocess/Git 模式，5秒有界查询，失败返回 null。8项真实布局/错误边界回归和本机相关验证后重新核对最终提交 CI；GITHUB_SHA 的原优先级不变，不改 Run、训练、调度、旧 manifest 或下游源码。见 record §47；草案仍不合并。
+
 ### B-059：共享输入文件合同按原始字符串比较，可绕过保留名与唯一性
 
 - 状态：open，Windows/Python 3.13.9 本机已复现；dev 9324014 与草案 b20a034 均尚未修复。
@@ -45,7 +54,7 @@
 - 方案：标准库 math.isfinite 提前校验，不新增调度、重试、锁所有者账本或缓存格式。已核对各 Factory、prepare、迁移使用默认 / 0 / 20 等有限非负值。
 - 验证：非法值与 watchdog 回归、既有零预算和退出释放锁均须通过。并发写、失败 staging 重建、Windows Unicode 路径的真实句柄拒绝在修复前已通过。最终工作提交 CI 另行核对，不把预期红色任务或未执行项算通过。见 [记录 §43](record.md#43-最小启动--缓存成本诊断与共享锁预算边界分步记录)。
 
-当前 dev 已确认 B-056 / B-057 / B-058 / B-059，修复候选在草案工作分支，尚未合入 dev；见对应条目。B-053（跨Study输入共享）和B-054（关闭扩展时的初始冻结拒绝保全）已通过[PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)合入dev `614d0a6`；工作提交07bcf2e的Unit tests / Build package / Branch flow及实际矩阵均通过，开发与实验依据见[集成记录](record.md#39-共享与三个反馈修复合入-dev)。实际dev集成提交的CI单独核对，不用PR通过替代。
+当前 dev 已确认 B-056 / B-057 / B-058 / B-059 / B-060，修复候选在草案工作分支，尚未合入 dev；见对应条目。B-053（跨Study输入共享）和B-054（关闭扩展时的初始冻结拒绝保全）已通过[PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)合入dev `614d0a6`；工作提交07bcf2e的Unit tests / Build package / Branch flow及实际矩阵均通过，开发与实验依据见[集成记录](record.md#39-共享与三个反馈修复合入-dev)。实际dev集成提交的CI单独核对，不用PR通过替代。
 
 B-055 的原生 launch 重试关闭入口已通过 [PR #42](https://github.com/DreamSoul-AI/RPipe/pull/42) 合入 dev `8c15cd84f8a47d5bfeb80edfa69bc5c370998e74`。最终工作提交 `8269bff` 的三项必需检查及实际 dev 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38557561151) / [Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38557561212) 均通过，包含 Windows / Python 3.13；开发证据见 [记录 §40](record.md#40-原生-launch-显式关闭失败重试41验证通过)。默认重试仍保留，#41 不自动关闭。
 
@@ -55,6 +64,6 @@ GitHub #36—#38及#41仍保持open，原v0.3.1/main尚未发布这些修复；�
 
 B-002、B-021 / B-024及B-025至B-029的既有修复证据仍在 [record.md](record.md)。B-022 / B-023 的代表性容量、精度合同与探索边界保留各自报告；本轮新的设备 / 并发结果见 [本轮执行记录](../../studies/main_exp/docs/v030_execution.md)。未实测支持范围不是已通过，缺环境依赖的导入失败也不自动列为库缺陷。
 
-B-031 至 B-059 已使用，编号不复用。下次新增问题从 **B-060** 起编号。
+B-031 至 B-060 已使用，编号不复用。下次新增问题从 **B-061** 起编号。
 
 新增条目一条一事，记录编号、open / investigating状态、复现条件、期望 / 实际、影响落点、方案和实际验证证据。
