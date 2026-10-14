@@ -61,10 +61,12 @@ def source_files(study_dir: Path | str, study: dict[str, Any]) -> dict[str, str]
         if not matched:
             raise FileNotFoundError(f'provenance.include matched nothing: {pattern}')
         names.extend(path.relative_to(study_dir).as_posix() for path in matched if path.is_file())
-    for name in names:
+    seen = set()
+    for name in dict.fromkeys(names):
         path = _inside(study_dir, name)
-        if path.is_file():
+        if path not in seen and path.is_file():
             out[path.relative_to(study_dir).as_posix()] = _sha256(path)
+            seen.add(path)
     return out
 
 
