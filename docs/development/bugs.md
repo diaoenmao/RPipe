@@ -8,13 +8,15 @@
 
 ### B-062：同字节共享引用发布的临时名仍依赖时钟，可被并发写者共用
 
-- 状态：open，原草案 c3b8cef 的 link_input 已本机复现；一行候选修复和相关 92 项通过，最终提交 CI 待核对；与 B-057 的 atomic_write_text 是不同发布入口，同属临时名唯一性边界，不重复登记旧文本写入反例。
+- 状态：open，原草案 c3b8cef 的 link_input 已本机复现；一行候选修复和最终相关 93 项通过，最终提交 CI 待核对；与 B-057 的 atomic_write_text 是不同发布入口，同属临时名唯一性边界，不重复登记旧文本写入反例。
 - 来源：主动审查 shared.link_input 的递归临时引用发布及 reference_tree 调用方。标准 DataFactory / 迁移有外层共享锁；本反例针对直接并发调用引用 helper，不声称现有锁保护流程或正式数据已经损坏。
 - 条件与期望：两个线程同时把同一已存在、内容相同的独立副本转为同一不可变源的引用。每个写者必须只发布/清理自己的 staging；两次调用均成功、最终 samefile、源字节和 peer 文件不变。固定 time_ns 读数是有效时钟语义，不能作为唯一性保证。
 - 实际：.link 临时名只含目标、PID、time_ns。冻结时钟后两个写者共用 staging，Windows 分别出现 PermissionError / FileExistsError，另一写者在用于同步发布的测试 barrier 退出；两种 backend 都失败。没有把 barrier 当生产锁死或原 480 s 根因。
 - 证据：.tmp/e062-red/ 的真实文件/线程回归为 2 failed / 3 passed，4.25 s；default 与强制 hardlink 的 frozen-clock 两项失败，正常时钟与发布拒绝保全通过。JUnit 和原日志保留，不随 clone 提供；只使用合成小文件。
-- 最小方案：临时名改用 shared.py 已导入的 uuid nonce，复用 B-057 的成熟模式，不新增锁/依赖或改变 symlink→hardlink fallback、原子 replace、冲突拒绝及 finally 清理。验证发布拒绝时源/旧副本/peer 完整；不扩展为可变 Run 多写者协议，也不宣称任意缺失目标的并发创建合同。
+- 最小方案：临时名改用 shared.py 已导入的短 UUID-only nonce + .link，不携带完整目标名，复用 B-057 的成熟模式，不新增锁/依赖或改变 symlink→hardlink fallback、原子 replace、冲突拒绝及 finally 清理。验证发布拒绝时源/旧副本/peer 完整；不扩展为可变 Run 多写者协议，也不宣称任意缺失目标的并发创建合同。
 
+
+- 候选复审：首版完整目标名+UUID 对合法 220 字符文件名产生新回归；旧 c3b8cef 实测成功，候选 .tmp/e062-name-red/ 1 failed 保留。短名修正后新增第六项实际文件系统回归，最终 .tmp/e062-final/ 93 passed；Windows 仅显式扩展路径，未改系统策略。
 
 ### B-061：Git status 查询失败被记为可靠的 dirty 布尔值
 

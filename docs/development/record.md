@@ -26,7 +26,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | 零评测预算（B-018） | `eval_num_steps=0` 仍读取并评测第一批 | 读取数据前报错；正数限批、缺省/负数完整 test 的语义保留 | 第二节 §7 |
 | CLI 重试控制（B-055 / #41） | API 有关闭入口，CLI 始终默认重试一次；非恢复型任务的第二次错误可覆盖首个最终错误 | `launch --no-retry` 显式传递既有 API；默认重试和 train→eval 屏障保留，首个失败可由单次执行保留 | 第二节 2026-10-14 §40 |
 | Git 来源失败（B-061，草案） | status 非零退出仍被写成 dirty 布尔值 | 失败返回空 Git 元数据；11 项新增边界、本机相关 87 项通过，尚未集成 | 第二节 2026-10-14 §48 |
-| 共享引用并发（B-062，草案） | 同字节引用发布临时名可被同 tick 写者共用 | 每个 staging 使用 UUID；5 项新增边界、本机相关 92 项通过，尚未集成 | 第二节 2026-10-15 §49 |
+| 共享引用并发（B-062，草案） | 同字节引用发布临时名可被同 tick 写者共用 | 每个 staging 使用 UUID；6 项新增边界、本机相关 93 项通过，尚未集成 | 第二节 2026-10-15 §49 |
 | 原生恢复（B-021） | checkpoint 缺少 RNG 与数据位置，续训样本后缀和最终权重可偏离连续运行 | 在单进程、受支持 sampler / batch metric 合同下保存并恢复完整训练状态；不匹配配置拒绝，其他路径明确提示部分恢复 | 第二节 2026-10-12 §6 |
 | epoch 停止（B-024） | 累积尾 batch 可导致多跑 epoch；整轮无 optimizer 更新时可能无限循环 | epoch 按声明轮数停止，已完成恢复不重训；整轮无法更新时报错，原尾 batch 丢弃语义保留 | 第二节 2026-10-12 §7 |
 | 曲线进度与回滚 | 横轴按 history 记录序号；记录频率变化不能直接解释为训练步数，恢复后的回滚分支未单独排除 | 按 optimizer_step / epoch 对齐；保留原始日志，聚合时排除回滚分支、处理重复坐标并记录逐点 n | [曲线修复记录](brainstorm.md#4-已经做的) |
@@ -93,14 +93,15 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ### 49. 共享引用发布隔离与源码扫描对照（B-062，草案）
 
-本轮主动审查发现 B-062：同字节副本转共享引用的临时名仍依赖时钟，与之前已修的文本发布入口不同。修复前 2 failed / 3 passed，候选一行 UUID 修复后相关 92 项通过。PR #46 保持草案，未合入 dev/main；最终提交必须单独核对必需 CI，不能使用 c3b8cef 的旧通过替代。
+本轮主动审查发现 B-062：同字节副本转共享引用的临时名仍依赖时钟，与之前已修的文本发布入口不同。修复前 2 failed / 3 passed，首轮候选相关 92 项通过，随后长文件名回归发现新反例并修正，最终相关 93 项通过。PR #46 保持草案，未合入 dev/main；最终提交必须单独核对必需 CI，不能使用 c3b8cef 的旧通过替代。
 
 #### （一）复现、改前改后与范围
 
 1. 核对 shared.link_input 的递归 staging、reference_tree 的调用，以及 DataFactory 原始文件布局桥接、显式共享迁移。Factory/迁移的外层锁仍存在，本反例是直接并发调用不可变引用 helper，未声称正式锁保护链已失败或历史数据损坏。
 2. 改前临时名为目标名/PID/time_ns；两个线程验证同一已存在的独立副本与源字节相同后，用 barrier 在发布前汇合。冻结 time_ns 时，default 引用和强制 hardlink 路径均共用临时名：分别见 PermissionError、FileExistsError，另一写者因同构测试 barrier 退出。barrier 是测试同步工具，不是生产锁死证据或原 480 s 根因。
-3. 修复只把 time_ns 换为 shared.py 已导入的 uuid4 nonce，复用原子文本发布的现有方案。原子 replace、finally 清理、symlink→hardlink fallback、不同内容拒绝、缓存格式及外层锁都不变。每个写者拥有自己的临时引用，不增加数据副本、不删除源或 peer。
-4. 新增五项真实文件/线程边界：正常/冻结时钟 × default/hardlink，以及发布 PermissionError 保全源、原副本和 peer。修复前 `.tmp/e062-red/` 为 2 failed / 3 passed，4.25 s；修复后联合共享、原子写、来源及事件回归 `.tmp/e062-green/` 为 92 passed，4.20 s，无跳过。原始日志、JUnit 与独立 basetemp 均保留，不随 clone 提供。
+3. 最终一行修复把目标/PID/时钟拼接名改为短 uuid4 hex + .link，使用 shared.py 已导入的 UUID，不再携带完整目标名。原子 replace、finally 清理、symlink→hardlink fallback、不同内容拒绝、缓存格式及外层锁都不变。每个写者拥有自己的临时引用，不增加数据副本、不删除源或 peer。
+4. 首先新增五项真实文件/线程边界：正常/冻结时钟 × default/hardlink，以及发布 PermissionError 保全源、原副本和 peer。修复前 `.tmp/e062-red/` 为 2 failed / 3 passed，4.25 s；修复后联合共享、原子写、来源及事件回归 `.tmp/e062-green/` 为 92 passed，4.20 s，无跳过。原始日志、JUnit 与独立 basetemp 均保留，不随 clone 提供。
+5. 提交前补实际 220 字符合法目标名：Windows 显式使用扩展路径，不修改 LongPathsEnabled；POSIX 用普通临时目录。旧 c3b8cef 的 timestamp 实现成功，首候选 494c064 的“完整目标名+UUID”因临时 basename 过长失败，.tmp/e062-name-red/ 为 1 failed，0.16 s。保留首候选及原始 CI，不把它计为最终验收。改为短 UUID-only basename 后新增该回归，.tmp/e062-final/ 最终 93 passed，4.18 s；源与目标 samefile，源字节/peer/清理不变。没有承诺所有路径、文件系统或自动扩展路径兼容；调用者仍需合法可访问的父目录。
 
 本轮不扩展为任意缺失目标的并发创建合同或可变 Run 多写者协议；模型对象、checkpoint、sampler、RNG 仍独立。没有修改下游 vendor/实验或迁移正式输入。
 
@@ -130,8 +131,8 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 #### （三）合并前执行清单
 
-1. 相对 c3b8cef 的生产改动仅 shared.py 临时名的一行替换；既有 B-061 两行、其他草案修复不变，git diff --check 无问题。
-2. 验证五项引用边界、92 项相关通过和两项原始失败，保留各批证据；检查源码扫描诊断的退出码、mapping 相等、冻结来源/脚本/原始记录 hash 与外部资源守卫边界。
+1. 相对 c3b8cef 的生产改动仅 shared.py 短 UUID 临时名的一行替换；既有 B-061 两行、其他草案修复不变，git diff --check 无问题。
+2. 验证六项引用边界、93 项最终相关通过（并保留前轮 92 项）和两项原始失败，保留各批证据；检查源码扫描诊断的退出码、mapping 相等、冻结来源/脚本/原始记录 hash 与外部资源守卫边界。
 3. 必需 CI 绑定当前 PR head：四环境 CPU core/Flow、两平台独立 wheel/sdist、Branch flow 必须实际完成并成功；skip 不算通过。可执行检查结果写 `.tmp/cache-lock-budget/checks-<head>.json`，并在 PR 正文给出最终链接。
 4. PR Draft/open/no-auto-merge，保留活动分支；dev/main、发布、Issue 状态、计费、数据/Run/provenance 不变。原 480 s 慢因与人类集成决定仍分别未闭环/未执行，不把已完成旧 CI 或历史 pending 再次派发。
 

@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import SimpleNamespace
 import threading
+import os
 
 import pytest
 
@@ -70,3 +71,15 @@ def test_failed_reference_publication_preserves_original_and_peer(tmp_path, monk
     assert not target.samefile(source)
     assert peer.read_bytes() == b'peer writer'
     assert set(tmp_path.iterdir()) == {source, target, peer}
+
+
+def test_reference_promotion_preserves_valid_long_filename(tmp_path):
+    # Extended Windows paths avoid changing the machine's LongPathsEnabled policy.
+    root = Path('\\\\?\\' + str(tmp_path.resolve())) if os.name == 'nt' else tmp_path
+    source, target = root / 'source', root / ('x' * 220)
+    source.write_bytes(b'immutable payload')
+    target.write_bytes(source.read_bytes())
+    assert shared.link_input(source, target) == target
+    assert target.samefile(source)
+    assert source.read_bytes() == target.read_bytes() == b'immutable payload'
+    assert set(root.iterdir()) == {source, target}
