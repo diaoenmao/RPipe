@@ -277,3 +277,76 @@ def test_interrupted_resource_retry_preserves_failed_staging_and_publishes_fresh
     def no_rebuild(staging):
         pytest.fail('published inputs must be reused')
     assert prepared_resource(tmp_path, {'revision': 'retry'}, ['data'], no_rebuild) == (cache, digest)
+
+
+
+def test_zero_wait_busy_lock_preserves_cause_and_releases_handle(tmp_path, monkeypatch):
+    import errno
+    from types import SimpleNamespace
+    import rpipe.structure.artifact.shared as shared
+
+    error = BlockingIOError(errno.EACCES, 'fixture occupied lock')
+    def busy(*args):
+        raise error
+    def no_sleep(delay):
+        pytest.fail('zero budget must not sleep')
+    with monkeypatch.context() as patch:
+        if os.name == 'nt':
+            import msvcrt
+            patch.setattr(msvcrt, 'locking', busy)
+        else:
+            import fcntl
+            patch.setattr(fcntl, 'flock', busy)
+        patch.setattr(shared, 'time', SimpleNamespace(monotonic=lambda: 100, sleep=no_sleep))
+        with pytest.raises(TimeoutError, match='shared input preparation locked') as caught:
+            with cache_lock(tmp_path, timeout=0):
+                pytest.fail('occupied lock was acquired')
+        assert caught.value.__cause__ is error
+    with cache_lock(tmp_path, timeout=0):
+        pass
+
+
+def test_non_contention_lock_error_is_not_retried_or_wrapped(tmp_path, monkeypatch):
+    import errno
+    from types import SimpleNamespace
+    import rpipe.structure.artifact.shared as shared
+
+    error = OSError(errno.EBADF, 'fixture invalid descriptor')
+    calls = []
+    def broken(*args):
+        calls.append(args)
+        raise error
+    def no_sleep(delay):
+        pytest.fail('descriptor errors must not retry')
+    with monkeypatch.context() as patch:
+        if os.name == 'nt':
+            import msvcrt
+            patch.setattr(msvcrt, 'locking', broken)
+        else:
+            import fcntl
+            patch.setattr(fcntl, 'flock', broken)
+        patch.setattr(shared, 'time', SimpleNamespace(monotonic=lambda: 100, sleep=no_sleep))
+        with pytest.raises(OSError) as caught:
+            with cache_lock(tmp_path):
+                pytest.fail('broken descriptor was accepted')
+        assert caught.value is error and len(calls) == 1
+    with cache_lock(tmp_path, timeout=0):
+        pass
+
+
+def test_nested_lock_exception_keeps_outer_owner_then_releases_for_other_thread(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+
+    def acquire():
+        with cache_lock(tmp_path, timeout=0):
+            return 'acquired'
+    with ThreadPoolExecutor(max_workers=1) as worker:
+        with pytest.raises(RuntimeError, match='outer interrupted'):
+            with cache_lock(tmp_path, timeout=0):
+                with pytest.raises(ValueError, match='inner interrupted'):
+                    with cache_lock(tmp_path / '.', timeout=0):
+                        raise ValueError('inner interrupted')
+                with pytest.raises(TimeoutError):
+                    worker.submit(acquire).result(timeout=10)
+                raise RuntimeError('outer interrupted')
+        assert worker.submit(acquire).result(timeout=10) == 'acquired'

@@ -89,6 +89,22 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-14
 
+### 44. 草案 #46 的锁错误边界与合并前检查
+
+本轮先核对工作区并 fetch origin；继续使用 codex/cache-lock-budget，不新建分支。开放 #36 / #37 / #38 / #41 及评论均为已修复条件，没有新的复现。只读复查 dayan、quantization 和 denoising speculative decoding（output_space Study 所在会话）：当前分别在比例控制、固定坐标对照和代理舍入研究阶段，没有新的上游 KeyError、锁或调度反例。旧业务 KeyError、外部 480 秒预算耗尽仍按 §40–§43 区分归属，不重复登记为新缺陷；没有向下游发消息或更换 vendor。
+
+改前：草案已验证非法预算和 staging 身份，但未分别断言零等待的异常因果、非竞争系统错误不重试、嵌套异常的外层所有权。改后：新增三个 test_shared 边界回归；零等待忙锁保留原异常为 cause 且不 sleep，EBADF 原对象只抛一次且不包装，两者失败后均能重新取得真实锁；嵌套异常不能提前释放外层锁，外层异常退出后另一线程可立即取得。复用现有 helper，不修改生产代码、默认重试、Run 或数据格式。本机下游仍有校准，实际执行沿用独立 Actions 的四环境 core 和 CPU Flow，不启动竞争本地 pytest；本轮最终提交未完成 CI 前不计通过。
+
+上轮确切工作提交 9c83564f6b229f3c254fb9170c6b5694e6687a21 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38573137667)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38573137647)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38573137727) 均通过。这些是上轮证据，不代替新增三个用例后的最终提交验收；§43 首轮失败、跳过和已验证复现继续保留。
+
+合并前清单（[PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46) 当前只交付草案）：
+
+1. 核对 PR 最新 head、干净工作区和 origin/dev；按最终 head 确认四个 CPU 环境、两平台 wheel/sdist 及 Branch flow 全部实际 success，不能拿旧 head 或 skipped 代替。
+2. 保留 38570617049 的预算失败复现、38571738491 的 Windows/Python 3.10 并发反例及后续全部结果，检查原子写入、锁释放和 CPU Flow 的断言没有放宽。
+3. 再核对生产差异仅预算入口校验和临时 nonce；默认 120 秒、有效零预算、重入、清理、Windows 有界重试、正式字节和单 Run 单写者合同均保持。
+4. B-056 / B-057 在 dev 9324014 仍未修复；已发布 main v0.3.1 / 7a15c46 也没有本草案修复。下游继续固定旧源码，草案 CI 不等于部署或下游复验；原 480 秒根因仍未确认。
+5. 等待人类明确的新集成授权，之前不得转 ready、自动合并、合并或删除活动分支。若以后授权集成，先按 cicd.md 核对最新 dev 和必需检查，再验证实际集成提交，更新 bugs 状态；不自动发布或关闭 Issue。
+
 ### 43. 最小启动 / 缓存成本诊断与共享锁预算边界（分步记录）
 
 第一步已完成工程诊断：[独立 Windows CPU 任务](https://github.com/DreamSoul-AI/RPipe/actions/runs/38568650365)，诊断提交 f3885c958b6dde7f4a983f1ece3d4244e1c886f4，生产 src 与 dev 9324014985680a0d186863cd135faa53a2e7bcbf 无差异。Windows Server 2025 / Python 3.13、AMD EPYC 7763、4 个逻辑 CPU；torch 2.14.1、NumPy 2.5.4、PyYAML 6.0.3。CUDA_VISIBLE_DEVICES 为空，OMP / MKL / OpenBLAS 均 1 线程；无 GPU、外部数据、预训练权重或训练。原量化设备为另一硬件和 torch 2.11，不能直接速度校准或推断旧现场根因。
