@@ -97,6 +97,14 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 77. v0.4.0 发布授权接续（准备阶段）
+
+Enmao明确更正“合dev后停止”，授权由本任务继续：dev→main发布PR、普通merge（不squash/强推/删分支）、实际main验收后 annotated tag v0.4.0、GitHub Release正文使用入库报告，发布后分别留言并关闭#36/#37/#38/#41/#48/#50。此授权取代§76及旧handover的“交监督助手”执行边界；不扩大到#53、数据/分支删除、PyPI或二进制发布。
+
+复用已合PR57的codex/v040-layout-release，先ff到实际dev79bcce0，再仅更新README、发布报告和当前版本入口；运行源码、目录、版本、测试均不变。PR57最终head全实际CI已通过，实际dev79bcce0的Unit38652463042/Package38652463047另行核对，不把旧pending或通过记录混淆。最终发版事实与链接在完成后追加，当前节不是已发布声明。
+
+GitHub连接未暴露创建Release工具接口；发布采用已认证gh对GitHub API的正式调用。不会为了补接口安装插件、使用浏览器凭据或更改计费。本轮不测速、不跑GPU、不干预下游实验，保留旧失败和全部分支/数据。
+
 ### 76. v0.4.0 目录合同、迁移材料与版本准备
 
 按 Enmao 本次指令，从已验收 dev 5cff920 建唯一工作分支 codex/v040-layout-release。项目根 shared/data、shared/model 沿用现有实现与位置，作为 studies 下各 Study 共用的不可变输入；Run 的模型对象、checkpoint、sampler、RNG 及可变状态不共享。未迁移正式数据、未重训 Study、未修改产物格式或运行路径。

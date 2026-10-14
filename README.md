@@ -2,7 +2,7 @@
 
 RPipe（Research Pipeline）是研究项目的代码架构与执行模板，本仓库的参考实现使用 Python 包名 `rpipe`。用 YAML 声明实验因素与 seed，展开并运行实验，再将配置、结果、日志、checkpoint 和跨 seed 汇总保存到同一 Study 中。
 
-当前模板版本为 **0.4.0（发布准备，尚未打标签）**，提供源码模板接入、跨 Study 不可变输入共享、原生 PyTorch / Hugging Face Trainer 通路、checkpoint/resume、运行日志与跨 seed 汇总。项目级输入固定在 `shared/data/`、`shared/model/`，Run 状态独立；完整目录合同见 [layout.md](docs/code/layout.md)，迁移与正确性修复见 [v0.4.0 发布材料](docs/releases/v0.4.0.md)。main / tag / GitHub Release 的发布由维护者另行执行。
+当前模板版本为 **0.4.0**，提供源码模板接入、跨 Study 不可变输入共享、原生 PyTorch / Hugging Face Trainer 通路、checkpoint/resume、运行日志与跨 seed 汇总。项目级输入固定在 `shared/data/`、`shared/model/`，Run 状态独立；完整目录合同见 [layout.md](docs/code/layout.md)，迁移与正确性修复见 [v0.4.0 发布材料](docs/releases/v0.4.0.md)。固定发布来源见 [v0.4.0](https://github.com/DreamSoul-AI/RPipe/releases/tag/v0.4.0)。
 
 其他项目接入从[在其他项目中使用 RPipe](#在其他项目中使用-rpipe)开始：将固定版本的源码复制到项目的 `src/rpipe/`，按 structure / flow 两柱组织自己的代码，在自己的仓库声明和运行 Study。
 
@@ -60,7 +60,7 @@ Agent 的文档导航与通用工作约定见 [AGENTS.md](AGENTS.md)。
 
 ### 1. 将固定版本源码复制到 src
 
-本轮准备的固定模板版本为 `v0.4.0`，该标签尚未建立；以下示例须等维护者完成发布后再执行，发布前继续使用已发布的 `v0.3.1` 固定来源，不把 dev 当作发布标签。先取得目标标签对应的 checkout 并记录其确切提交，以下命令在下游仓库根执行；已有该版本 checkout 时可直接使用，不必重新 clone。历史实验来源不因此改写：
+当前固定模板标签为 `v0.4.0`；使用标签的确切提交，不把 dev 当作发布标签。先取得目标标签对应的 checkout 并记录其确切提交，以下命令在下游仓库根执行；已有该版本 checkout 时可直接使用，不必重新 clone。历史实验来源不因此改写：
 
 ```bash
 git clone --branch v0.4.0 https://github.com/DreamSoul-AI/RPipe.git .tmp/rpipe-v0.4.0

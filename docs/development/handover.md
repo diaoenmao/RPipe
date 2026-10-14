@@ -1,5 +1,9 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-15 v0.4.0 已授权继续发布
+
+以Enmao最新明确指令为准：本任务继续完成dev→main普通merge、实际main CI验收、annotated tag v0.4.0、GitHub Release，再留言并关闭#36/#37/#38/#41/#48/#50。先检查实际PR/tag/Release与Issue状态，复用codex/v040-layout-release，不重复发布或移动已有标签。下方“仅合dev后停止/由监督助手发布”是当时状态，已被本节取代。#53不在关闭清单，分支和数据不删，不squash/强推，仍不测速、不跑GPU。完成事实见[record](record.md)，精确PR/commit/CI以Release附录为准。
+
 ## 2026-10-15 v0.4.0 目录规范与发布准备
 
 本轮唯一工作分支 codex/v040-layout-release 从已验收dev5cff920建立，按Enmao授权准备0.4.0并经PR合dev后停止；实际PR/head/mergeCommit与CI以最新状态为准，避免重复建分支或用下方历史pending状态重派任务。项目根 shared/data、shared/model 不搬，layout.md补位置/内容/写入方与“先文档后路径”合同，新增真实默认路径与文档对照；生产仅版本号更新。pyproject、__version__、README为0.4.0候选，[发布材料](../releases/v0.4.0.md)包括0.3.x迁移命令、私有设置、三类正确性与已修Issue，见[record §76](record.md#76-v040-目录合同迁移材料与版本准备)。
