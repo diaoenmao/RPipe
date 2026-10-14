@@ -107,7 +107,7 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 | --- | --- | --- | --- |
 | 第三类 / PR52 / B071 | 可替换文本绕过原子发布，index编码失败截断旧证据 → 复用原atomic链，保留LF和mode | 129通过 /1 POSIX跳过；全部15红合同在最终批次 | head eb52c65及实际dev ea2210b全实际CI通过；Issue53仍open |
 | 第二类 / PR54 | 分散读取、先信旧mode → 私有三态读取与计划字段校验，保留缺配置历史fallback | 最终107通过，原seed和TypeError候选失败保留；16新合同实际执行 | head41982bf全实际CI通过，合dev945c992，实际dev独立CI另核对 |
-| 第一类 / 当前PR | 内联保全决策 → 同一私有predicate，范围原样 | 基线42、最终128均通过 | 最终head与实际dev CI待独立验收，不以本机或上两类代替 |
+| 第一类 / [PR55](https://github.com/DreamSoul-AI/RPipe/pull/55) | 内联保全决策 → 同一私有predicate，范围原样 | 基线42、最终128均通过 | 最终head与实际dev CI待独立验收，不以本机或上两类代替 |
 
 三类均无新模块、产物目录、schema或result含义，特殊协议不搬动；第七节能力不实施，不测速/GPU/正式Study复跑，不合main、不删分支/数据、不自动关闭Issue。最终PR正文给出当前head和实际dev验收链接；旧record的待审/待CI文字保留为对应时点事实，不当作新未修缺陷。
 

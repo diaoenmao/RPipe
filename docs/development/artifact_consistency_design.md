@@ -159,6 +159,6 @@
 
 ## 十、实施进度
 
-按第三类→第二类→第一类执行，均复用现有文件和函数：第三类 PR52 的最终 head 与实际 dev 全实际 CI 通过；第二类 PR54 的最终 head 通过并合 dev，实际 dev 独立验收；第一类候选只提取原保全 predicate，基线42与相邻128项通过。完整改前/改后、失败和未完成门见 [record §69–73](record.md)，最终集成状态以对应 PR 的确切提交 / CI 为准。
+按第三类→第二类→第一类执行，均复用现有文件和函数：第三类 PR52 的最终 head 与实际 dev 全实际 CI 通过；第二类 PR54 的最终 head 通过并合 dev，实际 dev 独立验收；第一类 [PR55](https://github.com/DreamSoul-AI/RPipe/pull/55) 候选只提取原保全 predicate，基线42与相邻128项通过。完整改前/改后、失败和未完成门见 [record §69–73](record.md)，最终集成状态以对应 PR 的确切提交 / CI 为准。
 
 特殊追加、checkpoint、锁协议保持，第七节能力未实施；没有布局、schema或result含义变化，未测速或运行GPU，未合main。
