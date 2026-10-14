@@ -13,9 +13,13 @@ pytestmark = [pytest.mark.unit, pytest.mark.content, pytest.mark.p1,
               pytest.mark.result_type('categorical', detail='summary')]
 
 
-def test_atomic_writers_publish_complete_payloads_and_keep_peer_stage(tmp_path, monkeypatch):
+@pytest.mark.parametrize('clock', ['real', 'frozen'])
+def test_atomic_writers_publish_complete_payloads_and_keep_peer_stage(tmp_path, monkeypatch, clock):
     import rpipe.structure.artifact._atomic as atomic
 
+    if clock == 'frozen':
+        from types import SimpleNamespace
+        monkeypatch.setattr(atomic, 'time', SimpleNamespace(time_ns=lambda: 123, sleep=atomic.time.sleep))
     target = tmp_path / 'result.txt'
     target.write_text('old', encoding='utf-8')
     peer = tmp_path / 'result.txt.peer.tmp'
