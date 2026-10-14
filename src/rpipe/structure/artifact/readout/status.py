@@ -29,7 +29,7 @@ def _read_optional(path: Path | None, loader) -> tuple[str, Any]:
         return 'available', loader(path)
     except FileNotFoundError:
         return 'missing', None
-    except (OSError, UnicodeError, TypeError, ValueError, ArtifactError, yaml.YAMLError):
+    except (OSError, UnicodeError, ValueError, ArtifactError, yaml.YAMLError):
         return 'unreadable', None
 
 
