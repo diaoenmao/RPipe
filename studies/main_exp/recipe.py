@@ -1,6 +1,8 @@
 """Register historical builders; explicit preflight/calibrate commands never run on import."""
 from __future__ import annotations
 
+from rpipe.structure.artifact.shared import shared_paths
+
 import copy
 import hashlib
 import importlib.util
@@ -320,7 +322,7 @@ def main(argv: list[str] | None = None) -> int:
     before = source_files(STUDY, study)
     stamp = datetime.now(timezone.utc).strftime('%Y%m%d')
     output = REPO / '.tmp' / f'historical-preflight-{stamp}-{uuid.uuid4().hex[:8]}'
-    report = preflight(data_root=STUDY / 'shared' / 'data', output_dir=output, steps=600, device='cuda')
+    report = preflight(data_root=shared_paths(STUDY)['data'], output_dir=output, steps=600, device='cuda')
     if before != source_files(STUDY, study):
         raise RuntimeError('source/configuration changed during preflight; retained output is not a valid launch gate')
     report.update(source_hashes=before, output_dir=str(output), environment=capture_environment())

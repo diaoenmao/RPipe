@@ -50,3 +50,55 @@ def test_logs_prints_events_in_time_order(tmp_path: Path, capsys):
     assert 'Traceback' not in out
     assert not (study / 'logs').exists()
     assert main(['logs', str(tmp_path / 'missing')]) == 2
+
+
+@pytest.mark.parametrize('operation', ['stat', 'read'])
+def test_logs_skip_only_unreadable_run_and_keep_peer_events(tmp_path, monkeypatch, operation):
+    from rpipe.structure.artifact.readout.logs import event_lines
+    write_index(tmp_path, {'study': 'logs', 'experiments': [{'factors': {}, 'runs': [{'id': 'bad'}, {'id': 'peer'}]}]})
+    logs = [tmp_path / 'runs' / run / 'assets/logs/run.log' for run in ['bad', 'peer']]
+    for path in logs:
+        path.parent.mkdir(parents=True)
+        path.write_text(f'[flow] {path.parts[-4]} event\n', encoding='utf-8')
+    before = {p: p.read_bytes() for p in logs}
+    method = 'is_file' if operation == 'stat' else 'read_text'
+    original = getattr(Path, method)
+    def denied(path, *args, **kwargs):
+        if path == logs[0]:
+            raise PermissionError('log denied')
+        return original(path, *args, **kwargs)
+    monkeypatch.setattr(Path, method, denied)
+    assert event_lines(tmp_path) == ['[flow] peer event']
+    assert {p: p.read_bytes() for p in logs} == before
+
+
+def test_logs_unexpected_probe_error_is_not_hidden(tmp_path, monkeypatch):
+    from rpipe.structure.artifact.readout.logs import event_lines
+    write_index(tmp_path, {'study': 'logs', 'experiments': [{'factors': {}, 'runs': [{'id': 'bad'}]}]})
+    path = tmp_path / 'runs/bad/assets/logs/run.log'
+    original = Path.is_file
+    def broken(candidate):
+        if candidate == path:
+            raise RuntimeError('unexpected log probe failure')
+        return original(candidate)
+    monkeypatch.setattr(Path, 'is_file', broken)
+    with pytest.raises(RuntimeError, match='unexpected log probe failure'):
+        event_lines(tmp_path)
+
+
+@pytest.mark.parametrize('reader', ['note', 'events'])
+def test_log_decoder_programming_typeerror_is_not_optional_io(tmp_path, monkeypatch, reader):
+    from rpipe.structure.artifact.readout.status import _note_from_log
+    from rpipe.structure.artifact.readout.logs import event_lines
+    write_index(tmp_path, {'study': 'logs', 'experiments': [{'runs': [{'id': 'bad'}]}]})
+    path = tmp_path / 'runs/bad/assets/logs/run.log'
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b'event')
+    original = Path.read_text
+    def broken(candidate, *args, **kwargs):
+        if candidate == path:
+            raise TypeError('decoder programming error')
+        return original(candidate, *args, **kwargs)
+    monkeypatch.setattr(Path, 'read_text', broken)
+    with pytest.raises(TypeError, match='decoder programming error'):
+        _note_from_log(path) if reader == 'note' else event_lines(tmp_path)

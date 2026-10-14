@@ -15,7 +15,7 @@
 | `study.yaml`、`experiment_config.yaml` | 64 个 Run 的声明；`recipe`、`freeze`、`provenance.include` 见 [Study 指南](../README.md) |
 | `recipe.py` | `register(ctx)`：调用 structure 注册 `historical_4ccb28d` 数据与模型，设置确定性环境，拒绝续跑中断的 train，检查 preflight。`python -B recipe.py preflight` 保留显式 600-step 原代码对照入口，不在导入或注册时训练 |
 | `flow/execute/speed.py` | 由 `recipe.py calibrate` 调用的历史 / 当前链同条件阶段计时，独立测量 ID 与数值校验；手动校准，不自动进入阶段链，见 [校准方案](docs/speed_calibration.md) |
-| `flow/prepare_data.py` | 下载或复用 MNIST / CIFAR10 原始文件，逐文件核对 [EXPECTED_DATA.json](docs/EXPECTED_DATA.json)，写入 `shared/data/` |
+| `flow/prepare_data.py` | 下载或复用 MNIST / CIFAR10 原始文件，逐文件核对 [EXPECTED_DATA.json](docs/EXPECTED_DATA.json)，写入项目级 `shared/data/` |
 | `flow/process/curves.py` | 终验：四 seed 均值曲线对原图估读的固定门，输出 `docs/COMPARISON.json` 与图；同一实现支持手动完整 / partial 读取，不再保留根目录转调脚本 |
 | `flow/prepare/run.py` | 库 prepare 后核对实际 Data/Model 的配方来源与实际运行条件；建构前注册和安全门仍在 recipe |
 | `flow/process/run.py` | 库 Study 聚合后调用 `curves.py` 执行曲线门；每条 Run 的 process 不重复执行终验。手动读取直接调用 `curves.py` |
@@ -25,6 +25,10 @@
 | `docs/reference/` | 两张原图，逐字节保留 |
 
 ## 二、命令
+
+原始输入默认放在项目根 `shared/data/`，与其他 Study 共用。已有本机缓存先运行 `python -m rpipe shared studies/main_exp --migrate`，按 hash 核对并保留旧路径引用，原正式 Run / 来源清单不改写。prepare_data、preflight 和容量 / 精度工具解析同一共享根；独立复验仍需新 version 与 fresh make。
+
+processed按固定4ccb28d格式、raw hash与依赖版本缓存在`shared/data/derived/`，与其他归档格式分开；对象、transform和sampler每次重新构造，不共享训练状态。缓存完整发布后才读取，失败或损坏保留诊断。
 
 本轮实测后采用 `system.config.vram_bytes=4.5 GiB`、原生自动两并发及 safety=0.5，推导和资源保护见 [资源选择](docs/resource_choice_v030.json)。预算只针对本轮设备和配方，不能直接套用到 main_probe 或其他电脑。模型、数据增强、CPU 2 线程、workers0、batch250、完整 test10000、评测 / 保存频率和总预算不变。
 
@@ -61,11 +65,12 @@ python -m rpipe report studies/main_exp
 
 ```python
 from pathlib import Path
+from rpipe.structure.artifact.shared import shared_paths
 from runpy import run_path
 study = Path('studies/main_exp').resolve()
 recipe = run_path(str(study / 'recipe.py'))
 recipe['bootstrap']()
 recipe['preflight'](
-    study / 'shared/data', study / 'shared/validation/<new-validation-id>',
+    shared_paths(study)['data'], study / 'shared/validation/<new-validation-id>',
     steps=200, seed=0, device='cuda', combinations=[('MNIST', 'linear')])
 ```

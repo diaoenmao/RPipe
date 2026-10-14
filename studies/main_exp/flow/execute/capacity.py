@@ -1,6 +1,8 @@
 """Manual native Flow capacity validation; all computation remains in RPipe."""
 from __future__ import annotations
 
+from rpipe.structure.artifact.shared import shared_paths
+
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 import json
@@ -15,7 +17,7 @@ STUDY = Path(__file__).resolve().parents[2]
 def worker_register(ctx):
     from runpy import run_path
     recipe = run_path(str(STUDY / 'recipe.py'))
-    recipe['install'](STUDY / 'shared/data', ctx.seed)
+    recipe['install'](shared_paths(STUDY)['data'], ctx.seed)
 
 
 def worker_before(ctx):

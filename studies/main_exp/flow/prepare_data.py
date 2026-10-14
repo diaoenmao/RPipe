@@ -90,6 +90,7 @@ def download(url: str, destination: Path, md5: str) -> dict[str, str]:
 
 
 def reuse_caches(data_root: Path, expected: dict[str, str], cache_roots: list[Path]) -> dict[str, str]:
+    from rpipe.structure.artifact.shared import link_input
     copied = {}
     for relative, expected_hash in expected.items():
         destination = data_root / relative
@@ -103,7 +104,7 @@ def reuse_caches(data_root: Path, expected: dict[str, str], cache_roots: list[Pa
                           and verify_file(path, expected_hash)), None)
             if match is not None:
                 destination.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(match, destination)
+                link_input(match, destination)
                 copied[relative] = str(match.resolve())
                 print(f'reused raw cache: {match}', flush=True)
                 break
@@ -194,8 +195,9 @@ def split_counts(data_root: Path) -> dict[str, dict[str, int]]:
 
 
 def main(argv: list[str] | None = None) -> int:
+    from rpipe.structure.artifact.shared import cache_lock, shared_paths
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--data-root', type=Path, default=STUDY / 'shared' / 'data')
+    parser.add_argument('--data-root', type=Path, default=shared_paths(STUDY)['data'])
     parser.add_argument('--manifest', type=Path, default=STUDY / 'docs' / 'DATA_MANIFEST.json')
     parser.add_argument('--expected-manifest', type=Path,
                         default=STUDY / 'docs' / 'EXPECTED_DATA.json')
@@ -206,8 +208,9 @@ def main(argv: list[str] | None = None) -> int:
     expected = expected_files(args.expected_manifest)
     reused, downloads = {}, []
     if not args.verify_only:
-        reused = reuse_caches(data_root, expected, args.cache_root)
-        downloads = prepare_mnist(data_root, expected) + prepare_cifar(data_root, expected)
+        with cache_lock(data_root):
+            reused = reuse_caches(data_root, expected, args.cache_root)
+            downloads = prepare_mnist(data_root, expected) + prepare_cifar(data_root, expected)
     elif args.manifest.is_file():
         previous = json.loads(args.manifest.read_text(encoding='utf-8'))
         downloads = previous.get('downloads', [])

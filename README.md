@@ -2,7 +2,7 @@
 
 RPipe（Research Pipeline）是研究项目的代码架构与执行模板，本仓库的参考实现使用 Python 包名 `rpipe`。用 YAML 声明实验因素与 seed，展开并运行实验，再将配置、结果、日志、checkpoint 和跨 seed 汇总保存到同一 Study 中。
 
-当前模板版本为 **0.3.1（阶段版）**，提供项目入口参考、原生 PyTorch / Hugging Face Trainer 通路、checkpoint/resume、运行日志与跨 seed 聚合。本次小版本包含 B-030 报告来源修复、源码模板接入与研究/反馈规范，以及保留原基线的发布后实验记录；完整差异、迁移与验证边界见 [v0.3.1 发布报告](docs/releases/v0.3.1.md)。前一版本见 [v0.3.0](docs/releases/v0.3.0.md)。
+当前模板版本为 **0.4.0**，提供源码模板接入、跨 Study 不可变输入共享、原生 PyTorch / Hugging Face Trainer 通路、checkpoint/resume、运行日志与跨 seed 汇总。项目级输入固定在 `shared/data/`、`shared/model/`，Run 状态独立；完整目录合同见 [layout.md](docs/code/layout.md)，迁移与正确性修复见 [v0.4.0 发布材料](docs/releases/v0.4.0.md)。固定发布来源见 [v0.4.0](https://github.com/DreamSoul-AI/RPipe/releases/tag/v0.4.0)。
 
 其他项目接入从[在其他项目中使用 RPipe](#在其他项目中使用-rpipe)开始：将固定版本的源码复制到项目的 `src/rpipe/`，按 structure / flow 两柱组织自己的代码，在自己的仓库声明和运行 Study。
 
@@ -60,12 +60,12 @@ Agent 的文档导航与通用工作约定见 [AGENTS.md](AGENTS.md)。
 
 ### 1. 将固定版本源码复制到 src
 
-当前固定模板标签为 `v0.3.1`。先取得标签对应的 checkout 并记录其确切提交，以下命令在下游仓库根执行；已有该版本 checkout 时可直接使用，不必重新 clone。历史实验使用的 v0.3.0 / `804b3823` 不因此改写：
+当前固定模板标签为 `v0.4.0`；使用标签的确切提交，不把 dev 当作发布标签。先取得目标标签对应的 checkout 并记录其确切提交，以下命令在下游仓库根执行；已有该版本 checkout 时可直接使用，不必重新 clone。历史实验来源不因此改写：
 
 ```bash
-git clone --branch v0.3.1 https://github.com/DreamSoul-AI/RPipe.git .tmp/rpipe-v0.3.1
-git -C .tmp/rpipe-v0.3.1 rev-parse HEAD
-git -C .tmp/rpipe-v0.3.1 rev-parse "v0.3.1^{commit}"
+git clone --branch v0.4.0 https://github.com/DreamSoul-AI/RPipe.git .tmp/rpipe-v0.4.0
+git -C .tmp/rpipe-v0.4.0 rev-parse HEAD
+git -C .tmp/rpipe-v0.4.0 rev-parse "v0.4.0^{commit}"
 ```
 
 确认 HEAD 与标签解析出的提交一致，并将完整 SHA 写入来源记录后，复制完整 `src/rpipe/` 包和许可证。Windows PowerShell 示例：
@@ -73,8 +73,8 @@ git -C .tmp/rpipe-v0.3.1 rev-parse "v0.3.1^{commit}"
 ```powershell
 if (Test-Path -LiteralPath src/rpipe) { throw 'src/rpipe already exists; compare before updating' }
 New-Item -ItemType Directory -Force src | Out-Null
-Copy-Item -LiteralPath .tmp/rpipe-v0.3.1/src/rpipe -Destination src -Recurse
-Copy-Item -LiteralPath .tmp/rpipe-v0.3.1/LICENSE.md -Destination src/rpipe/LICENSE.md
+Copy-Item -LiteralPath .tmp/rpipe-v0.4.0/src/rpipe -Destination src -Recurse
+Copy-Item -LiteralPath .tmp/rpipe-v0.4.0/LICENSE.md -Destination src/rpipe/LICENSE.md
 ```
 
 不要覆盖已有副本：升级时先比较上游差异和本地修改，再迁移及回归。只复制受 Git 管理的源码，不带 `__pycache__`、本地缓存或运行产物。保持包名 `rpipe` 与内部导入；记录 `src/rpipe/ORIGIN`，至少包含上游仓库、确切 commit、release 和本地差异，不能只记 `main` 或包版本号。
@@ -369,7 +369,7 @@ PLAN 按[研究工作要求](docs/development/research.md)补齐本轮问题与�
 
 1. **正确性先于速度。** 默认整轮 launch：有依赖就分波，全部 train `wait` 完再 eval。也可以 `--mode eval` 单独重跑评测。已 `succeeded` 的默认跳过；中断恢复须符合对应 Algorithm / Study 的合同，不能自动推定自定义循环可精确续跑。一次 `FlowRunner` 只跑一个 Run。
 2. **先校准再提高并发。** 同类、相近耗时的格子按目标设备与工作负载的实测容量安排并发，估算系数、显存预算和并发上限可随校准调整，不规定统一比例，并测量整体吞吐、allocated / reserved、进程开销、主存、线程和 I/O。不能直接照搬其他设备预算或用“无 OOM”证明并行有效；性能校准时不同时运行竞争资源的验证。
-3. **error 不阻断无关任务。** 某条 `run-one` 失败：记下 `run_id` 和退出码（日志在该 Run 的 `assets/logs/`），同组其余进程继续。本波结束后库对失败格子重试一次，恢复行为仍受专项合同约束；拒绝恢复的 Study 须保留失败并按计划换新 version。依赖该 train 的 eval 只有在它成功后才运行，不把局部故障扩散到其他 seed。
+3. **error 不阻断无关任务。** 某条 `run-one` 失败：记下 `run_id` 和退出码（日志在该 Run 的 `assets/logs/`），同组其余进程继续。本波结束后库默认对失败格子重试一次，恢复行为仍受专项合同约束；单次执行或非恢复型任务用 `launch --no-retry` 关闭本次 launch 的自动重试，保留首个失败结果。该开关不持久化到生成脚本，也不禁止后续显式再次 launch；拒绝恢复的 Study 须保留失败并按计划换新 version。依赖该 train 的 eval 只有在它成功后才运行，不把局部故障扩散到其他 seed。
 4. **按本轮格子排班。** 轻的同类型可以叠很多；重的 resnet 可能一组 1～2 个。不要用一个全局 `--round` 把轻重砍齐。默认 `auto` 按类型装箱；`--round N` 是均匀切块。
 5. **PLAN 里写清排班。** 几个 seed、哪类一组、error 后怎么续。报告里复述实际怎么跑的。
 
@@ -566,6 +566,8 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 
 #### 字段约定
 
+同一项目的 Study 默认共用项目根 `shared/data/` 与 `shared/model/`，原始数据和预训练权重只保存一份。训练对象、checkpoint、RNG 和报告仍按 Run 独立。已有缓存可用 `python -m rpipe shared studies/<name>` 检查路径，再用 `--migrate` 按 hash 校验并建立旧路径引用；冲突不会覆盖。确实不能共用的派生输入在 `study.yaml` 中显式选择 `shared.data: study` 或 `shared.model: study` 并在计划说明原因。详见 [共享路径与迁移合同](docs/code/layout.md#跨-study-共享资产2026-10-14)。
+
 | **字段** | **含义** |
 |------|------|
 | `fixed` | 每次 Run 都带上的补丁（不要把研究因素只写在这里却期望它变成多个 Experiment） |
@@ -575,6 +577,7 @@ run_description: "train_size={train_size} mode={mode} seed={seed}"
 | `run_description` | 写入 config 的说明；**不进** `id` hash。占位符可用轴的末段名（如 `{train_size}`）以及 `{seed}`、`{experiment}` |
 | `flow.study_phases` | 显式启用阶段包；`flow/<phase>/run.py` 实现 hook，`__init__.py` 仅导出。prepare.before 在构造前，write 在库定稿前，其余 hook 在库阶段后。旧根目录阶段包需迁移 |
 | `flow.prepare_shared` | 默认 `true`；每条 Run 内准备隔离数据或注册专用 source 时设为 `false`，make 不提前构造 Data |
+| `shared` | `root` 为相对 Study 的可选公共根；`data` / `model` 默认 `project`，私有例外用 `study`。同项目的 Study 应指向同一公共根 |
 | `freeze` | 复用模板时，make 后已记录的源码、声明、注册适配或计划变化会被拒绝；项目重构后须验证实际冻结范围 |
 | `provenance.include` | 额外纳入来源清单的 Study 内文件（glob 列表），例如固定的参考数据或清单 |
 

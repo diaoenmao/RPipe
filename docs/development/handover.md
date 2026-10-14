@@ -1,5 +1,80 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-15 v0.4.0 已授权继续发布
+
+以Enmao最新明确指令为准：本任务继续完成dev→main普通merge、实际main CI验收、annotated tag v0.4.0、GitHub Release，再留言并关闭#36/#37/#38/#41/#48/#50。先检查实际PR/tag/Release与Issue状态，复用codex/v040-layout-release，不重复发布或移动已有标签。下方“仅合dev后停止/由监督助手发布”是当时状态，已被本节取代。#53不在关闭清单，分支和数据不删，不squash/强推，仍不测速、不跑GPU。完成事实见[record](record.md)，精确PR/commit/CI以Release附录为准。
+
+## 2026-10-15 v0.4.0 目录规范与发布准备
+
+本轮唯一工作分支 codex/v040-layout-release 从已验收dev5cff920建立，按Enmao授权准备0.4.0并经PR合dev后停止；实际PR/head/mergeCommit与CI以最新状态为准，避免重复建分支或用下方历史pending状态重派任务。项目根 shared/data、shared/model 不搬，layout.md补位置/内容/写入方与“先文档后路径”合同，新增真实默认路径与文档对照；生产仅版本号更新。pyproject、__version__、README为0.4.0候选，[发布材料](../releases/v0.4.0.md)包括0.3.x迁移命令、私有设置、三类正确性与已修Issue，见[record §76](record.md#76-v040-目录合同迁移材料与版本准备)。
+
+本机36项目录/版本、core662通过/1平台跳过、CPU流程157通过；初轮临时目录setup错误和两项漂移负控留证。最终head与实际dev CI另绑定，不拿旧结果替代。main仍已发布0.3.1，本任务不合main、不打tag、不发布；这些由监督助手接续。七个已修Issue保持open，全部分支/正式数据/Run/provenance保留，不测速、不跑GPU、不改磁盘布局或调查480秒。
+
+## 2026-10-15 B-070 指标类型审计与收尾
+
+新用户要求审计readout/_atomic/launch参数与make/run-one边界；基于已验收dev b2390b0确认[B-070 / Issue50](https://github.com/DreamSoul-AI/RPipe/issues/50)，先开Issue、提交红色回归f15e067（10项7 failed/3 passed），记录设计3a198ff，再做一行修复0b51ee6：取消status提前dict强转，复用已有metric cell的非object占位，保留状态/模式/输入字节。候选与相邻91项通过，见[record §63](record.md#63-相邻正确性审计与-status-指标类型回退b-070--50)。
+
+当前唯一新分支codex/status-metric-shape；先核对该分支PR最新head/state/mergeCommit，若已合dev则接续实际集成CI，不重复修复/新建分支。最终head的三门及所有实际矩阵、实际dev的两门分别验收；没有新验证前不拿旧B-069绿灯替代。原三个分支和全部数据保留，main7a15c46未变，六个Issue均不自动关闭，等Enmao决定main。
+
+B-069/PR49已在dev b2390b0完成全部实际CI（含此前未完成包门的拒绝与最终全绿保全），下方“待验收”为历史阶段；B-065性能优化仍撤回。不测速、不改性能、不跑GPU或查480s，不覆盖下游vendor/实验，原科学结果不重签。
+
+## 2026-10-15 四个 Issue 评论与 B-069 正确性接续
+
+四个旧 Issue 已按新授权各补一条真实修复提交、测试位置与 dev 验收评论，保持 open，链接见 [record §61](record.md#61-四个开放-issue-补齐修复与验收评论)。新缺陷 [#48 / B-069](https://github.com/DreamSoul-AI/RPipe/issues/48) 来自相邻 readout I/O 查询：红色测试提交31d1511为5 failed /8 passed，最小候选与相邻81项通过，实际PR/集成CI必须另核对。
+
+唯一新工作分支codex/status-readout-errors从已验收dev f9c6e90建立，旧两分支保留。生产只移动status/logs三个存在性查询到各自已有I/O边界；不恢复B-065性能去重，不测速/查超时，不改格式、算法或下游。接续先核对该分支PR的state/head/mergeCommit，若已经合入则不重复修复或派发；实际dev CI须与对应提交绑定，保留原5个失败。Issue48与旧四项均不自动关闭，main不变，数据/Run/provenance不删除。
+
+## 2026-10-15 PR #46 已合 dev，四个 Issue 正确性接续
+
+PR #46 已 normal merge，实际 dev `5ee1214b7ce0dc28b65139ac7b3f9ca16eb8b2ac`；最终 head `90b7d75` 三门及实际矩阵全通过，实际 dev 的 Unit38622291540 / Package38622291406 全部实际矩阵和聚合门通过，见 [record §59–60](record.md#59-pr-46-实际合入-dev-与归档后状态)。不要重复合并 PR #46 或把下方历史草案限制当作当前指令。
+
+后续分支 codex/open-issue-correctness 从该 dev 建立，四个 Issue 已逐项补回归，本机 75 项通过；没有新增生产改动或新的根因反例。合入后仍需核对该 PR 最新 head 和实际 dev CI。#36 / #37 / #38 / #41 不自动关闭，main 不变，两个工作分支和全部数据保留。只做正确性，不测速、改性能、查超时或干预下游实验；B-065 优化已撤回，不恢复。
+
+## 2026-10-15 归档、dev集成与四个Issue正确性接续
+
+最终授权以本节为准：PR #46可转ready并在最终head全部必需检查/实际矩阵通过后合dev；main不改，不强推，不删除任何分支/数据，不发布或花钱。此前“保持草案/不合dev”为历史阶段要求。先核对[PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46)当前state/mergeCommit和origin/dev；若已经合入，直接核对实际dev CI，不重复派发合并。
+
+[归档状态](maintenance_archive_2026-10-15.md)列出已完成与未完成。B-056～B-068修复/测试和记录均已主题提交；B-065/ad67f74次数去重优化按最终只做正确性要求单独撤回，历史源码/失败/记录保留。927c36e三门与实际矩阵已通过；后续归档提交和真实dev必须各自验收。已完成Study结果保持原来源，未重训或重签。
+
+合入后逐项核对开放#36/#37/#38/#41，现有修复已分别在更早PR中，先复验并补有意义的回归缺口，不伪称未修复或重复改代码，不自动关闭Issue。只做代码正确性，不测速、不做性能改动、不查超时；不干预三个下游对话的GPU工作。四任务共用24GB GPU，计时受外部负载影响的历史材料不作为新性能结论。
+
+
+## 2026-10-14 当前 dev 集成与持续维护
+
+共享及#36—#38修复已通过[PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)合入dev `614d0a6`，最终工作提交07bcf2e的三项必需检查及全部实际矩阵通过。B-053 / B-054从bugs开放区移除，详细依据见[集成记录](record.md#39-共享与三个反馈修复合入-dev)。dev集成CI独立核对；main仍为v0.3.1，不把dev修复描述成已发布。
+
+已合并的codex/powershell-launch-boundaries按规则清理；后续工作分支codex/shared-inputs-followup从该dev建立，只保留一个未合并工作分支。继续维护时先fetch并核对实际基线 / 工作区，读当前Issues；其他三个对话的vendor和运行中的实验不自动覆盖，新反馈依据实际最小复现处理。#36—#38暂仍open，不在缺少新问题时恢复早前撤回的人工探索。
+
+共享根默认项目shared/data与shared/model，raw及同版本processed / 固定Stats实际复用；Run模型对象、sampler、RNG、checkpoint和可变状态独立。已完成历史Run及来源保持；重新make / 实测必须新version，不能复用旧成功当新来源验收。下文待CI、未合并等记录保留其当时状态，以本节为接续入口。
+
+## 2026-10-14 跨 Study 共享与持续缺陷目标
+
+当前工作分支 `codex/powershell-launch-boundaries`，基线6619edc已含 #36—#38 修复；新增项目级共享输入、私有例外、进程文件锁与显式迁移，见 [当前记录](record.md#35-跨-study-共享输入与本机缓存迁移b-053) / [恢复身份复查](record.md#36-共享统计路径与恢复身份复查) / [共享合同](../code/layout.md#跨-study-共享资产2026-10-14)。core456 passed / 2 skipped、CPU integration66 passed、两个分发包各9 CLI / 4 Toy Run通过；跳过的是本机目录符号链接权限。[草稿PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)首批ac909ec检查全绿，profile_path后续提交的最终CI须单独核对。
+
+本机公共 raw 已放在项目 shared/data，旧路径仍指向同一文件。历史result/index/process/provenance和数值来源保留；不能重新make这些已完成Study后冒充旧验收。新独立实测设置新version；probe仍需同时更新fixed.version与基底version。当前小验证只有MNIST/linear单格CPU及CUDA，详细来源和配置层覆盖错误保留在Study报告。
+
+用户授权持续处理其他三个对话反馈的bug、关注Issues。当前#36—#38仍open；不得仅因本机回归就宣称已集成到dev/main或已发布。其他项目的vendored来源和正在运行的实验不由本目标自动覆盖；新反馈先核对实际Issue、源码及最小复现，再定向修复。下文收缩 / 仅待设计等文字属于早前状态，本节为当前接续入口。
+
+最新接续：#36的未扩展prepare初始冻结拒绝也补齐成功保全，见 [B-054记录](record.md#37-issue-36-未开启扩展的初始冻结拒绝b-054)。定向32、core456 / 2 skip、CPU integration68通过，新CPU单格Run44492c0d8f5cf190通过。PR #39首批ac909ec全绿；后续最终提交的必需CI以GitHub当前head为准，不能据旧一次全绿合并。
+
+当前还将同版本processed / 固定Stats纳入项目级派生缓存，区别4ccb28d与98648f3格式，见[最新缓存验证](record.md#38-固定格式-processed--stats-也跨-run-复用)。当前core463 / 2 skip、CPU integration68及两分发包基本CLI通过；两个linear数据格只是新来源小门，不是新完整Study。共享公共输入与独立Dataset / 模型 / sampler状态不可混为一谈。最终PR检查须绑定最新head。
+
+## 2026-10-14 工作分支异机交接
+
+用户已授权将当前收缩后的代码、测试和文档提交推送到 `codex/powershell-launch-boundaries`，在另一台机器继续；不合并 dev / main，不发布，不关闭 Issue #36 / #37 / #38。此前“未提交 / 不推送”是当时状态，以本节最新授权为准。实际交接提交以远端分支和 `git log -1` 为准。
+
+新机器先保留当地改动，再执行 `git fetch origin`；尚无本地分支时执行 `git switch --track origin/codex/powershell-launch-boundaries`，已有分支则切换后用 `git pull --ff-only`。阅读[当前收缩记录](record.md#32-按用户要求收缩到本机适配与三个下游-issue)和[共享下载待设计要求](brainstorm.md#2026-10-14-数据与模型下载共享约定用户要求待设计)。共享下载仅记录要求，尚未实现。
+
+`.tmp/` 的 venv、MKL 激活脚本、缓存、备份和本机验证日志不随 Git 推送；正式 Study 生成的 Run / 数据 / checkpoint 也不作为本次异机传输内容。目标机器需检查自己的 Python / Conda / OpenMP 环境并按 README 的源码接入方式准备，再做小验证；不能把本机 SEQUENTIAL 绕过或本机通过当作异机环境已验收。
+
+## 2026-10-14 当前收缩范围（未提交）
+
+当前 Issue #36 / #37 / #38 均为 open / reopened：用户要求暂不关闭、后续再修，已撤回本轮关闭操作并复查状态。现有本机补丁保留但不继续修复 / 提交 / 发布，见[状态记录](record.md#33-issue-状态按用户最新要求恢复开放)。
+
+仅保留本机迁移 / MKL 和 Issue #36、#37、#38。公共源码差异为 runner.py、readout/status.py、_atomic.py 三个文件；四个对应测试文件保留。其他主动探索的公共改动已撤回，历史证据和完整撤回备份保留，见[收缩记录](record.md#32-按用户要求收缩到本机适配与三个下游-issue)。
+
+当前定向75 passed、core440 passed / 2 skipped；新PowerShell下两seed四个CPU Toy/Stub Run全链和重复跳过通过。正式Study / 数据保全，八调度只做清单与语法核对。未commit / push / 发布、未更新Issue；此前扩展边界不属于当前已修复范围，后续不再自动扩展。
+
 ## 2026-10-14 v0.3.1 文档与发布准备
 
 当前发布准备版本为0.3.1：B-030修复、源码模板接入与旧804b3823的实验材料均进入版本区间；新增研究 / knowledge skills与下游Issue反馈约定，入口见[README](../../README.md)和[发布报告](../releases/v0.3.1.md)。正式科学报告、数字、配方、旧失败与快照保持原来源；本次不训练或扩大矩阵。core420 passed / 2 skipped、CPU流程52 passed、两种分发包各9条CLI / 4个Toy/Stub Run通过，环境失败、skip、文档扫描与本机包边界见[开发记录](record.md#10-研究工作下游反馈与-v031-发布准备)。

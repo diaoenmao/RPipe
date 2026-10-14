@@ -137,7 +137,7 @@ Factory 按注册的 `name` / `source` 精确匹配，未注册组合抛 `ValueE
 | Hugging Face | `datasets.Dataset` / `DatasetDict` 及加载、格式化 API |
 | ModelScope | ModelScope 数据集加载 API |
 
-已注册 `source: torch`：`MNIST`、`FashionMNIST`、`CIFAR10`、`CIFAR100`、`SVHN`。数据侧只做 ToTensor，像素留在 0–1。`python -m rpipe data studies/<name>` 在 `shared/data/<数据集>/stats.yaml` 写下张数、形状、类别数量、像素最小/最大，以及 train 的 mean / std。有这份文件时 Normalize 用它，否则用代码里的常数。模型前面用 kornia：始终 Normalize；`augment` 为真时，训练态再加 CIFAR 的翻转+pad-4 crop，或 SVHN 的 pad-4 crop。`config.augment: false` 关掉随机增强。`config.pin_memory` / `config.num_workers` 传给 DataLoader（缺省 `false` / `0`）。
+已注册 `source: torch`：`MNIST`、`FashionMNIST`、`CIFAR10`、`CIFAR100`、`SVHN`。数据侧只做 ToTensor，像素留在 0–1。`python -m rpipe data studies/<name>` 在 `<study>/shared/data/<数据集>/stats.yaml` 写下张数、形状、类别数量、像素最小/最大，以及 train 的 mean / std。Flow 只显式读取本 Study 的这份统计（config.stats_path 可指定），否则用代码里的常数，不借用其他 Study 的 profile。模型前面用 kornia：始终 Normalize；`augment` 为真时，训练态再加 CIFAR 的翻转+pad-4 crop，或 SVHN 的 pad-4 crop。`config.augment: false` 关掉随机增强。`config.pin_memory` / `config.num_workers` 传给 DataLoader（缺省 `false` / `0`）。
 
 其它来源经 Registry 注册即可。
 
@@ -187,7 +187,7 @@ flowchart LR
 
 ### 4.7 落盘与测试
 
-本层会把数据集等文件写到 Study 的 **asset**（通常 `shared/data/` 下的缓存），不把整份数据塞进 result。单测在 `tests/rpipe/structure/data/` 与 `tests/rpipe/structure/api/`（`data_api`）：Config 往返、Registry、Factory→`Data`。
+本层会把可复用数据文件写到项目级 **asset**（默认项目根 `shared/data/`，跨 Study 共用），不把整份数据塞进 result。单测在 `tests/rpipe/structure/data/` 与 `tests/rpipe/structure/api/`（`data_api`）：Config 往返、Registry、Factory→`Data`。
 
 ---
 
@@ -917,6 +917,10 @@ structure/artifact/
 
 `readout/` 只读 index、result、`run.log`、`process.json`，或把数字表写到 `docs/NUMBERS.md`。不跑阶段链，不 import `flow`。命令仍从 `flow/cli.py` 进来。
 
+readout 在既有 status.py 内用私有三态读取区分可用、缺失和不可读，logs 复用相同边界；activity 继续原可选读取合同。计划 config 可用时先核对 mode / id / seed，冲突按原 error 字段显示，坏格不遮蔽 peer；仅缺 config 时回退历史 axes / result 信息，见 [record §71](../development/record.md)。
+
+status / logs 的逐文件 I/O 容错同时覆盖存在性查询和内容读取：不可读结果沿用已有计划配置回退，不可用日志不提供 note/event，其他 Run 继续展示；不改写任何输入。当前 index 缺失/不可用仍拒绝，意外编程错误仍向上抛出，不把它们当作缺失文件。 status 的 metric 单元格仅展示 object 中支持的数值字段；非 object 指标直接使用已有不可用占位，不把列表对转换为 mapping，也不因此隐藏 Run 状态或其他有效结果。
+
 report 导出前以当前 index 核对 process 的 Study 名、完整计划 Run ID / seed / 因素归属；无新格式字段，合法部分聚合兼容。当前索引不可用、重复 / 缺失 Run 或身份不匹配时拒绝导出，保留旧聚合与数字表；仅校验成功后用已有 atomic writer 替换 NUMBERS。完整边界见 [flow.md §13](flow.md#13-climake--launch-与-wait)。
 
 `provenance.py` 记录来源 / 执行计划的哈希、环境与 Git 信息，并提供 freeze 检查。make 写入，Flow 在执行前核对；Study `flow/` 与 `structure/` 的 Python 源码自动发现，额外输入显式 include。完整范围、覆盖与迁移边界见 [flow.md §14.2](flow.md#142-来源清单)。
@@ -942,13 +946,13 @@ RunConfig 可选字段 `version` 参与 `id` hash，用于让相同实验配置�
 |------|------|
 | `ArtifactLayout` | 一次 Run 的路径句柄（含 `study_dir`） |
 | `artifact_layout(study_dir, run_dir)` | 根为 `study_dir/runs/<run_dir>/` |
-| `ensure_study_layout(study_dir)` | 确保 `docs/`、`shared/`、`runs/` |
+| `ensure_study_layout(study_dir)` | 确保 Study 的 `docs/`、`runs/` 及配置指定的共享输入根 |
 
 | **成员** | **含义** |
 |------|------|
 | `root` | `…/runs/<run_dir>/` |
 | `config_path` / `result_path` / `assets_dir` | 本 Run |
-| `shared_dir` / `shared_data_dir` / `shared_model_dir` | Study 共享 asset |
+| `shared_dir` / `shared_data_dir` / `shared_model_dir` | 项目级共享输入根；data / model 可分别显式选 Study 私有例外，见 layout |
 | `docs_dir` | 人文文档 |
 | `ensure()` | 创建上述目录 |
 
@@ -956,13 +960,17 @@ index 在 **Study 根**，不在 `runs/<id>/`。Run 目录直接使用 `id`，�
 
 错误：`ArtifactError`、`MissingConfigError`、`CorruptArtifactError`。
 
+原子文本的临时名按 PID 与随机 UUID nonce 区分写者，不使用墙钟读数充当唯一标识；同进程并发或相同 tick 仍须使用独立 staging。
+
+原子文本写入的初始临时文件写入与替换处于同一 finally 清理范围；部分写入失败保留旧目标、原异常并清理本次临时文件，不删除其他写者的临时文件。
+
 ### 9.3 `config/`
 
 编排写入；Flow 不改。正文含 **`id`**（hash）及四层等字段。
 
 `load_config` / `write_config`；原子写为宜。读入纯 mapping，由 `control_from_config` 解释。业务校验在 `structure.control.contract`。
 
-写入方：`structure.make`。读取方：`flow.prepare`。
+写入方：`structure.make`。读取方：`flow.prepare`；status 优先只读查询 Run config 的模式与身份；仅 config 缺失时兼容历史轴值 / 已记录结果。
 
 ### 9.4 `result/`
 
@@ -996,7 +1004,7 @@ Study 编排清单。`rpipe.structure.artifact.index`，**不是** Flow 的 writ
 
 | **位置** | **内容** |
 |------|------|
-| `shared/data/`、`shared/model/` | Study 内共享 |
+| `shared/data/`、`shared/model/` | 默认项目根，跨 Study 共享；可变 Run 状态不得写入 |
 | `runs/<id>/assets/` | 本 Run |
 | `runs/<id>/assets/tracker/` | AlgorithmTracker 数字（`tracker_state.json` / `scalars.jsonl`；TB 默认关） |
 | `runs/<id>/assets/logs/` | `system.Logger` 文本，**必写**，与终端同一套；`时间 级别 Run id [事件]` |
@@ -1064,7 +1072,7 @@ Run 目录名必须为非空单一目录组件，拒绝点 / 父目录、分隔�
 
 ## 11. 演进
 
-1. 编排：Study → Experiment → Run；artifact 挂在 Study 下（`shared/` + `runs/<id>/`）。
+1. 编排：Study → Experiment → Run；公共输入在项目级 `shared/`，Run artifact 挂在 Study 下（`runs/<id>/`）。
 2. 配置：基底 ⊕ **make** → run config → control；`study.yaml` 声明 `axes` / `seeds`（见 Study 指南）。
 3. result 快照契约（§9.4）先文档后单测固化。
 4. Flow：summarize 之后是 **write**（写 result），再 **process**。

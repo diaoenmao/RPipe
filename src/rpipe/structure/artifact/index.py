@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from rpipe.structure.artifact._atomic import atomic_write_text
 from rpipe.structure.artifact.paths import INDEX_NAME
 from rpipe.structure.artifact.asset.kinds import RUN_LOG
 from rpipe.structure.control.hashing import compute_index_id
@@ -87,13 +88,10 @@ def build_index(
 
 def write_index(study_dir: Path | str, mapping: dict[str, Any]) -> Path:
     target = index_path(study_dir)
-    target.parent.mkdir(parents=True, exist_ok=True)
     payload = dict(mapping)
     if not payload.get('id'):
         payload['id'] = compute_index_id(payload)
-    with target.open('w', encoding='utf-8') as f:
-        json.dump(payload, f, indent=2, ensure_ascii=False)
-    return target
+    return atomic_write_text(target, json.dumps(payload, indent=2, ensure_ascii=False))
 
 
 def load_index(study_dir: Path | str) -> dict[str, Any]:

@@ -1,22 +1,22 @@
-"""Isolated raw caches, original Stats and CPU initialization parity."""
+"""Shared raw / derived inputs, original Stats and CPU initialization parity."""
 from datetime import datetime, timezone
 from pathlib import Path
 import os
-import shutil
 import subprocess
 import sys
 from typing import Any
+from .inputs import prepared_inputs
 from ...structure.algorithm.paired import (
     ROOT, MAIN, MainArchive, bootstrap, source_manifest, sha, native_data,
     native_model, seed_runtime, rng, model_state, state_compare, rng_equal, save_json,
 )
 
 def prepare(workspace: Path, source_data: Path, pair: tuple[str, str]) -> dict[str, Any]:
-    """Copy isolated caches, recompute original Stats, and check CPU parity."""
+    """Reference immutable raw / processed inputs and check CPU parity."""
+    from rpipe.structure.artifact.shared import link_input, reference_tree
     bootstrap()
     import numpy as np
     import torch
-    import yaml
     head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     source_before = source_manifest()
     workspace.mkdir(parents=True, exist_ok=False)
@@ -36,7 +36,7 @@ def prepare(workspace: Path, source_data: Path, pair: tuple[str, str]) -> dict[s
             expected = sha(path)
             for destination in destinations:
                 destination.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(path, destination)
+                link_input(path, destination)
                 if sha(destination) != expected:
                     raise ValueError(f'copied raw file differs: {destination}')
             copied.append({'dataset': name, 'relative': relative.as_posix(), 'sha256': expected})
@@ -44,19 +44,19 @@ def prepare(workspace: Path, source_data: Path, pair: tuple[str, str]) -> dict[s
                 'dev_commit': head, 'device': 'cpu', 'raw_files': copied, 'data': [], 'models': []}
     for name in (pair[0],):
         archive.configure(name, 'linear')
+        cache, cache_digest = prepared_inputs(archive, source_data, name, copied)
+        reference_tree(cache / 'data' / name / 'processed',
+                       workspace / 'original' / 'data' / name / 'processed')
+        prepared.setdefault('shared_derived_inputs', []).append(
+            {'dataset': name, 'path': str(cache), 'manifest_sha256': cache_digest})
         original = archive.datasets(name)
-        loaders = archive.dataset.make_data_loader(original, {'train': 250, 'test': 1000}, shuffle=False)
-        stats = archive.module.Stats(dim=1)
-        with torch.no_grad():
-            for batch in loaders['train']:
-                stats.update(batch['data'])
+        with archive.aliases():
+            stats = archive.module.load(str(cache / 'stats' / name), 'torch')
         stats_path = workspace / 'original' / 'output' / 'stats' / name
         stats_path.parent.mkdir(parents=True, exist_ok=True)
-        with archive.aliases():
-            archive.module.save(stats, str(stats_path), 'torch')
+        link_input(cache / 'stats' / name, stats_path)
         stats_yaml = workspace / 'native-data' / name.lower() / 'stats.yaml'
-        stats_yaml.write_text(yaml.safe_dump({'mean': stats.mean.tolist(), 'std': stats.std.tolist()},
-                                            sort_keys=False), encoding='utf-8')
+        link_input(cache / 'stats' / 'stats.yaml', stats_yaml)
         current = native_data(workspace, name, workspace / 'prepare-assets')
         parity = []
         expected_sizes = (60000, 10000) if name == 'MNIST' else (50000, 10000)

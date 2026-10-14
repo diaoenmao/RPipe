@@ -17,11 +17,11 @@ def activity_path(study_dir: Path | str) -> Path:
 
 def read_activity(study_dir: Path | str) -> dict[str, Any] | None:
     path = activity_path(study_dir)
-    if not path.is_file():
-        return None
     try:
+        if not path.is_file():
+            return None
         body = json.loads(path.read_text(encoding='utf-8'))
-    except (OSError, json.JSONDecodeError, TypeError):
+    except (OSError, UnicodeError, json.JSONDecodeError, TypeError):
         return None
     if not isinstance(body, dict) or not body.get('phase'):
         return None

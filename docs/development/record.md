@@ -24,6 +24,15 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | train 均值（B-016） | step 模式跨评测段累计，反例最后一段应约10却报告约5 | 每个评测周期收口并重置 train 段，同一反例报告约10；空段不覆盖最后有效均值 | 第二节 §4 |
 | topk 计数（B-017） | topk=2 将3个样本的候选展平为6个索引，触发形状/计数错误 | 保留候选轴，每个样本命中任一候选只计一次；修复既有函数，未新增 CLI topk 配置 | 第二节 §5 |
 | 零评测预算（B-018） | `eval_num_steps=0` 仍读取并评测第一批 | 读取数据前报错；正数限批、缺省/负数完整 test 的语义保留 | 第二节 §7 |
+| CLI 重试控制（B-055 / #41） | API 有关闭入口，CLI 始终默认重试一次；非恢复型任务的第二次错误可覆盖首个最终错误 | `launch --no-retry` 显式传递既有 API；默认重试和 train→eval 屏障保留，首个失败可由单次执行保留 | 第二节 2026-10-14 §40 |
+| Git 来源失败（B-061，已合 dev） | status 非零退出仍被写成 dirty 布尔值 | 失败返回空 Git 元数据；11 项新增边界、本机相关 87 项通过，已由 PR #46 集成 | 第二节 2026-10-14 §48 |
+| 共享引用并发（B-062，已合 dev） | 同字节引用发布临时名可被同 tick 写者共用 | 每个 staging 使用 UUID；6 项新增边界、本机相关 93 项通过，已由 PR #46 集成 | 第二节 2026-10-15 §49 |
+| 可选 Git 元数据（B-063，已合 dev） | 文件读取/格式错误可令 pytest 配置失败或误记 SHA | 错误归为可选 null，保留快速路径和 CI 优先级；本机相关 108 项通过，已由 PR #46 集成 | 第二节 2026-10-15 §50 |
+| 长文件名 staging（B-064，已合 dev） | 文本/迁移临时名追加完整目标名，合法245字符名失败 | 两处短 UUID-only 名；4 项真实反例修复，相关187通过、5未选中，已由 PR #46 集成 | 第二节 2026-10-15 §51 |
+| 单次来源去重（B-065，暂缓） | 历史草案新增读取次数去重 | 已按最终只做正确性的要求撤回优化，历史证据保留 | 第二节 2026-10-15 §57 |
+| 可选活动读取（B-068，已合 dev） | 非法UTF-8或存在性权限错误使status异常，遮蔽正式结果 | 忽略不可用提示、保留index退出合同；新13项与status联合34通过，已由 PR #46 集成 | 第二节 2026-10-15 §56 |
+| 冻结采集错误（B-067，已合 dev） | 文件缺失/拒读或坏JSON异常可覆盖旧成功，非法mapping还会抛AttributeError | 读取时校验mapping，冻结入口转现有拒绝异常并保留cause；34项定向及214相邻检查通过，已由 PR #46 集成 | 第二节 2026-10-15 §54 |
+| 来源键遮蔽（B-066，已合 dev） | Study同键可覆盖库hash，真实库修改仍被freeze放行 | 保留库键域并验证物理身份，14边界和202相邻core通过，已由 PR #46 集成 | 第二节 2026-10-15 §53 |
 | 原生恢复（B-021） | checkpoint 缺少 RNG 与数据位置，续训样本后缀和最终权重可偏离连续运行 | 在单进程、受支持 sampler / batch metric 合同下保存并恢复完整训练状态；不匹配配置拒绝，其他路径明确提示部分恢复 | 第二节 2026-10-12 §6 |
 | epoch 停止（B-024） | 累积尾 batch 可导致多跑 epoch；整轮无 optimizer 更新时可能无限循环 | epoch 按声明轮数停止，已完成恢复不重训；整轮无法更新时报错，原尾 batch 丢弃语义保留 | 第二节 2026-10-12 §7 |
 | 曲线进度与回滚 | 横轴按 history 记录序号；记录频率变化不能直接解释为训练步数，恢复后的回滚分支未单独排除 | 按 optimizer_step / epoch 对齐；保留原始日志，聚合时排除回滚分支、处理重复坐标并记录逐点 n | [曲线修复记录](brainstorm.md#4-已经做的) |
@@ -86,7 +95,1100 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
+## 2026-10-15
+
+### 77. v0.4.0 发布授权接续（准备阶段）
+
+Enmao明确更正“合dev后停止”，授权由本任务继续：dev→main发布PR、普通merge（不squash/强推/删分支）、实际main验收后 annotated tag v0.4.0、GitHub Release正文使用入库报告，发布后分别留言并关闭#36/#37/#38/#41/#48/#50。此授权取代§76及旧handover的“交监督助手”执行边界；不扩大到#53、数据/分支删除、PyPI或二进制发布。
+
+复用已合PR57的codex/v040-layout-release，先ff到实际dev79bcce0，再仅更新README、发布报告和当前版本入口；运行源码、目录、版本、测试均不变。PR57最终head全实际CI已通过，实际dev79bcce0的Unit38652463042/Package38652463047另行核对，不把旧pending或通过记录混淆。最终发版事实与链接在完成后追加，当前节不是已发布声明。
+
+GitHub连接未暴露创建Release工具接口；发布采用已认证gh对GitHub API的正式调用。不会为了补接口安装插件、使用浏览器凭据或更改计费。本轮不测速、不跑GPU、不干预下游实验，保留旧失败和全部分支/数据。
+
+### 76. v0.4.0 目录合同、迁移材料与版本准备
+
+按 Enmao 本次指令，从已验收 dev 5cff920 建唯一工作分支 codex/v040-layout-release。项目根 shared/data、shared/model 沿用现有实现与位置，作为 studies 下各 Study 共用的不可变输入；Run 的模型对象、checkpoint、sampler、RNG 及可变状态不共享。未迁移正式数据、未重训 Study、未修改产物格式或运行路径。
+
+先以 d55461b 在 [layout.md](../code/layout.md) 固定项目顶层和 Study 级目录的位置、内容与写入方，明确以后先更新文档再改路径；在现有 test_layout.py 新增默认路径、私有 data/model、profile 与版本一致性回归。31个默认路径参数调用真实 layout / shared / schedule / process / readout 入口，与文档表格直接比较。已有镜像测试加35个新节点共36项；两项内存负控分别改文档和改实现路径，均被断言拒绝，不修改正式实现。
+
+后以 fccc45c 准备 [v0.4.0 发布材料](../releases/v0.4.0.md)，说明0.3.x的旧 Study 私有缓存到项目根 shared 的显式迁移、rpipe shared --migrate、同卷硬链接/冲突/中途I/O失败限制及 study.yaml 两类独立私有设置；列出三类收敛与 #36/#37/#38/#41/#48/#50（另含#53）修复。pyproject、__version__、README 同步0.4.0，README明确标签尚未建立，未来标签命令仅发布后执行；不把本次候选叫成已发布版本。生产源码相对5cff920仅__init__.py的一行版本号变化，路径和迁移实现不改。
+
+本机实际验证：
+
+| **入口** | **结果与边界** |
+| --- | --- |
+| pytest tests/rpipe/test_layout.py | 新独立basetemp下36 passed；当前core再次包含全部36节点 |
+| tests/run.py --core | 662 passed /1 skipped /161 deselected；跳过为Windows不适用POSIX脚本执行位，8条既有partial-resume警告保留 |
+| tests/run.py --all --cost-class c1 --cost-class c2，筛选CPU integration/e2e | 157 passed /667 deselected，无失败或跳过；未选中的GPU/外部/slow不算通过 |
+| 文档/实现路径漂移负控 | 两项均触发预期AssertionError；原文档/代码保持不变 |
+| 编码、版本、链接与变更范围 | UTF-8、CRLF、新相对文件链接与版本一致；无运行路径、结果schema或正式Study变更 |
+
+首轮PowerShell创建临时父目录的参数错误，导致pytest 2 passed /34 setup errors；原 .tmp/v040/layout-before-version.xml 保留，不当作库缺陷或合同通过。补建父目录后用 layout-verified 新目录重跑，全部实际执行。普通只读沙箱曾令git diff报告非工作树，真实checkout的只读复核确认worktree正常、core.bare=false；未改Git配置。本机隔离环境无build/wheel，不为本任务添加依赖；包构建/独立安装/CLI交由本PR真实CI，不冒充本机完成。
+
+本机XML、manifest/events、CONTRACT_MUTATIONS及LOCAL_CHECKED在 .tmp/v040 与 .tmp/test-results，不随clone；便携回归与发布说明随PR。最后提交、三项PR检查和实际dev检查以本次PR正文精确链接为准，旧5cff920的绿灯不替代本次版本验收。
+
+本任务仅合dev后停下报告；main仍v0.3.1/7a15c46，合main、v0.4.0 tag和Release交监督助手。开放Issue不自动关，现有分支/数据/Run/provenance保留，不开收费资源，不弹提问窗。后续无新增授权不开展相邻审计或性能工作。
+
+### 75. 三类收敛完成与维护待命边界
+
+本次先同步 origin/dev，确认三类已全部按批准顺序合入 dev `34e95069a3a2814d0fabf4879b1584f1bdbd0758`；分支生命周期规则已随 PR #55 合入 [cicd.md](cicd.md#分支管理2026-10-15)，原工作分支没有未纳入 dev 的提交，无需重复开同题 PR。下表是已完成验收，前文“待 CI / 待集成”为各自记录时点事实。
+
+| **类别** | **已完成内容与 PR** | **实际 dev 验收** |
+| --- | --- | --- |
+| 第三类 | [PR #52](https://github.com/DreamSoul-AI/RPipe/pull/52)：可整体替换文本复用原子发布，特殊追加 / checkpoint / 锁协议保留 | ea2210b：[Unit](https://github.com/DreamSoul-AI/RPipe/actions/runs/38639077019)、[Package](https://github.com/DreamSoul-AI/RPipe/actions/runs/38639076858) |
+| 第二类 | [PR #54](https://github.com/DreamSoul-AI/RPipe/pull/54)：统一私有安全读取与计划字段校验，保留历史 fallback | 945c992：[Unit](https://github.com/DreamSoul-AI/RPipe/actions/runs/38641099712)、[Package](https://github.com/DreamSoul-AI/RPipe/actions/runs/38641099684) |
+| 第一类 | [PR #55](https://github.com/DreamSoul-AI/RPipe/pull/55)：仅提炼既有失败保全判断，范围不扩大；含分支管理文档 | 34e9506：[Unit](https://github.com/DreamSoul-AI/RPipe/actions/runs/38643122769)、[Package](https://github.com/DreamSoul-AI/RPipe/actions/runs/38643122705) |
+
+三条 PR 的最终工作提交与上表实际 dev 的所有实际矩阵及聚合均已分别通过。本机对应为第三类 129 passed / 1 POSIX skipped、第二类 107 passed、第一类基线 42 passed / 最终 128 passed；跳过项不计通过。完整 head 与验收链接保留在各 PR 正文，原失败和候选结果不覆盖；本次仅文档核对，不重复运行这些测试。
+
+Issue #36 / #37 / #38 / #41 / #48 / #50 / #53 的修复已在 dev，仍有意保持 open，等待 Enmao 决定是否进入 main 后再处置；不自动关闭，不把 open 当作仍未修复。main 保持已发布 v0.3.1 / `7a15c46`，不合 main、不发布。现有工作分支、Run、数据、provenance 均保留，自动删除设置未改；删除分支或数据仍须单独确认。
+
+当前没有本轮已立项而未完成的正确性缺口；维护进入待命边界：仅响应明确的新任务或有来源、可复现的新 RPipe 缺陷，不再逐个审计相邻路径，不为保持活跃制造修复，不测速 / 改性能 / 查 480 秒 / 跑 GPU，不改文件架构或产物布局，不实施设计第七节能力、不干预下游实验。上述 CPU / 包门不替代 GPU 或完整 Study 科学验收。
+
+本节按 Enmao 的长期授权执行文档提交、工作分支推送及 PR 合 dev，不弹提问窗；如以本地检查替代远端 CI，必须明示实际范围且不伪称远端通过，保留平台强制门。自动审批拒绝则记录准确命令、理由与未执行状态并继续其他工作；删数据 / 删分支 / 强推 / 合 main / 花钱暂停对应操作，在报告列明待确认事项。本次无此类操作。
+
+### 74. 分支管理规则文档更新（随 PR55）
+
+按维护者补充要求，在 cicd.md 新增分支管理节：同工作流只留一条工作分支、同主题续做或从最新dev重新开始并清理旧分支、最终工作提交与实际dev必需CI通过后立即清理对应远程/本地工作分支、长期分支仅main/dev，并建议开启合并后自动删除。同时明确长期分支保护与发布PR头分支保全、本地清理和提交核验责任。
+
+本次只改文档，随当前PR55合dev，不改仓库设置、不删除任何现有分支；已合并分支集中清理等待Enmao明确确认。原三类实现和128项本机结果未变；文档补充后的最终head独立重验必需CI，不用6c61f53旧检查代替。第二类实际dev945c992的Unit38641099712 / Package38641099684全部实际矩阵与聚合已通过，PR54正文已补验收。
+
+### 73. 第一类候选与三类交付边界汇总
+
+第一类先提交42格既有合同 b0ead41，再仅在 runner.py 提取私有 _preserve_success，原表达式原样返回；run 内改为调用该函数。_write_failed_result 的读取、写入、宽容的二次定稿边界、日志、原异常传播、调度失效和重试代码均未动。反向移除 helper 并恢复原调用表达式后，规范化文本与 dev945c992完全一致；raw source hash 另保留，不混同换行规范化与原字节。
+
+改前42 passed；改后冻结、采集拒绝、Runner、调度和 provenance 相邻128 passed /0failed/error/skip，42个基线节点逐一包含于最终批次。不是新 bug，不制造应失败反例，不扩大旧成功保留范围。证据 .tmp/consolidation1/before.zip / baseline.xml / final.xml / LOCAL_CHECKED 不随clone；便携决策表在原 test_freeze_preservation.py。正式 source、tests 都没有新文件，Run结果、数据和provenance未迁移。
+
+| **类别** | **改前 → 改后** | **本机正确性** | **正式集成边界** |
+| --- | --- | --- | --- |
+| 第三类 / PR52 / B071 | 可替换文本绕过原子发布，index编码失败截断旧证据 → 复用原atomic链，保留LF和mode | 129通过 /1 POSIX跳过；全部15红合同在最终批次 | head eb52c65及实际dev ea2210b全实际CI通过；Issue53仍open |
+| 第二类 / PR54 | 分散读取、先信旧mode → 私有三态读取与计划字段校验，保留缺配置历史fallback | 最终107通过，原seed和TypeError候选失败保留；16新合同实际执行 | head41982bf全实际CI通过，合dev945c992，实际dev独立CI另核对 |
+| 第一类 / [PR55](https://github.com/DreamSoul-AI/RPipe/pull/55) | 内联保全决策 → 同一私有predicate，范围原样 | 基线42、最终128均通过 | 最终head与实际dev CI待独立验收，不以本机或上两类代替 |
+
+三类均无新模块、产物目录、schema或result含义，特殊协议不搬动；第七节能力不实施，不测速/GPU/正式Study复跑，不合main、不删分支/数据、不自动关闭Issue。最终PR正文给出当前head和实际dev验收链接；旧record的待审/待CI文字保留为对应时点事实，不当作新未修缺陷。
+
+### 72. 第一类：现有保全决策等价提炼，先锁定基线
+
+第二类最终 head 41982bf 的 Unit38640332309 / Package38640332160 / Branch38640332279 全部实际矩阵/聚合通过，经 PR54 正常合入 dev 945c9925c8657b50a7f0906c5cd4fd00b238f1a1，实际 dev CI 独立验收。第三类实际 dev ea2210b 的 Unit38639077019 / Package38639076858 已全部实际通过，DEV_CHECKED 的 SHA256为 e6682607bb41db7ccd5ce6cf6c0298c8d0aef1194d9e2f188edc60e1b48d970e；PR52和Issue53正文已补确切验收链接，Issue53保持open，不重复原六 Issue 评论。
+
+第一类从945c992建立唯一分支 codex/failure-preservation-policy，在既有 test_freeze_preservation.py 先补42格合同：7个阶段位置（含外门）×普通/冻结异常×无旧结果/旧失败/旧成功。基线42 passed，符合此类是等价提炼而非新缺陷的预期；不制造应失败的假反例。保留原错误对象、日志、peer和结果字节；只有 process 或初始/prepare 冻结拒绝且旧结果成功才保全，普通执行失败仍写failed。
+
+### 71. 第二类候选：安全读取复用与类型边界验证
+
+先红合同39d8a22，再补 seed 合同 d0d2fe2；生产仅改既有 readout/status.py 和 logs.py：私有 _read_optional 返回 available / missing / unreadable，日志沿现有依赖方向复用；删除分散的 result / note / event I/O try。activity 的现有可选读取协议与故障回归保留，不反向依赖 readout；严格 load_config / load_result 不变，未新增模块或持久化字段。
+
+_mode 在一次 config 读取后核对 mode / id / seed，以可用计划为先；仅缺失时保留 axes/result 的历史 fallback。冲突或坏配置只降级对应 mode 并在原 error 字段提示，已执行状态、真实 failure、其他格和 peer 不变。其余指标继续用旧 guard，无强转或 schema 放宽。日志正则、排序和 CLI 表头不变，读取不写盘、不清理文件。
+
+首候选102项通过后，新增3项 seed 边界出现2 failed /1 passed（null seed 遮蔽计划0、False 被等同0），修正后最终相邻105 passed /0failed/error/skip。原11项红例、首轮绿和 seed 红例均留在 .tmp/consolidation2，before.zip / XML / LOCAL_CHECKED 不随 clone；原 #37/#48/#50/B068 回归全部在最终批次，不重开旧 Issue。新增三态 helper 的缺失是提炼合同，不冒称原行为回归缺陷。
+
+补充自审发现首候选把日志 TypeError 也带入公共 fallback，会扩大原日志仅 I/O 容错的范围。先补 d4473ed 两项 note / event 编程错误回归，候选2 failed；移除公共 TypeError 捕获后新批次107 passed /0failed/error/skip。原105通过、两项失败和最终 verified.xml 全保留，不拿旧批次掩盖集中处理的反例；RuntimeError 等意外错误仍传播。
+
+正式计划 / 结果 / 数据 / provenance 未改，未运行 GPU 或性能测试。此为第二类独立 PR，最终 head 与实际 dev 必需 CI 尚须逐项验收；第一类未实施，不扩大旧成功保留范围。
+
+### 70. 第二类：三态读取与计划 config 优先合同
+
+第三类 PR52 最终 head eb52c65 全部实际矩阵/聚合通过：Unit38638301970、Package38638301989、Branch38638301958，正常合入 dev ea2210bc27e5456062bdef0ffb331e208c64f838；实际 dev 独立 CI 另验收。PR 汇总 Unit tests 尚 IN_PROGRESS 时拒绝的 ROLLUP_PENDING.json 保留，不拿实际任务已绿提前合并。
+
+从 ea2210b 建立 codex/safe-readout-contracts，按批准设计先补第二类11项合同，基线11 failed：6项为 config 与旧 axes/result 冲突或非法配置 / 身份仍被忽略，5项为计划新增的私有三态 helper 尚不存在。后者是接口提炼合同，不登记为旧代码 bug；config 优先是本设计明确批准的读出规则变更，不把它冒称旧 #37 未修。旧模式 fallback、peer / 原字节保全与严格 loader 均保留回归。
+
+### 69. 第三类：替换文本共用原子发布（B-071 / #53）
+
+先提交红色合同 a7277c1，再补 POSIX script mode 合同 1c56b31，之后生产改动仅五个原文件：index、jobs / scripts、profile / ready marker 改用现有 atomic_write_text；helper 只适配可选 newline 并保留已有 mode，继续调用原 atomic_replace。移除重复 mkdir；不搬模块、不新增产物或布局，不引入 producer 框架。脚本仍 LF，普通文本仍系统原生换行；JSON 字段和默认编码不改。
+
+旧15项合同8 failed /7 passed：真实 index TypeError 截断原文件、四个发布入口绕过提交及架构门失败；两项为新增 newline 适配合同。最终相邻130项为129 passed /1 skipped /0 failed/error，Windows 仅跳过 POSIX mode，待 Ubuntu CI 执行；原129项初轮全通过也保留，不替代最终验证。源码相邻门覆盖共享引用并发、部分写、编码拒绝、checkpoint staging 长名控制及 make/data；无 GPU、下载、正式数据或测速。
+
+架构测试在既有 test_atomic.py 内扫描库源码的直接替换文本写入并测别名 / 负例；Logger 初始化/追加与 AlgorithmTracker 初始化/追加/恢复偏移按精确函数豁免；checkpoint 二进制与 shared 文件锁不属于整体替换文本，原协议和测试保留。未将特殊协议挪到新模块，也不承诺 AST 对任意动态 Python 完整封锁。before.zip / red.xml / final.xml / LOCAL_CHECKED.json 在 .tmp/consolidation3，不随 clone；便携测试随 PR52。
+
+最终 head 与实际 dev 的全部必需 CI 分别验收，完整链接与执行清单回填 PR / Issue；本机通过不称已集成。第一、二类尚未实施，不扩大旧成功保留，main 和原六个 Issue 状态不动。
+
+### 68. 批准后的三类收敛：先合同回归，再最小实现
+
+维护者已审阅并授权按第三类→第二类→第一类实施，每类一个 PR，CI 后合 dev。§67 的待审门禁由本次明确批准解除，结构与磁盘合同仍不改；第一类只提炼 dev 既有保全判断，第三类只约束整体替换文本，特殊写入协议按设计第五（三）保留。现有文档 PR52 复用为第三类工作 PR，避免同任务两个未合分支；先提交文本发布/字节保全/架构负例合同测试，生产代码保持基线，之后再实现。
+
+第三类新增15项合同，基线8 failed /7 passed（2项为 newline 新适配合同）；真实 index 编码失败会截断旧计划，已登记 B-071 / Issue53。四个发布者提交拒绝和架构约束也给出旧链路反例；before.zip 与 red.xml 保留。未新建模块或运行性能/GPU。
+
+### 67. 按最新更正恢复设计待审门禁
+
+维护者明确作废上一条“不必停下等审阅”的指令，恢复设计提交推送后停止汇报、审阅前不动代码。设计正文恢复为 b687342 的文件架构不变方案；§66 / 275ac2b 的继续维护文字仅为当时已被撤销的指令记录，不再生效。当前不继续逐个相邻路径审计，不实施新架构、格式或磁盘布局调整。
+
+更正到达前文档已推送并创建 [PR #52](https://github.com/DreamSoul-AI/RPipe/pull/52)，尚未合入 dev；只读审查命令已结束，没有新复现、代码 / 测试改动或运行验证。本次将等待审阅的约束同步到文档与 PR，并设为草案防止误合；不等待 CI 后自行合入，不合 main、不删分支和数据。推送本次纯文档更正后停下汇报。
+
+### 66. 曾恢复正确性维护（该指令已由 §67 作废）
+
+按维护者最新纠正，设计说明作为参考归档，不再以等审阅为由暂停维护；§64–65 的停止 / 等待文字是当时指令与执行事实，现已被本节取代。文件架构、磁盘布局和 result.json 合同不变的约束继续有效，不实施无失败回归支撑的大重构。已修的六个 Issue 不重复开题或关闭；继续在现有职责范围核查新的真实反例，先复现、记录和提交红色回归，再最小修复与针对性正确性检查。
+
+本轮文档主题提交 c9e0141 / b687342 及本次状态补充一并推送唯一文档工作分支，经 PR→dev 的必需 CI 验证。代码 / 测试 / Study 产物相对基线 d294c1b 不变；文档只做编码、相对链接及差异检查，不以旧代码 CI 宣称架构验收。main、全部已有分支与数据保持；性能、耗时与 GPU 工作继续禁止。
+
+### 65. 按文件架构不变约束修订收敛设计（历史等待状态，后由 §66 取代）
+
+维护者补充明确：文件架构、产物布局和 result.json 的位置 / 格式 / 含义一律不改，模块不搬动。已据此重写[设计说明](artifact_consistency_design.md)：在现有失败写入入口内统一固定保全决策，在现有读取函数内统一三态和字段规则，复用 atomic_write_text → atomic_replace；日志追加、tracker、checkpoint 与资源锁保留原协议。
+
+§64 / c9e0141 中的 attempts、结果指针、格式迁移、计划 generation 和 I/O 职责搬迁方案不再是待实施范围；旧稿仅在 Git 历史保留。本稿把需要结构变化才能提供的完整尝试历史、多文件事务和任意同 Run 多写者互斥列为限制说明，不实施，不把日志说成机器可读历史或把单文件原子替换说成整体事务。替换类文本禁止绕行与特殊协议控制的差异明确待审。
+
+本次只修订设计和记录；检查 UTF-8、相对链接、差异和源码 / 测试相对 dev 不变，不运行代码、GPU 或速度验证。继续同一文档工作分支，等待审阅后才动代码；不推实施 PR、不合 dev / main、不迁移或删除任何产物。
+
+### 64. 产物一致性架构初稿（未实施，后由 §65 修订）
+
+按最新指示停止逐个相邻路径审计，先归纳既有问题并提交[产物一致性设计](artifact_consistency_design.md)。三类目标为：尝试不可变追加、result 根文件作有效结果视图；三态安全读取与计划 config 优先的有类型 Run 视图；唯一原子发布入口及受控 append / 锁。设计列出 #36 / #37 / #38 / #41 / #48 / #50、B-062 / B-067 / B-068 的已修事实、架构欠账、调用方替换、兼容迁移和回归计划，不把已修反例重新登记为 bug。
+
+本轮开始时 fetch 成功、工作区干净。#50 已由 [PR #51](https://github.com/DreamSoul-AI/RPipe/pull/51) 正常合入 dev d294c1b5aa99b4d7148f991f9a4ac8903fe23374；实际 dev 的 [Unit38633933430](https://github.com/DreamSoul-AI/RPipe/actions/runs/38633933430) / [Package38633933432](https://github.com/DreamSoul-AI/RPipe/actions/runs/38633933432) 已全部实际矩阵和聚合通过，不重复开修复 PR 或重派检查。六个 Issue 保持 open，main 仍 v0.3.1 / 7a15c46。
+
+本次仅设计文档和状态记录；文档核对包括相对文件链接、编码、结构、Git 差异与代码基线不变，没有运行代码回归、GPU 或性能检查。上述 CI 只证明此前修复，不能用于宣称新架构通过。attempt 目录、物化结果视图、计划 generation 与写入边界是待审合同，现行 layout / schema 仍有效；审阅通过前不改代码、不迁移历史 Run / 数据 / provenance、不推进实施 PR 或合入 dev / main。保留全部已有分支。
+
+### 63. 相邻正确性审计与 status 指标类型回退（B-070 / #50）
+
+#### （一）审计范围与收尾状态
+
+基于已验收 dev b2390b067abc0d39e347664573a95ad31fe11975，只读检查 readout status/logs、_atomic 写入/清理、launch 的本次重试参数和等待/失败状态、status mode 来源顺序，以及 make/run-one/Runner 的初始拒绝与失败写入。没有运行性能或GPU测试；不是全仓库/全部后端的无缺陷证明。模式合同严格接受小写train/eval/inference，不把无效大小写配置当作受支持模式扩展；checkpoint诊断保全仍按既有合同，不无依据清理。
+
+| **已完成项** | **实际状态** | **等待维护者决定的边界** |
+| --- | --- | --- |
+| #36/#37/#38/#41 原修复与边界补测 | 已在dev，PR46/47及实际集成CI通过；四条授权验收评论已发布 | Issue保持open；main/v0.3.1未发布这些修复 |
+| B-069 / #48 | PR49合入dev b2390b0；最终head ed96c8c的三门及实际dev Unit38629909667 / Package38629909697全部实际矩阵/聚合通过 | 原包门未完成的拒绝证据保留；不把skip或未执行GPU/HF算通过；Issue48仍open |
+| 当前新B-070 / #50 | 新鲜合成输入已复现，先开Issue50、再提交红色测试f15e067 | 当前候选及其最终head/实际dev必须独立验收；不合main或自动关Issue |
+
+B-069实际dev执行清单SHA256为636268155bb4d6d185868d539634b0fe9376dd33c1f9291a42fad83536e823c5；main仍7a15c46。旧三个工作分支、全部数据/Run/provenance保留。后续本轮仅使用一个新分支codex/status-metric-shape，不干预下游vendor/实验。
+
+#### （二）新反例与最小方案
+
+公共validate_result/write_result接受成功记录包含metrics=[1]，而list_runs先dict(...)导致TypeError；原生status返回2，正常peer被一起隐藏。列表对[['accuracy',0.9]]则会被当作mapping，显示并未按object记录的accuracy=0.9000。原始API/CLI输出和字节保全见.tmp/audit070/REPRO.json；这不是正式训练失败、结果损坏或性能结论。
+
+先创建[Issue #50](https://github.com/DreamSoul-AI/RPipe/issues/50)，再提交10项portable回归f15e067；旧代码 **7 failed /3 passed**，三个控制为None、空mapping和合法数值mapping。新增原生CLI用例覆盖eval过滤、Run成功状态/peer显示及全部输入字节不变。修复前status.py原字节ZIP/hash、红色XML/日志保留在.tmp/audit070，不随clone提供。
+
+方案仅取消list_runs调用方的dict强转，把原值交给既有_metric_cell的mapping/numeric guard；不改生产者、结果校验/格式、Run状态、mode、聚合或科学门，也不新增schema/解析器/重试/依赖。生产修复0b51ee6仅一行；10项新增节点全包含于绿色批次，与readout全目录/活动提示/原生status相邻门联合 **91 passed，0 failed / error / skipped**。红/绿节点、b2390b0到当前源码逐行仅该处变更与XML/SHA256已核对（Git与工作区原字节均为CRLF，read_text读取后规范化为LF；首次未统一文本比较因此拒绝，原字节hash与NEWLINE_CHECK.json分别保留，不当库失败），保存于.tmp/audit070/LOCAL_CHECKED.json。最终提交及实际集成CI仍分别核对，不以本机通过代替。
+
+### 62. readout 存在性查询与内容读取的错误边界（B-069 / #48）
+
+按新授权在实际 dev f9c6e90 检查四类相邻路径，取得新的逐文件 I/O 反例。readout status 的 _load_result / _note_from_log、logs 的 event_lines 已对内容读取失败做逐文件回退，但 is_file 在 try 外；同一 PermissionError 提前发生时，API 异常、原生 CLI 返回 2，正常 peer 结果或日志一并不可见。与 B-068 activity 已修入口分开，不重复登记 #37 模式问题。
+
+先在唯一新分支 codex/status-readout-errors 提交 portable 红色回归 31d1511；生产原字节 ZIP 与 SHA256 保存在 .tmp/phase069/before.zip / BEFORE.json，新增 13 项为 **5 failed / 8 passed**。五项失败分别定位 result stat、note stat、event stat、原生 status、原生 logs；内容读取拒绝与意外 RuntimeError 控制通过。新 [Issue #48](https://github.com/DreamSoul-AI/RPipe/issues/48) 已公开提交脱敏合成条件，未宣称真实系统 ACL 配置或正式数据损坏。
+
+设计只统一这三个函数各自已有的元数据/读取 I/O 边界；不创建 helper、改异常类、调整模式、改变不可读结果的原计划回退，亦不改 process/调度/科学条件。候选仅移动三个 is_file 到原有 try，异常类别保持原样。新增 13 项均已在绿色批次执行；与 readout 全目录、活动提示及原生 status 相邻门联合 **81 passed，0 failed / error / skipped**。XML、源码前后 hash 和红/绿节点包含关系已核对，保存于 .tmp/phase069/LOCAL_CHECKED.json。最终工作提交和集成提交 CI 分别核对，不以本机通过代替。其他三类审查范围为 Runner 初始拒绝、checkpoint staging 的已有恢复合同以及 CLI 默认/本次参数；未把保留诊断 staging 或正常运行失败写回认作新缺陷，不因此追加改动。
+
+### 61. 四个开放 Issue 补齐修复与验收评论
+
+按用户明确授权，在 #36 / #37 / #38 / #41 各留一条公开评论，分别链接实际生产修复、当前回归文件及已验收 dev f9c6e90 的 Unit38624513622 / Package38624513901；本机 75 项与远端实际矩阵分开，skip 与未执行 GPU/HF 不计通过。发布前逐项读已有评论、核对真实 Git 提交；8269bff 是验证记录，#41 生产修复链接到 PR42 集成 8c15cd8，避免把文档提交冒充代码修复。
+
+实际评论：[#36](https://github.com/DreamSoul-AI/RPipe/issues/36#issuecomment-6177095209)、[#37](https://github.com/DreamSoul-AI/RPipe/issues/37#issuecomment-6177095726)、[#38](https://github.com/DreamSoul-AI/RPipe/issues/38#issuecomment-6177096237)、[#41](https://github.com/DreamSoul-AI/RPipe/issues/41#issuecomment-6177096891)。四个 Issue 保持 open，main 不变；等维护者后续决定 main，再按授权处理关闭。没有发送跨会话消息、覆盖下游源码或开启性能/超时测试。
+
+### 60. 四个开放 Issue 的当前 dev 逐项复验与边界补测
+
+以实际集成 `5ee1214` 为基线，在唯一后续分支 codex/open-issue-correctness 中按 Issue 分开提交。四个原始问题已由此前 PR39/40/42–45 修复，本轮没有发现需要修改生产代码的新反例，因此只补有意义的边界，不重复造修复或改公共合同。
+
+| **Issue** | **原报告行为 → dev 行为** | **本轮新增边界** |
+| --- | --- | --- |
+| [#36](https://github.com/DreamSoul-AI/RPipe/issues/36) | 初始 freeze 拒绝覆盖旧成功 → 保留旧成功，新的失败仍定稿 | 两次独立原生 run-one 连续拒绝；Study 扩展开/关均核对 result 和非日志 asset 字节不变 |
+| [#37](https://github.com/DreamSoul-AI/RPipe/issues/37) | 固定 eval 被显示/筛选为 train → 从实际计划配置读取模式 | base/fixed 的 inference 也经 make→status / 指定模式 / train 过滤核验；全部文件字节不变 |
+| [#38](https://github.com/DreamSoul-AI/RPipe/issues/38) | 初次部分写入抛错遗留 staging → finally 清理自己的临时文件 | KeyboardInterrupt 后清理；真实 ASCII 编码拒绝；目标存在/缺失均保留 peer 字节与旧目标 |
+| [#41](https://github.com/DreamSoul-AI/RPipe/issues/41) | CLI 无 API 既有重试关闭选项 → launch --no-retry 单次生效 | 一次 opt-out 失败后再显式默认 launch：总计三次尝试，默认重试恢复，jobs 原字节不变 |
+
+本机 Python 3.13.9，使用已有隔离环境，CUDA_VISIBLE_DEVICES 为空、MPLBACKEND=Agg，独立 basetemp `.tmp/e-issues4/p`。四个目标文件分别 11 / 4 / 13 / 4 项；相邻冻结采集 22 项、status 21 项，联合 **75 passed，0 failed / error / skipped**。XML SHA-256：551150e466463fe5a5cdedccc861591fa83ff73c27d5c80519539646704d4ce4。保存每次原生 stdout/stderr、原生 Run/result/log 与 pytest manifest/events；`.tmp/issue-audit-20261015` 和 `.tmp/e-issues4` 不随 clone 提供，回归代码入库。
+
+复验调用：[冻结保全](../../tests/rpipe/flow/test_freeze_preservation.py)、[计划模式](../../tests/rpipe/flow/test_status_planned_modes.py)、[原子文本](../../tests/rpipe/structure/artifact/test_atomic.py)、[CLI 重试](../../tests/rpipe/flow/test_cli_retry.py)。不从 pytest 运行时间作性能结论；没有 GPU、外部数据、下游 vendor 更新或正式 Study 重训。只读检查三个下游最新状态，未取得新的 RPipe 缺陷线索，未向其他对话发送消息。Issue 保持 open，后续 PR 最终提交和实际 dev 的 CI 单独验收，不把本机通过写成已发布。
+
+### 59. PR #46 实际合入 dev 与归档后状态
+
+最终工作提交 `90b7d75323d266c4d272f786c28f4c00959d0432` 的 [Unit](https://github.com/DreamSoul-AI/RPipe/actions/runs/38621366046)、[Package](https://github.com/DreamSoul-AI/RPipe/actions/runs/38621366077)、[Branch](https://github.com/DreamSoul-AI/RPipe/actions/runs/38621366320) 及每个实际子任务全部成功；本机执行清单 checks-90b7d75323d2.json SHA-256 为 f9c96f09ce605bf066255cb035a4a5652f788be5c3e7511182d7da37c3c46f24。核对 clean / 精确 head / 最新 dev 祖先 / MERGEABLE / CLEAN / 仓库不自动删分支后，按维护者最终授权 normal merge [PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46)。
+
+实际 mergeCommit 为 `5ee1214b7ce0dc28b65139ac7b3f9ca16eb8b2ac`。集成提交的 [Unit](https://github.com/DreamSoul-AI/RPipe/actions/runs/38622291540) / [Package](https://github.com/DreamSoul-AI/RPipe/actions/runs/38622291406) 全部实际矩阵和聚合门均成功；DEV_CHECKED.json SHA-256 为 e96bb11ef815777ef13378708ab666f6594be11ab70539bcb86995868aadebbe。未拿 PR 绿灯代替 dev 检查。B-056～B-064、B-066～B-068 已集成，B-065 次数去重在 70231ca 撤回，历史失败/候选和主题提交保留。
+
+origin/main 仍为 `7a15c46b75c5eb951cccd60ed7b9fc3463db90f5`，本地及远端 codex/cache-lock-budget 均保留在最终工作 head；没有删除分支、数据、Run 或来源，没有强推、发布、收费变更。归档快照的“待合入”仅描述记录当时，当前接续已进入四个开放 Issue 的复验。正式 Study 不重新签名，不把本批 CPU 检查称为新科学验收。
+
+### 58. 正确性维护归档与授权进入dev
+
+维护者最终确认允许PR #46转ready、最终CI通过后合dev，撤销早先草案限制；仍不合main、不强推、不删任何分支/数据、不发布、不花钱。重启后先核对工作区干净、源码/测试均已commit/push；B-067并非遗留未提交。为遵守只做正确性，先用独立主题提交撤回B-065次数去重优化，再以文档主题保存[归档快照](maintenance_archive_2026-10-15.md)及handover接续规则。
+
+已完成范围、改前/改后、927c36e实际CI、53项来源正确性和53项并发门、34项status门、历史失败与本机证据边界均在归档文档及§43–57。未完成项明确包括最终归档head CI、PR46合dev/实际dev CI、四开放Issue在当前dev逐项复验及缺口补测；不预先写成全部已合并或新完整科学验收。
+
+本轮不运行GPU/模型/速度测试、不分析原480秒；不覆盖下游vendor，不重写旧Run/provenance。最终合入身份和CI由PR正文/实际GitHub状态核对，归档时的待完成文字只描述当时快照。按最新人类要求保留本地/远端分支，不套用AGENTS合并后删分支的默认规则。
+
+### 57. 按最终范围暂缓 B-065 性能去重
+
+维护者最终限定只做fix/test、不做性能改动，同时授权PR #46转ready并在CI通过后合dev。归档核对发现ad67f74的每次采集次数去重仍在候选差异中，因此以新的普通提交撤回这段优化，不改写旧提交、不强推，也不删除历史证据。
+
+只把source_files恢复为按原声明列表逐项解析/读取，移除dict.fromkeys与本地seen；B-066的库键域/物理身份校验、B-067的mapping验证/冻结错误保全全部保留。对应测试保留重叠路径规范化、hash内容、后续修改检出、读取拒绝、空匹配和越界断言，取消只服务于性能优化的读取次数约束。未改变任何科学门限、配置、Run ID或持久化格式。
+
+旧§52、ad67f74及其红例/计数/性能材料原样保留，不能称为本轮新增测速；§55表是当时草案状态。新的合入候选不含B-065去重优化，后续性能工作仍暂停。本次只运行来源正确性与相邻冻结门回归，最终与归档主题提交共同绑定当前head的必需CI。
+
+### 56. 可选活动提示不能遮蔽正式状态（B-068，草案）
+
+只读复查开放Issues与三个下游对话后，未取得新的RPipe根因反例；dayan的重复配对/归档恢复属于该对话已确认的编排失误，量化在整理本项目结果，output-space仍按研究计划运行，未干预它们。随后主动审查status读取边界，复现可选activity文件使正式状态无法展示的问题。性能与耗时工作继续暂停。
+
+| **条件** | **85d6070 改前** | **候选改后** |
+| --- | --- | --- |
+| activity.json包含真实非法UTF-8字节 | UnicodeDecodeError直接外溢，CLI即使有成功result也崩溃 | 忽略不可用活动提示，继续读取index/result，旧成功可展示 |
+| 查询activity是否存在时PermissionError | is_file在try外，未进入既有IO容错 | 与读取放入同一可选IO错误边界，继续原状态流程 |
+| 不存在index且没有有效提示 | 异常遮蔽missing-index诊断 | 保持退出2与missing index提示，不伪报成功 |
+| 有效Unicode提示/其他编程错误 | 原有读取或异常行为 | 有效字段与原字节保留，意外RuntimeError仍暴露 |
+
+生产改动仅read_activity：把is_file纳入既有try，增加UnicodeError捕获。已核对唯一生产调用方CLI _execute_status、只读list_runs与既有活动提示用例；announce/clear_activity、索引、来源、Run状态写入和共享输入均不改。沿用坏JSON被忽略的既有合同，不增加重试、警告系统、调度器或依赖。
+
+新增9个unit与4个真实CLI集成，修复前13项中6 failed /7 passed；修复后连同既有status回归共34 passed，无跳过。真实编码坏文件与精准方法替身的存在性/读取拒绝分开记录：非法编码是实际文件读解码，权限边界是隔离故障注入，不改变主机权限。每个集成条件比较index/result/activity原字节及目录成员，无写入或清理；有index显示原成功，无index仍退出2。全部是小型正确性检查，不运行模型、CUDA、下载或训练，不从pytest时间导出速度结论。
+
+.tmp/phase068/before.zip /BEFORE_INDEX.json保存修复前源码和测试，逐字节核对85d6070；red.xml /red.log保留真实失败；green.xml /green.log、final-source.zip与CHECKED.json记录最终源码hash及正确性结果。临时证据不随clone提供；可复现测试为[活动读取单元](../../tests/rpipe/structure/artifact/test_activity.py)与[原生status集成](../../tests/rpipe/flow/test_activity_status.py)。正式Study无已证实受影响记录，未改写既有结果或下游vendor。
+
+本次仍沿用PR #46草案，绑定最终工作提交检查必需CI及所有实际矩阵；最终链接与执行清单放PR正文，不用85d6070旧绿灯替代。dev9324014/main7a15c46不变，不转ready、不合并、不发布。B-058～B-067的逐项集成汇总仍见§55；新增B-068同样只在草案。
+
+### 55. B-058 至 B-067 修复汇总与并发补验
+
+本轮只补正确性测试、提交与开发记录，不修改生产源码，不做 perf 改动、性能采样或耗时比较。B-067 生产修复此前已提交并推送：8a24817，文档补正5bae738；本轮开始时工作区干净，不把已提交修复写成仍未提交。
+
+#### （一）修复汇总与集成状态
+
+逐项核对 Git 祖先关系：下表十项均已进入 codex/cache-lock-budget，即 [PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46) 的草案差异；**十项均未合入 dev 或 main**。dev 为9324014985680a0d186863cd135faa53a2e7bcbf，main 为已发布v0.3.1/7a15c46b75c5eb951cccd60ed7b9fc3463db90f5。dev 中共享输入与#36–38/#41修复来自更早PR，不能与本表草案混为已集成；main仍未发布这些修复。
+
+| **条目** | **改前 → 改后** | **草案修复提交** | **PR #46 / 集成状态** |
+| --- | --- | --- | --- |
+| B-058 | 事件起点取报告完成时刻 → 使用pytest实际阶段起点 | b20a034 | 已在PR；dev/main未合 |
+| B-059 | 清单别名/保留名可进入builder → 构建前校验本机Path等价和相对路径 | 8daebb5（含0bf77af修复） | 已在PR；dev/main未合 |
+| B-060 | packed refs/worktree测试来源丢失 → 快速路径加有界Git回退 | 394a068 | 已在PR；dev/main未合 |
+| B-061 | Git status失败仍误记dirty → 非零查询返回空可选元数据 | c3b8cef | 已在PR；dev/main未合 |
+| B-062 | 同tick引用临时名碰撞 → 每写者短UUID，失败只清理自己的staging | c4d651d（前候选494c064保留） | 已在PR；dev/main未合；本轮补并发失败交错 |
+| B-063 | HEAD/ref坏字节或消失使pytest启动失败 → 可选错误隔离并校验SHA形状 | 870da1b | 已在PR；dev/main未合 |
+| B-064 | 临时名拼完整目标名令合法长名失败 → 文本/迁移使用短UUID | 11ede41 | 已在PR；dev/main未合 |
+| B-065 | 单次来源采集重复读取重叠输入 → 仅当次去重，每次freeze仍重读 | ad67f74；证据补正296fac5 | 历史已在PR；dev/main未合；后续perf工作暂停 |
+| B-066 | Study同键覆盖库hash、掩盖库修改 → 保留库键域并核验物理身份 | 80fdce1 | 已在PR；dev/main未合 |
+| B-067 | 采集错误绕过冻结保全、覆盖旧成功 → mapping校验和现有拒绝异常，保留cause/旧成功 | 8a24817；文档5bae738 | 已在PR；dev/main未合；本轮补并发拒绝隔离 |
+
+B-065/ad67f74是已经存在的性能改动，本轮不继续优化、测量或扩展，也不将“暂停”写成已撤回该历史提交。PR继续Draft，尚未批准这些差异集成。B-056/B-057也仍在同一草案，本节依本次要求集中汇总B-058～B-067。旧失败、取消和未执行证据保留，既有§45～§54不删减。
+
+#### （二）B-062：失败清理与存活发布者
+
+新增4个确定性交错：默认symlink路径/显式hardlink fallback × 一方失败/双方失败。两线程完成同字节校验并各自产生staging后，令首写者PermissionError退出并完成finally清理；另一写者仍持有自己的staging，确认文件存在、字节完整、与source同物理输入，再成功发布或按计划拒绝。
+
+断言两个临时路径不同，首写者只能清理自己的路径；成功时target是source引用，双方失败时原独立副本保留；source、target及无关peer字节不变，最后只清理各自产生的临时引用。屏障/事件的有限等待仅防挂死，不采集或比较速度，不修改锁、调度或发布实现。仍不承诺任意缺失目标多写者或单Run多写者的新合同。
+
+#### （三）B-067：同Study不同Run同时拒绝
+
+新增4个并发条件：include文件消失/权限拒读 × 两个旧成功Run/一个旧成功加一个无结果Run。两个Runner读取同一份只读来源证据前通过屏障同时进入，使用真实check_frozen、Runner异常处理、日志与结果IO；禁止计算阶段导入。每个Run只有一个执行者/写入者，Context和Logger独立，不共享模型、RNG、sampler或可变状态。
+
+旧成功result逐字节保留；无旧结果的Run各自failed定稿并保留ProvenanceChangedError与原始cause；日志只含本Run标识，来源清单不改写。实际8份落盘结果中6个旧成功保全、2个新failed，不将并发拒绝写成成功模型执行。
+
+#### （四）红例、验收与提交边界
+
+- 先保存B-062基线c3b8cef和B-067基线80fdce1原始文件/hash，再在隔离pytest进程通过临时plugin只恢复link_input、load_provenance/check_frozen；不修改仓库生产文件或下游。8个新增并发用例全部失败，red.xml /red.log /RED_REASONS.json保留。旧B-062确有临时路径撞名、FileExistsError/共享拒绝及关联屏障退出；旧B-067实际覆盖旧成功，不只是异常文本不同。
+- 当前草案的新增8项与既有共享引用、原子发布、长名staging、冻结采集等相关回归共53 passed，无跳过；green.xml /green.log保留。没有用早先运行代替本轮执行。
+- TEST_SNAPSHOT.zip /SNAPSHOT_INDEX.json保存源码/测试字节；INTEGRATION_MAP.json保存逐项祖先核对；RESULTS.json保存实际8份结果状态/hash。首次证据收集器因pytest缩短临时目录名而拒绝空选择，EVIDENCE_SCAN_FAILURE.json保留，修正目录选择后检查原输出，无重跑/改写结果。临时材料在.tmp/b062-b067-concurrency，不随clone提供；便携回归见[共享引用测试](../../tests/rpipe/structure/artifact/test_shared_references.py)与[冻结拒绝测试](../../tests/rpipe/flow/test_capture_refusal.py)。
+- 本轮提交只有测试、record及bugs状态补充，生产src相对5bae738无变化。提交后绑定最终head核对Unit tests / Build package / Branch flow及所有实际子任务，不拿5bae738旧绿灯替代。最终链接与验收清单同步PR正文；PR保持Draft OPEN、无auto-merge，不合并、不发布。
+
+### 54. 暂停性能调查与冻结采集错误保全（B-067，草案）
+
+按最新人类指示，暂停所有速度、耗时、480 秒插桩、profiler、缓存与资源竞争测量。本轮只验证代码正确性；GPU 争用保留为未证实假设，不据此归因或新增全局 GPU 互斥。旧证据保留，后续速度验证另行恢复。未向下游发送消息或干预实验。
+
+#### （一）改前与改后
+
+| **条件** | **80fdce1 / 首候选** | **最终候选** |
+| --- | --- | --- |
+| 冻结 include 文件消失、读取被拒绝、来源 JSON 损坏 | 普通 FileNotFoundError / PermissionError / JSONDecodeError 越过冻结拒绝合同；实际 Runner 把旧成功改写为 failed | check_frozen 将 OSError / ValueError 转为现有 ProvenanceChangedError，保留 cause；CLI 拒绝，不执行计算，旧成功原字节保全 |
+| 合法 JSON 但根、files 或 plan 为列表 | 首候选仍抛 AttributeError，可再次绕过保全 | load_provenance 验证 mapping；结构错误以 ValueError 进入同一冻结拒绝路径 |
+| make / freeze 关闭 / 非预期编程异常 | 原输入错误、关闭时不查来源、RuntimeError 直接暴露 | 保留原合同；不改 make 接受行为，不捕获任意异常，不重写旧来源 |
+| Study 扩展关闭后的 prepare | 同类采集失败仍可覆盖旧成功 | 真实 prepare 冻结门拒绝；运行时和 System 在测试中隔离，不构造 Data/Model |
+
+只改 provenance.py 的 load_provenance 与 check_frozen；已核对 source_files、write_provenance、provenance_changes、CLI、Runner、prepare、Study process 及 summarize 调用。磁盘根必须是 mapping，files/plan 缺省或 null 沿用旧空映射语义，其余须为 mapping；不改变持久化格式、digest、Run ID、Runner 保全条件或共享输入。异常栈保留原始 cause，非预期 RuntimeError 不被归类为来源变更。
+
+#### （二）可复现证据与正确性检查
+
+新增定向用例使用隔离合成库/Study 与独立 basetemp，不执行模型或 CUDA 计算；prepare 仅对运行时/System 做轻量替身，冻结门和失败定稿使用真实实现。相邻 artifact 读出回归包含 PyTorch 微小 CPU 张量的 checkpoint 比较，不宣称整批未导入 Torch。没有正式输入、下载或训练。pytest 默认报告时间保留在原文件，本节不提取速度指标或比较耗时。
+
+| **证据** | **正确性结果** |
+| --- | --- |
+| before.zip / source-index.json | 实施前 80fdce1 源码与最初 19 项测试原字节及 SHA-256 |
+| red.xml / red.log / red-results.json | 15 failed /4 passed；真实旧成功覆盖为 failed 的三类反例均保留 |
+| green.xml / boundary.xml | 首候选19通过；追加关闭扩展的真实prepare后21通过，仅为当时范围 |
+| first-candidate.zip / candidate-index.json / shape-red.xml | 追加合法JSON非法结构后7 failed /21 passed；没有用早期绿灯覆盖缺口 |
+| final.xml | 34 passed：B-067 的12单元、18真实门/Runner/prepare，加B-066的4个原生门控制 |
+| final-core.xml | 214 passed /5 deselected；artifact、Git来源及真实manifest入口的相邻unit content检查；未选中不计通过 |
+| final-results.json | 14份B-067实际落盘结果：9份旧成功保留相同字节，5份无旧成功的Runner写failed；CLI无旧结果时不新增结果 |
+| CHECKED.json / final-source.zip | 原字节、ZIP CRC、各阶段结果/日志hash、最终生产与测试字节、结果合同核对通过 |
+
+临时证据均在 .tmp/phase067，不随 Git clone 提供；便携回归为 tests/rpipe/structure/artifact/test_freeze_capture.py 与 tests/rpipe/flow/test_capture_refusal.py。没有正式 Study 受影响的已证实事故，不迁移数据、不重签旧 provenance、不重训或修改科学预算。
+
+#### （三）最终提交、验收边界与待合入清单
+
+B-066 的工作提交 80fdce1773fc4510548912661acab8ea058cbc8c：[Unit](https://github.com/DreamSoul-AI/RPipe/actions/runs/38611789823)、[Package](https://github.com/DreamSoul-AI/RPipe/actions/runs/38611789983)、[Branch](https://github.com/DreamSoul-AI/RPipe/actions/runs/38611789914)及实际矩阵最终均成功。早先聚合绿但Ubuntu3.10实际子任务仍IN_PROGRESS时，执行清单正确拒绝；first-check-pr-status.log保留，未靠聚合绿灯签收。最终补报的job116016715215和PR状态快照保存到本轮 prior-matrix-final.json / prior-head-ci.json。因本轮B-067已有工作区修改，没有把旧清单在脏工作区运行并伪报通过；最终提交另核对全部证据与其自身CI。
+
+合入前依次检查：生产差异仅两处边界处理；红例/候选/最终快照与hash可核验；最终本机行为门、实际落盘结果与原生CPU流程/安装矩阵全部成功；绑定最新工作提交核对Unit tests / Build package / Branch flow及所有子任务；PR仍Draft OPEN且无auto-merge；dev9324014、main7a15c46不变。PR #46按人类要求保持草案，不执行合并或发布。
+
+只读复查：开放Issues仍为36/37/38/41，无新增；dayan仍在自己的研究执行，量化正补本项目占用守卫识别范围，output-space正在FP32质量检查，这些反馈未提供新的RPipe根因反例。不将下游自有守卫或研究结果登记为库缺陷。
+
+### 53. 来源键域遮蔽与冻结拒绝保全（B-066，草案）
+
+本轮主动审查source_files，确认Study输入可覆盖库的同名来源键，导致真实库修改/删除被掩盖。候选保留rpipe/库键域，仅允许与对应库路径可核验为同一物理文件的输入复用；不同副本、缺失或不可核验身份均以现有ProvenanceChangedError拒绝。10项新增单元、4项真实冻结门/Runner边界通过，相邻core为202 passed /5 deselected。PR #46继续草案，dev/main未变，不发布或改写旧来源。
+
+#### （一）改前与改后
+
+| **条件** | **296fac5 / 首候选** | **最终候选** |
+| --- | --- | --- |
+| Study include rpipe/__init__.py是独立文件 | 覆盖库哈希；即使初始字节相同也会隐藏后续库修改 | 拒绝占用库键域，不按相同字节冒充同一输入 |
+| 库文件修改后检查旧歧义清单 | legacy-bypass.json实测check_frozen仍放行，记录哈希等于Study副本 | 冻结拒绝，保留旧清单和成功结果，无计算阶段执行 |
+| 同一实际文件或硬链接 | 初始用例通过；首候选仍漏掉库路径被删除、Study硬链接保留的反例 | 对应库身份存在且samefile才可复用；修改能检测，删除或身份查询失败拒绝 |
+| 尚无对应库文件的Study rpipe/extra.py | 首候选允许，未来库成员变动可能仍被混合键来源掩盖 | 整个rpipe/逻辑键域保留；rpipe_inputs/extra.py等非保留键仍可使用 |
+
+库源码键相对包根加rpipe/，Study键相对Study根，本来共用一个flat mapping。只在已存在键上判断冲突不能保留来源成员身份：库路径删除后，Study硬链接可继续提供相同键/hash，因此最终必须声明保留键域，而不只拒绝当前字典重名。未改schema、digest算法或持久化键格式；无歧义Study的mapping保持。旧歧义Study须将独立输入移至不同相对路径（如rpipe_inputs/）或恢复真实库身份，保留旧证据，按计划用新version/fresh make；不批量迁移正式输入或重签旧Run。
+
+#### （二）真实复现与候选收缩
+
+隔离库/Study各有自己的__init__.py，只在诊断进程调整rpipe.__file__以定位合成库，并以显式synthetic环境/Git stub避免Torch采集；不导入或修改下游vendor，不执行模型。legacy-bypass.json记录库hash从a0e974...变为e3d2db...，check_frozen仍成功，清单值b02cf1...等于Study副本而非库。完整hash、原始字节与诊断路径均保留，不声称正式实验受过该反例影响。
+
+| **阶段证据（均保留）** | **结果与边界** |
+| --- | --- |
+| 初始单元红 .tmp/phase066/red.xml | 5 failed /2 passed，0.20s；两个同文件控制已通过 |
+| 首次混合收集 red-final.xml | 两个新测试basename相同导致1 collection error，0.19s；重命名Flow测试，不删缓存或旧日志；不当库缺陷证据 |
+| 实际冻结门/Runner反例 red-gates.xml | 9 failed /2 passed，0.31s；旧launch gate返回True，Runner进入禁止执行的合成阶段 |
+| 首候选 green.xml | 11 passed，0.23s；仅说明初始条件，不是最终验收 |
+| 追加删除/保留键边界 boundary-red.xml | 2 failed /11 passed，0.27s；库路径真实删除仍被Study硬链接掩盖 |
+| 身份拒绝 identity-red.xml | 1 failed /9 deselected，0.14s；PermissionError直接外溢，需保留cause转冻结拒绝 |
+| 最终候选首次 final-gates.xml | 1 failed /13 passed，0.29s；实际已正确拒绝缺失身份，但测试只匹配collid文本，调整为library消息断言；保留原失败 |
+| 最终 final-gates2.xml | 14 passed，0.25s；10单元+4真实gate/Runner，不启动计算 |
+| 相邻 final-core.xml | 202 passed /5 deselected，6.93s；artifact镜像、Git及真实manifest入口，未选integration不计通过 |
+
+实施前的pre-fix-acceptance.zip / acceptance-source-index.json含296fac5源码与当时11项冻结/门测试的原字节和hash；后续扩展边界另有首候选快照；更早pre-fix.zip、收集失败快照、first-candidate.zip和pre-final-boundary.zip均保留。使用互不别名的索引/结果文件名，不重演§52的大小写覆盖。临时证据在.tmp/phase066，不随Git clone提供；便携回归在tests/rpipe/structure/artifact/test_source_keys.py与tests/rpipe/flow/test_source_key_gate.py。
+
+#### （三）最小实现与流程合同
+
+变更仅在source_files写入Study键前检查rpipe/来源身份。相同键域但不同物理文件拒绝；samefile的OSError以cause保留并转为现有ProvenanceChangedError，无新异常或依赖。正常两柱发现、B-065每次调用内去重及跨调用重读、路径边界不变。额外身份IO仅针对保留键输入，不改变共享data/model或Run可变状态。
+
+已核对write_provenance、provenance_changes/check_frozen以及CLI _provenance_gate、prepare、FlowRunner、Study process调用方。复用现有异常使原生launch gate返回False、打印来源冲突；Runner在阶段前拒绝时沿用#36的旧成功字节保全，无旧成功时保留failed/日志合同。4个集成条件覆盖gate/Runner×有无旧成功，验证未进入phase、旧provenance原字节不改、必要日志/错误类型存在；不以退出码代替结果检查。make拒绝时也不覆写已有来源。
+
+最终提交必需CI与实际矩阵在[PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46)绑定核对，不能拿296fac5旧绿灯替代。执行清单检查所有红/候选/收集失败留存、原字节/hash、最终202 core及14门、运行差异只限本函数、PR Draft/open/no-auto-merge、dev/main不变。原480s根因仍未确认；此次是来源完整性修复，不作速度归因。
+
+#### （四）只读下游检查
+
+Issues #36–38/#41无新增反馈，仍按要求open。dayan按该对话用户要求结束当前pair并停止全量扫描，74/216为部分结果，不写成完整通过；其PowerShell/自有停止脚本失败不是RPipe新缺陷。量化的占用守卫因4个活动进程拒绝计算是预期资源边界。output-space新增结论属于研究结果，无新RPipe缺陷。未向其他对话发消息，不干预它们的停止、计时或运行。
+
+### 52. 调用内来源扫描拆解与单次去重（B-065，草案）
+
+本轮按路径/IO/哈希/锁/子进程拆解已冻结的实际 package_sources 函数，并以离线小场景复现 RPipe source_files 的重复工作。B-065 候选把一次采集的重叠声明去重，相关192 passed /5 deselected；PR #46 保持草案，不合入 dev/main。原480s调用内根因仍未闭环，本轮结果不冒充原现场。
+
+#### （一）调用内实测：文件/路径操作多于哈希
+
+取 .tmp/tquant063/s/ 中已冻结 provenance.py 的 package_sources 函数 AST，保留精确函数体和 PACKAGE_ROOT，对实际162文件执行；不导入整个下游业务、不执行模型，不修改下游源码。原始模块SHA-256与输出mapping哈希在 before.json/after.json 中一致。计时覆盖实际函数内部的 glob迭代、文件打开、read_bytes、SHA-256构造和hexdigest；对应原两节点 fixture 中反复执行的来源扫描步骤，不等于整个用例或原480s复现。
+
+| **实际冻结 helper 阶段** | **第一次诊断** | **第二次诊断（函数未改）** |
+| --- | --- | --- |
+| 函数总墙钟 | 13.700 ms | 13.317 ms |
+| read_bytes（包含 open） | 7.250 ms | 7.023 ms |
+| 其中打开文件 | 4.119 ms | 3.854 ms |
+| rglob迭代（包含内部glob） | 2.281 ms | 2.111 ms |
+| SHA-256构造 | 0.453 ms | 0.466 ms |
+| hexdigest | 0.174 ms | 0.187 ms |
+| subprocess.run / cache_lock 入口调用 | 0 /0 | 0 /0 |
+
+上述阶段是包容计时，不能直接相加；原始记录另含exclusive_wall，残差包括相对路径/排序/字典工作与观测开销。glob的calls记录迭代计时片段（每次next也计一次），不是目录扫描调用次数。计时CPU短段可能受15.625ms粒度影响，不把0或CPU大于短墙钟当物理结论。锁入口仅包裹所选实际函数，不推断整个原用例或其库外等待。
+
+结论限于此函数：路径遍历与文件打开/读取明显多于哈希计算；未发生锁和子进程。§48已测两节点每个package_sources有161次调用、累计约2s，但不能把本轮单调用13ms机械乘到原批次，也不能因此解释所有469.527s。
+
+#### （二）B-065：改前与改后
+
+source_files 会把启用阶段、两柱自动扫描、recipe、重叠include收集到names，之后每项都 _inside → is_file → read/hash；字典最后覆盖重复键，因此重复工作不体现在输出条数。生产调用为write_provenance和provenance_changes，后者用于launch、prepare/Runner及Study process的freeze。
+
+合成场景为32个4KiB源码、2个声明、1个隔离库输入，共35个唯一文件；flow启用，两个相同structure include及recipe别名。仅在诊断进程将rpipe.__file__暂指向小型库输入，__path__/实际函数不变，随后恢复；不改任何仓库或安装内容。三次调用输入相同，无缓存淘汰操作。
+
+| **同一合成输入，每次调用** | **11ede41 原实现** | **候选单次去重** |
+| --- | --- | --- |
+| 实际文件打开/读取/哈希次数 | 各100 | 各35 |
+| Path.resolve 调用次数 | 223 | 95 |
+| 总墙钟3次原始值 | 32.285 /32.382 /31.413 ms | 14.209 /14.562 /12.979 ms |
+| 总墙钟中位 | 32.285 ms | 14.209 ms |
+| 路径解析中位 | 18.051 ms | 7.211 ms |
+| read_bytes中位（含打开） | 5.143 ms | 1.662 ms |
+| SHA-256构造/hex中位 | 0.368 /0.161 ms | 0.123 /0.060 ms |
+| 完整输入mapping | 35项 | 逐项相等 |
+
+采用原生dict.fromkeys保持首次声明顺序，同一次调用用本地seen集合记录已通过_inside边界检查并成功读取的解析Path。只去掉相同字符串的重复解析，以及别名的重复读取；不跨调用缓存路径/内容/hash，不改变库源集合、格式、旧provenance或下游package_sources。去重集合不与库输出键混用，避免无关键碰撞改变现有映射行为。内存仅随本次Study文件数增长；源采集没有新增并发编辑期间的原子快照保证。
+
+这些是活跃无关负载下带观测器的小规模局部计时，修复前后三次顺序执行，非随机交替性能验收；不宣称严格加速比或整批可节省多少秒。确定性收益是少65次读/哈希和128次路径解析。两次冻结helper函数未改，差异作为波动原样保留。未清OS缓存、新进程不称硬件冷启动；未运行Torch、GPU或下载/正式训练。
+
+#### （三）复现、边界和正式验收
+
+真实文件计数回归 .tmp/phase065/red.xml 为2 failed /1 passed，0.20s；flow关闭时两个文件各读2次、helper4次，开启时flow各3次、helper4次。拒绝读取用例修复前已通过。before.zip保全原实现与当时三项测试字节。临时元数据BEFORE.json与计时before.json在Windows上大小写别名，后者覆盖了前者；首次证据清单因KeyError: mode失败，草案代码已推送但未签收。原ZIP及计时字节未改，另存diagnostic-before.json并重建SNAPSHOT_FILES.json，逐字节核对ZIP内生产源码等于11ede41及计时源hash，归档测试AST等于当前前三项；不声称原先独立的测试hash元数据仍存在，FIRST_CHECK_FAILURE.json保留该缺口。之后加空匹配/越界两项；26项相邻门通过，完整artifact镜像与Git/manifest入口最终192 passed /5 deselected，6.06s。5项未被core选中，不计通过；远端CPU Flow单独核验。
+
+五项新增便携回归在tests/rpipe/structure/artifact/test_source_reads.py。两种flow状态均验证单次每文件只读一次、下一次调用必须重新读且修改哈希变化；同时验证PermissionError外溢、缺失glob拒绝、Study外路径拒绝。既有两柱add/edit/delete和路径逃逸用例仍执行。临时完整源快照、分段原始wall/CPU、日志、JSON/JUnit在.tmp/phase065/，不随clone；measured-after.py与已计时候选hash相等，最终源码仅恢复原换行，AST与候选一致。
+
+最终提交的必需CI、实际矩阵及执行清单链接在[PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46)，不得用11ede41旧验收代替。合并前须确认本轮生产差异仅source_files的本地去重、所有红色证据与192通过保留、前后mapping及冻结helper来源不变、PR Draft/open/no-auto-merge和dev/main不变。原480s归因、集成人类授权保持未完成；不重签旧结果、不部署活动源码缓存。
+
+#### （四）可落地结论
+
+B-065只修复RPipe自身已证实的同一调用内重复读取。下游冻结helper内部是单次遍历/读取，161次重复调用是否可安全复用属于业务夹具生命周期设计，不能把此处seen集合扩为跨调用缓存；§50修改/新增/删除反例继续约束后续优化。当前不修改下游业务，也没有依据将旧480s报告为已修复。
+
+### 51. 长文件名 staging 修复与小规模竞争分段诊断（B-064，草案）
+
+本轮主动审查得到 B-064：合法目标文件名在文本写入、共享迁移时因临时名拼接失败；两处改为已有短 UUID 名，未更改格式或实际文件名。本机相关 187 passed / 5 deselected，PR #46 保持草案，dev/main 不变。另完成两个小进程的准备竞争与分段计时；原量化 480 s 的调用内根因仍不可由保留证据唯一确定。
+
+#### （一）改前与改后
+
+| **检查** | **改前（870da1b）** | **改后** |
+| --- | --- | --- |
+| 245 字符合法 ASCII 目标名 | 原目标能创建，但文本 create/replace 的 staging 超过单组件上限；data/model 同字节迁移亦失败 | 两处使用独立 UUID-only staging；4 项真实文件系统反例通过 |
+| 发布失败与并发准备 | 拒绝发布时旧副本/peer 保全已有保证 | 保留保证；新增两线程 prepared_resource 同 revision 只构建一次、相同 manifest 与完整输入 |
+| 原 480 s 的解释范围 | 知道外部批次截止，不能从旧 SHA 还原全部 dirty 测试/CPU/栈 | 重新核对 1131 个完成 call 累计 469.527 s；到最后报告 479.017908 s，其余约 9.490908 s。调用外启动不能单独解释累计成本，调用内懒导入/fixture/计算/等待仍混合 |
+
+已核对 atomic_write_text 的 config/result/tracker/activity/provenance/process/readout/manifest 调用方及 CLI shared --migrate → migrate_shared。修复只改两个 staging basename 并删除不再使用的 os 导入，锁顺序、同目录原子 replace、冲突校验、清理、有界 Windows 重试、返回值与目标名保持。未改变 LongPathsEnabled、持久化格式、科学条件、Run 或正式输入；Windows 长名测试显式使用扩展路径，不承诺任意总路径长度。
+
+#### （二）复现、回归与来源
+
+首轮 .tmp/phase064/red.log 因我未先建立 basetemp 父目录而出现 5 setup errors，测试没有执行；保留该次错误，不用作库缺陷证据。建立新父目录后 red2.log / red2.xml 为 4 failed / 1 passed，0.22 s，真实失败为文本 Errno 22、迁移 WinError 123；发布拒绝保全通过。before.zip / BEFORE.json 保存原实现和当时五项测试的原字节与 SHA-256。
+
+首次局部修复后 67 passed / 1.68 s；补充实际 prepared_resource 并发用例后，统一入口对 artifact 镜像及 Git/真实 manifest 入口的最终相关门为 **187 passed / 5 deselected，7.19 s**。5 项 integration 未被 --core 选中，不计通过，远端 CPU Flow 另行验收。所有临时日志、JUnit、微场景和快照在 .tmp/phase064/，不随 Git clone 提供；便携回归为 tests/rpipe/structure/artifact/test_staging_names.py。
+
+#### （三）两个离线进程的分段诊断
+
+micro.py 调用实际本机 cache_lock / prepared_resource，4096 字节合成输入。两个子进程、一个 builder、两个相同 manifest/payload hash，均验证再次调用不重建；用 -X importtime 保留原始导入树，并逐段记录 wall/CPU。未导入 Torch、未触碰下游项目，不下载/训练。仅该诊断子进程设置 OPENBLAS_NUM_THREADS=1、OMP_NUM_THREADS=1；不修改系统或正式科学配置。
+
+| **阶段** | **owner** | **contender** |
+| --- | --- | --- |
+| import rpipe | 52.532 ms | 49.891 ms |
+| import shared | 28.600 ms | 27.558 ms |
+| 读取 4 KiB 输入 | 0.127 ms | 0.116 ms |
+| 初始化合成 SHA 状态 | 0.022 ms | 0.027 ms |
+| 首次合成 digest 操作 | 0.004 ms | 0.004 ms |
+| 首次锁获取 | 0.927 ms | 252.655 ms |
+| 同进程校验复用（包含再次获取锁） | 1.215 ms | 1.401 ms |
+
+owner 人为持锁 **206.030 ms**（握手及显式 200 ms sleep），builder 写入 **0.679 ms**；整组外层 **0.415655 s**。等待者锁开销因此是受控注入效果，不能叫自然瓶颈/死锁或外推为原 480 s 根因。prepare_first 包含锁与 builder，不能与嵌套阶段相加。短操作 CPU 读数 0 是计时粒度，不是零成本。此为活跃下游负载下的功能诊断，不作吞吐排名；未清 OS 缓存，新进程不称硬件冷启动；合成 digest 不称真实模型 first step。
+
+#### （四）当前可落地结论与合并前检查
+
+原批次 call 外约 9.491 s 只是由报告起止与舍入 call 耗时重建的近似；监控外层起点和最后未完成调用不同，不能拿这个残差反推每阶段成本。当前冻结两节点的已完成分段证据见 §48：首 call 约 7.9 s，内 fixture 约 6.8 s，package_sources 每节点 161 次累计约 2 s，以及依赖首次懒导入；这些包容计时不相加。原批次缺栈/CPU/部分 dirty 测试字节，不能通过继续生成合成负载补回。
+
+可操作优化方向仍是核验不可变夹具来源输入的复用；§49–50 已否证缓存活动源码字节/清单的直接替换，不部署缓存或减少来源检查。当前实做修复为 B-064 的文件名预算，不把它包装为性能修复。以后若原慢批再现，按完整来源、真正 call 起止和有界同步采样采集新现场；本轮不重跑大批次。
+
+合并前可执行检查须核对：最终提交仅声明的两处生产路径改动；保留首轮夹具错误、4 项真红与最终187通过；快照/原始导入栈/hash 完整；微场景 builder=1 和两侧 manifest 相等；PR Draft/open/no-auto-merge，dev/main 不变；最终提交三项必需 CI 与实际矩阵单独核对。原480归因和人类授权集成保持未完成，不自动合并。最新只读下游快照：dayan 28/216 对无失败；量化等待计算窗口；output-space 准备多 prompt/seed 审计，均无新增 RPipe 缺陷。
+
+### 50. 可选 Git 元数据失败隔离与活动源码缓存否证（B-063，草案）
+
+本轮完成 B-063 主动复现、最小修复和相关 108 项本机验证；活动源码缓存的编辑/新增/删除负向控制明确失败，不能直接落地。PR #46 仍为草案，dev/main 不变；最终 head 的必需 CI 另行核对，不使用 c4d651d 的旧验收替代。原 480 s 批次的历史现场缺口仍存在，没有将当前负向控制写成历史慢因闭环。
+
+#### （一）B-063：可选字段不能中断真实测试入口
+
+- 改前：`_git_sha` 只捕获最后 Git 子进程的异常，直接 HEAD / loose ref 的读取在 try 外。非 UTF-8、拒绝读取、文件消失可外溢；无空格的 ref: 会触发 IndexError，任意文本又可直接成为 git_sha。
+- 修复：现有直接读取与 Git 查询共用可选错误边界，捕获 OSError / UnicodeError / SubprocessError；安全识别标准 ref 前缀，文件快速返回仅接受 40 / 64 位十六进制形状。正常 loose/detached 快速路径、packed/worktree 的 Git 回退、5 s 截止和显式 GITHUB_SHA 优先级不变。形状检查不证明对象存在，也不替代完整 dirty 来源快照。没有改生产库、科学条件或旧 manifest。
+- 调用方是 pytest_configure。新集成回归复制当前 tests/run.py、conftest.py 与配置到独立临时目录，损坏的 .git 仅在该 fixture 内。验证实际测试执行标记、正式 manifest 与一条 passed 事件；空可选来源为 null，显式 CI SHA 则保持原值。不只检查子进程退出码。
+
+修复前 `.tmp/e063-red/` 为 10 failed /10 passed，1.10 s，覆盖 HEAD/ref 真实损坏字节、非法文本、格式及注入读取拒绝/删除；既有布局和两个有效 SHA 快速路径仍通过。`.tmp/e063-session-red/` 为 2 failed /1 passed，1.11 s；两个真实子进程在 pytest_configure 退出 3、尚未执行测试，显式 CI SHA 分支成功。原始日志、JUnit 和独立 basetemp 保留，配置失败不是原 480 s 长调用的证据。
+
+修复后 `.tmp/e063-green/` 联合 108 passed，5.47 s，无跳过；含 12 项新增单元边界、3 项真实入口集成及先前 93 项相关合同。修复前 tests/conftest.py 与当时新增测试的原始字节、逐文件 hash / baseline c4d651d 记录在 `.tmp/phase063/BEFORE.json` 和 b063-before.zip，不随 clone 提供。测试替身只覆盖不可稳定制造的权限/TOCTOU，坏字节与入口配置失败均使用真实文件和进程。
+
+#### （二）缓存影响的明确否证与可落地边界
+
+承接 §49 已测得的原生 9–14 ms / RAM 字节哈希约 0.35 ms，进一步用独立合成源码执行功能控制，记录在 `.tmp/phase063/functional/RESULT.json`，不报告为物理性能测量或正式 Study。
+
+| **变更** | **原生即时扫描 / walk 原型** | **缓存方案的反例** |
+| --- | --- | --- |
+| 修改 a.py 字节 | 检测到 hash 变化 | 缓存字节仍给出旧 hash |
+| 新增 new.py | 清单包含新文件 | 缓存路径清单遗漏新增文件 |
+| 删除 sub/b.py | 清单删除该文件 | 缓存路径清单仍尝试读取并抛 FileNotFoundError |
+
+fixture 同时包含隐藏子目录及 .PY 文件，按本机匹配语义比较完整 mapping；原型未证明所有 symlink / junction / 权限语义。结论是不能以“全局缓存 package_sources 字节或路径清单”直接替换活动源码校验，即使缓存版本在静态树上更快，也会丢失必须检测的变化。可落地的当前决定是保持活动源码即时检测；后续若要复用，只能另行设计并验证已确认不可变的来源归档/清单输入，保留变更失效与完整校验责任，不在此自动改下游业务或扩张研究范围。
+
+另准备 `.tmp/phase063/path_probe.py` 比较原生、即时 os.walk、缓存清单、缓存字节，三进程各 20 组交替顺序；启动/运行守卫识别外部 pytest、run-one、--worker 和 watcher。本轮 dayan 已有活动 worker/watcher，截至此记录性能测量未启动；功能否证先独立完成，没有将排队算作通过。守卫最多等待 600 s，若无空闲窗口则保留未执行证据，不干预、停止或重启下游批次。没有清系统缓存，OS 冷盘性能未测；不把首次新进程当硬件冷启动。
+
+#### （三）合并前执行清单
+
+1. 相对 c4d651d 生产 src 不变；变更仅测试记录 helper、新单元/入口集成和相关文档。旧原始失败、候选长名反例、原 480 s 材料与来源全部保留。
+2. 可执行清单校验 B-063 的 10 /2 项失败、108 项通过、修复前快照与功能缓存反例；性能批次仍未执行时明确标记，不生成虚假数字。
+3. 新 head 必须独立通过四环境 CPU core/Flow、两平台 wheel/sdist 与 Branch flow。PR 最新正文给出最终实际链接、skip 与未执行边界；不能用数量或旧 head 通过替代整体验收。
+4. PR Draft/open/no-auto-merge，分支保留；不合并、不直接推 dev/main、不发布、关闭 Issue、删除正式数据或覆盖下游实验。原 480 s 归因与人类集成决定分别保持未闭环/未执行。
+
+### 49. 共享引用发布隔离与源码扫描对照（B-062，草案）
+
+本轮主动审查发现 B-062：同字节副本转共享引用的临时名仍依赖时钟，与之前已修的文本发布入口不同。修复前 2 failed / 3 passed，首轮候选相关 92 项通过，随后长文件名回归发现新反例并修正，最终相关 93 项通过。PR #46 保持草案，未合入 dev/main；最终提交必须单独核对必需 CI，不能使用 c3b8cef 的旧通过替代。
+
+#### （一）复现、改前改后与范围
+
+1. 核对 shared.link_input 的递归 staging、reference_tree 的调用，以及 DataFactory 原始文件布局桥接、显式共享迁移。Factory/迁移的外层锁仍存在，本反例是直接并发调用不可变引用 helper，未声称正式锁保护链已失败或历史数据损坏。
+2. 改前临时名为目标名/PID/time_ns；两个线程验证同一已存在的独立副本与源字节相同后，用 barrier 在发布前汇合。冻结 time_ns 时，default 引用和强制 hardlink 路径均共用临时名：分别见 PermissionError、FileExistsError，另一写者因同构测试 barrier 退出。barrier 是测试同步工具，不是生产锁死证据或原 480 s 根因。
+3. 最终一行修复把目标/PID/时钟拼接名改为短 uuid4 hex + .link，使用 shared.py 已导入的 UUID，不再携带完整目标名。原子 replace、finally 清理、symlink→hardlink fallback、不同内容拒绝、缓存格式及外层锁都不变。每个写者拥有自己的临时引用，不增加数据副本、不删除源或 peer。
+4. 首先新增五项真实文件/线程边界：正常/冻结时钟 × default/hardlink，以及发布 PermissionError 保全源、原副本和 peer。修复前 `.tmp/e062-red/` 为 2 failed / 3 passed，4.25 s；修复后联合共享、原子写、来源及事件回归 `.tmp/e062-green/` 为 92 passed，4.20 s，无跳过。原始日志、JUnit 与独立 basetemp 均保留，不随 clone 提供。
+5. 提交前补实际 220 字符合法目标名：Windows 显式使用扩展路径，不修改 LongPathsEnabled；POSIX 用普通临时目录。旧 c3b8cef 的 timestamp 实现成功，首候选 494c064 的“完整目标名+UUID”因临时 basename 过长失败，.tmp/e062-name-red/ 为 1 failed，0.16 s。保留首候选及原始 CI，不把它计为最终验收。改为短 UUID-only basename 后新增该回归，.tmp/e062-final/ 最终 93 passed，4.18 s；源与目标 samefile，源字节/peer/清理不变。没有承诺所有路径、文件系统或自动扩展路径兼容；调用者仍需合法可访问的父目录。
+
+本轮不扩展为任意缺失目标的并发创建合同或可变 Run 多写者协议；模型对象、checkpoint、sampler、RNG 仍独立。没有修改下游 vendor/实验或迁移正式输入。
+
+#### （二）进一步拆分当前源码扫描开销
+
+为核验 §48 的 package_sources 热点，准备 `.tmp/phase062/source_scan_probe.py`，在同一冻结副本及其实际解释器中分开记录模块导入、首次原生调用、glob、read_bytes 与 SHA-256；20 对原生/RAM 字节输入调用交替顺序，逐次比对完整路径→hash mapping。RAM 对照只省略路径扫描和打开/读取，不能据此给活动源码启用缓存。未清 OS 页缓存；父进程来源核对和 fixture 创建本身可能加热文件，首次调用不是硬件冷盘。
+
+量化回归 A 结束后立即开始 B，守卫记录真实活动进程/PID+创建时间并保持等待，未把 A 结束当整机空闲。守卫检测外部 pytest、--worker 和 watch_idle_batch.py；执行过程中若新测试启动，停止自己的诊断而不干预对方。无守卫放行的批次不记为测量完成；guard-wait.json、日志、RUN/DETAIL 与冻结来源校验保留。该守卫仍不覆盖任意非 Python 外部负载。
+
+资源空闲后两个受控进程均完成，外层 1.338476 / 1.334031 s，returncode=0、reason=null，执行前后所有冻结来源 hash 相同。实际模块位于冻结目录，原函数每次都返回相同 162 文件、779639 字节的完整 mapping；两个进程各 20 对，共 40 对交替顺序调用，不称为 80 次独立实验。
+
+| **阶段 / 对照** | **进程 1 秒** | **进程 2 秒** |
+| --- | --- | --- |
+| 模块导入 | 0.108909 | 0.081222 |
+| 原函数首次调用（OS 缓存未清） | 0.015798 | 0.010395 |
+| 单独 glob | 0.001987 | 0.001858 |
+| 单独 read_bytes（含路径键构造） | 0.012329 | 0.007526 |
+| 已有字节 SHA-256 | 0.000391 | 0.000379 |
+| 原函数 20 次调用中位数 | 0.013810 | 0.009079 |
+| RAM 字节对照 20 次调用中位数 | 0.000358 | 0.000350 |
+
+当前 0.78 MB 小源码树的成本主要在路径遍历、打开/读取与对象构造，纯 SHA-256 低于 0.4 ms。RAM 对照同时省略这些职责，不能把差额全归为磁盘物理读取，也不能由已缓存页上的结果推断冷盘性能。微秒级 process_time 的零值受 Windows 计时粒度影响，不表示没有 CPU 工作。两进程原生中位数差异完整保留，不挑快的一组验收。§48 的 161 次扫描对应静态清单的 26082 次文件哈希访问，说明当前用例会反复执行来源验证；这是需要保持的证据合同，不据此删除校验。
+
+原始 RUN/DETAIL、argv、逐对 wall/CPU、守卫活动 PID+创建时间、解释器和冻结 archive 标识均保留，CHECKED.json 验证两批完成、mapping 断言、导入路径和原始文件 hash。脚本 SHA256 bc5f3c3321d45321bbdc802731687c51caffa0b3538e1ea547f00cd417734a22；红色 pytest.log SHA256 866199bd8312a40a8595c3bb07668fc883f675cac8bf149cc0761bb26212ea2b；绿色日志 e4f59ef61837e59edea60ea7264d53230d08e3f45ae0b51afed3259b84194427。全部 `.tmp` 材料不随 clone 提供；冻结来源仍为 §47 的同一 archive，没有发布下游源码。
+
+原 480 s 批次的历史 dirty 字节与调用内栈/CPU依旧缺失。本轮对当前函数的进一步拆分不自动闭环历史根因，不依靠清缓存、改线程、减少断言或共享可变夹具获得结论。
+
+#### （三）合并前执行清单
+
+1. 相对 c3b8cef 的生产改动仅 shared.py 短 UUID 临时名的一行替换；既有 B-061 两行、其他草案修复不变，git diff --check 无问题。
+2. 验证六项引用边界、93 项最终相关通过（并保留前轮 92 项）和两项原始失败，保留各批证据；检查源码扫描诊断的退出码、mapping 相等、冻结来源/脚本/原始记录 hash 与外部资源守卫边界。
+3. 必需 CI 绑定当前 PR head：四环境 CPU core/Flow、两平台独立 wheel/sdist、Branch flow 必须实际完成并成功；skip 不算通过。可执行检查结果写 `.tmp/cache-lock-budget/checks-<head>.json`，并在 PR 正文给出最终链接。
+4. PR Draft/open/no-auto-merge，保留活动分支；dev/main、发布、Issue 状态、计费、数据/Run/provenance 不变。原 480 s 慢因与人类集成决定仍分别未闭环/未执行，不把已完成旧 CI 或历史 pending 再次派发。
+
 ## 2026-10-14
+
+### 48. 分阶段性能定位与 Git 失败来源记录（B-061，草案）
+
+本轮完成 18 组有界合成 Git 测量、4 批已冻结量化节点的函数诊断，发现并修复一个独立来源缺陷 B-061。修复前 3 failed / 8 passed，修复后相关联合回归 87 passed；最终工作提交的必需 CI 以 PR #46 最新 head 为准，不沿用 §47 的旧提交验收。B-056 至 B-061 均仍是草案候选，未合入 dev/main。
+
+#### （一）受控测量与结论
+
+基线为 1ba0877，Windows 11 / Python 3.13.9；RPipe 隔离环境和量化冻结环境仍沿用 §47 的依赖差异。所有测量串行执行；启动及运行期间检查已识别的下游 --worker / watch_idle_batch.py，未暂停或终止下游进程。该守卫不证明整台设备没有其他负载。未下载模型/数据、改变线程科学条件、清理系统缓存或运行正式 Study。
+
+`.tmp/phase061/measure.py` 为本地可复现入口，创建全新 `.tmp/phase061/repositories/`；重复执行须给出另一个全新输出目录，不能覆盖当前证据。每个规模建 40 个额外 ref，10 / 3000 个 tracked 与等量 untracked 合成小文件，依次比较 loose、packed、detached linked worktree。每格 3 个新 Python 进程，每进程重复 3 次 `_git_sha` 和 `capture_git`，共 18 个进程 / 每函数 54 次。分别记录模块导入、每个 Git 命令、测试提交查询、库 Git 来源、库/Study 源码扫描与环境采集。原始 argv、returncode 与秒级时长在 git-stage-results.json；没有用新训练循环代替原生入口。
+
+| **规模（tracked / untracked）** | **布局** | **测试 `_git_sha` 中位 / 最大秒** | **库 `capture_git` 中位 / 最大秒** |
+| --- | --- | --- | --- |
+| 10 / 10 | loose | 0.000275 / 0.000413 | 0.059897 / 0.073665 |
+| 10 / 10 | packed | 0.031256 / 0.034452 | 0.060625 / 0.071389 |
+| 10 / 10 | worktree | 0.026086 / 0.033418 | 0.056985 / 0.067707 |
+| 3000 / 3000 | loose | 0.000284 / 0.000455 | 0.064061 / 0.072597 |
+| 3000 / 3000 | packed | 0.031016 / 0.040995 | 0.061799 / 0.080161 |
+| 3000 / 3000 | worktree | 0.029126 / 0.036133 | 0.063746 / 0.384201 |
+
+每格 source_files 的进程间中位数为 0.012806–0.014372 s。`capture_environment()` 在同一进程首次为 2.893815 s，第二次为 0.000018 s，体现依赖首次导入与进程内模块缓存。未清 OS 页缓存，创建 fixture 已可能加热文件；“新进程首次 / 进程内重复”不等于硬件冷盘 / 热盘。这里的“大”只指 3000 个小文件，不能推断超大仓库、网络盘或任意 ref 数量。0.384201 s 的 worktree 首调用反例保留，不只报告中位数。
+
+当前结论：packed/worktree 的测试提交查询增加约一个 Git 子进程启动成本；这组规模下库 Git 查询为几十毫秒，未观察到分钟级等待。不得据此声称所有 Git 负载都很快，或排除原 480 s 调用中的任何历史等待。
+
+#### （二）函数级诊断与观测器核验
+
+`profile_nodes.py`、`profile_manual_nodes.py` 在 §47 的同一 342 文件冻结副本 `.tmp/tquant063/s/` 上运行两个原节点，仍用 tests/run.py 的 C1/C2 CPU integration 过滤；每次新 basetemp / JUnit。未改冻结源码，执行前后逐文件哈希相同，实际 rpipe/quantization 导入路径均指向冻结副本。脚本、插件、argv、JUnit、phases.jsonl、profile 原始 pstats / JSON 全保留在 `.tmp/phase061/`；每批 180 s 外层保护，未触发。
+
+1. cProfile 两批各 2 passed，外层 19.650878 / 19.645906 s。保留原始结果，但首调用某项累计时间 19.3872 s 大于实际 call 11.5558 s，不能据此给函数排占比或相加归因；未把第三方 profiler 失真登记为 RPipe 缺陷。随后改用显式函数和导入 wrapper，单独保留这套观测器，不能挑较快结果覆盖前批。
+2. 显式计时两批各 2 passed，外层 15.749357 / 14.411109 s；collection 为 1.243590 / 1.098251 s，setup / teardown 每项不足 0.005 s。第一 call 为 7.883675 / 7.854286 s，CPU 7.8125 / 7.71875 s；第二 call 为 2.887553 / 2.736152 s，CPU 2.859375 / 2.6875 s。
+3. 第一 call 的 `test_reduction_nll.fixture` 为 6.808831 / 6.815931 s，其内 `test_dot.trace_fixture` 为 5.432525 / 5.473595 s。`test_trace.fixture` 为 2.008126 / 1.998563 s。这些合成构造在测试 call 内，不是 pytest 的 setup，因此不能靠 setup 报告或单看训练函数定位开销。
+4. 两节点合计 `quantization.structure.artifact.provenance.package_sources` 各调用 161 次，累计 2.085731 / 1.981895 s；每次最大 0.017323 / 0.020395 s。这是下游源码扫描/哈希调用，不是 RPipe Git 查询。Qwen3 configuration 的顶层 import_module 首次约 1.828867 / 1.927319 s，modeling 约 0.311228 / 0.385657 s，同进程后续调用接近缓存命中。wrapper 记录的是包含子调用的时长，父 fixture、导入和哈希之间不能直接相加。
+
+可定位的当前开销为合成 fixture 构造、依赖首次懒导入和重复源码扫描/哈希；与 §47 的 CPU/原始栈观测一致，没有在这些样本中重现 480 s 空等。原批完整 dirty 测试字节及调用内 CPU/锁/栈仍缺，历史超时慢因保持未闭环，不将新函数计时倒推为当时唯一原因。没有擅自缓存可变来源或修改下游业务来获得速度提升。
+
+关键本机证据 SHA256：git-stage-results.json 为 3ab639071c18ed6b37d6bab0b9d6d17b34135fe6741cb2eaa55c99d56f160503；manual-summary.json 为 466191834bd292954b38068a9716188677fcaa2b4fe9ad12dca60afa033e4d08；显式计时 runner 为 24b41ec541861a805c8cf27300c16bad5ba89d709213c76e698181824da84a20，插件为 98ff9e18145d8ceaba55f26cd6ee9560715be43400fbe8aeb987824843ad5faf。CHECKED.json 校验四批成功 JUnit、退出码、冻结导入路径及每个原始文件 hash。上述 `.tmp` 材料不随 clone 提供，冻结下游源码不公开上传；结论与主要数字保留在本节。
+
+#### （三）B-061 最小修复与验收清单
+
+审查了生产 capture_git / 调用方 write_provenance、测试 `_git_sha`、tests/run.py 子进程入口、GPU 探针、cache_lock 与 launch_jobs 的启动/等待边界。没有把长计算无默认截止、未验证的取消策略或历史业务 KeyError 自动当成新缺陷；本轮只实施已复现 B-061。
+
+改前：capture_git 检查 HEAD 查询的退出码，却不检查 status；真实临时损坏 index 在 HEAD 成功而 status 失败时被记为 dirty=false，非零且部分 stdout 又被记为 dirty=true。改后：仅增加两行 returncode 判断，status 失败返回既有空 mapping 语义。正常 head/dirty、命令参数、10/30 s 截止、来源格式、freeze 比较规则、Run 结果及调度不变；不改写旧 provenance。
+
+- 修复前 `.tmp/e061-red/` 为 3 failed / 8 passed，1.53 s；真实损坏索引和空/部分失败 stdout 都失败，其他边界通过。只破坏自建 fixture 的索引。
+- 修复后 `.tmp/e061-green/` 为 87 passed，3.93 s，无跳过，覆盖新增 11 项、既有来源冻结、事件/Git 元数据、共享准备及原子写边界。新增实际 clean/dirty/packed/worktree、真实损坏索引、两种失败 stdout 与 HEAD/status 各缺命令/超时边界。
+- 合并前执行：git diff --check；核对相对 dev 的生产差异只限已声明 helper 与本次 provenance 两行；检查同一工作分支清洁、dev 祖先、PR 最新 head、Draft/open/no-auto-merge；按最新提交跑齐四环境 CPU core/Flow、两平台 wheel/sdist 和 Branch flow，不把本地或旧 head 代替 CI。
+- 可执行清单须同时校验本轮 3 项红色基线、87 项绿色联合回归、18 个新进程测量、四批 profile 与其观测器限制；保留 §47 和更早所有失败/取消。原 480 s 归因与人类集成决定仍分别未闭环/未执行。PR 保持草案，不合并、不改 dev/main、不发布或删除数据。
+
+### 47. 当前源码采栈与测试 Git 来源记录（B-060，草案）
+
+本轮已完成：完整当前源码/测试快照、原生CI过滤参数的本地诊断、B-060最小修复和对应回归。RPipe相关诊断58项通过；量化两个合成节点的无watchdog控制通过，同步采样的两次独立运行各2项通过；两次C watchdog原生失败完整保留。最新代码/测试提交394a068的四环境CPU、两平台安装包及Branch flow均通过，本机最终相关联合回归66项通过。所有修复仍只在PR46草案，dev/main不变。原480秒的历史原因仍不能由这些新样本倒推。
+
+#### （1）范围、快照与复跑入口
+
+只读扫描Issues和三个会话无新RPipe反例：dayan依次完成parallel-2、threads-1、ratio-one计时，量化1629项回归通过后推进新对照，output-space为领域数值研究。未给其他会话发消息，不改下游vendor、数据或运行中实验。HTTP504查询失败单独退避，未当作库缺陷。
+
+.tmp/trace480/trace_case.py及其v3/v4版本使用原生tests/run.py，core或C1/C2 integration/e2e的CI过滤参数保持不变，只限定相关节点、添加诊断plugin、新basetemp与JUnit。0.5s资源采样记录PID/创建时间、进程树CPU/RSS/线程；逐call记录真正monotonic起止、进程CPU和模块实际路径。外层180s，CUDA_VISIBLE_DEVICES为空、MPLBACKEND=Agg；OMP/MKL/OpenBLAS未额外覆盖，测试原精度、输入、调用量与断言不改。实际环境Windows11/Python3.13.9、NumPy2.4.4、torch2.11.0+cu130、PyYAML6.0.3；RPipe隔离环境pytest9.1.1，量化环境pytest8.4.2，不是GitHub runner的同一依赖环境。
+
+快照包含完整当前src/tests/config及两个被测用例所需的历史SOURCE.zip，不含数据集/预训练权重。Git HEAD、dirty状态、删除项、逐文件hash、诊断脚本字节和归档校验均保留；文件在捕获前后、运行前后及ZIP内容逐项核对。量化快照是6afad2b加实际dirty/新增源码，不能用HEAD单独冒充旧现场；所有采样变体的342个源文件hash完全相同。下游源码归档不公开，下面的临时材料仅本机保管，不随Git clone提供；本节数字、环境、失败和结论独立入库。
+
+| **材料** | **内容** | **SHA256** |
+| --- | --- | --- |
+| .tmp/tpipe061/SOURCE_TESTS.zip | 186文件，含82个tests文件；诊断基线8daebb5及当时新增元数据测试 | 3216207c9c0d97e48760f1e0f8fb049700a832ea4660a1f9b54a3cc0c68dda96 |
+| .tmp/tquant061/SOURCE_TESTS.zip | 342文件，含73个tests文件；0.25s watchdog脚本 | f78647113564e6780db5e785928583e89ab4610995cc9fce5692b5597e364d59 |
+| .tmp/tquant063/SOURCE_TESTS.zip | 同342文件；同步采样脚本v4 | ca10c8ac4bf04c6be765e6013daef5c8c3b0be4403b1e78e30cd2a2b6cc41f05 |
+| .tmp/trace480/trace_case_v4.py | 原始采样脚本；同字节副本也在上述归档diagnostic/内 | 803a8bd21d7aa1efa3f63a3d3d34dce692ca165059021b4b0985f3be2ab0df6c |
+
+脚本prepare生成完整快照，run拒绝覆盖批次；SNAPSHOT.json保留spec、源hash及脚本hash。每批启动前查已知校准watcher/worker；若中途出现校准，只终止自己的诊断进程树。两次准备期guard拒绝未启动pytest，证据在.tmp/trace480/guard-rejected.log；后续新增ratio-one批次期间也拒绝。没有暂停/终止下游。这个保护只覆盖已识别的校准进程，不证明排除了所有外部负载。
+
+```powershell
+# 本机已冻结的输入；每次换一个不存在的批次名，先确认无活动校准。
+& .tmp/v030-20261013/venv/Scripts/python.exe .tmp/trace480/trace_case.py run .tmp/tpipe061 new-core
+& .tmp/v030-20261013/venv/Scripts/python.exe .tmp/trace480/trace_case_v4.py run .tmp/tquant063 new-quant
+```
+
+这些路径只描述本机隔离环境；异机须恢复相同快照、依赖与可用的Python路径，不能照抄。量化两节点是原慢批次中的reduction NLL完整评分/collect和五视图trace完整评分/collect，均为合成CPU用例、不训练，不替代完整旧批次、真实模型或科学验收。
+
+#### （2）真实执行、失败与采样边界
+
+| **条件与新批次** | **实际结果** | **原始证据** |
+| --- | --- | --- |
+| RPipe core，0.25s dump_traceback_later | 58 passed，pytest1.65s/外层3.171462s，栈27802B | .tmp/tpipe061/r1/ |
+| 量化收集期即启动0.25s watchdog | 原生退出3221225477，9.851128s；未执行test call，不计通过 | .tmp/tquant061/r1/ |
+| 同字节量化、关闭周期watchdog，保留fatal handler | 2 passed，pytest11.85s/外层14.070022s | .tmp/tquant061/control-no-watchdog/ |
+| 同字节量化，收集后1s watchdog | 首个call中原生退出相同码，12.948206s；未完成call，不计通过 | .tmp/tquant062/r1/ |
+| 同字节量化，同步线程每1s dump_traceback，独立重复1 | 2 passed，pytest13.74s/外层17.633124s，11次栈采样、64994B | .tmp/tquant063/r1/ |
+| 同字节量化，同步线程每1s dump_traceback，独立重复2 | 2 passed，pytest13.30s/外层16.164850s，11次栈采样、61810B | .tmp/tquant063/r2/ |
+
+两个watchdog失败的原始栈分别涉及DLL加载/pytest断言改写和transformers动态导入/typing；没有据此认定RPipe或CPython的具体根因。同步版本不调用周期C watchdog，保留前两次失败、控制和每个脚本版本。Python采样线程在GIL长期被占用时可能延迟，1s采样也会漏掉更短等待；它不是无扰动或全覆盖分析。其实际观测仍有CPU/文件写入开销，不能按一次更快的结果挑选验收。
+
+两次量化call墙钟/进程CPU：reduction NLL为9.146471/9.062500s和8.810846/8.843750s，trace为3.029232/2.953125s和3.219571/3.203125s。进程CPU包含采样线程、不含其他子进程；Windows计时粒度可使短差值或CPU略大于墙钟，不能强行解释为收益。call收尾观察torch线程数为1。采样进程树RSS峰值851603456/851677184B，可能重复计算共享页，不是独占物理内存。
+
+原始栈观察到transformers/huggingface导入、业务fixture/算法、文件open/mkdir、归档读写/CRC和Linear.forward；分类是采样出现的路径，不是独占耗时百分比。两次call CPU与墙钟接近，支持这组新样本主要在执行本地导入/处理/评分，而不是分钟级空闲。冻结量化v0.3.1副本没有新dev的artifact/shared.py，不能将B-056的新共享锁当作这组调用的原因；仍不能因此排除所有旧代码内等待。RPipe控制中真实Windows句柄拒绝约0.757671s、低CPU，栈定位到已有有界原子替换等待，说明采样能看到该受控等待，并非所有等待都被当作计算。
+
+同步重复1/2的raw stack SHA256分别fe1604172867925513c0a9ab2c2f6b502bec7e49d99376191c88d2786de6ea9c、61b6618b17c5b19b927464b380ebb7503fa957dd5d0b8c713b0327ab70a1775d；RPipe栈为b998c31344145c9703c29c4baae3650f90c059329e897c58240c2ec21d80dc55。RESOURCE.json、pytest.log、calls.jsonl、runtime.json、stacks.txt、JUnit以及.tmp/trace480/SYNC_TRACE_SUMMARY.json保留完整材料与hash。原480s未补录的当时CPU/栈/dirty测试仍缺失；新样本只排查当前路径，不倒推其历史慢因，也不把小样本称作完整性能校准。
+
+#### （3）B-060修复与最终检查
+
+测试先行提交f162eb6的[Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38586121972)在四环境均仅packed/worktree两项失败；Windows2 failed/496 passed/2 skipped，Ubuntu2 failed/490 passed/8 skipped，Flow未执行；[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38586122003)与[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38586122146)通过，不把红色整轮算通过。先登记bugs.md和测试合同，再修helper：保留松散ref/detached文件快路径，仅已有.git且未读出HEAD时采用5s有界Git查询；Git不可用/失败/超时返回null，无.git快照不搜索父仓库，GITHUB_SHA优先级不变。
+
+首轮本地.tmp/e060-green/为3 failed/7 passed，0.82s，是新测试替身缺少真实SubprocessError类型；补全替身、不改原断言后.tmp/e060-green2/为10 passed，0.81s。最终结合三个artifact模块、事件和Git元数据的本机联合回归.tmp/e060-all/为66 passed，2.39s，无跳过。原失败和每批独立basetemp/JUnit均保留，不混成一次成功。
+
+代码/测试提交394a068c7fcf7fbb95a7dae8530ca122b2d10da4的[Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38588043099)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38588043105)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38588043112)全部通过。Windows core各498 passed/2 skipped，Ubuntu各492 passed/8 skipped，四环境CPU Flow各74 passed/2 skipped；平台/HF skip不计通过。基线红日志SHA256 e8dbc830498dccb0bbd536d140f5738f1113ed1a08e7263b5e1041594e0a09d7，修复日志496669be96f177082f0e04f410c0ddba78abceda22ad79c9dba0831a5b66df8d，位于.tmp/trace480/。后续整理提交不再改代码/测试，最新PR head仍须单独核对必需CI，不用这个旧head替代。
+
+合并前可执行清单更新：
+
+1. 取PR最新head，对照工作区和origin/dev，确认所有必需检查实际success；运行.tmp/cache-lock-budget/check_draft.py，拒绝旧head/未完成/跳过冒充通过。
+2. 检查真实packed/worktree红色、可选Git错误边界及66项本地JUnit；源码只含声明的runtime与测试记录修复，不改预算、RNG、重试默认和正式数据/Run。
+3. 核对完整快照、实际模块路径、前后源hash与两次采样的JUnit/call/栈；两次原生失败、无watchdog控制、fixture失败与guard拒绝均保留，互不替代。
+4. 原480s性能归因保持未确认；同步采样/GIL限制与不同依赖环境明示，不用这些工程诊断替代研究门。PR46继续Draft/open、无auto-merge，集成待人类另行授权，不发布、不删数据、不改计费配置。
+
+### 46. 共享输入文件别名校验（B-059，草案）
+
+接续用户反馈的限流失败后，先核对干净工作区、DreamSoul-AI origin 并 fetch；本轮 GitHub Issues / PR 查询均成功，没有继续出现 429。#36–#38 / #41 仍为已修复反馈，PR #46 仍 Draft、自动合并关闭；b20a034 的所有必需 CI 已通过。只读复查三个下游会话，没有新的 RPipe 反例；量化 1629 项回归已通过。原 480 秒缺少完整测试字节与调用内栈的缺口仍见 §45，不重复造根因结论或启动大批次。
+
+转查 prepared_resource 的文件合同后复现 B-059。改前：保留名和唯一性用原字符串比较，./manifest.json 进入 builder，正式 manifest 覆盖合成输入后发布 inputs，随后 hash 校验才失败；Windows 的 MANIFEST.JSON 也如此。data / ./data 被接受为两个文件；Windows 的大小写重复、带 drive/root 锚点，以及空名/目录本身也未在 builder 前拒绝。合成复现 .tmp/a51d92a07/repro.json 保存构造是否执行、异常和 inputs 是否已发布，不触碰项目共享数据。
+
+先记录 bugs.md / layout.md 合同，再补用例并在原实现实测：.tmp/e059-red/ 保留日志、JUnit 和独立 basetemp，**8 failed / 5 passed / 31 deselected，0.28 s**。四个 portable 新非法清单和四个 Windows 条件失败，原四个条件及有效路径兼容用例通过；预期红色复现不是质量通过。改后：入口建立 Path 清单，按本机 Path 等价拒绝重复/根 manifest，拒绝 anchor 或无文件名，沿用 .. 检查。原字符串继续作为 manifest 键；不迁移有效缓存、不改变 definition hash、锁、build、发布或任何已完成 Run。
+
+已检索全部调用方，main_exp 和 main_probe 均为固定相对文件名；有效 ./weights 与 nested/manifest.json 的构造、完整 hash、原键名和重复复用都有回归。新增共九个边界条件（四 portable、四 Windows 专用、一个有效兼容）；POSIX 不应假装 Windows 大小写/drive 语义，四项在 Linux 明确 skip，不算通过。入口的 Path 比较不是通用 NTFS 命名或符号链接安全协议，未扩大这个合同。
+
+修复后本机通过 tests/run.py 运行三个 artifact 模块与事件时间戳回归，.tmp/e059-green/ 的新短 basetemp / JUnit / 日志记录 **58 passed，1.50 s，无跳过**。每次执行前只读核对没有 --worker / watch_idle_batch 性能校准；保留旧红色和所有此前失败，不占用下游 GPU、不改外部线程设置或原实验预算。临时证据及 .tmp/test-results/ 不随 clone；正式链接以草案最新 head CI 和正文为准。
+
+b20a034 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38579687816)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38579687789)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38579687760) 是前一轮验收，不能替代 B-059 新提交。可执行清单沿用 §45 命令和 .tmp/cache-lock-budget/check_draft.py，补充核对 B-059 的红色 JUnit / 本地 58 项，并允许本次共享入口的明确修复差异；最终提交必须单独绑定必需 CI。初次提交 0bf77af 意外把 shared.py 从 LF 转为 CRLF，静态 diff 核对发现后恢复原 LF；语义差异仍为 4 行新增 / 3 行替换。其 Unit Tests 38581784650 与 Package Check 38581784564 在新最终提交前取消，保留记录，不计为验收通过；Branch flow 38581784662 已通过。最终提交重新绑定必需 CI，未 force push。
+
+B-056–B-059 都只在草案，不转 ready、不启用自动合并、不合并、不清理活动分支，不关闭现有 Issue；不触碰 dev/main、发布、系统长路径策略或正式研究来源。
+
+### 45. 原超时时间线、取消边界与本机验收
+
+改前：480 秒记录只有整批归属与后续分批成功，草案缺正预算截止时间线、等待取消及连续获取失败后的所有权断言。改后：只读重建原 1131 个事件并与后续相同节点对齐；补三个锁回归，使用原 tests/run.py 在本机运行相关模块。生产源码、科学门、下游 vendor 和调度保持不变；PR #46 继续草案，不合并。
+
+原记录 started_at 字段在 pytest_runtest_makereport 完成 call 时写入，不能当作真正调用起点。pytest session 开始到最后一项完成为 479.017908 s，已完成 call 的毫秒取整耗时累计 469.527 s；相邻报告时间差扣除后一个 call 耗时，最大余量约 33.835 ms、累计约 3.681223 s。末尾两项仍分别完成 3.037 s、2.452 s 的业务 trace 用例。可确认大部分时间落在已完成的调用区间，未看到一个发生在调用之间的分钟级空洞；调用内部可能包含计算、I/O、子进程或等待，这些汇总不能区分。外部监视器按 0.1 s 轮询整批 480 s 墙钟并终止进程树，实际 480.087342 s / 退出 15；不是 RPipe launch 的超时策略。
+
+后续分批 JUnit 中，原已完成的 1131 个节点全部存在，耗时合计 318.303 s，差异分散在多个业务模块；累计差异最多的模块原 107.780 s、后续 69.829 s。JUnit 包含 setup/teardown，原 events 是 call 毫秒取整；进程、顺序、缓存和负载也未受控，不能将差值直接定义为加速或根因。更关键的是，manifest 的 Git SHA 6afad2b 不包含至少 test_reduction_nll.py、test_dot.py 两个慢用例文件；该 SHA 单独不足以还原当时含新增/未提交测试的工作树。当前源码只作路径参考，不冒充原始字节。监视器也没有记录每线程 CPU、锁 acquire/release、线程栈或创建时间序列。因此直接原因是批次预算耗尽；为何原调用更慢、是否含锁等待仍未闭环，没有可宣称复现的上游死锁。
+
+本机只读分析脚本与 TIMEOUT_TIMELINE.json 放 .tmp/cache-lock-budget/（不随 clone），包含原 events、resource、监视器与两份 JUnit 的 hash。分析自检断言 1131 个成功节点、1491 个分批节点无重名且原节点全部可匹配；未启动原大批次、真实模型或下游训练。旧失败不改写。后续可验证路径：先恢复/冻结完整当时测试字节与环境，再按原 pytest 选择及新 basetemp 复跑；使用 pytest 自带 faulthandler_timeout 和监视器记录进程创建时间、CPU/线程与等待栈。只有获得具体共享调用的可重复等待反例后，才将其缩成公开合成输入并登记缺陷；当前三个锁用例只复现库合同，不是原 480 秒事件的复现。
+
+新增可执行回归位于 test_shared.py：有限 0.1 s 预算用可控 monotonic 验证三次竞争、两次 0.05 s 等待和 TimeoutError cause；等待中的 KeyboardInterrupt 原对象传播，失败句柄关闭后可再获取；另一线程连续三次真实零预算获取失败不释放所有者，所有者 KeyboardInterrupt 后该线程可获取。取消在这里指同步中断，不声称支持跨线程强行退出 context 或异步任务取消。
+
+进一步核对上游测试记录确认 B-058：hook 在阶段完成后调用 datetime.now 写 started_at，字段并非阶段起点。已先登记 bugs.md 和 testing.md 的纠偏合同，新增固定 start=2000-01-01T00:00:00.5Z、duration=1.25 s 的成功 call / 失败 setup 两格，调用真实记录 hook 并检查落盘事件。修复前 .tmp/e058-red/ 两格均 failed（0.05 s），实际记录本次生成时间而非给定起点；原失败保留。最小修复仅将事件字段换为 datetime.fromtimestamp(report.start, timezone.utc)，manifest session 时间、耗时、错误和旧日志均不改。已搜索所有读写方；该修复纠正工程记录，不解释旧调用变慢，也不修改 RPipe 运行时。草案 B-058 未合入 dev。
+
+本地首次选择过长的新 basetemp，47 项中 3 failed / 44 passed，1.65 s；新增三项均通过。失败为缓存 manifest 的路径 291 字符，本机 LongPathsEnabled=0；原 PID/time_ns 格式在同一目录也需 278 字符。保留 .tmp/cache-lock-budget/local-e3500747ec6c4b258fab918064d64e30/ 的日志与 JUnit，没有归因为新 nonce 修复或隐藏失败。缩短到新的 .tmp/l078cf7cf/p 后，同三模块 **47 passed，1.56 s**，无跳过；JUnit 与日志保留 .tmp/l078cf7cf/，原生 events/manifest 在 .tmp/test-results/。执行前检查没有活动 --worker / watch_idle_batch 校准；其他项目 CPU 回归使用各自临时目录，未修改其进程。
+
+可重执行的本机检查（先创建全新短 .tmp 父目录，每次替换示例路径；保留失败，不删除旧目录）：
+
+```powershell
+$env:PYTHONPATH = Join-Path (Get-Location) 'src'
+$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD = '1'
+$env:OMP_NUM_THREADS = '1'
+$env:MKL_NUM_THREADS = '1'
+$env:CUDA_VISIBLE_DEVICES = ''
+New-Item -ItemType Directory .tmp/l-new-check
+& .tmp/v030-20261013/venv/Scripts/python.exe tests/run.py --core -- tests/rpipe/structure/artifact/test_shared.py tests/rpipe/structure/artifact/test_atomic.py tests/rpipe/structure/artifact/test_atomic_boundaries.py tests/test_event_timing.py --basetemp .tmp/l-new-check/p --junitxml .tmp/l-new-check/junit.xml
+if ($LASTEXITCODE -ne 0) { throw 'local boundary regression failed' }
+git diff --check
+if ($LASTEXITCODE -ne 0) { throw 'invalid diff' }
+git merge-base --is-ancestor origin/dev HEAD
+if ($LASTEXITCODE -ne 0) { throw 'dev advanced; reconcile before acceptance' }
+```
+
+B-058 修复后将元数据两格与三个 artifact 模块一起执行，.tmp/lafdc49a8/ 保留独立 basetemp、JUnit 与日志，**49 passed，1.49 s，无跳过**。本次未更改旧日志；对应新 events 使用真正 report.start，旧事件按上述完成后时间语义解释。
+
+本机 Python 路径仅描述本次隔离环境，不是异机环境要求。静态检查及远端验收的可执行核对保存在 .tmp/cache-lock-budget/check_draft.py：核对实际 head、工作区、dev 祖先、生产差异、PR 草案/禁用自动合并、最新 head 各项必需 CI 和历史红色任务。最终结果写独立 checks-<head>.json；进行中 CI 不会返回通过。该脚本只读 Git/GitHub，不合并或清理分支，正式依据同时保留 PR 与 Actions 链接。
+
+上轮 b03cf7a 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38576170751)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38576170986)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38576170759) 全部通过。锁边界提交 f3eb08b 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38578735158)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38578735164)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38578735162) 全部通过。加入 B-058 后的最终 CI 仍以 PR 最新 head 为准，本机 49 项不能替代四环境与安装包门。剩余项分开标记：原慢调用原因需新现场证据；长路径通用兼容方案仅 brainstorm；草案集成人类决策未执行，dev/main 未包含 B-056/B-057/B-058。
+
+### 44. 草案 #46 的锁错误边界与合并前检查
+
+本轮先核对工作区并 fetch origin；继续使用 codex/cache-lock-budget，不新建分支。开放 #36 / #37 / #38 / #41 及评论均为已修复条件，没有新的复现。只读复查 dayan、quantization 和 denoising speculative decoding（output_space Study 所在会话）：当前分别在比例控制、固定坐标对照和代理舍入研究阶段，没有新的上游 KeyError、锁或调度反例。旧业务 KeyError、外部 480 秒预算耗尽仍按 §40–§43 区分归属，不重复登记为新缺陷；没有向下游发消息或更换 vendor。
+
+改前：草案已验证非法预算和 staging 身份，但未分别断言零等待的异常因果、非竞争系统错误不重试、嵌套异常的外层所有权。改后：新增三个 test_shared 边界回归；零等待忙锁保留原异常为 cause 且不 sleep，EBADF 原对象只抛一次且不包装，两者失败后均能重新取得真实锁；嵌套异常不能提前释放外层锁，外层异常退出后另一线程可立即取得。复用现有 helper，不修改生产代码、默认重试、Run 或数据格式。本机下游仍有校准，实际执行沿用独立 Actions 的四环境 core 和 CPU Flow，不启动竞争本地 pytest；本轮最终提交未完成 CI 前不计通过。
+
+上轮确切工作提交 9c83564f6b229f3c254fb9170c6b5694e6687a21 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38573137667)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38573137647)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38573137727) 均通过。这些是上轮证据，不代替新增三个用例后的最终提交验收；§43 首轮失败、跳过和已验证复现继续保留。
+
+合并前清单（[PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46) 当前只交付草案）：
+
+1. 核对 PR 最新 head、干净工作区和 origin/dev；按最终 head 确认四个 CPU 环境、两平台 wheel/sdist 及 Branch flow 全部实际 success，不能拿旧 head 或 skipped 代替。
+2. 保留 38570617049 的预算失败复现、38571738491 的 Windows/Python 3.10 并发反例及后续全部结果，检查原子写入、锁释放和 CPU Flow 的断言没有放宽。
+3. 再核对生产差异仅预算入口校验和临时 nonce；默认 120 秒、有效零预算、重入、清理、Windows 有界重试、正式字节和单 Run 单写者合同均保持。
+4. B-056 / B-057 在 dev 9324014 仍未修复；已发布 main v0.3.1 / 7a15c46 也没有本草案修复。下游继续固定旧源码，草案 CI 不等于部署或下游复验；原 480 秒根因仍未确认。
+5. 等待人类明确的新集成授权，之前不得转 ready、自动合并、合并或删除活动分支。若以后授权集成，先按 cicd.md 核对最新 dev 和必需检查，再验证实际集成提交，更新 bugs 状态；不自动发布或关闭 Issue。
+
+### 43. 最小启动 / 缓存成本诊断与共享锁预算边界（分步记录）
+
+第一步已完成工程诊断：[独立 Windows CPU 任务](https://github.com/DreamSoul-AI/RPipe/actions/runs/38568650365)，诊断提交 f3885c958b6dde7f4a983f1ece3d4244e1c886f4，生产 src 与 dev 9324014985680a0d186863cd135faa53a2e7bcbf 无差异。Windows Server 2025 / Python 3.13、AMD EPYC 7763、4 个逻辑 CPU；torch 2.14.1、NumPy 2.5.4、PyYAML 6.0.3。CUDA_VISIBLE_DEVICES 为空，OMP / MKL / OpenBLAS 均 1 线程；无 GPU、外部数据、预训练权重或训练。原量化设备为另一硬件和 torch 2.11，不能直接速度校准或推断旧现场根因。
+
+三对新进程采用控制/RPipe、RPipe/控制、控制/RPipe 顺序；“冷”只表示新 Python 进程/尚未导入的模块，不清空 OS 页缓存。每个 RPipe 进程复用原生 main / make / run-one，两个独立 Toy/Stub、module=None 的完整 Flow 分别使用新的临时 Study / version / Run ID，六个 Run 均 succeeded；没有用重复覆盖同一个 Run 冒充热启动。所有计时均包含 -X importtime 观测成本，数据只作诊断，无速度质量门。
+
+| **部件** | **三次或逐调用范围** | **口径与观察** |
+| --- | --- | --- |
+| CLI 模块首次导入 | 0.1213–0.2575 s | 进程 CPU 0.1250–0.2344 s；不包含后续 make |
+| 同进程 help | 2.55–4.75 ms，9 次 | 只测已经导入后的参数入口，不与包含 Flow 的整个新进程作等量速度排名 |
+| 同进程首次 / 再次 make | 2.8404–3.6010 s / 0.1028–0.1089 s | 两次都是新 Study，准备量相同；首次进程 CPU 2.7500–3.0938 s。capture_environment 按合同导入 torch / torchvision；首个 importtime 样本中 torch 累计 1.8723 s，不能将嵌套累计时间相加 |
+| 首次 / 再次 run-one | 48.32–68.00 ms / 42.54–43.23 ms | 准备环境已在 make 导入，完整六阶段的空模型合同执行，不是训练速度 |
+| 2 KiB 原子替换，50 次 | 整批 22.79–25.32 ms | 约每次 0.456–0.506 ms，批次前后句柄均 165 |
+| 无竞争共享锁，50 次 | 整批 17.30–21.24 ms | 约每次 0.346–0.425 ms，句柄均 165；不代表竞争等待成本 |
+| 64 KiB prepared_resource 初建 / 复用 | 3.54–3.88 ms / 1.60–4.69 ms | 复用包含完整文件 hash 校验；4.69 ms 反例保留，不声称每次都更快 |
+
+空 Python 控制进程 0.0954–0.1036 s；RPipe 整个诊断进程 3.8444–4.8088 s，后者包含两次 make、两次完整 Flow 和所有 I/O，二者工作量不同，不能把差值叫作纯启动开销。首次 make 后句柄从 118 增至 165，此后 help、Flow、写入、加锁和缓存复用没有继续增长；有限样本不证明所有路径无泄漏。Windows process_time 约 15.625 ms 粒度，短项显示 0 不等于没有 CPU 成本；它不含 git 子进程。整机忙率包含本探针，短项有 null / 100% 粗采样，不作为外部负载归因。
+
+结论：本路径可定位的首轮成本主要出现在环境来源捕获触发的真实依赖导入；无竞争文件写入和锁在本样本为毫秒级。未发现分钟级卡住或持续句柄增长。原 480 秒批次最后仍在完成量化用例，缺少当时调用栈、CPU 及进程身份时间序列；本次不同设备的最小诊断不能还原外部负载，也不能宣称已查明该批次变慢原因。本机下游全程未暂停、抢占或执行竞争基准。
+
+原始样本及选取的 importtime 行在上述 Actions 日志；完整本机下载和提取位于 .tmp/cache-lock-budget/startup-baseline.log、STARTUP_BASELINE.json（不随 clone），原始日志 SHA256 c54381bc90943ec088a05019e8ed0db4fe907aaaad62f13b65edc166af61770c。该次运行完整 importtime 树只在 runner 临时文件中，未声称已永久归档；复跑使用[固定诊断脚本](https://github.com/DreamSoul-AI/RPipe/blob/f3885c958b6dde7f4a983f1ece3d4244e1c886f4/tests/_data/startup_diagnostic.py)及同提交的[公共 recipe](https://github.com/DreamSoul-AI/RPipe/blob/f3885c958b6dde7f4a983f1ece3d4244e1c886f4/tests/_data/launch_retry_recipe.py)，放同一临时目录、按上方环境变量及隔离环境执行新输出路径；脚本拒绝覆盖已有工作区。本机副本在 .tmp/cache-lock-budget/startup_diagnostic_fixed.py。一次性脚本与临时工作流从最终草案差异移出，固定 Git 提交和原日志仍保留，不新增常规 CI 基准或诊断框架。
+
+补充验证限制：第二步首个临时任务 [38569905344](https://github.com/DreamSoul-AI/RPipe/actions/runs/38569905344) 因 checkout 浅克隆没有基线 Git 对象，在核对步骤 bad object 后退出，测试 skipped，未作为缺陷复现或通过证据。首轮性能任务也有相同 git diff 错误，但 PowerShell 多命令步骤最终由 Python 成功退出而未阻断；不能仅凭任务绿色声称来源核对通过。已在本机独立比较 9324014:src 与 f3885c9:src 的 Git 树对象，二者均为 e1b4f6f90ba96a6e58b8eb6f71b719252605a5e5；性能样本对应的生产文件未变。后续临时任务先显式 fetch 确切基线并检查每个 Git 退出码，再安装依赖和执行测试；原失败日志保留。
+第二步已完成修复前验证：[显式核对来源后的定向回归](https://github.com/DreamSoul-AI/RPipe/actions/runs/38570617049)，生产 src 仍为 9324014；31 项中 26 passed / 5 failed，1.51 s。五个失败分别为 NaN / ±inf / -1 未拒绝，以及 NaN 忙锁被三次 watchdog 截住；原始失败不计作通过。新并发替换、中断后重新准备和 Windows 真正不允许删除共享的句柄测试均通过；后者在 Unicode / 空格路径上经过 0.75 s 有界拒绝、保留旧字节与清理本次 staging，释放句柄后再次写入成功。两个写入线程只检查通用 atomic helper，不把单 Run checkpoint 宣称为支持多写入者。
+
+已先将 B-056 的来源、期望/实际、影响和证据写入 bugs.md，并在 layout.md 明确有限非负预算合同；brainstorm 收纳为本轮选定的低风险准备阶段草案。第三步方案为文件操作前的标准库数值校验；保留原签名、默认 120 秒、零预算、重入、退出释放和有效预算的竞争行为，不改数据/model 或科学门。第三步已在工作分支实现：仅新增 math 导入和两行入口校验，共三行生产差异；所有调用方继续使用原签名。新增八个边界用例沿原测试入口执行，临时远端工作流与一次性基准脚本不在最终差异中。AST / diff 检查通过；本机下游仍在执行，因此不启动本地回归。提交以面向 dev 的草案 PR 交付，最终工作提交由四环境 CPU 和两平台安装包必需 CI 验证，未完成前不计通过；当前 dev 上 B-056 仍开放，即使草案 CI 通过也不等于已集成。
+
+草案首轮 CI 发现第二个真实边界 B-057：[ebcdb8b 的 Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38571738491) 在 Windows/Python 3.10 的新增并发原子写用例报 WinError 2（临时源文件不存在），core 1 failed / 471 passed / 2 skipped，流程门未执行；其他三个环境以及两平台包门通过。B-056 五个新预算用例在四环境 core 中均通过；不将整轮质量写成通过。
+
+原子 helper 仍为 dev 的 PID+time_ns 临时名，不能区分同进程同一读数的两线程；这与旧 #38 的初始写失败清理不同，已单独登记 B-057。按 [Python 时钟文档](https://docs.python.org/3.13/library/time.html#time.time_ns)，纳秒单位与实际时钟实现/精度有别，不能当写者身份。保留自然时钟反例，再给相同测试增加固定读数条件，明确检查 staging 独立性；不通过改成串行、跳过 Windows/Python 3.10 或重跑挑通过规避失败。已核对 atomic_write_text 的 config、result、provenance、readout、activity、缓存 manifest 和 checkpoint 分件调用方；改动只涉及临时 nonce，不改变正式 artifact 名、字节或单 Run 单写者合同。
+B-057 工作分支采用项目已有的 UUID staging 模式：atomic_write_text 保留 PID / .tmp 后缀与原 finally、replace 和 Windows 重试，只将时钟部分换为随机 uuid4 nonce。来源依据见 [标准库 uuid4](https://docs.python.org/3.13/library/uuid.html#uuid.uuid4)。这与三行 B-056 预算校验组成当前草案的两项生产修复；自然/冻结时钟两个并发条件使本轮新增边界共九项。原 ebcdb8b 的失败和其他环境通过都保留，后续最终提交须完整重新通过必需 CI；草案保持未合并，dev 上 B-056 / B-057 均开放。
+### 42. 失败终端输出回归与反馈归属边界
+
+再次核对实际 dev 509a089 的四环境测试及两平台包检查，均为 success，已将 §41 的运行前说明替换为最终工作提交和实际集成提交的完整验收证据，包括最后完成的 Windows/Python 3.10 流程门；没有重新运行旧实验冒充新验收。
+
+#41 原有四格真实 CLI 回归已经验证默认/关闭重试的失败/成功、调用次数、最终错误、日志、jobs 字节和空计划跳过。本轮只扩展原失败用例的终端断言：共享 console 捕获 stdout/stderr 必须包含原始 RuntimeError；关闭重试时不出现二次 FileExistsError，默认重试时该二次错误仍可见。复用现有用例，不增加独立进程或修改生产代码。实际调用链为 CLI → launch_jobs → run-one → Logger.exception，同一错误还须按既有断言保存在 result 与 run.log。
+
+[反馈指南](feedback.md#四归属核验示例)补充三类边界：#38 原子写入清理、#41 CLI 重试入口与业务重复读取的区别、外部 pytest 批次超时的证据要求。量化 480 秒事件不是 #38；业务缓存的重复读取 KeyError 也不是 #41 的上游根因。未为未证实问题新建 B 编号或公开 Issue，未修改下游缓存/调度/监视器。
+
+逐项复查开放 #36 / #37 / #38 / #41 与评论，均已有 dev 修复；src / tests 搜索 TODO / FIXME / XXX 无标记。brainstorm 的尝试历史等候选仍是建议，未自动纳入实施。当前没有新的可本地复现上游缺陷；本轮交付为终端可观察性回归和记录缺口修补。本机性能校准继续，远端必需 CI 负责当前提交的实际执行，未完成的检查不计通过。
+
+### 41. 量化 480 秒超时归属核验与 #38 写入边界补测
+
+本轮只读核对量化项目固定 v0.3.1 模板、原始资源记录、逐项 events 和后续两批 JUnit XML。原 CPU pytest 批次在 480.087342 s 被下游外部资源监视器终止，退出 15；1131 个已完成用例均为量化项目，均 passed，记录耗时合计 469.527 s。当时尚未执行到 tests/rpipe，最后两项仍在完成量化 trace 的计算/采集用例（3.037 s、2.452 s）。这是整批预算耗尽的证据，不能据此归因为 RPipe 调度卡死，也不能把 1131 项局部通过写成完整回归通过。
+
+同源后续串行 A/B 两批分别 530 / 961 项，JUnit 均为零失败、零错误、零跳过；资源监视墙钟分别 146.476927 s / 224.341738 s，退出 0，最终存活 PID 均为空。两份 XML SHA256 分别为 3808787d5318dd8ee184280a992a6939f7efe1053436ba1b0d411cfd60f05837、b8ac30cef61a78f067390964e6445477b590585970e5e81e7f36fecb8fba91c2。直接标为 tests/rpipe 的用例时间合计仅 0.015 s；量化集成用例也调用模板，因此这个目录统计不能当成 RPipe 全部开销。原超时记录曾报告 PID 56508 瞬时存活，随后只读检查未存活；后续批次又出现同号 PID，不能只凭 PID 值推断持续泄漏或相同进程身份。
+
+上述材料仍由下游 Study 报告和本机原始日志保管，未搬入公开仓库，也未修改下游文件。经脱敏的未确认 Issue 草稿保存在 .tmp/feedback-boundary-evidence/quantization-timeout-issue-draft.md（本机临时材料，不随 clone 提供），没有向 GitHub 发布未证实的缺陷。缺少原超时瞬间的调用栈和受控 CPU/线程时间序列，不能精确解释首轮比后续分批更慢的原因；未重跑大回归或改变原科学门与预算。
+
+开放 #36 / #37 / #38 / #41 均已有 dev 修复且没有新评论条件。本轮选择 #38 补充真实写入边界：从 write_result 经过 JSON 编码、UTF-8 文件写入和原子清理，分别验证无旧档/有成功旧档时的真实 UnicodeEncodeError，检查旧成功字节、其他写入者临时文件保留、本次临时文件清除，以及下一次合法写入能成功。此前的回归通过注入部分写入错误验证底层 helper；新增两个集成用例不 mock 文件写入。现有公共修复已覆盖该行为，无需再次修改生产代码。
+
+#41 的最终工作提交 8269bff、集成 8c15cd8 及 Windows/Python 3.13 证据已由 [PR #43](https://github.com/DreamSoul-AI/RPipe/pull/43) 补齐（[§40](#40-原生-launch-显式关闭失败重试41验证通过)），PR #43 实际 dev a1e5b797ca6733dd73cf458f796f85c84d3d76ac 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38560337078) / [Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38560337260) 均通过。未重写原始 v0.3.1 下游报告，也未将其标为新 dev 验收。
+
+[PR #44](https://github.com/DreamSoul-AI/RPipe/pull/44) 最终工作提交 0b3ce37d286c484623791190dece9f7b28469358 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38562868705)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38562868844) 和 [Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38562868704) 全部成功，已合入 dev 509a0894c68076571f7d75cc7747707465092026；实际集成提交的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38563652457) / [Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38563651571) 也全部成功。四个环境 CPU integration 各 74 passed / 2 skipped，Windows core 各 464 passed / 2 skipped，Ubuntu core 各 463 passed / 3 skipped；HF 可选依赖和平台专用 skip 不计通过。最后的实际 dev Windows/Python 3.10 流程门已核对为 success，74 passed / 2 skipped，耗时 137.10 s；不是仍待运行。两平台 wheel/sdist 独立安装验收成功。
+
+旧工作提交 296aa59 的两个工作流在静态检查发现测试模块重名、改为唯一名称后取消，保留原记录，不计作通过；最终 0b3ce37 及实际 dev 509a089 的所有必需门均重新执行。核对最终工作树与集成树一致后，仅清理本任务已合并分支。该轮本机没有并行执行 pytest 或干预下游性能校准；未修改 main、版本、数据、Study 预算或下游 vendor，未关闭 Issue。
+
+### 40. 原生 launch 显式关闭失败重试（#41，验证通过）
+
+来源为 [Issue #41](https://github.com/DreamSoul-AI/RPipe/issues/41) 的 CPU 合成复现与当前 dev 调用链。改前：API 支持 retry_failed=False，但 CLI 只能采用默认重试；排他产物任务的第二次 FileExistsError 可成为最终错误。改后方案：launch --no-retry 仅投影现有 API，默认保持重试一次，不改变计算、Run ID、jobs 清单或依赖屏障；原始失败日志仍保留。更大的尝试历史设计只记 brainstorm。
+
+新增真实 CLI 四格回归：默认 / 关闭重试 × 失败 / 成功，检查实际调用次数、最终错误、原日志、jobs 字节、成功后空计划跳过；另有显式关闭重试时的失败 train→eval 屏障回归。使用测试公共合成输入，不接触正式 Study 或下游 vendor。本机此时存在 dayan 性能校准，因此未并行运行本地回归。
+
+工作提交 `b678802d54a509532cbca35e40223c889d1c369e` 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38556030997)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38556030922) 和 [Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38556031025) 全部成功。Windows 两个 Python 环境 core 各 464 passed / 2 skipped；Ubuntu 两个环境各 463 passed / 3 skipped；四个环境 CPU integration 各 72 passed / 2 skipped，均无失败。两项模块级 skip 对应未安装的 HF 可选依赖，Linux 另有 Windows 专用入口 skip，不计作通过。两平台 wheel/sdist 均完成独立安装验收。
+
+最终文档提交 `8269bff580eeb22d5050846d2452bbbc9b8f2b4b` 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38556840524)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38556840501)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38556840590) 全部通过，已单独核对 Windows / Python 3.13 为 success，没有将 pending 当作通过。生产代码及测试与上述首轮工作提交相同。
+
+[PR #42](https://github.com/DreamSoul-AI/RPipe/pull/42) 已合入 dev `8c15cd84f8a47d5bfeb80edfa69bc5c370998e74`，实际集成提交的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38557561151) / [Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38557561212) 也全部通过，覆盖四个 CPU 环境与两平台安装包。核对最终工作树与集成树一致、工作区干净后，已删除该修复的本地 / 远端 codex/launch-no-retry；其他活动分支保留。main 仍为 v0.3.1 / `7a15c46`，未进入发布流程。
+
+下游关于排他产物与自动重试的报告已核对，公开 #41 引用、固定 v0.3.1 来源和首个错误仍在日志的事实均正确；它记录的是原基线，不能改写为采用新 dev 后的验收。“尚未获得上游修复”属于当时记录，上游当前修复状态以上述确切提交与 CI 为准；未修改下游报告、vendor、锁或原 Run。
+
+本次再次逐项核对开放 #36 / #37 / #38 / #41 及评论，均为已在 dev 集成的修复，没有新增未处理条件。三个对话的新反馈没有提供新的 RPipe 反例；已完成的下游回归不因历史超时或领域数值门失败重标为库缺陷。未自动关闭 Issue、未运行正式长实验。独立尝试历史仍为 brainstorm 候选。
+
+### 39. 共享与三个反馈修复合入 dev
+
+[PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)在最终工作提交`07bcf2eac9632166c9063c1412f764f1a6d516e3`的Unit tests / Build package / Branch flow全绿后，于2026-10-14 07:00（Asia/Shanghai）合入dev `614d0a6bc6dc99f82445a1566d41a0b6150c6b85`。Ubuntu / Windows × Python3.10 / 3.13实际CPU矩阵与两平台wheel/sdist安装检查全部成功；已核对dev与该工作提交的生产源码及Study实现没有差异。
+
+远端依据：[Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38480920352)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38480920322)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38480920341)。dev集成后的[Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38481509649)和[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38481509815)独立运行，状态须以实际任务为准，不能仅凭上述PR通过算已完成。
+
+本轮B-053 / B-054实现与必要回归完成，从开放bugs移除，详细反例 / 修复事实及实验限制仍保留§35—38和各Study证据。#36—#38公开反馈暂不关闭；main仍是原v0.3.1，未进入发布流程、未创建tag/Release。未来下游升级须明确固定dev提交或发布来源，不把旧冻结实验就地覆盖为新版本。
+
+合并后核对07bcf2e为dev祖先、工作区干净，再清理本任务已合并的本地 / 远端codex/powershell-launch-boundaries；本机dev快进后新开codex/shared-inputs-followup记录交接。未删除其他任务分支，原数据、Run、缓存和失败保持；没有重新执行长训练或改变数值门。持续目标继续关注三个下游对话与新Issues，没有新反馈时不扩大为无依据的边界改造。
+
+### 38. 固定格式 processed / Stats 也跨 Run 复用
+
+进一步核对两份固定归档：4ccb28d的processed是NumPy pickle格式，98648f3格式不同，不能覆盖为同一目录；但同一归档与raw版本的文件可以跨Run共享，不能把全部processed一概当私有例外。已在项目shared/data/derived按归档commit、数据hash、Torch / NumPy版本及固定统计方法分目录，加载对象仍各自独立。
+
+复用artifact共享工具新增prepared_resource：版本定义生成key，准备回调在公共存储的唯一staging中构建，完整文件与manifest写齐后整目录发布，每次复用核对文件清单和hash。失败staging保留，损坏或缺项不自动重建；没有新增训练或调度循环。main_probe的processed及固定原版Stats / native YAML共用；main_exp也使用独立4ccb28d格式缓存，避免不同Study的格式碰撞。普通Study的自定义profile仍私有，不借用不同归一化约定。
+
+共享专项26 passed；当前core463 passed / 2 skipped（`20261013T223858Z_dd103c`），CPU integration68 passed（`20261013T224233Z_6c377b`），8条原partial-resume警告保留。更新源码的wheel/sdist各9CLI / 4Toy Run通过，依赖复用边界不变。此前38e0a3f远端三门已通过；本次提交需核对自己的最终CI。
+
+研究数字 / 失败留在Study：probe冷 / 热MNIST和CIFAR10单格对照及最终两数据集linear单格均通过，processed / Stats路径samefile证明实际复用；main_exp两数据集linear200-step前缀通过、参数最大差0，不替代正式八格600-step前置门。首轮临时前缀脚本提前创建输出目录被入口拒绝，修正调用后新目录运行，原拒绝保留。
+
+迁移只改字节完全一致的引用：162个旧processed路径及100个固定Stats路径改为同文件，未发现必须保留的不同编码匹配候选；原848个raw引用和278份历史result/index/process/provenance保持。详细hash、source和数字分别见[main_exp迁移](../../studies/main_exp/docs/shared_inputs_migration.json) / [前缀诊断](../../studies/main_exp/docs/shared_inputs_prefix.json)、[probe证据](../../studies/main_probe/docs/shared_inputs_validation.json)。逻辑字节合计不当作实测磁盘释放或速度收益。
+
+### 37. Issue #36 未开启扩展的初始冻结拒绝（B-054）
+
+在现有真实CPU回归加入flow.study_phases=false对照，发现prepare初始check_frozen拒绝仍覆写成功result，开启扩展的对照通过；红测1 failed / 10 passed（`20261013T222059Z_35423a`）。先在bugs记录，再仅将ProvenanceChangedError的成功保全覆盖prepare阶段；冻结条件 / 时机不变，其他prepare异常和execute / summarize / write失败继续写failed，process保全规则保持。没有恢复此前撤回的额外冻结门或调度改造。
+
+定向32 passed（`20261013T222126Z_36f53c`），真实run-one拒绝非零退出、旧成功和非日志资产字节保持；普通prepare失败仍覆写为failed。当前core456 passed / 2 skipped（`20261013T222158Z_4f621f`）、CPU integration68 passed（`20261013T222209Z_ce9510`），8条历史partial-resume警告保留。首批共享提交ac909ec远端三门通过，3f7bf18及本次后续提交的CI分别核对，不互相替代。
+
+来源变化后新version `shared-inputs-20261014-cpu05` / Run `44492c0d8f5cf190` 的MNIST/linear CPU60-step完整test单格再次通过、执行源不变；依据追加在[Study证据](../../studies/main_probe/docs/shared_inputs_validation.json)。仍无新的八格或长矩阵验收，原红测和各CPU / CUDA重复结果保留。工作仍在同一草稿PR #39，#36保持open，未合并或发布。
+
+### 36. 共享统计路径与恢复身份复查
+
+共享首批提交ac909ec已推至[草稿PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)，其Unit tests、Build package、Branch flow全部通过。进一步复查发现隐式统计目录被注入data.config，会令仅路径搬迁也改变native sampler的恢复身份；改用可选profile_path IO参数，不改变用户原实验配置，显式stats_path仍优先。
+
+新增实际Factory / BatchCursor回归：两个同内容profile目录下恢复同一cursor，后续两batch逐值相同，config身份保持。定向14 passed；当前core456 passed / 2 skipped（`20261013T221521Z_c4c197`），CPU integration66 passed（`20261013T221541Z_af5771`），原8条partial-resume警告与符号链接权限skip保留。最终源码的wheel/sdist重新构建安装，各9CLI / 4Toy Run通过，科学依赖复用限制不变。
+
+来源改变后再用新version `shared-inputs-20261014-cpu04` / Run `25ae12161dec991a` 完成MNIST/linear的CPU60-step完整test成对门，源码不变且固定归档字节校验通过，证据追加在[Study记录](../../studies/main_probe/docs/shared_inputs_validation.json)，不覆盖前三轮。首批CPU单格的整轮process也实际拒绝不完整矩阵，成功Run结果保留。最终提交仍须通过自己的远端CI，不用ac909ec的检查代替。
+
+### 35. 跨 Study 共享输入与本机缓存迁移（B-053）
+
+用户在新持续目标中授权同步 `codex/powershell-launch-boundaries`、处理其他三个对话反馈的 Issues，并实现跨 Study data / model 共享。已 fetch 并切换到 `6619edc`，确认分支已有 #36—#38 三个修复；没有恢复此前撤回的广泛边界改造。本轮新增范围为 [共享路径合同](../code/layout.md#跨-study-共享资产2026-10-14)。
+
+- 改前：各 Study 返回自己的 shared/data、shared/model，probe 每个 Run 为两侧 copyfile raw。改后：默认项目级共享输入，data / model 独立显式私有例外；Factory 与 recipe 接收统一根，模型对象 / checkpoint / RNG / tracker 仍独立。统计 profile 留在 Study 并显式传入，避免跨 Study 归一化污染。
+- 公共准备受进程文件锁保护；终止进程后可重新取得锁。同卷旧缓存迁移先验证全部重名文件，再建立硬链接，原路径保持可读；冲突和链接失败保留原输入。raw 的归档 / torchvision 路径通过引用适配，不再复制。自定义 builder 仍须按版本 / revision 分目录；未新增 HF / ModelScope builder 或训练调度器。
+- main_exp 手动准备、preflight、容量 / 精度入口解析同一共享根；历史 processed 构造也受锁保护。探针的 processed / 原版 Stats 因归档格式和状态隔离仍私有。临时复制 Study 的首次原始导出得到空树；Git ls-tree 改为 --full-tree 后，固定历史提交的完整文件字节校验保持通过。
+- 当前 core **456 passed / 2 skipped**（`20261013T220345Z_df43db`，UTC），两项跳过为本机目录符号链接权限，8 条原有 partial-resume 警告保留；CPU integration **65 passed**（`20261013T220523Z_128a81`）。新增共享专项18 passed，覆盖跨 Study 文件 / 训练隔离、私有 profile、路径配置、冲突拒绝、链接失败与被终止写者。首次双 Study 测试误用 checkpoint 文件名 / key，按实际 latest.pt / model 合同修正，原失败留存。
+- wheel / sdist 在 `.tmp/` 源码副本构建、分别安装到新环境，复用已有科学依赖而非干净依赖安装；各9条 CLI、4个Toy/Stub Run通过。首次临时构建脚本误写 LICENSE 文件名，改为实际 LICENSE.md 后新目录成功，失败未删除。包仍为0.3.1开发来源，不发布版本。
+- 本机原始输入迁移和单格数值依据留在 [main_exp 迁移记录](../../studies/main_exp/docs/shared_inputs_migration.json)、[main_probe 小验证](../../studies/main_probe/docs/shared_inputs_validation.json)。不是新的八格 / 长矩阵验收，不改写旧来源。
+
+本机原始 stdout / 失败、迁移逐文件 hash 和安装验收在 `.tmp/shared-inputs-20261014/`，不随 clone 提供。#36—#38 继续保持 open，当前未回复或关闭；正式集成与远端 CI 以对应工作 PR 为准。持续目标保留，后续关注新 Issue 及三个下游对话的实际反馈，不把“目前没有新增项”当作所有后端已验收。
+
+### 34. 工作分支提交推送交接
+
+用户授权 push 当前代码，以便在另一台机器继续。提交范围为收缩后保留的三个公共源码修复、四个对应测试文件、设计 / 历史开发 / 交接文档，以及跨 Study 共享下载的 brainstorm 要求；不恢复撤回的探索代码，不加入 `.tmp/`、环境、缓存、Run / 数据 / checkpoint。本次只推工作分支 `codex/powershell-launch-boundaries`，不合并 dev / main 或发布，Issue #36—#38 继续开放。
+
+源码与此前收缩后的定向75 passed、core440 passed / 2 skipped及四Run小流程验收保持同一实现，后续仅文档更新，不重复运行无变化的测试。提交前核对差异、忽略项及正式Study保全。实际交接提交与推送完成状态以远端分支为准，不在文档中自引用尚未生成的 commit；异机执行前须重新检查环境并做核心小验证。
+
+### 33. Issue 状态按用户最新要求恢复开放
+
+用户先授权清掉 Issue #36 / #37 / #38，三条在 GitHub 被关闭；拟附的本机验证说明评论被自动审批拒绝，没有发布。随后用户认为反馈来自其他项目，并明确要求暂不关闭、后续再修；已将三条恢复 open / reopened，并重新读取确认全部 open。原正文及讨论保留，没有追加公开评论。
+
+三条提交账号均为 diaoenmao；仅账号不能确定具体创建会话，当前没有独立定位全部创建来源，不能将其描述为三个外部用户反馈。现有三个本机修复及证据保留、未提交 / 推送 / 发布；本轮没有新源码修改、测试或研究任务。后续按用户新要求再处理，不因本机通过自动关单。
+
+### 32. 按用户要求收缩到本机适配与三个下游 Issue
+
+用户明确选择仅保留本机迁移 / MKL 和已收到的 Issue 修复。先将当时29个修改 / 新增文件、完整 tracked diff 与清单备份至 `.tmp/scope-reduction-20261014/`；七个范围外新测试移入该目录的 withdrawn-tests。没有删除历史反例、隔离环境、Run、数据或 checkpoint。
+
+当前公共源码仅保留三处：Runner 对阶段开始前 ProvenanceChangedError 保留旧成功（Issue #36）；status 缺轴 / result 模式时读生成配置并保留必要诊断（Issue #37）；原子文本初始写入纳入既有 finally 清理（Issue #38）。原阶段启用 / freeze 时机保持基线，撤回额外的 disabled-hook 冻结门拓展；未修改全局 config 解码合同。保留四个对应测试文件，撤回其余主动探索的 CLI 参数、脚本生成、自动 remake、计划资源 / 行 / 分组校验及 Study 解析改动。README 和 brainstorm 回到 HEAD；设计文档只同步这三项行为。
+
+本机 `.tmp/runtime/activate.ps1` 的 SEQUENTIAL 设置及 UTF-8 BOM 保留，源码 pth / 新项目路径保留；迁移后 main_probe 八项调度参数保全，main_exp 未创建新脚本或启动正式任务。撤回代码的历史记录保留为已发生事实，§11—31 的“已修复”描述对应当时源码，不能当当前交付状态；本节为当前范围依据。范围外已确认反例没有因此被证明不存在，只是不纳入本次实施。
+
+收缩后 Issue / readout / atomic 定向75 passed（`20261013T212721Z_885522`，UTC），core440 passed / 2 skipped（`20261013T212754Z_0ffd5d`），均exit0；原8条partial-resume警告保留。新 Windows PowerShell -NoProfile 使用最终本机激活步骤，源码导入和 help 正常；全新 version `scope-reduced-20261014-v1` 的 CPU Toy/Stub两seed、train/eval四Run、仅两训练step，make→launch→process→status/logs/report及重复launch跳过保全全部通过，见 `smoke/SMOKE_RESULT.json`。没有将它当科学结果验收。
+
+验证阶段627个受保护文件字节保持（包括427个正式Study文件），当前源码差异仅3个文件；diff --check通过。临时备份 / 证据不随clone提供。未 commit / push / 发布，未回复或关闭Issue；未验证远端CI、包安装、其他宿主、GPU、正式研究或完整CPU integration门。后续不再依据旧的宽泛探索目标自动扩展，按本次范围收口。
+
+### 31. B-052 保存分组与主清单一致性修复及范围收口
+
+补回归确认分组遗漏、增项、重复及 gpu / device / mode / config 漂移：默认成功过滤与 include-done 各覆盖一遍，红测 14 failed / 2 passed（`20261013T212214Z_2ca8af`，UTC），两个合法重排 / 成功过滤控制通过。先明确[保存分组合同](../code/structure.md#10-make)，在共享读取入口按 Run ID 核对完整任务 mapping 与一一对应，检查先于成功过滤，坏清单返回 None；合法组顺序、空 / null / 全空组自动分组保持。不新增调度器、资源参数或持久化格式。
+
+首轮调度目录 / launch 验证 181 passed / 1 failed（`20261013T212235Z_b97d1b`）：失败为 Bash 临时 Python 执行时报 Device or resource busy、exit126，原证据保留。单独新临时目录复查该用例 1 passed（`20261013T212322Z_d1714c`），未修改断言 / 自动重试，实际占用者未确认；不能将首轮失败删除或把这次复查当启动稳定性证明。
+
+补原生冻结拒绝后，B-052 最终定向 19 passed（`20261013T212349Z_433477`），包含全部一致性反例 / 合法顺序控制、来源漂移拒绝前字节保全，以及来源未变的坏分组重建；没有实际 GPU 使用。427 个正式 Study 文件哈希一致，git diff --check 通过。临时证据 `.tmp/b052-plan-consistency/` 不随 clone 提供，旧审查反例保留。
+
+用户指出累计改动过多。本轮先收口，不再追加边界探索；多个 B 编号是相邻输入 / 读取 / 保存边界的人工反例，并不表示正式实验出现同等数量的算法故障。当前仍有未经提交的累计改动，不把此前授权解读为可无限扩大重构。后续范围需以用户最新要求为准；不 commit / push / 发布，不改正式研究或数据。
+
+### 30. 累计审查：B-052 分组与主任务清单的一致性
+
+按 ponytail-review 核对未提交生产 diff 与连接调用链，范围为单写者 Study / 多 Run wait 的现有使用方式，不以本机行为保证多用户并发或性能。检查 CLI 输入 / freeze 自动重建、Runner 成功保全、原子文本清理、config / Study 解码、status 回退与脚本路径 / 资源传递；已有测试与整链证据按实际源码版本读取，没有再次运行测试门或增加通过数量。
+
+发现 B-052：合法形状的 jobs / batches 可以不一致，加载器验证 jobs 而 wait_groups 选择 batches。新只读探针三组：原始两 Run 清单 / 分组一致，待启动环境 GPU 0；分组删掉 r1 后仍加载成功，planned_ids 两项而 dispatch_ids 只有 r0；batch 副本 GPU 改 7 后仍加载成功，主清单 GPU 0 而待启动环境变 7。输入文件哈希不变，未调用 Popen 或训练，也未访问 GPU 设备。源码 plan_files 仅包含 index / config，已有 freeze 无法拦截单独修改 jobs.json 的分组。
+
+建议只在共享读取边界核对主任务 / 分组任务的一一对应与执行字段一致，不一致返回不可用，复用既有冻结门后的重建。保留合法分组顺序和空分组兼容；不引入新调度器、资源开关或迁移格式。在修复及针对性拒绝 / 合法控制验收前，本轮审查结论为需先修 B-052，而非可以交付。
+
+证据 `.tmp/review-plan-consistency/` 不随 clone 提供。仅记录确认缺陷、开发事实与交接，生产源码没有改变；原失败和当前用户改动保留，427 个正式 Study 文件哈希仍一致。完整门 / smoke 属 B-050 基线，B-051 仅有其定向结果；未核验当前整套远端 CI、包安装、其他宿主、GPU / 正式实验、并发写者或吞吐。仍不 commit / push / 发布。
+
+### 29. B-051 Study 顶层非 mapping 的拒绝
+
+复查与配置解码相邻的 Study 声明读取边界。load_study_yaml 先用 `safe_load(...) or {}`，使 [] / 0 / false / 空字符串绕过既有 mapping 检查；四项 loader 反例失败而三项空文件 / null / mapping 默认控制通过（`20261013T211658Z_0defd1`，UTC）。原生 make / run --skip-launch 的八项反例也失败（`20261013T211711Z_e957fc`）：均 exit 0 并实际生成默认单 Run，不是纯解析问题。红测只生成临时计划，没有 launch 或训练，原输出保留。
+
+先明确[Study 声明合同](../code/structure.md#10-make)，仅 safe_load 返回 None 时用空 mapping，其他非 mapping 复用既有 ValueError。expand_study 先解析声明再创建布局，避免 run --skip-launch 在拒绝时留下 docs / shared / runs 空目录；正常映射的布局 / recipe / 展开顺序保持。影响所有复用 loader 的 make、Runner、prepare、process 与 data profile；没有改变轴、seed、Run ID、算法或容错成默认研究。
+
+定向 make / phase validation / Study / 扩展 / run_study 90 passed（`20261013T211753Z_ed0a08`），含三项默认读取兼容及八项原生拒绝：非零退出、mapping 诊断，无标准输出，文件字节与目录集合保持。既有合法 Study 小 CPU 回归通过，本轮新增反例没有训练。427 个正式 Study 文件哈希一致，git diff --check 通过。
+
+下游 Issue 实查仍为 #36—#38，无新增项，未回复 / 关闭。证据 `.tmp/b051-study-mapping/` 与对应 `.tmp/test-results/<run_id>/` 不随 clone 提供。未重复完整门；上节累计门和四 Run smoke 对应 B-050 源码，不能替代本次新解析 / 布局顺序的完整验收。未 commit / push / 发布，未运行 GPU、正式实验、真实数据或长训练。
+
+### 28. B-050 本机 PowerShell 5.1 激活编码与当前整链验证
+
+本轮收口实际使用链，未增加公共库逻辑。新建 `.tmp/dev-current-smoke/`，复用原迁移验证脚本但使用全新 `dev-boundaries-20261014-v1` / Study；第一次 Windows PowerShell 5.1 -NoProfile 启动在 import 阶段失败，尚未 make 或训练。独立诊断显示 MKL 变量为空、NumPy / RPipe 原生退出 -1066598274（0xC06D007E），Torch 单独导入成功。
+
+B-050 根因为本机 `.tmp/runtime/activate.ps1` 中文注释以 UTF-8 无 BOM 保存；5.1 按 ANSI 解码，Parser token 的 Comment 吞入下一行 MKL_THREADING_LAYER 赋值。直接赋值和单独 venv 激活对照均保留 SEQUENTIAL，排除 venv deactivate 清除该变量。原 wrapper 字节和解析 / 导入输出已备份；诊断期间一次嵌套 -Command 引用出现解析错误，未执行环境检查，后续统一使用 -File。
+
+最小修复仅为本机 wrapper 加 UTF-8 BOM，并更新本机 runtime README；内容、依赖、全局 Conda / 环境变量、公共库与算法均未因此改变。Windows PowerShell 5.1 / PowerShell 7 各两个独立 -NoProfile 子进程，先删除继承的 MKL 变量再点调用 wrapper，断言 SEQUENTIAL 并导入当前源码，全都 exit 0，见 ACTIVATION_RESULT.json。启动仍为进入仓库后 `. .\.tmp\runtime\activate.ps1`，后续 CLI 子进程继承；关闭终端结束进程级设置。
+
+新 PowerShell 下 source import / CLI help、make→launch→process→status/logs/report 全部 exit 0。Toy/Stub、CPU、linear、两 seed、train/eval 四 Run 成功，训练仅两 step，两个 Experiment 聚合 n=n_planned=2；重复 launch 输出 0 jobs / nothing to launch，result / config / log / tracker 原字节保持。源码来自本仓库 src/rpipe，Python 为本机源码 venv；本轮没有安装 RPipe 分发包。全部 smoke 命令明确 shared，未开可见子控制台。
+
+当前源码完整 core 476 passed / 2 skipped（`20261013T211343Z_94edda`，UTC），CPU 流程 136 passed（`20261013T211401Z_0a4acf`），test_id 去重 612 passed / 2 skipped，均 exit 0。8 条已有 partial-resume 警告保留，不放宽合同。基线 HEAD `a424be5dedac46d8f459ff8748f18387ebb05169` 加本机未提交改动，源码逐文件哈希留 SOURCE_BASELINE.json。
+
+实查默认 cwd / Git 根目录与 Codex rpipe 项目登记均为 D:\GitHub\DreamSoul\RPipe，旧仓库路径不存在。活动源码 / 声明 / 调度 / 新环境没有旧根路径命中；main_probe 八 jobs 的非路径字段与迁移前备份一致，现存 PowerShell 调度仅检查语法，没有启动正式研究。验证阶段627个受保护文件字节保持（包括427个正式 Study 文件）；历史路径证据、原 Run / checkpoint 与八个隔离环境保留。
+
+本机证据在 `.tmp/dev-current-smoke/`，不会随 clone 提供；原失败与 wrapper 备份不删除。SEQUENTIAL 仍是本机缺失 Conda OpenMP DLL 的范围内绕过，不是全局运行库修复或科学 / 性能验收。未验证其他宿主、远端 CI、包安装、GPU、真实数据、长实验或并发写者；未 commit / push / 发布，仍同一工作分支。
+
+### 27. B-049 保存计划行与分组的结构拒绝
+
+继续核对计划加载的 trust boundary。原先只检查 jobs 为 list、batches 的第一组为 list，非 mapping job 被 _keep 静默删除，非法 batches 容器 / 首组被忽略并退回自动分组，合法首组之后出现整数组则 TypeError。五种反例均失败（`20261013T211004Z_e7b8d8`，UTC），分别为顶层任务行、分组容器、首组、后续组和组内任务行损坏；本轮红测仅只读，无训练。
+
+先明确[保存计划结构合同](../code/structure.md#10-make)：任务行 mapping，非 null batches 为 list，每组 list 且组内任务 mapping；不符合返回 None，沿已有 CLI 冻结门处理，而非丢任务或放弃保存分组。load_launch_plan 在资源 / config 查询之前完成形状检查，保留省略 / null / 空 batches 的自动分组兼容。不新增持久化字段或另写调度器，仍由现有 launch_jobs 处理合法任务的依赖、重复 Run 与阶段屏障。
+
+定向 schedule / make / launch freeze / selectors 105 passed（`20261013T211030Z_950f66`），包括来源漂移且后续分组损坏时 exit 2、全文件字节保全，空 / null / 全空组兼容与原任务集合保持。只做既有小 CPU Toy 回归，新反例无真实执行；427 个正式 Study 文件哈希一致，git diff --check 通过。
+
+本机证据 `.tmp/b049-plan-rows/` 及对应 `.tmp/test-results/<run_id>/` 不随 clone 提供。未重复完整门或远端 CI，未验证 GPU、正式研究、并发写者；没有将形状检查宣称为全部计划内容一致性验收。未 commit / push / 发布，仍同一工作分支。
+
+### 26. B-048 console 选择在计划处理前校验
+
+检查 CLI 参数到调度的拒绝边界，确认无效 console 原来在 launch_jobs 内才抛 ValueError，fresh / 缺计划 / 显式 remake 已先完成 make 并写入配置、脚本和来源。真实红测 3 failed / 1 passed（`20261013T210753Z_859cb5`，UTC），三项 console 反例均在生成后拒绝；筛选同时选中一项已有合法模式控制且通过，没有训练或子进程调度。
+
+先补充[launch 输入合同](../code/flow.md#13-climake--launch-与-wait)，在既有入口 try 中调用调度器 resolve_console；无效选择沿同一 ValueError→exit 2 路径，在读清单 / make / process 之前拒绝。把解析后的值传回 launch_jobs，保留它对直接 API 调用的独立校验；没有另写别名规则、修改默认平台选择或新增参数。
+
+定向 59 passed（`20261013T210832Z_c762ec`），覆盖 modes / console 原生错误拒绝与文件保全、fresh / 缺清单 / remake、空任务计划、大小写与 MIX 别名、冻结重建和 PowerShell 计划参数。测试用 MIX / shared 及假执行验证选择；未由本轮测试打开可见控制台。427 个正式 Study 文件哈希一致，git diff --check 通过。
+
+本机证据为 `.tmp/b048-console-input/` 和对应 `.tmp/test-results/<run_id>/`，不随 clone 提供。未再次执行完整测试门、远端 CI、GPU、正式研究或负载验收；前述完整门属于此前源码。未 commit / push / 发布，工作分支及用户既有改动保留。
+
+### 25. B-047 保存计划资源字段的读取容错
+
+实查下游开放 Issue 仍为 #36—#38，无新增反馈，未回复 / 关闭。核对 load_launch_plan 的 None→重建合同，发现 JSON 结构可读但 init_gpu / num_gpus / round 无法转为整数时，异常逃出读取路径，CLI 未进入已有来源冻结门。13 项真实红测失败（`20261013T210534Z_70bb71`，UTC），覆盖非数字字符串、list、mapping、Infinity 及来源漂移下的 CLI 行为；没有训练。
+
+先明确[计划读取合同](../code/structure.md#10-make)，只把保存资源元数据的整数转换纳入 TypeError / ValueError / OverflowError 容错，返回 None；不捕获调用方参数错误，不新增资源默认规则、参数或清单格式。CLI 继续沿既有冻结门后重建，漂移时 exit 2 并保全文件，未漂移时可以恢复清单。仍不把本次读取改动当并发写者协议。
+
+调度目录及 launch freeze / mode 定向 139 passed（`20261013T210551Z_31a819`）；补充旧默认 / 整数字符串兼容、来源未变的损坏清单重建后，schedule / freeze 控制批次 60 passed（`20261013T210640Z_317a24`）。两批均 exit 0；只有既有小 CPU Toy 回归，新增反例只读或假执行。未再次运行完整门，上节 581 passed / 2 skipped 对应 B-046 源码，不冒充本轮完整验收。
+
+证据在 `.tmp/b047-plan-metadata/`、对应 `.tmp/test-results/<run_id>/`，不随 clone 提供。427 个正式 Study 文件哈希仍一致；同一工作分支，未 commit / push / 发布、未改全局环境或研究算法，未验证 GPU、远端 CI、正式实验或负载性能。
+
+### 24. B-046 显式空 mode 的只读诊断
+
+沿上轮审查的反例补回归：初次临时父目录缺失，4 项 fixture setup 失败（`20261013T210153Z_55f057`，UTC），未执行行为断言；补齐父目录后真实红测 1 failed / 3 passed（`20261013T210200Z_63dbb4`），确认显式空字符串误报 train，而省略、空 algorithm mapping、显式 None 仍正常默认 train。原失败证据均保留。
+
+先补充[status 合同](../code/flow.md#13-climake--launch-与-wait)，仅在 config 模式回退中去掉空字符串默认，并以 ValueError 进入已有 unknown 诊断；不改变模式轴 / result 优先级、Run 状态、过滤器或算法。定向 readout / config IO / 原生 make→status 共 89 passed（`20261013T210212Z_fcaaa0`），含未知模式不计入 train、输入字节不变与默认兼容。
+
+当前源码重新执行 core：454 passed / 2 skipped（`20261013T210227Z_a15a02`），CPU integration / e2e 门：127 passed（`20261013T210243Z_2fcf23`）；按 test_id 去重共 581 passed / 2 skipped，均 exit 0。core 的 8 条 partial-resume 警告保留，未改变恢复合同。流程门含既有离线小 CPU 计算，不代表正式实验、科学精度、GPU、外网数据、远端 CI 或其他宿主验收。
+
+本机证据位于 `.tmp/b046-status-empty/` 及上述 `.tmp/test-results/<run_id>/`，不随 clone 提供。保全核验确认原快照的 427 个正式 Study 文件哈希一致，当前源码哈希写入 `PRESERVATION.json`。仍在同一工作分支，未 commit / push / 发布，不更新下游 Issue 状态。
+
+### 23. 累计改动审查与 B-046 显式空mode边界
+
+按ponytail-review检查当前未提交生产diff与连接代码：CLI调用链、Runner失败边界、调度依赖 / 重试、来源冻结、配置解码及status格式化；对照既有回归和README的本机单写者、多Run wait调度使用方式，不把它当多用户 / 并发写者负载保证。本次为审查，生产代码没有修改，也未重复运行已有测试门。
+
+发现B-046：新status配置回退把显式空algorithm.mode当train，而共享执行合同拒绝该值。单Run只读探针确认status_mode=train、无mode诊断；同一配置的validate_control报invalid algorithm.mode空字符串，输入字节保持，无训练。建议最小修复只保留省略 / None的train默认，空字符串使用现有unknown诊断；在修复及针对性验收前不判当前改动可直接交付。
+
+实际探针和JSON在 `.tmp/dev-change-review/`，不随clone提供。仅记录到bugs和交接，不擅自改算法、来源或用户Run。尚未验证当前完整门、远端CI、安装包、其他宿主、GPU、并发写者或性能，本次审查不产生新的通过数量。所有现有源码改动、原证据与不commit / push / 发布边界保持。
+
+### 22. B-045 公共阶段选择在展开和布局之前校验
+
+复查现有下游Issue仍为#36—#38，没有新增反馈或对外改状态；继续核对run / run-one与公共API输入边界。run_study原先在expand之后才通过后续Runner构造校验phases，skip-launch还会忽略错误选择；launch_one先创建布局 / 读配置，非法阶段会先留下空Run目录并以缺config错误拒绝。首轮10 failed / 4 passed（`20261013T205120Z_e212de`，UTC），覆盖unknown、乱序、重复、别名规范化后重复，fresh / 既有Study及原生skip-launch；没有训练。
+
+先明确[公共阶段合同](../code/flow.md#3-runner-与失败)，再在run_study / launch_runs对显式选择复用FlowRunner构造校验，在launch_one将原Runner构造移到布局 / config之前并复用对象。没有另写阶段规则、扩展参数或改变Runner执行；空Run列表也校验显式非法阶段。默认全链、合法子集、index / persist的write别名与skip-launch支持保持，非法输入仍抛ValueError，原生错误调用返回非零而不生成新产物。
+
+定向63 passed / 1 deselected，8.83 s（`20261013T205243Z_e40645`），覆盖全部15项新增边界及既有Study / 扩展 / Runner回归。原生无效skip-launch不输出路径、声明字节不变；API拒绝时目录集合和文件字节保全。既有回归仍包含其原有小CPU Toy计算，新输入反例本身只用skip-launch / 输入拒绝，无真实数据或GPU。
+
+证据在 `.tmp/b045-phase-validation/` 与上述test-results，不随clone提供。427个正式Study文件hash保持，原Run、checkpoint、数据与历史失败未改；仍未commit / push / PR、未回复或关闭Issue。上一项完整core / CPU流程对应此次入口顺序修改之前，不记为当前完整重跑；未验证整轮研究、GPU、跨宿主、并发文件变化、包安装或远端CI。
+
+### 21. Issue #37 核验：B-043 模式读取与 B-044 配置结构拒绝
+
+核验[Issue #37](https://github.com/DreamSoul-AI/RPipe/issues/37)：mode固定在base / fixed、不在axes、且无result时，status原来直接默认train，遗漏eval过滤；相邻inference同样误分类。首轮9 failed / 7 passed（`20261013T203520Z_a30162`，UTC），包含损坏模式配置仍猜train及非对象result未进入既有读取容错的反例。先明确[只读status合同](../code/flow.md#13-climake--launch-与-wait)，保留轴值→已记录结果的优先级，仅缺模式信息时用现有load_config读生成配置；不能读取时显示unknown及异常类型 / 路径，不输出配置正文或把pending改为failed。原failed错误保留，已知轴 / 结果模式仍兼容没有旧config的历史记录；没有为显示修复改axes、配置、Run ID或新结果字段。
+
+扩展损坏配置时另确认B-044：decode_config用truthiness把空list、0、false、空字符串当 `{}`，使结构错误静默变成默认配置。status补查3 failed / 5 passed（`20261013T203836Z_ebd7ee`），直接load_config为4 failed / 3 passed / 22 deselected（`20261013T203946Z_e28101`）。共享解码改成只将None视为空配置，拒绝其他非mapping；空文件、YAML null和合法空mapping默认保留。此项为上游相邻核验，不声称下游已报告该解码路径；没有包装新配置协议。
+
+早期status / IO定向72 passed与82 passed属于后续增加完整边界前的批次；最终定向86 passed，7.92 s（`20261013T204127Z_5e639b`），包括base与Study fixed两条真实原生make→未过滤 / eval / train status：index没有mode轴，生成config为eval、没有result，表正确显示pending eval，全部Study文件字节不变。新增只读诊断、真实失败信息保留、已成功状态不被诊断改变和损坏result回退均通过。本次没有launch、run-one、训练、GPU或真实数据下载。
+
+当前完整core451 passed / 2 skipped / 116 deselected，12.69 s，8条既有checkpoint部分恢复warning（`20261013T204308Z_ed78d1`）；标准CPU流程112 passed / 457 deselected，111.41 s（`20261013T204428Z_a1ea7e`）。两项skip仍为Windows符号链接权限，不计通过。按test_id合并563 passed / 2 skipped，不叠加更早或定向批次，也不以通过数量证明所有研究条件稳定。
+
+证据在 `.tmp/b043-issue37/` 及上述test-results，不随clone提供；原生make/status输出在独立basetemp，源与测试hash核对后归并。427个正式Study文件hash不变，未改旧Run、checkpoint、数据、失败或来源；仍未commit / push / PR、未向Issue评论或改状态。未验证并发文件修改、真实GPU、跨宿主、长实验、科学数值、包安装或远端CI；unknown诊断是读取状态，不是执行失败或新科学分类。
+
+### 20. Issue #38 核验：B-042 原子文本部分写入清理
+
+复查实际下游反馈，新增[Issue #37](https://github.com/DreamSoul-AI/RPipe/issues/37)的pending固定eval误分类和[Issue #38](https://github.com/DreamSoul-AI/RPipe/issues/38)的文本部分写入清理遗漏。#37已读并进入[具体待核验队列](brainstorm.md#四下游具体反馈待核验)，当前不宣称上游已复现、不占B编号；先完成范围较小的#38。
+
+旧atomic_write_text将tmp.write_text放在清理try/finally之前，部分内容写出后再抛OSError会留下本次临时文件，目标和原异常都保留；未发现成功目标损坏。新增目标存在 / 不存在两项故障注入及正常替换对照，同时预放一个peer临时文件检查不误删。首次2 failed / 7 passed（`20261013T202248Z_547420`，UTC）；peer只是预置文件，不是并发写者实测。
+
+先明确[原子文本合同](../code/structure.md#9-structureartifact)，再将初始write_text移入原try/finally；复用既有unlink清理和Windows有界replace重试，无新文件格式、重试策略或清理扫描。首次定向命令误用了不存在的test_activity / config / result测试路径，exit4、no tests ran（`20261013T202412Z_b24338`）；保留原日志后实查目录，改为整份artifact镜像，78 passed / 2 skipped，2.06 s（`20261013T202504Z_fa5784`）。两项skip为Windows符号链接权限，不计通过。
+
+原计划的完整CPU核验在新反馈前结束为424 passed / 2 skipped；它是B-042修改之前的证据。修改后重新完成当前完整core：427 passed / 2 skipped / 114 deselected，11.98 s，8条原有checkpoint部分恢复warning（`20261013T202532Z_65c398`）；当前标准CPU流程110 passed / 433 deselected，111.71 s（`20261013T202658Z_224161`）。两批按test_id合并为537 passed / 2 skipped，所有当前生产文件hash一致；不重复相加artifact定向或更早批次，不把全量已选通过当所有支持范围已验证。
+
+原始证据在 `.tmp/b042-issue38/`、`.tmp/dev-current-verification/` 和上述test-results，不随clone提供。427个正式Study文件hash保持，原Run / checkpoint / 数据与早期失败未修改；仍未commit / push / PR、未对Issue评论或改状态。未验证真实磁盘耗尽、断电、无法unlink时零残留、并发写者、GPU、跨宿主、包安装或远端CI。清理仍为尽力且只针对本次临时文件，原异常优先。
+
+### 19. B-041 脚本计数在写入前校验
+
+直接write_launch_scripts先创建scripts目录和写jobs，再调用render_bash校验有效round_size / split_round；零值会留下新目录 / jobs或覆盖旧计划。四项直接API反例全部失败（`20261013T201248Z_fd4ac2`，UTC）。原生CLI也允许非正split-round：make可能先展开 / 改写产物再报错，复用计划的launch则忽略它。原生首轮3 failed / 1 passed / 8 deselected（`20261013T201418Z_a986cf`）；两个复用计划反例意外完成两组临时单seed train/eval，CPU Toy/Stub、train预算2 step，均已退出。原始结果与日志保全，未执行正式Study；后续该测试先写占位成功结果，避免再次实际调度，不能把占位当真实训练证据。
+
+先明确[计数合同](../code/structure.md#10-make)，再把已有render_bash调用移到目录与jobs写入之前，不另写重复校验或跨文件事务。CLI添加正整数split-round解析及帮助说明，在make / launch参数解析时拒绝零、负数及非整数，防止复用清单忽略非法值；round的0 / auto仍走原自动装箱规则。有效生成、分组、预算、训练算法与持久化格式不变。
+
+定向82 passed，20.74 s（`20261013T201652Z_5c5ec7`），覆盖新增4项直接API拒绝和4项原生CLI split-round边界，以及原mode、make / schedule、Bash / PowerShell回归。非法API调用目录清单和文件字节均不变；原生CLI返回2、stdout空、stderr指向split-round，全部Study文件保全。正split-round=1与默认round=auto的make对照正常。随后只补帮助字符串，不改变执行逻辑；该文本修改另做CLI帮助核对，不把更早源码hash记为完全相同。
+
+证据在 `.tmp/b041-script-validation/` 和上述test-results，不随clone提供；原生输出、原意外临时Run和占位回归分属独立basetemp。427个正式Study文件hash不变，未操作用户原Run、checkpoint、数据或旧迁移备份。仍未commit / push / PR；未完成当前整套core / CPU流程重跑、跨宿主、磁盘故障事务、真实GPU、长实验或远端CI。
+
+### 18. B-040 launch mode 校验先于 make
+
+检查CLI输入拒绝的副作用边界。原 `_execute_launch` 在自动 / 显式make和来源签署之后才调用 `_normalize_modes`；无效 `--mode train,invalid` 虽exit2，首次启动却已生成产物，缺清单或 --remake也会改写来源与计划。首次3 failed / 3 passed（`20261013T200458Z_044836`，UTC），三个失败场景对应首次启动、缺清单、显式重建，三个对照验证合法选择；仅临时Toy/Stub声明与假执行器，不启动训练。
+
+先补[CLI合同](../code/flow.md#13-climake--launch-与-wait)，再将已有规范化 / ValueError处理块移到launch入口，在任何清单读取、make或共享输入准备之前完成；无新参数、helper或选项。逗号、重复参数、大小写、去重、默认整轮与合法过滤语义保留，status调用同一规范化函数的行为不变。
+
+初次定向68 passed，11.53 s（`20261013T200641Z_e3286e`）；增加两个真实CLI子进程验收后最终70 passed，11.65 s（`20261013T200742Z_8da7c3`），覆盖新增八项选择器边界、既有launch冻结门与make / schedule回归。原生首次启动和 --remake无效输入均exit2、stderr说明mode错误、stdout无make输出，Study文件逐字节不变；合法选择仍正常进入假执行并不改jobs清单。
+
+原始证据在 `.tmp/b040-launch-modes/` 及上述test-results，原生stdout/stderr在独立basetemp，均不随clone提供。427个正式Study文件hash保持；没有改旧Run、配置、checkpoint、数据或来源。仍未commit / push / PR；上一项98项完整CPU流程属于本次校验顺序调整之前，不冒称本次完整重跑。未验证其他CLI参数错误、副作用并发、真实GPU、异机、长实验或远端CI。
+
+### 17. B-039 底层调度器在旧结果失效前核对 freeze
+
+继续检查Bash静态清单与直接调度API的拒绝边界。`launch_jobs` 原先在spawn前失效旧成功train与sibling eval，直到子进程Runner才核对来源；即使没有开始新训练，旧结果已被改写。三种假进程反例覆盖修改Study源码、修改config字节、缺provenance；真实CPU Toy/Stub单seed、train/eval、2-step完成后，只给Study声明加注释再执行保存Bash清单，result与派生产物变化。原成功结果另存临时备份，首次4 failed / 2 passed（`20261013T195423Z_46b123`，UTC）。此为Issue #36的上游相邻路径核验，不把它写成下游已经报告或验证的范围。
+
+先补[共同调度合同](../code/structure.md#10-make)，再在Run ID / 重复校验后、任何结果失效与spawn前，复用artifact的check_frozen和现有Study声明读取；不导入Flow或另写来源比较。拒绝抛出原异常，Study原文件全部不变。两个兼容对照仍允许未冻结 / 来源未变的显式清单执行；没有把底层调度器改成CLI的成功Run自动过滤，也未修改分组、train/eval屏障或重试。
+
+定向97 passed，33.69 s（`20261013T195757Z_e320fa`），覆盖调度、make、Bash / PowerShell及两层既有冻结保全。当前标准CPU integration/e2e门98 passed / 426 deselected，106.38 s（`20261013T200001Z_4410bb`）；全部六项新增回归通过，无skip。真实Bash拒绝返回非零且stderr保留ProvenanceChangedError，整个临时Study的配置、来源、result、checkpoint、tracker、日志与派生产物逐字节保全。真实训练预算显式progress_unit=step、num_steps=2，无GPU或数据下载，不作科学数值判断。
+
+证据在 `.tmp/b039-scheduler-freeze/` 与上述test-results，不随clone提供；原生拒绝输出和原成功JSON在独立basetemp保留。427个正式Study文件hash继续不变，未操作原Run、数据、checkpoint或迁移备份。仍未commit / push / PR；此前core对应更早源码，不作为当前完整重跑。没有验证源文件在调度中变化、并发写者、GPU、跨宿主、性能、长实验或远端CI，前置核对不等于原子事务保证。
+
+### 16. B-037 / B-038 Bash 路径与目录切换失败边界
+
+继续同一工作分支核对Bash侧。B-037：仓库与解释器路径仅被双引号包裹，美元变量、反引号仍被shell展开，含中文 / 空格 / 单引号的组合路径会失效。B-038：cd失败后仍在调用者目录继续执行Python；假库启动器最终exit0，覆盖了原目录错误。真实Git Bash和标准库生成的隔离Python环境覆盖普通路径、仓库特殊路径、解释器特殊路径及两者特殊路径，初次4 failed / 1 passed（`20261013T194647Z_2da024`，UTC）。测试只用独立假库，无真实算法；变量固定为无敏感内容的测试值，反引号中的命令仅为true。
+
+先明确[脚本合同](../code/structure.md#10-make)，再复用标准库shlex.quote，对两个路径做Bash字面量转义，cd失败立即exit1；Python heredoc、wait分组、train→eval屏障、重试、结果判定和最终process均不改。新增[真实Bash脚本回归](../../tests/rpipe/structure/make/test_bash.py)，Windows明确选择Git Bash而不误用WSL入口，未安装时skip；临时环境不安装pip或RPipe。
+
+定向make / schedule / PowerShell / Bash门66 passed，17.11 s（`20261013T194803Z_5cf22d`）。另用当前源码和现有源码venv，在全新含特殊字符路径的临时Study执行make→生成Bash启动→process / status / logs / report；version `bash-boundary-20261014-v1`，两seed × train/eval四个Run成功、两个Experiment完整，train仅2 step。随后直接CLI launch正确跳过成功Run，结果字节及单份Flow start保持；没有重复执行Bash静态清单，不宣称Bash与CLI的重复启动语义相同。
+
+证据在 `.tmp/b037-bash/`（原始反例、定向日志、native各命令stdout/stderr与JSON）及上述test-results，不随clone提供。427个正式Study文件hash保持，未改历史脚本、Run、checkpoint、数据或来源。前一节core / 87项流程门对应此次Bash修改之前的源码，不把它们记为本次完整重跑；当前定向和新的原生流程证据覆盖实际修改。仍未commit / push / PR，未验证真正Linux / macOS宿主、GPU、长训练、吞吐或远端CI。
+
+### 15. 当前本机开发改动的完整 CPU 核心门与交付核对
+
+当前工作分支仍为 `codex/powershell-launch-boundaries`，基线 dev `a424be5`；本地 main `7a15c46` 与 dev 的代码树相同。B-031 至 B-036 的生产修改仅涉及 `schedule.py`、`flow/cli.py`、`flow/runner.py`，三份新增回归覆盖参数 / 路径 / 退出码、自动重建的冻结门、执行前拒绝的旧成功保全；设计与开发记录同步。没有依赖、算法、数值精度、持久化格式或公共参数变更。
+
+为核对共同 Runner / CLI 改动对其他模块的影响，运行当前完整 core：420 passed / 2 skipped / 91 deselected，11.36 s，8 warnings（`20261013T194122Z_b26b54`，UTC）。两项skip为Windows符号链接权限；warning来自原有train / HF Trainer测试的checkpoint部分恢复提示，保留不抑制。此次源码与上一项最终CPU流程批次一致，核对生产及新增测试hash后复用该批次的87项integration通过证据；其中另有153项unit通过及2项skip，与core重叠，不能将批次数字直接相加。按test_id去重为507 passed / 2 skipped，仍不是全支持范围验收。
+
+按成本、层级和资源标记核对三份新回归，均为integration / content / p1 / c2，当前CPU流程门会选择它们；缺PowerShell的环境明确skip其相关测试，未宣称所有平台均已运行。GitHub复查仍只有开放Issue #36，正文未变；本机已核验并修复的事实不等于已回复、合并、关闭或由下游验证。
+
+汇总证据与源文件hash位于 `.tmp/dev-boundary-final/`，core及上一项流程原始事件留在各自 `.tmp/test-results/`，不随clone提供。427个正式Study文件继续hash保全，既有数据、checkpoint和迁移备份没有清理。当前为可复核的未提交本机改动，遵守不commit / push / 发布授权；后续集成仍需工作PR进入dev及当前提交的必需CI，不直接修改main/dev。未执行新包构建 / 安装、异机、GPU、并发写者、科学数值、吞吐或长实验验收；持续开发目标没有据此标为全部完成。
+
+### 14. Issue #36 核验：B-035 保全改进与 B-036 冻结门遗漏
+
+继续读取实际下游反馈，发现 [Issue #36](https://github.com/DreamSoul-AI/RPipe/issues/36)：v0.3.1 的原生 run-one 在计算前因 freeze 拒绝时，将旧 succeeded result 覆盖成 failed。原行为符合当时统一失败写回文档，此项按 B-035 证据保全改进处理，不声称旧数值算法错误。以真实 CPU Toy/Stub、linear、单seed、2-step 复现默认 / 启用 Study hook 两条路径，源码改动仅为给 study.yaml 追加注释，身份与计算配置不变；旧成功 result 的字节被替换，日志与资产仍在。
+
+扩大到相邻失败边界时另确认 B-036：Runner 只在 Study hook 启用时做前置 freeze，关闭 hook 且直接选择 execute 子集会漏掉检查；这与任何阶段开始前检查的既有合同不一致。首轮14项中8 failed / 6 passed（`20261013T193614Z_9d5d10`，UTC），包括未进入阶段的断言失败和旧成功结果不变的断言失败。没有用真实GPU、领域算法或下游私有输入，也没有把下游 torch-first 导入改动带入上游修复。
+
+先更新 [Runner 失败合同](../code/flow.md#3-runner-与失败)，再在共同 Runner 中对 freeze=true 始终检查前置门；仅 `current is None` 且异常为 `ProvenanceChangedError` 时复用现有 succeeded 保全路径。旧成功 result 的原字节保留，拒绝仍有失败日志、原异常和 CLI 非零退出码；没有旧成功仍写 failed。execute / summarize / write 真正失败继续覆盖旧成功为 failed，process 的原保全规则不变。未引入新 Result 字段、事务记录或启动包装器。
+
+定向53 passed（`20261013T193722Z_401442`）。随后补充原成功 JSON 落盘备份及 checkpoint / tracker 等非日志资产的字节保全断言，当前最终 CPU 流程门240 passed / 2 skipped / 271 deselected，90.71 s（`20261013T193820Z_5dd6e1`），覆盖全部14项新反例、此前 launch 冻结门和 PowerShell 回归。两项skip仍为Windows符号链接权限，不计通过。真实 run-one 冻结拒绝exit1、stderr保留ProvenanceChangedError；结果和非日志资产不变，日志允许追加拒绝诊断。
+
+本机原始证据在 `.tmp/b035-issue36/`（red / green / cpu日志及源码hash）和上述 `.tmp/test-results/`；真实拒绝 stdout/stderr 与原成功 JSON 在该批次 basetemp，均不随clone提供。427个正式Study文件与原保护清单hash一致；没有改正式Run、数据、checkpoint或历史来源。尚未commit / push / PR，未向Issue发评论或改状态，尚无当前远端CI或下游固定版本复验；Issue仍作为待集成反馈保留。未验证并发写者、GPU、长实验或跨设备科学数值。
+
+### 13. B-034 自动计划重建前检查冻结来源
+
+继续当前工作分支检查失败边界。既有 `_execute_launch` 在 jobs 缺失 / 损坏或资源参数不匹配时先执行自动 make，再检查 freeze；make 已重签来源，导致被冻结来源的变化被自动接受。五种反例包括缺 jobs、损坏 jobs、资源变更、缺 provenance、缺 provenance/index 但仍有 Run config。首轮5 failed / 4 passed（`20261013T193030Z_dab78d`，UTC），四个通过项为首次启动、来源未变、未冻结和显式 --remake 的兼容对照；假执行器证明被错误允许进入执行，不用于数值判定。
+
+先补 [freeze 合同](../code/flow.md#142-来源清单) 和 README 命令表，再在自动 make 前复用现有来源检查：有 provenance、index 或 Run config 的默认重建必须先通过冻结门。拒绝时 exit 2，任何原配置、清单、脚本和来源均不改写；首次 launch 可以 make，显式 `make` / `launch --remake` 仍表示主动接受当前来源。没有变更持久化格式、公共参数、训练算法或 Run 重试语义，也未将显式重建改成隐式拒绝。
+
+针对性首次复验50 passed / 2 skipped（`20261013T193113Z_4071d0`），其后增加两个真实 CLI 子进程反例，分别覆盖缺 jobs 和资源参数不匹配：exit2、原生 stderr 说明被冻结来源变化，所有 Study 文件逐字节不变。最终受影响的 make / artifact unit 与本地 CPU integration/e2e 门226 passed / 2 skipped / 271 deselected，88.08 s（`20261013T193153Z_52f775`）；覆盖全部11项新冻结边界、此前10项 PowerShell 回归及既有流程。两项skip是Windows无符号链接创建权限，不计质量通过。
+
+证据在 `.tmp/b034-freeze-launch/`（red / green / cpu日志、源码hash）与上述 `.tmp/test-results/`；真实子进程 stdout / stderr 保存到本批次 basetemp。这些本机证据不随 clone 提供。427个正式 Study 文件hash仍与迁移后清单一致；本次不修改正式Run、checkpoint、数据或历史provenance。保持同一本地工作分支且未提交 / 推送 / PR；未执行真实GPU、正式实验、长训练、性能矩阵或远端CI。当前已完成本机冻结门修复，持续开发目标仍包含后续下游问题收纳与边界探索。
+
+### 12. B-033 PowerShell 脚本保留生成时的资源参数
+
+继续同一本机工作分支，核对脚本与直接 CLI 的计划复用边界。已有生成入口没有向 CLI 传递 `init_gpu` / `num_gpus` / `round`；以 `--init-gpu 3 --num-gpus 0 --round 2` make 的 CPU Toy/Stub 计划会因默认参数不匹配而进入自动 make，改写 `jobs.json` 和 `provenance.json`。两种 PowerShell 的真实计划保全反例及八项假 CLI 参数反例均先失败，共10 failed（`20261013T192619Z_491e76`，UTC）。没有启动 CUDA，只对非默认设备参数传递做 CPU 反例；不能据此声称 GPU 调度实测通过。
+
+先补充[脚本合同](../code/structure.md#10-make)，再只在生成命令加三个已有 CLI 参数；显式 round 使用清单的有效并发值，自动装箱原有 batches 继续由清单复用。没有修改 CLI 对显式资源变更的重建规则、自动装箱或训练算法。实际修改的共同入口仍为 `write_launch_scripts`；根 CLI 和 make exports 不变，Bash 已直接携带分组，不在本次改动范围。
+
+定向回归61 passed，14.67 s（`20261013T192706Z_949e30`）。新增两个真实子进程回归分别调用 Windows PowerShell / PowerShell 7：freeze=true、单 seed、Toy/Stub CPU 1-step，Run succeeded，index、provenance、jobs 和 config 四份文件的字节与 make 后完全一致。原八项路径 / 退出码反例同时验证参数传递，既有 make / schedule 回归保持通过。前一项的138项 CPU 流程门是参数补齐之前的证据，不冒称当前改动的完整重跑。
+
+原始日志与独立临时目录在 `.tmp/b033-plan-reuse/` 及上述 `.tmp/test-results/`，不随 clone 提供。427个正式 Study 文件与本机迁移后的保护清单 SHA256 一致；未改历史脚本、Run、checkpoint、数据或来源。仍未 commit、push 或创建PR；旧脚本需按既有 make 流程更新，正式研究须保留旧身份与来源并另用新version。未验证真实GPU、多卡、远端CI、吞吐或长实验。
+
+### 11. B-031 / B-032 PowerShell 调度入口边界
+
+继续开发的本机工作分支为 `codex/powershell-launch-boundaries`，从 dev `a424be5dedac46d8f459ff8748f18387ebb05169` 建立；main 的发布合并提交为 `7a15c46`，两者代码树相同。GitHub connector 检索当时开放 Issues 和 PowerShell 相关 Issues 均为空；没有对外报单或自动监控。依据既有调度合同做小范围反例，不实施 brainstorm 中尚未确认的吞吐 / 滚动补位改造。
+
+B-031：原 `launch.ps1` 设置 `$ErrorActionPreference=Stop` 但没有传递原生 Python 退出码。Windows PowerShell 5.1 / PowerShell 7 的真实 `-File` 子进程中，临时 CLI 返回 7，外层都返回 0。B-032：路径使用 `json.dumps`，反斜杠加倍、中文成为字面 `\uXXXX`，美元符号 / 反引号被 PowerShell 展开；普通路径已改变参数字节，特殊路径直接导致 Set-Location 失败。八项最小反例先全部失败（`20261013T192100Z_253e12`，UTC）。
+
+先明确 [make 脚本合同](../code/structure.md#10-make)，再修改同一生成入口：PowerShell 单引号字面量及内部单引号转义、UTF-8 BOM 编码和 `exit $LASTEXITCODE`。没有新增配置、依赖或另一套启动器，也没有修改算法、Run 状态、失败重试、资源分组、Bash 生成或科学精度。新增 [PowerShell 子进程回归](../../tests/rpipe/structure/make/test_powershell.py)，使用临时假 CLI 检查真实参数与退出码；缺相应 shell 的环境明确 skip，不计通过。
+
+定向 make / schedule / PowerShell 回归 59 passed（`20261013T192148Z_764c2e`）；受影响的 module_make unit 与本地 CPU integration/e2e 门 138 passed / 348 deselected，69.22 s（`20261013T192232Z_313c42`）。统一入口使用独立 basetemp，本机环境通过 `.tmp/runtime/activate.ps1` 启动，SEQUENTIAL / Agg / 空 GPU 可见性；未使用真实 GPU 或下载数据。
+
+真实 CLI 的新增 `.tmp` Toy/Stub Study 使用中文 / 美元符号 / 反引号 / 单引号路径，version `powershell-boundary-20261014-v2`，两 seed × train/eval 四个 Run succeeded、两个 Experiment complete，训练仅 2 step。Windows PowerShell 启动完成后再由 PowerShell 7 重复启动，原 Run 日志只有一份 Flow start。缺 Study 声明时 native CLI、两种脚本均返回 1。临时验证器首轮默认 GBK 读取中文 JSON 失败；第二轮误将缺声明的原生退出码预期为 2，保留原日志后显式 UTF-8 并对照实际 native 退出码，独立失败出口核验通过。这两次是验证脚本错误，没有修改库 CLI 错误处理掩盖它们。
+
+本机原始证据在 `.tmp/b031-powershell/` 和上述 `.tmp/test-results/`，不随 Git clone 提供。正式 studies 的源码、声明、调度及结果不改写；原本机迁移与 MKL 证据仍保留。旧生成 `.ps1` 不自动修改，下次按现有 make 流程应用修复，不能为更新脚本覆盖历史实测身份或来源。此次尚未 commit / push / PR，未通过远端跨平台门，也未运行正式 Study、GPU、长训练或性能矩阵。
 
 ### 10. 研究工作、下游反馈与 v0.3.1 发布准备
 

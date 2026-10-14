@@ -9,7 +9,7 @@ from pathlib import Path
 from rpipe.structure.artifact.result import STATUS_FAILED, STATUS_SUCCEEDED, write_result
 from rpipe.flow.context import FlowContext
 from rpipe.flow.study import run_study_phase
-from rpipe.structure.artifact.provenance import check_frozen
+from rpipe.structure.artifact.provenance import ProvenanceChangedError, check_frozen
 from rpipe.structure.make.expand import load_study_yaml
 from rpipe.structure.make.recipe import STUDY_PHASES, study_phases_enabled
 
@@ -17,6 +17,11 @@ PHASES = STUDY_PHASES
 
 # Old callers may still pass ``index`` / ``persist``; map to ``write``.
 _PHASE_ALIASES = {'index': 'write', 'persist': 'write'}
+
+
+def _preserve_success(phase: str | None, exc: BaseException) -> bool:
+    return phase == 'process' or (
+        phase in (None, 'prepare') and isinstance(exc, ProvenanceChangedError))
 
 
 class FlowRunner:
@@ -47,7 +52,7 @@ class FlowRunner:
                     run_study_phase(ctx.study_dir, name, ctx, study)
         except Exception as exc:
             self._log_failure(ctx, current, exc)
-            self._write_failed_result(ctx, exc, preserve_success=current == 'process')
+            self._write_failed_result(ctx, exc, preserve_success=_preserve_success(current, exc))
             raise
         logger.info('succeeded')
         return ctx.layout.result_path
@@ -79,7 +84,8 @@ class FlowRunner:
     def _write_failed_result(self, ctx: FlowContext, exc: BaseException, *, preserve_success: bool = False) -> None:
         """Best-effort failed Result; must not hide the original error.
 
-        process failure must not overwrite an already-written succeeded result.
+        Initial freeze refusal (outer gate or prepare) and process failure
+        preserve an existing success; other phase failures still replace it.
         """
         try:
             from rpipe.structure.artifact.result import load_result

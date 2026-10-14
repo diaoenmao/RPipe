@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 from rpipe.structure.artifact.index import load_index
-from rpipe.structure.artifact.readout.status import log_path
+from rpipe.structure.artifact.readout.status import _read_optional, log_path
 
 _STAMP = re.compile(r'^(\d{4}-\d{2}-\d{2}T\S+)')
 _EVENT = re.compile(r'\[(epoch|error|flow|warn|ckpt|resume)\]\s*(.*)$')
@@ -20,11 +20,8 @@ def event_lines(study_dir: Path | str) -> list[str]:
         for run in exp.get('runs') or []:
             run_dir = str(run.get('run_dir') or run.get('id') or '')
             path = log_path(study_dir, run, run_dir)
-            if path is None or not path.is_file():
-                continue
-            try:
-                text = path.read_text(encoding='utf-8', errors='replace')
-            except OSError:
+            state, text = _read_optional(path, lambda p: p.read_text(encoding='utf-8', errors='replace'))
+            if state != 'available':
                 continue
             for line in text.splitlines():
                 match = _EVENT.search(line)

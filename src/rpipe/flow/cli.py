@@ -300,6 +300,7 @@ def _execute_launch(args: argparse.Namespace) -> int:
         round_size=int(written.get('round') or 1),
         batches=written.get('batches'),
         console=str(getattr(args, 'console', 'auto')),
+        retry_failed=bool(getattr(args, 'retry_failed', True)),
     )
     still = [
         job['run_id']
@@ -477,6 +478,10 @@ def main(argv: list[str] | None = None) -> int:
     launch_p = sub.add_parser('launch', help='run pending jobs from make; make only if jobs.json is missing')
     _add_make_flags(launch_p)
     launch_p.add_argument(
+        '--no-retry', action='store_false', dest='retry_failed', default=True,
+        help='do not retry failed Runs during this launch (default: retry once)',
+    )
+    launch_p.add_argument(
         '--remake',
         action='store_true',
         help='ignore scripts/jobs.json and run make again',
@@ -513,7 +518,11 @@ def main(argv: list[str] | None = None) -> int:
         help='only this algorithm.mode (repeatable: train, eval)',
     )
 
-    data_p = sub.add_parser('data', help='write shared/data/<set>/stats.yaml for each dataset in the Study')
+    shared_p = sub.add_parser('shared', help='show shared input paths; explicitly migrate legacy caches')
+    shared_p.add_argument('study_dir', type=Path)
+    shared_p.add_argument('--migrate', action='store_true', help='validate and hard-link legacy inputs to project storage')
+
+    data_p = sub.add_parser('data', help='profile shared inputs; write Study-owned normalization stats')
     data_p.add_argument('study_dir', type=Path, help='Path to studies/<name>/')
 
     compare_p = sub.add_parser('compare', help='compare two Run dirs: metrics, tracker history, checkpoints')
@@ -531,6 +540,17 @@ def main(argv: list[str] | None = None) -> int:
     compare_p.add_argument('--out', type=Path, default=None, help='write the full comparison JSON')
 
     args = parser.parse_args(argv)
+    if args.cmd == 'shared':
+        import json
+        from rpipe.structure.artifact.shared import migrate_shared, shared_paths
+        try:
+            body = migrate_shared(args.study_dir) if args.migrate else {
+                key: str(value) for key, value in shared_paths(args.study_dir).items()}
+            print(json.dumps(body, ensure_ascii=False, indent=2))
+            return 0
+        except (OSError, ValueError) as exc:
+            print(f'shared: {exc}', file=sys.stderr)
+            return 2
     if args.cmd == 'run' or (args.cmd == 'study' and args.study_cmd == 'run'):
         return _execute_run(args)
     if args.cmd == 'make':

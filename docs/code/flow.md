@@ -108,7 +108,9 @@ flowchart TD
 - 失败：`_write_failed_result` 尽最大努力写入 `status: failed` + `error`（类型名 + 消息），补齐已知 `paths`；**不得吞掉原异常**。落盘自己再失败则静默，优先保证异常向上。
 - 失败时 **traceback 进该 Run 的 `run.log`**（与 stdout 同一套；每一行都是 `[error]`，并带时间和 Run `id`）。execute 失败由 execute 写；prepare 等阶段由 Runner 写。prepare 尚未挂 System 时 Runner 先打开同一路径的 Logger。
 - 失败时若已有 `control` / `collected.metrics`，写入 result，便于对照哪次 Run 挂了。
+- Runner 的初始冻结拒绝 / process 旧成功保全条件由 runner.py 的私有判断统一表达，范围不变；普通执行失败仍按原合同写 failed。
 - process 发生异常时，Runner 保留已有 `status: succeeded` 的 result，记录日志并重新抛出异常。影响本 Run 成功判定的门限须在 write 定稿之前执行；process 的派生失败另行报告。
+- Issue #36：Runner 尚未开始任何阶段且来源冻结检查抛出 `ProvenanceChangedError` 时，保留已有成功 result 的原始字节，仍记录失败日志并抛出异常；无旧成功结果仍写 failed。阶段内的实际执行失败沿用原写回规则。
 
 ---
 
@@ -293,13 +295,15 @@ conservative 墙钟只在 **make** 打印。本进程实测时间在 Logger 行�
 
 `--console`：Windows 默认 `new`（每条 `run-one` 一个控制台，并行 printout 分开）；`shared` 混在当前终端。不改变 wait 语义。
 
-`python -m rpipe status <study>` **不是** Flow 阶段。它只读 `index.json` 和各 `runs/<id>/result.json`，打 planned / succeeded / failed / pending 和一张表。没有 result 的格子是 `pending`。`note` 只填 `pending` 和 `failed`：`pending` 是 `run.log` 最后一条 `[epoch]` 或 `[error]`（没有就用最后一条 `[flow]`，跳过 `Traceback` / `File ` 续行）；`failed` 只取最后一条 `[error]`，`error` 列仍是 result。`succeeded` 的 `note` 是 `-`。`--mode` 只滤行。若存在 `activity.json`（make 进行中写入，成功后删除），第一行是当前阶段，例如 `make: shared CIFAR10 download`；这时还没有 index 也退出 0。缺 index 且没有 activity 则退出 2。读表在 `structure/artifact/readout/`。make 的活动行写入在 `structure/artifact/activity.py`。
+`python -m rpipe status <study>` **不是** Flow 阶段。它只读 `index.json`、各 `runs/<id>/result.json` 及必要的 Run config，打 planned / succeeded / failed / pending 和一张表。没有 result 的格子是 `pending`。mode 优先读取生成的 Run config 并核对 index / result 的 mode、id 和 seed；冲突或不可读时显示 unknown，在原 error 列给类型与路径诊断，不改 Run 执行状态或文件。仅 config 缺失时兼容历史轴值 / result 模式；两者也未知则 unknown，不猜 train。可读配置省略 mode / None 仍按默认 train；非法类型、空字符串或不支持的模式不可用。`note` 只填 `pending` 和 `failed`：`pending` 是 `run.log` 最后一条 `[epoch]` 或 `[error]`（没有就用最后一条 `[flow]`，跳过 `Traceback` / `File ` 续行）；`failed` 只取最后一条 `[error]`，`error` 列保留 result 错误，并可附加模式读取诊断。`succeeded` 的 `note` 是 `-`。`--mode` 只滤行。若存在 `activity.json`（make 进行中写入，成功后删除），第一行是当前阶段，例如 `make: shared CIFAR10 download`；这时还没有 index 也退出 0。缺 index 且没有 activity 则退出 2。读表在 `structure/artifact/readout/`。make 的活动行写入在 `structure/artifact/activity.py`。
+
+`activity.json` 仅为可选提示：不可读、存在性查询失败、UTF-8解码失败或JSON无效时忽略提示，继续按index/result展示权威状态，不删除或重写该文件。忽略提示不会把缺少index改成成功；缺index且无有效提示仍退出2。非预期编程异常不归为可选IO失败。
 
 `python -m rpipe logs <study>` 只读，把各 Run 的事件行按行首时间打到终端，不写 Study 级总 log。缺 index 退出 2。
 
 `python -m rpipe report <study>` 读 `process.json`，写 `docs/NUMBERS.md`（Experiment 的 mean / std / min / max，以及 Run 表）。导出前必须读取可用的当前 index，核对 Study 名以及所有计划 Run 的 ID、seed 与因素归属；包含未成功 Run 的合法部分聚合仍可导出，不要求 complete=true。不新增格式字段，旧 process 同样按其已有清单核对；Run / Experiment 的排列次序不影响身份。缺失、损坏的 index / process、重复或缺少 Run 以及身份不匹配时退出 2，提示检查并重新 process；保留旧 process、现有 NUMBERS、图和 Run 证据。数字表在校验成功后原子替换，不改 `STUDY_REPORT.md`。该校验只绑定当前计划，不证明同一 Run 重跑后的指标新鲜度或研究质量。
 
-`launch` 每一组开始前打 `launch: wait i/n mode=`，失败再试打 `launch: retry`。全部 wait 完再打一行和 status 相同的计数。不改 `jobs.json`。
+`launch` 每一组开始前打 `launch: wait i/n mode=`，默认失败再试打 `launch: retry`。`launch --no-retry` 将现有 API 的 `retry_failed=False` 传给调度器，每条选中 Run 在本次 launch 中最多执行一次；不改变 train→eval 屏障、原失败定稿或 `jobs.json`。该选项不持久化到生成脚本，不禁止后续显式再次 launch，也不提供恢复能力。全部 wait 完再打一行和 status 相同的计数。
 
 失败重试属于本波：先结束 train 的初次执行与重试，再放行 eval。按 index 匹配的 sibling train 最终未成功时，其 eval 不启动且不算成功；重跑 train 前失效旧的 sibling eval 结果。后续 launch 对父结果较新的旧 eval 重新执行。具体匹配、独立 eval 的例外与手动改文件的边界见 [Study 指南 §4](../../README.md#4-一条命令怎么跑)。
 
@@ -379,13 +383,19 @@ make 在 Study 根写 `provenance.json`（与 `index.json` 同级，不进 Git�
 | `files` | 库源码 `rpipe/**/*.py`、`study.yaml`、`experiment_config.yaml`、recipe 文件、Study 两柱 `flow/**/*.py` / `structure/**/*.py`，以及 `provenance.include` 列出的额外 Study 内文件，各自 SHA-256 |
 | `plan` | 当前 `index.json` 与其中各 Run `config.yaml` 的 SHA-256 |
 | `environment` | Python、平台、torch / torchvision / numpy 版本、CUDA、GPU 名称 |
-| `git` | 仓库 HEAD 与工作区是否有未提交改动；不在 Git 仓库内则为空 |
+| `git` | 仓库 HEAD 与工作区是否有未提交改动；只有两次查询均成功才记录，不在 Git 仓库内、查询失败或超时则为空 |
 | `created_at` | UTC 时间 |
 | `digest` | 仅对 `files` 与 `plan` 合并内容计算 SHA-256，取前 16 个十六进制字符 |
 
-文件键用相对路径：库源码相对 `rpipe` 包根，加前缀 `rpipe/`；Study 文件相对 Study 根。
+文件键用相对路径：库源码相对 `rpipe` 包根，加前缀 `rpipe/`；Study 文件相对 Study 根。 rpipe/是库来源保留键域；Study输入使用该前缀时，必须能核验为对应库路径的同一物理文件（包括硬链接），否则以既有ProvenanceChangedError拒绝采集/冻结。即使当前库尚无同名文件或副本字节相同，也不能占用该键域，避免后续库新增/删除被掩盖。身份查询OSError保留cause并转为冻结拒绝；初始拒绝沿用旧成功结果保全。旧歧义清单不自动改写，须恢复对应库身份或将Study输入移到无冲突路径（如rpipe_inputs/），保留旧证据并按计划使用新version/fresh make。
 
 `plan` 是执行清单与 Run 配置，不是人写的 `docs/PLAN.md`。根目录额外 helper、参考 JSON、依赖清单或计划等需要冻结时显式加入 `provenance.include`；模式未匹配任何路径会报错，解析后的文件必须留在 Study 内。原始数据、历史报告和 Run 产物不自动进入来源清单。库源码覆盖当前导入的整个 `rpipe` 包，非本 Study 使用的 Python 模块变化也会影响 freeze。
+
+来源采集允许声明与自动发现路径重叠，结果按相对路径键记录；每个输入仍须通过 Study 内路径边界验证。每次冻结检查重新发现并读取文件，检测新增、修改、删除，不复用前次清单或 hash。不承诺单次采集的读取次数；先前 B-065 的次数去重优化已按只做正确性的要求暂缓。
+
+来源JSON根必须是mapping，已有files/plan若非null须为mapping；缺省/null映射沿用旧空清单语义。格式不合法时load_provenance抛ValueError，不把磁盘结构错误留给调用方的AttributeError。
+
+freeze开启时，证据读取失败（含include匹配文件消失、权限拒绝）或来源JSON解析失败均以现有ProvenanceChangedError拒绝，原始异常保留在cause与日志中；初始冻结拒绝保留旧成功结果。make仍报告原输入/解析错误，freeze关闭不执行该检查，不将任意编程错误归为来源变更。
 
 `launch` 开始前核对一次。`study.yaml` 写 `freeze: true` 时，`files` 或 `plan` 有任何差异，或来源清单缺失，就退出 2，不启动 Run；prepare 也做同样核对（§5 第 4.1 步），防止直接 `run-one` 绕过。Runner 与 Study process 的检查时机见 §14.0。未启用 freeze 时，launch 对已有清单的变化打印 `provenance: N changed`，照常运行；没有清单则不作该提示。`environment`、`git` 和 `created_at` 只记录，不参与 freeze 比较，不能用 freeze 证明异机环境一致。
 
