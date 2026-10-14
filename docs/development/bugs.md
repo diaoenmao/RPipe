@@ -6,6 +6,16 @@
 
 ## 开放
 
+### B-061：Git status 查询失败被记为可靠的 dirty 布尔值
+
+- 状态：open，原草案 1ba0877 的实现已在本机复现；两行候选修复和本机 87 项回归通过，最终提交 CI 待核对；PR #46 继续草案，不合入 dev/main。
+- 来源：主动审查 provenance.capture_git 的两个 subprocess.run 调用及唯一生产调用方 write_provenance。不是原量化 480 秒慢因结论，也不是 B-060 的测试 manifest 布局问题。
+- 期望：只有 HEAD 与 status 均查询成功才记录 head/dirty；状态不可取得时沿用现有可选元数据失败语义，返回空 mapping。非零退出码的空或部分 stdout 不能证明干净或脏；保留正常、packed refs、worktree、非 Git、缺命令和既有 10/30 秒截止。
+- 实际：临时仓库提交正常后只把合成 .git/index 写坏，rev-parse HEAD 仍成功，git status 返回非零且无 stdout；capture_git 却返回真实 head 和 dirty=false。注入非零 status 的部分 stdout 又得到 dirty=true，均把失败当成可靠状态。
+- 证据：新增镜像回归 test_provenance_git.py；修复前 .tmp/e061-red/ 为 3 failed / 8 passed，1.53 s，包括真实损坏索引及两种失败 stdout。只破坏自建临时 fixture，不修改仓库索引、真实数据、旧 provenance 或下游代码。临时日志与 JUnit 不随 Git clone 提供。
+- 最小方案：在 status 结果后检查 returncode，失败返回空 mapping；不更改命令、超时、进程生命周期或持久化结构。补齐 Git 查询超时/不可用、正常 clean/dirty 与 packed/worktree 回归；验证后保留红色证据并更新开发记录。
+
+
 ### B-060：本地测试 manifest 遗漏 packed refs / worktree 的 Git 提交
 
 - 状态：open，候选修复在草案 PR #46 / 394a068；最终代码四环境 CI 与本机66项通过，dev 9324014 尚未集成。原 f162eb6 红色回归保留。
@@ -54,7 +64,7 @@
 - 方案：标准库 math.isfinite 提前校验，不新增调度、重试、锁所有者账本或缓存格式。已核对各 Factory、prepare、迁移使用默认 / 0 / 20 等有限非负值。
 - 验证：非法值与 watchdog 回归、既有零预算和退出释放锁均须通过。并发写、失败 staging 重建、Windows Unicode 路径的真实句柄拒绝在修复前已通过。最终工作提交 CI 另行核对，不把预期红色任务或未执行项算通过。见 [记录 §43](record.md#43-最小启动--缓存成本诊断与共享锁预算边界分步记录)。
 
-当前 dev 已确认 B-056 / B-057 / B-058 / B-059 / B-060，修复候选在草案工作分支，尚未合入 dev；见对应条目。B-053（跨Study输入共享）和B-054（关闭扩展时的初始冻结拒绝保全）已通过[PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)合入dev `614d0a6`；工作提交07bcf2e的Unit tests / Build package / Branch flow及实际矩阵均通过，开发与实验依据见[集成记录](record.md#39-共享与三个反馈修复合入-dev)。实际dev集成提交的CI单独核对，不用PR通过替代。
+当前 dev 已确认 B-056 / B-057 / B-058 / B-059 / B-060 / B-061，修复候选在草案工作分支，尚未合入 dev；见对应条目。B-053（跨Study输入共享）和B-054（关闭扩展时的初始冻结拒绝保全）已通过[PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)合入dev `614d0a6`；工作提交07bcf2e的Unit tests / Build package / Branch flow及实际矩阵均通过，开发与实验依据见[集成记录](record.md#39-共享与三个反馈修复合入-dev)。实际dev集成提交的CI单独核对，不用PR通过替代。
 
 B-055 的原生 launch 重试关闭入口已通过 [PR #42](https://github.com/DreamSoul-AI/RPipe/pull/42) 合入 dev `8c15cd84f8a47d5bfeb80edfa69bc5c370998e74`。最终工作提交 `8269bff` 的三项必需检查及实际 dev 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38557561151) / [Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38557561212) 均通过，包含 Windows / Python 3.13；开发证据见 [记录 §40](record.md#40-原生-launch-显式关闭失败重试41验证通过)。默认重试仍保留，#41 不自动关闭。
 

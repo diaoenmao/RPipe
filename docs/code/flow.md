@@ -380,7 +380,7 @@ make 在 Study 根写 `provenance.json`（与 `index.json` 同级，不进 Git�
 | `files` | 库源码 `rpipe/**/*.py`、`study.yaml`、`experiment_config.yaml`、recipe 文件、Study 两柱 `flow/**/*.py` / `structure/**/*.py`，以及 `provenance.include` 列出的额外 Study 内文件，各自 SHA-256 |
 | `plan` | 当前 `index.json` 与其中各 Run `config.yaml` 的 SHA-256 |
 | `environment` | Python、平台、torch / torchvision / numpy 版本、CUDA、GPU 名称 |
-| `git` | 仓库 HEAD 与工作区是否有未提交改动；不在 Git 仓库内则为空 |
+| `git` | 仓库 HEAD 与工作区是否有未提交改动；只有两次查询均成功才记录，不在 Git 仓库内、查询失败或超时则为空 |
 | `created_at` | UTC 时间 |
 | `digest` | 仅对 `files` 与 `plan` 合并内容计算 SHA-256，取前 16 个十六进制字符 |
 

@@ -115,6 +115,8 @@ def capture_git(study_dir: Path | str) -> dict[str, Any]:
         dirty = subprocess.run(
             ['git', 'status', '--porcelain'], cwd=study_dir, capture_output=True, text=True, timeout=30,
         )
+        if dirty.returncode != 0:
+            return {}
         return {'head': head.stdout.strip(), 'dirty': bool(dirty.stdout.strip())}
     except (OSError, subprocess.SubprocessError):
         return {}

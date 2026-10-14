@@ -25,6 +25,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | topk 计数（B-017） | topk=2 将3个样本的候选展平为6个索引，触发形状/计数错误 | 保留候选轴，每个样本命中任一候选只计一次；修复既有函数，未新增 CLI topk 配置 | 第二节 §5 |
 | 零评测预算（B-018） | `eval_num_steps=0` 仍读取并评测第一批 | 读取数据前报错；正数限批、缺省/负数完整 test 的语义保留 | 第二节 §7 |
 | CLI 重试控制（B-055 / #41） | API 有关闭入口，CLI 始终默认重试一次；非恢复型任务的第二次错误可覆盖首个最终错误 | `launch --no-retry` 显式传递既有 API；默认重试和 train→eval 屏障保留，首个失败可由单次执行保留 | 第二节 2026-10-14 §40 |
+| Git 来源失败（B-061，草案） | status 非零退出仍被写成 dirty 布尔值 | 失败返回空 Git 元数据；11 项新增边界、本机相关 87 项通过，尚未集成 | 第二节 2026-10-14 §48 |
 | 原生恢复（B-021） | checkpoint 缺少 RNG 与数据位置，续训样本后缀和最终权重可偏离连续运行 | 在单进程、受支持 sampler / batch metric 合同下保存并恢复完整训练状态；不匹配配置拒绝，其他路径明确提示部分恢复 | 第二节 2026-10-12 §6 |
 | epoch 停止（B-024） | 累积尾 batch 可导致多跑 epoch；整轮无 optimizer 更新时可能无限循环 | epoch 按声明轮数停止，已完成恢复不重训；整轮无法更新时报错，原尾 batch 丢弃语义保留 | 第二节 2026-10-12 §7 |
 | 曲线进度与回滚 | 横轴按 history 记录序号；记录频率变化不能直接解释为训练步数，恢复后的回滚分支未单独排除 | 按 optimizer_step / epoch 对齐；保留原始日志，聚合时排除回滚分支、处理重复坐标并记录逐点 n | [曲线修复记录](brainstorm.md#4-已经做的) |
@@ -88,6 +89,53 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-14
+
+### 48. 分阶段性能定位与 Git 失败来源记录（B-061，草案）
+
+本轮完成 18 组有界合成 Git 测量、4 批已冻结量化节点的函数诊断，发现并修复一个独立来源缺陷 B-061。修复前 3 failed / 8 passed，修复后相关联合回归 87 passed；最终工作提交的必需 CI 以 PR #46 最新 head 为准，不沿用 §47 的旧提交验收。B-056 至 B-061 均仍是草案候选，未合入 dev/main。
+
+#### （一）受控测量与结论
+
+基线为 1ba0877，Windows 11 / Python 3.13.9；RPipe 隔离环境和量化冻结环境仍沿用 §47 的依赖差异。所有测量串行执行；启动及运行期间检查已识别的下游 --worker / watch_idle_batch.py，未暂停或终止下游进程。该守卫不证明整台设备没有其他负载。未下载模型/数据、改变线程科学条件、清理系统缓存或运行正式 Study。
+
+`.tmp/phase061/measure.py` 为本地可复现入口，创建全新 `.tmp/phase061/repositories/`；重复执行须给出另一个全新输出目录，不能覆盖当前证据。每个规模建 40 个额外 ref，10 / 3000 个 tracked 与等量 untracked 合成小文件，依次比较 loose、packed、detached linked worktree。每格 3 个新 Python 进程，每进程重复 3 次 `_git_sha` 和 `capture_git`，共 18 个进程 / 每函数 54 次。分别记录模块导入、每个 Git 命令、测试提交查询、库 Git 来源、库/Study 源码扫描与环境采集。原始 argv、returncode 与秒级时长在 git-stage-results.json；没有用新训练循环代替原生入口。
+
+| **规模（tracked / untracked）** | **布局** | **测试 `_git_sha` 中位 / 最大秒** | **库 `capture_git` 中位 / 最大秒** |
+| --- | --- | --- | --- |
+| 10 / 10 | loose | 0.000275 / 0.000413 | 0.059897 / 0.073665 |
+| 10 / 10 | packed | 0.031256 / 0.034452 | 0.060625 / 0.071389 |
+| 10 / 10 | worktree | 0.026086 / 0.033418 | 0.056985 / 0.067707 |
+| 3000 / 3000 | loose | 0.000284 / 0.000455 | 0.064061 / 0.072597 |
+| 3000 / 3000 | packed | 0.031016 / 0.040995 | 0.061799 / 0.080161 |
+| 3000 / 3000 | worktree | 0.029126 / 0.036133 | 0.063746 / 0.384201 |
+
+每格 source_files 的进程间中位数为 0.012806–0.014372 s。`capture_environment()` 在同一进程首次为 2.893815 s，第二次为 0.000018 s，体现依赖首次导入与进程内模块缓存。未清 OS 页缓存，创建 fixture 已可能加热文件；“新进程首次 / 进程内重复”不等于硬件冷盘 / 热盘。这里的“大”只指 3000 个小文件，不能推断超大仓库、网络盘或任意 ref 数量。0.384201 s 的 worktree 首调用反例保留，不只报告中位数。
+
+当前结论：packed/worktree 的测试提交查询增加约一个 Git 子进程启动成本；这组规模下库 Git 查询为几十毫秒，未观察到分钟级等待。不得据此声称所有 Git 负载都很快，或排除原 480 s 调用中的任何历史等待。
+
+#### （二）函数级诊断与观测器核验
+
+`profile_nodes.py`、`profile_manual_nodes.py` 在 §47 的同一 342 文件冻结副本 `.tmp/tquant063/s/` 上运行两个原节点，仍用 tests/run.py 的 C1/C2 CPU integration 过滤；每次新 basetemp / JUnit。未改冻结源码，执行前后逐文件哈希相同，实际 rpipe/quantization 导入路径均指向冻结副本。脚本、插件、argv、JUnit、phases.jsonl、profile 原始 pstats / JSON 全保留在 `.tmp/phase061/`；每批 180 s 外层保护，未触发。
+
+1. cProfile 两批各 2 passed，外层 19.650878 / 19.645906 s。保留原始结果，但首调用某项累计时间 19.3872 s 大于实际 call 11.5558 s，不能据此给函数排占比或相加归因；未把第三方 profiler 失真登记为 RPipe 缺陷。随后改用显式函数和导入 wrapper，单独保留这套观测器，不能挑较快结果覆盖前批。
+2. 显式计时两批各 2 passed，外层 15.749357 / 14.411109 s；collection 为 1.243590 / 1.098251 s，setup / teardown 每项不足 0.005 s。第一 call 为 7.883675 / 7.854286 s，CPU 7.8125 / 7.71875 s；第二 call 为 2.887553 / 2.736152 s，CPU 2.859375 / 2.6875 s。
+3. 第一 call 的 `test_reduction_nll.fixture` 为 6.808831 / 6.815931 s，其内 `test_dot.trace_fixture` 为 5.432525 / 5.473595 s。`test_trace.fixture` 为 2.008126 / 1.998563 s。这些合成构造在测试 call 内，不是 pytest 的 setup，因此不能靠 setup 报告或单看训练函数定位开销。
+4. 两节点合计 `quantization.structure.artifact.provenance.package_sources` 各调用 161 次，累计 2.085731 / 1.981895 s；每次最大 0.017323 / 0.020395 s。这是下游源码扫描/哈希调用，不是 RPipe Git 查询。Qwen3 configuration 的顶层 import_module 首次约 1.828867 / 1.927319 s，modeling 约 0.311228 / 0.385657 s，同进程后续调用接近缓存命中。wrapper 记录的是包含子调用的时长，父 fixture、导入和哈希之间不能直接相加。
+
+可定位的当前开销为合成 fixture 构造、依赖首次懒导入和重复源码扫描/哈希；与 §47 的 CPU/原始栈观测一致，没有在这些样本中重现 480 s 空等。原批完整 dirty 测试字节及调用内 CPU/锁/栈仍缺，历史超时慢因保持未闭环，不将新函数计时倒推为当时唯一原因。没有擅自缓存可变来源或修改下游业务来获得速度提升。
+
+关键本机证据 SHA256：git-stage-results.json 为 3ab639071c18ed6b37d6bab0b9d6d17b34135fe6741cb2eaa55c99d56f160503；manual-summary.json 为 466191834bd292954b38068a9716188677fcaa2b4fe9ad12dca60afa033e4d08；显式计时 runner 为 24b41ec541861a805c8cf27300c16bad5ba89d709213c76e698181824da84a20，插件为 98ff9e18145d8ceaba55f26cd6ee9560715be43400fbe8aeb987824843ad5faf。CHECKED.json 校验四批成功 JUnit、退出码、冻结导入路径及每个原始文件 hash。上述 `.tmp` 材料不随 clone 提供，冻结下游源码不公开上传；结论与主要数字保留在本节。
+
+#### （三）B-061 最小修复与验收清单
+
+审查了生产 capture_git / 调用方 write_provenance、测试 `_git_sha`、tests/run.py 子进程入口、GPU 探针、cache_lock 与 launch_jobs 的启动/等待边界。没有把长计算无默认截止、未验证的取消策略或历史业务 KeyError 自动当成新缺陷；本轮只实施已复现 B-061。
+
+改前：capture_git 检查 HEAD 查询的退出码，却不检查 status；真实临时损坏 index 在 HEAD 成功而 status 失败时被记为 dirty=false，非零且部分 stdout 又被记为 dirty=true。改后：仅增加两行 returncode 判断，status 失败返回既有空 mapping 语义。正常 head/dirty、命令参数、10/30 s 截止、来源格式、freeze 比较规则、Run 结果及调度不变；不改写旧 provenance。
+
+- 修复前 `.tmp/e061-red/` 为 3 failed / 8 passed，1.53 s；真实损坏索引和空/部分失败 stdout 都失败，其他边界通过。只破坏自建 fixture 的索引。
+- 修复后 `.tmp/e061-green/` 为 87 passed，3.93 s，无跳过，覆盖新增 11 项、既有来源冻结、事件/Git 元数据、共享准备及原子写边界。新增实际 clean/dirty/packed/worktree、真实损坏索引、两种失败 stdout 与 HEAD/status 各缺命令/超时边界。
+- 合并前执行：git diff --check；核对相对 dev 的生产差异只限已声明 helper 与本次 provenance 两行；检查同一工作分支清洁、dev 祖先、PR 最新 head、Draft/open/no-auto-merge；按最新提交跑齐四环境 CPU core/Flow、两平台 wheel/sdist 和 Branch flow，不把本地或旧 head 代替 CI。
+- 可执行清单须同时校验本轮 3 项红色基线、87 项绿色联合回归、18 个新进程测量、四批 profile 与其观测器限制；保留 §47 和更早所有失败/取消。原 480 s 归因与人类集成决定仍分别未闭环/未执行。PR 保持草案，不合并、不改 dev/main、不发布或删除数据。
 
 ### 47. 当前源码采栈与测试 Git 来源记录（B-060，草案）
 
