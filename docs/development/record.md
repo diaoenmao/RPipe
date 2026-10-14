@@ -89,6 +89,20 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-14
 
+### 41. 量化 480 秒超时归属核验与 #38 写入边界补测
+
+本轮只读核对量化项目固定 v0.3.1 模板、原始资源记录、逐项 events 和后续两批 JUnit XML。原 CPU pytest 批次在 480.087342 s 被下游外部资源监视器终止，退出 15；1131 个已完成用例均为量化项目，均 passed，记录耗时合计 469.527 s。当时尚未执行到 tests/rpipe，最后两项仍在完成量化 trace 的计算/采集用例（3.037 s、2.452 s）。这是整批预算耗尽的证据，不能据此归因为 RPipe 调度卡死，也不能把 1131 项局部通过写成完整回归通过。
+
+同源后续串行 A/B 两批分别 530 / 961 项，JUnit 均为零失败、零错误、零跳过；资源监视墙钟分别 146.476927 s / 224.341738 s，退出 0，最终存活 PID 均为空。两份 XML SHA256 分别为 3808787d5318dd8ee184280a992a6939f7efe1053436ba1b0d411cfd60f05837、b8ac30cef61a78f067390964e6445477b590585970e5e81e7f36fecb8fba91c2。直接标为 tests/rpipe 的用例时间合计仅 0.015 s；量化集成用例也调用模板，因此这个目录统计不能当成 RPipe 全部开销。原超时记录曾报告 PID 56508 瞬时存活，随后只读检查未存活；后续批次又出现同号 PID，不能只凭 PID 值推断持续泄漏或相同进程身份。
+
+上述材料仍由下游 Study 报告和本机原始日志保管，未搬入公开仓库，也未修改下游文件。经脱敏的未确认 Issue 草稿保存在 .tmp/feedback-boundary-evidence/quantization-timeout-issue-draft.md（本机临时材料，不随 clone 提供），没有向 GitHub 发布未证实的缺陷。缺少原超时瞬间的调用栈和受控 CPU/线程时间序列，不能精确解释首轮比后续分批更慢的原因；未重跑大回归或改变原科学门与预算。
+
+开放 #36 / #37 / #38 / #41 均已有 dev 修复且没有新评论条件。本轮选择 #38 补充真实写入边界：从 write_result 经过 JSON 编码、UTF-8 文件写入和原子清理，分别验证无旧档/有成功旧档时的真实 UnicodeEncodeError，检查旧成功字节、其他写入者临时文件保留、本次临时文件清除，以及下一次合法写入能成功。此前的回归通过注入部分写入错误验证底层 helper；新增两个集成用例不 mock 文件写入。现有公共修复已覆盖该行为，无需再次修改生产代码。
+
+#41 的最终工作提交 8269bff、集成 8c15cd8 及 Windows/Python 3.13 证据已由 [PR #43](https://github.com/DreamSoul-AI/RPipe/pull/43) 补齐（[§40](#40-原生-launch-显式关闭失败重试41验证通过)），PR #43 实际 dev a1e5b797ca6733dd73cf458f796f85c84d3d76ac 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38560337078) / [Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38560337260) 均通过。未重写原始 v0.3.1 下游报告，也未将其标为新 dev 验收。
+
+验证：本机存在持续的下游性能校准，不并行执行 pytest；新增用例的实际执行及跨平台必需门由本工作 PR 的远端 CI 核对，未完成前不计通过。未修改 main、版本、数据、Study 预算或下游 vendor，未关闭 Issue。
+
 ### 40. 原生 launch 显式关闭失败重试（#41，验证通过）
 
 来源为 [Issue #41](https://github.com/DreamSoul-AI/RPipe/issues/41) 的 CPU 合成复现与当前 dev 调用链。改前：API 支持 retry_failed=False，但 CLI 只能采用默认重试；排他产物任务的第二次 FileExistsError 可成为最终错误。改后方案：launch --no-retry 仅投影现有 API，默认保持重试一次，不改变计算、Run ID、jobs 清单或依赖屏障；原始失败日志仍保留。更大的尝试历史设计只记 brainstorm。
