@@ -97,6 +97,16 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 69. 第三类：替换文本共用原子发布（B-071 / #53）
+
+先提交红色合同 a7277c1，再补 POSIX script mode 合同 1c56b31，之后生产改动仅五个原文件：index、jobs / scripts、profile / ready marker 改用现有 atomic_write_text；helper 只适配可选 newline 并保留已有 mode，继续调用原 atomic_replace。移除重复 mkdir；不搬模块、不新增产物或布局，不引入 producer 框架。脚本仍 LF，普通文本仍系统原生换行；JSON 字段和默认编码不改。
+
+旧15项合同8 failed /7 passed：真实 index TypeError 截断原文件、四个发布入口绕过提交及架构门失败；两项为新增 newline 适配合同。最终相邻130项为129 passed /1 skipped /0 failed/error，Windows 仅跳过 POSIX mode，待 Ubuntu CI 执行；原129项初轮全通过也保留，不替代最终验证。源码相邻门覆盖共享引用并发、部分写、编码拒绝、checkpoint staging 长名控制及 make/data；无 GPU、下载、正式数据或测速。
+
+架构测试在既有 test_atomic.py 内扫描库源码的直接替换文本写入并测别名 / 负例；Logger 初始化/追加与 AlgorithmTracker 初始化/追加/恢复偏移按精确函数豁免；checkpoint 二进制与 shared 文件锁不属于整体替换文本，原协议和测试保留。未将特殊协议挪到新模块，也不承诺 AST 对任意动态 Python 完整封锁。before.zip / red.xml / final.xml / LOCAL_CHECKED.json 在 .tmp/consolidation3，不随 clone；便携测试随 PR52。
+
+最终 head 与实际 dev 的全部必需 CI 分别验收，完整链接与执行清单回填 PR / Issue；本机通过不称已集成。第一、二类尚未实施，不扩大旧成功保留，main 和原六个 Issue 状态不动。
+
 ### 68. 批准后的三类收敛：先合同回归，再最小实现
 
 维护者已审阅并授权按第三类→第二类→第一类实施，每类一个 PR，CI 后合 dev。§67 的待审门禁由本次明确批准解除，结构与磁盘合同仍不改；第一类只提炼 dev 既有保全判断，第三类只约束整体替换文本，特殊写入协议按设计第五（三）保留。现有文档 PR52 复用为第三类工作 PR，避免同任务两个未合分支；先提交文本发布/字节保全/架构负例合同测试，生产代码保持基线，之后再实现。

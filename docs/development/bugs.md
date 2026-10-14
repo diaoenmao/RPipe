@@ -6,13 +6,7 @@
 
 ## 开放
 
-### B-071：整体替换文本发布绕过原子入口（#53，已复现）
-
-- 来源：[Issue #53](https://github.com/DreamSoul-AI/RPipe/issues/53)，dev d294c1b 的第三类合同测试。write_index 直接 open w 后 json.dump，合成不可编码对象触发 TypeError 时旧 index.json 已变成部分 JSON；期望旧计划原字节保全。
-- 影响：index、jobs、生成脚本、profile 与 ready marker 的直接替换文本入口，不代表已证明正式数据事故。日志追加、checkpoint、tracker 恢复偏移与 shared 锁不在整体替换文本范围。
-- 证据：tests/rpipe/structure/artifact/test_atomic.py 的15项新增合同在修复前8 failed /7 passed；2项为计划新增 newline 参数的适配合同，不误称旧 API bug。其余包含架构约束、四发布者拒绝提交、真实 index 编码失败；.tmp/consolidation3/before.zip、red.xml / red.log 为本机原字节和失败，不随clone。
-- 方案：复用现有 atomic_write_text / atomic_replace，保留默认字节和脚本 LF，不新增模块、产物或结构性能力；先提交本批红测再最小实现与相邻回归。
-
+B-071（[Issue #53](https://github.com/DreamSoul-AI/RPipe/issues/53)）已完成第三类本机129通过 /1平台跳过的修复，生产提交 a3f21d443b03；原始反例及编码/发布保全见 [record §69](record.md)。最终 head 与实际 dev 的必需 CI 尚须逐项验收，Issue保持open，不称已发布。
 
 B-070（[#50](https://github.com/DreamSoul-AI/RPipe/issues/50)）已通过[PR #51](https://github.com/DreamSoul-AI/RPipe/pull/51)合入 dev d294c1b5aa99b4d7148f991f9a4ac8903fe23374，最终工作提交及实际 dev 的必需 CI 全部实际矩阵和聚合通过；原始条目保留在[修复前记录](https://github.com/DreamSoul-AI/RPipe/blob/3a198ff4e04d25999a895b131f0c01ab964b5e0a/docs/development/bugs.md)和[record §63–64](record.md)。Issue50保持open，main尚未包含该修复。后续归纳方案见[产物一致性设计](artifact_consistency_design.md)，待审阅、未实施，不属于新增反例。
 
