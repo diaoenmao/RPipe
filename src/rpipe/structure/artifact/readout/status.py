@@ -19,37 +19,53 @@ STATUS_PENDING = 'pending'
 _EVENT = re.compile(r'\[(epoch|error|flow)\]\s*(.*)$')
 
 
-def _load_result(study_dir: Path, run_dir: str) -> dict[str, Any] | None:
-    path = study_dir / RUNS_DIRNAME / run_dir / RESULT_NAME
+def _read_optional(path: Path | None, loader) -> tuple[str, Any]:
+    """Three read states for display only; strict loaders keep their contract."""
     try:
+        if path is None:
+            return 'missing', None
         if not path.is_file():
-            return None
-        return load_result(path)
-    except (OSError, TypeError, ValueError, ArtifactError):
-        return None
+            return ('unreadable' if path.exists() else 'missing'), None
+        return 'available', loader(path)
+    except FileNotFoundError:
+        return 'missing', None
+    except (OSError, UnicodeError, TypeError, ValueError, ArtifactError, yaml.YAMLError):
+        return 'unreadable', None
 
 
-def _mode(factors: dict[str, Any], result: dict[str, Any] | None, config_path: Path) -> str:
-    raw = factors.get('algorithm.mode')
-    if raw:
-        return str(raw)
-    if isinstance(result, dict):
-        control = result.get('control')
-        if isinstance(control, dict):
-            algo = control.get('algorithm')
-            if isinstance(algo, dict) and algo.get('mode'):
-                return str(algo['mode'])
-    algorithm = load_config(config_path).get('algorithm')
-    if algorithm is None:
-        return 'train'
-    if not isinstance(algorithm, dict):
+def _mode(factors, result, config_path: Path, planned) -> tuple[str, Any]:
+    state, config = _read_optional(config_path, load_config)
+    if state == 'unreadable':
+        raise ValueError('unreadable planned config')
+    control = result.get('control') if isinstance(result, dict) else None
+    control = control if isinstance(control, dict) else {}
+    algorithm = control.get('algorithm')
+    recorded = algorithm.get('mode') if isinstance(algorithm, dict) else None
+    legacy = [value for value in (factors.get('algorithm.mode'), recorded) if value]
+    seed = planned.get('seed')
+    if config is None:
+        if legacy and isinstance(legacy[0], str):
+            return legacy[0], seed
+        raise ValueError('missing planned config and legacy mode')
+    algorithm = config.get('algorithm')
+    if algorithm is not None and not isinstance(algorithm, dict):
         raise ValueError('algorithm must be a mapping')
-    raw = algorithm.get('mode')
-    if raw is None:
-        return 'train'
-    if not isinstance(raw, str) or not raw:
-        raise ValueError('algorithm.mode must be a non-empty string')
-    return raw
+    mode = (algorithm or {}).get('mode')
+    mode = 'train' if mode is None else mode
+    if not isinstance(mode, str) or mode not in ('train', 'eval', 'inference'):
+        raise ValueError('invalid algorithm mode')
+    if any(value != mode for value in legacy):
+        raise ValueError('mode conflicts with planned config')
+    for field, expected in (('id', planned.get('id')), ('seed', seed)):
+        value = config.get(field)
+        if value is not None and ((field == 'seed' and type(value) is not int)
+                                  or (expected is not None and value != expected)):
+            raise ValueError('config identity conflict')
+        recorded = control.get(field)
+        if recorded is not None and ((field == 'seed' and type(recorded) is not int)
+                                     or (value is not None and recorded != value)):
+            raise ValueError('result identity conflict')
+    return mode, seed if config.get('seed') is None else config['seed']
 
 
 def _factor_label(factors: dict[str, Any]) -> str:
@@ -75,12 +91,10 @@ def _note_from_log(path: Path | None, *, errors_only: bool = False) -> str:
 
     ``errors_only`` keeps the last ``[error]`` summary and ignores later epochs.
     """
-    try:
-        if path is None or not path.is_file():
-            return '-'
-        lines = path.read_text(encoding='utf-8', errors='replace').splitlines()
-    except OSError:
+    state, text = _read_optional(path, lambda p: p.read_text(encoding='utf-8', errors='replace'))
+    if state != 'available':
         return '-'
+    lines = text.splitlines()
     chosen = None
     fallback = None
     for line in lines:
@@ -125,14 +139,16 @@ def list_runs(
         factors = dict(exp.get('factors') or {})
         for run in exp.get('runs') or []:
             run_dir = str(run.get('run_dir') or run.get('id') or '')
-            result = _load_result(study_dir, run_dir) if run_dir else None
+            result_path = study_dir / RUNS_DIRNAME / run_dir / RESULT_NAME
+            result_state, result = _read_optional(result_path if run_dir else None, load_result)
             config_path = study_dir / RUNS_DIRNAME / run_dir / CONFIG_NAME
             mode_error = None
+            seed = run.get('seed')
             try:
-                mode = _mode(factors, result, config_path)
+                mode, seed = _mode(factors, result, config_path, run)
             except (OSError, TypeError, ValueError, ArtifactError, yaml.YAMLError) as exc:
                 mode = 'unknown'
-                mode_error = f'mode config unreadable ({type(exc).__name__}): {config_path}'
+                mode_error = f'mode config unreadable or conflicting ({type(exc).__name__}): {config_path}'
             if wanted and mode not in wanted:
                 continue
             status = STATUS_PENDING
@@ -149,12 +165,14 @@ def list_runs(
             elif status == 'failed':
                 note = _note_from_log(log_path(study_dir, run, run_dir), errors_only=True)
             error = None if status == STATUS_SUCCEEDED else error
+            if result_state == 'unreadable':
+                error = f'result unreadable: {result_path}'
             if mode_error:
                 error = f'{error}; {mode_error}' if error else mode_error
             rows.append(
                 {
                     'id': run.get('id') or run_dir,
-                    'seed': run.get('seed'),
+                    'seed': seed,
                     'mode': mode,
                     'status': status,
                     'factors': _factor_label(factors),
