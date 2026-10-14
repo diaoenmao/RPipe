@@ -222,3 +222,58 @@ def test_invalid_resource_contract_is_rejected_before_writes(tmp_path, files):
     with pytest.raises(ValueError, match='relative'):
         prepared_resource(tmp_path, {}, files, lambda staging: None)
     assert not list(tmp_path.iterdir())
+
+@pytest.mark.parametrize('timeout', [float('nan'), float('inf'), float('-inf'), -1.0])
+def test_invalid_cache_lock_budget_is_rejected_before_creating_root(tmp_path, timeout):
+    root = tmp_path / 'invalid-budget'
+    with pytest.raises(ValueError, match='timeout'):
+        with cache_lock(root, timeout=timeout):
+            pass
+    assert not root.exists()
+
+
+def test_nan_cache_lock_budget_cannot_disable_contention_deadline(tmp_path, monkeypatch):
+    """A bounded busy-lock fixture exposes the old NaN loop without hanging pytest."""
+    import errno
+    import time
+    from types import SimpleNamespace
+    import rpipe.structure.artifact.shared as shared
+
+    sleeps = []
+    def busy(*args):
+        raise BlockingIOError(errno.EACCES, 'fixture lock held by another writer')
+    def watchdog(delay):
+        sleeps.append(delay)
+        if len(sleeps) == 3:
+            raise RuntimeError('bounded watchdog: NaN disabled the contention deadline')
+    if os.name == 'nt':
+        import msvcrt
+        monkeypatch.setattr(msvcrt, 'locking', busy)
+    else:
+        import fcntl
+        monkeypatch.setattr(fcntl, 'flock', busy)
+    monkeypatch.setattr(shared, 'time', SimpleNamespace(monotonic=time.monotonic, sleep=watchdog))
+    root = tmp_path / 'nan-budget'
+    with pytest.raises(ValueError, match='timeout'):
+        with cache_lock(root, timeout=float('nan')):
+            pytest.fail('invalid budget acquired a lock')
+    assert sleeps == [] and not root.exists()
+
+
+def test_interrupted_resource_retry_preserves_failed_staging_and_publishes_fresh(tmp_path):
+    def interrupted(staging):
+        (staging / 'data').write_bytes(b'partial')
+        raise OSError('fixture interrupted preparation')
+    with pytest.raises(OSError, match='interrupted'):
+        prepared_resource(tmp_path, {'revision': 'retry'}, ['data'], interrupted)
+    failed = list(tmp_path.glob('*/.building-*/data'))
+    assert len(failed) == 1 and failed[0].read_bytes() == b'partial'
+
+    def complete(staging):
+        (staging / 'data').write_bytes(b'complete')
+    cache, digest = prepared_resource(tmp_path, {'revision': 'retry'}, ['data'], complete)
+    assert (cache / 'data').read_bytes() == b'complete'
+    assert failed[0].read_bytes() == b'partial'
+    def no_rebuild(staging):
+        pytest.fail('published inputs must be reused')
+    assert prepared_resource(tmp_path, {'revision': 'retry'}, ['data'], no_rebuild) == (cache, digest)
