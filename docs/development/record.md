@@ -97,9 +97,23 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 73. 第一类候选与三类交付边界汇总
+
+第一类先提交42格既有合同 b0ead41，再仅在 runner.py 提取私有 _preserve_success，原表达式原样返回；run 内改为调用该函数。_write_failed_result 的读取、写入、宽容的二次定稿边界、日志、原异常传播、调度失效和重试代码均未动。反向移除 helper 并恢复原调用表达式后，规范化文本与 dev945c992完全一致；raw source hash 另保留，不混同换行规范化与原字节。
+
+改前42 passed；改后冻结、采集拒绝、Runner、调度和 provenance 相邻128 passed /0failed/error/skip，42个基线节点逐一包含于最终批次。不是新 bug，不制造应失败反例，不扩大旧成功保留范围。证据 .tmp/consolidation1/before.zip / baseline.xml / final.xml / LOCAL_CHECKED 不随clone；便携决策表在原 test_freeze_preservation.py。正式 source、tests 都没有新文件，Run结果、数据和provenance未迁移。
+
+| **类别** | **改前 → 改后** | **本机正确性** | **正式集成边界** |
+| --- | --- | --- | --- |
+| 第三类 / PR52 / B071 | 可替换文本绕过原子发布，index编码失败截断旧证据 → 复用原atomic链，保留LF和mode | 129通过 /1 POSIX跳过；全部15红合同在最终批次 | head eb52c65及实际dev ea2210b全实际CI通过；Issue53仍open |
+| 第二类 / PR54 | 分散读取、先信旧mode → 私有三态读取与计划字段校验，保留缺配置历史fallback | 最终107通过，原seed和TypeError候选失败保留；16新合同实际执行 | head41982bf全实际CI通过，合dev945c992，实际dev独立CI另核对 |
+| 第一类 / 当前PR | 内联保全决策 → 同一私有predicate，范围原样 | 基线42、最终128均通过 | 最终head与实际dev CI待独立验收，不以本机或上两类代替 |
+
+三类均无新模块、产物目录、schema或result含义，特殊协议不搬动；第七节能力不实施，不测速/GPU/正式Study复跑，不合main、不删分支/数据、不自动关闭Issue。最终PR正文给出当前head和实际dev验收链接；旧record的待审/待CI文字保留为对应时点事实，不当作新未修缺陷。
+
 ### 72. 第一类：现有保全决策等价提炼，先锁定基线
 
-第二类最终 head 41982bf 的 Unit38640332309 / Package38640332160 / Branch38640332279 全部实际矩阵/聚合通过，经 PR54 正常合入 dev 945c9925c8657b50a7f0906c5cd4fd00b238f1a1，实际 dev CI 独立验收。第三类实际 dev ea2210b 的 Unit38639077019 / Package38639076858 已全部实际通过，DEV_CHECKED 的 SHA256为 e6682607bb41db7ccd5ce6cf6c0298c8d0aef1194d9e2f188edc60e1b48d970e；PR52和Issue53正文已补确切验收链接并保持open，不重复原六 Issue 评论。
+第二类最终 head 41982bf 的 Unit38640332309 / Package38640332160 / Branch38640332279 全部实际矩阵/聚合通过，经 PR54 正常合入 dev 945c9925c8657b50a7f0906c5cd4fd00b238f1a1，实际 dev CI 独立验收。第三类实际 dev ea2210b 的 Unit38639077019 / Package38639076858 已全部实际通过，DEV_CHECKED 的 SHA256为 e6682607bb41db7ccd5ce6cf6c0298c8d0aef1194d9e2f188edc60e1b48d970e；PR52和Issue53正文已补确切验收链接，Issue53保持open，不重复原六 Issue 评论。
 
 第一类从945c992建立唯一分支 codex/failure-preservation-policy，在既有 test_freeze_preservation.py 先补42格合同：7个阶段位置（含外门）×普通/冻结异常×无旧结果/旧失败/旧成功。基线42 passed，符合此类是等价提炼而非新缺陷的预期；不制造应失败的假反例。保留原错误对象、日志、peer和结果字节；只有 process 或初始/prepare 冻结拒绝且旧结果成功才保全，普通执行失败仍写failed。
 
