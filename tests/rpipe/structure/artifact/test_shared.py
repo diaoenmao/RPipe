@@ -217,7 +217,8 @@ def test_corrupt_payload_and_incomplete_manifest_are_not_rebuilt_or_accepted(tmp
         prepared_resource(tmp_path, {}, ['data'], build)
 
 
-@pytest.mark.parametrize('files', [[], ['../outside'], ['manifest.json'], ['data', 'data']])
+@pytest.mark.parametrize('files', [[], ['../outside'], ['manifest.json'], ['data', 'data'],
+                                 ['./manifest.json'], ['data', './data'], [''], ['.']])
 def test_invalid_resource_contract_is_rejected_before_writes(tmp_path, files):
     with pytest.raises(ValueError, match='relative'):
         prepared_resource(tmp_path, {}, files, lambda staging: None)
@@ -424,3 +425,34 @@ def test_repeated_failed_acquisitions_do_not_release_other_thread_owner(tmp_path
                         worker.submit(acquire).result(timeout=10)
                 raise KeyboardInterrupt('owner cancelled')
         assert worker.submit(acquire).result(timeout=10) == 'acquired'
+
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='requires Windows Path equivalence and drive semantics')
+@pytest.mark.parametrize('files', [['MANIFEST.JSON'], ['DATA', 'data'], ['C:outside'], ['\\outside']])
+def test_windows_resource_aliases_rejected_before_builder_or_layout(tmp_path, files):
+    def no_build(staging):
+        pytest.fail('invalid contract called builder')
+    root = tmp_path / 'never-created'
+    with pytest.raises(ValueError, match='relative'):
+        prepared_resource(root, {}, files, no_build)
+    assert not root.exists()
+
+
+def test_valid_resource_names_keep_original_manifest_keys_and_reuse(tmp_path):
+    import json
+    files = ['./weights', 'nested/manifest.json']
+    def build(staging):
+        for name in files:
+            path = staging / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b'complete')
+    cache, digest = prepared_resource(tmp_path, {}, files, build)
+    manifest = cache / 'manifest.json'
+    original = manifest.read_bytes()
+    assert set(json.loads(original)['files']) == set(files)
+    def no_rebuild(staging):
+        pytest.fail('valid inputs must be reused')
+    assert prepared_resource(tmp_path, {}, files, no_rebuild) == (cache, digest)
+    assert manifest.read_bytes() == original
+    assert all((cache / name).read_bytes() == b'complete' for name in files)

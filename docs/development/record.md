@@ -89,6 +89,20 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-14
 
+### 46. 共享输入文件别名校验（B-059，草案）
+
+接续用户反馈的限流失败后，先核对干净工作区、DreamSoul-AI origin 并 fetch；本轮 GitHub Issues / PR 查询均成功，没有继续出现 429。#36–#38 / #41 仍为已修复反馈，PR #46 仍 Draft、自动合并关闭；b20a034 的所有必需 CI 已通过。只读复查三个下游会话，没有新的 RPipe 反例；量化 1629 项回归已通过。原 480 秒缺少完整测试字节与调用内栈的缺口仍见 §45，不重复造根因结论或启动大批次。
+
+转查 prepared_resource 的文件合同后复现 B-059。改前：保留名和唯一性用原字符串比较，./manifest.json 进入 builder，正式 manifest 覆盖合成输入后发布 inputs，随后 hash 校验才失败；Windows 的 MANIFEST.JSON 也如此。data / ./data 被接受为两个文件；Windows 的大小写重复、带 drive/root 锚点，以及空名/目录本身也未在 builder 前拒绝。合成复现 .tmp/a51d92a07/repro.json 保存构造是否执行、异常和 inputs 是否已发布，不触碰项目共享数据。
+
+先记录 bugs.md / layout.md 合同，再补用例并在原实现实测：.tmp/e059-red/ 保留日志、JUnit 和独立 basetemp，**8 failed / 5 passed / 31 deselected，0.28 s**。四个 portable 新非法清单和四个 Windows 条件失败，原四个条件及有效路径兼容用例通过；预期红色复现不是质量通过。改后：入口建立 Path 清单，按本机 Path 等价拒绝重复/根 manifest，拒绝 anchor 或无文件名，沿用 .. 检查。原字符串继续作为 manifest 键；不迁移有效缓存、不改变 definition hash、锁、build、发布或任何已完成 Run。
+
+已检索全部调用方，main_exp 和 main_probe 均为固定相对文件名；有效 ./weights 与 nested/manifest.json 的构造、完整 hash、原键名和重复复用都有回归。新增共九个边界条件（四 portable、四 Windows 专用、一个有效兼容）；POSIX 不应假装 Windows 大小写/drive 语义，四项在 Linux 明确 skip，不算通过。入口的 Path 比较不是通用 NTFS 命名或符号链接安全协议，未扩大这个合同。
+
+修复后本机通过 tests/run.py 运行三个 artifact 模块与事件时间戳回归，.tmp/e059-green/ 的新短 basetemp / JUnit / 日志记录 **58 passed，1.50 s，无跳过**。每次执行前只读核对没有 --worker / watch_idle_batch 性能校准；保留旧红色和所有此前失败，不占用下游 GPU、不改外部线程设置或原实验预算。临时证据及 .tmp/test-results/ 不随 clone；正式链接以草案最新 head CI 和正文为准。
+
+b20a034 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38579687816)、[Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38579687789)、[Branch flow](https://github.com/DreamSoul-AI/RPipe/actions/runs/38579687760) 是前一轮验收，不能替代 B-059 新提交。可执行清单沿用 §45 命令和 .tmp/cache-lock-budget/check_draft.py，补充核对 B-059 的红色 JUnit / 本地 58 项，并允许本次共享入口的明确修复差异；最终提交必须单独绑定必需 CI。B-056–B-059 都只在草案，不转 ready、不启用自动合并、不合并、不清理活动分支，不关闭现有 Issue；不触碰 dev/main、发布、系统长路径策略或正式研究来源。
+
 ### 45. 原超时时间线、取消边界与本机验收
 
 改前：480 秒记录只有整批归属与后续分批成功，草案缺正预算截止时间线、等待取消及连续获取失败后的所有权断言。改后：只读重建原 1131 个事件并与后续相同节点对齐；补三个锁回归，使用原 tests/run.py 在本机运行相关模块。生产源码、科学门、下游 vendor 和调度保持不变；PR #46 继续草案，不合并。

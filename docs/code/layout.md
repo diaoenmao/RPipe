@@ -61,6 +61,8 @@ Flow 通过 data_api / DataFactory 的可选 `profile_path` 传递自动解析�
 
 迁移是独立操作：`rpipe shared <study>` 默认只列路径；`--migrate` 校验已有私有资产与公共资产的全部重名文件，冲突时拒绝，成功后保留旧路径的链接。不得重写已完成 Run / provenance。历史探针原版 / 当前版 raw 引用同一文件；同一归档版本、依赖和 raw hash 的 processed / 固定 Stats 也使用项目共享派生缓存，不逐 Run 重建。不同归档格式单独分版本存储，加载的 Dataset / Stats 对象仍独立。旧不同编码的历史缓存先保留，不以新序列化覆写旧证据。迁移前保全来源与失败，迁移后独立实测用新 version / make。
 
+共享准备的文件清单在创建根或调用 builder 前按本机 Path 语义检查：须有相对文件名，不含锚点或 ..，不得指向根 manifest.json 或重复等价路径。原清单字符串仍作为 manifest 键；单个 ./weights、嵌套目录的 manifest.json 不因此改名，既有有效缓存不迁移。
+
 共享锁的 timeout 必须有限且非负；0 表示不等待竞争锁。非法预算在创建目录 / 锁文件前抛 ValueError；合法竞争到期仍抛 TimeoutError，不改变默认 120 秒或进程退出释放锁的语义。
 
 共享下载 / 发布受文件锁保护；进程退出释放锁，锁文件存在不代表下载成功。构造失败不写 ready。库不会自动下载未注册的 HF / ModelScope 模型；下游通过现有 ModelRegistry builder 使用共享根和相应 hub 的版本缓存。

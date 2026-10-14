@@ -6,6 +6,15 @@
 
 ## 开放
 
+### B-059：共享输入文件合同按原始字符串比较，可绕过保留名与唯一性
+
+- 状态：open，Windows/Python 3.13.9 本机已复现；dev 9324014 与草案 b20a034 均尚未修复。
+- 来源：继续审查 prepared_resource 文件清单入口，已核对 main_exp / main_probe 两个正式调用方，均使用正常相对文件名。
+- 期望：创建缓存根或调用 builder 前拒绝控制 manifest 本身及按本机 Path 语义等价的重复路径；空文件名、目录本身或带锚点的路径也不能作为相对文件输入。
+- 实际：files=['./manifest.json'] 进入 builder，随后覆盖作为输入的 manifest 并发布 inputs，校验才失败；下次仍复用这个不一致目录而拒绝。Windows 上 MANIFEST.JSON 同样触发。files=['data','./data'] 被当作不同文件接受。合成缓存复现 .tmp/a51d92a07/repro.json 保留，未触碰真实数据。
+- 方案：只在入口建立 Path 对象并按 Path 等价比较保留名/重复项、拒绝 anchor 与无文件名；仍保留原清单字符串作为 manifest 键，不改变既有有效缓存、定义 hash、build/锁或发布格式。Windows case / 分隔符规则按实际平台处理，不在 POSIX 假装大小写不敏感。
+- 验证：先增加 portable 与 Windows 专属非法清单断言，并检查 builder 不被调用、根不创建；有效单个 ./weights 和 nested/manifest.json 必须继续构建、hash 校验和复用。该修复不是通用 NTFS 路径/符号链接防护，也不是原 480 秒事件根因。见 record §46；草案不合并。
+
 ### B-058：测试事件 started_at 记录的是完成后时间
 
 - 状态：open；当前 dev 9324014 和草案 f3eb08b 均存在，尚未集成修复。
@@ -36,7 +45,7 @@
 - 方案：标准库 math.isfinite 提前校验，不新增调度、重试、锁所有者账本或缓存格式。已核对各 Factory、prepare、迁移使用默认 / 0 / 20 等有限非负值。
 - 验证：非法值与 watchdog 回归、既有零预算和退出释放锁均须通过。并发写、失败 staging 重建、Windows Unicode 路径的真实句柄拒绝在修复前已通过。最终工作提交 CI 另行核对，不把预期红色任务或未执行项算通过。见 [记录 §43](record.md#43-最小启动--缓存成本诊断与共享锁预算边界分步记录)。
 
-当前 dev 已确认 B-056 / B-057 / B-058，修复候选在草案工作分支，尚未合入 dev；见对应条目。B-053（跨Study输入共享）和B-054（关闭扩展时的初始冻结拒绝保全）已通过[PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)合入dev `614d0a6`；工作提交07bcf2e的Unit tests / Build package / Branch flow及实际矩阵均通过，开发与实验依据见[集成记录](record.md#39-共享与三个反馈修复合入-dev)。实际dev集成提交的CI单独核对，不用PR通过替代。
+当前 dev 已确认 B-056 / B-057 / B-058 / B-059，修复候选在草案工作分支，尚未合入 dev；见对应条目。B-053（跨Study输入共享）和B-054（关闭扩展时的初始冻结拒绝保全）已通过[PR #39](https://github.com/DreamSoul-AI/RPipe/pull/39)合入dev `614d0a6`；工作提交07bcf2e的Unit tests / Build package / Branch flow及实际矩阵均通过，开发与实验依据见[集成记录](record.md#39-共享与三个反馈修复合入-dev)。实际dev集成提交的CI单独核对，不用PR通过替代。
 
 B-055 的原生 launch 重试关闭入口已通过 [PR #42](https://github.com/DreamSoul-AI/RPipe/pull/42) 合入 dev `8c15cd84f8a47d5bfeb80edfa69bc5c370998e74`。最终工作提交 `8269bff` 的三项必需检查及实际 dev 的 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38557561151) / [Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38557561212) 均通过，包含 Windows / Python 3.13；开发证据见 [记录 §40](record.md#40-原生-launch-显式关闭失败重试41验证通过)。默认重试仍保留，#41 不自动关闭。
 
@@ -46,6 +55,6 @@ GitHub #36—#38及#41仍保持open，原v0.3.1/main尚未发布这些修复；�
 
 B-002、B-021 / B-024及B-025至B-029的既有修复证据仍在 [record.md](record.md)。B-022 / B-023 的代表性容量、精度合同与探索边界保留各自报告；本轮新的设备 / 并发结果见 [本轮执行记录](../../studies/main_exp/docs/v030_execution.md)。未实测支持范围不是已通过，缺环境依赖的导入失败也不自动列为库缺陷。
 
-B-031 至 B-058 已使用，编号不复用。下次新增问题从 **B-059** 起编号。
+B-031 至 B-059 已使用，编号不复用。下次新增问题从 **B-060** 起编号。
 
 新增条目一条一事，记录编号、open / investigating状态、复现条件、期望 / 实际、影响落点、方案和实际验证证据。

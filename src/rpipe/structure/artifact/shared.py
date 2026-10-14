@@ -140,9 +140,10 @@ def prepared_resource(root: Path | str, definition: dict, files: list[str], buil
     The caller supplies version/format identity and a preparation callback, not
     training. Interrupted staging is retained; no ready marker accepts it.
     """
-    if (not files or len(set(files)) != len(files) or any(
-            Path(name).is_absolute() or '..' in Path(name).parts or name == 'manifest.json'
-            for name in files)):
+    names = [Path(name) for name in files]
+    if (not names or len(set(names)) != len(names) or any(
+            name.anchor or not name.name or '..' in name.parts or name == Path('manifest.json')
+            for name in names)):
         raise ValueError('input files must be unique safe relative names, excluding manifest.json')
     root = Path(root)
     key = hashlib.sha256(json.dumps(definition, sort_keys=True).encode()).hexdigest()
