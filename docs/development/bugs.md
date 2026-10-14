@@ -6,7 +6,7 @@
 
 ## 开放
 
-B-070（[#50](https://github.com/DreamSoul-AI/RPipe/issues/50)）已在当前工作分支以一行修复并通过本机91项回归；原始条目保留在[修复前记录](https://github.com/DreamSoul-AI/RPipe/blob/3a198ff4e04d25999a895b131f0c01ab964b5e0a/docs/development/bugs.md)和[record §63](record.md)。实际dev合入身份与CI须从该工作分支的PR核对，不能把本机通过当已发布。Issue50保持open。
+B-070（[#50](https://github.com/DreamSoul-AI/RPipe/issues/50)）已通过[PR #51](https://github.com/DreamSoul-AI/RPipe/pull/51)合入 dev d294c1b5aa99b4d7148f991f9a4ac8903fe23374，最终工作提交及实际 dev 的必需 CI 全部实际矩阵和聚合通过；原始条目保留在[修复前记录](https://github.com/DreamSoul-AI/RPipe/blob/3a198ff4e04d25999a895b131f0c01ab964b5e0a/docs/development/bugs.md)和[record §63–64](record.md)。Issue50保持open，main尚未包含该修复。后续归纳方案见[产物一致性设计](artifact_consistency_design.md)，待审阅、未实施，不属于新增反例。
 
 B-069（[#48](https://github.com/DreamSoul-AI/RPipe/issues/48)）已经由[PR #49](https://github.com/DreamSoul-AI/RPipe/pull/49)合入dev b2390b0，最终head与实际dev Unit38629909667 / Package38629909697全部实际矩阵和聚合通过；来源/红例和包门未完成拒绝保留于record §62–63与Issue正文。该条不再属于待修缺陷，Issue仍保持open。
 

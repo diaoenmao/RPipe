@@ -97,6 +97,14 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 64. 产物一致性架构设计（待审阅，未实施）
+
+按最新指示停止逐个相邻路径审计，先归纳既有问题并提交[产物一致性设计](artifact_consistency_design.md)。三类目标为：尝试不可变追加、result 根文件作有效结果视图；三态安全读取与计划 config 优先的有类型 Run 视图；唯一原子发布入口及受控 append / 锁。设计列出 #36 / #37 / #38 / #41 / #48 / #50、B-062 / B-067 / B-068 的已修事实、架构欠账、调用方替换、兼容迁移和回归计划，不把已修反例重新登记为 bug。
+
+本轮开始时 fetch 成功、工作区干净。#50 已由 [PR #51](https://github.com/DreamSoul-AI/RPipe/pull/51) 正常合入 dev d294c1b5aa99b4d7148f991f9a4ac8903fe23374；实际 dev 的 [Unit38633933430](https://github.com/DreamSoul-AI/RPipe/actions/runs/38633933430) / [Package38633933432](https://github.com/DreamSoul-AI/RPipe/actions/runs/38633933432) 已全部实际矩阵和聚合通过，不重复开修复 PR 或重派检查。六个 Issue 保持 open，main 仍 v0.3.1 / 7a15c46。
+
+本次仅设计文档和状态记录；文档核对包括相对文件链接、编码、结构、Git 差异与代码基线不变，没有运行代码回归、GPU 或性能检查。上述 CI 只证明此前修复，不能用于宣称新架构通过。attempt 目录、物化结果视图、计划 generation 与写入边界是待审合同，现行 layout / schema 仍有效；审阅通过前不改代码、不迁移历史 Run / 数据 / provenance、不推进实施 PR 或合入 dev / main。保留全部已有分支。
+
 ### 63. 相邻正确性审计与 status 指标类型回退（B-070 / #50）
 
 #### （一）审计范围与收尾状态
