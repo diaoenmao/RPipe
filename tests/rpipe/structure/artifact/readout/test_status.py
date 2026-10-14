@@ -260,3 +260,45 @@ def test_mode_diagnostic_preserves_execution_state_and_real_failure(tmp_path, st
     assert 'mode config unreadable' in row['error']
     assert ('original failure' in row['error']) == (status == 'failed')
     assert result_path.read_bytes() == before
+
+
+@pytest.mark.parametrize('target', ['result', 'log'])
+@pytest.mark.parametrize('operation', ['stat', 'read'])
+def test_status_read_denial_keeps_other_runs_and_original_bytes(tmp_path, monkeypatch, target, operation):
+    study = _write_study(tmp_path)
+    log = study / 'runs/bad/assets/logs/run.log'
+    log.write_text('[error] original failure\n', encoding='utf-8')
+    path = study / 'runs/bad/result.json' if target == 'result' else log
+    files = [p for p in study.rglob('*') if p.is_file()]
+    before = {p: p.read_bytes() for p in files}
+    method = 'is_file' if operation == 'stat' else 'read_text'
+    original = getattr(Path, method)
+    def denied(candidate, *args, **kwargs):
+        if candidate == path:
+            raise PermissionError('readout input denied')
+        return original(candidate, *args, **kwargs)
+    monkeypatch.setattr(Path, method, denied)
+    body = list_runs(study)
+    by_id = {row['id']: row for row in body['runs']}
+    assert by_id['ok']['status'] == 'succeeded' and by_id['ok']['metric'] == 'accuracy=0.8000'
+    assert by_id['bad']['mode'] == 'eval'
+    if target == 'result':
+        assert by_id['bad']['status'] == 'pending' and body['counts']['succeeded'] == 1
+    else:
+        assert by_id['bad']['status'] == 'failed' and by_id['bad']['error'] == 'RuntimeError: boom'
+        assert by_id['bad']['note'] == '-'
+    assert {p: p.read_bytes() for p in files} == before
+
+
+@pytest.mark.parametrize('target', ['result', 'log'])
+def test_status_unexpected_probe_error_is_not_hidden(tmp_path, monkeypatch, target):
+    study = _write_study(tmp_path)
+    path = study / ('runs/bad/result.json' if target == 'result' else 'runs/bad/assets/logs/run.log')
+    original = Path.is_file
+    def broken(candidate):
+        if candidate == path:
+            raise RuntimeError('unexpected probe failure')
+        return original(candidate)
+    monkeypatch.setattr(Path, 'is_file', broken)
+    with pytest.raises(RuntimeError, match='unexpected probe failure'):
+        list_runs(study)

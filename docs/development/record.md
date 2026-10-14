@@ -97,6 +97,20 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 62. readout 存在性查询与内容读取的错误边界（B-069 / #48）
+
+按新授权在实际 dev f9c6e90 检查四类相邻路径，取得新的逐文件 I/O 反例。readout status 的 _load_result / _note_from_log、logs 的 event_lines 已对内容读取失败做逐文件回退，但 is_file 在 try 外；同一 PermissionError 提前发生时，API 异常、原生 CLI 返回 2，正常 peer 结果或日志一并不可见。与 B-068 activity 已修入口分开，不重复登记 #37 模式问题。
+
+先在唯一新分支 codex/status-readout-errors 提交 portable 红色回归 31d1511；生产原字节 ZIP 与 SHA256 保存在 .tmp/phase069/before.zip / BEFORE.json，新增 13 项为 **5 failed / 8 passed**。五项失败分别定位 result stat、note stat、event stat、原生 status、原生 logs；内容读取拒绝与意外 RuntimeError 控制通过。新 [Issue #48](https://github.com/DreamSoul-AI/RPipe/issues/48) 已公开提交脱敏合成条件，未宣称真实系统 ACL 配置或正式数据损坏。
+
+设计只统一这三个函数各自已有的元数据/读取 I/O 边界；不创建 helper、改异常类、调整模式、改变不可读结果的原计划回退，亦不改 process/调度/科学条件。候选仅移动三个 is_file 到原有 try，异常类别保持原样。新增 13 项均已在绿色批次执行；与 readout 全目录、活动提示及原生 status 相邻门联合 **81 passed，0 failed / error / skipped**。XML、源码前后 hash 和红/绿节点包含关系已核对，保存于 .tmp/phase069/LOCAL_CHECKED.json。最终工作提交和集成提交 CI 分别核对，不以本机通过代替。其他三类审查范围为 Runner 初始拒绝、checkpoint staging 的已有恢复合同以及 CLI 默认/本次参数；未把保留诊断 staging 或正常运行失败写回认作新缺陷，不因此追加改动。
+
+### 61. 四个开放 Issue 补齐修复与验收评论
+
+按用户明确授权，在 #36 / #37 / #38 / #41 各留一条公开评论，分别链接实际生产修复、当前回归文件及已验收 dev f9c6e90 的 Unit38624513622 / Package38624513901；本机 75 项与远端实际矩阵分开，skip 与未执行 GPU/HF 不计通过。发布前逐项读已有评论、核对真实 Git 提交；8269bff 是验证记录，#41 生产修复链接到 PR42 集成 8c15cd8，避免把文档提交冒充代码修复。
+
+实际评论：[#36](https://github.com/DreamSoul-AI/RPipe/issues/36#issuecomment-6177095209)、[#37](https://github.com/DreamSoul-AI/RPipe/issues/37#issuecomment-6177095726)、[#38](https://github.com/DreamSoul-AI/RPipe/issues/38#issuecomment-6177096237)、[#41](https://github.com/DreamSoul-AI/RPipe/issues/41#issuecomment-6177096891)。四个 Issue 保持 open，main 不变；等维护者后续决定 main，再按授权处理关闭。没有发送跨会话消息、覆盖下游源码或开启性能/超时测试。
+
 ### 60. 四个开放 Issue 的当前 dev 逐项复验与边界补测
 
 以实际集成 `5ee1214` 为基线，在唯一后续分支 codex/open-issue-correctness 中按 Issue 分开提交。四个原始问题已由此前 PR39/40/42–45 修复，本轮没有发现需要修改生产代码的新反例，因此只补有意义的边界，不重复造修复或改公共合同。

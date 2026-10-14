@@ -6,7 +6,9 @@
 
 ## 开放
 
-暂无已复现且尚未修复的软件条目。B-056～B-064、B-066～B-068 已通过 [PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46) 合入 dev `5ee1214b7ce0dc28b65139ac7b3f9ca16eb8b2ac`；原始期望、实际、来源和失败证据保留在 [合入前条目快照](https://github.com/DreamSoul-AI/RPipe/blob/90b7d75323d266c4d272f786c28f4c00959d0432/docs/development/bugs.md) 与 [record §43–60](record.md)。B-065 性能去重已经撤回，不算本轮修复。
+B-069（[#48](https://github.com/DreamSoul-AI/RPipe/issues/48)）已在当前工作分支修复并通过本机 81 项回归，按本文件规则将原始条目转入历史；详细期望、实际、红例与最小方案见 [record §62](record.md#62-readout-存在性查询与内容读取的错误边界b-069--48) 和 [修复前条目](https://github.com/DreamSoul-AI/RPipe/blob/1046452/docs/development/bugs.md)。实际 dev 集成尚须核对 [PR #49](https://github.com/DreamSoul-AI/RPipe/pull/49) 的最终 head、mergeCommit 和对应 CI，不以本机通过代替；Issue 保持 open。当前工作代码暂无缺少修复的已确认软件条目。
+
+B-056～B-064、B-066～B-068 已通过 [PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46) 合入 dev `5ee1214b7ce0dc28b65139ac7b3f9ca16eb8b2ac`；原始期望、实际、来源和失败证据保留在 [合入前条目快照](https://github.com/DreamSoul-AI/RPipe/blob/90b7d75323d266c4d272f786c28f4c00959d0432/docs/development/bugs.md) 与 [record §43–60](record.md)。B-065 性能去重已经撤回，不算本轮修复。
 
 GitHub #36 / #37 / #38 / #41 仍保持 open，不自动关闭。它们在 dev 已有修复，本轮逐项补边界与复验，没有新根因反例；已发布 main/v0.3.1 尚不含这些修复。当前 CPU 验证不代表 GPU 或全部 Study 的数值验收。
 
@@ -33,6 +35,6 @@ GitHub #36—#38及#41仍保持open，原v0.3.1/main尚未发布这些修复；�
 
 B-002、B-021 / B-024及B-025至B-029的既有修复证据仍在 [record.md](record.md)。B-022 / B-023 的代表性容量、精度合同与探索边界保留各自报告；本轮新的设备 / 并发结果见 [本轮执行记录](../../studies/main_exp/docs/v030_execution.md)。未实测支持范围不是已通过，缺环境依赖的导入失败也不自动列为库缺陷。
 
-B-031 至 B-068 已使用，编号不复用。下次新增问题从 **B-069** 起编号。
+B-031 至 B-069 已使用，编号不复用。下次新增问题从 **B-070** 起编号。
 
 新增条目一条一事，记录编号、open / investigating状态、复现条件、期望 / 实际、影响落点、方案和实际验证证据。
