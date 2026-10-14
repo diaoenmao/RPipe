@@ -84,3 +84,21 @@ def test_logs_unexpected_probe_error_is_not_hidden(tmp_path, monkeypatch):
     monkeypatch.setattr(Path, 'is_file', broken)
     with pytest.raises(RuntimeError, match='unexpected log probe failure'):
         event_lines(tmp_path)
+
+
+@pytest.mark.parametrize('reader', ['note', 'events'])
+def test_log_decoder_programming_typeerror_is_not_optional_io(tmp_path, monkeypatch, reader):
+    from rpipe.structure.artifact.readout.status import _note_from_log
+    from rpipe.structure.artifact.readout.logs import event_lines
+    write_index(tmp_path, {'study': 'logs', 'experiments': [{'runs': [{'id': 'bad'}]}]})
+    path = tmp_path / 'runs/bad/assets/logs/run.log'
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b'event')
+    original = Path.read_text
+    def broken(candidate, *args, **kwargs):
+        if candidate == path:
+            raise TypeError('decoder programming error')
+        return original(candidate, *args, **kwargs)
+    monkeypatch.setattr(Path, 'read_text', broken)
+    with pytest.raises(TypeError, match='decoder programming error'):
+        _note_from_log(path) if reader == 'note' else event_lines(tmp_path)
