@@ -302,3 +302,23 @@ def test_status_unexpected_probe_error_is_not_hidden(tmp_path, monkeypatch, targ
     monkeypatch.setattr(Path, 'is_file', broken)
     with pytest.raises(RuntimeError, match='unexpected probe failure'):
         list_runs(study)
+
+
+@pytest.mark.parametrize('metrics,expected', [
+    (None, '-'), ({}, '-'), ({'accuracy': 0.8}, 'accuracy=0.8000'),
+    ([1], '-'), (1, '-'), (True, '-'), ('bad metrics', '-'),
+    ([['accuracy', 0.9]], '-'),
+])
+def test_metric_shape_fallback_preserves_run_state_and_peer(tmp_path, metrics, expected):
+    study = _write_study(tmp_path)
+    write_result(study / 'runs/bad/result.json', {'status': 'succeeded', 'control': {},
+                 'paths': {}, 'metrics': metrics})
+    files = [p for p in study.rglob('*') if p.is_file()]
+    before = {p: p.read_bytes() for p in files}
+    body = list_runs(study)
+    rows = {row['id']: row for row in body['runs']}
+    assert body['counts'] == {'planned': 3, 'succeeded': 2, 'failed': 0, 'pending': 1}
+    assert rows['bad']['status'] == 'succeeded' and rows['bad']['mode'] == 'eval'
+    assert rows['bad']['metric'] == expected
+    assert rows['ok']['metric'] == 'accuracy=0.8000'
+    assert {p: p.read_bytes() for p in files} == before
