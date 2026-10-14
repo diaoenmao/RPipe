@@ -131,6 +131,17 @@ def _fake_processes(monkeypatch, study, failures):
     return started
 
 
+def test_no_retry_keeps_failed_train_eval_barrier(tmp_path, monkeypatch):
+    jobs = _study(tmp_path)
+    started = _fake_processes(monkeypatch, tmp_path, {'t0': 1})
+    codes = schedule.launch_jobs(tmp_path, jobs, batches=[jobs], retry_failed=False, console='shared')
+    assert started == ['t0', 't1', 'e1']
+    assert codes == [1, 0, 1, 0]
+    assert not schedule.run_succeeded(tmp_path, 'e0')
+    assert schedule.run_succeeded(tmp_path, 'e1')
+    assert 't0' in load_result(artifact_layout(tmp_path, 'e0').result_path)['error']
+
+
 @pytest.mark.parametrize('failures', [1, 2], ids=['retry-recovers', 'retry-exhausted'])
 def test_launch_finishes_train_retry_before_dependent_eval(tmp_path, monkeypatch, failures):
     jobs = _study(tmp_path)

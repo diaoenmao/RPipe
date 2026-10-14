@@ -300,6 +300,7 @@ def _execute_launch(args: argparse.Namespace) -> int:
         round_size=int(written.get('round') or 1),
         batches=written.get('batches'),
         console=str(getattr(args, 'console', 'auto')),
+        retry_failed=bool(getattr(args, 'retry_failed', True)),
     )
     still = [
         job['run_id']
@@ -476,6 +477,10 @@ def main(argv: list[str] | None = None) -> int:
 
     launch_p = sub.add_parser('launch', help='run pending jobs from make; make only if jobs.json is missing')
     _add_make_flags(launch_p)
+    launch_p.add_argument(
+        '--no-retry', action='store_false', dest='retry_failed', default=True,
+        help='do not retry failed Runs during this launch (default: retry once)',
+    )
     launch_p.add_argument(
         '--remake',
         action='store_true',
