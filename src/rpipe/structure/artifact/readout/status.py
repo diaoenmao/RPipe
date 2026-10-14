@@ -142,7 +142,7 @@ def list_runs(
                 status = str(result.get('status') or STATUS_PENDING)
                 error = result.get('error')
                 if status == STATUS_SUCCEEDED:
-                    metrics = dict(result.get('metrics') or {})
+                    metrics = result.get('metrics') or {}
             note = '-'
             if status == STATUS_PENDING:
                 note = _note_from_log(log_path(study_dir, run, run_dir))

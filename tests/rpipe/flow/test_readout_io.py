@@ -46,3 +46,24 @@ def test_native_readout_denied_log_preserves_results_and_peer_output(tmp_path, m
         assert captured.out == '[flow] peer event\n'
     assert {p: p.read_bytes() for p in files} == before
     assert set(tmp_path.rglob('*')) == entries
+
+
+@pytest.mark.parametrize('metrics', [[1], [['accuracy', 0.9]]])
+def test_native_status_metric_shape_keeps_filtered_peer_and_bytes(tmp_path, capsys, metrics):
+    """Public result writer -> CLI status filter -> unavailable cell, unchanged success/peer and all input bytes."""
+    write_index(tmp_path, {'study': 'metric_shape', 'experiments': [{'factors': {'algorithm.mode': 'eval'},
+                 'runs': [{'id': 'odd'}, {'id': 'peer'}]}]})
+    for run, values in [('odd', metrics), ('peer', {'accuracy': 0.8})]:
+        write_result(tmp_path / 'runs' / run / 'result.json', {'status': 'succeeded', 'control': {},
+                     'paths': {}, 'metrics': values})
+    entries = set(tmp_path.rglob('*'))
+    files = [p for p in entries if p.is_file()]
+    before = {p: p.read_bytes() for p in files}
+    assert main(['status', str(tmp_path), '--mode', 'eval']) == 0
+    captured = capsys.readouterr()
+    assert not captured.err and 'planned=2 succeeded=2 failed=0 pending=0' in captured.out
+    rows = {row.split('\t')[3]: row.split('\t') for row in captured.out.splitlines()[2:]}
+    assert rows['odd'][0] == 'succeeded' and rows['odd'][5] == '-'
+    assert rows['peer'][5] == 'accuracy=0.8000'
+    assert {p: p.read_bytes() for p in files} == before
+    assert set(tmp_path.rglob('*')) == entries

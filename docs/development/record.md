@@ -97,6 +97,28 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 63. 相邻正确性审计与 status 指标类型回退（B-070 / #50）
+
+#### （一）审计范围与收尾状态
+
+基于已验收 dev b2390b067abc0d39e347664573a95ad31fe11975，只读检查 readout status/logs、_atomic 写入/清理、launch 的本次重试参数和等待/失败状态、status mode 来源顺序，以及 make/run-one/Runner 的初始拒绝与失败写入。没有运行性能或GPU测试；不是全仓库/全部后端的无缺陷证明。模式合同严格接受小写train/eval/inference，不把无效大小写配置当作受支持模式扩展；checkpoint诊断保全仍按既有合同，不无依据清理。
+
+| **已完成项** | **实际状态** | **等待维护者决定的边界** |
+| --- | --- | --- |
+| #36/#37/#38/#41 原修复与边界补测 | 已在dev，PR46/47及实际集成CI通过；四条授权验收评论已发布 | Issue保持open；main/v0.3.1未发布这些修复 |
+| B-069 / #48 | PR49合入dev b2390b0；最终head ed96c8c的三门及实际dev Unit38629909667 / Package38629909697全部实际矩阵/聚合通过 | 原包门未完成的拒绝证据保留；不把skip或未执行GPU/HF算通过；Issue48仍open |
+| 当前新B-070 / #50 | 新鲜合成输入已复现，先开Issue50、再提交红色测试f15e067 | 当前候选及其最终head/实际dev必须独立验收；不合main或自动关Issue |
+
+B-069实际dev执行清单SHA256为636268155bb4d6d185868d539634b0fe9376dd33c1f9291a42fad83536e823c5；main仍7a15c46。旧三个工作分支、全部数据/Run/provenance保留。后续本轮仅使用一个新分支codex/status-metric-shape，不干预下游vendor/实验。
+
+#### （二）新反例与最小方案
+
+公共validate_result/write_result接受成功记录包含metrics=[1]，而list_runs先dict(...)导致TypeError；原生status返回2，正常peer被一起隐藏。列表对[['accuracy',0.9]]则会被当作mapping，显示并未按object记录的accuracy=0.9000。原始API/CLI输出和字节保全见.tmp/audit070/REPRO.json；这不是正式训练失败、结果损坏或性能结论。
+
+先创建[Issue #50](https://github.com/DreamSoul-AI/RPipe/issues/50)，再提交10项portable回归f15e067；旧代码 **7 failed /3 passed**，三个控制为None、空mapping和合法数值mapping。新增原生CLI用例覆盖eval过滤、Run成功状态/peer显示及全部输入字节不变。修复前status.py原字节ZIP/hash、红色XML/日志保留在.tmp/audit070，不随clone提供。
+
+方案仅取消list_runs调用方的dict强转，把原值交给既有_metric_cell的mapping/numeric guard；不改生产者、结果校验/格式、Run状态、mode、聚合或科学门，也不新增schema/解析器/重试/依赖。生产修复0b51ee6仅一行；10项新增节点全包含于绿色批次，与readout全目录/活动提示/原生status相邻门联合 **91 passed，0 failed / error / skipped**。红/绿节点、b2390b0到当前源码逐行仅该处变更与XML/SHA256已核对（Git与工作区原字节均为CRLF，read_text读取后规范化为LF；首次未统一文本比较因此拒绝，原字节hash与NEWLINE_CHECK.json分别保留，不当库失败），保存于.tmp/audit070/LOCAL_CHECKED.json。最终提交及实际集成CI仍分别核对，不以本机通过代替。
+
 ### 62. readout 存在性查询与内容读取的错误边界（B-069 / #48）
 
 按新授权在实际 dev f9c6e90 检查四类相邻路径，取得新的逐文件 I/O 反例。readout status 的 _load_result / _note_from_log、logs 的 event_lines 已对内容读取失败做逐文件回退，但 is_file 在 try 外；同一 PermissionError 提前发生时，API 异常、原生 CLI 返回 2，正常 peer 结果或日志一并不可见。与 B-068 activity 已修入口分开，不重复登记 #37 模式问题。
