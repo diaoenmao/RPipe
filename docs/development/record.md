@@ -139,7 +139,7 @@ source_files 会把启用阶段、两柱自动扫描、recipe、重叠include收
 
 #### （三）复现、边界和正式验收
 
-真实文件计数回归 .tmp/phase065/red.xml 为2 failed /1 passed，0.20s；flow关闭时两个文件各读2次、helper4次，开启时flow各3次、helper4次。拒绝读取用例修复前已通过。before.zip / BEFORE.json保全原实现与当时三项测试字节。之后加空匹配/越界两项；26项相邻门通过，完整artifact镜像与Git/manifest入口最终192 passed /5 deselected，6.06s。5项未被core选中，不计通过；远端CPU Flow单独核验。
+真实文件计数回归 .tmp/phase065/red.xml 为2 failed /1 passed，0.20s；flow关闭时两个文件各读2次、helper4次，开启时flow各3次、helper4次。拒绝读取用例修复前已通过。before.zip保全原实现与当时三项测试字节。临时元数据BEFORE.json与计时before.json在Windows上大小写别名，后者覆盖了前者；首次证据清单因KeyError: mode失败，草案代码已推送但未签收。原ZIP及计时字节未改，另存diagnostic-before.json并重建SNAPSHOT_FILES.json，逐字节核对ZIP内生产源码等于11ede41及计时源hash，归档测试AST等于当前前三项；不声称原先独立的测试hash元数据仍存在，FIRST_CHECK_FAILURE.json保留该缺口。之后加空匹配/越界两项；26项相邻门通过，完整artifact镜像与Git/manifest入口最终192 passed /5 deselected，6.06s。5项未被core选中，不计通过；远端CPU Flow单独核验。
 
 五项新增便携回归在tests/rpipe/structure/artifact/test_source_reads.py。两种flow状态均验证单次每文件只读一次、下一次调用必须重新读且修改哈希变化；同时验证PermissionError外溢、缺失glob拒绝、Study外路径拒绝。既有两柱add/edit/delete和路径逃逸用例仍执行。临时完整源快照、分段原始wall/CPU、日志、JSON/JUnit在.tmp/phase065/，不随clone；measured-after.py与已计时候选hash相等，最终源码仅恢复原换行，AST与候选一致。
 
