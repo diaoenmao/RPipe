@@ -16,6 +16,8 @@
 - 追加边界：合法JSON但根/files/plan为非mapping时，首候选仍有7 failed /21 passed（shape-red.xml），AttributeError仍可绕过保全。须在load_provenance验证磁盘mapping形状后交由同一冻结拒绝路径；不以捕获AttributeError掩盖编程错误。
 - 最小方案：仅在check_frozen读取/比较证据时将OSError或ValueError转现有ProvenanceChangedError并保留cause；不改Runner保全规则、不捕获任意编程异常、不重签旧来源。
 
+- 并发补验（2026-10-15）：新增失败交错与独立Run同时拒绝回归，修复前函数8项全红、当前相关53项通过；生产修复已在PR #46，仍未合入dev/main。详见[本轮汇总](record.md#55-b-058-至-b-067-修复汇总与并发补验)。
+
 ### B-066：Study 来源键可覆盖库来源哈希，掩盖真实库修改
 
 - 状态：open；296fac5上已用隔离库/Study真实复现，最终候选14项门和202 passed /5 deselected相邻core通过，最终提交CI另核对。PR #46保持草案，不合dev/main。
@@ -65,6 +67,8 @@
 
 
 - 候选复审：首版完整目标名+UUID 对合法 220 字符文件名产生新回归；旧 c3b8cef 实测成功，候选 .tmp/e062-name-red/ 1 failed 保留。短名修正后新增第六项实际文件系统回归，最终 .tmp/e062-final/ 93 passed；Windows 仅显式扩展路径，未改系统策略。
+
+- 并发补验（2026-10-15）：新增失败交错与独立Run同时拒绝回归，修复前函数8项全红、当前相关53项通过；生产修复已在PR #46，仍未合入dev/main。详见[本轮汇总](record.md#55-b-058-至-b-067-修复汇总与并发补验)。
 
 ### B-061：Git status 查询失败被记为可靠的 dirty 布尔值
 

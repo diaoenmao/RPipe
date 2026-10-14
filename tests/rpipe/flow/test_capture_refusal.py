@@ -116,3 +116,69 @@ def test_prepare_capture_refusal_with_study_phases_disabled(tmp_path, monkeypatc
     log = (layout.assets_dir / 'logs/run.log').read_text(encoding='utf-8')
     assert 'phase=prepare status=failed' in log and 'ProvenanceChangedError' in log
     assert (study / 'provenance.json').read_bytes() == saved
+
+
+@pytest.mark.parametrize('failure', ['missing', 'permission'])
+@pytest.mark.parametrize('prior', ['both-success', 'mixed'])
+def test_concurrent_freeze_refusals_preserve_each_run_independently(tmp_path, monkeypatch, failure, prior):
+    """Two distinct Runs share read-only Study evidence; concurrent refusals preserve successes or finalize only a new failed Run."""
+    from concurrent.futures import ThreadPoolExecutor
+    import threading
+    package, study = tmp_path / 'library', tmp_path / 'study'
+    package.mkdir()
+    (package / '__init__.py').write_bytes(b'library')
+    study.mkdir()
+    extra = study / 'input.txt'
+    extra.write_bytes(b'input')
+    monkeypatch.setattr(rpipe, '__file__', str(package / '__init__.py'))
+    monkeypatch.setattr(provenance, 'capture_environment', lambda: {'synthetic': True})
+    monkeypatch.setattr(provenance, 'capture_git', lambda _: {})
+    declared = {'freeze': True, 'flow': {'study_phases': True},
+                'provenance': {'include': ['input.txt']}}
+    write_config(study / 'study.yaml', declared)
+    provenance.write_provenance(study, declared)
+    saved = (study / 'provenance.json').read_bytes()
+    layouts = [artifact_layout(study, f'run-{index}') for index in range(2)]
+    before = {}
+    for index, layout in enumerate(layouts):
+        if index == 0 or prior == 'both-success':
+            write_result(layout.result_path, {'status': 'succeeded', 'control': {'seed': index},
+                         'paths': {}, 'metrics': {'accuracy': 40 + index}, 'owner': index})
+            before[index] = layout.result_path.read_bytes()
+    if failure == 'missing':
+        extra.unlink()  # Only this test's synthetic input.
+    else:
+        digest = provenance._sha256
+        def denied(path):
+            if path == extra:
+                raise PermissionError('input denied')
+            return digest(path)
+        monkeypatch.setattr(provenance, '_sha256', denied)
+    ready = threading.Barrier(2)
+    changes = provenance.provenance_changes
+    def synchronized(*args):
+        ready.wait(timeout=10)
+        return changes(*args)
+    monkeypatch.setattr(provenance, 'provenance_changes', synchronized)
+    def forbidden(_name):
+        pytest.fail('no phase may be imported after freeze refusal')
+    monkeypatch.setattr('rpipe.flow.runner.import_module', forbidden)
+    contexts = [FlowContext(study, layout, {}) for layout in layouts]
+    with ThreadPoolExecutor(max_workers=2) as workers:
+        futures = [workers.submit(FlowRunner(['execute']).run, context) for context in contexts]
+        errors = [future.exception(timeout=20) for future in futures]
+    for index, layout in enumerate(layouts):
+        if index in before:
+            assert layout.result_path.read_bytes() == before[index]
+        else:
+            result = load_result(layout.result_path)
+            assert result['status'] == 'failed' and result['error'].startswith('ProvenanceChangedError:')
+        assert isinstance(errors[index], provenance.ProvenanceChangedError), repr(errors[index])
+        expected = FileNotFoundError if failure == 'missing' else PermissionError
+        assert isinstance(errors[index].__cause__, expected)
+        log = (layout.assets_dir / 'logs/run.log').read_text(encoding='utf-8')
+        assert f' run-{index} ' in log and f' run-{1-index} ' not in log
+        assert 'ProvenanceChangedError' in log and '[flow] succeeded' not in log
+    assert (study / 'provenance.json').read_bytes() == saved
+    assert contexts[0].state is not contexts[1].state
+    assert contexts[0].state['logger'] is not contexts[1].state['logger']

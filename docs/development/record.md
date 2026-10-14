@@ -96,6 +96,48 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 55. B-058 至 B-067 修复汇总与并发补验
+
+本轮只补正确性测试、提交与开发记录，不修改生产源码，不做 perf 改动、性能采样或耗时比较。B-067 生产修复此前已提交并推送：8a24817，文档补正5bae738；本轮开始时工作区干净，不把已提交修复写成仍未提交。
+
+#### （一）修复汇总与集成状态
+
+逐项核对 Git 祖先关系：下表十项均已进入 codex/cache-lock-budget，即 [PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46) 的草案差异；**十项均未合入 dev 或 main**。dev 为9324014985680a0d186863cd135faa53a2e7bcbf，main 为已发布v0.3.1/7a15c46b75c5eb951cccd60ed7b9fc3463db90f5。dev 中共享输入与#36–38/#41修复来自更早PR，不能与本表草案混为已集成；main仍未发布这些修复。
+
+| **条目** | **改前 → 改后** | **草案修复提交** | **PR #46 / 集成状态** |
+| --- | --- | --- | --- |
+| B-058 | 事件起点取报告完成时刻 → 使用pytest实际阶段起点 | b20a034 | 已在PR；dev/main未合 |
+| B-059 | 清单别名/保留名可进入builder → 构建前校验本机Path等价和相对路径 | 8daebb5（含0bf77af修复） | 已在PR；dev/main未合 |
+| B-060 | packed refs/worktree测试来源丢失 → 快速路径加有界Git回退 | 394a068 | 已在PR；dev/main未合 |
+| B-061 | Git status失败仍误记dirty → 非零查询返回空可选元数据 | c3b8cef | 已在PR；dev/main未合 |
+| B-062 | 同tick引用临时名碰撞 → 每写者短UUID，失败只清理自己的staging | c4d651d（前候选494c064保留） | 已在PR；dev/main未合；本轮补并发失败交错 |
+| B-063 | HEAD/ref坏字节或消失使pytest启动失败 → 可选错误隔离并校验SHA形状 | 870da1b | 已在PR；dev/main未合 |
+| B-064 | 临时名拼完整目标名令合法长名失败 → 文本/迁移使用短UUID | 11ede41 | 已在PR；dev/main未合 |
+| B-065 | 单次来源采集重复读取重叠输入 → 仅当次去重，每次freeze仍重读 | ad67f74；证据补正296fac5 | 历史已在PR；dev/main未合；后续perf工作暂停 |
+| B-066 | Study同键覆盖库hash、掩盖库修改 → 保留库键域并核验物理身份 | 80fdce1 | 已在PR；dev/main未合 |
+| B-067 | 采集错误绕过冻结保全、覆盖旧成功 → mapping校验和现有拒绝异常，保留cause/旧成功 | 8a24817；文档5bae738 | 已在PR；dev/main未合；本轮补并发拒绝隔离 |
+
+B-065/ad67f74是已经存在的性能改动，本轮不继续优化、测量或扩展，也不将“暂停”写成已撤回该历史提交。PR继续Draft，尚未批准这些差异集成。B-056/B-057也仍在同一草案，本节依本次要求集中汇总B-058～B-067。旧失败、取消和未执行证据保留，既有§45～§54不删减。
+
+#### （二）B-062：失败清理与存活发布者
+
+新增4个确定性交错：默认symlink路径/显式hardlink fallback × 一方失败/双方失败。两线程完成同字节校验并各自产生staging后，令首写者PermissionError退出并完成finally清理；另一写者仍持有自己的staging，确认文件存在、字节完整、与source同物理输入，再成功发布或按计划拒绝。
+
+断言两个临时路径不同，首写者只能清理自己的路径；成功时target是source引用，双方失败时原独立副本保留；source、target及无关peer字节不变，最后只清理各自产生的临时引用。屏障/事件的有限等待仅防挂死，不采集或比较速度，不修改锁、调度或发布实现。仍不承诺任意缺失目标多写者或单Run多写者的新合同。
+
+#### （三）B-067：同Study不同Run同时拒绝
+
+新增4个并发条件：include文件消失/权限拒读 × 两个旧成功Run/一个旧成功加一个无结果Run。两个Runner读取同一份只读来源证据前通过屏障同时进入，使用真实check_frozen、Runner异常处理、日志与结果IO；禁止计算阶段导入。每个Run只有一个执行者/写入者，Context和Logger独立，不共享模型、RNG、sampler或可变状态。
+
+旧成功result逐字节保留；无旧结果的Run各自failed定稿并保留ProvenanceChangedError与原始cause；日志只含本Run标识，来源清单不改写。实际8份落盘结果中6个旧成功保全、2个新failed，不将并发拒绝写成成功模型执行。
+
+#### （四）红例、验收与提交边界
+
+- 先保存B-062基线c3b8cef和B-067基线80fdce1原始文件/hash，再在隔离pytest进程通过临时plugin只恢复link_input、load_provenance/check_frozen；不修改仓库生产文件或下游。8个新增并发用例全部失败，red.xml /red.log /RED_REASONS.json保留。旧B-062确有临时路径撞名、FileExistsError/共享拒绝及关联屏障退出；旧B-067实际覆盖旧成功，不只是异常文本不同。
+- 当前草案的新增8项与既有共享引用、原子发布、长名staging、冻结采集等相关回归共53 passed，无跳过；green.xml /green.log保留。没有用早先运行代替本轮执行。
+- TEST_SNAPSHOT.zip /SNAPSHOT_INDEX.json保存源码/测试字节；INTEGRATION_MAP.json保存逐项祖先核对；RESULTS.json保存实际8份结果状态/hash。首次证据收集器因pytest缩短临时目录名而拒绝空选择，EVIDENCE_SCAN_FAILURE.json保留，修正目录选择后检查原输出，无重跑/改写结果。临时材料在.tmp/b062-b067-concurrency，不随clone提供；便携回归见[共享引用测试](../../tests/rpipe/structure/artifact/test_shared_references.py)与[冻结拒绝测试](../../tests/rpipe/flow/test_capture_refusal.py)。
+- 本轮提交只有测试、record及bugs状态补充，生产src相对5bae738无变化。提交后绑定最终head核对Unit tests / Build package / Branch flow及所有实际子任务，不拿5bae738旧绿灯替代。最终链接与验收清单同步PR正文；PR保持Draft OPEN、无auto-merge，不合并、不发布。
+
 ### 54. 暂停性能调查与冻结采集错误保全（B-067，草案）
 
 按最新人类指示，暂停所有速度、耗时、480 秒插桩、profiler、缓存与资源竞争测量。本轮只验证代码正确性；GPU 争用保留为未证实假设，不据此归因或新增全局 GPU 互斥。旧证据保留，后续速度验证另行恢复。未向下游发送消息或干预实验。
