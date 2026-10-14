@@ -97,6 +97,12 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 70. 第二类：三态读取与计划 config 优先合同
+
+第三类 PR52 最终 head eb52c65 全部实际矩阵/聚合通过：Unit38638301970、Package38638301989、Branch38638301958，正常合入 dev ea2210bc27e5456062bdef0ffb331e208c64f838；实际 dev 独立 CI 另验收。PR 汇总 Unit tests 尚 IN_PROGRESS 时拒绝的 ROLLUP_PENDING.json 保留，不拿实际任务已绿提前合并。
+
+从 ea2210b 建立 codex/safe-readout-contracts，按批准设计先补第二类11项合同，基线11 failed：6项为 config 与旧 axes/result 冲突或非法配置 / 身份仍被忽略，5项为计划新增的私有三态 helper 尚不存在。后者是接口提炼合同，不登记为旧代码 bug；config 优先是本设计明确批准的读出规则变更，不把它冒称旧 #37 未修。旧模式 fallback、peer / 原字节保全与严格 loader 均保留回归。
+
 ### 69. 第三类：替换文本共用原子发布（B-071 / #53）
 
 先提交红色合同 a7277c1，再补 POSIX script mode 合同 1c56b31，之后生产改动仅五个原文件：index、jobs / scripts、profile / ready marker 改用现有 atomic_write_text；helper 只适配可选 newline 并保留已有 mode，继续调用原 atomic_replace。移除重复 mkdir；不搬模块、不新增产物或布局，不引入 producer 框架。脚本仍 LF，普通文本仍系统原生换行；JSON 字段和默认编码不改。
