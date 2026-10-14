@@ -97,6 +97,24 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 75. 三类收敛完成与维护待命边界
+
+本次先同步 origin/dev，确认三类已全部按批准顺序合入 dev `34e95069a3a2814d0fabf4879b1584f1bdbd0758`；分支生命周期规则已随 PR #55 合入 [cicd.md](cicd.md#分支管理2026-10-15)，原工作分支没有未纳入 dev 的提交，无需重复开同题 PR。下表是已完成验收，前文“待 CI / 待集成”为各自记录时点事实。
+
+| **类别** | **已完成内容与 PR** | **实际 dev 验收** |
+| --- | --- | --- |
+| 第三类 | [PR #52](https://github.com/DreamSoul-AI/RPipe/pull/52)：可整体替换文本复用原子发布，特殊追加 / checkpoint / 锁协议保留 | ea2210b：[Unit](https://github.com/DreamSoul-AI/RPipe/actions/runs/38639077019)、[Package](https://github.com/DreamSoul-AI/RPipe/actions/runs/38639076858) |
+| 第二类 | [PR #54](https://github.com/DreamSoul-AI/RPipe/pull/54)：统一私有安全读取与计划字段校验，保留历史 fallback | 945c992：[Unit](https://github.com/DreamSoul-AI/RPipe/actions/runs/38641099712)、[Package](https://github.com/DreamSoul-AI/RPipe/actions/runs/38641099684) |
+| 第一类 | [PR #55](https://github.com/DreamSoul-AI/RPipe/pull/55)：仅提炼既有失败保全判断，范围不扩大；含分支管理文档 | 34e9506：[Unit](https://github.com/DreamSoul-AI/RPipe/actions/runs/38643122769)、[Package](https://github.com/DreamSoul-AI/RPipe/actions/runs/38643122705) |
+
+三条 PR 的最终工作提交与上表实际 dev 的所有实际矩阵及聚合均已分别通过。本机对应为第三类 129 passed / 1 POSIX skipped、第二类 107 passed、第一类基线 42 passed / 最终 128 passed；跳过项不计通过。完整 head 与验收链接保留在各 PR 正文，原失败和候选结果不覆盖；本次仅文档核对，不重复运行这些测试。
+
+Issue #36 / #37 / #38 / #41 / #48 / #50 / #53 的修复已在 dev，仍有意保持 open，等待 Enmao 决定是否进入 main 后再处置；不自动关闭，不把 open 当作仍未修复。main 保持已发布 v0.3.1 / `7a15c46`，不合 main、不发布。现有工作分支、Run、数据、provenance 均保留，自动删除设置未改；删除分支或数据仍须单独确认。
+
+当前没有本轮已立项而未完成的正确性缺口；维护进入待命边界：仅响应明确的新任务或有来源、可复现的新 RPipe 缺陷，不再逐个审计相邻路径，不为保持活跃制造修复，不测速 / 改性能 / 查 480 秒 / 跑 GPU，不改文件架构或产物布局，不实施设计第七节能力、不干预下游实验。上述 CPU / 包门不替代 GPU 或完整 Study 科学验收。
+
+本节按 Enmao 的长期授权执行文档提交、工作分支推送及 PR 合 dev，不弹提问窗；如以本地检查替代远端 CI，必须明示实际范围且不伪称远端通过，保留平台强制门。自动审批拒绝则记录准确命令、理由与未执行状态并继续其他工作；删数据 / 删分支 / 强推 / 合 main / 花钱暂停对应操作，在报告列明待确认事项。本次无此类操作。
+
 ### 74. 分支管理规则文档更新（随 PR55）
 
 按维护者补充要求，在 cicd.md 新增分支管理节：同工作流只留一条工作分支、同主题续做或从最新dev重新开始并清理旧分支、最终工作提交与实际dev必需CI通过后立即清理对应远程/本地工作分支、长期分支仅main/dev，并建议开启合并后自动删除。同时明确长期分支保护与发布PR头分支保全、本地清理和提交核验责任。
