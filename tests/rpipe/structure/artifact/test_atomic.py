@@ -233,3 +233,12 @@ def test_atomic_text_newline_option_preserves_native_and_script_bytes(tmp_path, 
     atomic_write_text(target, '中文\nsecond\n', newline=newline)
     assert target.read_bytes() == ('中文' + (os.linesep if newline is None else '\n')
                                   + 'second' + (os.linesep if newline is None else '\n')).encode('utf-8')
+
+
+@pytest.mark.skipif(__import__('os').name == 'nt', reason='POSIX executable mode bits')
+def test_atomic_text_preserves_existing_script_mode(tmp_path):
+    target = tmp_path / 'launch.sh'
+    target.write_text('old', encoding='utf-8')
+    target.chmod(0o750)
+    atomic_write_text(target, 'new', newline='\n')
+    assert target.stat().st_mode & 0o777 == 0o750
