@@ -1,5 +1,11 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-15 v0.4.0 已正式发布
+
+发布[PR #59](https://github.com/DreamSoul-AI/RPipe/pull/59)已dev→main正常merge为54f8d31c0f5505742677dd2ce6dec323ee114c61，实际main全部CPU/包CI成功后建立annotated [tag v0.4.0](https://github.com/DreamSoul-AI/RPipe/tree/v0.4.0)并发布[同名Release](https://github.com/DreamSoul-AI/RPipe/releases/tag/v0.4.0)。正文取自该提交发布报告，转换相对链接并附验收。#36/#37/#38/#41/#48/#50均已分别留言版本后completed关闭，#53保持open；准确链接和hash见[record §78](record.md#78-v040-正式发布完成与六项-issue-关闭)。
+
+不要重复发版、关闭评论或移动标签；下方“待发布/仅合dev/交监督助手”为当时状态。复用原codex/v040-layout-release提交发布后文档补记并PR合dev，当前以实际PR状态为准，不另建同质分支。全部分支/数据/Run/provenance保留，仍不测速、跑GPU、改产物布局或主动相邻审计。
+
 ## 2026-10-15 v0.4.0 已授权继续发布
 
 以Enmao最新明确指令为准：本任务继续完成dev→main普通merge、实际main CI验收、annotated tag v0.4.0、GitHub Release，再留言并关闭#36/#37/#38/#41/#48/#50。先检查实际PR/tag/Release与Issue状态，复用codex/v040-layout-release，不重复发布或移动已有标签。下方“仅合dev后停止/由监督助手发布”是当时状态，已被本节取代。#53不在关闭清单，分支和数据不删，不squash/强推，仍不测速、不跑GPU。完成事实见[record](record.md)，精确PR/commit/CI以Release附录为准。
