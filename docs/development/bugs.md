@@ -6,6 +6,16 @@
 
 ## 开放
 
+### B-072：Study 替换文本绕过统一原子入口与固定 staging 所有权
+
+- 状态：open；归入 [#53](https://github.com/DreamSoul-AI/RPipe/issues/53#issuecomment-6191251124) 同类发布合同扩展，原库 index 修复已在 v0.4.0，不重复登记为未修。
+- 来源与范围：按最新全仓三类归纳授权检查受跟踪的 Study recipe / flow / structure。main_exp 的报告、数据/源码清单仍直接 write_text；main_probe.save_json 使用固定 `<target>.writing`，未复用库原子链。
+- 期望：替换文本完整编码后交给 atomic_write_text；每个写者独立 staging，失败不改 target / peer，日志流与二进制输入/检查点保留原协议。
+- 实际：合成旧 target 与 peer `.writing`，部分写和替换拒绝可覆盖 peer；正常发布移走 peer；双线程提交共用 staging。架构检查还检出八个文件的绕行入口。
+- 红色回归：先提交 19a3fbb；35 项中 5 failed /29 passed /1 POSIX skip。位置 tests/rpipe/structure/artifact/test_atomic.py；.tmp/contract072/red2.xml 与 before.zip/hash 仅本机保留，不随 clone。初轮测试钩子遗漏 os.replace 已修正，red.xml 保留，不当独立生产缺陷。
+- 统一方案：八文件的替换文本复用 atomic_write_text，无新 I/O helper、目录、schema 或计算逻辑；现有流式 worker.log 精确豁免。旧 Run / provenance / 数据不改，新源码实测必须新 version / make。仅 CPU 合同测试，不执行数据准备/历史训练/测速。
+
+
 B-071（[Issue #53](https://github.com/DreamSoul-AI/RPipe/issues/53)）已通过[PR #52](https://github.com/DreamSoul-AI/RPipe/pull/52)合入 dev ea2210bc27e5456062bdef0ffb331e208c64f838；最终 head eb52c65 与实际 dev 的全部实际 CI 通过。真实旧 index 截断与红绿合同见 [record §69 / §73](record.md)。修复已随v0.4.0进入main54f8d31；Issue53不在本次关闭清单，仍保持open。
 
 B-070（[#50](https://github.com/DreamSoul-AI/RPipe/issues/50)）已通过[PR #51](https://github.com/DreamSoul-AI/RPipe/pull/51)合入 dev d294c1b5aa99b4d7148f991f9a4ac8903fe23374，最终工作提交及实际 dev 的必需 CI 全部实际矩阵和聚合通过；原始条目保留在[修复前记录](https://github.com/DreamSoul-AI/RPipe/blob/3a198ff4e04d25999a895b131f0c01ab964b5e0a/docs/development/bugs.md)和[record §63–64](record.md)。Issue50已在v0.4.0发布后按明确授权留言并关闭。三类[产物一致性设计](artifact_consistency_design.md)已按PR52/54/55完成，不再处于待审或未实施状态。
@@ -39,6 +49,6 @@ B-055 的原生 launch 重试关闭入口已通过 [PR #42](https://github.com/D
 
 B-002、B-021 / B-024及B-025至B-029的既有修复证据仍在 [record.md](record.md)。B-022 / B-023 的代表性容量、精度合同与探索边界保留各自报告；本轮新的设备 / 并发结果见 [本轮执行记录](../../studies/main_exp/docs/v030_execution.md)。未实测支持范围不是已通过，缺环境依赖的导入失败也不自动列为库缺陷。
 
-B-031 至 B-071 已使用，编号不复用。下次新增问题从 **B-072** 起编号。
+B-031 至 B-072 已使用，编号不复用。下次新增问题从 **B-073** 起编号。
 
 新增条目一条一事，记录编号、open / investigating状态、复现条件、期望 / 实际、影响落点、方案和实际验证证据。
