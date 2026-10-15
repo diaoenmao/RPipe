@@ -128,3 +128,70 @@ def test_index_rejects_unsafe_id_even_with_safe_directory(tmp_path, entry):
     write_index(tmp_path, {'experiments': [{'runs': [entry]}]})
     with pytest.raises(ValueError):
         load_index(tmp_path)
+
+
+@pytest.mark.parametrize('body', [
+    {'experiments': {}},
+    {'experiments': {'unexpected': []}},
+    {'experiments': [7]},
+    {'experiments': [{'runs': {}}]},
+    {'experiments': [{'runs': {'unexpected': []}}]},
+    {'experiments': [{'runs': [7]}]},
+    {'experiments': [{'factors': 7}]},
+    {'experiments': [{'factors': []}]},
+    {'experiments': [{'factors': [['axis', 1]]}]},
+    {'experiments': [{'factors': 'bad'}]},
+], ids=['experiments-empty-object', 'experiments-object', 'experiment-scalar',
+        'runs-empty-object', 'runs-object', 'run-scalar', 'factors-scalar',
+        'factors-list', 'factors-pairs', 'factors-text'])
+def test_index_rejects_malformed_nested_containers_without_writes(tmp_path, body):
+    import json
+
+    path = tmp_path / 'index.json'
+    raw = json.dumps(body).encode('utf-8')
+    path.write_bytes(raw)
+    peer = tmp_path / 'peer.json'
+    peer.write_bytes(b'preserve peer')
+    with pytest.raises((TypeError, ValueError), match='Study index'):
+        load_index(tmp_path)
+    assert path.read_bytes() == raw
+    assert peer.read_bytes() == b'preserve peer'
+    assert set(tmp_path.iterdir()) == {path, peer}
+
+
+@pytest.mark.parametrize('command', ['status', 'logs'])
+@pytest.mark.parametrize('body', [
+    {'experiments': [7]},
+    {'experiments': [{'runs': [7]}]},
+    {'experiments': {}},
+    {'experiments': [{'factors': [['axis', 1]], 'runs': []}]},
+], ids=['experiment-scalar', 'run-scalar', 'false-empty-plan', 'factor-pairs'])
+def test_readouts_reject_malformed_index_at_shared_boundary(tmp_path, capsys, command, body):
+    import json
+    from rpipe.flow.cli import main
+
+    path = tmp_path / 'index.json'
+    raw = json.dumps(body).encode('utf-8')
+    path.write_bytes(raw)
+    assert main([command, str(tmp_path)]) == 2
+    captured = capsys.readouterr()
+    assert 'Study index' in captured.err
+    assert not captured.out
+    assert path.read_bytes() == raw
+    assert list(tmp_path.iterdir()) == [path]
+
+
+@pytest.mark.parametrize('body', [
+    {}, {'experiments': None}, {'experiments': []},
+    {'experiments': [{}]},
+    {'experiments': [{'runs': None, 'factors': None}]},
+    {'experiments': [{'runs': [], 'factors': {}}]},
+], ids=['missing', 'null', 'empty-list', 'missing-fields', 'null-fields', 'empty-fields'])
+def test_index_keeps_legacy_optional_empty_containers(tmp_path, body):
+    import json
+
+    raw = json.dumps(body).encode('utf-8')
+    path = tmp_path / 'index.json'
+    path.write_bytes(raw)
+    assert load_index(tmp_path) == body
+    assert path.read_bytes() == raw
