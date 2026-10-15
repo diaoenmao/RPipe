@@ -1,8 +1,8 @@
-> 现状：PR109实际dev全绿清远程；唯一未合report-count-cells处理B092/#110，B093/#111独立排队。
-> 最新：三计数格15原生场景12不符；完整RED2共60项45失败/15控制，出处§126。
-> 保留：首RED因失败事件的U+D800编码故障中止，52节点36失败/1error，原日志/字节未覆盖。
-> 验证：readout491、core1384+1平台skip、CPU Flow181通过，60新节点全执行；下一CI合dev后紧接#111。
-> 边界：不改科学聚合/JSON/布局，不测速/GPU，不合main/tag；已修Issue等下版，目标active。
+> 现状：B092/#110已PR112合dev49748695并实际CI全绿；当前唯一未合分支修B093/#111。
+> 最新：20新合同回归15失败/5控制，另5既有测试通过；红提交2b4c0d1，出处§128。
+> 依据：原生入口exit3、空事件、peer未执行；manifest同类编码边界也复现。
+> 验证：175针对性、core1396+1既有平台skip、CPU Flow189通过；12单元/8原生与60计数节点均执行。
+> 下一步：最终head与实际dev全部实际CI验收后清remote，Issue111保留至下版。 无阻塞；不测速/GPU/main/tag/布局变更。
 
 # 一、摘要
 
@@ -103,6 +103,24 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-16
 
+
+### 128. 测试证据 Unicode 传输合同（B-093 / #111）
+
+2026-10-16：Issue111 已先于修复登记；不重复登记计数格问题。独立复制原生入口证据 `.tmp/audit093/NATIVE_REPRO.json` 显示旧 writer 遇到 U+D800 时退出3、events0字节且 peer 未执行。旧源码 SHA256 `b732100cd80b2d9872789c316964147318cce1b1e4e32da38647f59ad3595456`。这些本机证据不随 clone，portable 回归在 tests 根的既有设施测试文件。
+
+2b4c0d1 先提交红回归：20新节点15 failed/5正常Unicode控制 passed；连同5既有节点为25项15 failed/10 passed、0error/skip，RED.xml/RED_CHECKED 保留。覆盖8事件、4manifest、8真实复制入口；call/setup、高/低/混合代理与有效中文/emoji全部执行。子进程原退出3的真实故障由外层断言失败记录，未排除坏输入或挑选通过。
+
+方案先写入 testing：不增加helper/模块/目录，两个现有JSON文本写入点加 errors=backslashreplace，保留 ensure_ascii=False 与有效UTF8，只把非法代理转成可无损解码的JSON转义。既有4000字符上限/状态/phase起点/来源优先级不变。修复后删除B092计数测试的临时ASCII诊断shortcut，恢复相同直接断言；src生产代码不变。终端编码设置仅保障采集，不掩盖显式JSON writer故障。
+
+58f9aaf只在manifest write_text和events append open各加一个errors参数；原ensure_ascii=False保持。计数测试同步删2行绕行/注释、恢复原直接相等断言，src生产树与基线49748695完全相同。针对性175 passed；core1396 passed/1既有POSIX mode skip；CPU Flow189 passed，无failure/error。12新unit在core、8新native在Flow、60计数在core均实执行。8独立native子进程各退出1，事件failed1+passed1且peer执行，报告同样失败1/通过1；这是预期失败测试的正确落盘，不是子任务质量通过。有效中文/emoji原UTF8与代理解码字符串均核验。
+
+LOCAL_CHECKED SHA256 `cea6fe304c936747d6deaff3dc0389c11c9aaf8f9510fb39f86234c1e76b41cc`；原始before.zip/hash/RED/GREEN/CORE/FLOW及红测试实际CRLF字节保留.tmp/audit093，不随clone。首次核对器把pytest的current目录别名重复计入为9条而拒绝；原脚本及LOCAL_CHECK_REFUSED保留，按resolve去重后确认8独立结果，未重跑测试或删结果。此核对拒绝不当库失败。最终工作head与实际dev CI待验，不把本机通过替代远端。
+
+### 127. PR112实际dev验收与第十七条结束远程清理
+
+PR112普通merge到 `4974869527bffe706d59fd4da92a6cfcbafa711e`。最终head `07a32762ec777b29d4c4134621d2f62fa617da5f` 的 Unit38808338109、Package38808338125、Branch38808337874，以及实际dev Unit38809234579、Package38809234571的全部实际矩阵/聚合成功。DEV_CHECKED SHA256 `32bfa3c0833f9bd946a5e2157c4369844056ae6e79b8c1430482d5bfad2076e3`。证据 `.tmp/audit092` 不随clone。
+
+B09260新节点完整红45失败/15控制，修复后readout491、core1384+1既有平台skip、CPU Flow181通过。核对祖先/无开放PR/实际CI后已删remote codex/report-count-cells，本地tip保留；本目标累计17条结束remote已清。Issue110保留open至下版；B093/#111独立接续，不重跑已完成CI，不合main/tag。
 
 ### 126. NUMBERS计数格的统一类型与行列合同（B-092 / #110；另发现B-093 / #111）
 
