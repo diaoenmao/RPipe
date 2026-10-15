@@ -412,3 +412,22 @@ def test_boolean_recorded_seed_is_not_equal_to_planned_zero(tmp_path):
                  'control': {'seed': False, 'algorithm': {'mode': 'eval'}}, 'metrics': {}, 'paths': {}})
     row = list_runs(tmp_path)['runs'][0]
     assert row['mode'] == 'unknown' and 'conflict' in row['error']
+
+
+@pytest.mark.parametrize('value', [10**400, float('nan'), float('inf'), -float('inf')], ids=['overflow', 'nan', 'inf', 'negative-inf'])
+@pytest.mark.parametrize('fallback', [False, True])
+def test_unusable_numeric_metric_is_local_and_keeps_valid_fallback(tmp_path, capsys, value, fallback):
+    study = _write_study(tmp_path)
+    metrics = {'accuracy': value}
+    if fallback:
+        metrics['best_accuracy'] = 0.7
+    write_result(study / 'runs/bad/result.json', {'status': 'succeeded',
+                 'control': {'algorithm': {'mode': 'eval'}}, 'metrics': metrics, 'paths': {}})
+    before = {p: p.read_bytes() for p in study.rglob('*') if p.is_file()}
+    rows = {row['id']: row for row in list_runs(study)['runs']}
+    assert rows['bad']['metric'] == ('best_accuracy=0.7000' if fallback else '-')
+    assert rows['bad']['status'] == 'succeeded' and rows['bad']['mode'] == 'eval'
+    assert rows['ok']['metric'] == 'accuracy=0.8000'
+    assert main(['status', str(study)]) == 0
+    assert 'accuracy=0.8000' in capsys.readouterr().out
+    assert {p: p.read_bytes() for p in before} == before

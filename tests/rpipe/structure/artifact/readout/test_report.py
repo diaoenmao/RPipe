@@ -174,3 +174,43 @@ def test_report_preserves_numbers_if_atomic_replace_fails(report_study, monkeypa
     assert main(['report', str(report_study)]) == 2
     assert numbers_path(report_study).read_bytes() == before
     assert not list((report_study / 'docs').glob('*.tmp'))
+
+
+@pytest.mark.parametrize('value', [10**400, float('nan'), float('inf'), -float('inf')], ids=['overflow', 'nan', 'inf', 'negative-inf'])
+def test_unusable_number_is_a_placeholder_in_aggregate_and_run_cells(report_study, value):
+    from rpipe.structure.artifact.readout.report import render_numbers
+
+    path = report_study / 'process.json'
+    body = json.loads(path.read_text())
+    exp = body['experiments'][0]
+    exp['metrics']['accuracy']['mean'] = value
+    exp['runs'][0]['metrics']['accuracy'] = value
+    exp['runs'][1]['metrics'] = {'accuracy': 0.75}
+    path.write_text(json.dumps(body), encoding='utf-8')
+    before = {p: p.read_bytes() for p in report_study.rglob('*') if p.is_file()}
+    text = render_numbers(report_study)
+    assert '| model.name=linear | accuracy | - | 0.0000 |' in text
+    assert '`a` | accuracy=- |' in text and '`b` | accuracy=0.7500 |' in text
+    assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('value', [7, True, 'bad', [['accuracy', 0.5]], []], ids=['int', 'bool', 'text', 'pairs', 'empty-list'])
+@pytest.mark.parametrize('scope', ['experiment', 'run'])
+def test_nonobject_metrics_do_not_hide_other_run_or_rewrite_evidence(report_study, value, scope):
+    from rpipe.structure.artifact.readout.report import render_numbers
+
+    path = report_study / 'process.json'
+    body = json.loads(path.read_text())
+    exp = body['experiments'][0]
+    target = exp if scope == 'experiment' else exp['runs'][0]
+    target['metrics'] = value
+    exp['runs'][1]['metrics'] = {'accuracy': 0.75}
+    path.write_text(json.dumps(body), encoding='utf-8')
+    before = {p: p.read_bytes() for p in report_study.rglob('*') if p.is_file()}
+    text = render_numbers(report_study)
+    assert '`a`' in text and '`b` | accuracy=0.7500 |' in text
+    if scope == 'experiment':
+        assert '| model.name=linear | - | - | - | - | - | 1 |' in text
+    else:
+        assert '`a` | - |' in text
+    assert {p: p.read_bytes() for p in before} == before
