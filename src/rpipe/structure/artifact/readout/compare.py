@@ -29,6 +29,8 @@ def _close(a: float, b: float, atol: float, rtol: float) -> tuple[bool, float]:
     if math.isnan(a) or math.isnan(b):
         same = math.isnan(a) and math.isnan(b)
         return same, 0.0 if same else math.inf
+    if math.isinf(a) or math.isinf(b):
+        return a == b, 0.0 if a == b else math.inf
     diff = abs(a - b)
     return diff <= atol + rtol * abs(b), diff
 
@@ -61,9 +63,11 @@ def _tree(a: Any, b: Any, atol: float, rtol: float, path: str, problems: list[st
         dtype = torch.complex128 if a.is_complex() or b.is_complex() else torch.float64
         left, right = a.detach().cpu().to(dtype), b.detach().cpu().to(dtype)
         both_nan = torch.isnan(left) & torch.isnan(right)
-        diff = (left - right).abs().masked_fill(both_nan, 0.0)
+        same = both_nan | (left == right)
+        nonfinite = ~torch.isfinite(left) | ~torch.isfinite(right)
+        diff = (left - right).abs().masked_fill(same, 0.0).masked_fill(nonfinite & ~same, math.inf)
         worst = float(diff.max())
-        bound = atol + rtol * right.abs().masked_fill(both_nan, 0.0)
+        bound = (atol + rtol * right.abs()).masked_fill(nonfinite, 0.0)
         if math.isnan(worst) or bool((diff > bound).any()):
             problems.append(f'{path}: max abs diff {worst:g}')
         return worst
