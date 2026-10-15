@@ -65,3 +65,78 @@ def test_two_column_source_cannot_escape_study(tmp_path, folder):
         pytest.skip('host does not allow directory symlinks')
     with pytest.raises(ValueError, match='inside the Study'):
         source_files(study, {})
+
+
+
+_BAD_PROVENANCE_DECLARATIONS = [
+    {'provenance': False}, {'provenance': 0}, {'provenance': ''}, {'provenance': []},
+    {'provenance': {'include': False}}, {'provenance': {'include': 0}},
+    {'provenance': {'include': ''}}, {'provenance': {'include': {}}},
+    {'provenance': {'include': 'x'}},
+    {'provenance': {'include': {'x': False}}},
+]
+
+
+def _declaration_study(tmp_path, monkeypatch):
+    import rpipe
+    from rpipe.structure.artifact import provenance
+
+    package = tmp_path / 'library'
+    _source(package, '__init__.py')
+    monkeypatch.setattr(rpipe, '__file__', str(package / '__init__.py'))
+    monkeypatch.setattr(provenance, 'capture_environment', lambda: {'test': 'CPU'})
+    monkeypatch.setattr(provenance, 'capture_git', lambda root: {})
+    study = tmp_path / 'study'
+    study.mkdir()
+    (study / 'study.yaml').write_bytes(b'name: synthetic\n')
+    (study / 'x').write_bytes(b'immutable input\n')
+    return study
+
+
+@pytest.mark.parametrize('config', _BAD_PROVENANCE_DECLARATIONS)
+def test_source_manifest_rejects_malformed_declaration(tmp_path, monkeypatch, config):
+    study = _declaration_study(tmp_path, monkeypatch)
+    before = {p.name: p.read_bytes() for p in study.iterdir()}
+    with pytest.raises(ValueError, match='provenance'):
+        source_files(study, config)
+    assert {p.name: p.read_bytes() for p in study.iterdir()} == before
+
+
+@pytest.mark.parametrize('config', _BAD_PROVENANCE_DECLARATIONS)
+@pytest.mark.parametrize('prior', [False, True])
+def test_provenance_refuses_bad_declaration_without_publication(tmp_path, monkeypatch, config, prior):
+    study = _declaration_study(tmp_path, monkeypatch)
+    target = study / 'provenance.json'
+    old = b'{"files":{"old.py":"prior-hash"},"plan":{}}'
+    if prior:
+        target.write_bytes(old)
+    peer = study / 'peer.json'
+    peer.write_bytes(b'{"status":"succeeded"}')
+    before = {p.name: p.read_bytes() for p in study.iterdir()}
+    with pytest.raises(ValueError, match='provenance'):
+        write_provenance(study, config)
+    assert {p.name: p.read_bytes() for p in study.iterdir()} == before
+
+
+@pytest.mark.parametrize('config,included', [
+    ({}, False), ({'provenance': None}, False), ({'provenance': {}}, False),
+    ({'provenance': {'include': None}}, False), ({'provenance': {'include': []}}, False),
+    ({'provenance': {'include': ['x']}}, True),
+    ({'provenance': {'include': ['x*']}}, True),
+    ({'provenance': {'include': [Path('x')]}}, True),
+])
+def test_source_manifest_keeps_supported_declaration_forms(tmp_path, monkeypatch, config, included):
+    import hashlib
+    from rpipe.structure.artifact.provenance import load_provenance
+
+    study = _declaration_study(tmp_path, monkeypatch)
+    before = {p.name: p.read_bytes() for p in study.iterdir()}
+    files = source_files(study, config)
+    assert ('x' in files) is included
+    if included:
+        assert files['x'] == hashlib.sha256(before['x']).hexdigest()
+    write_provenance(study, config)
+    saved = load_provenance(study)
+    assert saved['files'] == files
+    assert saved['plan'] == {}
+    assert {p.name: p.read_bytes() for p in study.iterdir() if p.name != 'provenance.json'} == before
