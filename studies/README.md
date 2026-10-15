@@ -4,6 +4,8 @@
 
 ## 从宏观研究提取具体 Study
 
+本仓库宏观入口是 [RPipe 中文研究计划](../docs/research/research_plan.md)（[English](../docs/research/research_plan_en.md)）与[文献证据](../docs/research/literature.md)。本轮计划重做不重写下列历史 Study 的方案、来源或结果；其验收仅适用于各自记录的版本。
+
 研究项目先按[研究工作要求](../docs/development/research.md)在 `docs/research/` 维护宏观问题、文献依据、假设与六方面方案，再从其中提取可独立执行和验收的 Study，不从现有脚本倒推研究问题，也不把整份宏观方案直接当作一个实验矩阵。一个宏观方向可以拆成多个 Study，每个只回答边界明确的问题。
 
 1. 选择宏观方案中已经确认的一个问题，写明它与研究方向的对应关系；探索想法先确认，不直接成为执行合同。

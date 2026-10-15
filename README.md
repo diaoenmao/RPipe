@@ -49,7 +49,7 @@ Agent 的文档导航与通用工作约定见 [AGENTS.md](AGENTS.md)。
 2. [layout.md](docs/code/layout.md)：仓库和 Study 的目录契约
 3. [code.md](docs/code/code.md)：模块边界与依赖方向
 4. [structure.md](docs/code/structure.md) / [flow.md](docs/code/flow.md)：两柱的详细契约
-5. [研究工作要求](docs/development/research.md)：研究流程、六方面计划和证据要求；[Study 使用指南](#study-使用指南)说明如何设计和运行一轮 Study，[Study 导航](studies/README.md)列出现有研究的计划、报告和代码
+5. [研究工作要求](docs/development/research.md)：研究流程、六方面计划和证据要求；[Study 使用指南](#study-使用指南)说明如何设计和运行一轮 Study，[Study 导航](studies/README.md)列出现有研究的计划、报告和代码。项目宏观方案见 [中文研究计划](docs/research/research_plan.md)、[English](docs/research/research_plan_en.md)及[文献证据](docs/research/literature.md)。
 6. [testing.md](docs/development/testing.md)：测试策略、标签和结果持久化
 
 已知缺陷见 [bugs.md](docs/development/bugs.md)，开发记录见 [record.md](docs/development/record.md)，Flow/Study 重构交接见 [handover.md](docs/development/handover.md)，阶段性想法见 [brainstorm.md](docs/development/brainstorm.md)。

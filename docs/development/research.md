@@ -2,6 +2,8 @@
 
 ## 一、适用范围与入口
 
+本项目的实际宏观方案为 [RPipe 中文研究计划](../research/research_plan.md)及[完整英译](../research/research_plan_en.md)，按新模板十章组织；文献来源、实际阅读与限制见[文献证据](../research/literature.md)，中文[文献调研规范](<../research/standards/文献调研规范 Literature Review Standard.md>)随 Git 提供。当前仅做代码正确性与文档，计划不自动授权新实验。
+
 本地权威文本现已随Git提供：[研究计划规范中文正本](<../research/standards/研究计划规范 Research Plan Standard.md>)、[研究计划模板中文正本](<../research/standards/研究计划模板 Research Plan Template.md>)，以及[规范英译](../research/standards/research_plan_standard_en.md)、[模板英译](../research/standards/research_plan_template_en.md)。两份中文均为DEM交付的2026-10-16更新原字节；来源、SHA-256及DEM内部缺失依赖见[正本入口](../research/standards/README.md)。英文供理解，中文优先；本页保留RPipe宏观方案/Study分工适配，不要求新增重复计划或改变运行布局。
 
 本文件按 DreamSoul 的研究计划规范、模板及 knowledge 中的相关 skills 适配 RPipe：先从灵感与文献形成研究问题，再联合规划文献调研、数据、模型、算法、指标和实验设计，以证据回答问题。它规定研究工作的最低说明要求，不新增库接口、目录层级或执行命令。
@@ -22,7 +24,7 @@
 | 实测、正式数字、图与复跑代码 | 对应 Study；结论写入 `docs/STUDY_REPORT.md`，原始 Run 与大制品按现有忽略和保存规则管理 |
 | 工程测试、缺陷与开发事实 | [测试规范](testing.md)、[bugs.md](bugs.md)、[record.md](record.md)；开发记录链接实验报告，不代替它 |
 
-研究要求与具体课题方案分开维护：本文件不是 RPipe 的研究计划，也不声称本仓库已存在宏观 `docs/research/`。缺少宏观资料时先补充真实问题与依据，不编造来源。本仓库的历史 Study 是模板验证实例，不是下游项目的研究结论。
+研究要求与具体课题方案分开维护：本文件不是 RPipe 的课题研究计划；项目当前宏观方案见 [research_plan.md](../research/research_plan.md)。缺少宏观资料时先补充真实问题与依据，不编造来源。本仓库的历史 Study 是模板验证实例，不是下游项目的研究结论。
 
 源规范建议使用单份 `docs/research-plan.md`，同时允许沿用项目结构；这里采用 RPipe 已有的“宏观方案 → 具体 Study”分工，不再新建同内容的平行计划。Study 的执行模板只是起点，以下研究说明须按问题补齐，不能用 YAML 或调度安排代替研究设计。目录和执行细节见[根 README 的 Study 指南](../../README.md#study-使用指南)与 [Studies 入口](../../studies/README.md#从宏观研究提取具体-study)。
 
@@ -105,3 +107,7 @@ Agent 使用前阅读对应 `SKILL.md`，再按其中要求阅读相关 referenc
 按Enmao指示读取监督助手交付的_staging_from_DEM两份中文Markdown（规范184行/25618字节，模板122行/9309字节），按字节保留中文名复制到docs/research/standards，逐字节/哈希核验并完成英译。没有直接读取Office DEM原路径，不把旧飞书revision3当本次文件版本。中文保留原作者文献/skill引用与核验日期，本次未重新核验二级论文或安装skill；DEM内部相对引用缺失如实登记，不修改正本“修链接”。暂存保留对照，不是正式入口。研究计划路径及正式Study报告仍按layout；没有启动实验或重写完成的Study计划。
 
 [跨项目shared](../issue/cross_project_shared.md)与[实验监控/logger](../issue/experiment_monitoring.md)分别调研，未批准即不做运行时迁移；两题不成为使用模板的前置条件。
+
+### 2026-10-16 项目研究计划重做
+
+按新正本与模板十章形成项目[中文研究计划](../research/research_plan.md)及[完整英译](../research/research_plan_en.md)，从工程失效来源归纳RQ1–RQ4，连接六方面、配对合同、科学复验条件与结论边界。新挂入原字节文献规范；本轮实际阅读本地Knowledge提交0d7c68d的literature-search技能、research-note模板和检索wiki，范围及四条来源的阅读深度见[证据表](../research/literature.md)。没有安装技能或复制未读规范，不把搜索摘录写成全文阅读。历史Study计划/结果保持原版本，不改变文件架构或产物布局，不启动训练/测速/GPU。
