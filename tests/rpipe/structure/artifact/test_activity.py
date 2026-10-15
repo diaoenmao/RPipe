@@ -132,3 +132,41 @@ def test_activity_keeps_custom_unicode_and_optional_detail_compatibility(tmp_pat
     assert not captured.err
     assert path.read_bytes() == raw
     assert list(tmp_path.iterdir()) == [path]
+
+
+
+@pytest.mark.parametrize('planned', [False, True], ids=['missing-index', 'planned-peer'])
+@pytest.mark.parametrize('payload', ['valid-integer', 'integer-limit', 'deep-json'])
+def test_optional_activity_integer_decode_keeps_authoritative_status(tmp_path, capsys, planned, payload):
+    import sys
+    from rpipe.flow.cli import main
+    from rpipe.structure.artifact.index import write_index
+    from rpipe.structure.artifact.result import write_result
+
+    limit = getattr(sys, 'get_int_max_str_digits', lambda: 0)()
+    large = payload != 'valid-integer'
+    if payload == 'integer-limit' and not 0 < limit < 5000:
+        pytest.skip('native integer digit limit is unavailable or outside the 5000-digit probe')
+    if planned:
+        write_index(tmp_path, {'study': 'tiny', 'experiments': [
+            {'factors': {'algorithm.mode': 'train'}, 'runs': [{'id': 'peer', 'seed': 0}]}]})
+        write_result(tmp_path / 'runs/peer/result.json',
+                     {'status': 'succeeded', 'control': {}, 'metrics': {'accuracy': 1}, 'paths': {}})
+    raw = b'{"phase":"make","unused":' + (b'[' * 10000 + b'0' + b']' * 10000 if payload == 'deep-json'
+                    else b'9' * 5000 if large else b'17') + b'}'
+    path = tmp_path / 'activity.json'
+    path.write_bytes(raw)
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    assert read_activity(tmp_path) == (None if large else {'phase': 'make', 'unused': 17})
+    assert main(['status', str(tmp_path)]) == (0 if planned or not large else 2)
+    captured = capsys.readouterr()
+    if planned:
+        assert 'tiny  planned=1 succeeded=1 failed=0 pending=0' in captured.out
+        assert 'peer' in captured.out and 'accuracy=1.0000' in captured.out
+        assert not captured.err
+    elif large:
+        assert 'missing index' in captured.err and not captured.out
+    else:
+        assert captured.out.startswith('make:') and not captured.err
+    assert captured.out.startswith('make:') == (not large)
+    assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
