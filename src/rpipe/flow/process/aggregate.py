@@ -27,7 +27,7 @@ def _state_history(study_dir: Path | str, run_dir: str) -> dict[str, dict[str, l
         return {}
     try:
         body = json.loads(path.read_text(encoding='utf-8'))
-    except (OSError, json.JSONDecodeError, TypeError):
+    except (OSError, json.JSONDecodeError, UnicodeError, TypeError):
         return {}
     splits = body.get('splits') if isinstance(body, dict) else None
     if not isinstance(splits, dict):
