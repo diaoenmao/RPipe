@@ -99,6 +99,9 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ### 80. 全仓三类合同第二批：安全数字显示（B-073 / #62）
 
+最小生产修复8605fc3只改status/report两个文件；119项相邻回归全部通过，22新节点全部执行。core691 passed /1 POSIX skip /161 deselected，8条既有partial-resume warning；CPU Flow157 passed /0 skip。本机LOCAL_CHECKED.json逐项验证红20失败/2通过与三个绿色集合；临时XML、原字节快照和清单不随clone。科学计算、严格load/compare和process聚合均未改；无GPU/性能/正式Study执行。
+
+
 第三类 PR61 最终head a3e4a140a29c75512d47090e273efc28cf5edbf0 的 Unit38731020292、Package38731020242、Branch38731020233 所有实际矩阵/聚合成功，普通merge到dev fa184045dc09f54c6b296d1f4c914a021853d041；实际dev独立观察中，不以工作head代替验收。旧Python3.10失败保留，未重跑挑通过。
 
 第二类在同一工作分支接续，不另建同质分支。Issue62先登记，22项便携回归先于生产修复，20 failed /2 passed：8项status、4项数字格式、8项非法容器失败，2项空列表控制通过。输入为临时合成index/result/process；没有改正式Study或既有产物。复用已有report._fmt，消除status的重复数值转换；严格执行/比较/聚合的异常不转成显示占位。临时证据.tmp/contract073不随clone。
