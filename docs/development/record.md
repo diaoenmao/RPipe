@@ -97,6 +97,22 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 87. 三类系统扫描最终集成验收与下一版边界
+
+7895169分支清理记录已由PR65合dev并完成最终head/实际dev全实际CI。此后按第三类→第二类→第一类各自先红回归、最小生产修复、独立PR普通merge：三批代码及相应便携回归均已在dev集成。下表工作提交与实际集成提交分别核对所有实际矩阵/聚合，不用rollup或旧提交替代。
+
+| **批次** | **最终工作提交 / CI** | **实际 dev / CI** |
+| --- | --- | --- |
+| 第三类 / [PR69](https://github.com/DreamSoul-AI/RPipe/pull/69) | `0f393f1a48acf7f14824dd49af108f72548d0fe8`；[Branch flow 38742367302](https://github.com/DreamSoul-AI/RPipe/actions/runs/38742367302) / [Package Check 38742367353](https://github.com/DreamSoul-AI/RPipe/actions/runs/38742367353) / [Unit Tests 38742367339](https://github.com/DreamSoul-AI/RPipe/actions/runs/38742367339) | `b858c2ba689f1f8e77fe7065b53ee551fe42325d`；[Package Check 38743310055](https://github.com/DreamSoul-AI/RPipe/actions/runs/38743310055) / [Unit Tests 38743309828](https://github.com/DreamSoul-AI/RPipe/actions/runs/38743309828) |
+| 第二类 / [PR70](https://github.com/DreamSoul-AI/RPipe/pull/70) | `02f6f05a5f9dd35fb58c9565a24305b37ae0923d`；[Branch flow 38744687921](https://github.com/DreamSoul-AI/RPipe/actions/runs/38744687921) / [Package Check 38744688048](https://github.com/DreamSoul-AI/RPipe/actions/runs/38744688048) / [Unit Tests 38744687993](https://github.com/DreamSoul-AI/RPipe/actions/runs/38744687993) | `869300bd446edb24cfd95bdd3bc9a3a65bf29702`；[Package Check 38745527623](https://github.com/DreamSoul-AI/RPipe/actions/runs/38745527623) / [Unit Tests 38745527574](https://github.com/DreamSoul-AI/RPipe/actions/runs/38745527574) |
+| 第一类 / [PR71](https://github.com/DreamSoul-AI/RPipe/pull/71) | `6a25b3b9cf88ab47badfd9b5e06526d5c3465754`；[Branch flow 38746397054](https://github.com/DreamSoul-AI/RPipe/actions/runs/38746397054) / [Package Check 38746397615](https://github.com/DreamSoul-AI/RPipe/actions/runs/38746397615) / [Unit Tests 38746397175](https://github.com/DreamSoul-AI/RPipe/actions/runs/38746397175) | `fb022a41230ba5c11916941e3a25617b33f04d57`；[Package Check 38747297474](https://github.com/DreamSoul-AI/RPipe/actions/runs/38747297474) / [Unit Tests 38747297462](https://github.com/DreamSoul-AI/RPipe/actions/runs/38747297462) |
+
+本轮最终代码dev为`fb022a41230ba5c11916941e3a25617b33f04d57`。本机最终core734 passed/1平台skip/173 deselected，CPU Flow169 passed/0skip；三批新增合同分别7、32、4节点全部执行，合计43节点。原失败（第三类6 failed、第二类26 failed/6 passed、第一类2 failed/2 passed）、首候选局部失败、未执行路径错误及全部核验拒绝保留，不挑通过覆盖历史。CPU门中的平台/可选依赖skip不是通过，不代表GPU或Study科学验收。
+
+全仓215个受跟踪Python文件、1313候选调用的当前403函数组清单见§83（生产/Study146，验证257）；13个根边界按三类统一修复，无本轮已确认而未修的缺口。原始基线388组及逐字节源hash保留于.tmp/systematic-contracts-20261015；FINAL_INVENTORY_CHECKED与三批*_LOCAL_CHECKED/CI_CHECKED可执行复核材料不随clone，便携回归/清单/设计已入库。所有当前Python字节仍与最终扫描快照一致。专用追加、checkpoint恢复、锁、二进制/图片、外部builder与单写者边界已逐项注明；不把静态清单称为任意第三方扩展的完整证明。
+
+#53/#62与本轮#66/#67/#68均已修并有dev回归，但故意保持open至下一版发版时关闭，不自动关闭。main仍v0.4.0/54f8d31；本轮没有合main、打tag、发release、测速、GPU、下载或正式Study重跑，layout与产物schema/含义不变，原数据/Run/provenance不覆盖。唯一工作分支codex/artifact-contracts-correctness按明确授权保留，已删九条旧远程分支不恢复，本地旧分支不删。后续只处理新证据或新立项正确性工作，不为维持活跃重复扫描/生成同质任务，性能与结构扩张仍不实施。
+
 ### 86. 第一类：追加诊断初始化保全与三类逐点收敛（B-075 / #67）
 
 本轮复用同一工作分支。第二类PR70最终head02f6f05的Unit38744687993/Package38744688048/Branch38744687921全部实际矩阵与聚合成功，普通合dev869300bd446edb24cfd95bdd3bc9a3a65bf29702；实际dev独立验收。第一类portable红提交f3605f1：到达交错2 failed，目录拒绝2 passed，原构造器确实把旧证据变成空字节；FIRST_RED/XML/log保留于.tmp/systematic-contracts-20261015，不随clone。
