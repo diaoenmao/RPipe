@@ -1,8 +1,8 @@
-> 现状：研究规范PR92已验收并清远程；来源证据PR94最终head CI全绿合dev2b7c769，集成CI中；继续#95。
-> 最新：日志引用60项红34失败/26通过，另6项错误边界合同失败；5类真实坏引用/2控制，出处§106。
-> 下一步：在既有log_path/status/report统一引用校验与URI展示，66合同先红后修，正确性门后PR合dev。
-> 阻塞：无；唯一未合codex/log-reference-contract；前批dev观察独立接续，无数据或布局迁移。
-> 边界：不测速/GPU、不迁logger/shared、不改schema/目录、不合main/打tag，不删数据/Run。
+> 现状：研究PR92与来源证据PR94均已最终head/实际dev全绿并清远程；#95日志引用统一修复本地全绿。
+> 最新：72项前置合同转绿、另6兼容控制；相关874/core1077各1平台skip、Flow175通过，出处§107。
+> 下一步：同一日志引用PR最终head/实际dev全部实际CI验收，合dev后清远程；继续三类正确性复查。
+> 阻塞：无；唯一未合codex/log-reference-contract；8条结束远程清单已记录，当前活动分支保留。
+> 边界：不测速/GPU、不迁shared/logger、不改layout/schema、不合main/打tag，不删数据/Run。
 
 # 一、摘要
 
@@ -102,6 +102,18 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+### 107. 来源证据实际dev验收与日志引用统一修复本地门
+
+记录日期2026-10-16。#91/#93由[PR94](https://github.com/DreamSoul-AI/RPipe/pull/94)普通merge为dev `2b7c76986950fd6242afbf5bfc0bf81892dfeeaa`，最终head三门及实际dev [Unit38780743725](https://github.com/DreamSoul-AI/RPipe/actions/runs/38780743725) / [Package38780743746](https://github.com/DreamSoul-AI/RPipe/actions/runs/38780743746)全部实际矩阵及聚合成功。DEV_CHECKED SHA256 `dd63d4eb87bc6b9ee4613e3b9a8f6f91e33700394ec7e4fc02276c7c5582655c`。祖先/无开放PR/目标非活动分支核对后，普通删除结束remote `codex/provenance-declarations`（tip e59a226）；PR/两个Issue验收正文已追加，Issue保留open至下版。
+
+本目标累计八条已删结束remote清单：codex/artifact-contracts-correctness、codex/yaml-mapping-roots、codex/declared-batch-contract、codex/saved-plan-read-boundary、codex/result-status-contract、codex/activity-hint-fields、codex/research-plan-masters、codex/provenance-declarations。各批清理前后/命令/祖先与CI证据留对应.tmp，不随clone；旧本地分支保留，main/dev未因删除改变，历史§82九条不重复计。当前唯一未合codex/log-reference-contract；推送前远程只剩main/dev，后续本分支保持至实际dev验收。
+
+B085/#95先红1a2fb23（60项34失败/26通过）、9abee79（6项错误边界合同失败），设计fee867e后再补Unicode LS/NEL行分隔6项：4失败/2通过，红6ffed36仍先于生产。三批节点不重叠，共72项44失败/28通过；权限/程序错误是前置守卫合同，不是额外声称实际数据损坏。最小生产3a5c98f仅修改现有status.py与report.py，共+33/-13：既有log_path统一可选引用类型、行字符、Run/Study词法及物理范围，status构建行时复用一次并不展示坏引用；logs沿已有调用自动复用；report函数内复用同一guard避免_fmt模块循环，用标准库quote输出合法文件URI，坏href仅本格'-'。不新建模块、读取层或配置，不改writer追加/字段/schema/布局、状态/计数及科学聚合。OSError/非法路径可选降级，RuntimeError原样。
+
+合法默认/null/空串、相对/自身绝对、Unicode空格、内部别名和未来日志路径已覆盖；再补c89a6d1的6项本Run内合法父段路径/Study目录别名兼容控制（生产后追加，不冒充原红）。相关874 passed/1 POSIX mode平台skip、core1077 passed/1同skip、Flow175 passed/0skip，0fail/error；72前置节点与6后补共78节点均在GREEN及CORE执行。日志外链、文件/目录别名在本机真实执行，未改系统权限；其他平台可选链接skip不算通过。输入及peer字节均保全，report测试只在合成Study渲染，不覆盖正式报告。
+
+完整红/绿/命令/XML/原码与真实输入在.tmp/audit085（本机材料，不随clone），LOCAL_CHECKED记录两份生产hash；78个portable节点已提交。没有GPU/性能测量/服务启动/迁shared或logger，不干预下游vendor/实验。接着本批最终head与实际dev分别全部实际CI验收、正常合dev后删remote，Issue95保持open至下版；当前没有B086已确认问题。
 
 ### 106. 来源证据PR合dev与日志引用统一合同红测试（B-085 / #95）
 

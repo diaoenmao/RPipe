@@ -1,5 +1,9 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 日志引用统一候选本地验收
+
+研究PR92、来源证据PR94均已最终head/实际dev全部实际CI成功并清remote，当前验收dev2b7c769；八条结束remote清单见record §107，旧本地保留。唯一未合codex/log-reference-contract修#95/B085：红1a2fb23/9abee79/6ffed36前置72项44失败/28控制，设计fee867e后最小3a5c98f仅两既有文件+33/-13复用log_path；report合法文件URI编码、坏格'-'，不新模块/字段/布局或吞RuntimeError。后补6兼容c89a6d1；874相邻/1平台skip、core1077/1skip、Flow175通过，78新节点均在GREEN/CORE执行。下一步最终head与实际dev分别验收，成功后清本remote，Issue95等下版；B086尚无确认反例。研究正本/英译已入dev，89/90仅探索，不迁logger/shared、不测速/GPU/合main/tag或删数据。
+
 ## 2026-10-16 日志引用合同红测试接续
 
 研究文档PR92已完成最终head/实际dev验收并清远程。来源证据PR94最终heade59a226全部实际CI成功合dev2b7c769，实际dev观察中。唯一未合codex/log-reference-contract修B085/#95：7小场景5真实坏引用/2控制，status/logs可串读Study外/peer事件且表格断行；同字节红1a2fb23为60节点34失败/26控制，另6解析IO/RuntimeError边界红9abee79先于生产。设计复用既有log_path到status/logs/report，坏引用单格降级，保持合法路径/内部别名并修文件URI，不搬模块/改格式或吞RuntimeError；见record §106与.tmp/audit085。生产尚未动，下一编号B086；目标active、不测速/GPU/合main/tag或迁shared/logger。

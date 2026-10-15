@@ -12,23 +12,9 @@
 - 真实7隔离场景：5坏引用（Study外相对/绝对、peer、换行、外部target symlink）会串读外部/peer事件、输出坏NUMBERS链接或将status由4行断成5行；2合法/缺省控制正常。输入字节全保留，无正式数据泄漏/损坏证据。数字_fmt已有OverflowError保护、activity清理已有OSError保护，不重复登记。
 - 期望：既有log_path统一类型、行字符、Run/Study词法及物理范围规则；status/logs/report共同复用，坏引用只使本格不可用，peer/状态/计数不变。缺省/null/空串默认、合法自身绝对/相对、Unicode/空格/内部别名兼容，report对文件URI编码，不移动模块或增schema/目录。IO故障可选降级，RuntimeError原样上抛。
 - 先Issue95，隔离冻结快照60节点34 failed/26 passed、0error/skip；除坏引用外还证实原report对合法自身绝对路径/Unicode空格URI输出错误。实际导入/原码hash/测试原字节保留，当前分支按同字节红1a2fb23先提交。再补6个物理解析IO/程序错误前置合同，6失败/0error/skip，由9abee79先提交；它们是新守卫的错误边界约束，不算6种新实际数据故障。
-- 本项生产未修改，source/doc/REPRO/RED与RED_PATH在.tmp/audit085，不随clone；下一新编号B-086。
+- 本项最小3a5c98f在现有两文件统一guard/URI；前置72项均转绿、后补6兼容控制通过，874相邻/1平台skip、core1077/1skip、Flow175通过，待本批最终head/实际dev验收。source/doc/REPRO/全部RED与green在.tmp/audit085，不随clone；下一新编号B-086。
 
-### B-084：来源plan绕过权威index校验并读取Study外配置（[#93](https://github.com/DreamSoul-AI/RPipe/issues/93)）
-
-- 来源：来源证据发布的系统复查；不是B077主load_index已修问题重开，而是plan_files另行json.loads绕过它。
-- 12真实隔离探针：10坏输入中8被接受/2泄漏AttributeError或TypeError，2合法控制；同样10坏输入被权威load_index拒绝。`../../external`会把Study外config摘要纳入`runs/../../external/config.yaml`并覆盖合成旧provenance。另2实际file symlink（index/config）均接受外部target。外部输入未改，未使用正式数据/Run。
-- 期望：复用load_index/validate_run_directory/_inside，统一根结构/必需Run id与物理范围校验；数据TypeError在plan入口转ValueError供既有freeze拒绝并保cause，RuntimeError不吞。保留空/partial/缺config及内部链接逻辑键，不扩make事务或改schema/布局/hash。
-- 先Issue93，再红3804bce：67节点56 failed/11 passed、0error/skip，两类真实file链接已执行。48坏容器/路径在plan、写新、写旧、freeze四入口拒绝；8链接拒绝/禁止外部哈希；11兼容/缺省/内部逻辑键/RuntimeError控制。原码ZIP/REPRO/LINK_REPRO/RED XML、命令和hash保留.tmp/audit084，不随clone。
-- 按归纳统一修复要求与B-083/#91共用codex/provenance-declarations、一个来源证据批次PR，不拆零碎PR；本项最小生产2cd634c已复用既有校验；组合784相邻/1skip、core987/1skip、Flow175与追加12边界通过（105原红节点全执行），待同一PR最终head/实际dev验收，详record §105；下一编号B-085。
-
-### B-083：非法来源声明绕过校验并覆盖旧来源证据（[#91](https://github.com/DreamSoul-AI/RPipe/issues/91)）
-
-- 来源：三类失败写入/typed声明系统复查。source_files以or空值回退，provenance的false/0/空串/空list被当空mapping，include非list被忽略或迭代。
-- 实际：隔离10种非法声明全被接受、6个合法声明控制及True block拒绝控制；直接write_provenance对False声明覆盖合成旧provenance，旧SHA83c56e89413dfa79b426c211b5777e9f364a1ff99947869efdb09a52ece7e6d1，新7ddc267434d52ab14259c45a45141ba5fafe50c9ac8bb7334651e3f25096dbeb。未使用正式Study/旧Run，不声称已发生正式数据损坏。
-- 期望：只在source_files统一区分None与非法类型，provenance为mapping、include为list；缺省/null和合法空mapping/list兼容；非法声明在写来源证据前ValueError，旧或缺失目标及peer不变。合法glob/Path强转、哈希/键域/冻结异常与旧成功保全范围不变，不改布局或make多文件事务。
-- Issue先开；38合同在冻结隔离snapshot执行30 failed/8 passed、0error/skip，真实导入路径与生产字节hash已核对；同字节portable红测试d1baff1提交先于生产。10个source拒绝、20个有/无旧目标发布拒绝、8个合法/历史控制。首快照漏--format=zip导致BadZipFile发生在pytest之前，原tar字节/脚本/错误记录保留，非库失败；修正后才执行RED。BEFORE/REPRO/RED/log/XML/hash在.tmp/audit083，不随clone。
-- B-083已最小fix4f23ae4，本项38合同转绿、717相邻/1平台skip、core920/1平台skip、Flow175通过（旧批证据不替代新增B084后最终验收）；下一新编号B-085。B-082/#86已PR88合dev8ee1913并最终head/实际dev全实际CI成功，结束远程已删，见record §103。修复Issue均保持open等下版。
+B-083/#91与B-084/#93已由PR94合dev2b7c769，最终head/实际dev全部实际CI成功并清结束remote，已从未解决队列移除；Issue等下版。完整红绿、117新增节点、实际验收与八条远程清单见record §103—107。
 
 B-081/#85已由PR87合dev37d0262，最终head/实际dev全部实际CI通过并删除结束远程，Issue保留open，见record §101。
 
