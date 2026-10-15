@@ -326,22 +326,37 @@ def test_study_json_publisher_success_preserves_payload_format_and_peer(tmp_path
     assert set(tmp_path.iterdir()) == {target, peer}
 
 
-def test_study_json_concurrent_publishers_keep_distinct_stages_and_peer(tmp_path, monkeypatch):
+@pytest.mark.parametrize('backend', ['dynamic', 'prebound'])
+def test_study_json_concurrent_publishers_keep_distinct_stages_and_peer(tmp_path, monkeypatch, backend):
     from concurrent.futures import ThreadPoolExecutor
     import json
     import os
     import threading
+    import rpipe.structure.artifact._atomic as atomic
 
     target, peer = tmp_path / 'EXECUTION.json', tmp_path / 'EXECUTION.json.writing'
     target.write_bytes(b'old evidence')
     peer.write_bytes(b'another publisher')
     writer = _probe_json_writer()
     barrier, stages, replace = threading.Barrier(2), [], os.replace
+    if backend == 'prebound':
+        # Python 3.10 pathlib captures os.replace before the test patches it.
+        monkeypatch.setattr(Path, 'replace', lambda source, destination: replace(source, destination) or Path(destination))
+    commit, local = atomic.atomic_replace, threading.local()
     def synchronized(source, destination):
         stages.append(source)
         barrier.wait(timeout=10)
-        return replace(source, destination)
-    monkeypatch.setattr(os, 'replace', synchronized)
+        local.publishing = True
+        try:
+            return commit(source, destination)
+        finally:
+            local.publishing = False
+    def native_replace(source, destination):
+        if getattr(local, 'publishing', False):
+            return replace(source, destination)
+        return synchronized(source, destination)
+    monkeypatch.setattr(atomic, 'atomic_replace', synchronized)
+    monkeypatch.setattr(os, 'replace', native_replace)
     bodies = [{'writer': 'A'}, {'writer': 'B'}]
     with ThreadPoolExecutor(max_workers=2) as pool:
         futures = [pool.submit(writer, target, body) for body in bodies]

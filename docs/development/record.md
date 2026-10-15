@@ -99,6 +99,9 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ### 79. 全仓替换文本发布合同接续（#53 / B-072）
 
+首个远端head `5aceeda` 的 Unit 38730213954 保留真实失败：Ubuntu/Windows Python3.10各仅新增并发测试失败（stages为空），3.13与包门成功。原因是3.10 pathlib捕获os.replace的预绑定接口，单拦os.replace不能证明同步点到达。测试现同时拦原子发布边界与原生入口，用thread-local防重入，并显式模拟预绑定后端；原生产atomic_replace重试继续执行。中间portable.xml的2项WinError5来自测试替身直接调用os.replace而绕开重试，该候选未推送、原失败保留；portable2.xml相关48 passed /1 POSIX skip。生产八文件与a20efbb完全相同，不将测试钩子修正记为另一个库缺陷。本机没有Python3.10，跨版本验收以新head实际CI为准。
+
+
 按 Enmao 新授权，从实际 dev `2e8d786` 建唯一未合分支 `codex/artifact-contracts-correctness`。#53 原 index 截断已在 PR52/v0.4.0 修复；本轮先重验旧合同，Issue 继续开放至下一版，不重复发布或关闭。
 
 | **范围** | **改前** | **本批改后** |
