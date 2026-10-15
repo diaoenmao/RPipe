@@ -300,3 +300,40 @@ def test_study_progress_summary_and_plot_share_coordinates_and_counts(tmp_path, 
     assert list(step_axis.lines[0].get_xdata()) == step['x']
     assert list(step_axis.lines[0].get_ydata()) == step['mean']
     assert [text.get_text() for text in step_axis.texts] == ['n=2', 'n=1', 'n=1', 'n=2']
+
+
+@pytest.mark.parametrize('raw', [b'\xff\xfe\x80', b'{"splits": "\x80"}', b'\xf0\x9f'])
+@pytest.mark.parametrize('scope', ['run', 'study'])
+def test_process_optional_state_decode_failure_keeps_peer_evidence(tmp_path, raw, scope):
+    """Existing result/index + bad optional tracker → process; peer and source bytes stay intact."""
+    from rpipe.flow.process.individual import run as process_one
+    study = tmp_path / 'demo'
+    a = _write_succeeded(study, 'a', 0, 500, {'accuracy': 80.0}, [])
+    b = _write_succeeded(study, 'b', 1, 500, {'accuracy': 70.0}, [])
+    write_index(study, {'study': 'demo', 'experiments': [
+        {'factors': {'algorithm.mode': 'train'}, 'runs': [
+            {'id': 'a', 'seed': 0}, {'id': 'b', 'seed': 1}]}]})
+    state = a.assets_dir / kinds.TRACKER_STATE
+    state.parent.mkdir(parents=True, exist_ok=True)
+    state.write_bytes(raw)
+    target = run_process_path(a.root) if scope == 'run' else process_path(study)
+    target.write_text('previous derived process\n', encoding='utf-8')
+    before = {p: p.read_bytes() for p in study.rglob('*') if p.is_file() and p != target}
+    if scope == 'run':
+        ctx = FlowContext(study_dir=study, layout=a, config={})
+        process_one(ctx)
+        body = ctx.state['process']
+        assert body['metrics'] == {'accuracy': 80.0}
+        assert body['history'] == {}
+        assert not process_path(study).exists()
+    else:
+        body = run_study(study)
+        exp = body['experiments'][0]
+        assert exp['n'] == 2 and exp['n_planned'] == 2
+        assert exp['metrics']['accuracy']['mean'] == 75.0
+        assert [r['id'] for r in exp['runs']] == ['a', 'b']
+        assert body['complete'] is True
+        assert 'figures' not in body
+        assert not run_process_path(b.root).exists()
+    assert json.loads(target.read_text(encoding='utf-8')) == body
+    assert {p: p.read_bytes() for p in before} == before
