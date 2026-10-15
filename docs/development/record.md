@@ -1,7 +1,7 @@
 > 现状：PR105已合dev83615d7且实际CI全绿、结束remote已清，当前唯一未合atomic-readonly-cleanup。
 > 最新：B090/#106原生Windows发布拒绝后残留只读文本stage；12红合同5失败/7控制，出处§122。
 > 已保留：原生WinError5、旧目标/peer字节及权限、残留候选完整内容、原码ZIP/hash；不动正式数据。
-> 下一步：仅在owned独立文本cleanup恢复可写属性并有界重试，跑针对性/必要CPU门与最终CI。
+> 验证：atomic/shared 96通过/1平台skip、core 1300通过/1同skip、CPU Flow181通过；下一最终head/实际dev CI。
 > 边界：不改共享hardlink权限、旧目标、checkpoint恢复/布局，不测速/GPU，不合main/tag；目标active。
 
 # 一、摘要
@@ -111,6 +111,8 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 先[Issue106](https://github.com/DreamSoul-AI/RPipe/issues/106)，再红提交50aac22，12合同5 failed/7 passed、0error/skip；真实Windows三公共writer（text/config/result）及正常控制，可移植删除权限拒绝/恢复/再次拒绝/非权限IO，未取得owned的只读碰撞控制。输入字节与权限保全，异常identity不变。native readonly三项其他平台按明确Windows语义skip不计通过，非Windows仍执行可移植故障合同；原生复现未改系统ACL或设置。
 
 设计：仅在现有owned finally范围，先照旧unlink；仅PermissionError触发临时独立文本chmod0o600后再unlink一次。仍不可删除时best-effort保留诊断并传播原发布异常，不更改target/peer或未owned路径。保留默认成功路径、编码/部分写入/长名/碰撞/模式保全合同；不新建helper/模块/格式，修新宏观计划RQ3/H3的发布/清理不变量。文档先于生产，相关源码与全部调用边界已核对。
+
+生产f2c0ab9仅既有_atomic.py净+6，无新helper/import；先unlink的成功路径不变，只有PermissionError进入有界属性恢复与第二次删除，仍拒绝时保留诊断并保持原发布异常。联合atomic/shared 96 passed/1既有POSIX script mode skip，core 1300 passed/1同skip、CPU Flow181 passed，0fail/error，12新增节点全部在本机Windows的联合与core实际执行转绿。无真实权限/ACL系统调整，首次原生只读目标和残留内容保留不动；不可恢复chmod/第二次删除/非权限IO与碰撞控制均通过。Git LF与执行CRLF的红字节单独hash核验并保留准确原字节，不混称Git blob字节相同。LOCAL_CHECKED/XML/log/ZIP/hash在.tmp/audit090，不随clone；最终工作head/实际dev CI待验，Issue106留至下版。
 
 ### 121. PR105实际dev验收与第十四条结束远程清理
 

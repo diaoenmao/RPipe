@@ -11,6 +11,7 @@
 - 来源：第三类共享原子文本入口，dev83615d7真实Windows只读旧target保留，但本调用staging复制只读属性后unlink拒绝，遗留完整候选内容；原始REPRO与文件留.tmp/audit090，不随clone。
 - 期望：只在owned独立文本stage的删除遇PermissionError时有界恢复可写属性并再删一次；不触碰旧target/peer、共享hardlink、checkpoint诊断目录，原异常保留；不可恢复IO仍best-effort。
 - 先Issue106，红50aac22共12项5 failed/7 passed、0error/skip；含真实text/config/result只读/正常路径、恢复/再次拒绝/非权限IO、未取得owned的只读碰撞。先设计再最小修复，不测速/GPU/改布局或恢复协议。
+- f2c0ab9原_atomic净+6修复；12节点转绿，atomic/shared96+1平台skip、core1300+1同skip、Flow181通过，原字节/权限/异常保全，待最终head/实际devCI。
 
 B-089/#104已由PR105普通合dev83615d7，最终head和实际dev全部实际矩阵/聚合通过，结束remote已清，见record§121；Issue留至下版。
 

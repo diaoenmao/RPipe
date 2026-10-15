@@ -1,5 +1,9 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 PR105完成、owned只读文本清理批次
+
+PR105已普通合dev83615d7，最终head/实际dev全部实际CI成功，结束remote已清、本地保留；累计十四条见record§121，Issue104等下版。当前唯一未合codex/atomic-readonly-cleanup修B090/#106：真实Windows只读旧target保留但同mode的自有临时文本无法删除；先Issue→红50aac22（12项5失败/7控制）→设计96705cd→既有_atomic净+6 f2c0ab9。仅owned独立文本首次unlink PermissionError时恢复临时文件0o600后再删一次；不触旧target/peer、共享hardlink或checkpoint staging，原异常保留，不改原replace重试。12节点本机全执行转绿，atomic/shared96+1平台skip、core1300+1同skip、Flow181通过；其他平台3原生只读项明确skip不计通过。见§122、.tmp/audit090（本机证据不随clone）；下一最终head/实际devCI后清remote，Issue106留至下版，不测速/GPU、不合main/tag或改布局。
+
 ## 2026-10-16 研究计划完成、非有限比较合同批次
 
 PR103中文计划/完整英译/文献证据已普通合dev233fb2a，最终head与实际dev全实际CI通过，结束remote已删、本地保留，累计13条清理见record§119，main仍v0.4.1。当前唯一未合codex/compare-nonfinite-contract修B089/#104：18原生场景12判定不符；红19313c7首96失败包含CLI尾行测试误假设，更正1821c3c后权威红96项40失败/56控制；设计b01ce2c先于原compare净+4修复2444097。compare152/core1276+1平台skip/Flow181通过；dc5988c后补12混合非有限与有限漂移控制，全compare164通过，源未变，未把后补测试混算旧完整门。最终108新增节点由最终CI再验。冻结字节/换行核对/全部失败与LOCAL_CHECKED在.tmp/audit089（不随clone）；下一最终head/实际dev CI合dev清remote，Issue104等下版。仅只读比较判断，不改训练数值、有限容差、pairedNaN或磁盘布局；不测速/GPU，不合main/tag。
