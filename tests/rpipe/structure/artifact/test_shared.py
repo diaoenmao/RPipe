@@ -456,3 +456,91 @@ def test_valid_resource_names_keep_original_manifest_keys_and_reuse(tmp_path):
     assert prepared_resource(tmp_path, {}, files, no_rebuild) == (cache, digest)
     assert manifest.read_bytes() == original
     assert all((cache / name).read_bytes() == b'complete' for name in files)
+
+
+@pytest.fixture(params=['reference-default', 'reference-hardlink', 'migration-data', 'migration-model'])
+def shared_publication_case(tmp_path, monkeypatch, request):
+    route = request.param
+    if route.startswith('reference'):
+        source, target = tmp_path / 'source.bin', tmp_path / 'target.bin'
+        if route == 'reference-hardlink':
+            def no_symlink(*args, **kwargs):
+                raise OSError('fixture symlink privilege unavailable')
+            monkeypatch.setattr(Path, 'symlink_to', no_symlink)
+        publish_target = target
+        def invoke():
+            return link_input(source, target)
+    else:
+        study = tmp_path / 'studies' / 'sample'
+        kind = route.split('-')[1]
+        source, target = study / 'shared' / kind / 'input.bin', tmp_path / 'shared' / kind / 'input.bin'
+        source.parent.mkdir(parents=True)
+        target.parent.mkdir(parents=True)
+        publish_target = source
+        def invoke():
+            return migrate_shared(study)
+    source.write_bytes(b'immutable input')
+    target.write_bytes(b'immutable input')
+    return source, target, publish_target, invoke
+
+
+@pytest.mark.parametrize('cleanup', ['failed-permission', 'failed-io', 'committed-io', 'program-error'])
+def test_shared_owned_cleanup_preserves_publication_outcome(tmp_path, monkeypatch, shared_publication_case, cleanup):
+    from rpipe.structure.artifact import _atomic
+
+    source, target, destination, invoke = shared_publication_case
+    peer = tmp_path / 'peer.link'
+    peer.write_bytes(b'other writer evidence')
+    before = {p: (p.read_bytes(), p.stat().st_mode) for p in (source, target, peer)}
+    original = OSError('original publication refusal')
+    cleanup_error = (RuntimeError('cleanup program defect') if cleanup == 'program-error' else
+                     PermissionError('cleanup permission denied') if cleanup == 'failed-permission' else
+                     OSError('cleanup IO refused'))
+    stages, removed = [], []
+    publish, unlink = _atomic.atomic_replace, Path.unlink
+    def attempt(stage, final):
+        stages.append(stage)
+        assert final == destination
+        if cleanup == 'committed-io':
+            return publish(stage, final)
+        raise original
+    def remove(path, *args, **kwargs):
+        if path.suffix == '.link':
+            assert path in stages and path != peer
+            removed.append(path)
+            raise cleanup_error
+        return unlink(path, *args, **kwargs)
+    monkeypatch.setattr(_atomic, 'atomic_replace', attempt)
+    monkeypatch.setattr(Path, 'unlink', remove)
+    if cleanup == 'committed-io':
+        result = invoke()
+        assert result and source.samefile(target)
+    else:
+        with pytest.raises(type(cleanup_error) if cleanup == 'program-error' else OSError) as caught:
+            invoke()
+        assert caught.value is (cleanup_error if cleanup == 'program-error' else original)
+    assert len(stages) == len(removed) == 1
+    assert {p: (p.read_bytes(), p.stat().st_mode) for p in before} == before
+
+
+@pytest.mark.parametrize('readonly', [False, True], ids=['native-writable', 'native-readonly'])
+def test_shared_native_readonly_cleanup_keeps_original_replace_error(tmp_path, monkeypatch, shared_publication_case, readonly):
+    from rpipe.structure.artifact import _atomic
+
+    if readonly and os.name != 'nt':
+        pytest.skip('Windows read-only hardlink replacement/unlink semantics')
+    source, target, destination, invoke = shared_publication_case
+    if readonly:
+        source.chmod(0o444)
+        target.chmod(0o444)
+    before = {p: (p.read_bytes(), p.stat().st_mode) for p in (source, target)}
+    monkeypatch.setattr(_atomic.time, 'sleep', lambda _: None)
+    if readonly:
+        with pytest.raises(PermissionError) as caught:
+            invoke()
+        assert caught.value.filename2 is not None
+        assert Path(caught.value.filename2).resolve() == destination.resolve()
+    else:
+        assert invoke() and source.samefile(target)
+        assert not list(tmp_path.rglob('*.link'))
+    assert {p: (p.read_bytes(), p.stat().st_mode) for p in before} == before
