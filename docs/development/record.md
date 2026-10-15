@@ -105,6 +105,10 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 统一方案在既有compare.py与CLI函数内：_load_json同时校验根对象与所用metrics/splits对象（null兼容），history逐级校验；严格文件错误拒绝，不套用status占位。torch.load解析错误仅在实际加载调用处转ValueError并保留cause，意外程序RuntimeError不吞。整数阈值使用标准库Fraction对应已配置浮点容差的精确值，保留差值整数，格式化不用g隐式float；普通浮点/NaN分支保持。CLI把--out发布也放入原错误边界，成功后才展示结果；不改Run文件、schema、计算或物理布局。
 
+第二类生产修复提交dbf0837；相关161 passed、core730 passed /1平台skip /173 deselected（8条既有partial-resume warning），CPU Flow169 passed /0失败/0skip。SECOND_LOCAL_CHECKED确认32个新增节点均执行、旧32项红例26失败/6通过，生产仅compare.py与CLI，输入/旧输出字节保护及程序异常传播控制均通过。原始XML/log/check清单在.tmp/systematic-contracts-20261015（不随clone）；未运行GPU、研究或性能入口。
+
+第三类实际dev b858c2b已验收：Unit38743309828 / Package38743310055所有实际矩阵/聚合成功；DEV_CHECKED SHA256为8c4374c8e361113b0a1078f44044bf361e4cf79be7f54804efa1c232649b4850。PR69正文与Issue66一次性追加验收，Issue仍open。第二类后续PR/head与实际dev独立验收，不用本机或上一类CI替代。
+
 ### 84. 第三类：排他所有权覆盖文本与共享引用（B-074 / #66）
 
 先Issue66与portable红提交a080bc6（6 failed），再设计/逐点清单5d2e174，补活动stage真实线程交错a99fef0，生产8f9cc2c只改现有_atomic/shared两文件。atomic_write_text以排他touch获得owned后才写/清，shared晋升去除递归并统一软链→硬链创建，迁移在link成功后才清本写者；短名、Windows有界replace、外层锁、返回值和路径保持。
