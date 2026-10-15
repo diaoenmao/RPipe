@@ -1,3 +1,9 @@
+> 现状：PR74准备0.4.1；已在工作分支普通merge补齐main两个历史发布祖先，生产字节不变，最终CI重新绑定。
+> 最新：五Issue已修；全仓403组/13根边界、43新增合同；core734通过/1跳过、CPU Flow169通过，出处见§83—88及PR69—73。
+> 下一步：版本同步PR合dev→dev到main发布PR→实际main CI→tag/release→引用release关闭五Issue，再继续三类回归复查。
+> 阻塞：无；仅有正常CI验收等待，不强推、不改布局、不测速/GPU；此前“只草稿不发布”已由本次明确发布授权覆盖。
+> 范围：本轮允许v0.4.1发布与关闭#53/#62/#66/#67/#68；保留工作分支、数据/Run/provenance，复查不混入未验证改动。
+
 # 一、摘要
 
 RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库。本节按内容归纳当前 dev 与本机新增成果的累计变化；具体实施日期、失败和阶段边界保留在第二节。
@@ -96,6 +102,16 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-15
+
+### 89. v0.4.1 正式发布授权与版本准备
+
+Enmao明确覆盖前一阶段“仅草稿/不合main/不打tag/不发release”的限制：草稿PR73正常合dev23d6907aec49a5950ea4bd323a19280256323991，最终head7461522三项必需CI全部实际矩阵/聚合成功；实际dev独立验收。发布按工作PR→dev→main发布PR普通merge→实际main全实际CI→annotated tag v0.4.1→GitHub Release→逐项引用release关闭#53/#62/#66/#67/#68执行，不强推、不删分支/数据。
+
+pyproject、rpipe.__version__与README同步0.4.1；release notes由草稿转为本次授权发布正文，逐项PR/迁移说明不变，不增加目录/schema/运行时改动。按“立即5行以内现状”要求已在本报告顶部记录当前步骤、数字与出处、下一步和无阻塞状态。已有四项近期交互控制草稿仅在.tmp准备，按最新顺序留到正式发布完成后执行复查，不混入本次发布候选。
+
+版本/布局36项全部通过、无skip；VERSION_LOCAL_CHECKED确认生产仅__version__字符串改变且其余原字节相同，测试与layout无改动，14个发布正文相对文件链接有效。首个范围checker仅规范化working换行而未处理原blob同为CRLF，拒绝证据VERSION_SCOPE_CHECK_REJECTED保留；精确按原字节替换版本后核对相等，不当代码失败。原始XML/log位于.tmp/v041-draft-20261015，不随clone；候选与实际dev仍需各自CI。
+
+发布前祖先检查发现dev缺main两个历史发布merge（54f8d31/v0.4.0与7a15c46/v0.3.1，main...dev为2/40）。merge-tree预演与原工作树tree完全相同、无冲突；经当前工作分支普通merge补齐main历史，不直接推dev/main。只改Git父关系，36项本机验证仍绑定相同代码/测试/版本字节。旧head3633255的CI/状态保留在.tmp/v041-draft-20261015/version-ci-original和BRANCH_ANCESTRY_BEFORE；旧观察者自然完成，保守终止检查未执行任何终止；最终head需重新验收，不能用旧head替代。
 
 ### 88. v0.4.1 Release Notes 草稿与近期修复复查立项
 
