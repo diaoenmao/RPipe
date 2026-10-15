@@ -129,3 +129,21 @@ def test_optional_jsonl_parser_failure_keeps_later_valid_record(tmp_path, reader
         'unit': 'step', 'x': [1], 'values': [75.0]}
     assert reader(tmp_path, 'a') == {'test': {'Accuracy': expected}}
     assert scalar.read_bytes() == raw
+
+
+
+def test_optional_jsonl_keeps_unexpected_decoder_runtime_error(tmp_path, monkeypatch):
+    scalar = tmp_path / 'runs/a/assets' / kinds.TRACKER_JSONL
+    scalar.parent.mkdir(parents=True)
+    scalar.write_bytes(b'{}\n')
+    error = RuntimeError('unexpected JSON decoder bug')
+    original = json.loads
+    def decode(value, *args, **kwargs):
+        if value == b'{}\n':
+            raise error
+        return original(value, *args, **kwargs)
+    monkeypatch.setattr(json, 'loads', decode)
+    with pytest.raises(RuntimeError) as caught:
+        load_curve_series(tmp_path, 'a')
+    assert caught.value is error
+    assert scalar.read_bytes() == b'{}\n'
