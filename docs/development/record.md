@@ -1,7 +1,7 @@
 > 现状：研究计划PR103已合dev233fb2a且实际CI全绿、结束remote已清；正确性目标active。
 > 最新：B089/#104非有限比较18实文件场景12判定不符；96红回归40失败/56控制，出处§120。
-> 已保留：首轮CLI尾行假设错误96失败与更正后的RED2，生产尚未修改；仅一个未合分支compare-nonfinite-contract。
-> 下一步：按统一非有限身份规则修现有标量/张量比较，再针对性/必要CPU门与最终head/实际dev CI。
+> 验证：compare164通过；core1276通过/1平台skip、CPU Flow181通过；108新增节点执行范围分开登记。
+> 下一步：最终head与实际dev CI验收，普通PR合dev后清结束remote；只有一个未合工作分支。
 > 边界：不测速/GPU、不改训练数值/容差/布局，不合main/tag；Issue等下版，无阻塞。
 
 # 一、摘要
@@ -111,6 +111,10 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 先[Issue104](https://github.com/DreamSoul-AI/RPipe/issues/104)，96个API/CLI合同红提交19313c7；首轮96失败中含测试错误：--out后CLI最后一行是输出路径，不是passed/failed。原RED保留；1821c3c更正尾两行断言，生产字节与冻结基线相同，RED2为40 failed/56 passed、0error/skip。该错误测试不当作产品缺陷，18实际复现独立成立。参数覆盖四类来源（metrics/history/real tensor/complex tensor）、exact/relative、双向±inf/同值/NaN/有限控制和所有输入原字节。
 
 设计只改原compare.py共享判断：标量先判NaN/inf身份；tensor将已相同非有限元素差归零，不匹配非有限差归inf且相对界归零，防止inf与NaN界绕过。保持既有pairedNaN、有限值容差、整数精度、字段选择、缺失/错误传播与JSON差值null处理；不新建helper/模块/字段、不改变训练计算或checkpoint恢复。结构合同先更新再生产。复数已有NaN行为沿用，不借此新设逐分量复数协议；任意有限极值算术或精度扩展不伪装为本批已覆盖。
+
+生产2444097仅原compare.py +6/-2（净+4），96前置合同转绿，完整compare152、core1276 passed/1既有POSIX mode skip、CPU Flow181 passed，0fail/error。随后dc5988c补12混合tensor控制：相同±inf/NaN旁仍检有限值inside/outside漂移，冻结原函数实际12场景有4不符，候选全符，输入字节保全；全compare164再通过，源字节未变，未重复整套core/Flow、不把后补12项冒充旧完整门执行。原96项均在core及GREEN_MIXED实际执行。XML/log/LOCAL_CHECKED记录分层范围，平台skip不计通过。
+
+首次直接比较RED2工作区hash与Git blob拒绝：执行为CRLF、Git为LF。RED_NEWLINE_CHECK分记两hash，按Git文本换行策略恢复的红工作区字节与原记录hash逐字节一致；原RED/RED2不覆盖，不把换行差异当库失败。测试差异与错误假设均公开保留。对应新宏观计划RQ2/H2的“错误通过数”合同；这里只修只读判定，不改变训练载荷或旧科学结果。当前最终PR/实际dev验收待办，Issue104留至下版。
 
 ### 119. 研究计划PR103实际dev验收与第十三条结束远程清理
 
