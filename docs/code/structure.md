@@ -962,7 +962,7 @@ index 在 **Study 根**，不在 `runs/<id>/`。Run 目录直接使用 `id`，�
 
 错误：`ArtifactError`、`MissingConfigError`、`CorruptArtifactError`。
 
-原子文本的临时名按 PID 与随机 UUID nonce 区分写者，不使用墙钟读数充当唯一标识；同进程并发或相同 tick 仍须使用独立 staging。
+原子文本使用短随机 UUID 临时名，不使用墙钟充当唯一标识；必须排他创建成功才取得 staging 所有权，碰撞时拒绝，stat/创建失败不能清理 peer。共享引用同样只清创建成功的临时链接，不能以递归晋升推断所有权。
 
 原子文本写入的初始临时文件写入与替换处于同一 finally 清理范围；部分写入失败保留旧目标、原异常并清理本次临时文件，不删除其他写者的临时文件。
 

@@ -97,6 +97,14 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 84. 第三类：排他所有权覆盖文本与共享引用（B-074 / #66）
+
+先Issue66与portable红提交a080bc6（6 failed），再设计/逐点清单5d2e174，补活动stage真实线程交错a99fef0，生产8f9cc2c只改现有_atomic/shared两文件。atomic_write_text以排他touch获得owned后才写/清，shared晋升去除递归并统一软链→硬链创建，迁移在link成功后才清本写者；短名、Windows有界replace、外层锁、返回值和路径保持。
+
+相邻105 passed /1 POSIX skip，七个新节点均执行；core698 passed /1 skip /173 deselected，8条既有partial-resume warning；CPU Flow169 passed /0 fail/0 skip，THIRD_LOCAL_CHECKED逐项核对完整XML与七个新节点。原6失败与所有源字节ZIP不改写。首个编辑只完成_atomic，shared为LF而脚本错用CRLF锚点导致中止，THIRD_GREEN原3失败/101通过/1skip与PARTIAL_EDIT_NOTE保留；按文件原换行补完后GREEN2为104/1skip，增加线程合同GREEN3为105/1skip。未将工具错误当新库问题或隐藏首候选失败。
+
+本批不扩大任意同Run多写者或跨文件事务，不迁移正式数据、不调用研究/性能入口，#53/#62及新Issue均留到下版。第二类B-076和第一类B-075仍按清单分别接续，不把本批全绿当它们已修。
+
 ### 83. 全仓写入与只读展示逐项清单（系统扫描基线99e9e09）
 
 按 Enmao 本轮新要求，7895169已通过[PR65](https://github.com/DreamSoul-AI/RPipe/pull/65)普通合dev99e9e0961ccf2dce9a16cf17e2e00270fd605571；最终head Unit38738711058/Package38738711163/Branch38738711093与实际dev Unit38740119413/Package38740119450所有实际矩阵/聚合均成功。§82“不额外开PR”是新授权前事实，本轮明确覆盖该边界。仍复用保留工作分支，不重建已删九分支。
