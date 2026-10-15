@@ -694,6 +694,8 @@ prepare 顺序建议：先 `SystemFactory.build`，再 data / model（设备与�
 
 本层管执行环境，因此也管**往本 Run asset 写环境侧文件**：checkpoint 读写 `assets/checkpoints/`（`save_checkpoint` / `load_checkpoint`）；Logger 必写 `assets/logs/`。**resume 策略**在 algorithm。algorithm 算出的数字曲线仍由 AlgorithmTracker 写到 `assets/tracker/`。单测在 `tests/rpipe/structure/system/` 与 `system_api`（含 Logger 根据 AlgorithmTracker 打出行）。多设备 / 外网推理标 `external` 或 `slow`。
 
+Logger 与 AlgorithmTracker 的追加文件初始化只能创建/追加，不能截断存在性检查之后到达的旧字节。已有文件不在构造器重开，目录错误继续拒绝；日志追加和曲线 offset 恢复沿用各自协议，这不承诺任意同 Run 多写者或多文件事务。
+
 ### 7.8 `Logger`
 
 Logger 是 **system** 的运行时对象：打到 **terminal**，并且 **同一行写入** `assets/logs/run.log` 后立刻 flush。每一行是一条记录：`<RFC3339 毫秒+时区> <INFO|WARN|ERROR> <Run id 或 -> [<事件>] <内容>`。级别补齐到 5 个字符。没有 Run id 时身份格写 `-`。`--console shared` 时用 Run id 这一格把多条 Run 拆开。这是执行环境的 IO，不是算法语义。没有 Study 级总 log；index 的 `log` 指向这份文件。

@@ -97,6 +97,12 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 86. 第一类：追加诊断初始化保全与三类逐点收敛（B-075 / #67）
+
+本轮复用同一工作分支。第二类PR70最终head02f6f05的Unit38744687993/Package38744688048/Branch38744687921全部实际矩阵与聚合成功，普通合dev869300bd446edb24cfd95bdd3bc9a3a65bf29702；实际dev独立验收。第一类portable红提交f3605f1：到达交错2 failed，目录拒绝2 passed，原构造器确实把旧证据变成空字节；FIRST_RED/XML/log保留于.tmp/systematic-contracts-20261015，不随clone。
+
+最小方案只在Logger.__init__与AlgorithmTracker.__init__的既有is_file分支内用append创建文件；不把已存在只读文件提前重开，不改emit/flush、Tracker.begin_run的offset恢复、状态原子发布或Runner/schedule保全predicate。该分支内创建遇到目录仍抛原OSError，不吞程序错误、不增加锁或新目录。系统扫描发现的多个调用方继续委托这两个根入口，不复制补丁。
+
 ### 85. 第二类：严格 compare 读取与输出边界（B-076 / #68）
 
 第三类PR69最终head0f393f1的Unit38742367339/Package38742367353/Branch38742367302全部实际任务与聚合成功，正常合dev b858c2ba689f1f8e77fe7065b53ee551fe42325d，实际dev独立CI接续。第二类复用同一工作分支，portable红提交c954b49：32项26 failed/6 passed，程序RuntimeError原样上抛、历史null和已拒绝的负无穷作为控制通过。
