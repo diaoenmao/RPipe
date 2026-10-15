@@ -11,6 +11,7 @@
 - 来源：第三类引用/迁移合同，实际dev3a72bd8真实Windows只读硬链接的replace和unlink先后拒绝，最终只剩清理错误filename，原发布目标filename2丢失；两真实路径均保全源/目标字节与权限。NATIVE_REPRO/原始文件、原码ZIP/hash在.tmp/audit091，不随clone。
 - 期望：既有link_input/migrate_shared仅owned cleanup遇OSError按best-effort保留原异常/成功提交，不chmod任何共享输入；RuntimeError不吞，未owned路径不动。原子重试、布局、返回值与路径保留。
 - 先Issue108，红f1c6426共24项15 failed/9 passed、0error/skip，覆盖引用默认/硬链接回退、data/model迁移，发布失败/完成、权限/IO清理拒绝与程序异常、真实Windows原错误/正常控制。先设计再最小共享修复；不测速/GPU、不迁真实数据或改权限。
+- a8fb381原shared两处finally净+6修复，24节点转绿；联合120+1平台skip、core1324+1同skip、Flow181通过。无chmod/新helper，待最终head/实际devCI。
 
 B-090/#106已由PR107普通合dev3a72bd8，最终head和实际dev全部实际矩阵/聚合成功并清结束remote，见record§123；Issue留至下版。
 

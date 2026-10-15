@@ -1,7 +1,7 @@
 > 现状：PR107实际dev全绿清远程；唯一未合shared-cleanup-errors处理B091/#108，目标active。
 > 最新：两条真实Windows共享发布被清理错误遮蔽；24红合同15失败/9控制，出处§124。
 > 证据：原始只读文件/硬链接、字节/权限与原异常context均保留；绝不chmod共享输入。
-> 下一步：仅原shared.py两处owned cleanup best-effort保留发布结果，针对性/必要CPU门及最终CI。
+> 验证：atomic/shared120+1平台skip、core1324+1同skip、CPU Flow181通过；下一最终head/实际devCI。
 > 边界：不测速/GPU，不改布局/原replace重试或删除数据，不合main/tag；已修Issue等下版。
 
 # 一、摘要
@@ -110,7 +110,9 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 先[Issue108](https://github.com/DreamSoul-AI/RPipe/issues/108)再f1c6426红合同：24项15 failed/9 passed、0error/skip；四路为引用默认/硬链接回退、data/model迁移，覆盖发布失败的权限/普通IO清理拒绝、完成后清理IO拒绝、RuntimeError程序错误以及真实原生只读/正常控制。回归断言原异常identity或原生filename2、成功后的samefile、源/目标/peer字节权限，禁止清理非owned路径。本机Windows全部24执行，其他平台四个原生只读项明确skip不计通过，其余照常；原红保留。
 
-设计先于生产：只在shared.py两处既有owned finally内捕获unlink的OSError、best-effort保留诊断；原发布异常及已提交成功返回值不被覆盖。RuntimeError不吞，未owned路径不清理，不chmod硬链接，不动原atomic_replace六次有界重试、锁次序、配置/返回结构、schema或布局，无新helper/模块。全仓调用核对涵盖DataFactory的reference_tree/link_input、模型/数据prepared调用及CLI shared迁移；prepared_resource诊断目录、checkpoint恢复合同不改。关联研究计划RQ1/H1与RQ3/H3的首错/发布不变量，不新增科学实验。
+设计先于生产：只在shared.py两处既有owned finally内捕获unlink的OSError、best-effort保留诊断；原发布异常及已提交成功返回值不被覆盖。RuntimeError不吞，未owned路径不清理，不chmod硬链接，不动原atomic_replace六次有界重试、锁次序、配置/返回结构、schema或布局，无新helper/模块。全仓实际调用核对为DataFactory的reference_tree/link_input及CLI shared迁移；prepared_resource独立构建入口仅核对、不改其诊断目录，checkpoint恢复合同也不改。关联研究计划RQ1/H1与RQ3/H3的首错/发布不变量，不新增科学实验。
+
+生产a8fb381仅原shared.py两处owned finally +8/-2（净+6），无chmod或新helper；OSError清理拒绝不覆盖原发布异常/成功，RuntimeError控制仍传播。atomic/shared120 passed/1既有POSIX mode skip、core1324 passed/1同skip、CPU Flow181 passed，0fail/error，24新增节点在本机Windows的联合与core全部实际执行转绿。原生四个只读节点在其他平台明确skip不计通过，可移植合同仍执行。所有源/目标/peer字节权限保留；原只读样本/硬链接未清或改属性，不把残留诊断称为已删除。执行CRLF与Git LF的红字节分别hash核对、保留准确原执行字节；原XML/log/ZIP/LOCAL_CHECKED在.tmp/audit091，不随clone。最终head/实际devCI待验，Issue108等下版。
 
 ### 123. PR107实际dev验收与第十五条结束远程清理
 
