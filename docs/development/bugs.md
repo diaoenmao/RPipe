@@ -6,12 +6,13 @@
 
 ## 开放
 
-### B-082：损坏activity字段被当有效提示，绕过缺index错误（[#86](https://github.com/DreamSoul-AI/RPipe/issues/86)）
+### B-083：非法来源声明绕过校验并覆盖旧来源证据（[#91](https://github.com/DreamSoul-AI/RPipe/issues/91)）
 
-- 来源：可选提示有类型合同复查，read_activity仅要求根dict与phase真值，未校验被CLI打印字段。
-- 真实9探针：phase为True、1、非空list/dict、空白串或detail为dict六个坏提示均被接受，index不存在却status退出0；合法缺detail/null detail为2控制，空dict被忽略并退出2为1控制。全部提示原字节不改，真实进程/GPU/ACL变更0。
-- 期望：在既有可选reader验证非空白str phase、可选str/null detail，坏字段沿不可用提示处理；缺index保留退出2、有合法index仍显示peer表。保留Unicode/自定义非空阶段名与缺省/null/空detail，不新增阶段enum、ownership/TTL或格式/目录。
-- Issue86已先开，从已合dev37d0262建立唯一未合codex/activity-hint-fields，先提交红313f826：25节点21 failed/4 passed、0error/skip；生产尚未修改。所有announce现有调用都给字符串，不重构writer。源码/测试ZIP与REPRO在.tmp/audit082，不随clone。不同于原B-068 stat/编码错误，不重复登记旧反例。本项最小fix59785be已获436相邻/core882通过+1平台skip/Flow175通过，最终head/实际dev待本批PR；下一新编号B-083。
+- 来源：三类失败写入/typed声明系统复查。source_files以or空值回退，provenance的false/0/空串/空list被当空mapping，include非list被忽略或迭代。
+- 实际：隔离10种非法声明全被接受、6个合法声明控制及True block拒绝控制；直接write_provenance对False声明覆盖合成旧provenance，旧SHA83c56e89413dfa79b426c211b5777e9f364a1ff99947869efdb09a52ece7e6d1，新7ddc267434d52ab14259c45a45141ba5fafe50c9ac8bb7334651e3f25096dbeb。未使用正式Study/旧Run，不声称已发生正式数据损坏。
+- 期望：只在source_files统一区分None与非法类型，provenance为mapping、include为list；缺省/null和合法空mapping/list兼容；非法声明在写来源证据前ValueError，旧或缺失目标及peer不变。合法glob/Path强转、哈希/键域/冻结异常与旧成功保全范围不变，不改布局或make多文件事务。
+- Issue先开；38合同在冻结隔离snapshot执行30 failed/8 passed、0error/skip，真实导入路径与生产字节hash已核对；同字节portable红测试d1baff1提交先于生产。10个source拒绝、20个有/无旧目标发布拒绝、8个合法/历史控制。首快照漏--format=zip导致BadZipFile发生在pytest之前，原tar字节/脚本/错误记录保留，非库失败；修正后才执行RED。BEFORE/REPRO/RED/log/XML/hash在.tmp/audit083，不随clone。
+- 当前尚未生产修复，下一新编号B-084；B-082/#86已PR88合dev8ee1913并最终head/实际dev全实际CI成功，结束远程已删，见record §103。修复Issue均保持open等下版。
 
 B-081/#85已由PR87合dev37d0262，最终head/实际dev全部实际CI通过并删除结束远程，Issue保留open，见record §101。
 

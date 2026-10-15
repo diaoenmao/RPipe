@@ -1,5 +1,9 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 来源声明红合同接续
+
+#86/PR88最终head及实际dev8ee1913全部实际CI成功，结束remote已删；PR92研究正本/英译/独立探索已合devf303d72，最终head全部实际CI通过，实际dev观察中。唯一未合codex/provenance-declarations修B-083/#91，同字节红d1baff1为38节点30失败/8控制，先于生产；snapshot首次打包错误发生pytest前，原失败保留，不计库失败。设计统一source_files拒绝非法provenance/include容器，保留None/有效列表与旧来源/peer，不扩大make事务或旧成功保全范围。见record §103，源码仍待最小修复。文档任务已入dev，暂存留对照；#89/#90仅独立调研，不自动实施。目标active，不合main/打tag、不测速/GPU/迁目录/logger。
+
 ## 2026-10-16 研究计划原件与独立调研接续
 
 #86经PR88合dev8ee1913，最终head63e2c84全部实际CI成功、实际dev独立验收中，完成后删codex/activity-hint-fields远程。唯一未合codex/research-plan-masters按新授权处理DEM中文正本与完整英译、research入口及两个互不绑定的探索Issue89/90，见record §102与docs/research/standards/README。正本按字节保留，3类DEM缺失依赖明确登记；暂存保留不提交。36 layout通过，不迁共享目录/logger、不跑性能/GPU、不改运行格式。已有provenance声明反例.tmp/audit083待后续先Issue/红回归，不混入文档PR；正确性目标active，Issue86及已修工程Issue等下版。

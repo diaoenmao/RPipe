@@ -1,8 +1,8 @@
-> 现状：#86 已由 PR88 普通合 dev8ee1913；最终head CI全绿，实际dev独立验收中；研究规范文档独立接续。
-> 最新：中文正本25618/9309字节完全一致；英译8/10章、72/29表格行对应；布局36项通过，出处§102。
-> 下一步：规范/译本与两项独立调研经文档PR合dev；继续已复现provenance声明正确性缺口。
-> 阻塞：无；唯一未合codex/research-plan-masters；DEM内部3类引用缺失已明记，暂存保留。
-> 边界：不测速/GPU、不迁shared/logger、不改运行布局、不合main/打tag，不删数据。
+> 现状：#86/PR88与实际dev均CI全绿、远程已删；研究规范PR92合devf303d72，集成CI中；#91红回归已提交。
+> 最新：来源声明38项30失败/8合法控制，出处§103、d1baff1、.tmp/audit083/RED_CHECKED.json。
+> 下一步：既有source_files统一mapping/list校验，保全旧provenance与peer；针对性/core/Flow正确性验证后PR合dev。
+> 阻塞：无；唯一未合codex/provenance-declarations；文档实际dev观察独立接续，暂存保留。
+> 边界：不测速/GPU、不改layout/产物格式、不合main/打tag、不迁shared/logger，不删数据。
 
 # 一、摘要
 
@@ -102,6 +102,18 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+### 103. 研究规范合dev、activity实际验收与来源声明红合同（B-083 / #91）
+
+记录日期2026-10-16。B-082/#86的PR88实际dev `8ee1913de69871692c99d7228384730f81c18bb9` 的[Unit38775349489](https://github.com/DreamSoul-AI/RPipe/actions/runs/38775349489) / [Package38775349361](https://github.com/DreamSoul-AI/RPipe/actions/runs/38775349361)全部实际矩阵及聚合成功，DEV_CHECKED SHA256 `7096b74293fb906fa298d35200dc015371d6f80e2da0979500f3be8148a0f458`。核对tip63e2c84为dev祖先、无开放PR后普通删除远程`codex/activity-hint-fields`，本地保留，main/dev与活动文档分支不因删除改变。PR/Issue验收已追加，Issue86保持open；本目标至此共六条结束远程删除，前五条见§101。
+
+[PR92](https://github.com/DreamSoul-AI/RPipe/pull/92)最终head `eadb39219d4c3c1425f0fc087a1127e843b38f58` 的[Unit38776167214](https://github.com/DreamSoul-AI/RPipe/actions/runs/38776167214)、[Package38776167175](https://github.com/DreamSoul-AI/RPipe/actions/runs/38776167175)、[Branch38776167404](https://github.com/DreamSoul-AI/RPipe/actions/runs/38776167404)全部实际矩阵与聚合成功，PR_CHECKED SHA256 `dd10585ffaa472c9fe804f377400c72c5f926e2021ddd76800eb78a777a50be4`，普通merge为dev `f303d72`，实际dev独立观察中；完成后清文档remote，不冒充已验收。DEM中文正本/英译/入口及两个独立调研已入dev，source字节与换行checkout证据见§102。监控调研固定dayan a7a1b40已用GitHub commit API确认远程存在，不依赖未推本机commit。#89/#90是探索议题，不是待立刻实施的bug，不与正确性修复或模板绑定。
+
+新B-083/#91真实10种非法声明被接受（4种provenance容器、6种include值），缺省/null/空mapping/list与有效列表共6控制，True block按已有规则ValueError拒绝为控制。单文件合成包与临时Study避免扫描正式输入，environment/Git采集mock；直接write_provenance把旧合成provenance覆盖，旧SHA256 `83c56e89413dfa79b426c211b5777e9f364a1ff99947869efdb09a52ece7e6d1`、新 `7ddc267434d52ab14259c45a45141ba5fafe50c9ac8bb7334651e3f25096dbeb`，不声称正式数据已损坏。
+
+先开Issue91，等待文档CI时仅在.tmp冻结快照加portable测试，实际导入该快照src、生产provenance字节与活动基线一致。38节点30 failed/8 passed、0error/skip：10项source拒绝、20项有/无旧target发布拒绝及peer保全、8项合法/历史声明控制（含glob/Path）。源码/新增测试SHA及真实导入路径在RED_SNAPSHOT_V2_CHECKED，XML/日志/命令/REPRO/BEFORE.zip全留.tmp/audit083，不随clone。首快照git archive缺--format=zip，tar送入ZIP reader产生BadZipFile，pytest尚未启动，错误及原tar字节保留；修正导出后才执行红回归，不计为库失败/通过。文档PR合后从新dev建唯一未合codex/provenance-declarations，同字节测试由d1baff1先提交，尚未修生产；未重复跑红测试来挑结果。
+
+设计先明确在既有source_files区分None/非法类型、复用ValueError及下游既有拒绝边界；write_provenance发布前失败保全原来源/peer。合法声明/模式/键域/hash和错误/冻结/旧成功决策不变，不将make既有config/index步骤改成多文件事务、不加新模块/布局/缓存。这是同类声明根边界统一，未散加CLI补丁，不测速/GPU或干预下游。下一步最小修复与相邻/core/Flow正确性验收。
 
 ### 102. DEM 研究计划中文正本、英译与两个独立调研议题
 
