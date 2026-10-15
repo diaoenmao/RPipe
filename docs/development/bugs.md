@@ -6,12 +6,14 @@
 
 ## 开放
 
-### B-090：只读文本staging在发布拒绝后残留（[#106](https://github.com/DreamSoul-AI/RPipe/issues/106)）
+### B-091：共享临时链接清理遮蔽原发布结果（[#108](https://github.com/DreamSoul-AI/RPipe/issues/108)）
 
-- 来源：第三类共享原子文本入口，dev83615d7真实Windows只读旧target保留，但本调用staging复制只读属性后unlink拒绝，遗留完整候选内容；原始REPRO与文件留.tmp/audit090，不随clone。
-- 期望：只在owned独立文本stage的删除遇PermissionError时有界恢复可写属性并再删一次；不触碰旧target/peer、共享hardlink、checkpoint诊断目录，原异常保留；不可恢复IO仍best-effort。
-- 先Issue106，红50aac22共12项5 failed/7 passed、0error/skip；含真实text/config/result只读/正常路径、恢复/再次拒绝/非权限IO、未取得owned的只读碰撞。先设计再最小修复，不测速/GPU/改布局或恢复协议。
-- f2c0ab9原_atomic净+6修复；12节点转绿，atomic/shared96+1平台skip、core1300+1同skip、Flow181通过，原字节/权限/异常保全，待最终head/实际devCI。
+- 来源：第三类引用/迁移合同，实际dev3a72bd8真实Windows只读硬链接的replace和unlink先后拒绝，最终只剩清理错误filename，原发布目标filename2丢失；两真实路径均保全源/目标字节与权限。NATIVE_REPRO/原始文件、原码ZIP/hash在.tmp/audit091，不随clone。
+- 期望：既有link_input/migrate_shared仅owned cleanup遇OSError按best-effort保留原异常/成功提交，不chmod任何共享输入；RuntimeError不吞，未owned路径不动。原子重试、布局、返回值与路径保留。
+- 先Issue108，红f1c6426共24项15 failed/9 passed、0error/skip，覆盖引用默认/硬链接回退、data/model迁移，发布失败/完成、权限/IO清理拒绝与程序异常、真实Windows原错误/正常控制。先设计再最小共享修复；不测速/GPU、不迁真实数据或改权限。
+- a8fb381原shared两处finally净+6修复，24节点转绿；联合120+1平台skip、core1324+1同skip、Flow181通过。无chmod/新helper，待最终head/实际devCI。
+
+B-090/#106已由PR107普通合dev3a72bd8，最终head和实际dev全部实际矩阵/聚合成功并清结束remote，见record§123；Issue留至下版。
 
 B-089/#104已由PR105普通合dev83615d7，最终head和实际dev全部实际矩阵/聚合通过，结束remote已清，见record§121；Issue留至下版。
 

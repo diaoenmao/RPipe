@@ -1,8 +1,8 @@
-> 现状：PR105已合dev83615d7且实际CI全绿、结束remote已清，当前唯一未合atomic-readonly-cleanup。
-> 最新：B090/#106原生Windows发布拒绝后残留只读文本stage；12红合同5失败/7控制，出处§122。
-> 已保留：原生WinError5、旧目标/peer字节及权限、残留候选完整内容、原码ZIP/hash；不动正式数据。
-> 验证：atomic/shared 96通过/1平台skip、core 1300通过/1同skip、CPU Flow181通过；下一最终head/实际dev CI。
-> 边界：不改共享hardlink权限、旧目标、checkpoint恢复/布局，不测速/GPU，不合main/tag；目标active。
+> 现状：PR107实际dev全绿清远程；唯一未合shared-cleanup-errors处理B091/#108，目标active。
+> 最新：两条真实Windows共享发布被清理错误遮蔽；24红合同15失败/9控制，出处§124。
+> 证据：原始只读文件/硬链接、字节/权限与原异常context均保留；绝不chmod共享输入。
+> 验证：atomic/shared120+1平台skip、core1324+1同skip、CPU Flow181通过；下一最终head/实际devCI。
+> 边界：不测速/GPU，不改布局/原replace重试或删除数据，不合main/tag；已修Issue等下版。
 
 # 一、摘要
 
@@ -103,6 +103,22 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-16
 
+
+### 124. 共享引用/迁移的原发布结果保全（B-091 / #108，红合同与设计）
+
+记录日期2026-10-16，第三类共享链接清理复查，不将独立文本的属性恢复套到硬链接。实际Windows两条路径：link_input模拟无symlink权限走原生hardlink，migrate_shared原生hardlink；只读旧目标先使replace WinError5，finally unlink同样WinError5，后者遮蔽原发布错误，最终filename2为None，原目标仅在context。源/目标字节与权限均未变，原始文件/硬链接与NATIVE_REPRO/源码ZIP/hash在.tmp/audit091，不随clone。没有迁移正式输入或修改系统ACL/设置。保留诊断链接比修改与原始输入共享的权限安全；此处修的是错误归属及发布结果，不宣称任意IO必清。
+
+先[Issue108](https://github.com/DreamSoul-AI/RPipe/issues/108)再f1c6426红合同：24项15 failed/9 passed、0error/skip；四路为引用默认/硬链接回退、data/model迁移，覆盖发布失败的权限/普通IO清理拒绝、完成后清理IO拒绝、RuntimeError程序错误以及真实原生只读/正常控制。回归断言原异常identity或原生filename2、成功后的samefile、源/目标/peer字节权限，禁止清理非owned路径。本机Windows全部24执行，其他平台四个原生只读项明确skip不计通过，其余照常；原红保留。
+
+设计先于生产：只在shared.py两处既有owned finally内捕获unlink的OSError、best-effort保留诊断；原发布异常及已提交成功返回值不被覆盖。RuntimeError不吞，未owned路径不清理，不chmod硬链接，不动原atomic_replace六次有界重试、锁次序、配置/返回结构、schema或布局，无新helper/模块。全仓实际调用核对为DataFactory的reference_tree/link_input及CLI shared迁移；prepared_resource独立构建入口仅核对、不改其诊断目录，checkpoint恢复合同也不改。关联研究计划RQ1/H1与RQ3/H3的首错/发布不变量，不新增科学实验。
+
+生产a8fb381仅原shared.py两处owned finally +8/-2（净+6），无chmod或新helper；OSError清理拒绝不覆盖原发布异常/成功，RuntimeError控制仍传播。atomic/shared120 passed/1既有POSIX mode skip、core1324 passed/1同skip、CPU Flow181 passed，0fail/error，24新增节点在本机Windows的联合与core全部实际执行转绿。原生四个只读节点在其他平台明确skip不计通过，可移植合同仍执行。所有源/目标/peer字节权限保留；原只读样本/硬链接未清或改属性，不把残留诊断称为已删除。执行CRLF与Git LF的红字节分别hash核对、保留准确原执行字节；原XML/log/ZIP/LOCAL_CHECKED在.tmp/audit091，不随clone。最终head/实际devCI待验，Issue108等下版。
+
+### 123. PR107实际dev验收与第十五条结束远程清理
+
+[PR107](https://github.com/DreamSoul-AI/RPipe/pull/107)最终head `168456adf0fba9223bad5113a5e8d05eec955ad4` 的Unit38802303742/Package38802303741/Branch38802303901全部实际矩阵/聚合成功，PR_CHECKED SHA256 `a0b6f8552f3590d0792891f73b6be24728f6a0035d3de0d0caff1ce80eaa2f28`；普通merge实际dev `3a72bd8cef7efc178d9f51b49d4dc05c53d83b36`，[Unit38803008248](https://github.com/DreamSoul-AI/RPipe/actions/runs/38803008248)/[Package38803008361](https://github.com/DreamSoul-AI/RPipe/actions/runs/38803008361)也全部实际成功，DEV_CHECKED SHA256 `34f0f676b0c264e313a075f58703e221a2c5b0af126d8d70910013873d90289a`。12新增节点本机Windows均执行；其他平台3原生只读节点skip另记，不冒充通过，详§122。
+
+祖先/无开放PR/实际CI核对后普通删除结束remote codex/atomic-readonly-cleanup（tip168456a），原本地保留；目标累计十五条结束remote清理，前十四见§121，§82历史不重复计数。PR与Issue106原正文已追加实际验收，Issue等下版。main仍00e70b1/v0.4.1；所有数据/Run/provenance和旧失败保留。临时proof/删除前后/五行COMPLETION在.tmp/audit090，不随clone；当前新分支仅处理共享链接结果保全，不重复旧CI或重开旧缺陷。
 
 ### 122. owned只读文本staging的清理边界（B-090 / #106，红回归与设计）
 

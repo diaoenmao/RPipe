@@ -1,5 +1,9 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 PR107完成、共享链接清理结果保全批次
+
+PR107已普通合dev3a72bd8，最终head/实际dev全部实际CI成功，结束remote已删、本地保留；累计十五条清理见record§123，Issue106留至下版。当前唯一未合codex/shared-cleanup-errors修B091/#108：真实Windows引用hardlink回退与迁移均被后续unlink错误遮蔽原发布失败，原字节/权限完整。先Issue→红f1c6426（24项15失败/9控制）→设计2061395→生产a8fb381只在shared.py两处owned finally净+6捕获清理OSError，保留原发布错误或已提交成功，RuntimeError不吞；禁止chmod共享硬链接，不改原replace重试/锁/布局。联合120+1平台skip、core1324+1同skip、Flow181通过，24新增本机全部执行，其他平台4原生只读节点skip不计通过。证据见§124与.tmp/audit091（不随clone）；下一最终head/实际devCI后清remote，Issue108等下版，不测速/GPU、不合main/tag、不删数据。
+
 ## 2026-10-16 PR105完成、owned只读文本清理批次
 
 PR105已普通合dev83615d7，最终head/实际dev全部实际CI成功，结束remote已清、本地保留；累计十四条见record§121，Issue104等下版。当前唯一未合codex/atomic-readonly-cleanup修B090/#106：真实Windows只读旧target保留但同mode的自有临时文本无法删除；先Issue→红50aac22（12项5失败/7控制）→设计96705cd→既有_atomic净+6 f2c0ab9。仅owned独立文本首次unlink PermissionError时恢复临时文件0o600后再删一次；不触旧target/peer、共享hardlink或checkpoint staging，原异常保留，不改原replace重试。12节点本机全执行转绿，atomic/shared96+1平台skip、core1300+1同skip、Flow181通过；其他平台3原生只读项明确skip不计通过。见§122、.tmp/audit090（本机证据不随clone）；下一最终head/实际devCI后清remote，Issue106留至下版，不测速/GPU、不合main/tag或改布局。
