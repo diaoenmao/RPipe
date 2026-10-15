@@ -53,10 +53,14 @@ def source_files(study_dir: Path | str, study: dict[str, Any]) -> dict[str, str]
         names.extend(path.relative_to(study_dir).as_posix() for path in sorted(directory.rglob('*.py')))
     if study.get('recipe') not in (None, ''):
         names.append(str(study['recipe']))
-    block = study.get('provenance') or {}
+    block = study.get('provenance')
+    block = {} if block is None else block
     if not isinstance(block, dict):
         raise ValueError('provenance must be a mapping with an include list')
-    for pattern in block.get('include') or []:
+    include = block.get('include')
+    if include is not None and not isinstance(include, list):
+        raise ValueError('provenance.include must be a list')
+    for pattern in include or []:
         matched = sorted(study_dir.glob(str(pattern)))
         if not matched:
             raise FileNotFoundError(f'provenance.include matched nothing: {pattern}')
