@@ -925,7 +925,7 @@ readout 在既有 status.py 内用私有三态读取区分可用、缺失和不�
 
 status / logs 的逐文件 I/O 容错同时覆盖存在性查询和内容读取：不可读结果沿用已有计划配置回退，不可用日志不提供 note/event，其他 Run 继续展示；不改写任何输入。共享 load_index 在进入调用方前验证 experiments/runs 为 list、各条目为 object、factors 为 object；缺省/null 的可选容器保留历史空值语义，非法非空或空类型均明确拒绝，不将列表对强转为因素。当前 index 缺失/不可用仍拒绝，意外编程错误仍向上抛出，不把它们当作缺失文件。 status 的 metric 单元格仅展示 object 中支持的数值字段；非 object 指标直接使用已有不可用占位，不把列表对转换为 mapping，也不因此隐藏 Run 状态或其他有效结果。
 
-读数的数字格式只在既有 report._fmt 内统一：有限 int/float 显示四位小数，bool、其他类型、溢出和非有限值显示 `-`，status 复用并保留后续可用指标 fallback。report 的 Experiment / Run metrics 非 object 时仅该格不可用，不隐藏其他 Run；严格 loader、计划一致性、compare 与 process 科学聚合不由此放宽。
+读数的数字格式只在既有 report._fmt 内统一：有限 int/float 显示四位小数，bool、其他类型、溢出和非有限值显示 `-`，status 复用并保留后续可用指标 fallback。report 的计数格由既有report.py内私有_count统一：仅非负int按原十进制显示，bool/负数/其他类型为单格“-”；stat.n、空metrics的Experiment.n及缺stat.n时的回退共用，缺失字段原回退/默认0不变，不重算或回写process计数。report 的 Experiment / Run metrics 非 object 时仅该格不可用，不隐藏其他 Run；严格 loader、计划一致性、compare 与 process 科学聚合不由此放宽。
 
 通用 compare 的标量与张量树统一非有限值身份：无穷值只在相同值/符号/位置时相同，不让相对界的 inf 或 0×inf 的 NaN 产生错误通过；非有限不匹配报告差异，保持既有 paired-NaN 判断。有限值绝对/相对容差、整数精度、匹配字段及缺失语义不变；这是已有证据的只读比较，不改变训练计算、输出schema或checkpoint恢复。JSON输出继续原有非有限差值归null，CLI合法比较不同exit1、文件/参数错误exit2。
 

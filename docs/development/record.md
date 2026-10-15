@@ -1,8 +1,8 @@
-> 现状：PR107实际dev全绿清远程；唯一未合shared-cleanup-errors处理B091/#108，目标active。
-> 最新：两条真实Windows共享发布被清理错误遮蔽；24红合同15失败/9控制，出处§124。
-> 证据：原始只读文件/硬链接、字节/权限与原异常context均保留；绝不chmod共享输入。
-> 验证：atomic/shared120+1平台skip、core1324+1同skip、CPU Flow181通过；下一最终head/实际devCI。
-> 边界：不测速/GPU，不改布局/原replace重试或删除数据，不合main/tag；已修Issue等下版。
+> 现状：PR109实际dev全绿清远程；唯一未合report-count-cells处理B092/#110，B093/#111独立排队。
+> 最新：三计数格15原生场景12不符；完整RED2共60项45失败/15控制，出处§126。
+> 保留：首RED因失败事件的U+D800编码故障中止，52节点36失败/1error，原日志/字节未覆盖。
+> 下一步：统一report计数格，完整回归/必要CPU门与最终CI；随后修#111测试证据编码。
+> 边界：不改科学聚合/JSON/布局，不测速/GPU，不合main/tag；已修Issue等下版，目标active。
 
 # 一、摘要
 
@@ -103,6 +103,20 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-16
 
+
+### 126. NUMBERS计数格的统一类型与行列合同（B-092 / #110；另发现B-093 / #111）
+
+记录日期2026-10-16，第二类只读展示系统复查。report直接str拼stat.n、空metrics的Experiment.n与stat缺n时的Experiment回退，前期B086覆盖factor/metric文本而未覆盖计数类型；不重开旧合法文本反例。实际15文件场景：三个分支各4坏输入（pipe/newline/bool/negative）及1合法整数，12违反合同/3控制；pipe使7列表格多边界符，newline拆行，bool/负数假计数。原REPRO.json保留，REPRO_CHECKED另记几何+单元格联合判据，不能仅对换行后的碎片误认count；每个rendered.md可核对原文。index/process原字节保全，未跑计算。
+
+先[Issue110](https://github.com/DreamSoul-AI/RPipe/issues/110)，首60回归在第52节点因测试证据writer编码崩溃中止：RED.xml记36 failed/1error/15控制，不当作完整60执行。原测试FIRST_RED_TEST_BYTES/RED/log/hash保留；tests/conftest.py ensure_ascii=False序列化失败longrepr含U+D800，UTF8写失败造成pytest internalerror。另开[Issue111](https://github.com/DreamSoul-AI/RPipe/issues/111)登记B093，紧接当前批次处理，不把测试设施失败当计数产品失败或吞掉。当前断言将同一单元格相等判断先存bool，仅诊断用ASCII（shortcut明确关联#111），所有原数据及案例含U+D800保留，不排除节点、不放宽判断。c1add39正式红提交，完整RED2为60项45 failed/15 passed、0error/skip，源码仍冻结原字节。
+
+设计先于生产：report.py现有模块内增私有_count，三分支共享非负int十进制/其他“-”规则；bool、负数、float/非有限、text/分隔符/代理、array/object/null均为坏格。4整数控制含0/大整数及缺失回退控制保留，缺stat.n沿exp.n，缺exp.n默认0仍原语义。不按n_planned重算或改写科学计数，不改_fmt浮点精度、计划一致性、Run归属、peer或JSON/schema/布局；不新增模块。关联研究计划RQ2/H2的类型视图，不把显示可用当数据真实性或科学质量通过。
+
+### 125. PR109实际dev验收与第十六条结束远程清理
+
+[PR109](https://github.com/DreamSoul-AI/RPipe/pull/109)最终head `9e2f0efbe546a64c4fbbbe4caf1fed326cd396bd` 的Unit38804944730/Package38804944700/Branch38804944725全部实际矩阵/聚合成功，PR_CHECKED SHA256 `baf857baac64d4c81c11b7d6f93f2dc72211a4b939e694b2243f3a37fbce1b24`；普通merge实际dev `fccccc4c28f9f6797fe5873b0700eead3ba39404`，[Unit38805781593](https://github.com/DreamSoul-AI/RPipe/actions/runs/38805781593)/[Package38805781634](https://github.com/DreamSoul-AI/RPipe/actions/runs/38805781634)也全部实际成功，DEV_CHECKED SHA256 `a8fa26c46478379644d4342248f6f730701e811c396295fa650e2c2a6a8fc89e`。24新增本机Windows全部执行，其他平台4原生只读项skip另记，见§124，不宣称任意权限必清或更改共享硬链接mode。
+
+祖先/无开放PR/实际CI核对后普通删除结束remote codex/shared-cleanup-errors（tip9e2f0ef），原本地保留；目标累计十六条结束remote清理，前十五见§123，§82历史不重复计数。PR/Issue108原正文已补实际验收，Issue留至下版，main仍00e70b1/v0.4.1。数据/Run/provenance/原只读文件与所有失败保留；临时proof/删除前后/五行COMPLETION在.tmp/audit091，不随clone。当前分支处理新计数合同，未重派旧CI或重开旧题。
 
 ### 124. 共享引用/迁移的原发布结果保全（B-091 / #108，红合同与设计）
 
