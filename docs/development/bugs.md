@@ -6,6 +6,14 @@
 
 ## 开放
 
+### B-081：Run状态字段的校验/读出类型与枚举约束不一致（[#85](https://github.com/DreamSoul-AI/RPipe/issues/85)）
+
+- 来源：三类typed-status合同复查，validate_result在类型判断前做frozenset成员检查；status读出直接str/真值回退。
+- 实际复现：8个隔离状态输入中3种容器在validator/writer均TypeError，7种非法状态在只读表无损坏诊断，3种落到计数外。null为兼容控制。旧target/所有Run与peer原字节均未改，不声称旧writer发生数据损坏。
+- 期望：writer沿既有VALID_STATUS，先验字符串再判枚举，非法状态返回原errors/ValueError；status对非法类型/未知枚举复用unreadable诊断回退。保留读出缺失/null/空/pending与合法partial映射，不在全局loader套Run写schema、不支持新标签、不改科学聚合或文件布局。
+- Issue85先创建，红测试fc704fa先于生产：29节点16 failed/13 passed、0error/skip，覆盖validator、真实writer无/有旧target及peer、单Run诊断/计数/计划值和7个历史/partial控制。首RED诊断断言对None用了in而不够直观，改成显式短路后RED2同样16失败/13通过；两份均保留，不能把断言表达式异常计为库额外故障。
+- 源码/测试原字节ZIP、8个REPRO、RED/RED2 XML/log/命令在.tmp/audit081，不随clone；生产待修。直接validator调用方为write_result，Run读out为list_runs；其他load_result/process/report调用保持通用mapping合同。
+
 ### B-080：可选jobs缓存的stat/编码/数值元数据失败越过重建边界（[#82](https://github.com/DreamSoul-AI/RPipe/issues/82)）
 
 - 来源：持续第二类可选读取复查。load_launch_plan合同为不可用返回None请求make重建；但stat在try外、UTF-8及缓存int转换未在同一边界。

@@ -1,7 +1,7 @@
-> 现状：#77/#79/#81均已合dev并通过实际CI，结束远程已清；B-080/#82实现和本地检查完成，按PR流程验收。
-> 最新：#82的22项由10失败/12控制转全绿；相邻371、core834通过/1平台skip、Flow169通过；本轮新删3远程，出处§97。
-> 下一步：验收缓存读取修复最终head/实际dev并清理该远程，再按目标继续正确性；Issue留待后版。
-> 阻塞：无；GitHub查询EOF退避后恢复，未重跑CI；目标active，当前仅codex/saved-plan-read-boundary未合。
+> 现状：#77/#79/#81已合dev验收并清理远程；#82由PR84合dev6863f7f，集成CI中；继续B-081/#85。
+> 最新：状态容器校验TypeError/非法状态无读出诊断已复现；29项红合同16失败/13控制通过，出处§98、fc704fa。
+> 下一步：复用既有状态枚举做最小类型/读出修复，保留legacy/partial合同；正确性验收后PR合dev并清理远程。
+> 阻塞：无；目标active，当前唯一未合codex/result-status-contract，原字节/红例/删除清单保留。
 > 边界：不测速/GPU、不改layout/产物格式、不合main/打tag，不删数据/Run/provenance。
 
 # 一、摘要
@@ -102,6 +102,15 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+### 98. Run状态字段校验与只读有类型视图（B-081 / #85）
+
+记录日期2026-10-16。上一批[PR84](https://github.com/DreamSoul-AI/RPipe/pull/84)最终head1516a8bacc0188c210f92ecff4aec0354fdb1c5d的Unit38768342129/Package38768342472/Branch38768341996全部实际矩阵/聚合成功后普通merge dev6863f7ffe5f2e8b3e1883e39dfd5106cdb234493，实际dev独立验收中；codex/saved-plan-read-boundary待通过后清理。当前唯一未合codex/result-status-contract，继续已真实确认的#85，不恢复测速或布局重构。
+
+1. 先8个隔离输入探针（.tmp/audit081/REPRO.json）：三个容器status使validate_result和write_result抛unhashable TypeError；七个非法字段在status没有损坏诊断，其中list-label/float/未知queued造成状态计数总和小于planned。null是legacy pending控制。所有旧target/输入/peer字节不改，实际损害是校验/展示合同，不夸大为已发生数据丢失。
+2. 已先[Issue85](https://github.com/DreamSoul-AI/RPipe/issues/85)，再红测试fc704fa：29节点16 failed/13 passed、0error/skip。validator的3容器为红、6其他非法值原errors为控制；writer有/无旧target各3容器为红并核对peer/无staging；读out7非法字段为红、7缺失/null/空/pending/成功/失败/partial为兼容控制。首RED诊断assert用了None的in导致表达式不清晰，改成显式短路并保留RED2，同样红绿计数，生产未动；不把这个断言表达式错误混记库TypeError来源。
+3. 设计先写structure.md：validator先验str再使用既有VALID_STATUS，状态枚举/写入异常接口不变；status在现有list_runs针对所读Run状态字段复用同一枚举，非法字段按已有文件unreadable处理，保留计划mode/seed、peer与输入。显示保留现有缺失/null/空/pending、合法部分映射兼容，不扩大未知状态标签；不把Run写validator用于通用process映射或修改全局load_result。
+4. 已搜索所有validate_result直接调用方（write_result）以及读出list_runs/CLI；不改load_result、process科学聚合、schema/持久格式或目录布局。原字节ZIP/红日志在.tmp/audit081不随clone，portable合同已入库。旧任务的head/实际dev分别验收、remote已结束再删；所有Issue等后续版本才关。目标active，不弹窗、不测速/GPU、不合main/打tag、不删数据/Run/provenance。
 
 ### 97. 批次证据保护最终验收与可选缓存候选完成
 
