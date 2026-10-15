@@ -431,3 +431,20 @@ def test_unusable_numeric_metric_is_local_and_keeps_valid_fallback(tmp_path, cap
     assert main(['status', str(study)]) == 0
     assert 'accuracy=0.8000' in capsys.readouterr().out
     assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('text', ['false', '0', '[]', "''"])
+def test_falsy_non_mapping_config_is_unknown_without_hiding_peer(tmp_path, text):
+    study = _write_study(tmp_path)
+    path = study / 'runs/wait/config.yaml'
+    path.write_text(text, encoding='utf-8')
+    before = {p: p.read_bytes() for p in study.rglob('*') if p.is_file()}
+    body = list_runs(study)
+    rows = {row['id']: row for row in body['runs']}
+    assert rows['wait']['mode'] == 'unknown'
+    assert 'mode config unreadable' in rows['wait']['error']
+    assert rows['wait']['status'] == 'pending'
+    assert rows['ok']['mode'] == 'train'
+    assert rows['ok']['metric'] == 'accuracy=0.8000'
+    assert body['counts'] == {'planned': 3, 'succeeded': 1, 'failed': 1, 'pending': 1}
+    assert {p: p.read_bytes() for p in study.rglob('*') if p.is_file()} == before

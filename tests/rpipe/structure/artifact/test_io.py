@@ -195,3 +195,25 @@ def test_index_keeps_legacy_optional_empty_containers(tmp_path, body):
     path.write_bytes(raw)
     assert load_index(tmp_path) == body
     assert path.read_bytes() == raw
+
+
+@pytest.mark.parametrize('text', ['false', '0', '[]', "''", 'true', '1'],
+                         ids=['false', 'zero', 'empty-list', 'empty-string', 'true', 'one'])
+def test_config_rejects_non_mapping_yaml_root_without_writes(tmp_path, text):
+    from rpipe.structure.artifact.errors import CorruptArtifactError
+
+    path = tmp_path / 'config.yaml'
+    raw = text.encode('utf-8')
+    path.write_bytes(raw)
+    with pytest.raises(CorruptArtifactError, match='mapping'):
+        load_config(path)
+    assert path.read_bytes() == raw
+    assert list(tmp_path.iterdir()) == [path]
+
+
+@pytest.mark.parametrize('text', ['', '# empty document', 'null', '{}'])
+def test_config_keeps_legacy_empty_yaml_document_or_mapping(tmp_path, text):
+    path = tmp_path / 'config.yaml'
+    path.write_text(text, encoding='utf-8')
+    assert load_config(path) == {}
+    assert path.read_text(encoding='utf-8') == text
