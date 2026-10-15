@@ -6,6 +6,12 @@
 
 ## 开放
 
+### B-086：合法文本打破只读表格行列（[#97](https://github.com/DreamSoul-AI/RPipe/issues/97)）
+
+- 来源：第二类显示合同批次，dev bf57c88。7组真实隔离探针：factor LF使status4→5行，tab使9→10列；factor/metric pipe使report7/5列各加1，metric LF使表断段；2几何控制正常。输入字节不变，原始`.tmp/audit086/REPRO.json`不随clone。
+- 期望：现有文本格式化函数统一单行、TSV及Markdown单元格规则，数值/peer/状态与输入schema/layout不变。
+- 先Issue97，红测试1801e5b；首轮误假设status支持任意metric已留证并用7b451a7修正，实际56项39 failed/17 passed、0error/skip。status仍只展示原指标白名单；report支持自定义指标，不扩接口。设计见artifact_consistency_design补充；待最小修复/最终验收。
+
 ### B-085：日志引用未校验归属/格式，跨Run/Study串读及表格断行（[#95](https://github.com/DreamSoul-AI/RPipe/issues/95)）
 
 - 来源：第二类只读展示合同复查，log_path把任意truthy log直接拼Path，三个展示消费者未统一引用约束。
