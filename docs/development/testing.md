@@ -1052,3 +1052,9 @@ Fast / Core / Extended / Full 可继续作为项目已有计划名称，但不�
 本地测试 manifest 的 Git 提交应兼容松散 ref、packed refs、detached HEAD 和 worktree 的 .git 指针；非 Git 快照不向父目录查找仓库。Git 不可用、调用失败或查询超时时允许记录 null，不能伪造 SHA 或因此阻断测试。直接 HEAD / loose ref 读取被拒绝、文件消失、解码失败或格式损坏时同样记录 null；文件快速路径只接受 40 / 64 位十六进制 SHA 形状，不验证 Git 对象是否存在。GITHUB_SHA 的显式 CI 来源继续优先；这个字段不能代替包含未提交测试字节的完整快照。
 
 事件的 `started_at` 使用 pytest TestReport.start 转为 UTC，表示被记录阶段的开始：正常用例为 call，setup 失败为 setup；不代表整个 setup/call/teardown 的总起点。duration_ms 继续取该报告的 duration。B-058 修复前的历史事件在报告完成后生成该字段，分析时须区分旧语义，不能就地回填或混用时间线。manifest 的 started_at 仍为 session 开始时间。
+
+### 测试证据 JSON 的 Unicode 边界（B-093 / #111）
+
+现有 `tests/conftest.py` 的 manifest 写入和 event 追加统一使用 UTF-8、`ensure_ascii=False` 与 `errors=backslashreplace`：有效中文/emoji 继续直接存 UTF-8，未配对的高/低代理字符按 JSON 的 `\udxxx` 转义落盘，解码后保留原字符串。不得用替换字符丢失诊断，也不得吞掉测试失败、提前停止后续节点。文件位置、schema、4000 字符诊断上限、verdict、phase 起点和可选 Git 来源规则均不变。
+
+合同回归分别覆盖 call/setup 失败、高/低/混合代理与有效 Unicode，以及 manifest 参数。复制原生入口须验证预期失败退出 1、失败与后续通过各一条事件、peer 确实执行、报告保留失败计数；子进程预期失败不当成业务质量通过。终端设 UTF-8/backslashreplace 仅用于诊断采集，不能代替显式 JSON writer 的编码边界。
