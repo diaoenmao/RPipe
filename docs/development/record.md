@@ -1,8 +1,8 @@
-> 现状：#77已合dev并删结束远程；#79已由PR80合devf4acb93，实际集成CI验收中；继续B-079/#81。
-> 最新：不一致batches会mock启动未声明peer并把旧成功改failed；26项红回归23失败/3控制通过，出处§94、5597727。
-> 下一步：在既有分组入口统一批次一致性，覆盖写计划/缓存/native/脚本；正确性验证后PR合dev并清理远程。
-> 阻塞：无；目标模式active，唯一未合分支codex/declared-batch-contract，原始失败/旧字节均保留。
-> 边界：不测速/GPU、不改layout/产物格式、不合main/打tag，不删数据/Run/provenance。
+> 现状：#77/#79已合dev并各自通过实际CI，结束的两远程已删；当前B-079/#81准备PR，B-080/#82已真实复现排队。
+> 最新：#81合同26项全绿，相邻349、core812通过/1平台skip、Flow169通过；缓存新探针6异常/2控制，出处§95和.tmp/audit079—080。
+> 下一步：批次一致性PR合dev并清理远程，再处理#82；修复Issue留待下版关闭。
+> 阻塞：无；目标模式active，唯一未合分支codex/declared-batch-contract，原始失败和删除清单保留。
+> 边界：只做正确性，不测速/GPU、不改layout/产物格式、不合main/打tag，不删数据/Run/provenance。
 
 # 一、摘要
 
@@ -100,6 +100,18 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 # 二、开发记录
 
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
+
+## 2026-10-16
+
+### 95. 两批dev验收、远端清理及持续正确性队列
+
+本节记录本地日期2026-10-16的收尾与接续；§92—94中的2026-10-15开发/复现事实保留，不改写为当天新成果。目标模式active，目标为持续正确性；不以已发布v0.4.1或某批CI完成当作等反馈空档。
+
+1. B-078/#79最终验收：[PR80](https://github.com/DreamSoul-AI/RPipe/pull/80)最终head dd8c7f8e72ff28601b9a3d9a8e523b74bbdec28b的[Unit38763144958](https://github.com/DreamSoul-AI/RPipe/actions/runs/38763144958)/[Package38763144991](https://github.com/DreamSoul-AI/RPipe/actions/runs/38763144991)/[Branch38763144864](https://github.com/DreamSoul-AI/RPipe/actions/runs/38763144864)全部实际矩阵/聚合成功。普通merge devf4acb936ce66ac1db4907bccb4813a073cf80f71，实际dev的[Unit38764359287](https://github.com/DreamSoul-AI/RPipe/actions/runs/38764359287)/[Package38764359383](https://github.com/DreamSoul-AI/RPipe/actions/runs/38764359383)亦全部实际成功；DEV_CHECKED SHA256 52449a5e141b98ca03eb5bdb4c5607ee0ac58a739ed2999c7ce871a975821e12。Issue79与PR80正文补齐，Issue保留open到下版。观察4196/52389已正常结束，不重复派发。
+2. 实际新增远程删除清单：codex/artifact-contracts-correctness（959f2a5675b1f9b309a53d4ee592c7faa659b73d，PR78/实际dev1667f51完成后删，详§92）；codex/yaml-mapping-roots（dd8c7f8e72ff28601b9a3d9a8e523b74bbdec28b，PR80/实际devf4acb93完成后删）。均先核对祖先、没有活动PR引用、main/dev未动；普通git push --delete，无force。删除后当时远端仅main/dev，随后只推当前未合codex/declared-batch-contract。本地旧分支及数据/Run/provenance不删。此前9条清单继续见§82，不把它们重新计成本次新增删除。
+3. B-079/#81本地完成：红5597727为23 failed/3 passed；设计aa6b56b先于生产fix0f57ddb（schedule.py+12/-1，既有函数内共享一次分组规则及两处调用）。26新增节点全部执行，349相邻通过、core812通过/1 POSIX权限平台skip、CPU Flow169通过，0fail/error。保护原native peer/目标/旧scripts字节；旧重复与路径、合法重排、模式/已成功过滤、retry屏障不变。LOCAL_CHECKED与原红/旧字节在.tmp/audit079，本机证据不随clone；最终head/实际dev仍按下一PR实际CI验收。
+4. 接续真实B-080/[Issue82](https://github.com/DreamSoul-AI/RPipe/issues/82)：可选jobs缓存8个隔离探针中6个stat/编码/缓存数值转换异常逃逸，坏JSON返回None与合法空计划可用为2控制；输入不改、真实ACL/进程/GPU均未动。已先Issue，尚未写便携红测试/修生产；根因是现有可选缓存错误边界缺口，不借此重构schema或资源规划。原字节ZIP/REPRO在.tmp/audit080。按当前任务单一未合分支接续，不与#81候选混做已完成。
+5. 仅CPU正确性，main保持00e70b1f83ac23d113b9582a4270a41cfadb1444及v0.4.1；不测速、GPU、480s调查、科学重跑、布局/格式迁移、main合并或tag。#77/#79已修dev仍open，#81当前候选、#82新确认队列；均留待之后版本关闭。无审批弹窗、花钱或数据删除。
 
 ## 2026-10-15
 
