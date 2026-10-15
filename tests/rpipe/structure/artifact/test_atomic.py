@@ -449,3 +449,100 @@ def test_owned_text_stage_chmod_refusal_preserves_old_target_and_peer(tmp_path, 
     assert caught.value is error and len(stages) == 1
     assert target.read_bytes() == b'old target' and peer.read_bytes() == b'peer evidence'
     assert set(tmp_path.iterdir()) == {target, peer}
+
+
+@pytest.mark.parametrize('writer', ['text', 'config', 'result'])
+@pytest.mark.parametrize('readonly', [False, True], ids=['writable-control', 'native-readonly'])
+def test_atomic_text_native_permissions_cleanup_owned_stage(tmp_path, monkeypatch, writer, readonly):
+    import os
+    from rpipe.structure.artifact import _atomic
+    from rpipe.structure.artifact.config import write_config
+    from rpipe.structure.artifact.result import write_result
+
+    if readonly and os.name != 'nt':
+        pytest.skip('Windows read-only replacement and unlink semantics')
+    target, peer = tmp_path / 'target.txt', tmp_path / 'peer.tmp'
+    target.write_bytes(b'old evidence')
+    peer.write_bytes(b'other writer evidence')
+    peer.chmod(0o444)
+    if readonly:
+        target.chmod(0o444)
+    before = {p: (p.read_bytes(), p.stat().st_mode) for p in (target, peer)}
+    monkeypatch.setattr(_atomic.time, 'sleep', lambda _: None)
+    def write():
+        if writer == 'config':
+            return write_config(target, {'new': 'configuration'})
+        if writer == 'result':
+            return write_result(target, {'status': 'succeeded', 'control': {}, 'metrics': {}, 'paths': {}})
+        return _atomic.atomic_write_text(target, 'new text')
+    if readonly:
+        with pytest.raises(PermissionError):
+            write()
+        assert (target.read_bytes(), target.stat().st_mode) == before[target]
+    else:
+        assert write() == target and target.read_bytes() != before[target][0]
+    assert (peer.read_bytes(), peer.stat().st_mode) == before[peer]
+    assert set(tmp_path.iterdir()) == {target, peer}
+
+
+@pytest.mark.parametrize('cleanup', ['recover', 'chmod-denied', 'unlink-denied', 'io-denied'])
+def test_atomic_text_permission_cleanup_is_owned_bounded_and_best_effort(tmp_path, monkeypatch, cleanup):
+    from rpipe.structure.artifact import _atomic
+
+    target, peer = tmp_path / 'target.txt', tmp_path / 'peer.tmp'
+    target.write_bytes(b'old target')
+    peer.write_bytes(b'peer bytes')
+    target.chmod(0o444)
+    peer.chmod(0o444)
+    before = {p: (p.read_bytes(), p.stat().st_mode) for p in (target, peer)}
+    error = PermissionError('publication refused')
+    stages, removals, modes = [], [], []
+    unlink, chmod = Path.unlink, Path.chmod
+    def refuse(stage, destination):
+        stages.append(stage)
+        raise error
+    def remove(path, *args, **kwargs):
+        assert path not in (target, peer)
+        removals.append(path)
+        if cleanup == 'io-denied':
+            raise OSError('cleanup IO failure')
+        if cleanup == 'unlink-denied' or not path.stat().st_mode & 0o200:
+            raise PermissionError('read-only staging')
+        return unlink(path, *args, **kwargs)
+    def mode(path, value, *args, **kwargs):
+        assert path not in (target, peer)
+        modes.append(value)
+        if cleanup == 'chmod-denied' and value == 0o600:
+            raise PermissionError('cleanup mode refused')
+        return chmod(path, value, *args, **kwargs)
+    monkeypatch.setattr(_atomic, 'atomic_replace', refuse)
+    monkeypatch.setattr(Path, 'unlink', remove)
+    monkeypatch.setattr(Path, 'chmod', mode)
+    with pytest.raises(PermissionError) as caught:
+        _atomic.atomic_write_text(target, 'new candidate')
+    assert caught.value is error and len(stages) == 1
+    assert {p: (p.read_bytes(), p.stat().st_mode) for p in before} == before
+    if cleanup == 'recover':
+        assert set(tmp_path.iterdir()) == {target, peer}
+        assert len(removals) == 2 and modes[-1] == 0o600
+    else:
+        assert stages[0].read_bytes() == b'new candidate'
+        assert len(removals) == (2 if cleanup == 'unlink-denied' else 1)
+
+
+@pytest.mark.parametrize('existing', [False, True])
+def test_atomic_text_readonly_collision_never_changes_unowned_stage(tmp_path, monkeypatch, existing):
+    from types import SimpleNamespace
+    from rpipe.structure.artifact import _atomic
+
+    target, stage = tmp_path / 'target.txt', tmp_path / 'occupied.tmp'
+    stage.write_bytes(b'other writer candidate')
+    stage.chmod(0o444)
+    if existing:
+        target.write_bytes(b'old evidence')
+    before = {p: (p.read_bytes(), p.stat().st_mode) for p in tmp_path.iterdir()}
+    monkeypatch.setattr(_atomic.uuid, 'uuid4', lambda: SimpleNamespace(hex='occupied'))
+    with pytest.raises(FileExistsError):
+        _atomic.atomic_write_text(target, 'new candidate')
+    assert set(tmp_path.iterdir()) == set(before)
+    assert {p: (p.read_bytes(), p.stat().st_mode) for p in before} == before
