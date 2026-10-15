@@ -346,9 +346,7 @@ def test_report_count_cells_preserve_rows_and_peers(report_study, capsys, route,
     block = text.split('## Experiments')[1].split('## Runs')[0]
     rows = [line for line in block.splitlines() if line.startswith('|')]
     assert len(rows) == 4 and all(line.count('|') == 8 for line in rows)
-    # shortcut: ASCII diagnostics avoid event-writer fault #111, remove after its regression fix.
-    count_is_valid = rows[2].split('|')[-2].strip() == expected
-    assert count_is_valid, 'count cell violates the typed display contract'
+    assert rows[2].split('|')[-2].strip() == expected
     assert rows[3].split('|')[-2].strip() == '1' and '80.0000' in rows[3]
     assert all('`' + name + '`' in text for name in ('a', 'b', 'c'))
     assert main(['report', str(study)]) == 0

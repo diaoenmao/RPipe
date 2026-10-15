@@ -116,7 +116,7 @@ def pytest_configure(config: pytest.Config) -> None:
     }
     (out_dir / 'manifest.json').write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False) + '\n',
-        encoding='utf-8',
+        encoding='utf-8', errors='backslashreplace',
     )
     (out_dir / 'events.jsonl').write_text('', encoding='utf-8')
     (out_dir / 'artifacts').mkdir(exist_ok=True)
@@ -210,7 +210,7 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo):
         'failure': failure,
         'artifacts': [],
     }
-    with (out_dir / 'events.jsonl').open('a', encoding='utf-8') as handle:
+    with (out_dir / 'events.jsonl').open('a', encoding='utf-8', errors='backslashreplace') as handle:
         handle.write(json.dumps(event, ensure_ascii=False) + '\n')
 
 
