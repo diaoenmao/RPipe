@@ -927,6 +927,8 @@ status / logs 的逐文件 I/O 容错同时覆盖存在性查询和内容读取�
 
 读数的数字格式只在既有 report._fmt 内统一：有限 int/float 显示四位小数，bool、其他类型、溢出和非有限值显示 `-`，status 复用并保留后续可用指标 fallback。report 的 Experiment / Run metrics 非 object 时仅该格不可用，不隐藏其他 Run；严格 loader、计划一致性、compare 与 process 科学聚合不由此放宽。
 
+通用 compare 的标量与张量树统一非有限值身份：无穷值只在相同值/符号/位置时相同，不让相对界的 inf 或 0×inf 的 NaN 产生错误通过；非有限不匹配报告差异，保持既有 paired-NaN 判断。有限值绝对/相对容差、整数精度、匹配字段及缺失语义不变；这是已有证据的只读比较，不改变训练计算、输出schema或checkpoint恢复。JSON输出继续原有非有限差值归null，CLI合法比较不同exit1、文件/参数错误exit2。
+
 report 导出前以当前 index 核对 process 的 Study 名、完整计划 Run ID / seed / 因素归属；无新格式字段，合法部分聚合兼容。当前索引不可用、重复 / 缺失 Run 或身份不匹配时拒绝导出，保留旧聚合与数字表；仅校验成功后用已有 atomic writer 替换 NUMBERS。完整边界见 [flow.md §13](flow.md#13-climake--launch-与-wait)。
 
 `provenance.py` 记录来源 / 执行计划的哈希、环境与 Git 信息，并提供 freeze 检查。make 写入，Flow 在执行前核对；Study `flow/` 与 `structure/` 的 Python 源码自动发现，额外输入显式 include。完整范围、覆盖与迁移边界见 [flow.md §14.2](flow.md#142-来源清单)。
