@@ -6,7 +6,9 @@
 
 ## 开放
 
-B-095/#116已abe24a3首红→f1b0d5f扩展完整红→f64917b编程错误控制→68cee20设计→843daa4三处可选JSON异常列表修复。97针对性/core1432+1平台skip/Flow189通过，27新节点均执行，系统解析限制/strict loader/普通RuntimeError/输入与peer保持，见record§132；最终head/实际devCI待验，Issue留至下版。
+B-096/#118已e3c3c12先红20新项13失败/7控制→2ffeb0b设计→bbd33b4既有调度查询异常边界修复；make157/core1452+1平台skip/CPU Flow189通过，20新项均执行，严格decoder/参数错误/成功peer/原字节保持，见record§134。最终head/实际dev CI待验；Issue留至下版。
+
+B-095/#116已PR117普通合dev20027af，最终head和实际dev全部实际CI成功，结束remote已清，本地/当前活动分支保持，见record§136；Issue留至下版。
 
 B-094/#114已PR115普通合devb28f6a2，最终head与实际dev全部实际CI成功，结束remote已清，本地与当前工作分支保持，见record§133；Issue留至下版。
 

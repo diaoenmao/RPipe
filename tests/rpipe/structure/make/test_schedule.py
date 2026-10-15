@@ -392,3 +392,70 @@ def test_saved_plan_rejects_mismatched_batches_without_rewrite(tmp_path, kind, i
     assert schedule.load_launch_plan(tmp_path, init_gpu=0, num_gpus=0, round_size=0,
                                      include_done=include_done) is None
     assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
+
+
+
+@pytest.mark.parametrize('include_done', [False, True])
+@pytest.mark.parametrize('kind,raw', [
+    ('list', b'[]'), ('null', b'null'), ('bool', b'false'), ('text', b'""'), ('number', b'0'),
+    ('syntax', b'{'),
+    ('deep', b'{"status":"succeeded","unused":' + b'[' * 10000 + b'0' + b']' * 10000 + b'}'),
+    ('valid', b'{"status":"succeeded","control":{},"metrics":{},"paths":{}}'),
+], ids=['list', 'null', 'bool', 'text', 'number', 'syntax', 'deep', 'valid'])
+def test_readiness_parse_failure_keeps_cached_jobs_and_peer(tmp_path, kind, raw, include_done):
+    from rpipe.structure.artifact.errors import CorruptArtifactError
+
+    jobs = _study(tmp_path)[:2]
+    _succeed(tmp_path, 't1')
+    path = tmp_path / 'runs/t0/result.json'
+    path.write_bytes(raw)
+    cache = tmp_path / 'scripts/jobs.json'
+    cache.parent.mkdir()
+    cache.write_text(json.dumps({'jobs': jobs}), encoding='utf-8')
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    if kind != 'valid':
+        error = RecursionError if kind == 'deep' else ValueError if kind == 'syntax' else CorruptArtifactError
+        with pytest.raises(error):
+            load_result(path)
+    else:
+        assert load_result(path)['status'] == 'succeeded'
+    assert schedule.run_succeeded(tmp_path, 't0') == (kind == 'valid')
+    assert schedule.run_succeeded(tmp_path, 't1')
+    plan = schedule.load_launch_plan(tmp_path, init_gpu=0, num_gpus=1, round_size=0,
+                                     include_done=include_done)
+    expected = ['t0', 't1'] if include_done else [] if kind == 'valid' else ['t0']
+    assert plan is not None
+    assert [job['run_id'] for job in plan['job_list']] == expected
+    assert plan['n_jobs'] == len(expected)
+    assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
+
+
+@pytest.mark.parametrize('kind', ['deep', 'syntax', 'valid'])
+def test_cached_plan_json_parse_keeps_existing_rebuild_boundary(tmp_path, kind):
+    _study(tmp_path)
+    path = tmp_path / 'scripts/jobs.json'
+    path.parent.mkdir()
+    raw = (b'{"jobs":[],"unused":' + b'[' * 10000 + b'0' + b']' * 10000 + b'}'
+           if kind == 'deep' else b'{' if kind == 'syntax' else b'{"jobs":[]}')
+    path.write_bytes(raw)
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    plan = schedule.load_launch_plan(tmp_path, init_gpu=0, num_gpus=1, round_size=0)
+    assert (plan is None) == (kind != 'valid')
+    if kind == 'valid':
+        assert plan['job_list'] == [] and plan['n_jobs'] == 0
+    assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
+
+
+def test_readiness_does_not_suppress_unexpected_decoder_bug(tmp_path, monkeypatch):
+    _study(tmp_path)
+    _succeed(tmp_path, 't0')
+    path = tmp_path / 'runs/t0/result.json'
+    before = path.read_bytes()
+    error = RuntimeError('unexpected result decoder bug')
+    def broken(text):
+        raise error
+    monkeypatch.setattr(schedule, 'decode_result', broken)
+    with pytest.raises(RuntimeError) as caught:
+        schedule.run_succeeded(tmp_path, 't0')
+    assert caught.value is error
+    assert path.read_bytes() == before

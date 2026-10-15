@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from rpipe.structure.api.algorithm_api import sibling_train_dependency
-from rpipe.structure.artifact import artifact_layout, load_config
+from rpipe.structure.artifact import CorruptArtifactError, artifact_layout, load_config
 from rpipe.structure.artifact.index import load_index
 from rpipe.structure.artifact.layout import validate_run_directory
 from rpipe.structure.artifact._atomic import atomic_write_text
@@ -49,7 +49,7 @@ def _run_result(study_dir: Path, run_id: str) -> dict[str, Any]:
     result_path = Path(study_dir) / 'runs' / run_id / 'result.json'
     try:
         return decode_result(result_path.read_text(encoding='utf-8'))
-    except (OSError, json.JSONDecodeError, ValueError):
+    except (OSError, ValueError, CorruptArtifactError, RecursionError):
         return {}
 
 
@@ -195,7 +195,7 @@ def load_launch_plan(
         stored_init_gpu = int(payload.get('init_gpu', 0))
         stored_num_gpus = int(payload.get('num_gpus', 1))
         stored_round = int(payload.get('round') or 1)
-    except (OSError, TypeError, ValueError, OverflowError):
+    except (OSError, TypeError, ValueError, OverflowError, RecursionError):
         return None
     if stored_init_gpu != int(init_gpu):
         return None
