@@ -6,6 +6,13 @@
 
 ## 开放
 
+### B-088：compare跨Run checkpoint串读和动态名称断行（[#101](https://github.com/DreamSoul-AI/RPipe/issues/101)）
+
+- 来源：第二类引用/展示合同，先前record§111把compare key当代码固定不完整；checkpoint.name实际由参数构造，本轮明确更正。
+- 隔离CPU实际父路径/Run外绝对stem/对外文件alias，会让不同Run读取同一外部pt；补齐相同metrics/history后三场景完整report错误true，实际自身不同权重control false。UnicodeLS合法stem使显示5行而非4；所有源/外部bytes保留。原始REPRO/REPRO2/原码ZIP在.tmp/audit088，不随clone。
+- 期望：既有_checkpoint对存在普通文件加载前核对根属于Run且文件属于该根；合法nested/自身abs/内部alias/missing/Windowsnamespace不退化；format_compare复用_text_cell，JSON原key/数值/容差不变。
+- 先Issue101，原字节冻结17节点10 failed/7 passed、0error/skip，同字节红测试先提交，再设计；待最小修复和最终验收。不改训练保存/恢复、schema/模块/文件布局、不跑GPU/测速。
+
 ### B-087：可选 tracker_state 坏UTF8阻断有效主轨迹和process（[#99](https://github.com/DreamSoul-AI/RPipe/issues/99)）
 
 - 来源：第二类读取合同批次，真实坏UTF8原文件经load_curve_series抛UnicodeDecodeError；缺失/损坏JSON/IO原已空history。3条循环symlink实际正常降级，不登记；普通控制正常。REPRO/原码ZIP/hash/真实导入路径/红日志在`.tmp/audit087`，不随clone。

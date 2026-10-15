@@ -194,3 +194,12 @@
 status 对标题及全部9个单元格统一应用单行合同，替换 error/note 仅处理 LF/tab 的重复局部逻辑；report 对 factor、metric name/text、seed、Run ID 应用 Markdown 单元格合同，标题仅保持单行。日志链接仍复用 B-085 的 URI 规则，数字格式器与指标白名单不变。只写派生 NUMBERS 的原入口不变，reader 不改 index/process/result、peer 和人工结论。
 
 验收先提交公共渲染红测试：factor key/value、report 自定义 metric、CR/LF/CRLF、tab、NEL/Unicode LS、pipe 与一/二反斜线 pipe及普通控制；校验固定行列、原数值/peer/链接/计数和输入精确字节。初轮误将自定义 metric 纳入 status 既有白名单的10测试假设已撤出，原始证据留存；更正后56项39 failed/17 passed，无error/skip，代码尚未修复。此补充不包含通用富文本清洗、HTML框架、配置schema扩展或本设计第七节结构性能力。
+
+
+### compare checkpoint 引用与显示合同（B-088 / #101）
+
+layout.md已规定checkpoint为每Run的可变状态，compare的参数名称应指向该Run的assets/checkpoints。保留原regular-file/missing/目录/IO预检，再在既有_checkpoint内检查已解析的checkpoint根在已解析Run内、已解析文件在该根内，之后才调用torch.load。合法nested、自身绝对、内部文件/目录别名继续可用；缺失可选checkpoint仍按原missing，读取/程序异常不扩大捕获。保持原生IO路径，只对归属比较复用已有_log_path_key的Windowsnamespace键，不复制路径框架/移模块。
+
+format_compare复用现有_text_cell，仅把动态key显示成单行；JSON原key、比较数值/容差、缺失判定和原输出位置不变。训练checkpoint保存/恢复与strict pickle语义不受影响；不建目录、搬产物或自动迁数据。错误外部引用由CLI既有ValueError边界返回2，旧--out不覆盖。
+
+先Issue101，隔离实际三种外部引用可使完整比较错误true、正常不同权重control false；Unicode LS合法stem使显示5行而非4。再冻结原字节17节点10 failed/7 passed、0error/skip，包含API/CLI父路径/绝对/文件alias/根alias、合法nested/自身abs/内部alias/missing/普通名称/Windowsextendedown控制。原始快照与原始REPRO/REPRO2/导入path/hash/JUnit留.tmp/audit088（不随clone）；正式红测试先提交再改代码。record§111的compare key固定判断不完整，以本轮真实证据明确更正，不把旧结论当新验收。
