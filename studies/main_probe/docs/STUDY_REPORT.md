@@ -2,6 +2,11 @@
 
 ## 一、摘要
 
+### 2026-10-15 文本产物发布正确性修复（未重跑研究）
+
+本Study的替换类报告/清单发布统一复用库 atomic_write_text；main_probe 的共享 save_json 另消除固定 `.writing` 竞争。最终文件位置、JSON/YAML格式和研究配置/预算不变；旧Run和provenance不改写。合成文件/并发合同、计算AST范围核对及CI状态见 [开发记录 §79](../../../docs/development/record.md#79-全仓替换文本发布合同接续53--b-072)。本次仅代码正确性验证，不执行数据准备、性能入口、GPU或原研究；既有科学结论仍对应其原来源，未来实测使用新version/make并重新验证。
+
+
 ### 2026-10-14 共享 raw 的单格流程验证
 
 共享改动后使用两个新身份完成 MNIST/linear 的60-step、完整test10000成对验证，实际CUDA与CPU各一次，均通过输入 / RNG / 参数 / 整数样本计数 / best独立eval和库compare；仅单格，未执行新完整八格Study。原版 / 当前版raw引用项目共享文件，Stats和processed仍隔离。实际来源、版本、数值门及首轮失败见 [共享验证证据](shared_inputs_validation.json)。

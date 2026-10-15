@@ -2,6 +2,11 @@
 
 ## 一、摘要
 
+### 2026-10-15 文本产物发布正确性修复（未重跑研究）
+
+本Study的替换类报告/清单发布统一复用库 atomic_write_text；main_probe 的共享 save_json 另消除固定 `.writing` 竞争。最终文件位置、JSON/YAML格式和研究配置/预算不变；旧Run和provenance不改写。合成文件/并发合同、计算AST范围核对及CI状态见 [开发记录 §79](../../../docs/development/record.md#79-全仓替换文本发布合同接续53--b-072)。本次仅代码正确性验证，不执行数据准备、性能入口、GPU或原研究；既有科学结论仍对应其原来源，未来实测使用新version/make并重新验证。
+
+
 ### 2026-10-14 共享输入迁移验证
 
 原始数据默认迁至项目shared/data，并保留旧路径引用。完整MNIST60000/10000、CIFAR1050000/10000各由两个消费者读取，16项固定raw hash不变；归档格式与torchvision路径指向同一文件。本机main_exp的23个共享文件及旧probe的848个匹配raw路径完成引用适配，278份历史result/index/process/provenance字节不变。逻辑重复字节汇总不是实测磁盘释放量；不删除无法识别的输入或失败证据。见 [迁移证据](shared_inputs_migration.json)。
