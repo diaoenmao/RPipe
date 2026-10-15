@@ -11,15 +11,9 @@
 - 来源：可选提示有类型合同复查，read_activity仅要求根dict与phase真值，未校验被CLI打印字段。
 - 真实9探针：phase为True、1、非空list/dict、空白串或detail为dict六个坏提示均被接受，index不存在却status退出0；合法缺detail/null detail为2控制，空dict被忽略并退出2为1控制。全部提示原字节不改，真实进程/GPU/ACL变更0。
 - 期望：在既有可选reader验证非空白str phase、可选str/null detail，坏字段沿不可用提示处理；缺index保留退出2、有合法index仍显示peer表。保留Unicode/自定义非空阶段名与缺省/null/空detail，不新增阶段enum、ownership/TTL或格式/目录。
-- Issue86已先开，portable红测试与生产修复尚未执行；所有announce现有调用都给字符串，不重构writer。源码/测试ZIP与REPRO在.tmp/audit082，不随clone。不同于原B-068 stat/编码错误，不重复登记旧反例。当前未验收B-081/#85与本项，下一新编号B-083。
+- Issue86已先开，从已合dev37d0262建立唯一未合codex/activity-hint-fields，先提交红313f826：25节点21 failed/4 passed、0error/skip；生产尚未修改。所有announce现有调用都给字符串，不重构writer。源码/测试ZIP与REPRO在.tmp/audit082，不随clone。不同于原B-068 stat/编码错误，不重复登记旧反例。本项最小fix59785be已获436相邻/core882通过+1平台skip/Flow175通过，最终head/实际dev待本批PR；下一新编号B-083。
 
-### B-081：Run状态字段的校验/读出类型与枚举约束不一致（[#85](https://github.com/DreamSoul-AI/RPipe/issues/85)）
-
-- 来源：三类typed-status合同复查，validate_result在类型判断前做frozenset成员检查；status读出直接str/真值回退。
-- 实际复现：8个隔离状态输入中3种容器在validator/writer均TypeError，7种非法状态在只读表无损坏诊断，3种落到计数外。null为兼容控制。旧target/所有Run与peer原字节均未改，不声称旧writer发生数据损坏。
-- 期望：writer沿既有VALID_STATUS，先验字符串再判枚举，非法状态返回原errors/ValueError；status对非法类型/未知枚举复用unreadable诊断回退。保留读出缺失/null/空/pending与合法partial映射，不在全局loader套Run写schema、不支持新标签、不改科学聚合或文件布局。
-- Issue85先创建，红测试fc704fa先于生产：29节点16 failed/13 passed、0error/skip，覆盖validator、真实writer无/有旧target及peer、单Run诊断/计数/计划值和7个历史/partial控制。首RED诊断断言对None用了in而不够直观，改成显式短路后RED2同样16失败/13通过；两份均保留，不能把断言表达式异常计为库额外故障。
-- 源码/测试原字节ZIP、8个REPRO、RED/RED2 XML/log/命令在.tmp/audit081，不随clone；最小fixcd06c5d已完成，402相邻、core857通过/1平台skip、Flow175通过，最终head/实际dev待PR验收。直接validator调用方为write_result，Run读out为list_runs；其他load_result/process/report调用保持通用mapping合同。
+B-081/#85已由PR87合dev37d0262，最终head/实际dev全部实际CI通过并删除结束远程，Issue保留open，见record §101。
 
 B-080/#82已由[PR84](https://github.com/DreamSoul-AI/RPipe/pull/84)普通merge dev6863f7f，最终head/实际dev全部实际矩阵/聚合成功，已从未修队列移除；Issue留待下版。已删结束远程codex/saved-plan-read-boundary，详record §99。
 
