@@ -2,6 +2,8 @@
 
 ## 一、适用范围与入口
 
+本地权威文本现已随Git提供：[研究计划规范中文正本](<../research/standards/研究计划规范 Research Plan Standard.md>)、[研究计划模板中文正本](<../research/standards/研究计划模板 Research Plan Template.md>)，以及[规范英译](../research/standards/research_plan_standard_en.md)、[模板英译](../research/standards/research_plan_template_en.md)。两份中文均为DEM交付的2026-10-16更新原字节；来源、SHA-256及DEM内部缺失依赖见[正本入口](../research/standards/README.md)。英文供理解，中文优先；本页保留RPipe宏观方案/Study分工适配，不要求新增重复计划或改变运行布局。
+
 本文件按 DreamSoul 的研究计划规范、模板及 knowledge 中的相关 skills 适配 RPipe：先从灵感与文献形成研究问题，再联合规划文献调研、数据、模型、算法、指标和实验设计，以证据回答问题。它规定研究工作的最低说明要求，不新增库接口、目录层级或执行命令。
 
 - **开始前：** 写清为什么做、怎样比较、怎样判断、需要什么资源。六个方面都要回应，不适用时说明原因和替代证据，未知信息保留“待确认”。
@@ -97,3 +99,9 @@ Agent 使用前阅读对应 `SKILL.md`，再按其中要求阅读相关 referenc
 2026-10-14 另核对 knowledge 的 main，固定提交为 `09078015ad8c80971ac4abd5b5ad2e322cd0e1a1`；完整读取第六章四份 `SKILL.md`、research-plan 的中文指南与模板，以及仓库中文 README。采用范围为任务分流、研究计划、文献检索、阅读深度和 PyTorch 小规模验证；未读取其他 skills 或其参考教程。
 
 上述原文中的建议与示例不是已确认的课题、预算或实测结果；未独立核验其引用的论文、其他规范和示例项目，不声称已阅读这些二级来源。飞书链接可能需要权限，本页的适配要求可随 Git 获取，不依赖访问云端后才能执行。后续同步须核对来源版本，不能把云端变更自动当作本仓库的新决定。
+
+### 2026-10-16 中文正本落库与英译
+
+按Enmao指示读取监督助手交付的_staging_from_DEM两份中文Markdown（规范184行/25618字节，模板122行/9309字节），按字节保留中文名复制到docs/research/standards，逐字节/哈希核验并完成英译。没有直接读取Office DEM原路径，不把旧飞书revision3当本次文件版本。中文保留原作者文献/skill引用与核验日期，本次未重新核验二级论文或安装skill；DEM内部相对引用缺失如实登记，不修改正本“修链接”。暂存保留对照，不是正式入口。研究计划路径及正式Study报告仍按layout；没有启动实验或重写完成的Study计划。
+
+[跨项目shared](../issue/cross_project_shared.md)与[实验监控/logger](../issue/experiment_monitoring.md)分别调研，未批准即不做运行时迁移；两题不成为使用模板的前置条件。
