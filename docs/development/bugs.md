@@ -6,7 +6,29 @@
 
 ## 开放
 
-本轮没有尚待修复的已复现软件缺口。B-072 / B-073分别经[PR61](https://github.com/DreamSoul-AI/RPipe/pull/61)与[PR63](https://github.com/DreamSoul-AI/RPipe/pull/63)普通合dev fa18404 /72e4307；最终head及实际dev全部实际CPU/包CI成功。原始条目见[B-072修复前快照](https://github.com/DreamSoul-AI/RPipe/blob/f8e6de1/docs/development/bugs.md)与[B-073修复前快照](https://github.com/DreamSoul-AI/RPipe/blob/7223d78/docs/development/bugs.md)，失败/回归/限制见[record §79—81](record.md)。#53与#62故意保持open至下个版本发版时关闭；这两项新扩展仍只在dev，未发布到main。后续新编号B-074，不为已有通过的合同控制新造缺陷。
+### B-074：staging未取得所有权就写入或清理
+
+- 来源：全仓清单#66；atomic_write_text/shared.link_input/migrate_shared，固定UUID与到达peer的合成输入。
+- 期望：排他创建成功才拥有stage，只清自己，碰撞拒绝保留target/peer/source。
+- 实际：6项portable红色失败（a080bc6），包括覆盖、删除、同字节递归；原字节与XML在.tmp/systematic-contracts-20261015（不随clone）。
+- 方案：现有入口内统一owned规则，不改短名、锁、fallback、布局或支持范围；先红后修。
+
+### B-075：追加诊断初始化可截断到达的旧证据
+
+- 来源：全仓清单#67；Logger/AlgorithmTracker构造器is_file→write_text空串。
+- 期望：路径在打开前出现内容也不截断；目录错误仍拒绝。
+- 实际：2失败/2目录控制通过；仅合成.Path.open到达注入，无正式日志改动。
+- 方案：原构造器以append创建，不动追加/offset/Runner保全政策；本机预检证据同record§83。
+
+### B-076：严格compare的读取/数值/输出错误边界不完整
+
+- 来源：全仓清单#68；坏JSON容器、巨大整数、非有限容差、输出拒绝。
+- 期望：文件/参数错误按原CLI2且不覆盖旧out；缺失仍1；整数保留精度，历史null兼容，一般浮点含NaN旧口径不改。
+- 实际：合成21项16失败/5控制通过；可越出CLI或把坏文件当空/缺失写新out。
+- 方案：原读取与格式函数补类型/整数边界，输出放现有错误边界，不新增schema/模块/路径。
+
+
+上一批B-072/B-073已完成；本轮新增待修见上列B-074—B-076。B-072 / B-073分别经[PR61](https://github.com/DreamSoul-AI/RPipe/pull/61)与[PR63](https://github.com/DreamSoul-AI/RPipe/pull/63)普通合dev fa18404 /72e4307；最终head及实际dev全部实际CPU/包CI成功。原始条目见[B-072修复前快照](https://github.com/DreamSoul-AI/RPipe/blob/f8e6de1/docs/development/bugs.md)与[B-073修复前快照](https://github.com/DreamSoul-AI/RPipe/blob/7223d78/docs/development/bugs.md)，失败/回归/限制见[record §79—81](record.md)。#53与#62故意保持open至下个版本发版时关闭；这两项新扩展仍只在dev，未发布到main。后续新编号B-074，不为已有通过的合同控制新造缺陷。
 
 B-071（[Issue #53](https://github.com/DreamSoul-AI/RPipe/issues/53)）已通过[PR #52](https://github.com/DreamSoul-AI/RPipe/pull/52)合入 dev ea2210bc27e5456062bdef0ffb331e208c64f838；最终 head eb52c65 与实际 dev 的全部实际 CI 通过。真实旧 index 截断与红绿合同见 [record §69 / §73](record.md)。修复已随v0.4.0进入main54f8d31；Issue53不在本次关闭清单，仍保持open。
 
