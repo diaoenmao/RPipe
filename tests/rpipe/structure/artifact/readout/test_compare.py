@@ -315,3 +315,45 @@ def test_compare_checkpoint_ownership_keeps_extended_own_path(tmp_path):
     assert native.samefile(original)
     report = compare_runs(a, a, checkpoints=[str(native)[:-3]])
     assert report['passed'] is True
+
+
+@pytest.mark.parametrize('kind', ['metrics', 'history', 'tensor', 'complex-tensor'])
+@pytest.mark.parametrize('rtol', [0.0, 1e-5], ids=['exact', 'relative'])
+@pytest.mark.parametrize('left,right,passed', [
+    (1.0, float('inf'), False), (float('inf'), 1.0, False),
+    (1.0, -float('inf'), False), (-float('inf'), 1.0, False),
+    (float('inf'), -float('inf'), False), (-float('inf'), float('inf'), False),
+    (float('inf'), float('inf'), True), (-float('inf'), -float('inf'), True),
+    (float('nan'), float('nan'), True), (float('nan'), 1.0, False),
+    (1.0, float('nan'), False), (1.0, 1.0, True),
+], ids=['finite-posinf', 'posinf-finite', 'finite-neginf', 'neginf-finite',
+        'posinf-neginf', 'neginf-posinf', 'same-posinf', 'same-neginf',
+        'paired-nan', 'nan-finite', 'finite-nan', 'finite-control'])
+def test_compare_nonfinite_evidence_keeps_value_identity(tmp_path, capsys, kind, rtol, left, right, passed):
+    import torch
+
+    a, b = _run(tmp_path, 'a'), _run(tmp_path, 'b')
+    for run, value in [(a, left), (b, right)]:
+        if kind == 'metrics':
+            path = run / 'result.json'
+            body = json.loads(path.read_text())
+            body['metrics']['loss'] = value
+            path.write_text(json.dumps(body), encoding='utf-8')
+        elif kind == 'history':
+            path = run / 'assets/tracker/tracker_state.json'
+            body = json.loads(path.read_text())
+            body['splits']['train']['Loss']['history'] = [value]
+            path.write_text(json.dumps(body), encoding='utf-8')
+        else:
+            path = run / 'assets/checkpoints/latest.pt'
+            body = torch.load(path, weights_only=False)
+            dtype = torch.complex128 if kind == 'complex-tensor' else torch.float64
+            body['model']['w'] = torch.tensor([value, 2.0], dtype=dtype)
+            torch.save(body, path)
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    assert compare_runs(a, b, rtol=rtol)['passed'] is passed
+    output = tmp_path / 'compare.json'
+    assert cli.main(['compare', str(a), str(b), f'--rtol={rtol}', '--out', str(output)]) == (0 if passed else 1)
+    assert json.loads(output.read_text())['passed'] is passed
+    assert capsys.readouterr().out.endswith('passed\n' if passed else 'failed\n')
+    assert {p: p.read_bytes() for p in before} == before
