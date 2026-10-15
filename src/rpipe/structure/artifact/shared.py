@@ -122,7 +122,10 @@ def link_input(source: Path | str, target: Path | str) -> Path:
         return target
     finally:
         if owned and temporary != target:
-            temporary.unlink(missing_ok=True)
+            try:
+                temporary.unlink(missing_ok=True)
+            except OSError:
+                pass
 
 
 def reference_tree(source: Path | str, target: Path | str) -> None:
@@ -222,7 +225,10 @@ def migrate_shared(study_dir: Path | str) -> dict[str, object]:
                     atomic_replace(tmp, source)
                 finally:
                     if owned:
-                        tmp.unlink(missing_ok=True)
+                        try:
+                            tmp.unlink(missing_ok=True)
+                        except OSError:
+                            pass
         return {'study': str(study), 'paths': {k: str(v) for k, v in roots.items()},
                 'files': [{'old': str(s), 'shared': str(t), 'sha256': d,
                            'same_file': s.samefile(t)} for s, t, d in rows]}
