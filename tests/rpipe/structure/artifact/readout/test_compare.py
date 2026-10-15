@@ -94,3 +94,129 @@ def test_exact_checkpoint_comparison_preserves_integer_and_complex_differences(t
             payload['model']['complex'] = torch.tensor([1 + delta * 1j])
         torch.save(payload, path)
     assert compare_runs(a, b)['passed'] is False
+
+
+@pytest.mark.parametrize('field,value', [('result-root', []), ('metrics', 7), ('metrics', False), ('metrics', [['loss', 0.5]]), ('tracker-root', []), ('splits', 7), ('split', []), ('meter', 7), ('history', 'bad')])
+def test_compare_bad_containers_are_file_errors_without_evidence_overwrite(tmp_path, capsys, field, value):
+    a, b = (_run(tmp_path, 'a'), _run(tmp_path, 'b'))
+    path = a / ('result.json' if field in ('result-root', 'metrics') else 'assets/tracker/tracker_state.json')
+    body = json.loads(path.read_text())
+    if field.endswith('root'):
+        body = value
+    elif field in ('metrics', 'splits'):
+        body[field] = value
+    elif field == 'split':
+        body['splits']['train'] = value
+    elif field == 'meter':
+        body['splits']['train']['Loss'] = value
+    else:
+        body['splits']['train']['Loss']['history'] = value
+    path.write_text(json.dumps(body), encoding='utf-8')
+    output = tmp_path / 'compare.json'
+    output.write_bytes(b'prior comparison')
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    assert cli.main(['compare', str(a), str(b), '--out', str(output)]) == 2
+    assert capsys.readouterr().err
+    assert {p: p.read_bytes() for p in before} == before
+
+
+def test_compare_output_refusal_uses_cli_file_error_boundary(tmp_path, monkeypatch, capsys):
+    from rpipe.structure.artifact.readout import compare
+    a, b = (_run(tmp_path, 'a'), _run(tmp_path, 'b'))
+    output = tmp_path / 'comparison.json'
+    output.write_bytes(b'previous comparison')
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+
+    def refused(*args, **kwargs):
+        raise PermissionError('comparison output refused')
+    monkeypatch.setattr(compare, 'atomic_write_text', refused)
+    assert cli.main(['compare', str(a), str(b), '--out', str(output)]) == 2
+    assert 'comparison output refused' in capsys.readouterr().err
+    assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('different', [False, True])
+def test_compare_exact_huge_integers_without_float_coercion(tmp_path, different):
+    a = _run(tmp_path, 'a', loss=10 ** 400)
+    b = _run(tmp_path, 'b', loss=0 if different else 10 ** 400)
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    output = tmp_path / 'comparison.json'
+    assert cli.main(['compare', str(a), str(b), '--out', str(output)]) == (1 if different else 0)
+    result = json.loads(output.read_text())
+    assert result['items']['metrics']['max_abs_diff'] == (10 ** 400 if different else 0)
+    assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('flag', ['--atol', '--rtol'])
+@pytest.mark.parametrize('value', ['nan', 'inf', '-inf'])
+def test_compare_nonfinite_tolerances_are_argument_errors(tmp_path, flag, value, capsys):
+    a, b = (_run(tmp_path, 'a'), _run(tmp_path, 'b'))
+    output = tmp_path / 'comparison.json'
+    output.write_bytes(b'old comparison')
+    assert cli.main(['compare', str(a), str(b), f'{flag}={value}', '--out', str(output)]) == 2
+    assert output.read_bytes() == b'old comparison'
+    assert capsys.readouterr().err
+
+
+@pytest.mark.parametrize('field', ['metrics', 'splits', 'split'])
+def test_compare_keeps_legacy_null_optional_containers(tmp_path, field):
+    a, b = (_run(tmp_path, 'a'), _run(tmp_path, 'b'))
+    for run in (a, b):
+        p = run / ('result.json' if field == 'metrics' else 'assets/tracker/tracker_state.json')
+        body = json.loads(p.read_text())
+        if field == 'split':
+            body['splits']['train'] = None
+        else:
+            body[field] = None
+        p.write_text(json.dumps(body), encoding='utf-8')
+    assert cli.main(['compare', str(a), str(b)]) == 0
+
+
+@pytest.mark.parametrize('delta,atol,rtol,passed', [(1, 1.0, 0.0, True), (2, 1.0, 0.0, False), (10 ** 390, 0.0, 1e-08, True), (10 ** 390, 0.0, 1e-12, False)], ids=['absolute-boundary', 'absolute-outside', 'relative-pass', 'relative-fail'])
+def test_compare_huge_integer_tolerance_retains_exact_difference(tmp_path, delta, atol, rtol, passed):
+    a = _run(tmp_path, 'a', loss=10 ** 400)
+    b = _run(tmp_path, 'b', loss=10 ** 400 + delta)
+    output = tmp_path / 'comparison.json'
+    assert cli.main(['compare', str(a), str(b), f'--atol={atol}', f'--rtol={rtol}', '--out', str(output)]) == (0 if passed else 1)
+    result = json.loads(output.read_text())
+    assert result['items']['metrics']['max_abs_diff'] == delta
+
+
+@pytest.mark.parametrize('kind', ['result', 'tracker', 'checkpoint'])
+def test_compare_directory_is_bad_file_not_missing(tmp_path, kind, capsys):
+    a, b = (_run(tmp_path, 'a'), _run(tmp_path, 'b'))
+    path = a / {'result': 'result.json', 'tracker': 'assets/tracker/tracker_state.json', 'checkpoint': 'assets/checkpoints/latest.pt'}[kind]
+    path.unlink()
+    path.mkdir()
+    output = tmp_path / 'comparison.json'
+    output.write_bytes(b'old comparison')
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    assert cli.main(['compare', str(a), str(b), '--out', str(output)]) == 2
+    assert capsys.readouterr().err
+    assert {p: p.read_bytes() for p in before} == before and path.is_dir()
+
+
+@pytest.mark.parametrize('kind', ['empty', 'pickle', 'truncated-zip'])
+def test_compare_corrupt_checkpoint_is_file_error_without_rewrite(tmp_path, kind, capsys):
+    a, b = (_run(tmp_path, 'a'), _run(tmp_path, 'b'))
+    path = a / 'assets/checkpoints/latest.pt'
+    path.write_bytes(b'' if kind == 'empty' else b'not a checkpoint' if kind == 'pickle' else path.read_bytes()[:32])
+    output = tmp_path / 'comparison.json'
+    output.write_bytes(b'old comparison')
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    assert cli.main(['compare', str(a), str(b), '--out', str(output)]) == 2
+    assert capsys.readouterr().err
+    assert {p: p.read_bytes() for p in before} == before
+
+
+def test_compare_unexpected_program_error_is_not_swallowed(tmp_path, monkeypatch):
+    from rpipe.structure.artifact.readout import compare
+    a, b = (_run(tmp_path, 'a'), _run(tmp_path, 'b'))
+    error = RuntimeError('unexpected compare program error')
+
+    def broken(*args, **kwargs):
+        raise error
+    monkeypatch.setattr(compare, '_history', broken)
+    with pytest.raises(RuntimeError) as caught:
+        cli.main(['compare', str(a), str(b)])
+    assert caught.value is error
