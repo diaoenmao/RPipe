@@ -1,7 +1,7 @@
-> 现状：#77/#79/#81已合dev验收并清理远程；#82由PR84合dev6863f7f，集成CI中；继续B-081/#85。
-> 最新：状态容器校验TypeError/非法状态无读出诊断已复现；29项红合同16失败/13控制通过，出处§98、fc704fa。
-> 下一步：复用既有状态枚举做最小类型/读出修复，保留legacy/partial合同；正确性验收后PR合dev并清理远程。
-> 阻塞：无；目标active，当前唯一未合codex/result-status-contract，原字节/红例/删除清单保留。
+> 现状：#77/#79/#81/#82均已合dev验收，四条结束远程已清；B-081/#85本地完成按PR验收，B-082/#86已真实复现排队。
+> 最新：#85的29项全绿；相邻402、core857通过/1平台skip、Flow175通过；坏activity6例绕过缺index，出处§99。
+> 下一步：验收状态修复最终head/实际dev并清理远程，再处理#86；Issue留待后版关闭。
+> 阻塞：无；目标active，当前唯一未合codex/result-status-contract，原始失败/删除清单均保留。
 > 边界：不测速/GPU、不改layout/产物格式、不合main/打tag，不删数据/Run/provenance。
 
 # 一、摘要
@@ -102,6 +102,16 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+### 99. 可选缓存最终验收、第四条远程清理与状态候选
+
+记录日期2026-10-16，目标active。先清已结束分支，再推进已确认正确性队列，不合main/打tag或关闭待下版Issue。
+
+1. B-080/#82已通过[PR84](https://github.com/DreamSoul-AI/RPipe/pull/84)普通merge dev6863f7ffe5f2e8b3e1883e39dfd5106cdb234493。最终head1516a8bacc0188c210f92ecff4aec0354fdb1c5d的[Unit38768342129](https://github.com/DreamSoul-AI/RPipe/actions/runs/38768342129)/[Package38768342472](https://github.com/DreamSoul-AI/RPipe/actions/runs/38768342472)/[Branch38768341996](https://github.com/DreamSoul-AI/RPipe/actions/runs/38768341996)及实际dev的[Unit38769261653](https://github.com/DreamSoul-AI/RPipe/actions/runs/38769261653)/[Package38769261884](https://github.com/DreamSoul-AI/RPipe/actions/runs/38769261884)全部实际矩阵/聚合成功；DEV_CHECKED SHA256 2157b2029574020fde2afbe73d092919eb80e15e243b9dbad8b6d5e8abf471d4。观察3302/28794均正常结束，Issue82/PR84正文补齐验收，不重派流程。
+2. 实际新增删除远程codex/saved-plan-read-boundary，旧tip1516a8bacc0188c210f92ecff4aec0354fdb1c5d已是dev祖先、无活动PR引用；普通push --delete。删除后当时仅main00e70b1/dev6863f7f，随后仅推当前codex/result-status-contract；本地旧分支和数据保留。本轮新增累计4条（前三条详§95/97），早前9条另记§82。删除前/日志/复核在.tmp/audit080，不随clone。
+3. B-081/#85本地候选完成：红fc704fa为29节点16 failed/13 passed，设计50e18f5先于fixcd06c5d（两原文件+9/-2，复用VALID_STATUS，不改通用load_result或process schema）。402相邻通过、core857通过/1 POSIX权限平台skip、CPU Flow175通过，0fail/error，29新增节点均执行。原writer/peer/输入字节保留；status合法/legacy/partial7控制不变。LOCAL_CHECKED与原RED/RED2/源码ZIP在.tmp/audit081，不随clone；最后head/实际dev以本批PR正文实际CI验收为准。
+4. 接续真实B-082/[Issue86](https://github.com/DreamSoul-AI/RPipe/issues/86)：9个小探针中6个坏activity字段被当有效，缺index时status错误退出0；2合法提示、1空dict不可用为控制。所有原字节不改，未启动进程/GPU。仅需既有read_activity最低字段类型检查，不建阶段enum或ownership/TTL；writer现有调用均为字符串，保留自定义非空phase与缺省/null detail，不重构。已先Issue，便携红测试/生产修复尚未做；原证据在.tmp/audit082。该形状缺口不同于B-068已修的IO错误。
+5. main仍已发布v0.4.1/00e70b1；五个开放Issue77/79/81/82/85中前四已修dev、85当前候选，86新确认队列，均留到后版关闭。未测速/GPU/480s调查、重训Study、改layout/磁盘格式、覆盖vendor或删数据/Run/provenance；继续目标，不卡等待反馈。
 
 ### 98. Run状态字段校验与只读有类型视图（B-081 / #85）
 
