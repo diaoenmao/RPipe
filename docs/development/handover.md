@@ -1,5 +1,9 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 目标active，可选缓存候选完成
+
+#77/PR78、#79/PR80、#81/PR83均已普通合dev且最终head/实际dev所有实际CI成功；当前已验收dev4536ec4。三条结束远程codex/artifact-contracts-correctness、codex/yaml-mapping-roots、codex/declared-batch-contract均实际删除，旧tip/祖先/清单与一次GitHub EOF恢复见record §97；本地分支与数据保留。当前唯一未合codex/saved-plan-read-boundary修B-080/#82：红9add4cc为10失败/12控制，设计ef11eda后fixaf56370；371相邻、core834通过/1平台skip、Flow169通过。最终head/实际dev按本批PR正文分别验收，再删结束远程。四Issue保持open等后版。无测速/GPU/布局变化/main/tag，继续目标，不重复修已合问题或干预下游。
+
 ## 2026-10-16 目标active，批次一致性候选与可选缓存队列
 
 #77/PR78和#79/PR80均已合dev并分别通过最终head/实际dev全实际CI。远程codex/artifact-contracts-correctness与codex/yaml-mapping-roots均在对应验收后实际删除（清单/旧tip见record §95），本地旧分支保留。当前唯一未合codex/declared-batch-contract修B-079/#81：红5597727为23失败/3控制通过；设计aa6b56b后最小fix0f57ddb，349相邻、core812通过/1平台skip、Flow169通过，准备PR最终验收。另已真实确认并先开B-080/#82（可选jobs缓存stat/UTF8/存储数值转换异常越过重建None边界），只有本机探针，红便携测试/生产修复尚未做。按目标连续接续，不合main/打tag、不测速/GPU、不改layout/格式、不删数据；所有Issue留到后版关闭。

@@ -1,7 +1,7 @@
-> 现状：#77/#79已合dev验收且远程已清；#81已由PR83合dev4536ec4，实际集成CI验收中；继续B-080/#82。
-> 最新：#82的22项红合同10失败/12控制通过，明确缓存文件边界与调用参数/程序错误分离，出处§96、9add4cc。
-> 下一步：在既有可选loader统一错误边界，正确性回归后PR合dev并清理结束远程；Issue留待下版。
-> 阻塞：无；目标模式active，唯一未合分支codex/saved-plan-read-boundary，旧失败/输入字节/删除证据均保留。
+> 现状：#77/#79/#81均已合dev并通过实际CI，结束远程已清；B-080/#82实现和本地检查完成，按PR流程验收。
+> 最新：#82的22项由10失败/12控制转全绿；相邻371、core834通过/1平台skip、Flow169通过；本轮新删3远程，出处§97。
+> 下一步：验收缓存读取修复最终head/实际dev并清理该远程，再按目标继续正确性；Issue留待后版。
+> 阻塞：无；GitHub查询EOF退避后恢复，未重跑CI；目标active，当前仅codex/saved-plan-read-boundary未合。
 > 边界：不测速/GPU、不改layout/产物格式、不合main/打tag，不删数据/Run/provenance。
 
 # 一、摘要
@@ -102,6 +102,16 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+### 97. 批次证据保护最终验收与可选缓存候选完成
+
+记录日期2026-10-16。目标模式active；先处理已确认队列，所有四个Issue77/79/81/82保持open，已合dev不等同下版正式发布。
+
+1. B-079/#81通过[PR83](https://github.com/DreamSoul-AI/RPipe/pull/83)普通merge dev4536ec497cce48c56db77ead6f8ce3009a186142。最终headf617d4366ebf9570080996dc36fdba3d1b2bff75的[Unit38765832139](https://github.com/DreamSoul-AI/RPipe/actions/runs/38765832139)/[Package38765831882](https://github.com/DreamSoul-AI/RPipe/actions/runs/38765831882)/[Branch38765831857](https://github.com/DreamSoul-AI/RPipe/actions/runs/38765831857)及实际dev的[Unit38766766425](https://github.com/DreamSoul-AI/RPipe/actions/runs/38766766425)/[Package38766766311](https://github.com/DreamSoul-AI/RPipe/actions/runs/38766766311)均全部实际矩阵/聚合成功。DEV_CHECKED SHA256 b99811e3e81e77e47248049f072fd88319ff7eaedeee5f76a39582924ecdc840，Issue81/PR83正文已补全验收。
+2. 一次查询故障：观察29334因`gh pr view83`的GraphQL POST EOF退出1，最后已知Unit38766766425为pending，未重派CI、未当测试失败/通过、未提前删分支。DEV_OBSERVER_NETWORK_EOF.json保留；退避30秒后重查同组既有流程，全实际通过才验收。不是自动审批拒绝，不需要弹窗或调整计费。
+3. 实际新增删除远程codex/declared-batch-contract，删除前tipf617d4366ebf9570080996dc36fdba3d1b2bff75已是dev祖先，无活动PR引用；普通push --delete后main00e70b1/dev4536ec4未变，本地分支与数据保留。本轮累计新删3条：artifact-contracts-correctness、yaml-mapping-roots、declared-batch-contract（均codex/前缀，逐项SHA/验证见§92/95/本节）；早前9条另见§82。当前唯一未合codex/saved-plan-read-boundary保留，正常推送。原始删除前/日志/复核在.tmp/audit079，不随clone。
+4. B-080/#82候选完成：红9add4cc为22节点10 failed/12 passed；设计ef11eda先于fixaf56370（load_launch_plan原函数+10/-8，缓存stat/读取/解码/存储数值转换归入现有错误边界）。371相邻通过、core834通过/1 POSIX权限平台skip、CPU Flow169通过，0fail/error，22新增节点全执行；输入/peer字节不改，非法当前参数与原RuntimeError仍抛出。既有batch一致性、合法缺省/整数文本/round空值与模式/依赖/retry不变。LOCAL_CHECKED/原红/源码ZIP在.tmp/audit080，本机证据不随clone。最终head与实际dev以本批PR正文实际CI验收为准。
+5. 只读核查dayan、量化、output-space三会话最新反馈，内容为其各自研究/集成；未从中取得新的已复现RPipe反例，未发任何消息、覆盖vendor或干预实验。本批没有测速、GPU、480s调查、布局/格式迁移、main/tag或数据/Run/provenance删除；保留原失败、网络错误与全部旧证据。
 
 ### 96. 可选缓存读取的完整文件错误边界（B-080 / #82）
 

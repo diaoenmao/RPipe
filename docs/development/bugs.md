@@ -11,14 +11,9 @@
 - 来源：持续第二类可选读取复查。load_launch_plan合同为不可用返回None请求make重建；但stat在try外、UTF-8及缓存int转换未在同一边界。
 - 复现：8小探针中坏UTF8、坏init_gpu文本、null num_gpus、坏round文本、Infinity round、注入stat PermissionError共6异常逃逸；坏JSON已返回None、合法空计划可用为2控制。7个物理缓存原字节不改；没有启动进程/GPU或更改ACL。
 - 期望：只在现有函数内把缓存stat/read/decode/已存元数据转换归入明确文件/类型/值/溢出边界；保留合法/缺省参数和缓存不匹配逻辑。调用方非法参数、意外RuntimeError继续上抛，不改缓存字节/格式、实际分组、retry、资源策略或布局。
-- 已先创建Issue82；现已从#81已合dev4536ec4建立单一未合codex/saved-plan-read-boundary，先提交红9add4cc，22节点10 failed/12 passed、0error/skip，生产修复尚未执行。源码/测试原字节ZIP与REPRO.json在.tmp/audit080，不随clone。该问题不同于B-079的jobs/batches一致性，不混写未做验收。
+- 已先创建Issue82；现已从#81已合dev4536ec4建立单一未合codex/saved-plan-read-boundary，先提交红9add4cc，22节点10 failed/12 passed、0error/skip，生产fixaf56370已完成，371相邻、core834通过/1平台skip、Flow169通过；最终head/实际dev仍需分别验收。源码/测试原字节ZIP与REPRO.json在.tmp/audit080，不随clone。该问题不同于B-079的jobs/batches一致性，不混写未做验收。
 
-### B-079：显式batches越过声明jobs，可能先失效未列入任务的旧成功（[#81](https://github.com/DreamSoul-AI/RPipe/issues/81)）
-
-- 来源：三类合同全仓接续，schedule.wait_groups直接返回batches；native与render_bash均信任它，缓存loader也未核对jobs/batches一致性。
-- 真实隔离复现：jobs仅planned、batches仅peer，Popen为内存替身；实际mock启动peer，旧peer result从succeeded变failed，原SHA256 c0cf5aa5350fbf1628583326b8a9b4b9cea22d6d0064886e38cdadc2f071f37b→c8d12e2aa95bc93159dfc5987230ab16b992f2c32fe649fb09c1c10799565da0。未启动真实子进程/GPU，未触碰正式数据。生成Bash仅嵌入peer并从groups重建jobs，原planned被丢弃；脚本未执行。
-- 期望：既有wait_groups验证batches与jobs完整多重集/字段相同，允许合法重排；writer在发布前验证，缓存在过滤成功项前验证，不一致请求重建，native/script在失效旧结果/启动/覆盖前拒绝。不修改合法rerun保全范围、默认retry/依赖顺序、格式或布局。
-- 先Issue，再红测试5597727：26节点，23 failed/3 passed，0error/skip；覆盖foreign/missing/metadata/duplicate的共享分组、native旧字节/peer、脚本发布、渲染、两种include_done缓存读取，以及合法/重排控制。原字节ZIP、native REPRO、旧peer bytes/hash、脚本、RED.xml/log/命令在.tmp/audit079，不随clone。首次补充脚本探针少传两个必需参数的调用错误另存，已纠正，不当库失败。
+B-079/#81已由[PR83](https://github.com/DreamSoul-AI/RPipe/pull/83)普通merge dev4536ec4，最终head与实际dev全部实际矩阵/聚合成功，已从未修队列移除；Issue仍open到下版。已删结束远程codex/declared-batch-contract，错误查询EOF与恢复证据见record §97。本轮当前未完成验收项为B-080/#82，下一新编号B-081。
 
 B-078/#79已由[PR80](https://github.com/DreamSoul-AI/RPipe/pull/80)普通merge devf4acb93，最终head与实际dev所有实际矩阵/聚合成功，从未修队列移除；Issue仍open到下版。YAML远程结束分支已删除，详细证据见record §93/95。
 
