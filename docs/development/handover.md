@@ -1,5 +1,12 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 设计状态实际验收完成、B097可选state完整I/O边界
+
+PR119实际dev4d12719全部实际CI全绿，设计状态修订与B096已集成；e44b94d将三类/PR98/102标已实施、补merge记录，原锚点/12相对链接保持、第七节不实施，不再等设计批准。结束remote codex/scheduling-query-parse已删、本地保留，本目标累计21条；Issue118留至下版。
+
+当前唯一未合codex/optional-state-stat修B097/#120：目标Path.stat故障注入四公共调用均PermissionError，未改系统ACL，不当native OS复现。764a613将既有2项IO控制合成32实例（净增30），8红失败/24控制→0a18f85先设计→06dfe86仅原is_file移入已有try，源码总行数/异常列表不变，无新增helper。process104/core1482+1既有平台skip/Flow189通过，32矩阵RED/GREEN/CORE均全执行，普通RuntimeError同对象传播、missing/OSError回退、primary/旧fallback/原输入与peer保持。证据.tmp/audit097不随clone，见record§137–139。下一最终head/实际dev全实际CI后普通合dev、清结束remote，Issue等下版；无main/强推/tag/测速/GPU/科学聚合/布局或数据变更。
+
+
 ## 2026-10-16 设计状态已实施、PR117验收完成与B096调度查询
 
 监督助手审定无需再审：e44b94d已单独修订artifact_consistency_design，原三类PR52/54/55与B086 PR98、B088 PR102标已实施并补实际merge commit，历史红测试不再称尚未修；标题锚点/12相对链接保留，第七节不实施、文件架构/产物布局不改。
