@@ -1,5 +1,9 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 目标active，activity候选本地验收
+
+前五批至#85/PR87均已合dev37d0262且最终head/实际dev全部实际CI成功，五条结束远程均已删除，本地旧分支保留，见record §101。当前唯一未合codex/activity-hint-fields，#86红313f826为21失败/4控制，设计c16a7e2后最小fix59785be；436相邻、core882通过/1平台skip、Flow175通过，25项新合同全部执行。接着PR最终head和实际dev独立验收后删结束远程；新provenance声明类型反例只在.tmp/audit083复现，尚未开Issue/红测试/修生产，不冒充已修。无关未跟踪_staging_from_DEM/原样保留，只允许该精确项的临时checker不放宽tracked/CI。Issue均等后版，不合main/打tag、不测速/GPU、不改layout或删数据。
+
 ## 2026-10-16 目标active，Run状态候选与activity队列
 
 前四批#77/PR78、#79/PR80、#81/PR83、#82/PR84均已合dev且最终head/实际dev所有实际CI成功；当前验收dev6863f7f。四条结束远程均实际删除，最新codex/saved-plan-read-boundary清理与旧tip详record §99，本地旧分支保留。当前唯一未合codex/result-status-contract修B-081/#85：红fc704fa16失败/13控制，设计50e18f5后最小fixcd06c5d；402相邻、core857通过/1平台skip、Flow175通过，最后head/实际dev按本批PR验收后删远程。新真实B-082/#86是坏activity字段使缺index的status成功退出，只有9小探针（6反例/3控制）、尚未红测试/修生产。所有Issue等后版，不合main/打tag、不测速/GPU、不改layout或删数据；目标持续接续。

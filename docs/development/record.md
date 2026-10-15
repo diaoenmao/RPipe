@@ -1,8 +1,8 @@
-> 现状：前四批已合dev验收并清远程；#85由PR87合dev37d0262，集成CI中；继续B-082/#86。
-> 最新：坏activity字段绕过缺index已复现；25项红合同21失败/4兼容控制通过，出处§100、313f826。
-> 下一步：在既有reader统一最低字段检查，保留合法进度提示/权威Run表，正确性验收后PR合dev并清理远程。
-> 阻塞：无；目标active，当前唯一未合codex/activity-hint-fields，原始失败/输入字节/删除清单保留。
-> 边界：不测速/GPU、不改layout/产物格式、不合main/打tag，不删数据/Run/provenance。
+> 现状：前五批均已合 dev、最终 head/实际 dev CI 全绿并清远程；#86 最小字段修复已完成本地门。
+> 最新：25项合同全绿；相关436、core882通过/1平台skip、Flow175通过，出处§101、.tmp/audit082/LOCAL_CHECKED.json。
+> 下一步：#86 经 PR/CI 合 dev；新声明校验反例已隔离复现，按红测试→最小修复接续。
+> 阻塞：无；唯一未合 codex/activity-hint-fields；无关 _staging_from_DEM/ 未跟踪目录原样保留。
+> 边界：不测速/GPU、不改 layout/产物格式、不合 main/打 tag，不删数据/Run/provenance。
 
 # 一、摘要
 
@@ -102,6 +102,16 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+### 101. activity 字段候选本地验收与第五条结束远程清理
+
+记录日期2026-10-16。B-081/#85 经[PR87](https://github.com/DreamSoul-AI/RPipe/pull/87)普通 merge 为 dev `37d0262b58fd1ac8d833b04fbb0fdcdcfce61235`，最终 head `49fbf56f9d595728a32b0cf2a1f169999636cecb` 的 Unit38770856180 / Package38770856256 / Branch38770856234、实际 dev [Unit38771938958](https://github.com/DreamSoul-AI/RPipe/actions/runs/38771938958) / [Package38771938853](https://github.com/DreamSoul-AI/RPipe/actions/runs/38771938853) 全部实际矩阵及聚合成功。DEV_CHECKED SHA256 `726461b0a65d27999523f96c7495b773a5f034836dbaafd33de374578afb3a69`；已更新原 PR/Issue 验收正文，Issue85仍open至下版。
+
+已证明旧tip纳入dev、无开放PR、目标不是当前工作分支后，普通删除远程 `codex/result-status-contract`（tip49fbf56）。本目标累计结束远程五条：`codex/artifact-contracts-correctness`、`codex/yaml-mapping-roots`、`codex/declared-batch-contract`、`codex/saved-plan-read-boundary`、`codex/result-status-contract`。清理前后与命令保存各批.tmp；本地旧分支保留，main/dev未因清理改变，不重复计历史§82九条。
+
+B-082/#86：红313f826为25项21失败/4控制，文档c16a7e2后最小生产59785be仅在read_activity增加非空白str phase及可选str/null detail检查（+4/-1）。坏提示沿既有不可用分支，合法自定义/Unicode阶段、缺省/null/空detail不变；未改writer/clear/CLI、阶段枚举、TTL或所有权。25项全部执行并转绿；相关436 passed、core882 passed/1 POSIX mode平台skip、Flow175 passed，0fail/error；CPU子进程隐藏CUDA，不是GPU/科学验收。核心XML共883节点，skip不计通过。生产仅activity.py变化，layout/版本/发布正文/Study均无变更。完整红绿/XML/命令与LOCAL_CHECKED在`.tmp/audit082`，不随clone；待本批最终head及实际dev CI验收，不拿旧CI替代。
+
+本机出现与本次变更无关的未跟踪`_staging_from_DEM/`，保持原样，未打开/移动/删除/忽略。临时CI checker只允许这一条精确未跟踪状态或全干净，仍拒绝任何tracked/staged改动及其他未跟踪项；不更改仓库配置或必需CI。目标active，下一批仅针对已复现的provenance声明类型缺口，原始REPRO/BEFORE.zip在.tmp/audit083；不把“新反例”计为已修。
 
 ### 100. 可选activity字段类型与权威index的边界（B-082 / #86）
 
