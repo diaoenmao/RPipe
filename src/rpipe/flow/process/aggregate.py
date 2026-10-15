@@ -23,9 +23,9 @@ def run_process_path(run_root: Path | str) -> Path:
 
 def _state_history(study_dir: Path | str, run_dir: str) -> dict[str, dict[str, list[float]]]:
     path = Path(study_dir) / RUNS_DIRNAME / run_dir / 'assets' / kinds.TRACKER_STATE
-    if not path.is_file():
-        return {}
     try:
+        if not path.is_file():
+            return {}
         body = json.loads(path.read_text(encoding='utf-8'))
     except (OSError, ValueError, RecursionError, UnicodeError, TypeError):
         return {}
