@@ -12,6 +12,8 @@ from typing import Any
 from rpipe.structure.artifact._atomic import atomic_write_text
 from rpipe.structure.artifact.asset import kinds
 from rpipe.structure.artifact.paths import ASSETS_DIRNAME, RESULT_NAME
+from rpipe.structure.artifact.readout.report import _text_cell
+from rpipe.structure.artifact.readout.status import _log_path_key
 
 CHECKPOINT_PARTS = ('model', 'optimizer', 'scheduler')
 
@@ -137,11 +139,18 @@ def _history(run: Path) -> dict[str, dict[str, list[Any]]] | None:
 def _checkpoint(run: Path, name: str) -> dict[str, Any] | None:
     import torch
 
-    path = run / ASSETS_DIRNAME / kinds.CHECKPOINTS / f'{name}.pt'
+    root = run / ASSETS_DIRNAME / kinds.CHECKPOINTS
+    path = root / f'{name}.pt'
     if not path.is_file():
         if path.exists():
             raise ValueError(f'not a checkpoint file: {path}')
         return None
+    try:
+        base = _log_path_key(root.resolve())
+        base.relative_to(_log_path_key(run.resolve()))
+        _log_path_key(path.resolve()).relative_to(base)
+    except ValueError as exc:
+        raise ValueError(f'checkpoint must stay inside its Run checkpoint directory: {path}') from exc
     try:
         payload = torch.load(path, map_location='cpu', weights_only=False)
     except (EOFError, pickle.UnpicklingError, RuntimeError) as exc:
@@ -216,7 +225,7 @@ def format_compare(report: dict[str, Any]) -> str:
             difference = item['max_abs_diff']
             value = str(difference) if isinstance(difference, int) else f'{difference:g}'
             detail = f'max abs diff {value}'
-        lines.append(f'{state}  {key}  {detail}')
+        lines.append(f'{state}  {_text_cell(key)}  {detail}')
     lines.append('passed' if report['passed'] else 'failed')
     return '\n'.join(lines) + '\n'
 
