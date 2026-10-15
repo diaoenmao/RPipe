@@ -1,8 +1,8 @@
-> 现状：v0.4.1发布后新确认B-077/#77；红测试f85f6bb、设计842dacd、最小修复823c9b0均在唯一工作分支。
-> 最新：24项新合同由18失败/6通过转为全绿；相邻299项CPU全部通过；远端只3分支、可删0条，出处§92。
-> 下一步：本机CPU Flow169项也已全绿，提交PR并核对最终工作提交/实际dev CI；#77保留到下版关闭。
-> 阻塞：无；首次绿色命令文件名错误未执行用例，已纠正且原错误保留；未重复派发验证。
-> 边界：当前工作分支保留，不测速/GPU，不改layout/产物格式，不合main/打tag，不删数据。
+> 现状：#77已由PR78合dev1667f51，实际dev CI独立验收中；继续修新确认的B-078/#79。
+> 最新：两严格YAML入口把4类非法falsy根值当{}；24项红回归12失败/12控制通过，出处§93、9f4d796。
+> 下一步：按既有mapping合同仅统一None判定，针对性/流程正确性验证后PR合dev；完成旧分支验收即清理远程。
+> 阻塞：无；当前唯一未合分支codex/yaml-mapping-roots，保留全部失败和旧字节。
+> 边界：文件架构/layout不变，不测速/GPU、不合main/打tag，不删数据/Run/provenance。
 
 # 一、摘要
 
@@ -102,6 +102,15 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-15
+
+### 93. 严格YAML mapping读取的空值判定统一（B-078 / #79）
+
+记录日期2026-10-15。PR78已通过最终head959f2a5所有实际Unit38761019602/Package38761019537/Branch38761019535后普通合dev1667f517d8585627ba04639ba14f7612ead8b885；实际dev CI另行验收中。不开等待反馈空档，从该dev建立唯一未合工作分支codex/yaml-mapping-roots，上一条已合分支待实际dev验收后按新授权清理，当前分支保留。
+
+1. 归类：继续第二类共享解析边界，确认decode_config和load_study_yaml两处同一`safe_load(...) or {}`反例。各7个隔离输入中false/0/[]/空字符串误接受，空文档/null/{}是兼容控制。四个坏Run配置令status误显示train且无error；原输入均未改写，不代表真实正式数据已损坏。已先创建[Issue79](https://github.com/DreamSoul-AI/RPipe/issues/79)，不重开旧Issue。
+2. 设计先写structure.md：复用现有类型验证，只把truthiness空值判定改成None判定，保留两入口异常类型与合法mapping。load_config所有调用方和load_study_yaml调用方均搜索核对；stats可选loader已对同类输入返回None，明确不改。文件架构/layout/产物格式、科学聚合、异常分类和默认train合法配置语义不变。
+3. 红测试先提交9f4d796：两严格parser各6非法根值（4falsy反例+true/1已有拒绝控制）与4空文档/null/{}兼容控制，另4个真实status peer/字节保全，共24节点、12 failed/12 passed、0error/skip。源码原字节ZIP、探针与RED.xml/log/命令/计数在.tmp/audit078，本机证据不随clone；portable回归已入库。
+4. 后续只实施上述已有失败支撑的两处小改，按类一PR进dev；不测速/GPU、不合main/打tag、不删除数据/Run/provenance。#77/#79均保留至后续版本，最终head/实际dev验证分别记录，不把历史pending当新失败。
 
 ### 92. v0.4.1后共享index容器合同缺口（B-077 / #77）
 

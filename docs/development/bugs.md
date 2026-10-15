@@ -6,6 +6,14 @@
 
 ## 开放
 
+### B-078：严格YAML mapping读取把falsy非对象误当空配置（[#79](https://github.com/DreamSoul-AI/RPipe/issues/79)）
+
+- 来源：B-077后同类解析边界复查；配置decoder及Study声明loader均先用`safe_load(...) or {}`，绕过既有mapping验证。
+- 复现/实际：false、0、[]、空字符串四种根值，在两严格入口均误接受为{}；计划Run的status据此无诊断猜train。共两组7个合成文档，原字节不改；空文档/null/{}为必须保留的兼容控制。
+- 期望：两现有入口仅对None回退空dict，其他非mapping由既有CorruptArtifactError/ValueError拒绝；status复用原unreadable→unknown+诊断，不隐藏peer。非空非法标量也保持拒绝，不新增helper、模块、格式或迁移。
+- 先Issue、再红测试9f4d796：24节点，12 failed/12 passed，0error/skip。原字节ZIP、REPRO/STUDY_REPRO、RED.xml/log/COMMAND/计数在.tmp/audit078，不随clone。
+- 调用范围：load_config→prepare/CLI、make写配置/index、data.prepare、resume、schedule/capacity及main_exp capacity；load_study_yaml→make/Runner/provenance/Study process/data.profile。可选load_stats对同类输入已返回None，不改；不扩大科学/schema/容错边界。
+
 ### B-077：共享 index 读取未验证中间容器，展示崩溃或误报空计划（[#77](https://github.com/DreamSoul-AI/RPipe/issues/77)）
 
 - 来源：v0.4.1 后三类正确性复查，dev `2c8b6fbeab617dfabfff3db03789b21f6a29c23c`；不是既有 #53 写入截断问题。
