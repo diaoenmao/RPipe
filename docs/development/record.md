@@ -97,6 +97,14 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 85. 第二类：严格 compare 读取与输出边界（B-076 / #68）
+
+第三类PR69最终head0f393f1的Unit38742367339/Package38742367353/Branch38742367302全部实际任务与聚合成功，正常合dev b858c2ba689f1f8e77fe7065b53ee551fe42325d，实际dev独立CI接续。第二类复用同一工作分支，portable红提交c954b49：32项26 failed/6 passed，程序RuntimeError原样上抛、历史null和已拒绝的负无穷作为控制通过。
+
+在最初21项预检之后，实际读取点继续覆盖：目录冒充result/tracker/checkpoint、空/坏pickle/截断zip的原生解析错误，以及巨大整数有限绝对/相对容差。原21项16失败/5通过及后续SECOND_PREFLIGHT/XML全保留；该补充使§83初始标合规的_checkpoint也归入B-076，不能用最初清单覆盖新反例。
+
+统一方案在既有compare.py与CLI函数内：_load_json同时校验根对象与所用metrics/splits对象（null兼容），history逐级校验；严格文件错误拒绝，不套用status占位。torch.load解析错误仅在实际加载调用处转ValueError并保留cause，意外程序RuntimeError不吞。整数阈值使用标准库Fraction对应已配置浮点容差的精确值，保留差值整数，格式化不用g隐式float；普通浮点/NaN分支保持。CLI把--out发布也放入原错误边界，成功后才展示结果；不改Run文件、schema、计算或物理布局。
+
 ### 84. 第三类：排他所有权覆盖文本与共享引用（B-074 / #66）
 
 先Issue66与portable红提交a080bc6（6 failed），再设计/逐点清单5d2e174，补活动stage真实线程交错a99fef0，生产8f9cc2c只改现有_atomic/shared两文件。atomic_write_text以排他touch获得owned后才写/清，shared晋升去除递归并统一软链→硬链创建，迁移在link成功后才清本写者；短名、Windows有界replace、外层锁、返回值和路径保持。
