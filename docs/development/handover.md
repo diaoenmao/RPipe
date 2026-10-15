@@ -1,5 +1,9 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 来源证据组合候选本地验收
+
+#91/B083与#93/B084共用codex/provenance-declarations，红d1baff1/3804bce先于各自最小fix4f23ae4/2cd634c。仅provenance.py +18/-6，复用index/目录/物理范围helper，不改格式/布局/hash/旧成功决策。105原红合同全执行转绿；784相邻+1平台skip、core987+1平台skip、Flow175通过。追加12身份/配套路径控制单独EXTRA通过，未混算core或原红节点；见record §105与.tmp/audit084/LOCAL_CHECKED。接着一个PR最终head和实际dev各自实际CI验收后清远程，Issue91/93等下版。研究PR92最终head/实际dev均已全绿并清远程，正本/英译和89/90独立探索已入dev；暂存保留，不迁shared/logger。目标active，不合main/tag、测速或GPU。
+
 ## 2026-10-16 来源证据按类合并验证
 
 研究规范PR92最终head/实际devf303d72全部实际CI成功，文档remote已删、正本原字节/完整英译/独立89/90调研已正式入dev。当前唯一未合codex/provenance-declarations包含B083/#91与新B084/#93，归纳为一批来源证据发布合同。前者最小4f23ae4获717相邻/1skip、core920/1skip、Flow175；后者先Issue再红3804bce，67项56失败/11控制、实际外部文件链接两类均执行。后者将复用load_index/validate_run_directory/_inside，数据错误转既有freeze拒绝并保原cause，内部链接逻辑键兼容，RuntimeError原样。新代码后重新组合验收，不用旧通过替代；见record §104。目标active、不测速/GPU、不改布局/迁logger或shared、不合main/tag。

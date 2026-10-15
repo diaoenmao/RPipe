@@ -12,7 +12,7 @@
 - 12真实隔离探针：10坏输入中8被接受/2泄漏AttributeError或TypeError，2合法控制；同样10坏输入被权威load_index拒绝。`../../external`会把Study外config摘要纳入`runs/../../external/config.yaml`并覆盖合成旧provenance。另2实际file symlink（index/config）均接受外部target。外部输入未改，未使用正式数据/Run。
 - 期望：复用load_index/validate_run_directory/_inside，统一根结构/必需Run id与物理范围校验；数据TypeError在plan入口转ValueError供既有freeze拒绝并保cause，RuntimeError不吞。保留空/partial/缺config及内部链接逻辑键，不扩make事务或改schema/布局/hash。
 - 先Issue93，再红3804bce：67节点56 failed/11 passed、0error/skip，两类真实file链接已执行。48坏容器/路径在plan、写新、写旧、freeze四入口拒绝；8链接拒绝/禁止外部哈希；11兼容/缺省/内部逻辑键/RuntimeError控制。原码ZIP/REPRO/LINK_REPRO/RED XML、命令和hash保留.tmp/audit084，不随clone。
-- 按归纳统一修复要求与B-083/#91共用codex/provenance-declarations、一个来源证据批次PR，不拆零碎PR；本项生产仍未改，下一编号B-085。
+- 按归纳统一修复要求与B-083/#91共用codex/provenance-declarations、一个来源证据批次PR，不拆零碎PR；本项最小生产2cd634c已复用既有校验；组合784相邻/1skip、core987/1skip、Flow175与追加12边界通过（105原红节点全执行），待同一PR最终head/实际dev验收，详record §105；下一编号B-085。
 
 ### B-083：非法来源声明绕过校验并覆盖旧来源证据（[#91](https://github.com/DreamSoul-AI/RPipe/issues/91)）
 

@@ -1,7 +1,7 @@
-> 现状：DEM正本/英译与两独立调研已PR92合dev并实际CI全绿、清远程；来源证据批次归并#91/#93。
-> 最新：#91红30/38已转绿；#93红67项56失败/11控制，实际外链index/config均执行，出处§104、3804bce。
-> 下一步：plan_files复用既有index/路径校验，统一修同类来源发布边界，再跑组合相邻/core/Flow并PR合dev。
-> 阻塞：无；唯一未合codex/provenance-declarations；新缺口未冒充旧CI通过，原失败均保留。
+> 现状：DEM正本/英译与两独立调研已PR92合dev验收并清远程；#91/#93来源证据批次已完成本地正确性门。
+> 最新：105项原红合同转绿，另补12边界；相关784通过/1skip、core987/1skip、Flow175、追加12通过，出处§105。
+> 下一步：同一来源证据PR最终head/实际dev CI分别验收，合dev后清远程；研究89/90仅探索，不自动实施。
+> 阻塞：无；唯一未合codex/provenance-declarations，原始失败/打包错误/旧门结果均保留。
 > 边界：不测速/GPU、不迁shared/logger、不改layout/格式、不合main/打tag，不删数据/Run。
 
 # 一、摘要
@@ -102,6 +102,18 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+### 105. 来源证据两项根边界统一修复与组合本地验收
+
+记录日期2026-10-16，唯一未合codex/provenance-declarations统一处理#91/#93，不为同类另开零碎PR。源码只改provenance.py（相对devf303d72共+18/-6），不新增模块/helper/字段或目录。B083红d1baff1→设计2b29e89→source_files最小fix4f23ae4；B084红3804bce→设计4e1dbc3→plan_files最小fix2cd634c，保留每项红测试先于其生产修复的顺序。
+
+source_files以显式None回退保留缺省/null，统一拒绝非法provenance mapping/include list类型；plan_files复用现有load_index/validate_run_directory/_inside，约束权威index及物理输入留在Study内、保留内部链接的逻辑Run键，数据TypeError转ValueError并保cause给既有freeze拒绝，RuntimeError不吞。缺index/合法空/partial/缺config等旧语义保留，write_provenance原发布函数不变；未扩大旧成功保全范围、make多文件事务、hash缓存或研究能力。
+
+组合本机CPU：相关784 passed/1 POSIX mode平台skip；core987 passed/1同平台skip；Flow175 passed、0skip，均0fail/error。B083的38原节点与B084的67原节点共105个全部在GREEN与CORE执行；原来分别30失败/8控制、56失败/11控制，现全部绿。另在生产修复后补a721ec0的12项缺失/null Run id及配套run_dir越界控制，独立EXTRA12通过/0skip，不把它们冒充原红节点或已执行旧core节点，不把core数字写成999。当前117个新节点均有执行证据；后续最终head CI将收集全套。没有为挑通过重复跑同字节测试；扩展根边界后使用全新a84g/c/f，原B083门保留，不替代本批。
+
+LOCAL_CHECKED在.tmp/audit084，生产SHA256 `182ede3fb83286e8cf8f41b210b73cc50f6fadf59f6c4182f2a6d9da23c84c36`，全部XML/命令/日志/红原字节/真实外链输入保留；这些临时证据不随clone，117 portable节点随Git。相关受影响调用方make、freeze/prepare、Study process与已有Run/peer保全合同共同回归；不是make全局事务证明、任意网络文件系统并发证明或Study科学验收。layout、版本/发布材料及正式Study无变化；无GPU/性能测试或下游覆盖。下一步同一PR最终head与实际dev全部实际矩阵验收，成功后删结束remote、Issue91/93留至下版。
+
+本轮只读检查activity清理路径也确认其已有OSError保护，不再将其当新缺陷。当前无B085已确认反例，继续按三类合同核查而不制造任务或实施探索89/90的架构改动。
 
 ### 104. 研究文档实际dev验收与同类来源计划边界红回归（B-084 / #93）
 
