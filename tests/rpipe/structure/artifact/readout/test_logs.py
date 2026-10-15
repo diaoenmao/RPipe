@@ -263,3 +263,34 @@ def test_log_reference_cycle_is_unavailable_without_hiding_peer(tmp_path, reader
     target = linked.readlink()
     _assert_reference_view(study, 'cycle', reader, True, 'runs/bad/assets/logs/cyclic.log')
     assert linked.is_symlink() and linked.readlink() == target
+
+
+
+@pytest.mark.parametrize('reader', _REFERENCE_READERS)
+def test_log_reference_directory_is_unavailable(tmp_path, reader):
+    import json
+
+    study, _ = _reference_study(tmp_path, 'valid')
+    index = study / 'index.json'
+    body = json.loads(index.read_text(encoding='utf-8'))
+    body['experiments'][0]['runs'][0]['log'] = 'runs/bad/assets/logs'
+    index.write_text(json.dumps(body), encoding='utf-8')
+    _assert_reference_view(study, 'directory', reader, True, 'runs/bad/assets/logs')
+
+
+@pytest.mark.parametrize('reader', _REFERENCE_READERS)
+def test_log_reference_extended_windows_alias_keeps_owned_input(tmp_path, reader):
+    import os
+    import json
+    from pathlib import Path
+
+    if os.name != 'nt':
+        pytest.skip('Windows extended path alias semantics')
+    study, relative = _reference_study(tmp_path, 'valid')
+    extended = str(Path('//?/' + (study / relative).resolve().as_posix()))
+    assert Path(extended).samefile(study / relative)
+    index = study / 'index.json'
+    body = json.loads(index.read_text(encoding='utf-8'))
+    body['experiments'][0]['runs'][0]['log'] = extended
+    index.write_text(json.dumps(body), encoding='utf-8')
+    _assert_reference_view(study, 'extended', reader, False, relative)
