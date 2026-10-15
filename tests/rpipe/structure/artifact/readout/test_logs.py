@@ -109,7 +109,7 @@ _BAD_LOG_REFERENCES = [
     'outside-relative', 'outside-absolute', 'peer', 'newline', 'tab',
     'symlink-outside', 'unicode-line', 'unicode-next-line', 'false', 'zero', 'true', 'empty-list', 'empty-map', 'nonempty-map',
 ]
-_GOOD_LOG_REFERENCES = ['missing', 'null', 'empty', 'valid', 'absolute-own', 'unicode-space', 'internal-alias', 'nonexistent']
+_GOOD_LOG_REFERENCES = ['missing', 'null', 'empty', 'valid', 'absolute-own', 'unicode-space', 'internal-alias', 'internal-parent', 'study-alias', 'nonexistent']
 _REFERENCE_READERS = ['status', 'logs', 'report']
 
 
@@ -130,6 +130,7 @@ def _reference_study(tmp_path, variant):
            'tab': own + '\tFAKE-CELL', 'unicode-line': own + '\u2028FAKE-ROW', 'unicode-next-line': own + '\x85FAKE-ROW', 'false': False, 'zero': 0, 'true': True,
            'empty-list': [], 'empty-map': {}, 'nonempty-map': {'path': own},
            'null': None, 'empty': '', 'valid': own, 'absolute-own': str((study / own).resolve()),
+           'internal-parent': 'runs/bad/assets/logs/../logs/run.log',
            'nonexistent': 'runs/bad/assets/logs/later.log'}.get(variant)
     if variant == 'unicode-space':
         raw = 'runs/bad/assets/logs/日志 数据.log'
@@ -153,6 +154,13 @@ def _reference_study(tmp_path, variant):
     ]}]}
     (study / 'process.json').write_text(json.dumps(process), encoding='utf-8')
     relative = raw if variant not in ('missing', 'null', 'empty', 'absolute-own') else own
+    if variant == 'study-alias':
+        alias = tmp_path / 'study-alias'
+        try:
+            alias.symlink_to(study, target_is_directory=True)
+        except OSError:
+            pytest.skip('host does not allow directory symlinks')
+        study, relative = alias, own
     return study, relative
 
 
