@@ -294,3 +294,22 @@ def test_log_reference_extended_windows_alias_keeps_owned_input(tmp_path, reader
     body['experiments'][0]['runs'][0]['log'] = extended
     index.write_text(json.dumps(body), encoding='utf-8')
     _assert_reference_view(study, 'extended', reader, False, relative)
+
+
+
+@pytest.mark.parametrize('server,share,owned', [('SERVER', 'SHARE', True), ('server', 'other', False), ('other', 'share', False)])
+def test_log_reference_windows_namespace_preserves_share_ownership(server, share, owned):
+    import os
+    from pathlib import Path
+
+    if os.name != 'nt':
+        pytest.skip('Windows namespace path comparison semantics')
+    from rpipe.structure.artifact.readout.status import _log_path_key
+
+    candidate = Path(f'//?/UNC/{server}/{share}/study/runs/bad/assets/logs/run.log')
+    owner = Path('//server/share/study/runs/bad')
+    if owned:
+        assert _log_path_key(candidate).relative_to(_log_path_key(owner)) == Path('assets/logs/run.log')
+    else:
+        with pytest.raises(ValueError):
+            _log_path_key(candidate).relative_to(_log_path_key(owner))
