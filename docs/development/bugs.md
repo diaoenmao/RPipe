@@ -6,25 +6,7 @@
 
 ## 开放
 
-### B-073：读数的容器假设与浮点溢出遮蔽正常 Run
-
-- 状态：open；[Issue #62](https://github.com/DreamSoul-AI/RPipe/issues/62)，下个版本发布时再关闭。
-- 来源：全仓第二类显示合同核对，基线 dev fa18404；status._metric_cell / report._fmt 直接 float，report 假定 metrics 可按字符串键索引。
-- 期望：只有 object 指标逐格显示；有限数显示四位小数，溢出/非有限/非法值只显示 -，status 可选后续有效指标；正常 peer、状态/mode、计划匹配和输入字节不变。
-- 实际：10**400 触发 OverflowError；标量/列表对触发 TypeError；NaN/Infinity 被当可用数字。纯合成输入可复现，无训练/计时/GPU。
-- 红回归：原 readout 测试文件新增22项，20 failed /2 passed；.tmp/contract073/red.xml /red.log 和修复前源码快照仅本机，不随clone。
-- 方案：复用现有 report._fmt 作为 status/report 的私有显示格式化；report 仅接受 dict 指标。严格 loader、compare、process 科学聚合与 schema 不改，不添加模块/路径/异常总兜底。
-
-
-### B-072：Study 替换文本绕过统一原子入口与固定 staging 所有权
-
-- 状态：open；归入 [#53](https://github.com/DreamSoul-AI/RPipe/issues/53#issuecomment-6191251124) 同类发布合同扩展，原库 index 修复已在 v0.4.0，不重复登记为未修。
-- 来源与范围：按最新全仓三类归纳授权检查受跟踪的 Study recipe / flow / structure。main_exp 的报告、数据/源码清单仍直接 write_text；main_probe.save_json 使用固定 `<target>.writing`，未复用库原子链。
-- 期望：替换文本完整编码后交给 atomic_write_text；每个写者独立 staging，失败不改 target / peer，日志流与二进制输入/检查点保留原协议。
-- 实际：合成旧 target 与 peer `.writing`，部分写和替换拒绝可覆盖 peer；正常发布移走 peer；双线程提交共用 staging。架构检查还检出八个文件的绕行入口。
-- 红色回归：先提交 19a3fbb；35 项中 5 failed /29 passed /1 POSIX skip。位置 tests/rpipe/structure/artifact/test_atomic.py；.tmp/contract072/red2.xml 与 before.zip/hash 仅本机保留，不随 clone。初轮测试钩子遗漏 os.replace 已修正，red.xml 保留，不当独立生产缺陷。
-- 统一方案：八文件的替换文本复用 atomic_write_text，无新 I/O helper、目录、schema 或计算逻辑；现有流式 worker.log 精确豁免。旧 Run / provenance / 数据不改，新源码实测必须新 version / make。仅 CPU 合同测试，不执行数据准备/历史训练/测速。
-
+本轮没有尚待修复的已复现软件缺口。B-072 / B-073分别经[PR61](https://github.com/DreamSoul-AI/RPipe/pull/61)与[PR63](https://github.com/DreamSoul-AI/RPipe/pull/63)普通合dev fa18404 /72e4307；最终head及实际dev全部实际CPU/包CI成功。原始条目见[B-072修复前快照](https://github.com/DreamSoul-AI/RPipe/blob/f8e6de1/docs/development/bugs.md)与[B-073修复前快照](https://github.com/DreamSoul-AI/RPipe/blob/7223d78/docs/development/bugs.md)，失败/回归/限制见[record §79—81](record.md)。#53与#62故意保持open至下个版本发版时关闭；这两项新扩展仍只在dev，未发布到main。后续新编号B-074，不为已有通过的合同控制新造缺陷。
 
 B-071（[Issue #53](https://github.com/DreamSoul-AI/RPipe/issues/53)）已通过[PR #52](https://github.com/DreamSoul-AI/RPipe/pull/52)合入 dev ea2210bc27e5456062bdef0ffb331e208c64f838；最终 head eb52c65 与实际 dev 的全部实际 CI 通过。真实旧 index 截断与红绿合同见 [record §69 / §73](record.md)。修复已随v0.4.0进入main54f8d31；Issue53不在本次关闭清单，仍保持open。
 
