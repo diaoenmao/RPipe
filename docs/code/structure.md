@@ -968,7 +968,7 @@ index 在 **Study 根**，不在 `runs/<id>/`。Run 目录直接使用 `id`，�
 
 错误：`ArtifactError`、`MissingConfigError`、`CorruptArtifactError`。
 
-原子文本使用短随机 UUID 临时名，不使用墙钟充当唯一标识；必须排他创建成功才取得 staging 所有权，碰撞时拒绝，stat/创建失败不能清理 peer。共享引用同样只清创建成功的临时链接，不能以递归晋升推断所有权。
+原子文本使用短随机 UUID 临时名，不使用墙钟充当唯一标识；必须排他创建成功才取得 staging 所有权，碰撞时拒绝，stat/创建失败不能清理 peer。共享引用同样只清创建成功的临时链接，不能以递归晋升推断所有权。 link_input及migrate_shared的自有临时链接清理遇OSError时保留诊断，不覆盖原发布异常或把已经提交的发布误报失败；RuntimeError等意外程序错误照常传播。共享硬链接的权限与源共享，禁止为清理而chmod；不可恢复OS拒绝允许留下诊断链接，不承诺任意失败无残留。
 
 原子文本写入的初始临时文件写入与替换处于同一 finally 清理范围；部分写入失败保留旧目标、原异常并清理本次临时文件，不删除其他写者的临时文件。 对本次排他创建的独立文本staging，unlink遇PermissionError时仅恢复该临时文件为0o600并重试删除一次；不可恢复的chmod/删除IO仍best-effort，不遮蔽原发布异常。不修改旧target/peer权限，不将权限恢复用于共享硬链接或checkpoint诊断staging，atomic_replace既有有界重试不变。
 
