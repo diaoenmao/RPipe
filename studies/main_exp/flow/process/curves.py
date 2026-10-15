@@ -355,6 +355,8 @@ def plot_report(report, reference, destination):
 
 
 def main(argv=None):
+    from rpipe.structure.artifact._atomic import atomic_write_text
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--study', type=Path, default=STUDY)
     parser.add_argument('--reference', type=Path, default=STUDY / 'docs' / 'REFERENCE_CURVES.json')
@@ -367,7 +369,7 @@ def main(argv=None):
     report = compare(study, reference, partial=args.partial)
     report['reference_file_sha256'] = sha256(args.reference)
     output.mkdir(parents=True, exist_ok=True)
-    (output / 'COMPARISON.json').write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + '\n', encoding='utf-8')
+    atomic_write_text(output / 'COMPARISON.json', json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + '\n', encoding='utf-8')
     plot_report(report, reference, output / 'figures' / 'historical_comparison.png')
     print(json.dumps({'status': report['status'], 'complete': report['complete'],
                       'final_gates_applied': report['final_gates_applied'], 'passed': report['passed'],

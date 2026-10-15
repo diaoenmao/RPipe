@@ -78,3 +78,32 @@ def test_legacy_tracker_without_accumulator_still_loads(tmp_path):
     restored = AlgorithmTracker(tmp_path / 'restored')
     restored.load_state_dict(state)
     assert restored.mean('train')['Loss'] == 2.0
+
+
+def test_tracker_constructor_preserves_evidence_arriving_before_open(tmp_path, monkeypatch):
+    from rpipe.structure.artifact.asset import kinds
+
+    target = tmp_path / kinds.TRACKER_JSONL
+    native = Path.open
+    arrivals = []
+
+    def arriving(path, mode='r', *args, **kwargs):
+        if path == target and mode in ('w', 'a') and not arrivals:
+            arrivals.append(True)
+            with native(path, 'wb') as stream:
+                stream.write(b'prior error evidence\n')
+        return native(path, mode, *args, **kwargs)
+
+    monkeypatch.setattr(Path, 'open', arriving)
+    AlgorithmTracker(tmp_path)
+    assert arrivals == [True]
+    assert target.read_bytes() == b'prior error evidence\n'
+
+
+def test_tracker_constructor_still_rejects_directory(tmp_path):
+    from rpipe.structure.artifact.asset import kinds
+
+    target = tmp_path / kinds.TRACKER_JSONL
+    target.mkdir(parents=True)
+    with pytest.raises(OSError):
+        AlgorithmTracker(tmp_path)

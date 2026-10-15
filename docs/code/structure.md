@@ -694,6 +694,8 @@ prepare 顺序建议：先 `SystemFactory.build`，再 data / model（设备与�
 
 本层管执行环境，因此也管**往本 Run asset 写环境侧文件**：checkpoint 读写 `assets/checkpoints/`（`save_checkpoint` / `load_checkpoint`）；Logger 必写 `assets/logs/`。**resume 策略**在 algorithm。algorithm 算出的数字曲线仍由 AlgorithmTracker 写到 `assets/tracker/`。单测在 `tests/rpipe/structure/system/` 与 `system_api`（含 Logger 根据 AlgorithmTracker 打出行）。多设备 / 外网推理标 `external` 或 `slow`。
 
+Logger 与 AlgorithmTracker 的追加文件初始化只能创建/追加，不能截断存在性检查之后到达的旧字节。已有文件不在构造器重开，目录错误继续拒绝；日志追加和曲线 offset 恢复沿用各自协议，这不承诺任意同 Run 多写者或多文件事务。
+
 ### 7.8 `Logger`
 
 Logger 是 **system** 的运行时对象：打到 **terminal**，并且 **同一行写入** `assets/logs/run.log` 后立刻 flush。每一行是一条记录：`<RFC3339 毫秒+时区> <INFO|WARN|ERROR> <Run id 或 -> [<事件>] <内容>`。级别补齐到 5 个字符。没有 Run id 时身份格写 `-`。`--console shared` 时用 Run id 这一格把多条 Run 拆开。这是执行环境的 IO，不是算法语义。没有 Study 级总 log；index 的 `log` 指向这份文件。
@@ -921,6 +923,8 @@ readout 在既有 status.py 内用私有三态读取区分可用、缺失和不�
 
 status / logs 的逐文件 I/O 容错同时覆盖存在性查询和内容读取：不可读结果沿用已有计划配置回退，不可用日志不提供 note/event，其他 Run 继续展示；不改写任何输入。当前 index 缺失/不可用仍拒绝，意外编程错误仍向上抛出，不把它们当作缺失文件。 status 的 metric 单元格仅展示 object 中支持的数值字段；非 object 指标直接使用已有不可用占位，不把列表对转换为 mapping，也不因此隐藏 Run 状态或其他有效结果。
 
+读数的数字格式只在既有 report._fmt 内统一：有限 int/float 显示四位小数，bool、其他类型、溢出和非有限值显示 `-`，status 复用并保留后续可用指标 fallback。report 的 Experiment / Run metrics 非 object 时仅该格不可用，不隐藏其他 Run；严格 loader、计划一致性、compare 与 process 科学聚合不由此放宽。
+
 report 导出前以当前 index 核对 process 的 Study 名、完整计划 Run ID / seed / 因素归属；无新格式字段，合法部分聚合兼容。当前索引不可用、重复 / 缺失 Run 或身份不匹配时拒绝导出，保留旧聚合与数字表；仅校验成功后用已有 atomic writer 替换 NUMBERS。完整边界见 [flow.md §13](flow.md#13-climake--launch-与-wait)。
 
 `provenance.py` 记录来源 / 执行计划的哈希、环境与 Git 信息，并提供 freeze 检查。make 写入，Flow 在执行前核对；Study `flow/` 与 `structure/` 的 Python 源码自动发现，额外输入显式 include。完整范围、覆盖与迁移边界见 [flow.md §14.2](flow.md#142-来源清单)。
@@ -960,7 +964,7 @@ index 在 **Study 根**，不在 `runs/<id>/`。Run 目录直接使用 `id`，�
 
 错误：`ArtifactError`、`MissingConfigError`、`CorruptArtifactError`。
 
-原子文本的临时名按 PID 与随机 UUID nonce 区分写者，不使用墙钟读数充当唯一标识；同进程并发或相同 tick 仍须使用独立 staging。
+原子文本使用短随机 UUID 临时名，不使用墙钟充当唯一标识；必须排他创建成功才取得 staging 所有权，碰撞时拒绝，stat/创建失败不能清理 peer。共享引用同样只清创建成功的临时链接，不能以递归晋升推断所有权。
 
 原子文本写入的初始临时文件写入与替换处于同一 finally 清理范围；部分写入失败保留旧目标、原异常并清理本次临时文件，不删除其他写者的临时文件。
 

@@ -63,7 +63,8 @@ class AlgorithmTracker:
         self.jsonl_path = self.assets_dir / kinds.TRACKER_JSONL
         self.jsonl_path.parent.mkdir(parents=True, exist_ok=True)
         if not self.jsonl_path.is_file():
-            self.jsonl_path.write_text('', encoding='utf-8')
+            with self.jsonl_path.open('a', encoding='utf-8'):
+                pass
         self.step = 0
         self.progress: dict[str, Any] | None = None
         self.metrics = metrics or MetricBundle()

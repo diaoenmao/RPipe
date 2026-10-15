@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 from typing import Any
 
@@ -19,7 +20,11 @@ def numbers_path(study_dir: Path | str) -> Path:
 def _fmt(value: Any) -> str:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return '-'
-    return f'{float(value):.4f}'
+    try:
+        number = float(value)
+    except OverflowError:
+        return '-'
+    return f'{number:.4f}' if math.isfinite(number) else '-'
 
 
 def _factors(factors: dict[str, Any]) -> str:
@@ -91,7 +96,8 @@ def render_numbers(study_dir: Path | str) -> str:
     ]
     for exp in body.get('experiments') or []:
         factors = _factors(dict(exp.get('factors') or {}))
-        metrics = exp.get('metrics') or {}
+        metrics = exp.get('metrics')
+        metrics = metrics if isinstance(metrics, dict) else {}
         if not metrics:
             lines.append(f'| {factors} | - | - | - | - | - | {exp.get("n", 0)} |')
             continue
@@ -125,7 +131,8 @@ def render_numbers(study_dir: Path | str) -> str:
         factors = _factors(dict(exp.get('factors') or {}))
         for run in exp.get('runs') or []:
             run_id = str(run.get('id') or '')
-            metrics = run.get('metrics') or {}
+            metrics = run.get('metrics')
+            metrics = metrics if isinstance(metrics, dict) else {}
             metric_text = ', '.join(f'{key}={_fmt(metrics[key])}' for key in sorted(metrics)) or '-'
             href = links.get(run_id) or f'../runs/{run_id}/assets/logs/run.log'
             seed = '' if run.get('seed') is None else str(run.get('seed'))

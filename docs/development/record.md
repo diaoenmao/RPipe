@@ -1,3 +1,9 @@
+> 现状：PR74准备0.4.1；已在工作分支普通merge补齐main两个历史发布祖先，生产字节不变，最终CI重新绑定。
+> 最新：五Issue已修；全仓403组/13根边界、43新增合同；core734通过/1跳过、CPU Flow169通过，出处见§83—88及PR69—73。
+> 下一步：版本同步PR合dev→dev到main发布PR→实际main CI→tag/release→引用release关闭五Issue，再继续三类回归复查。
+> 阻塞：无；仅有正常CI验收等待，不强推、不改布局、不测速/GPU；此前“只草稿不发布”已由本次明确发布授权覆盖。
+> 范围：本轮允许v0.4.1发布与关闭#53/#62/#66/#67/#68；保留工作分支、数据/Run/provenance，复查不混入未验证改动。
+
 # 一、摘要
 
 RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库。本节按内容归纳当前 dev 与本机新增成果的累计变化；具体实施日期、失败和阶段边界保留在第二节。
@@ -96,6 +102,597 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-15
+
+### 89. v0.4.1 正式发布授权与版本准备
+
+Enmao明确覆盖前一阶段“仅草稿/不合main/不打tag/不发release”的限制：草稿PR73正常合dev23d6907aec49a5950ea4bd323a19280256323991，最终head7461522三项必需CI全部实际矩阵/聚合成功；实际dev独立验收。发布按工作PR→dev→main发布PR普通merge→实际main全实际CI→annotated tag v0.4.1→GitHub Release→逐项引用release关闭#53/#62/#66/#67/#68执行，不强推、不删分支/数据。
+
+pyproject、rpipe.__version__与README同步0.4.1；release notes由草稿转为本次授权发布正文，逐项PR/迁移说明不变，不增加目录/schema/运行时改动。按“立即5行以内现状”要求已在本报告顶部记录当前步骤、数字与出处、下一步和无阻塞状态。已有四项近期交互控制草稿仅在.tmp准备，按最新顺序留到正式发布完成后执行复查，不混入本次发布候选。
+
+版本/布局36项全部通过、无skip；VERSION_LOCAL_CHECKED确认生产仅__version__字符串改变且其余原字节相同，测试与layout无改动，14个发布正文相对文件链接有效。首个范围checker仅规范化working换行而未处理原blob同为CRLF，拒绝证据VERSION_SCOPE_CHECK_REJECTED保留；精确按原字节替换版本后核对相等，不当代码失败。原始XML/log位于.tmp/v041-draft-20261015，不随clone；候选与实际dev仍需各自CI。
+
+发布前祖先检查发现dev缺main两个历史发布merge（54f8d31/v0.4.0与7a15c46/v0.3.1，main...dev为2/40）。merge-tree预演与原工作树tree完全相同、无冲突；经当前工作分支普通merge补齐main历史，不直接推dev/main。只改Git父关系，36项本机验证仍绑定相同代码/测试/版本字节。旧head3633255的CI/状态保留在.tmp/v041-draft-20261015/version-ci-original和BRANCH_ANCESTRY_BEFORE；旧观察者自然完成，保守终止检查未执行任何终止；最终head需重新验收，不能用旧head替代。
+
+### 88. v0.4.1 Release Notes 草稿与近期修复复查立项
+
+前轮收尾PR72实际dev e39f7f82c3d07fa600b62727fee17587d65338c6已全实际验收：Unit38749067743 / Package38749067736全部矩阵/聚合成功，DEV_CHECKED SHA256为37c43d95eea8ad874acccf7af9f7a6b1abc84cb7717e372d57385f30ce215eb8，工作区干净，保留工作分支已普通快进同步。
+
+按最新授权在同一分支编写[下一版草稿](../releases/v0.4.1.md)：五个open Issue逐项列PR/回归/迁移影响，区分#53已在v0.4.0发布的原始index修复和PR61后续Study发布边界。三个统一合同包含PR64失败保全控制及PR69/70/71根入口修复；无文件/schema/shared位置迁移，明确status占位与compare退出语义变化。仅写docs，不升包版本、不合main/打tag/发release/关Issue；正式发布由父会话决定。
+
+草稿经本地链接/事实核对与正常PR/CI合dev后，继续只读审查最近合入三类修复是否引入同类回归，再按真实反例决定是否需要红测试和最小修复。不重做全仓无差别扫描，不制造新缺陷，不改性能/文件架构/产物布局，不跑GPU。临时证据在.tmp/v041-draft-20261015，不随clone。
+
+### 87. 三类系统扫描最终集成验收与下一版边界
+
+7895169分支清理记录已由PR65合dev并完成最终head/实际dev全实际CI。此后按第三类→第二类→第一类各自先红回归、最小生产修复、独立PR普通merge：三批代码及相应便携回归均已在dev集成。下表工作提交与实际集成提交分别核对所有实际矩阵/聚合，不用rollup或旧提交替代。
+
+| **批次** | **最终工作提交 / CI** | **实际 dev / CI** |
+| --- | --- | --- |
+| 第三类 / [PR69](https://github.com/DreamSoul-AI/RPipe/pull/69) | `0f393f1a48acf7f14824dd49af108f72548d0fe8`；[Branch flow 38742367302](https://github.com/DreamSoul-AI/RPipe/actions/runs/38742367302) / [Package Check 38742367353](https://github.com/DreamSoul-AI/RPipe/actions/runs/38742367353) / [Unit Tests 38742367339](https://github.com/DreamSoul-AI/RPipe/actions/runs/38742367339) | `b858c2ba689f1f8e77fe7065b53ee551fe42325d`；[Package Check 38743310055](https://github.com/DreamSoul-AI/RPipe/actions/runs/38743310055) / [Unit Tests 38743309828](https://github.com/DreamSoul-AI/RPipe/actions/runs/38743309828) |
+| 第二类 / [PR70](https://github.com/DreamSoul-AI/RPipe/pull/70) | `02f6f05a5f9dd35fb58c9565a24305b37ae0923d`；[Branch flow 38744687921](https://github.com/DreamSoul-AI/RPipe/actions/runs/38744687921) / [Package Check 38744688048](https://github.com/DreamSoul-AI/RPipe/actions/runs/38744688048) / [Unit Tests 38744687993](https://github.com/DreamSoul-AI/RPipe/actions/runs/38744687993) | `869300bd446edb24cfd95bdd3bc9a3a65bf29702`；[Package Check 38745527623](https://github.com/DreamSoul-AI/RPipe/actions/runs/38745527623) / [Unit Tests 38745527574](https://github.com/DreamSoul-AI/RPipe/actions/runs/38745527574) |
+| 第一类 / [PR71](https://github.com/DreamSoul-AI/RPipe/pull/71) | `6a25b3b9cf88ab47badfd9b5e06526d5c3465754`；[Branch flow 38746397054](https://github.com/DreamSoul-AI/RPipe/actions/runs/38746397054) / [Package Check 38746397615](https://github.com/DreamSoul-AI/RPipe/actions/runs/38746397615) / [Unit Tests 38746397175](https://github.com/DreamSoul-AI/RPipe/actions/runs/38746397175) | `fb022a41230ba5c11916941e3a25617b33f04d57`；[Package Check 38747297474](https://github.com/DreamSoul-AI/RPipe/actions/runs/38747297474) / [Unit Tests 38747297462](https://github.com/DreamSoul-AI/RPipe/actions/runs/38747297462) |
+
+本轮最终代码dev为`fb022a41230ba5c11916941e3a25617b33f04d57`。本机最终core734 passed/1平台skip/173 deselected，CPU Flow169 passed/0skip；三批新增合同分别7、32、4节点全部执行，合计43节点。原失败（第三类6 failed、第二类26 failed/6 passed、第一类2 failed/2 passed）、首候选局部失败、未执行路径错误及全部核验拒绝保留，不挑通过覆盖历史。CPU门中的平台/可选依赖skip不是通过，不代表GPU或Study科学验收。
+
+全仓215个受跟踪Python文件、1313候选调用的当前403函数组清单见§83（生产/Study146，验证257）；13个根边界按三类统一修复，无本轮已确认而未修的缺口。原始基线388组及逐字节源hash保留于.tmp/systematic-contracts-20261015；FINAL_INVENTORY_CHECKED与三批*_LOCAL_CHECKED/CI_CHECKED可执行复核材料不随clone，便携回归/清单/设计已入库。所有当前Python字节仍与最终扫描快照一致。专用追加、checkpoint恢复、锁、二进制/图片、外部builder与单写者边界已逐项注明；不把静态清单称为任意第三方扩展的完整证明。
+
+#53/#62与本轮#66/#67/#68均已修并有dev回归，但故意保持open至下一版发版时关闭，不自动关闭。main仍v0.4.0/54f8d31；本轮没有合main、打tag、发release、测速、GPU、下载或正式Study重跑，layout与产物schema/含义不变，原数据/Run/provenance不覆盖。唯一工作分支codex/artifact-contracts-correctness按明确授权保留，已删九条旧远程分支不恢复，本地旧分支不删。后续只处理新证据或新立项正确性工作，不为维持活跃重复扫描/生成同质任务，性能与结构扩张仍不实施。
+
+### 86. 第一类：追加诊断初始化保全与三类逐点收敛（B-075 / #67）
+
+本轮复用同一工作分支。第二类PR70最终head02f6f05的Unit38744687993/Package38744688048/Branch38744687921全部实际矩阵与聚合成功，普通合dev869300bd446edb24cfd95bdd3bc9a3a65bf29702；实际dev独立验收。第一类portable红提交f3605f1：到达交错2 failed，目录拒绝2 passed，原构造器确实把旧证据变成空字节；FIRST_RED/XML/log保留于.tmp/systematic-contracts-20261015，不随clone。
+
+最小方案只在Logger.__init__与AlgorithmTracker.__init__的既有is_file分支内用append创建文件；不把已存在只读文件提前重开，不改emit/flush、Tracker.begin_run的offset恢复、状态原子发布或Runner/schedule保全predicate。该分支内创建遇到目录仍抛原OSError，不吞程序错误、不增加锁或新目录。系统扫描发现的多个调用方继续委托这两个根入口，不复制补丁。
+
+第一类生产提交e072305，仅两个原构造器4行增/2行删；相关162 passed /1平台skip、core734 passed /1平台skip /173 deselected（8条既有partial-resume warning）、CPU Flow169 passed /0失败/0skip。FIRST_LOCAL_CHECKED核对四个新节点均执行、输入到达字节与目录错误合同、生产仅两文件。首次相邻检查误写tests/rpipe/flow/test_schedule.py导致未执行/退出4，原FIRST_GREEN.log保留；实际路径structure/make/test_schedule.py的GREEN2及完整CPU门均通过，不将未执行误计失败或通过。
+
+最终逐点复核215个受跟踪Python文件、1313个候选调用，共403函数组（生产/Study146、验证257）；13个已修根边界全部标明对应合同，无本轮已知待修项。§83表格按当前源码刷新，原388组清单、红例与源字节ZIP不覆盖。FINAL_INVENTORY_CHECKED绑定e072305源hash，403条相对文件链接均存在；layout的Git规范化blob与基线相同，未改目录/格式/含义。直接比较checkout CRLF与Git blob LF曾拒绝，FINAL_LAYOUT_BYTE_CHECK_REJECTED与原字节hash保留，随后分别记录checkout SHA和相同Git blob，不把换行形态差异算生产变更。
+
+三类代码与便携回归均已完成，本次只执行工程CPU正确性门；head/实际dev的最终CI与合并事实分别写入对应PR验收正文，不能用前一类CI替代下一类。#53/#62及#66/#67/#68均按指令保持open至下版；main保持v0.4.0/54f8d31，不打tag、不删活动分支或数据，不测速/跑GPU、不修改文件架构、正式研究或旧provenance。所有临时证据在.tmp/systematic-contracts-20261015，不随clone；第三方扩展与专用二进制协议的限制仍以§83说明为准。
+
+### 85. 第二类：严格 compare 读取与输出边界（B-076 / #68）
+
+第三类PR69最终head0f393f1的Unit38742367339/Package38742367353/Branch38742367302全部实际任务与聚合成功，正常合dev b858c2ba689f1f8e77fe7065b53ee551fe42325d，实际dev独立CI接续。第二类复用同一工作分支，portable红提交c954b49：32项26 failed/6 passed，程序RuntimeError原样上抛、历史null和已拒绝的负无穷作为控制通过。
+
+在最初21项预检之后，实际读取点继续覆盖：目录冒充result/tracker/checkpoint、空/坏pickle/截断zip的原生解析错误，以及巨大整数有限绝对/相对容差。原21项16失败/5通过及后续SECOND_PREFLIGHT/XML全保留；该补充使§83初始标合规的_checkpoint也归入B-076，不能用最初清单覆盖新反例。
+
+统一方案在既有compare.py与CLI函数内：_load_json同时校验根对象与所用metrics/splits对象（null兼容），history逐级校验；严格文件错误拒绝，不套用status占位。torch.load解析错误仅在实际加载调用处转ValueError并保留cause，意外程序RuntimeError不吞。整数阈值使用标准库Fraction对应已配置浮点容差的精确值，保留差值整数，格式化不用g隐式float；普通浮点/NaN分支保持。CLI把--out发布也放入原错误边界，成功后才展示结果；不改Run文件、schema、计算或物理布局。
+
+第二类生产修复提交dbf0837；相关161 passed、core730 passed /1平台skip /173 deselected（8条既有partial-resume warning），CPU Flow169 passed /0失败/0skip。SECOND_LOCAL_CHECKED确认32个新增节点均执行、旧32项红例26失败/6通过，生产仅compare.py与CLI，输入/旧输出字节保护及程序异常传播控制均通过。原始XML/log/check清单在.tmp/systematic-contracts-20261015（不随clone）；未运行GPU、研究或性能入口。
+
+第三类实际dev b858c2b已验收：Unit38743309828 / Package38743310055所有实际矩阵/聚合成功；DEV_CHECKED SHA256为8c4374c8e361113b0a1078f44044bf361e4cf79be7f54804efa1c232649b4850。PR69正文与Issue66一次性追加验收，Issue仍open。第二类后续PR/head与实际dev独立验收，不用本机或上一类CI替代。
+
+### 84. 第三类：排他所有权覆盖文本与共享引用（B-074 / #66）
+
+先Issue66与portable红提交a080bc6（6 failed），再设计/逐点清单5d2e174，补活动stage真实线程交错a99fef0，生产8f9cc2c只改现有_atomic/shared两文件。atomic_write_text以排他touch获得owned后才写/清，shared晋升去除递归并统一软链→硬链创建，迁移在link成功后才清本写者；短名、Windows有界replace、外层锁、返回值和路径保持。
+
+相邻105 passed /1 POSIX skip，七个新节点均执行；core698 passed /1 skip /173 deselected，8条既有partial-resume warning；CPU Flow169 passed /0 fail/0 skip，THIRD_LOCAL_CHECKED逐项核对完整XML与七个新节点。原6失败与所有源字节ZIP不改写。首个编辑只完成_atomic，shared为LF而脚本错用CRLF锚点导致中止，THIRD_GREEN原3失败/101通过/1skip与PARTIAL_EDIT_NOTE保留；按文件原换行补完后GREEN2为104/1skip，增加线程合同GREEN3为105/1skip。未将工具错误当新库问题或隐藏首候选失败。
+
+本批不扩大任意同Run多写者或跨文件事务，不迁移正式数据、不调用研究/性能入口，#53/#62及新Issue均留到下版。第二类B-076和第一类B-075仍按清单分别接续，不把本批全绿当它们已修。
+
+### 83. 全仓写入与只读展示逐项清单（系统扫描基线99e9e09）
+
+按 Enmao 本轮新要求，7895169已通过[PR65](https://github.com/DreamSoul-AI/RPipe/pull/65)普通合dev99e9e0961ccf2dce9a16cf17e2e00270fd605571；最终head Unit38738711058/Package38738711163/Branch38738711093与实际dev Unit38740119413/Package38740119450所有实际矩阵/聚合均成功。§82“不额外开PR”是新授权前事实，本轮明确覆盖该边界。仍复用保留工作分支，不重建已删九分支。
+
+本次不是只跑旧文本架构门：以git ls-files枚举全部215个受跟踪Python文件，AST记录文本/二进制写、stream open、replace/link/unlink/mkdir、委托writer、日志与终端展示；补列全部readout函数、activity和纯展示入口，并人工追踪TrainAlgorithm.on_checkpoint的getattr(system,'save_checkpoint')→writer(payload,name)到System发布者。§83逐函数列出全部候选行/调用，字符串replace单独排除，验证fixture单独列出，避免误禁造坏输入。
+
+最初扫描基线99e9e09共388个函数组：生产/Study146组、验证242组，当时12个根函数/边界待修。后补真实反例使_checkpoint归入同一B-076。下表已按三类修复后源码重新生成：共403组（生产/Study146、验证257），13个根边界均有红绿合同覆盖，无本轮待修项。行号对应本轮最终源码；原始基线清单、hash与失败仍在本机证据中，不把新增测试组误记成新生产缺陷。
+
+| **类** | **统一待修项** | **真实未修结果** | **最小方案** |
+| --- | --- | --- | --- |
+| 第三类 | B-074/[#66](https://github.com/DreamSoul-AI/RPipe/issues/66)，临时名碰撞时写入/清理未取得所有权的peer | 原portable红提交a080bc6，6 failed；包含target与stage同名、stat拒绝、同字节递归和迁移到达peer | 排他创建成功才拥有staging；只清自身；共享引用移除递归晋升并复用原发布；不改外层锁/软硬链fallback/短名 |
+| 第二类 | B-076/[#68](https://github.com/DreamSoul-AI/RPipe/issues/68)，compare坏容器/整数/容差/--out错误越界 | 合成21项16 failed/5 passed，合法历史null与负无穷拒绝控制保留 | 严格文件形状用ValueError/CLI2，不转status占位；整数精确、一般浮点口径不动；输出纳同一错误边界 |
+| 第一类 | B-075/[#67](https://github.com/DreamSoul-AI/RPipe/issues/67)，Logger/Tracker初始化w模式截断刚到达证据 | 合成4项2 failed/2目录拒绝控制passed | 只在现有构造器用append创建，不扩大旧成功保留规则或任意同Run多写者承诺 |
+
+全部合成预检31项24 failed/7 passed，原字节ZIP/hash与PREFLIGHT2/XML/log在.tmp/systematic-contracts-20261015，本机材料不随clone，原失败不改写。临时扫描器首轮对Name形式replace调用取.value而失败，已补AST类型判断并重跑；SCAN_FIRST_FAILURE保留，不当生产缺陷，也不把不完整扫描计完成。
+
+判定依据是[layout](../code/layout.md)与[既有三类设计](artifact_consistency_design.md)，不是“全部文件都必须文本原子”：追加日志/恢复offset、checkpoint恢复bundle、锁inode、校验后发布二进制partial、固定Git blob与派生图片均按原协议精确标注。单写者与单文件保证不升级成多文件事务或任意多写者；下载/第三方builder及任意注册扩展具有其外部协议，表格登记其委托入口，不声称静态AST可证明未提供扩展的任意Python副作用。CI的build/pip只写临时runner环境与包，使用已跟踪tests/package_smoke.py；workflow YAML未包含新增业务写入点。README/文档中的代码块与未跟踪历史缓存不执行、不纳为当前代码。
+
+以下“合规”指入口符合既有合同；13个已修根边界由函数行与上表单列，调用方委托同一入口，不复制补丁。验证代码允许部分写/坏字节以复现，不能因扫描误报删除这些用例。所有行均有明确类别，未知调用会让清单生成拒绝，不用默认“合规”掩盖漏审。
+
+#### 生产与Study写入/展示点（146个函数组）
+
+| **位置/函数** | **行:调用（当前复核）** | **状态** | **合同与依据** |
+| --- | --- | --- | --- |
+| [src/rpipe/flow/cli.py](../../src/rpipe/flow/cli.py) `_execute_compare` | `345:write_compare; 347:print; 349:print; 349:format_compare; 351:print ` | 已修（本轮） | B-076/#68：严格对象/文件/数值/输出边界；compare新增32项合同；PR70 |
+| [src/rpipe/flow/cli.py](../../src/rpipe/flow/cli.py) `_execute_data` | `404:print ` | 合规 | 终端进度/错误或只读入口；保留退出语义，非正式结果替代；CLI/流程回归 |
+| [src/rpipe/flow/cli.py](../../src/rpipe/flow/cli.py) `_execute_launch` | `276:print; 277:print; 285:print; 290:print; 292:print; 294:print; 311:print; 313:print; 315:print ` | 合规 | 终端进度/错误或只读入口；保留退出语义，非正式结果替代；CLI/流程回归 |
+| [src/rpipe/flow/cli.py](../../src/rpipe/flow/cli.py) `_execute_logs` | `381:format_logs; 383:print; 386:print; 388:print ` | 合规 | 终端进度/错误或只读入口；保留退出语义，非正式结果替代；CLI/流程回归 |
+| [src/rpipe/flow/cli.py](../../src/rpipe/flow/cli.py) `_execute_process` | `394:print; 395:print ` | 合规 | 终端进度/错误或只读入口；保留退出语义，非正式结果替代；CLI/流程回归 |
+| [src/rpipe/flow/cli.py](../../src/rpipe/flow/cli.py) `_execute_report` | `367:write_numbers; 369:print; 372:print; 374:print ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [src/rpipe/flow/cli.py](../../src/rpipe/flow/cli.py) `_execute_run` | `236:print; 237:print; 239:print ` | 合规 | 终端进度/错误或只读入口；保留退出语义，非正式结果替代；CLI/流程回归 |
+| [src/rpipe/flow/cli.py](../../src/rpipe/flow/cli.py) `_execute_run_one` | `435:print ` | 合规 | 终端进度/错误或只读入口；保留退出语义，非正式结果替代；CLI/流程回归 |
+| [src/rpipe/flow/cli.py](../../src/rpipe/flow/cli.py) `_execute_status` | `413:print; 417:print; 423:print; 426:print; 428:print; 428:format_status ` | 合规 | 终端进度/错误或只读入口；保留退出语义，非正式结果替代；CLI/流程回归 |
+| [src/rpipe/flow/cli.py](../../src/rpipe/flow/cli.py) `_prepare_shared` | `58:print ` | 合规 | 终端进度/错误或只读入口；保留退出语义，非正式结果替代；CLI/流程回归 |
+| [src/rpipe/flow/cli.py](../../src/rpipe/flow/cli.py) `_print_launch_counts` | `360:format_status; 361:print ` | 合规 | 终端进度/错误或只读入口；保留退出语义，非正式结果替代；CLI/流程回归 |
+| [src/rpipe/flow/cli.py](../../src/rpipe/flow/cli.py) `_print_make_paths` | `244:print; 245:print; 246:print; 248:print; 249:print; 252:print; 252:summarize_capacity ` | 合规 | 终端进度/错误或只读入口；保留退出语义，非正式结果替代；CLI/流程回归 |
+| [src/rpipe/flow/cli.py](../../src/rpipe/flow/cli.py) `_provenance_gate` | `327:print; 332:print ` | 合规 | 终端进度/错误或只读入口；保留退出语义，非正式结果替代；CLI/流程回归 |
+| [src/rpipe/flow/cli.py](../../src/rpipe/flow/cli.py) `main` | `548:migrate_shared; 550:print; 553:print ` | 合规 | 终端进度/错误或只读入口；保留退出语义，非正式结果替代；CLI/流程回归 |
+| [src/rpipe/flow/execute/run.py](../../src/rpipe/flow/execute/run.py) `run` | `28:logger.info; 32:logger.exception; 35:logger.error; 43:tracker.flush_state ` | 合规调用 | 委托Logger追加/Tracker原子state，B-074/B-075在根入口统一覆盖；不吞原阶段异常 |
+| [src/rpipe/flow/process/curves.py](../../src/rpipe/flow/process/curves.py) `write_learning_curves` | `90:dest.parent.mkdir; 124:fig.savefig ` | 合规（专用协议） | 派生二进制图，不属整体文本硬门；计划核对先行，未承诺多文件事务 |
+| [src/rpipe/flow/process/individual.py](../../src/rpipe/flow/process/individual.py) `run` | `46:atomic_write_text ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [src/rpipe/flow/process/study.py](../../src/rpipe/flow/process/study.py) `run_study` | `49:str(figure.relative_to(study_dir)).replace; 51:atomic_write_text ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [src/rpipe/flow/runner.py](../../src/rpipe/flow/runner.py) `FlowRunner._log_failure` | `76:logger.exception; 79:logger.error ` | 合规 | 失败保全predicate/既有rerun失效；委托Result原子入口；42+12/CLI/schedule合同 |
+| [src/rpipe/flow/runner.py](../../src/rpipe/flow/runner.py) `FlowRunner._write_failed_result` | `116:write_result ` | 合规 | 失败保全predicate/既有rerun失效；委托Result原子入口；42+12/CLI/schedule合同 |
+| [src/rpipe/flow/runner.py](../../src/rpipe/flow/runner.py) `FlowRunner.run` | `39:logger.info; 57:logger.info ` | 合规 | 失败保全predicate/既有rerun失效；委托Result原子入口；42+12/CLI/schedule合同 |
+| [src/rpipe/flow/write/run.py](../../src/rpipe/flow/write/run.py) `run` | `21:write_result ` | 合规 | 失败保全predicate/既有rerun失效；委托Result原子入口；42+12/CLI/schedule合同 |
+| [src/rpipe/structure/algorithm/base.py](../../src/rpipe/structure/algorithm/base.py) `Algorithm.resume` | `76:logger.info ` | 合规调用 | 委托Logger追加/Tracker原子state，B-074/B-075在根入口统一覆盖；不吞原阶段异常 |
+| [src/rpipe/structure/algorithm/eval/__init__.py](../../src/rpipe/structure/algorithm/eval/__init__.py) `EvalAlgorithm.run` | `23:logger.report; 56:logger.info ` | 合规调用 | 委托Logger追加/Tracker原子state，B-074/B-075在根入口统一覆盖；不吞原阶段异常 |
+| [src/rpipe/structure/algorithm/eval_hook.py](../../src/rpipe/structure/algorithm/eval_hook.py) `eval_test_split` | `56:logger.report; 60:tracker.flush_state ` | 合规调用 | 委托Logger追加/Tracker原子state，B-074/B-075在根入口统一覆盖；不吞原阶段异常 |
+| [src/rpipe/structure/algorithm/hf_map.py](../../src/rpipe/structure/algorithm/hf_map.py) `hf_optim_name` | `30:str(raw or 'SGD').lower().replace ` | 非IO（排除） | 字符串/配置名转换，不是文件替换 |
+| [src/rpipe/structure/algorithm/hf_map.py](../../src/rpipe/structure/algorithm/hf_map.py) `hf_scheduler_name` | `39:str(raw).lower().replace ` | 非IO（排除） | 字符串/配置名转换，不是文件替换 |
+| [src/rpipe/structure/algorithm/kwargs.py](../../src/rpipe/structure/algorithm/kwargs.py) `torch_attr` | `49:raw.lower().replace; 52:raw.lower().replace; 54:attr.lower().replace ` | 非IO（排除） | 字符串/配置名转换，不是文件替换 |
+| [src/rpipe/structure/algorithm/optim.py](../../src/rpipe/structure/algorithm/optim.py) `make_scheduler` | `66:str(name).lower().replace; 68:str(name).lower().replace ` | 非IO（排除） | 字符串/配置名转换，不是文件替换 |
+| [src/rpipe/structure/algorithm/progress.py](../../src/rpipe/structure/algorithm/progress.py) `parse_checkpoint_mode` | `158:str(raw).lower().replace ` | 非IO（排除） | 字符串/配置名转换，不是文件替换 |
+| [src/rpipe/structure/algorithm/resume.py](../../src/rpipe/structure/algorithm/resume.py) `partial_resume_warning` | `43:logger.warning ` | 合规调用 | 委托Logger追加/Tracker原子state，B-074/B-075在根入口统一覆盖；不吞原阶段异常 |
+| [src/rpipe/structure/algorithm/tracker.py](../../src/rpipe/structure/algorithm/tracker.py) `AlgorithmTracker.__init__` | `61:self.root.mkdir; 64:self.jsonl_path.parent.mkdir; 66:self.jsonl_path.open ` | 已修（本轮） | B-075/#67：现有日志/曲线构造器append创建；到达证据及目录拒绝四项合同 |
+| [src/rpipe/structure/algorithm/tracker.py](../../src/rpipe/structure/algorithm/tracker.py) `AlgorithmTracker.append_jsonl` | `167:self.jsonl_path.parent.mkdir; 169:self.jsonl_path.open; 178:handle.write ` | 合规（专用协议） | JSONL追加/恢复offset与state原子发布；tracker/恢复回归 |
+| [src/rpipe/structure/algorithm/tracker.py](../../src/rpipe/structure/algorithm/tracker.py) `AlgorithmTracker.begin_run` | `159:self.jsonl_path.open; 163:handle.write; 164:handle.write ` | 合规（专用协议） | JSONL追加/恢复offset与state原子发布；tracker/恢复回归 |
+| [src/rpipe/structure/algorithm/tracker.py](../../src/rpipe/structure/algorithm/tracker.py) `AlgorithmTracker.flush` | `188:self.append_jsonl; 189:self.flush_state ` | 合规（专用协议） | JSONL追加/恢复offset与state原子发布；tracker/恢复回归 |
+| [src/rpipe/structure/algorithm/tracker.py](../../src/rpipe/structure/algorithm/tracker.py) `AlgorithmTracker.flush_state` | `183:atomic_write_text ` | 合规（专用协议） | JSONL追加/恢复offset与state原子发布；tracker/恢复回归 |
+| [src/rpipe/structure/algorithm/train/__init__.py](../../src/rpipe/structure/algorithm/train/__init__.py) `TrainAlgorithm.on_checkpoint` | `122:logger.info ` | 合规调用 | 委托Logger追加/Tracker原子state，B-074/B-075在根入口统一覆盖；不吞原阶段异常 |
+| [src/rpipe/structure/algorithm/train/__init__.py](../../src/rpipe/structure/algorithm/train/__init__.py) `TrainAlgorithm.on_eval_period` | `90:logger.info ` | 合规调用 | 委托Logger追加/Tracker原子state，B-074/B-075在根入口统一覆盖；不吞原阶段异常 |
+| [src/rpipe/structure/algorithm/train/__init__.py](../../src/rpipe/structure/algorithm/train/__init__.py) `_run_supervised` | `395:logger.report; 450:tracker.flush_state ` | 合规调用 | 委托Logger追加/Tracker原子state，B-074/B-075在根入口统一覆盖；不吞原阶段异常 |
+| [src/rpipe/structure/algorithm/train/__init__.py](../../src/rpipe/structure/algorithm/train/__init__.py) `_run_supervised.finish_train_segment` | `313:logger.report; 317:tracker.flush_state ` | 合规调用 | 委托Logger追加/Tracker原子state，B-074/B-075在根入口统一覆盖；不吞原阶段异常 |
+| [src/rpipe/structure/algorithm/train/__init__.py](../../src/rpipe/structure/algorithm/train/__init__.py) `_run_supervised.fire_ckpt` | `351:algo.on_checkpoint ` | 合规调用 | 算法回调委托既有System.save_checkpoint；包含getattr writer(payload,name)动态入口；checkpoint/Hook合同 |
+| [src/rpipe/structure/algorithm/transformers_trainer.py](../../src/rpipe/structure/algorithm/transformers_trainer.py) `_run_hf_trainer._EpochHook.on_epoch_end` | `302:logger.report; 308:tracker.flush_state ` | 合规调用 | 委托Logger追加/Tracker原子state，B-074/B-075在根入口统一覆盖；不吞原阶段异常 |
+| [src/rpipe/structure/algorithm/transformers_trainer.py](../../src/rpipe/structure/algorithm/transformers_trainer.py) `_run_hf_trainer._EpochHook.on_train_end` | `331:tracker.flush_state ` | 合规调用 | 委托Logger追加/Tracker原子state，B-074/B-075在根入口统一覆盖；不吞原阶段异常 |
+| [src/rpipe/structure/algorithm/transformers_trainer.py](../../src/rpipe/structure/algorithm/transformers_trainer.py) `_run_hf_trainer.fire_ckpt` | `249:algo.on_checkpoint ` | 合规调用 | 算法回调委托既有System.save_checkpoint；包含getattr writer(payload,name)动态入口；checkpoint/Hook合同 |
+| [src/rpipe/structure/artifact/_atomic.py](../../src/rpipe/structure/artifact/_atomic.py) `atomic_replace` | `15:source.replace ` | 非IO（排除） | 字符串/配置名转换，不是文件替换 |
+| [src/rpipe/structure/artifact/_atomic.py](../../src/rpipe/structure/artifact/_atomic.py) `atomic_write_text` | `25:target.parent.mkdir; 33:tmp.touch; 35:tmp.write_text; 37:tmp.chmod; 38:atomic_replace; 42:tmp.unlink ` | 已修（本轮） | B-074/#66：排他取得stage才写/清；atomic/shared七项所有权回归；PR69已合dev |
+| [src/rpipe/structure/artifact/activity.py](../../src/rpipe/structure/artifact/activity.py) `announce` | `42:atomic_write_text; 46:print ` | 合规 | 可选activity读取/独立原子提示/显式clear；activity回归 |
+| [src/rpipe/structure/artifact/activity.py](../../src/rpipe/structure/artifact/activity.py) `clear_activity` | `34:path.unlink ` | 合规 | 可选activity读取/独立原子提示/显式clear；activity回归 |
+| [src/rpipe/structure/artifact/activity.py](../../src/rpipe/structure/artifact/activity.py) `read_activity` | `18:display-contract ` | 合规 | 可选activity读取/独立原子提示/显式clear；activity回归 |
+| [src/rpipe/structure/artifact/asset/__init__.py](../../src/rpipe/structure/artifact/asset/__init__.py) `ensure_assets` | `13:layout.assets_dir.mkdir; 14:(layout.assets_dir / kinds.TRACKER).mkdir; 15:(layout.assets_dir / kinds.LOGS).mkdir; 16:(layout.assets_dir / kinds.CHECKPOINTS).mkdir ` | 合规 | 目录创建或字符串转换，不截断已有产物；layout/Factory回归 |
+| [src/rpipe/structure/artifact/config/io.py](../../src/rpipe/structure/artifact/config/io.py) `write_config` | `21:atomic_write_text ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [src/rpipe/structure/artifact/index.py](../../src/rpipe/structure/artifact/index.py) `_run_log_ref` | `32:f'runs/{run_id}/assets/{RUN_LOG}'.replace ` | 非IO（排除） | 字符串/配置名转换，不是文件替换 |
+| [src/rpipe/structure/artifact/index.py](../../src/rpipe/structure/artifact/index.py) `write_index` | `94:atomic_write_text ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [src/rpipe/structure/artifact/layout.py](../../src/rpipe/structure/artifact/layout.py) `ArtifactLayout.ensure` | `57:self.root.mkdir; 58:self.assets_dir.mkdir; 59:self.shared_data_dir.mkdir; 60:self.shared_model_dir.mkdir; 61:self.docs_dir.mkdir ` | 合规 | 目录创建或字符串转换，不截断已有产物；layout/Factory回归 |
+| [src/rpipe/structure/artifact/layout.py](../../src/rpipe/structure/artifact/layout.py) `ensure_study_layout` | `68:(study / paths.DOCS_DIRNAME).mkdir; 69:shared['data'].mkdir; 70:shared['model'].mkdir; 71:(study / paths.RUNS_DIRNAME).mkdir ` | 合规 | 目录创建或字符串转换，不截断已有产物；layout/Factory回归 |
+| [src/rpipe/structure/artifact/provenance.py](../../src/rpipe/structure/artifact/provenance.py) `write_provenance` | `150:atomic_write_text ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [src/rpipe/structure/artifact/readout/compare.py](../../src/rpipe/structure/artifact/readout/compare.py) `_checkpoint` | `137:display-contract ` | 已修（本轮） | B-076/#68：严格对象/文件/数值/输出边界；compare新增32项合同；PR70 |
+| [src/rpipe/structure/artifact/readout/compare.py](../../src/rpipe/structure/artifact/readout/compare.py) `_close` | `23:display-contract ` | 已修（本轮） | B-076/#68：严格对象/文件/数值/输出边界；compare新增32项合同；PR70 |
+| [src/rpipe/structure/artifact/readout/compare.py](../../src/rpipe/structure/artifact/readout/compare.py) `_compare_tree` | `96:display-contract ` | 已修（本轮） | B-076/#68：严格对象/文件/数值/输出边界；compare新增32项合同；PR70 |
+| [src/rpipe/structure/artifact/readout/compare.py](../../src/rpipe/structure/artifact/readout/compare.py) `_history` | `121:display-contract ` | 已修（本轮） | B-076/#68：严格对象/文件/数值/输出边界；compare新增32项合同；PR70 |
+| [src/rpipe/structure/artifact/readout/compare.py](../../src/rpipe/structure/artifact/readout/compare.py) `_item` | `34:display-contract ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/compare.py](../../src/rpipe/structure/artifact/readout/compare.py) `_load_json` | `105:display-contract ` | 已修（本轮） | B-076/#68：严格对象/文件/数值/输出边界；compare新增32项合同；PR70 |
+| [src/rpipe/structure/artifact/readout/compare.py](../../src/rpipe/structure/artifact/readout/compare.py) `_missing` | `38:display-contract ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/compare.py](../../src/rpipe/structure/artifact/readout/compare.py) `_number` | `19:display-contract ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/compare.py](../../src/rpipe/structure/artifact/readout/compare.py) `_tree` | `42:display-contract ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/compare.py](../../src/rpipe/structure/artifact/readout/compare.py) `compare_runs` | `152:display-contract ` | 已修（本轮） | B-076/#68：严格对象/文件/数值/输出边界；compare新增32项合同；PR70 |
+| [src/rpipe/structure/artifact/readout/compare.py](../../src/rpipe/structure/artifact/readout/compare.py) `format_compare` | `209:display-contract ` | 已修（本轮） | B-076/#68：严格对象/文件/数值/输出边界；compare新增32项合同；PR70 |
+| [src/rpipe/structure/artifact/readout/compare.py](../../src/rpipe/structure/artifact/readout/compare.py) `write_compare` | `224:display-contract; 235:atomic_write_text ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/logs.py](../../src/rpipe/structure/artifact/readout/logs.py) `event_lines` | `15:display-contract ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/logs.py](../../src/rpipe/structure/artifact/readout/logs.py) `format_logs` | `41:display-contract ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/report.py](../../src/rpipe/structure/artifact/readout/report.py) `_factors` | `30:display-contract ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/report.py](../../src/rpipe/structure/artifact/readout/report.py) `_fmt` | `20:display-contract ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/report.py](../../src/rpipe/structure/artifact/readout/report.py) `_log_links` | `55:display-contract; 63:str(raw).replace ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/report.py](../../src/rpipe/structure/artifact/readout/report.py) `_planned_runs` | `35:display-contract ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/report.py](../../src/rpipe/structure/artifact/readout/report.py) `numbers_path` | `16:display-contract ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/report.py](../../src/rpipe/structure/artifact/readout/report.py) `render_numbers` | `67:display-contract ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/report.py](../../src/rpipe/structure/artifact/readout/report.py) `write_numbers` | `146:display-contract; 147:atomic_write_text; 147:render_numbers ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/status.py](../../src/rpipe/structure/artifact/readout/status.py) `_factor_label` | `72:display-contract ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/status.py](../../src/rpipe/structure/artifact/readout/status.py) `_metric_cell` | `119:display-contract ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/status.py](../../src/rpipe/structure/artifact/readout/status.py) `_mode` | `37:display-contract ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/status.py](../../src/rpipe/structure/artifact/readout/status.py) `_note_from_log` | `90:display-contract; 116:note.replace('\t', ' ').replace; 116:note.replace ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/status.py](../../src/rpipe/structure/artifact/readout/status.py) `_read_optional` | `23:display-contract ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/status.py](../../src/rpipe/structure/artifact/readout/status.py) `format_status` | `200:display-contract; 214:str(error).replace('\t', ' ').replace; 214:str(error).replace; 215:str(row.get('note') or '-').replace('\t', ' ').replace; 215:str(row.get('note') or '-').replace ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/status.py](../../src/rpipe/structure/artifact/readout/status.py) `list_runs` | `129:display-contract ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/readout/status.py](../../src/rpipe/structure/artifact/readout/status.py) `log_path` | `81:display-contract ` | 合规 | 只读三态/严格计划或纯格式；共享有限数/原子数字表；readout回归 |
+| [src/rpipe/structure/artifact/result/io.py](../../src/rpipe/structure/artifact/result/io.py) `write_result` | `22:atomic_write_text ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [src/rpipe/structure/artifact/shared.py](../../src/rpipe/structure/artifact/shared.py) `cache_lock` | `50:root.mkdir; 56:(root / '.rpipe.lock').open; 58:handle.write ` | 合规 | 资源锁/新staging/摘要校验/引用委托；不清diagnostic；shared回归 |
+| [src/rpipe/structure/artifact/shared.py](../../src/rpipe/structure/artifact/shared.py) `link_input` | `103:target.parent.mkdir; 115:temporary.symlink_to; 117:os.link; 121:atomic_replace; 125:temporary.unlink ` | 已修（本轮） | B-074/#66：排他取得stage才写/清；atomic/shared七项所有权回归；PR69已合dev |
+| [src/rpipe/structure/artifact/shared.py](../../src/rpipe/structure/artifact/shared.py) `migrate_shared` | `210:target.parent.mkdir; 212:os.link; 219:os.link; 222:atomic_replace; 225:tmp.unlink ` | 已修（本轮） | B-074/#66：排他取得stage才写/清；atomic/shared七项所有权回归；PR69已合dev |
+| [src/rpipe/structure/artifact/shared.py](../../src/rpipe/structure/artifact/shared.py) `prepared_resource` | `159:staging.mkdir; 165:atomic_write_text; 168:staging.rename ` | 合规 | 资源锁/新staging/摘要校验/引用委托；不清diagnostic；shared回归 |
+| [src/rpipe/structure/artifact/shared.py](../../src/rpipe/structure/artifact/shared.py) `reference_tree` | `138:link_input ` | 合规 | 资源锁/新staging/摘要校验/引用委托；不清diagnostic；shared回归 |
+| [src/rpipe/structure/data/factory.py](../../src/rpipe/structure/data/factory.py) `_build_torch_vision` | `370:root.mkdir; 374:reference_tree; 382:discard_bad_archive; 386:reference_tree ` | 合规（委托协议） | 缓存/第三方builder入口，运行路径与资源锁由原Factory合同约束；不执行外网/下载 |
+| [src/rpipe/structure/data/prepare.py](../../src/rpipe/structure/data/prepare.py) `_prepare` | `65:atomic_write_text ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [src/rpipe/structure/data/profile.py](../../src/rpipe/structure/data/profile.py) `profile_study` | `127:atomic_write_text ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [src/rpipe/structure/make/__init__.py](../../src/rpipe/structure/make/__init__.py) `expand_study` | `74:write_run_configs; 75:write_study_index ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [src/rpipe/structure/make/capacity.py](../../src/rpipe/structure/make/capacity.py) `summarize_capacity` | `530:display-contract ` | 合规 | 只格式化容量元数据，无磁盘写入；不执行容量/性能测量 |
+| [src/rpipe/structure/make/expand.py](../../src/rpipe/structure/make/expand.py) `format_description` | `46:str(dotted).replace ` | 非IO（排除） | 字符串/配置名转换，不是文件替换 |
+| [src/rpipe/structure/make/schedule.py](../../src/rpipe/structure/make/schedule.py) `_fail_result` | `75:write_result ` | 合规 | 失败保全predicate/既有rerun失效；委托Result原子入口；42+12/CLI/schedule合同 |
+| [src/rpipe/structure/make/schedule.py](../../src/rpipe/structure/make/schedule.py) `bash_path` | `43:text[2:].replace; 44:text.replace ` | 非IO（排除） | 字符串/配置名转换，不是文件替换 |
+| [src/rpipe/structure/make/schedule.py](../../src/rpipe/structure/make/schedule.py) `launch_jobs` | `528:print ` | 合规 | 终端进度/错误或只读入口；保留退出语义，非正式结果替代；CLI/流程回归 |
+| [src/rpipe/structure/make/schedule.py](../../src/rpipe/structure/make/schedule.py) `launch_jobs._run_groups` | `478:print; 486:print; 497:print; 513:print ` | 合规 | 终端进度/错误或只读入口；保留退出语义，非正式结果替代；CLI/流程回归 |
+| [src/rpipe/structure/make/schedule.py](../../src/rpipe/structure/make/schedule.py) `scripts_dir` | `169:path.mkdir ` | 合规 | 目录创建或字符串转换，不截断已有产物；layout/Factory回归 |
+| [src/rpipe/structure/make/schedule.py](../../src/rpipe/structure/make/schedule.py) `write_jobs_json` | `257:atomic_write_text ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [src/rpipe/structure/make/schedule.py](../../src/rpipe/structure/make/schedule.py) `write_launch_scripts` | `359:atomic_write_text; 364:atomic_write_text ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [src/rpipe/structure/make/write.py](../../src/rpipe/structure/make/write.py) `write_run_configs` | `33:write_config ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [src/rpipe/structure/make/write.py](../../src/rpipe/structure/make/write.py) `write_study_index` | `53:write_index ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [src/rpipe/structure/origin.py](../../src/rpipe/structure/origin.py) `discard_bad_archive` | `142:path.unlink ` | 合规（显式策略） | 仅校验失败的下载归档显式剔除；origin回归，本轮不调用正式缓存 |
+| [src/rpipe/structure/system/factory.py](../../src/rpipe/structure/system/factory.py) `System.checkpoint_dir` | `37:directory.mkdir ` | 合规（专用协议） | checkpoint bundle/.writing/.incomplete恢复合同；不以文本替换/清残留改写；checkpoint回归 |
+| [src/rpipe/structure/system/factory.py](../../src/rpipe/structure/system/factory.py) `System.load_checkpoint` | `110:raw.replace('/', '_').replace; 110:raw.replace ` | 非IO（排除） | 字符串/配置名转换，不是文件替换 |
+| [src/rpipe/structure/system/factory.py](../../src/rpipe/structure/system/factory.py) `System.save_checkpoint` | `48:str(name).replace('/', '_').replace; 48:str(name).replace; 59:torch.save; 60:atomic_replace; 61:torch.save; 64:shutil.rmtree; 65:tmp.mkdir; 70:torch.save; 72:atomic_write_text; 74:atomic_write_text; 81:atomic_write_text; 83:torch.save; 85:incomplete.touch; 86:folder.mkdir; 90:atomic_replace; 92:target.unlink; 93:atomic_replace; 95:incomplete.unlink ` | 合规（专用协议） | checkpoint bundle/.writing/.incomplete恢复合同；不以文本替换/清残留改写；checkpoint回归 |
+| [src/rpipe/structure/system/logger.py](../../src/rpipe/structure/system/logger.py) `Logger.__init__` | `32:self.path.parent.mkdir; 34:self.path.open ` | 已修（本轮） | B-075/#67：现有日志/曲线构造器append创建；到达证据及目录拒绝四项合同 |
+| [src/rpipe/structure/system/logger.py](../../src/rpipe/structure/system/logger.py) `Logger._emit` | `41:print; 42:self.path.open; 43:handle.write ` | 合规（专用协议） | Logger追加+flush；运行期typed指标，不把编程错误吞为缺文件；logger回归 |
+| [src/rpipe/structure/system/logger.py](../../src/rpipe/structure/system/logger.py) `Logger.report` | `63:display-contract ` | 合规（专用协议） | Logger追加+flush；运行期typed指标，不把编程错误吞为缺文件；logger回归 |
+| [studies/main_exp/flow/execute/capacity.py](../../studies/main_exp/flow/execute/capacity.py) `main` | `73:root.mkdir; 88:folder.mkdir; 90:write_config; 94:write_config; 100:atomic_write_text; 104:path.mkdir; 105:atomic_write_text; 106:atomic_write_text; 153:atomic_write_text; 154:print ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [studies/main_exp/flow/execute/capacity.py](../../studies/main_exp/flow/execute/capacity.py) `worker_write` | `44:atomic_write_text ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [studies/main_exp/flow/execute/precision.py](../../studies/main_exp/flow/execute/precision.py) `_worker` | `146:torch.save; 147:atomic_write_text ` | 合规（专用协议） | Study隔离version/Run的二进制观测/权重；单写者，保留原配方，不执行研究 |
+| [studies/main_exp/flow/execute/precision.py](../../studies/main_exp/flow/execute/precision.py) `main` | `34:root.mkdir; 65:atomic_write_text; 66:print; 77:atomic_write_text ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [studies/main_exp/flow/execute/precision.py](../../studies/main_exp/flow/execute/precision.py) `main.execute` | `49:output.mkdir; 56:(output / 'worker.log').open ` | 合规（专用协议） | fresh output.mkdir后subprocess实时worker.log，不整体替换；架构门精确函数豁免，本轮不执行 |
+| [studies/main_exp/flow/execute/speed.py](../../studies/main_exp/flow/execute/speed.py) `main` | `53:name.replace; 85:output.mkdir; 236:target.parent.mkdir; 237:atomic_write_text; 238:print ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [studies/main_exp/flow/execute/speed.py](../../studies/main_exp/flow/execute/speed.py) `main.current.MeasuredTrain.on_checkpoint` | `197:super(MeasuredTrain, self).on_checkpoint ` | 合规调用 | 算法回调委托既有System.save_checkpoint；包含getattr writer(payload,name)动态入口；checkpoint/Hook合同 |
+| [studies/main_exp/flow/execute/speed.py](../../studies/main_exp/flow/execute/speed.py) `main.old.save` | `154:(output / 'old/best').mkdir ` | 合规 | 目录创建或字符串转换，不截断已有产物；layout/Factory回归 |
+| [studies/main_exp/flow/prepare/run.py](../../studies/main_exp/flow/prepare/run.py) `validate_runtime` | `20:atomic_write_text ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [studies/main_exp/flow/prepare_data.py](../../studies/main_exp/flow/prepare_data.py) `download` | `65:print; 69:destination.parent.mkdir; 71:print; 73:partial.open; 79:handle.write; 82:print; 88:partial.replace ` | 合规（专用协议） | 二进制partial+校验后发布；失败保留诊断；脚本单写者，不新增任意多写者承诺 |
+| [studies/main_exp/flow/prepare_data.py](../../studies/main_exp/flow/prepare_data.py) `expected_files` | `52:relative.replace ` | 非IO（排除） | 字符串/配置名转换，不是文件替换 |
+| [studies/main_exp/flow/prepare_data.py](../../studies/main_exp/flow/prepare_data.py) `main` | `246:args.manifest.parent.mkdir; 247:atomic_write_text; 248:print ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [studies/main_exp/flow/prepare_data.py](../../studies/main_exp/flow/prepare_data.py) `prepare_cifar` | `157:destination.parent.mkdir; 159:partial.open; 160:shutil.copyfileobj; 163:partial.replace ` | 合规（专用协议） | 二进制partial+校验后发布；失败保留诊断；脚本单写者，不新增任意多写者承诺 |
+| [studies/main_exp/flow/prepare_data.py](../../studies/main_exp/flow/prepare_data.py) `prepare_mnist` | `116:folder.mkdir; 128:partial.open; 129:shutil.copyfileobj; 132:partial.replace ` | 合规（专用协议） | 二进制partial+校验后发布；失败保留诊断；脚本单写者，不新增任意多写者承诺 |
+| [studies/main_exp/flow/prepare_data.py](../../studies/main_exp/flow/prepare_data.py) `reuse_caches` | `106:destination.parent.mkdir; 107:link_input; 109:print ` | 合规 | 终端进度/错误或只读入口；保留退出语义，非正式结果替代；CLI/流程回归 |
+| [studies/main_exp/flow/process/curves.py](../../studies/main_exp/flow/process/curves.py) `main` | `371:output.mkdir; 372:atomic_write_text; 374:print ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [studies/main_exp/flow/process/curves.py](../../studies/main_exp/flow/process/curves.py) `plot_report` | `352:destination.parent.mkdir; 353:fig.savefig ` | 合规（专用协议） | 派生二进制图，不属整体文本硬门；计划核对先行，未承诺多文件事务 |
+| [studies/main_exp/recipe.py](../../studies/main_exp/recipe.py) `main` | `331:atomic_write_text ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [studies/main_exp/recipe.py](../../studies/main_exp/recipe.py) `preflight` | `145:output.mkdir; 183:cell.mkdir; 209:torch.save; 214:torch.save; 293:atomic_write_text; 294:print ` | 合规（专用协议） | Study隔离version/Run的二进制观测/权重；单写者，保留原配方，不执行研究 |
+| [studies/main_exp/recipe.py](../../studies/main_exp/recipe.py) `preflight.CapturedTrain.on_checkpoint` | `174:super().on_checkpoint ` | 合规调用 | 算法回调委托既有System.save_checkpoint；包含getattr writer(payload,name)动态入口；checkpoint/Hook合同 |
+| [studies/main_exp/structure/api/__init__.py](../../studies/main_exp/structure/api/__init__.py) `export_source` | `80:target.parent.mkdir; 81:target.write_bytes; 87:atomic_write_text ` | 合规（专用协议） | 固定Git blob字节，既有归档逐字节拒绝不符；manifest原子写，不转码历史源码 |
+| [studies/main_exp/structure/data/cache.py](../../studies/main_exp/structure/data/cache.py) `datasets` | `32:prepared_resource ` | 合规调用 | 共享不可变输入委托同一shared入口；B-074已在根入口修复；shared/Study合同 |
+| [studies/main_exp/structure/data/cache.py](../../studies/main_exp/structure/data/cache.py) `datasets.build` | `27:reference_tree ` | 合规调用 | 共享不可变输入委托同一shared入口；B-074已在根入口修复；shared/Study合同 |
+| [studies/main_probe/flow/prepare/data.py](../../studies/main_probe/flow/prepare/data.py) `prepare` | `22:workspace.mkdir; 23:(workspace / 'original').mkdir; 38:destination.parent.mkdir; 39:link_input; 48:reference_tree; 56:stats_path.parent.mkdir; 57:link_input; 59:link_input; 101:print ` | 合规 | 终端进度/错误或只读入口；保留退出语义，非正式结果替代；CLI/流程回归 |
+| [studies/main_probe/flow/prepare/inputs.py](../../studies/main_probe/flow/prepare/inputs.py) `prepared_inputs` | `35:prepared_resource ` | 合规调用 | 共享不可变输入委托同一shared入口；B-074已在根入口修复；shared/Study合同 |
+| [studies/main_probe/flow/prepare/inputs.py](../../studies/main_probe/flow/prepare/inputs.py) `prepared_inputs.build` | `17:reference_tree; 26:atomic_write_text ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [studies/main_probe/flow/process/run.py](../../studies/main_probe/flow/process/run.py) `run` | `43:atomic_write_text ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+| [studies/main_probe/flow/write/run.py](../../studies/main_probe/flow/write/run.py) `run` | `67:write_compare ` | 合规 | 失败保全predicate/既有rerun失效；委托Result原子入口；42+12/CLI/schedule合同 |
+| [studies/main_probe/flow/write/run.py](../../studies/main_probe/flow/write/run.py) `write_observed_run` | `26:write_config; 32:atomic_write_text; 34:folder.mkdir; 41:torch.save; 42:write_result ` | 合规（专用协议） | Study隔离version/Run的二进制观测/权重；单写者，保留原配方，不执行研究 |
+| [studies/main_probe/structure/algorithm/paired.py](../../studies/main_probe/structure/algorithm/paired.py) `MainArchive.__init__` | `90:target.parent.mkdir; 91:target.write_bytes ` | 合规（专用协议） | 固定Git blob字节，既有归档逐字节拒绝不符；manifest原子写，不转码历史源码 |
+| [studies/main_probe/structure/algorithm/paired.py](../../studies/main_probe/structure/algorithm/paired.py) `run_pair` | `367:run_root.mkdir; 411:cell.mkdir; 443:torch.save; 451:torch.save; 516:torch.save ` | 合规（专用协议） | Study隔离version/Run的二进制观测/权重；单写者，保留原配方，不执行研究 |
+| [studies/main_probe/structure/algorithm/paired.py](../../studies/main_probe/structure/algorithm/paired.py) `run_pair.CapturedTrain.on_checkpoint` | `395:super().on_checkpoint; 403:torch.save ` | 合规（专用协议） | Study隔离version/Run的二进制观测/权重；单写者，保留原配方，不执行研究 |
+| [studies/main_probe/structure/algorithm/paired.py](../../studies/main_probe/structure/algorithm/paired.py) `save_json` | `44:atomic_write_text ` | 合规调用 | 委托既有统一文本入口；B-074已在根入口修复；调用方不重复补丁；原子/流程回归 |
+
+#### 验证入口与fixture写入/展示点（257个函数组）
+
+| **位置/函数** | **行:调用（当前复核）** | **状态** | **合同与依据** |
+| --- | --- | --- | --- |
+| [tests/_data/launch_retry_recipe.py](../../tests/_data/launch_retry_recipe.py) `Once.run` | `9:(system.assets_dir / 'attempts.txt').open; 10:stream.write; 11:(system.assets_dir / 'exclusive').mkdir ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/_data/recovery_worker.py](../../tests/_data/recovery_worker.py) `<module>` | `25:root.mkdir; 81:(root / f'{action}_trace.json').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/conftest.py](../../tests/conftest.py) `pytest_configure` | `100:out_dir.mkdir; 117:(out_dir / 'manifest.json').write_text; 121:(out_dir / 'events.jsonl').write_text; 122:(out_dir / 'artifacts').mkdir ` | 合规 | 验证元数据独立run_id；写.tmp/报告，不改旧Run；测试入口/元数据回归 |
+| [tests/conftest.py](../../tests/conftest.py) `pytest_runtest_makereport` | `213:(out_dir / 'events.jsonl').open; 214:handle.write ` | 合规 | 验证元数据独立run_id；写.tmp/报告，不改旧Run；测试入口/元数据回归 |
+| [tests/conftest.py](../../tests/conftest.py) `pytest_sessionfinish` | `257:(out_dir / 'report.md').write_text ` | 合规 | 验证元数据独立run_id；写.tmp/报告，不改旧Run；测试入口/元数据回归 |
+| [tests/package_smoke.py](../../tests/package_smoke.py) `main` | `26:workspace.mkdir; 72:study.mkdir; 73:(study / 'experiment_config.yaml').write_text; 89:(study / 'study.yaml').write_text; 134:(workspace / 'SMOKE_RESULT.json').write_text; 135:print ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/package_smoke.py](../../tests/package_smoke.py) `main.command` | `64:(workspace / 'SMOKE_RESULT.json').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/process/test_curves.py](../../tests/rpipe/flow/process/test_curves.py) `test_curve_only_uses_explicit_valid_coordinates` | `165:tracker.mkdir; 167:(tracker / 'scalars.jsonl').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/process/test_curves.py](../../tests/rpipe/flow/process/test_curves.py) `test_history_falls_back_when_jsonl_has_no_matching_values` | `72:tracker.mkdir; 73:(tracker / 'tracker_state.json').write_text; 77:(tracker / 'scalars.jsonl').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/process/test_curves.py](../../tests/rpipe/flow/process/test_curves.py) `test_history_prefers_all_report_observations_over_sparse_history` | `23:tracker.mkdir; 24:(tracker / 'tracker_state.json').write_text; 35:(tracker / 'scalars.jsonl').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/process/test_curves.py](../../tests/rpipe/flow/process/test_curves.py) `test_history_skips_invalid_jsonl_rows_and_keeps_valid_observations` | `46:tracker.mkdir; 60:(tracker / 'scalars.jsonl').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/process/test_curves.py](../../tests/rpipe/flow/process/test_curves.py) `test_restart_marker_survives_a_partial_jsonl_tail` | `148:tracker.jsonl_path.open; 149:handle.write ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/process/test_process.py](../../tests/rpipe/flow/process/test_process.py) `_write_succeeded` | `40:write_config; 41:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/process/test_process.py](../../tests/rpipe/flow/process/test_process.py) `test_process_does_not_rewrite_result` | `204:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/process/test_process.py](../../tests/rpipe/flow/process/test_process.py) `test_report_rejects_old_process_after_fresh_make_and_accepts_reprocess` | `172:study.mkdir; 173:(study / 'study.yaml').write_text; 177:(study / 'experiment_config.yaml').write_text; 186:(study / 'experiment_config.yaml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/process/test_process.py](../../tests/rpipe/flow/process/test_process.py) `test_study_process_accepts_empty_current_index` | `252:write_index ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/process/test_process.py](../../tests/rpipe/flow/process/test_process.py) `test_study_process_aggregates_history_min_max` | `112:path.parent.mkdir; 113:path.write_text; 131:write_index ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/process/test_process.py](../../tests/rpipe/flow/process/test_process.py) `test_study_process_aggregates_history_min_max.capture_figure` | `85:savefig ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/process/test_process.py](../../tests/rpipe/flow/process/test_process.py) `test_study_process_rejects_unusable_index_without_touching_artifacts` | `235:output.write_bytes; 237:figure.parent.mkdir; 238:figure.write_bytes; 241:(tmp_path / 'index.json').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/process/test_process.py](../../tests/rpipe/flow/process/test_process.py) `test_study_progress_summary_and_plot_share_coordinates_and_counts` | `280:write_result; 288:write_index ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/process/test_process.py](../../tests/rpipe/flow/process/test_process.py) `test_study_progress_summary_and_plot_share_coordinates_and_counts.capture` | `268:savefig ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_activity_status.py](../../tests/rpipe/flow/test_activity_status.py) `test_status_ignores_unusable_hint_and_keeps_index_contract` | `21:study.mkdir; 23:activity.write_bytes; 25:write_index; 27:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_capture_refusal.py](../../tests/rpipe/flow/test_capture_refusal.py) `test_capture_refusal_preserves_results_and_executes_no_phase` | `24:package.mkdir; 25:(package / '__init__.py').write_bytes; 26:study.mkdir; 28:extra.write_bytes; 34:write_config; 38:write_result; 41:extra.unlink; 51:(study / 'provenance.json').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_capture_refusal.py](../../tests/rpipe/flow/test_capture_refusal.py) `test_concurrent_freeze_refusals_preserve_each_run_independently` | `128:package.mkdir; 129:(package / '__init__.py').write_bytes; 130:study.mkdir; 132:extra.write_bytes; 138:write_config; 145:write_result; 149:extra.unlink ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_capture_refusal.py](../../tests/rpipe/flow/test_capture_refusal.py) `test_prepare_capture_refusal_with_study_phases_disabled` | `83:package.mkdir; 84:(package / '__init__.py').write_bytes; 85:study.mkdir; 87:extra.write_bytes; 93:write_config; 95:write_config; 101:write_result; 103:extra.unlink ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_cli_retry.py](../../tests/rpipe/flow/test_cli_retry.py) `test_native_launch_retry_policy_preserves_attempts_and_failure` | `26:shutil.copyfile; 27:write_config; 31:write_config; 48:(tmp_path / 'launch.stdout').write_bytes; 49:(tmp_path / 'launch.stderr').write_bytes; 66:(tmp_path / 'later-default.stdout').write_bytes; 67:(tmp_path / 'later-default.stderr').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_freeze_preservation.py](../../tests/rpipe/flow/test_freeze_preservation.py) `_success` | `24:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_freeze_preservation.py](../../tests/rpipe/flow/test_freeze_preservation.py) `test_existing_failure_preservation_decision_table` | `110:write_config; 112:layout.assets_dir.mkdir; 114:peer.write_bytes; 119:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_freeze_preservation.py](../../tests/rpipe/flow/test_freeze_preservation.py) `test_freeze_refusal_preserves_success_or_creates_failure` | `33:write_config; 35:write_config; 38:(tmp_path / 'study.yaml').open; 39:stream.write ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_freeze_preservation.py](../../tests/rpipe/flow/test_freeze_preservation.py) `test_native_run_one_preserves_real_cpu_success_on_freeze_refusal` | `76:write_config; 78:write_config; 88:(tmp_path / 'prior-success.json').write_bytes; 91:(tmp_path / 'study.yaml').open; 92:stream.write; 97:(tmp_path / f'refusal-{attempt}.stdout').write_bytes; 98:(tmp_path / f'refusal-{attempt}.stderr').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_freeze_preservation.py](../../tests/rpipe/flow/test_freeze_preservation.py) `test_phase_and_failure_publication_errors_preserve_original_evidence` | `153:peer.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_mnist_native_vs_hf_study.py](../../tests/rpipe/flow/test_mnist_native_vs_hf_study.py) `test_mnist_native_vs_hf_cpu_make_launches_both_sources_without_gpu` | `32:shutil.copytree; 38:shutil.copytree; 41:text.replace; 45:text.replace; 46:text.replace; 47:yaml_path.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_mnist_train_size_study.py](../../tests/rpipe/flow/test_mnist_train_size_study.py) `test_mnist_train_size_make_launch_processes_train_before_eval` | `31:shutil.copytree; 37:shutil.copytree; 40:text.replace; 44:text.replace; 45:text.replace; 46:yaml_path.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_readout_io.py](../../tests/rpipe/flow/test_readout_io.py) `test_native_readout_denied_log_preserves_results_and_peer_output` | `20:write_index; 23:write_result; 26:log.parent.mkdir; 27:log.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_readout_io.py](../../tests/rpipe/flow/test_readout_io.py) `test_native_status_metric_shape_keeps_filtered_peer_and_bytes` | `54:write_index; 57:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_run_study.py](../../tests/rpipe/flow/test_run_study.py) `test_nested_cpu_device_make_and_run_one_agree` | `26:study.mkdir; 27:(study / 'study.yaml').write_text; 28:(study / 'experiment_config.yaml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_run_study.py](../../tests/rpipe/flow/test_run_study.py) `test_run_study_new_version_replaces_index_and_preserves_old_run` | `84:study.mkdir; 85:write_config; 90:write_config; 95:write_result; 102:write_config; 120:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_run_study.py](../../tests/rpipe/flow/test_run_study.py) `test_run_study_skip_launch_index_groups_train_eval_experiments` | `57:shutil.copytree ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_runner.py](../../tests/rpipe/flow/test_runner.py) `test_failed_flow_writes_failed_result` | `51:write_config ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_runner.py](../../tests/rpipe/flow/test_runner.py) `test_full_flow_writes_succeeded_status` | `22:write_config ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_runner.py](../../tests/rpipe/flow/test_runner.py) `test_invalid_configuration_writes_failed_result` | `119:write_config ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_shared_inputs.py](../../tests/rpipe/flow/test_shared_inputs.py) `test_profile_directory_move_keeps_native_sampler_restore_identity` | `145:path.parent.mkdir; 146:path.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_shared_inputs.py](../../tests/rpipe/flow/test_shared_inputs.py) `test_shared_raw_does_not_share_study_normalization` | `101:foreign_stats.mkdir; 102:(foreign_stats / 'stats.yaml').write_text; 106:study.mkdir; 107:(study / 'study.yaml').write_text; 108:(study / 'experiment_config.yaml').write_text; 113:local.mkdir; 114:(local / 'stats.yaml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_shared_inputs.py](../../tests/rpipe/flow/test_shared_inputs.py) `test_two_native_studies_share_downloads_not_training_state` | `51:study.mkdir; 53:(study / 'study.yaml').write_text; 54:(study / 'experiment_config.yaml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_shared_inputs.py](../../tests/rpipe/flow/test_shared_inputs.py) `test_two_native_studies_share_downloads_not_training_state.data_builder` | `27:raw.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_shared_inputs.py](../../tests/rpipe/flow/test_shared_inputs.py) `test_two_native_studies_share_downloads_not_training_state.model_builder` | `41:torch.save ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_source_key_gate.py](../../tests/rpipe/flow/test_source_key_gate.py) `test_collision_refusal_executes_no_phase_and_preserves_success` | `25:package.mkdir; 26:(package / '__init__.py').write_bytes; 27:(study / 'rpipe').mkdir; 28:(study / 'rpipe/__init__.py').write_bytes; 30:write_config; 36:(study / 'provenance.json').write_bytes; 39:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_status_planned_modes.py](../../tests/rpipe/flow/test_status_planned_modes.py) `test_native_status_finds_pending_fixed_mode_without_writes` | `25:study.mkdir; 29:write_config; 30:write_config ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_status_planned_modes.py](../../tests/rpipe/flow/test_status_planned_modes.py) `test_native_status_finds_pending_fixed_mode_without_writes.command` | `38:(tmp_path / (name + '.stdout')).write_bytes; 39:(tmp_path / (name + '.stderr')).write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study.py](../../tests/rpipe/flow/test_study.py) `test_disabled_study_directories_do_not_execute` | `34:phase.mkdir; 35:(phase / '__init__.py').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study.py](../../tests/rpipe/flow/test_study.py) `test_flow_parent_and_structure_relative_imports_are_isolated` | `68:phase.mkdir; 69:(root / 'structure').mkdir; 70:(root / 'structure' / 'data.py').write_text; 71:(root / 'recipe.py').write_text; 72:(root / 'flow' / 'helper.py').write_text; 74:(root / 'flow' / '__init__.py').write_text; 75:(phase / '__init__.py').write_text; 76:(phase / 'run.py').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study.py](../../tests/rpipe/flow/test_study.py) `test_helper_only_phase_is_not_executed` | `89:phase.mkdir; 90:(phase / 'speed.py').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study.py](../../tests/rpipe/flow/test_study.py) `test_import_failure_does_not_leak_study_namespace` | `104:phase.mkdir; 105:(phase / '__init__.py').write_text; 106:(phase / 'run.py').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study.py](../../tests/rpipe/flow/test_study.py) `test_invalid_hook_does_not_leak_modules` | `49:directory.parent.mkdir; 50:directory.write_text; 53:directory.unlink; 54:directory.mkdir; 55:(directory / '__init__.py').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study.py](../../tests/rpipe/flow/test_study.py) `test_legacy_root_phase_requires_explicit_migration` | `96:phase.mkdir; 97:(phase / '__init__.py').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study.py](../../tests/rpipe/flow/test_study.py) `test_recipe_owned_shared_preparation_is_not_called` | `121:(tmp_path / 'study.yaml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study.py](../../tests/rpipe/flow/test_study.py) `test_relative_helpers_are_isolated_between_studies` | `22:phase.mkdir; 23:(root / 'helper.py').write_text; 24:(phase / '__init__.py').write_text; 25:(phase / 'run.py').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study.py](../../tests/rpipe/flow/test_study.py) `test_shared_preparation_requires_boolean` | `131:(tmp_path / 'study.yaml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study_hooks.py](../../tests/rpipe/flow/test_study_hooks.py) `_study` | `44:study.mkdir; 48:(study / 'recipe.py').write_text; 49:(study / 'helper.py').write_text; 52:(study / 'study.yaml').write_text; 53:(study / 'notes').mkdir; 54:(study / 'notes' / 'a.txt').write_text; 55:(study / 'experiment_config.yaml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study_hooks.py](../../tests/rpipe/flow/test_study_hooks.py) `test_freeze_blocks_launch_and_run_one_after_source_change` | `116:(study / 'notes' / 'a.txt').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study_hooks.py](../../tests/rpipe/flow/test_study_hooks.py) `test_make_rejects_missing_or_invalid_recipe` | `103:(study / 'recipe.py').write_text; 105:(study / 'recipe.py').unlink ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study_hooks.py](../../tests/rpipe/flow/test_study_hooks.py) `test_without_freeze_change_only_warns` | `131:(study / 'notes' / 'a.txt').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study_phases.py](../../tests/rpipe/flow/test_study_phases.py) `_hook` | `30:path.parent.mkdir; 32:(path.parent / '__init__.py').write_text; 33:path.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study_phases.py](../../tests/rpipe/flow/test_study_phases.py) `_study` | `19:study.mkdir; 20:(study / 'study.yaml').write_text; 22:(study / 'experiment_config.yaml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study_phases.py](../../tests/rpipe/flow/test_study_phases.py) `test_freeze_includes_stage_helpers_and_blocks_before_selected_execute` | `163:helper.unlink; 165:helper.write_text; 168:helper.unlink; 170:helper.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study_phases.py](../../tests/rpipe/flow/test_study_phases.py) `test_generated_run_archive_does_not_change_source_provenance` | `127:archive.parent.mkdir; 128:archive.write_text; 131:(study / 'flow' / 'prepare' / 'helper.py').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study_phases.py](../../tests/rpipe/flow/test_study_phases.py) `test_prepare_before_runs_before_recipe_and_factory` | `75:(study / 'recipe.py').write_text; 78:(study / 'study.yaml').open; 79:stream.write ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_study_phases.py](../../tests/rpipe/flow/test_study_phases.py) `test_write_gate_failure_cannot_leave_success_result` | `97:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/flow/test_svhn.py](../../tests/rpipe/flow/test_svhn.py) `test_svhn_mat_train_checkpoint_eval` | `27:root.mkdir ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/algorithm/test_checkpoint_train.py](../../tests/rpipe/structure/algorithm/test_checkpoint_train.py) `test_legacy_training_resume_warns_but_loads_weights` | `320:system.save_checkpoint ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/algorithm/test_resume_sibling.py](../../tests/rpipe/structure/algorithm/test_resume_sibling.py) `test_eval_run_loads_sibling_train_best` | `33:train_assets.mkdir; 34:eval_assets.mkdir; 40:train_system.save_checkpoint; 44:write_index ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/algorithm/test_resume_sibling.py](../../tests/rpipe/structure/algorithm/test_resume_sibling.py) `test_sibling_lookup_ignores_previous_version_outside_index` | `89:old_best.parent.mkdir; 90:old_best.write_bytes; 93:current_best.parent.mkdir; 94:current_best.write_bytes; 96:eval_assets.mkdir; 97:write_index ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/algorithm/test_tracker.py](../../tests/rpipe/structure/algorithm/test_tracker.py) `test_tracker_constructor_preserves_evidence_arriving_before_open.arriving` | `94:stream.write ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/algorithm/test_tracker.py](../../tests/rpipe/structure/algorithm/test_tracker.py) `test_tracker_constructor_still_rejects_directory` | `107:target.mkdir ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/algorithm/test_tracker.py](../../tests/rpipe/structure/algorithm/test_tracker.py) `test_tracker_keeps_jsonl_on_init` | `20:leftover.parent.mkdir; 21:leftover.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/algorithm/test_train.py](../../tests/rpipe/structure/algorithm/test_train.py) `test_checkpoint_hook_normalizes_best_metric_for_all_train_callers` | `317:algo.on_checkpoint ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/asset/test_tree.py](../../tests/rpipe/structure/artifact/asset/test_tree.py) `test_list_asset_files_is_recursive` | `22:path.parent.mkdir; 23:path.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_compare.py](../../tests/rpipe/structure/artifact/readout/test_compare.py) `_run` | `24:(run / 'assets' / 'tracker').mkdir; 25:(run / 'assets' / 'checkpoints').mkdir; 26:(run / 'result.json').write_text; 30:(run / 'assets' / 'tracker' / 'tracker_state.json').write_text; 34:torch.save ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_compare.py](../../tests/rpipe/structure/artifact/readout/test_compare.py) `test_compare_bad_containers_are_file_errors_without_evidence_overwrite` | `114:path.write_text; 116:output.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_compare.py](../../tests/rpipe/structure/artifact/readout/test_compare.py) `test_compare_corrupt_checkpoint_is_file_error_without_rewrite` | `203:path.write_bytes; 205:output.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_compare.py](../../tests/rpipe/structure/artifact/readout/test_compare.py) `test_compare_directory_is_bad_file_not_missing` | `189:path.unlink; 190:path.mkdir; 192:output.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_compare.py](../../tests/rpipe/structure/artifact/readout/test_compare.py) `test_compare_keeps_legacy_null_optional_containers` | `171:p.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_compare.py](../../tests/rpipe/structure/artifact/readout/test_compare.py) `test_compare_nonfinite_tolerances_are_argument_errors` | `155:output.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_compare.py](../../tests/rpipe/structure/artifact/readout/test_compare.py) `test_compare_output_refusal_uses_cli_file_error_boundary` | `127:output.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_compare.py](../../tests/rpipe/structure/artifact/readout/test_compare.py) `test_exact_checkpoint_comparison_preserves_integer_and_complex_differences` | `95:torch.save ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_logs.py](../../tests/rpipe/structure/artifact/readout/test_logs.py) `test_log_decoder_programming_typeerror_is_not_optional_io` | `93:write_index; 95:path.parent.mkdir; 96:path.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_logs.py](../../tests/rpipe/structure/artifact/readout/test_logs.py) `test_logs_prints_events_in_time_order` | `26:folder.mkdir; 27:(folder / 'run.log').write_text; 32:write_index ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_logs.py](../../tests/rpipe/structure/artifact/readout/test_logs.py) `test_logs_skip_only_unreadable_run_and_keep_peer_events` | `58:write_index; 61:path.parent.mkdir; 62:path.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_logs.py](../../tests/rpipe/structure/artifact/readout/test_logs.py) `test_logs_unexpected_probe_error_is_not_hidden` | `77:write_index ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_report.py](../../tests/rpipe/structure/artifact/readout/test_report.py) `report_study` | `77:(study / 'docs').mkdir; 88:(study / 'index.json').write_text; 89:(study / 'process.json').write_text; 90:numbers_path(study).write_text; 91:(study / 'docs/STUDY_REPORT.md').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_report.py](../../tests/rpipe/structure/artifact/readout/test_report.py) `test_nonobject_metrics_do_not_hide_other_run_or_rewrite_evidence` | `208:path.write_text; 210:render_numbers ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_report.py](../../tests/rpipe/structure/artifact/readout/test_report.py) `test_report_accepts_legacy_partial_aggregation_and_reordered_runs` | `147:(report_study / 'index.json').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_report.py](../../tests/rpipe/structure/artifact/readout/test_report.py) `test_report_rejects_stale_plan_without_overwriting_evidence` | `120:(study / 'index.json').write_text; 121:(study / 'process.json').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_report.py](../../tests/rpipe/structure/artifact/readout/test_report.py) `test_report_rejects_unusable_current_index` | `135:index.unlink; 137:index.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_report.py](../../tests/rpipe/structure/artifact/readout/test_report.py) `test_report_rejects_unusable_process_without_overwriting_numbers` | `160:(report_study / 'process.json').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_report.py](../../tests/rpipe/structure/artifact/readout/test_report.py) `test_report_writes_experiment_and_run_tables` | `22:(study / 'docs').mkdir; 23:(study / 'docs' / 'STUDY_REPORT.md').write_text; 24:(study / 'process.json').write_text; 49:(study / 'index.json').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_report.py](../../tests/rpipe/structure/artifact/readout/test_report.py) `test_unusable_number_is_a_placeholder_in_aggregate_and_run_cells` | `189:path.write_text; 191:render_numbers ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py) `_planned_run` | `184:write_index; 185:write_config ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py) `_write_study` | `24:(study / 'runs' / 'ok' / 'assets' / 'logs').mkdir; 25:(study / 'runs' / 'bad' / 'assets' / 'logs').mkdir; 26:(study / 'runs' / 'wait' / 'assets' / 'logs').mkdir; 27:write_index; 70:write_result; 79:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py) `test_boolean_recorded_seed_is_not_equal_to_planned_zero` | `411:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py) `test_config_identity_conflict_does_not_change_disk_result_or_hide_peer` | `374:write_config ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py) `test_known_mode_does_not_require_legacy_config` | `231:(tmp_path / 'runs/r0/config.yaml').unlink; 233:write_index; 236:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py) `test_metric_shape_fallback_preserves_run_state_and_peer` | `314:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py) `test_missing_or_malformed_mode_config_is_unknown_with_diagnostic` | `204:path.unlink; 206:path.write_text; 208:path.write_text; 210:write_config; 212:write_config; 217:format_status ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py) `test_mode_diagnostic_preserves_execution_state_and_real_failure` | `253:(tmp_path / 'runs/r0/config.yaml').unlink; 255:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py) `test_optional_directory_is_unreadable_not_missing_and_programming_error_propagates` | `397:path.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py) `test_optional_read_states_keep_input_bytes_and_strict_loader` | `335:path.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py) `test_pending_note_is_last_epoch_or_error_not_traceback` | `109:(study / 'runs' / 'bad' / 'assets' / 'logs' / 'run.log').write_text; 121:log.write_text; 140:format_status; 141:print; 147:log.write_text; 152:format_status; 153:print ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py) `test_planned_mode_conflict_is_local_and_not_silently_coerced` | `352:write_config; 358:write_index ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py) `test_status_cli_prints_activity_while_index_is_missing` | `174:study.mkdir; 175:(study / 'activity.json').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py) `test_status_read_denial_keeps_other_runs_and_original_bytes` | `270:log.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py) `test_unreadable_config_cannot_be_hidden_by_legacy_mode` | `385:(study / 'runs/bad/config.yaml').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py) `test_unreadable_result_uses_planned_config_mode` | `245:(tmp_path / 'runs/r0/result.json').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/readout/test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py) `test_unusable_numeric_metric_is_local_and_keeps_valid_fallback` | `424:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/result/test_result_io.py](../../tests/rpipe/structure/artifact/result/test_result_io.py) `test_result_encoding_failure_preserves_target_and_allows_next_write` | `23:write_result; 26:peer.write_text; 29:write_result; 38:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_activity.py](../../tests/rpipe/structure/artifact/test_activity.py) `test_unexpected_activity_reader_bug_is_not_suppressed` | `54:path.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_activity.py](../../tests/rpipe/structure/artifact/test_activity.py) `test_unreadable_activity_is_ignored_including_existence_check` | `26:path.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_activity.py](../../tests/rpipe/structure/artifact/test_activity.py) `test_unusable_activity_is_ignored_without_rewriting` | `18:path.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_activity.py](../../tests/rpipe/structure/artifact/test_activity.py) `test_valid_unicode_activity_keeps_original_bytes` | `47:path.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic.py](../../tests/rpipe/structure/artifact/test_atomic.py) `test_atomic_replace_transient_windows_denial_eventually_commits` | `15:source.write_text; 16:target.write_text; 30:atomic_replace ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic.py](../../tests/rpipe/structure/artifact/test_atomic.py) `test_atomic_replace_transient_windows_denial_eventually_commits.held` | `26:replace ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic.py](../../tests/rpipe/structure/artifact/test_atomic.py) `test_atomic_text_newline_option_preserves_native_and_script_bytes` | `233:atomic_write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic.py](../../tests/rpipe/structure/artifact/test_atomic.py) `test_atomic_text_preserves_existing_script_mode` | `241:target.write_text; 242:target.chmod; 243:atomic_write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic.py](../../tests/rpipe/structure/artifact/test_atomic.py) `test_atomic_text_success_replaces_target_and_keeps_peer_stage` | `94:target.write_text; 96:peer.write_text; 97:atomic_write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic.py](../../tests/rpipe/structure/artifact/test_atomic.py) `test_atomic_write_permanent_failure_preserves_target_and_cleans_stage` | `38:target.write_text; 49:atomic_write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic.py](../../tests/rpipe/structure/artifact/test_atomic.py) `test_concurrent_nonce_collision_cannot_delete_an_active_writer_stage` | `404:target.write_text; 423:_atomic.atomic_write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic.py](../../tests/rpipe/structure/artifact/test_atomic.py) `test_index_encoding_failure_does_not_truncate_existing_plan` | `222:target.write_bytes; 224:write_index ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic.py](../../tests/rpipe/structure/artifact/test_atomic.py) `test_partial_text_write_failure_cleans_only_its_stage` | `60:target.write_text; 62:peer.write_text; 70:atomic_write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic.py](../../tests/rpipe/structure/artifact/test_atomic.py) `test_public_text_publishers_preserve_target_when_commit_is_refused` | `193:target.parent.mkdir; 194:target.write_bytes; 196:peer.write_bytes; 209:write_index ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic.py](../../tests/rpipe/structure/artifact/test_atomic.py) `test_study_json_concurrent_publishers_keep_distinct_stages_and_peer` | `338:target.write_bytes; 339:peer.write_bytes; 344:replace ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic.py](../../tests/rpipe/structure/artifact/test_atomic.py) `test_study_json_concurrent_publishers_keep_distinct_stages_and_peer.native_replace` | `356:replace ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic.py](../../tests/rpipe/structure/artifact/test_atomic.py) `test_study_json_publisher_failure_preserves_evidence_and_peer` | `291:target.write_bytes; 292:peer.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic.py](../../tests/rpipe/structure/artifact/test_atomic.py) `test_study_json_publisher_success_preserves_payload_format_and_peer` | `320:peer.write_bytes; 323:(json.dumps(body, ensure_ascii=False, indent=2) + '\n').replace ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic.py](../../tests/rpipe/structure/artifact/test_atomic.py) `test_text_encoding_failure_preserves_target_and_peer` | `82:target.write_bytes; 83:peer.write_bytes; 85:atomic_write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic.py](../../tests/rpipe/structure/artifact/test_atomic.py) `test_text_stage_collision_preserves_unowned_bytes` | `377:target.write_bytes; 379:peer.write_bytes; 391:_atomic.atomic_write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic_boundaries.py](../../tests/rpipe/structure/artifact/test_atomic_boundaries.py) `test_atomic_writers_publish_complete_payloads_and_keep_peer_stage` | `24:target.write_text; 26:peer.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic_boundaries.py](../../tests/rpipe/structure/artifact/test_atomic_boundaries.py) `test_atomic_writers_publish_complete_payloads_and_keep_peer_stage.publish` | `32:replace ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_atomic_boundaries.py](../../tests/rpipe/structure/artifact/test_atomic_boundaries.py) `test_windows_held_unicode_target_preserves_old_bytes_then_recovers` | `50:directory.mkdir; 52:target.write_bytes; 64:atomic_write_text; 71:atomic_write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_freeze_capture.py](../../tests/rpipe/structure/artifact/test_freeze_capture.py) `fail_capture` | `33:extra.unlink; 45:(study / 'provenance.json').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_freeze_capture.py](../../tests/rpipe/structure/artifact/test_freeze_capture.py) `frozen` | `18:library.mkdir; 19:(library / '__init__.py').write_bytes; 20:study.mkdir; 22:extra.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_freeze_capture.py](../../tests/rpipe/structure/artifact/test_freeze_capture.py) `test_load_retains_optional_legacy_mappings` | `90:(study / 'provenance.json').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_io.py](../../tests/rpipe/structure/artifact/test_io.py) `test_index_groups_runs_by_experiment_factors` | `87:study_dir.mkdir; 97:write_config; 119:write_index ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_io.py](../../tests/rpipe/structure/artifact/test_io.py) `test_index_rejects_unsafe_id_even_with_safe_directory` | `128:write_index ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_io.py](../../tests/rpipe/structure/artifact/test_io.py) `test_index_rejects_unsafe_run_directory_before_readout` | `49:write_index ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_io.py](../../tests/rpipe/structure/artifact/test_io.py) `test_write_config_roundtrip_preserves_slug` | `56:write_config ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_io.py](../../tests/rpipe/structure/artifact/test_io.py) `test_write_result_missing_status_raises_value_error` | `82:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_io.py](../../tests/rpipe/structure/artifact/test_io.py) `test_write_result_valid_payload_creates_file` | `75:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_provenance.py](../../tests/rpipe/structure/artifact/test_provenance.py) `_source` | `16:path.parent.mkdir; 17:path.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_provenance.py](../../tests/rpipe/structure/artifact/test_provenance.py) `test_freeze_detects_two_column_helper_changes` | `48:path.unlink; 50:_source(tmp_path, f'{folder}/helper.py').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_provenance.py](../../tests/rpipe/structure/artifact/test_provenance.py) `test_two_column_source_cannot_escape_study` | `58:outside.mkdir; 61:study.mkdir; 63:(study / folder).symlink_to ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_provenance_git.py](../../tests/rpipe/structure/artifact/test_provenance_git.py) `test_capture_git_reports_real_repository_state` | `19:repo.mkdir; 21:hooks.mkdir; 28:(repo / 'tracked.txt').write_text; 35:(repo / 'tracked.txt').write_text; 41:(repo / '.git/index').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_bad_shared_config_creates_no_layout` | `45:study.mkdir; 46:(study / 'study.yaml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_corrupt_payload_and_incomplete_manifest_are_not_rebuilt_or_accepted` | `205:prepared_resource; 208:(cache / 'data').write_bytes; 210:prepared_resource; 212:(cache / 'data').write_bytes; 215:manifest.write_text; 217:prepared_resource ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_corrupt_payload_and_incomplete_manifest_are_not_rebuilt_or_accepted.build` | `204:(staging / 'data').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_explicit_root_is_resolved_relative_to_study` | `37:study.mkdir; 38:(study / 'study.yaml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_failed_reference_creation_keeps_duplicate_payload` | `118:source.write_bytes; 119:target.write_bytes; 125:link_input ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_identical_raw_duplicates_become_one_file` | `106:source.mkdir; 107:target.mkdir; 108:(source / 'input.bin').write_bytes; 109:(target / 'input.bin').write_bytes; 110:(source / 'stats.yaml').write_text; 111:reference_tree ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_input_reference_never_copies_or_overwrites` | `92:source.write_bytes; 93:link_input; 95:link_input; 97:unrelated.write_bytes; 99:link_input ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_interrupted_resource_retry_preserves_failed_staging_and_publishes_fresh` | `269:prepared_resource; 275:prepared_resource; 280:prepared_resource ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_interrupted_resource_retry_preserves_failed_staging_and_publishes_fresh.complete` | `274:(staging / 'data').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_interrupted_resource_retry_preserves_failed_staging_and_publishes_fresh.interrupted` | `266:(staging / 'data').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_invalid_resource_contract_is_rejected_before_writes` | `224:prepared_resource ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_migration_checks_all_conflicts_before_linking` | `76:data.mkdir; 77:model.mkdir; 78:(data / 'raw.bin').write_bytes; 79:(model / 'weights.bin').write_bytes; 81:target.mkdir; 82:(target / 'weights.bin').write_bytes; 84:migrate_shared ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_migration_deduplicates_identical_bytes_and_keeps_profiles_private` | `58:folder.mkdir; 59:(folder / 'input.bin').write_bytes; 60:(study / 'shared' / 'data' / 'stats.yaml').write_text; 62:migrate_shared; 69:migrate_shared ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_partial_build_is_retained_without_publishing_ready` | `196:prepared_resource ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_partial_build_is_retained_without_publishing_ready.fail` | `193:(staging / 'data').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_private_data_does_not_disable_shared_model` | `28:study.mkdir; 29:(study / 'study.yaml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_same_definition_reuses_input_and_changed_revision_builds_separately` | `184:prepared_resource; 185:prepared_resource; 186:prepared_resource ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_same_definition_reuses_input_and_changed_revision_builds_separately.build` | `183:(staging / 'weights').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_valid_resource_names_keep_original_manifest_keys_and_reuse` | `450:prepared_resource; 456:prepared_resource ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_valid_resource_names_keep_original_manifest_keys_and_reuse.build` | `448:path.parent.mkdir; 449:path.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared.py](../../tests/rpipe/structure/artifact/test_shared.py) `test_windows_resource_aliases_rejected_before_builder_or_layout` | `438:prepared_resource ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared_references.py](../../tests/rpipe/structure/artifact/test_shared_references.py) `test_concurrent_identical_promotions_own_distinct_staging` | `22:source.write_bytes; 23:target.write_bytes; 25:peer.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared_references.py](../../tests/rpipe/structure/artifact/test_shared_references.py) `test_concurrent_identical_promotions_own_distinct_staging.publish` | `43:replace ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared_references.py](../../tests/rpipe/structure/artifact/test_shared_references.py) `test_failed_publisher_cleans_only_own_stage_while_peer_is_live` | `92:source.write_bytes; 93:target.write_bytes; 95:peer.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared_references.py](../../tests/rpipe/structure/artifact/test_shared_references.py) `test_failed_publisher_cleans_only_own_stage_while_peer_is_live.promote` | `128:shared.link_input ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared_references.py](../../tests/rpipe/structure/artifact/test_shared_references.py) `test_failed_publisher_cleans_only_own_stage_while_peer_is_live.publish` | `124:replace ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared_references.py](../../tests/rpipe/structure/artifact/test_shared_references.py) `test_failed_reference_publication_preserves_original_and_peer` | `61:source.write_bytes; 62:target.write_bytes; 64:peer.write_bytes; 69:shared.link_input ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared_references.py](../../tests/rpipe/structure/artifact/test_shared_references.py) `test_migration_collision_cleanup_preserves_arriving_peer` | `178:source.parent.mkdir; 179:target.parent.mkdir; 180:source.write_bytes; 181:target.write_bytes; 192:shared.migrate_shared ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared_references.py](../../tests/rpipe/structure/artifact/test_shared_references.py) `test_migration_collision_cleanup_preserves_arriving_peer.arriving` | `188:peer.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared_references.py](../../tests/rpipe/structure/artifact/test_shared_references.py) `test_reference_collision_never_owns_or_deletes_peer` | `154:source.write_bytes; 155:target.write_bytes; 157:peer.write_bytes; 170:shared.link_input ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_shared_references.py](../../tests/rpipe/structure/artifact/test_shared_references.py) `test_reference_promotion_preserves_valid_long_filename` | `80:source.write_bytes; 81:target.write_bytes; 82:shared.link_input ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_source_keys.py](../../tests/rpipe/structure/artifact/test_source_keys.py) `inputs` | `20:package.mkdir; 21:(package / '__init__.py').write_bytes; 22:(study / 'rpipe').mkdir ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_source_keys.py](../../tests/rpipe/structure/artifact/test_source_keys.py) `test_distinct_sources_cannot_share_library_manifest_key` | `33:copy.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_source_keys.py](../../tests/rpipe/structure/artifact/test_source_keys.py) `test_existing_shadowed_freeze_is_refused_after_library_edit` | `42:copy.write_bytes; 45:path.write_bytes; 46:(package / '__init__.py').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_source_keys.py](../../tests/rpipe/structure/artifact/test_source_keys.py) `test_hardlink_does_not_mask_deleted_library_path` | `91:os.link; 93:source.unlink ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_source_keys.py](../../tests/rpipe/structure/artifact/test_source_keys.py) `test_make_refuses_collision_without_overwriting_prior_provenance` | `54:(study / 'rpipe/__init__.py').write_bytes; 56:path.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_source_keys.py](../../tests/rpipe/structure/artifact/test_source_keys.py) `test_reserved_namespace_refuses_extra_even_before_library_has_that_name` | `83:(study / 'rpipe/extra.py').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_source_keys.py](../../tests/rpipe/structure/artifact/test_source_keys.py) `test_same_physical_source_keeps_one_key_and_detects_edits` | `68:copy.write_bytes; 72:os.link; 76:source.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_source_keys.py](../../tests/rpipe/structure/artifact/test_source_keys.py) `test_similar_nonreserved_namespace_is_accepted` | `101:target.parent.mkdir; 102:target.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_source_keys.py](../../tests/rpipe/structure/artifact/test_source_keys.py) `test_unreadable_source_identity_is_freeze_refusal` | `110:os.link ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_source_reads.py](../../tests/rpipe/structure/artifact/test_source_reads.py) `test_overlap_does_not_hide_invalid_extra_input` | `51:(study / 'structure').mkdir; 52:(study / 'structure/helper.py').write_bytes; 53:(tmp_path / 'outside.py').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_source_reads.py](../../tests/rpipe/structure/artifact/test_source_reads.py) `test_overlapping_discovery_preserves_read_failure` | `36:target.parent.mkdir; 37:target.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_source_reads.py](../../tests/rpipe/structure/artifact/test_source_reads.py) `test_overlapping_sources_keep_keys_and_detect_later_edits` | `20:path.parent.mkdir; 21:path.write_bytes; 28:(tmp_path / 'structure/helper.py').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_staging_names.py](../../tests/rpipe/structure/artifact/test_staging_names.py) `test_atomic_text_accepts_valid_long_basename` | `22:target.write_bytes; 23:_atomic.atomic_write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_staging_names.py](../../tests/rpipe/structure/artifact/test_staging_names.py) `test_duplicate_migration_accepts_valid_long_basename` | `34:folder.mkdir; 35:(folder / ('x' * 245)).write_bytes; 38:shared.migrate_shared; 43:shared.migrate_shared ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_staging_names.py](../../tests/rpipe/structure/artifact/test_staging_names.py) `test_failed_migration_publication_keeps_copies_and_peer` | `50:folder.mkdir; 51:(folder / 'input').write_bytes; 53:peer.write_bytes; 58:shared.migrate_shared ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_staging_names.py](../../tests/rpipe/structure/artifact/test_staging_names.py) `test_two_preparers_publish_one_complete_resource.build` | `70:(staging / 'data').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/artifact/test_staging_names.py](../../tests/rpipe/structure/artifact/test_staging_names.py) `test_two_preparers_publish_one_complete_resource.prepare` | `73:shared.prepared_resource ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/data/test_origin.py](../../tests/rpipe/structure/data/test_origin.py) `test_discard_bad_archive_removes_partial_and_keeps_matching_md5` | `72:partial.write_bytes; 73:discard_bad_archive; 78:good.write_bytes; 86:discard_bad_archive ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/data/test_prepare.py](../../tests/rpipe/structure/data/test_prepare.py) `isolated_shared_root` | `17:(tmp_path / 'study.yaml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/data/test_prepare.py](../../tests/rpipe/structure/data/test_prepare.py) `test_prepare_announces_download_before_build` | `96:write_config ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/data/test_prepare.py](../../tests/rpipe/structure/data/test_prepare.py) `test_prepare_once_per_name_source` | `69:write_config ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/data/test_prepare.py](../../tests/rpipe/structure/data/test_prepare.py) `test_prepare_retries_partial_archive` | `118:write_config; 131:partial.mkdir; 132:(partial / 'cifar-10-python.tar.gz').write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/data/test_prepare.py](../../tests/rpipe/structure/data/test_prepare.py) `test_prepare_skips_existing_cache` | `47:write_config; 52:cached.mkdir; 53:(cached / '.ready').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/data/test_prepare.py](../../tests/rpipe/structure/data/test_prepare.py) `test_prepare_skips_stub` | `33:write_config ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/data/test_profile.py](../../tests/rpipe/structure/data/test_profile.py) `test_recorded_stats_replace_the_builtin_table` | `36:path.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_capacity.py](../../tests/rpipe/structure/make/test_capacity.py) `test_attach_estimates_reads_calibrated_budget_from_run_config` | `307:write_config ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_capacity.py](../../tests/rpipe/structure/make/test_capacity.py) `test_cpu_capacity_summary_does_not_mention_gpu` | `233:summarize_capacity ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_make.py](../../tests/rpipe/structure/make/test_make.py) `_touch_config` | `32:layout.config_path.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_make.py](../../tests/rpipe/structure/make/test_make.py) `_write_succeeded` | `41:layout.result_path.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_make.py](../../tests/rpipe/structure/make/test_make.py) `test_cpu_make_skips_gpu_probe` | `365:study.mkdir; 366:(study / 'study.yaml').write_text; 370:(study / 'experiment_config.yaml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_make.py](../../tests/rpipe/structure/make/test_make.py) `test_duplicate_expansion_is_rejected_before_writing` | `66:(tmp_path / 'study.yaml').write_text; 67:(tmp_path / 'experiment_config.yaml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_make.py](../../tests/rpipe/structure/make/test_make.py) `test_launch_jobs_prints_each_wait_group` | `278:study.mkdir ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_make.py](../../tests/rpipe/structure/make/test_make.py) `test_launch_mode_eval_does_not_rewrite_jobs_json` | `329:(tmp_path / 'pyproject.toml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_make.py](../../tests/rpipe/structure/make/test_make.py) `test_launch_prints_status_counts_when_nothing_remains` | `299:(tmp_path / 'pyproject.toml').write_text; 304:write_index ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_make.py](../../tests/rpipe/structure/make/test_make.py) `test_load_launch_plan_include_done_keeps_succeeded` | `243:(tmp_path / 'pyproject.toml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_make.py](../../tests/rpipe/structure/make/test_make.py) `test_load_launch_plan_reuses_jobs_and_drops_succeeded` | `205:(tmp_path / 'pyproject.toml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_make.py](../../tests/rpipe/structure/make/test_make.py) `test_plan_jobs_trains_before_eval` | `77:eval_path.write_text; 79:train_path.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_make.py](../../tests/rpipe/structure/make/test_make.py) `test_render_bash_wait_every_round` | `153:(tmp_path / 'pyproject.toml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_make.py](../../tests/rpipe/structure/make/test_make.py) `test_render_bash_waits_after_train_wave` | `87:(tmp_path / 'pyproject.toml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_make.py](../../tests/rpipe/structure/make/test_make.py) `test_write_launch_scripts_split_round` | `171:(tmp_path / 'pyproject.toml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_schedule.py](../../tests/rpipe/structure/make/test_schedule.py) `_fake_processes.Proc.wait` | `124:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_schedule.py](../../tests/rpipe/structure/make/test_schedule.py) `_study` | `33:config.write_text; 37:write_index ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_schedule.py](../../tests/rpipe/structure/make/test_schedule.py) `_succeed` | `42:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_schedule.py](../../tests/rpipe/structure/make/test_schedule.py) `test_checkpoint_directory_requires_material_to_be_independent` | `238:folder.mkdir; 240:(folder / material).write_bytes; 242:folder.with_suffix('.pt').write_bytes; 244:(folder / 'meta.json').write_text; 246:(folder / 'notes.txt').write_text; 248:artifact_layout(tmp_path, 'e0').config_path.write_text; 253:partial.parent.mkdir; 254:partial.write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_schedule.py](../../tests/rpipe/structure/make/test_schedule.py) `test_independent_eval_does_not_require_sibling_success` | `221:checkpoint.parent.mkdir; 222:checkpoint.write_bytes; 225:artifact_layout(tmp_path, 'e0').config_path.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_schedule.py](../../tests/rpipe/structure/make/test_schedule.py) `test_plan_and_capacity_use_nested_runtime_device` | `54:layout.config_path.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_schedule.py](../../tests/rpipe/structure/make/test_schedule.py) `test_relaunch_and_make_include_previously_successful_stale_eval` | `186:write_result ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_schedule.py](../../tests/rpipe/structure/make/test_schedule.py) `test_reused_plan_rejects_gpu_binding_on_cpu_job` | `79:layout.config_path.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/make/test_schedule.py](../../tests/rpipe/structure/make/test_schedule.py) `test_reused_plan_rejects_stale_device_then_accepts_replanned_jobs` | `66:layout.config_path.write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/system/test_checkpoint.py](../../tests/rpipe/structure/system/test_checkpoint.py) `test_checkpoint_mirror_removes_stale_meta_format` | `137:system.save_checkpoint; 141:system.save_checkpoint; 143:bundle.unlink ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/system/test_checkpoint.py](../../tests/rpipe/structure/system/test_checkpoint.py) `test_checkpoint_publication_failure_preserves_committed_bundle` | `47:folder.mkdir; 48:torch.save; 50:system.save_checkpoint; 52:bundle.unlink; 85:system.save_checkpoint; 103:system.save_checkpoint; 112:shutil.copytree; 114:bundle.unlink ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/system/test_checkpoint.py](../../tests/rpipe/structure/system/test_checkpoint.py) `test_checkpoint_publication_failure_preserves_committed_bundle.fail_rename` | `78:rename ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/system/test_checkpoint.py](../../tests/rpipe/structure/system/test_checkpoint.py) `test_checkpoint_publication_failure_preserves_committed_bundle.fail_replace` | `73:replace ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/system/test_checkpoint.py](../../tests/rpipe/structure/system/test_checkpoint.py) `test_checkpoint_publication_failure_preserves_committed_bundle.fail_save` | `63:Path(path).write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/system/test_checkpoint.py](../../tests/rpipe/structure/system/test_checkpoint.py) `test_checkpoint_rejects_unsafe_stem` | `151:system.save_checkpoint ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/system/test_checkpoint.py](../../tests/rpipe/structure/system/test_checkpoint.py) `test_checkpoint_windows_denial_commits_or_preserves_old_bundle` | `160:system.save_checkpoint; 178:system.save_checkpoint; 184:system.save_checkpoint ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/system/test_checkpoint.py](../../tests/rpipe/structure/system/test_checkpoint.py) `test_checkpoint_windows_denial_commits_or_preserves_old_bundle.denied` | `173:replace ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/system/test_checkpoint.py](../../tests/rpipe/structure/system/test_checkpoint.py) `test_committed_checkpoint_survives_marker_cleanup_failure` | `129:system.save_checkpoint ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/system/test_checkpoint.py](../../tests/rpipe/structure/system/test_checkpoint.py) `test_committed_checkpoint_survives_marker_cleanup_failure.fail_marker_cleanup` | `125:unlink ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/system/test_checkpoint.py](../../tests/rpipe/structure/system/test_checkpoint.py) `test_system_save_checkpoint_writes_pt` | `21:system.save_checkpoint ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/system/test_logger.py](../../tests/rpipe/structure/system/test_logger.py) `test_logger_constructor_preserves_evidence_arriving_before_open.arriving` | `90:stream.write ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/system/test_logger.py](../../tests/rpipe/structure/system/test_logger.py) `test_logger_constructor_still_rejects_directory` | `103:target.mkdir ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/system/test_logger.py](../../tests/rpipe/structure/system/test_logger.py) `test_logger_exception_writes_traceback_on_each_line` | `58:logger.exception ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/system/test_logger.py](../../tests/rpipe/structure/system/test_logger.py) `test_logger_report_uses_metric_tags` | `41:logger.report ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/structure/system/test_logger.py](../../tests/rpipe/structure/system/test_logger.py) `test_logger_writes_timestamp_level_and_run_id` | `29:logger.info ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/test_layout.py](../../tests/rpipe/test_layout.py) `test_private_shared_paths_match_layout_documentation` | `119:study.mkdir; 120:(study / 'study.yaml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/rpipe/test_layout.py](../../tests/rpipe/test_layout.py) `test_profile_path_matches_documented_private_directory` | `136:study.mkdir; 137:(study / 'study.yaml').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/run.py](../../tests/run.py) `main` | `75:print ` | 合规 | 验证元数据独立run_id；写.tmp/报告，不改旧Run；测试入口/元数据回归 |
+| [tests/test_git_metadata.py](../../tests/test_git_metadata.py) `test_corrupt_direct_metadata_is_optional` | `66:(metadata / 'refs/heads').mkdir; 67:(metadata / 'objects').mkdir; 69:(metadata / 'HEAD').write_text; 70:(metadata / location).write_bytes ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/test_git_metadata.py](../../tests/test_git_metadata.py) `test_detached_sha_formats_keep_file_fast_path` | `96:(tmp_path / '.git').mkdir; 97:(tmp_path / '.git/HEAD').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/test_git_metadata.py](../../tests/test_git_metadata.py) `test_direct_metadata_read_failure_is_optional` | `79:(metadata / 'refs/heads').mkdir; 81:leaf.write_text; 83:(metadata / 'HEAD').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/test_git_metadata.py](../../tests/test_git_metadata.py) `test_git_fallback_unavailable_is_optional_metadata` | `53:(tmp_path / '.git').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/test_git_metadata.py](../../tests/test_git_metadata.py) `test_manifest_git_sha_handles_real_git_layouts` | `19:hooks.mkdir ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/test_manifest_bootstrap.py](../../tests/test_manifest_bootstrap.py) `test_native_test_entry_keeps_optional_corrupt_metadata` | `20:(tmp_path / 'tests').mkdir; 22:shutil.copy2; 23:(tmp_path / '.git').mkdir; 24:(tmp_path / '.git/HEAD').write_bytes; 25:(tmp_path / 'tests/test_minimal.py').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+| [tests/test_run_entry.py](../../tests/test_run_entry.py) `test_captured_launcher_keeps_child_environment_output_and_exit` | `25:module.mkdir; 26:(module / '__init__.py').write_text; 27:(module / '__main__.py').write_text ` | 合规 | 隔离fixture/故障注入/测试输出；允许构造坏字节；不纳入生产文本硬门 |
+
+### 82. Enmao 授权清理九条已合并远程分支
+
+2026-10-15 按 Enmao 本次明确授权，只删除本仓库已合入 dev 的远程分支，保留当前工作分支 `codex/artifact-contracts-correctness`。删除前 fetch origin，核对远端12条heads、恰好9条候选、无活动PR使用候选；逐条 `merge-base --is-ancestor` 确认以下tip均已包含在 dev `401af5e553f7a5024ab7b68c3000d718327c3399`。使用普通 `git push --atomic origin --delete` 一次删除，不使用 force push，不删除本地分支。
+
+| **已删除的远程分支** | **删除前 tip（均由 dev 历史保全）** |
+| --- | --- |
+| `codex/artifact-consistency-design` | `eb52c65b9128cd60b8eb2ab84592dbd9f4da8161` |
+| `codex/cache-lock-budget` | `90b7d75323d266c4d272f786c28f4c00959d0432` |
+| `codex/failure-preservation-policy` | `bbb2f41fa8af7107eada339f412ecefb05653ddb` |
+| `codex/maintenance-closeout` | `b8648d54296ffe3a0050e8e570d8aa9cdb524495` |
+| `codex/open-issue-correctness` | `8a3f21342ced528a885001629d2643df0127e0b2` |
+| `codex/safe-readout-contracts` | `41982bfb62cc562d4005093dc6c8a57a3f190d29` |
+| `codex/status-metric-shape` | `cbc8c0ae13c998e74b178209de0abd14a74cf8e7` |
+| `codex/status-readout-errors` | `ed96c8ccbe388dba4fe07f0598a5c93bcb712af5` |
+| `codex/v040-layout-release` | `fb15d6efd20fa97904c62b4b151e693495a7328a` |
+
+删除后以 `git ls-remote --heads origin` 复核：远程只剩 `main`、`dev`、`codex/artifact-contracts-correctness`。删除操作未改变main `54f8d31c0f5505742677dd2ce6dec323ee114c61`、dev或保留工作分支的tip；后续报告提交正常追加到保留分支。所有本地分支、数据、Run、provenance与Git对象均保留，#53/#62仍open；没有改自动删除设置或其他仓库。
+
+本轮仅清理远程引用与补文档，未修改源码、布局、版本或产物，不重跑代码测试/CI/性能/科学实验。报告提交并推送至保留工作分支，本轮不额外发起文档集成PR；后续入dev仍遵循正常PR流程。原始删除前/后清单、祖先核对与DELETE.log在本机.tmp/branch-cleanup-20261015，不随clone；本节保留全部分支名/tip与dev基线，正式清单不依赖临时材料。
+
+### 81. 三类系统合同归纳与第一类双重失败留证
+
+第二类实际dev验收完成：DEV_CHECKED.json SHA256 c2385f49cabfda50d994192e74a3a51fe14b250ea685db9ebdf99c424eeede89；第三类对应f5d5ca315cb450feb700a5ed038ac461eb2f654e69fd9f6aec238ac51ce78443。精确CI与最终验收也入PR61/63正文。B-072/B-073从开放软件缺陷表移除，原失败条目快照仍可追溯；#53/#62按本轮要求保持open到下一版本，不冒充已随v0.4.0发布。main仍54f8d31，无新tag/release。本批第一类测试/文档经[PR64](https://github.com/DreamSoul-AI/RPipe/pull/64)接续，最终head与实际集成CI仍分别核对。
+
+
+按最新授权，先处理#53，再在库与受跟踪Study源文件中按三类归纳，不以逐个邻接补丁代替共享规则，也不改变[layout](../code/layout.md)。唯一工作分支codex/artifact-contracts-correctness依次复用，全部旧分支、数据、Run与provenance保留。
+
+| **类别** | **统一规则与实际处理** | **回归与边界** |
+| --- | --- | --- |
+| 原子写与并发（第三类） | B-072的八个Study发布文件复用既有atomic_write_text；删除probe固定staging；原#53 index合同重验 | 先红19a3fbb、生产a20efbb；PR61最终a3e4a14全实际CI成功，实际dev fa18404的Unit38731981263/Package38731981260全实际成功。三态读取/二进制/日志协议不混入文本架构门 |
+| status/log安全读取（第二类） | B-073把status/report的数值显示收为既有report._fmt；只接收object指标与有限数，不隐藏peer | 红a201d2f为20失败/2通过；生产8605fc3；119相邻、core691通过/1平台skip、CPU Flow157通过。PR63最终716a95c的Unit38732603420/Package38732603458/Branch38732603454全部实际成功，正常合dev72e4307；实际dev的[Unit38733284739](https://github.com/DreamSoul-AI/RPipe/actions/runs/38733284739)与[Package38733284680](https://github.com/DreamSoul-AI/RPipe/actions/runs/38733284680)全部实际矩阵/聚合成功 |
+| 失败写入留证（第一类） | 保留既有_preserve_success决策，不新增生产函数或修改保留范围 | 新e6817b1加12项阶段失败+失败结果编码/提交再失败合同，连同Runner/CLI/schedule相邻共103通过；同时核对42项原决策表。完整CPU流程169 passed /0 skip；生产和layout逐字节差异检查为空，未重复本地core（生产未改），本批最终head仍执行全实际CI |
+
+第一类核对范围：Runner外层/prepare/execute/collect/summarize/write/process；result验证→编码→原子提交；launch的rerun与train→eval屏障；make的全配置预验证与逐文件提交；Study输出调用方。二次写入失败仍返回原始阶段异常，原错日志、旧result和peer字节不变，只清本写者staging。process的旧成功短路仍按既有合同，不假称发生二次提交。
+
+第二类核对status/logs/activity的三态I/O与mode/计划一致性，以及report显示；compare是严格比较，process是科学聚合，保持拒绝/判定，不套用显示层降级。第三类架构门覆盖src/rpipe与Study recipe/flow/structure；precision.main.execute流式worker.log、tracker追加/恢复offset、下载二进制、原Git blob、checkpoint与锁按既有协议精确豁免。
+
+本批未发现第一类新的生产反例，因此只补合同测试，不新造Issue或扩大异常吞咽。单文件原子不承诺多文件事务或任意同Run多写者；不加attempts/锁/模块/字段，不动第七节结构能力。新Study源码的科学使用仍须新version/make与原科学门，未重签旧来源。临时证据.tmp/contract072—074不随clone；便携回归已进入原镜像测试文件。没有测速、性能修改、GPU、下载或正式研究计算。
+
+### 80. 全仓三类合同第二批：安全数字显示（B-073 / #62）
+
+最小生产修复8605fc3只改status/report两个文件；119项相邻回归全部通过，22新节点全部执行。core691 passed /1 POSIX skip /161 deselected，8条既有partial-resume warning；CPU Flow157 passed /0 skip。本机LOCAL_CHECKED.json逐项验证红20失败/2通过与三个绿色集合；临时XML、原字节快照和清单不随clone。科学计算、严格load/compare和process聚合均未改；无GPU/性能/正式Study执行。
+
+
+第三类 PR61 最终head a3e4a140a29c75512d47090e273efc28cf5edbf0 的 Unit38731020292、Package38731020242、Branch38731020233 所有实际矩阵/聚合成功，普通merge到dev fa184045dc09f54c6b296d1f4c914a021853d041；实际dev随后Unit38731981263/Package38731981260全部实际成功，不以工作head代替验收。旧Python3.10失败保留，未重跑挑通过。
+
+第二类在同一工作分支接续，不另建同质分支。Issue62先登记，22项便携回归先于生产修复，20 failed /2 passed：8项status、4项数字格式、8项非法容器失败，2项空列表控制通过。输入为临时合成index/result/process；没有改正式Study或既有产物。复用已有report._fmt，消除status的重复数值转换；严格执行/比较/聚合的异常不转成显示占位。临时证据.tmp/contract073不随clone。
+
+### 79. 全仓替换文本发布合同接续（#53 / B-072）
+
+首个远端head `5aceeda` 的 Unit 38730213954 保留真实失败：Ubuntu/Windows Python3.10各仅新增并发测试失败（stages为空），3.13与包门成功。原因是3.10 pathlib捕获os.replace的预绑定接口，单拦os.replace不能证明同步点到达。测试现同时拦原子发布边界与原生入口，用thread-local防重入，并显式模拟预绑定后端；原生产atomic_replace重试继续执行。中间portable.xml的2项WinError5来自测试替身直接调用os.replace而绕开重试，该候选未推送、原失败保留；portable2.xml相关48 passed /1 POSIX skip。生产八文件与a20efbb完全相同，不将测试钩子修正记为另一个库缺陷。本机没有Python3.10，跨版本验收以新head实际CI为准。
+
+
+按 Enmao 新授权，从实际 dev `2e8d786` 建唯一未合分支 `codex/artifact-contracts-correctness`。#53 原 index 截断已在 PR52/v0.4.0 修复；本轮先重验旧合同，Issue 继续开放至下一版，不重复发布或关闭。
+
+| **范围** | **改前** | **本批改后** |
+| --- | --- | --- |
+| 库 index / jobs / result / profile 等 | 已统一 atomic writer，原回归存在 | 保留原生产实现，重验原编码失败/替换拒绝合同 |
+| 受跟踪 Study recipe / flow / structure | 八文件中的替换报告/清单仍直接写；架构门只扫描库 | 同一 atomic_write_text 发布；架构门同时覆盖 Study 源码，不扫描旧 runs/shared 或修改其中数据 |
+| probe.save_json | 固定 `.writing`，部分写/拒绝会覆盖 peer，成功会移走 peer，并发共用临时文件 | 删除重复 staging/replace 逻辑，复用库随机临时名、finally 与原子替换；JSON/编码/换行和最终路径不变 |
+| 专用协议 | 流式 worker.log、原始 Git blob、下载二进制与 checkpoint 独立合同 | 保持；流式日志精确豁免到 precision.main.execute，不把整个模块豁免 |
+
+先红提交 `19a3fbb`：35项5 failed /29 passed /1 POSIX skip。八文件原字节/hash在本机 .tmp/contract072/before.zip/before.json；初轮 red.xml 的 replace 钩子未覆盖 os.replace，修正后 red2.xml 真实拒绝导致 peer 被覆盖，旧材料保留。候选首轮 green.xml 的唯一失败是日志豁免错写外层 main，后限定真实嵌套函数 main.execute；不把测试清单修正冒充生产修复。
+
+设计/缺陷 `f8e6de1` 先于生产修复 `a20efbb`。相邻原子/引用合同47 passed /1 POSIX skip；core668 passed /1 POSIX skip，8条既有 partial-resume warning。便携用例在 tests/rpipe/structure/artifact/test_atomic.py；Study函数测试只从源码抽取 JSON 发布函数，在合成临时目录执行，不调用配对训练。SOURCE_CHECKED.json 核对除发布表达式/导入及 save_json 本体外，八文件计算 AST 与原字节快照一致；初次通用编辑曾规范化文件既有混合换行，提交前已恢复所有未改行原字节。
+
+临时XML/自动report/源码快照不随clone；本地CPU integration/e2e流程157 passed /0 skipped；head/实际dev CI另补确切结果。没有运行性能入口、下载、GPU、数值研究或重训；不声称新源码完成科学验收。两个Study旧Run/result/provenance全部不改写，新计算须新version/make并按原科学门复验。第二类读取与第一类失败保全继续以同一范围系统核对，不扩大旧成功保留条件或吞咽程序错误。
+
+
+### 78. v0.4.0 正式发布完成与六项 Issue 关闭
+
+按Enmao本次明确发版授权完成发布，不再沿用§76的“仅准备/监督助手接续”旧边界。发布状态文档经[PR #58](https://github.com/DreamSoul-AI/RPipe/pull/58)正常合dev300308a，最终head b49fed6及实际dev全部实际CI分别通过；[发布PR #59](https://github.com/DreamSoul-AI/RPipe/pull/59)由dev→main正常merge，两个父提交为旧main7a15c46和dev300308a，未squash/rebase/强推。材料与目录合同来源[PR #57](https://github.com/DreamSoul-AI/RPipe/pull/57)及实际dev79bcce0也已独立全绿。
+
+- **发布提交：** `54f8d31c0f5505742677dd2ce6dec323ee114c61`；main树与已验收dev一致。
+- **实际main验收：** [Unit Tests 38654268816](https://github.com/DreamSoul-AI/RPipe/actions/runs/38654268816)、[Package Check 38654268693](https://github.com/DreamSoul-AI/RPipe/actions/runs/38654268693)，全部实际矩阵和聚合成功后才建立tag。
+- **Annotated tag：** [v0.4.0](https://github.com/DreamSoul-AI/RPipe/tree/v0.4.0)，Git对象 `4b3f70ba2fed5cb19288b6f99b0d50f838e112c7`，本地类型tag，远端peeled commit与发布提交完全一致；普通推送，未覆盖旧标签。
+- **GitHub Release：** [v0.4.0](https://github.com/DreamSoul-AI/RPipe/releases/tag/v0.4.0)，ID413273894，published_at为2026-10-14T23:35:48Z（本地2026-10-15），非draft/prerelease，无二进制或本机数据附件。
+- **正文来源：** 发布提交内docs/releases/v0.4.0.md，转换16个仓库相对引用为精确提交链接并附PR/commit/main CI；实际Release正文SHA256 `e90f95c11e50dd639111fc0df599b92c94e61d0e9a35e7942fe0c80a76bc4f20` 与生成正文逐字节一致。连接无Release创建接口，按记录使用已认证gh的GitHub API正式创建并回读验证，未修改计费或安装额外插件。
+
+Release实际发布后，六个Issue各自留言注明“已在v0.4.0修复”、回归位置与精确发布来源，再经GitHub连接以completed关闭；评论与状态回读确认如下。#53不在明确关闭清单，仍保持open，不扩大处置范围。
+
+| **Issue** | **发布验收评论** | **状态** |
+| --- | --- | --- |
+| [#36](https://github.com/DreamSoul-AI/RPipe/issues/36) | [注明v0.4.0修复](https://github.com/DreamSoul-AI/RPipe/issues/36#issuecomment-6180860574) | closed / completed |
+| [#37](https://github.com/DreamSoul-AI/RPipe/issues/37) | [注明v0.4.0修复](https://github.com/DreamSoul-AI/RPipe/issues/37#issuecomment-6180861076) | closed / completed |
+| [#38](https://github.com/DreamSoul-AI/RPipe/issues/38) | [注明v0.4.0修复](https://github.com/DreamSoul-AI/RPipe/issues/38#issuecomment-6180861608) | closed / completed |
+| [#41](https://github.com/DreamSoul-AI/RPipe/issues/41) | [注明v0.4.0修复](https://github.com/DreamSoul-AI/RPipe/issues/41#issuecomment-6180862310) | closed / completed |
+| [#48](https://github.com/DreamSoul-AI/RPipe/issues/48) | [注明v0.4.0修复](https://github.com/DreamSoul-AI/RPipe/issues/48#issuecomment-6180862843) | closed / completed |
+| [#50](https://github.com/DreamSoul-AI/RPipe/issues/50) | [注明v0.4.0修复](https://github.com/DreamSoul-AI/RPipe/issues/50#issuecomment-6180863455) | closed / completed |
+
+本机TAG_CHECKED、RELEASE_CHECKED、ISSUES_CLOSED及完整CI核对在.tmp/v040，不随clone；便携证据为上述公开PR/commit/CI/tag/Release/评论链接。实际main核对文件SHA256 `7ba9692e617d5b830d5f6f0c2580e8973eb44a04bfce50ac7be393b595710e20`。旧失败、Run、provenance、所有工作分支及dev保留，未删数据/分支；未测速、跑GPU、更新下游vendor、重训或重签科学验收。本节为发布后dev文档补记，不移动v0.4.0标签或改写已发布正文；后续只按明确任务或可复现新反馈推进。
 
 ### 77. v0.4.0 发布授权接续（准备阶段）
 

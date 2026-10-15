@@ -1,5 +1,35 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-15 三类全仓清单已全部集成并实际验收
+
+最终代码dev `fb022a41230ba5c11916941e3a25617b33f04d57`：PR65清理记录及第三类PR69、第二类PR70、第一类PR71均已普通merge，最终head和实际dev的全部实际矩阵/聚合CI分别成功；精确SHA/CI链接与403组清单见record §83—87。B-074/075/076已从未解决队列移除，下一编号B-077；#53/#62/#66/#67/#68保持open至下版，不重修或自动关闭。下方“独立验收/候选”仅为历史阶段。
+
+只在dev集成，main54f8d31与layout不变；不测速/GPU/研究重跑，不覆盖旧字节。活动codex/artifact-contracts-correctness按新授权保留，九条旧远程已删不恢复，本地旧分支不删。本轮系统扫描已完成，无本轮已立项未修缺口，不重复扫描或重派通过的CI。
+
+## 2026-10-15 三类逐点清单与修复已实施
+
+新授权已覆盖原“不额外开PR/停止系统扫描”边界：7895169经PR65合dev且最终head/实际dev全实际CI成功。全仓215个Python文件的403个函数组清单见record §83，三类13个根边界与原始红绿事实见§84—86。第三类PR69已合dev b858c2b且实际dev全绿；第二类PR70已合dev869300b，实际dev独立验收；第一类e072305候选完成162相邻/734 core/169 Flow正确性检查，最终PR/head/实际dev以对应PR验收为准。
+
+同一活动工作分支codex/artifact-contracts-correctness保留；已删九条旧远程分支不恢复。本轮所有代码修复仅在dev流程集成，main/tag不动，#53/#62/#66/#67/#68保持open至下版。没有布局/schema变化、测速/GPU/研究重跑或旧Run/provenance覆盖，不将静态清单推断为任意第三方扩展的副作用证明。
+
+## 2026-10-15 已合并远程分支按新授权清理
+
+Enmao 已明确授权删除九条已合dev的远程分支，仅保留main/dev/codex/artifact-contracts-correctness；祖先/活动PR核对、全部名称与删除前SHA、实际删除后复核见[record §82](record.md#82-enmao-授权清理九条已合并远程分支)。本地分支和数据不删，源码与布局不变，#53/#62仍open。下方“所有旧远程分支保留”属于本次授权前状态，不要重新创建已删分支。报告正常提交推送保留工作分支，本轮不新增文档集成PR或重跑CI。
+
+
+## 2026-10-15 全仓三类正确性接续
+
+以Enmao最新“先#53、全仓按类统一”的授权为准，下方停止审计/等main等状态是历史。沿用唯一未合工作分支codex/artifact-contracts-correctness：第三类PR61已普通合dev fa18404且最终head/实际dev全部实际CI成功；第二类PR63最终716a95c全部实际CI成功、普通合dev72e4307，实际dev72e4307的Unit38733284739/Package38733284680也全部实际成功；第一类只补12项双重失败合同，103相邻回归及169项CPU流程全部通过，不改保留旧成功的范围。最终状态见[record §81](record.md#81-三类系统合同归纳与第一类双重失败留证)及对应PR确切CI。
+
+B-072扩展在#53、B-073在#62；两Issue保持open至下个版本发布，不自动关闭。main保持v0.4.0/54f8d31，旧六Issue已经v0.4.0发布关闭，不重开。无性能/测速/GPU/480s调查；layout是唯一磁盘依据，不改路径/schema/模块，不覆盖Study旧Run/provenance。后续有新真实反例仍按三类合同接续，不扩大第七节结构能力或制造无失败支撑的重构。
+
+
+## 2026-10-15 v0.4.0 已正式发布
+
+发布[PR #59](https://github.com/DreamSoul-AI/RPipe/pull/59)已dev→main正常merge为54f8d31c0f5505742677dd2ce6dec323ee114c61，实际main全部CPU/包CI成功后建立annotated [tag v0.4.0](https://github.com/DreamSoul-AI/RPipe/tree/v0.4.0)并发布[同名Release](https://github.com/DreamSoul-AI/RPipe/releases/tag/v0.4.0)。正文取自该提交发布报告，转换相对链接并附验收。#36/#37/#38/#41/#48/#50均已分别留言版本后completed关闭，#53保持open；准确链接和hash见[record §78](record.md#78-v040-正式发布完成与六项-issue-关闭)。
+
+不要重复发版、关闭评论或移动标签；下方“待发布/仅合dev/交监督助手”为当时状态。复用原codex/v040-layout-release提交发布后文档补记并PR合dev，当前以实际PR状态为准，不另建同质分支。全部分支/数据/Run/provenance保留，仍不测速、跑GPU、改产物布局或主动相邻审计。
+
 ## 2026-10-15 v0.4.0 已授权继续发布
 
 以Enmao最新明确指令为准：本任务继续完成dev→main普通merge、实际main CI验收、annotated tag v0.4.0、GitHub Release，再留言并关闭#36/#37/#38/#41/#48/#50。先检查实际PR/tag/Release与Issue状态，复用codex/v040-layout-release，不重复发布或移动已有标签。下方“仅合dev后停止/由监督助手发布”是当时状态，已被本节取代。#53不在关闭清单，分支和数据不删，不squash/强推，仍不测速、不跑GPU。完成事实见[record](record.md)，精确PR/commit/CI以Release附录为准。

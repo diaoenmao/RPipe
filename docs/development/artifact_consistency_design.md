@@ -162,3 +162,26 @@
 按第三类→第二类→第一类执行，均复用现有文件和函数：第三类 PR52 的最终 head 与实际 dev 全实际 CI 通过；第二类 PR54 的最终 head 通过并合 dev，实际 dev 独立验收；第一类 [PR55](https://github.com/DreamSoul-AI/RPipe/pull/55) 候选只提取原保全 predicate，基线42与相邻128项通过。完整改前/改后、失败和未完成门见 [record §69–73](record.md)，最终集成状态以对应 PR 的确切提交 / CI 为准。
 
 特殊追加、checkpoint、锁协议保持，第七节能力未实施；没有布局、schema或result含义变化，未测速或运行GPU，未合main。
+
+
+## 十一、2026-10-15 全仓同类正确性接续
+
+按最新授权继续三类系统核对。目录与磁盘合同唯一依据仍为 layout.md；不恢复结构性账本或改变已有成功保全范围。#53 原 index 反例已修且随 v0.4.0 发布，本轮先重验原回归，再补齐此前仅覆盖库包而漏掉的 Study 发布边界。
+
+第三类本批：受跟踪的 Study recipe / flow / structure 中，可整体替换的报告、数据/源码 manifest 和 probe JSON 全部复用已有 atomic_write_text。main_probe 固定 `.writing` 是可复现的 peer 所有权缺陷（B-072）；测试先失败再修。数据下载的二进制 partial、原始 Git blob、OBSERVATIONS.pt、模型/checkpoint 不纳入文本转码，直接字节合同保持。precision.main.execute 的 worker.log 是 subprocess 实时写入流，按函数精确豁免，不作为整体替换报告。
+
+只在隔离合成输入上运行回归；不会触发性能入口、下载数据或计算循环，也不修改旧 provenance。更改源码的后续研究须使用新 version / make 并重新过原门。第二类与第一类核对采用已有三态/保全判断，确认新反例后再补合同，不为制造工作扩大异常吞咽或保留范围。
+
+第二类本批（B-073 / #62）：status 与数字表复用 report.py 既有私有 _fmt，统一有限数显示边界；浮点转换溢出/非有限值显示占位，status 继续寻找可用 fallback。report 对 metrics 先确认 dict，不把列表对强转为对象。只改显示，不放宽严格读取、计划一致性、compare 或 process 科学门；无新增函数层/文件/schema。22项合同先红20失败/2通过，正常peer和原字节由回归锁定。
+
+第一类本批只补合同：六阶段原异常 × 失败结果编码/提交再失败12项，验证原异常身份、原错日志、旧result/peer和本写者清理，与原42项决策表共同锁定既有predicate。原规则全部通过，无新增生产反例，不改Runner/schedule/make的失效语义。全仓归纳及严格compare/process、流式/二进制/锁豁免边界见record §81；不把单文件原子等同多文件事务或任意同Run并发。
+
+本轮第三类PR61与第二类PR63均已普通合dev，最终head和实际dev全部实际CI分别成功；#53/#62保持开放至下版，旧v0.4.0六Issue不重开。第一类新增合同全部通过，生产规则不改。具体源码/红绿/验收链接见record §79—81；main与layout不变。
+
+## 十二、2026-10-15 逐点清单后的三类边界补齐
+
+以record §83全仓清单为准，所有固定产物位置/schema继续不变。第三类先修B-074：短随机名仍须排他取得所有权，失败不unlink未创建的peer；atomic_write_text先排他创建并记录owned，shared引用去掉递归晋升，软链→硬链创建与原子replace仍在原函数，迁移仅成功link后清自己。第二类B-076维持compare严格错误语义：坏容器拒绝，不降级成空；合法null兼容，整数不用float丢精度，有限容差按数学值比较，普通浮点比较逻辑不变；输出在CLI既有try内。第一类B-075只改日志/曲线构造器的append创建，目录错误与恢复offset不变，不扩大Runner旧成功范围。
+
+三类分别先红合同、主题PR与最终/实际dev CI；#53/#62及本轮新Issue留到下一版关闭。无性能/GPU/原始结果覆盖，不增加账本、锁、目录、模块或第七节能力。
+
+本节三类补齐已按PR69（第三类）、PR70（第二类）、PR71（第一类）普通合dev，最终head与实际dev全实际CPU/包CI分别成功；完整403组清单与验收见record §83—87。三类只在既有入口内部收敛，43项新增合同覆盖原反例和有效控制；既有布局/schema、专用协议与第七节不实施边界保持，GitHub Issue留到下一版关闭。

@@ -13,6 +13,7 @@ from rpipe.structure.artifact.config import load_config
 from rpipe.structure.artifact.errors import ArtifactError
 from rpipe.structure.artifact.index import index_path, load_index
 from rpipe.structure.artifact.paths import CONFIG_NAME, RESULT_NAME, RUNS_DIRNAME
+from rpipe.structure.artifact.readout.report import _fmt
 from rpipe.structure.artifact.result import STATUS_SUCCEEDED, load_result
 
 STATUS_PENDING = 'pending'
@@ -119,9 +120,9 @@ def _metric_cell(metrics: dict[str, Any]) -> str:
     if not isinstance(metrics, dict):
         return '-'
     for key in ('accuracy', 'best_accuracy', 'train_loss'):
-        value = metrics.get(key)
-        if isinstance(value, (int, float)) and not isinstance(value, bool):
-            return f'{key}={float(value):.4f}'
+        cell = _fmt(metrics.get(key))
+        if cell != '-':
+            return f'{key}={cell}'
     return '-'
 
 

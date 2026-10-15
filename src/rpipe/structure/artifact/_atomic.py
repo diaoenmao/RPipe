@@ -24,17 +24,21 @@ def atomic_write_text(path: Path | str, text: str, encoding: str = 'utf-8', *, n
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     tmp = target.with_name(f'{uuid.uuid4().hex}.tmp')
+    owned = False
     try:
         try:
             mode = target.stat().st_mode
         except FileNotFoundError:
             mode = None
+        tmp.touch(exist_ok=False)
+        owned = True
         tmp.write_text(text, encoding=encoding, newline=newline)
         if mode is not None:
             tmp.chmod(mode)
         return atomic_replace(tmp, target)
     finally:
-        try:
-            tmp.unlink(missing_ok=True)
-        except OSError:
-            pass
+        if owned:
+            try:
+                tmp.unlink(missing_ok=True)
+            except OSError:
+                pass

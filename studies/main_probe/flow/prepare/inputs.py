@@ -12,6 +12,8 @@ def prepared_inputs(archive, source_data, name, raw_files):
                   'torch': torch.__version__, 'numpy': np.__version__,
                   'stats': {'dim': 1, 'batch': 250, 'threads': 2, 'device': 'cpu'}}
     def build(staging):
+        from rpipe.structure.artifact._atomic import atomic_write_text
+
         reference_tree(source_data / name / 'raw', staging / 'data' / name / 'raw')
         with archive.aliases(), cwd(staging):
             datasets = archive.dataset.make_dataset(name, verbose=False)
@@ -21,7 +23,7 @@ def prepared_inputs(archive, source_data, name, raw_files):
                 for batch in loaders['train']:
                     stats.update(batch['data'])
             archive.module.save(stats, str(staging / 'stats' / name), 'torch')
-        (staging / 'stats' / 'stats.yaml').write_text(yaml.safe_dump(
+        atomic_write_text(staging / 'stats' / 'stats.yaml', yaml.safe_dump(
             {'mean': stats.mean.tolist(), 'std': stats.std.tolist()}, sort_keys=False), encoding='utf-8')
 
     files = [f'data/{name}/processed/{filename}' for filename in ('train', 'test', 'meta')]

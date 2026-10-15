@@ -417,6 +417,8 @@ freeze开启时，证据读取失败（含include匹配文件消失、权限拒�
 
 严格比较不得通过 float64 转换吞掉大整数的差异；零容差整数 / bool tensor 精确核对，整数标量保留原值算差。复数 tensor 的实部和虚部均参加数值差，不隐式转成实数。一般浮点容差与共用数值 metric 键的规则不变。
 
+compare 对 result/tracker 的根和所用容器先作对象/历史列表校验；缺省或 null 的可选 metrics/splits/split 保持历史空容器语义，非法容器或目录冒充文件按文件错误退出2。checkpoint 仅在 torch.load 解析边界将 EOF/反序列化/归档解析错误转成带原 cause 的文件错误，其他位置的 RuntimeError 仍上抛。非有限容差是参数错误；整数用配置浮点容差的精确有理数值判定，不将大整数转float，普通浮点/NaN原有比较逻辑保持。--out 发布失败也进入同一CLI错误边界，在成功发布前不打印成功摘要，保留旧输出。
+
 compare 不重跑计算，不改任何 Run 文件。和外部实现（例如旧 `main` 代码）对比时，先让 Study 的适配逻辑把外部观测投影为同样的 Run 目录格式，再用 compare。
 
 ### 14.4 Study 专用数据准备

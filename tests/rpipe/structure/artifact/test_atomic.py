@@ -242,3 +242,188 @@ def test_atomic_text_preserves_existing_script_mode(tmp_path):
     target.chmod(0o750)
     atomic_write_text(target, 'new', newline='\n')
     assert target.stat().st_mode & 0o777 == 0o750
+
+
+def _study_sources():
+    # Scan source paths only, never generated Run archives or shared inputs.
+    root = Path(__file__).resolve().parents[4] / 'studies'
+    for study in sorted(root.iterdir()):
+        for name in ('recipe.py',):
+            path = study / name
+            if path.is_file():
+                yield root, path
+        for name in ('structure', 'flow'):
+            for path in sorted((study / name).rglob('*.py')):
+                yield root, path
+
+
+def test_study_replaceable_text_artifacts_use_same_atomic_publisher():
+    exemptions = {('main_exp/flow/execute/precision.py', 'main.execute'):
+                  'live subprocess stdout/stderr stream, not replaceable report'}
+    found = [(path.relative_to(root).as_posix(), function, line)
+             for root, path in _study_sources()
+             for function, line in _direct_text_writes(path.read_text(encoding='utf-8'))
+             if (path.relative_to(root).as_posix(), function) not in exemptions]
+    assert not found, found
+
+
+def _probe_json_writer():
+    import ast
+    import json
+    import os
+    from typing import Any
+
+    root = Path(__file__).resolve().parents[4]
+    path = root / 'studies/main_probe/structure/algorithm/paired.py'
+    tree = ast.parse(path.read_text(encoding='utf-8'))
+    function = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'save_json')
+    namespace = dict(Path=Path, Any=Any, json=json, os=os, atomic_write_text=atomic_write_text)
+    exec(compile(ast.Module(body=[function], type_ignores=[]), str(path), 'exec'), namespace)
+    return namespace['save_json']
+
+
+@pytest.mark.parametrize('failure', ['partial', 'replace', 'encoding'])
+def test_study_json_publisher_failure_preserves_evidence_and_peer(tmp_path, monkeypatch, failure):
+    import rpipe.structure.artifact._atomic as atomic
+
+    writer = _probe_json_writer()
+    target, peer = tmp_path / 'EXECUTION.json', tmp_path / 'EXECUTION.json.writing'
+    target.write_bytes(b'old evidence')
+    peer.write_bytes(b'another publisher')
+    error = OSError('publication refused')
+    if failure == 'partial':
+        original = Path.write_text
+        def partial(path, *args, **kwargs):
+            original(path, 'partial', encoding='utf-8')
+            raise error
+        monkeypatch.setattr(Path, 'write_text', partial)
+    elif failure == 'replace':
+        import os
+        def refused(*args):
+            raise error
+        monkeypatch.setattr(atomic, 'atomic_replace', refused)
+        monkeypatch.setattr(Path, 'replace', refused)
+        monkeypatch.setattr(os, 'replace', refused)
+    payload = {'invalid': object()} if failure == 'encoding' else {'new': '中文'}
+    with pytest.raises(TypeError if failure == 'encoding' else OSError):
+        writer(target, payload)
+    assert target.read_bytes() == b'old evidence'
+    assert peer.read_bytes() == b'another publisher'
+    assert set(tmp_path.iterdir()) == {target, peer}
+
+
+def test_study_json_publisher_success_preserves_payload_format_and_peer(tmp_path):
+    import json
+    import os
+
+    target, peer = tmp_path / 'EXECUTION.json', tmp_path / 'EXECUTION.json.writing'
+    peer.write_bytes(b'another publisher')
+    body = {'text': '中文', 'rows': [1, 2]}
+    assert _probe_json_writer()(target, body) is None
+    expected = (json.dumps(body, ensure_ascii=False, indent=2) + '\n').replace('\n', os.linesep).encode('utf-8')
+    assert target.read_bytes() == expected
+    assert peer.read_bytes() == b'another publisher'
+    assert set(tmp_path.iterdir()) == {target, peer}
+
+
+@pytest.mark.parametrize('backend', ['dynamic', 'prebound'])
+def test_study_json_concurrent_publishers_keep_distinct_stages_and_peer(tmp_path, monkeypatch, backend):
+    from concurrent.futures import ThreadPoolExecutor
+    import json
+    import os
+    import threading
+    import rpipe.structure.artifact._atomic as atomic
+
+    target, peer = tmp_path / 'EXECUTION.json', tmp_path / 'EXECUTION.json.writing'
+    target.write_bytes(b'old evidence')
+    peer.write_bytes(b'another publisher')
+    writer = _probe_json_writer()
+    barrier, stages, replace = threading.Barrier(2), [], os.replace
+    if backend == 'prebound':
+        # Python 3.10 pathlib captures os.replace before the test patches it.
+        monkeypatch.setattr(Path, 'replace', lambda source, destination: replace(source, destination) or Path(destination))
+    commit, local = atomic.atomic_replace, threading.local()
+    def synchronized(source, destination):
+        stages.append(source)
+        barrier.wait(timeout=10)
+        local.publishing = True
+        try:
+            return commit(source, destination)
+        finally:
+            local.publishing = False
+    def native_replace(source, destination):
+        if getattr(local, 'publishing', False):
+            return replace(source, destination)
+        return synchronized(source, destination)
+    monkeypatch.setattr(atomic, 'atomic_replace', synchronized)
+    monkeypatch.setattr(os, 'replace', native_replace)
+    bodies = [{'writer': 'A'}, {'writer': 'B'}]
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        futures = [pool.submit(writer, target, body) for body in bodies]
+        assert [future.result(timeout=15) for future in futures] == [None, None]
+    assert len(set(stages)) == 2
+    assert json.loads(target.read_text(encoding='utf-8')) in bodies
+    assert peer.read_bytes() == b'another publisher'
+    assert set(tmp_path.iterdir()) == {target, peer}
+
+
+@pytest.mark.parametrize('kind', ['peer', 'target-alias', 'stat-refusal'])
+def test_text_stage_collision_preserves_unowned_bytes(tmp_path, monkeypatch, kind):
+    from types import SimpleNamespace
+    from rpipe.structure.artifact import _atomic
+    monkeypatch.setattr(_atomic.uuid, 'uuid4', lambda: SimpleNamespace(hex='0' * 32))
+    peer = tmp_path / ('0' * 32 + '.tmp')
+    target = peer if kind == 'target-alias' else tmp_path / 'target.txt'
+    target.write_bytes(b'old target')
+    if peer != target:
+        peer.write_bytes(b'peer stage')
+    before = {p: p.read_bytes() for p in [target, peer]}
+    error = PermissionError('target stat refused')
+    if kind == 'stat-refusal':
+        stat = Path.stat
+
+        def denied(path, *a, **kw):
+            if path == target:
+                raise error
+            return stat(path, *a, **kw)
+        monkeypatch.setattr(Path, 'stat', denied)
+    with pytest.raises(PermissionError if kind == 'stat-refusal' else FileExistsError) as caught:
+        _atomic.atomic_write_text(target, 'new target')
+    if kind == 'stat-refusal':
+        assert caught.value is error
+    assert {p: p.read_bytes() for p in before} == before
+
+
+def test_concurrent_nonce_collision_cannot_delete_an_active_writer_stage(tmp_path, monkeypatch):
+    from concurrent.futures import ThreadPoolExecutor
+    from types import SimpleNamespace
+    import threading
+    from rpipe.structure.artifact import _atomic
+
+    target = tmp_path / 'target.txt'
+    target.write_text('old', encoding='utf-8')
+    stage = tmp_path / ('0' * 32 + '.tmp')
+    monkeypatch.setattr(_atomic.uuid, 'uuid4', lambda: SimpleNamespace(hex='0' * 32))
+    ready, release = threading.Event(), threading.Event()
+    publish = _atomic.atomic_replace
+
+    def hold(source, destination):
+        if ready.is_set():
+            raise AssertionError('colliding writer reached publication')
+        ready.set()
+        assert release.wait(5)
+        return publish(source, destination)
+
+    monkeypatch.setattr(_atomic, 'atomic_replace', hold)
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        first = pool.submit(_atomic.atomic_write_text, target, 'first')
+        try:
+            assert ready.wait(5)
+            with pytest.raises(FileExistsError):
+                _atomic.atomic_write_text(target, 'second')
+            assert stage.read_text(encoding='utf-8') == 'first'
+        finally:
+            release.set()
+        assert first.result() == target
+    assert target.read_text(encoding='utf-8') == 'first'
+    assert not stage.exists()
