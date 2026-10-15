@@ -29,7 +29,7 @@ def validate_result(data: dict[str, Any]) -> list[str]:
     if not isinstance(data, dict):
         return ['result must be an object']
     status = data.get('status')
-    if status not in VALID_STATUS:
+    if not isinstance(status, str) or status not in VALID_STATUS:
         errors.append(f'status must be one of {sorted(VALID_STATUS)}')
         return errors
     if status == STATUS_SUCCEEDED:

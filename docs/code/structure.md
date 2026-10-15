@@ -984,6 +984,8 @@ collect → summarize → Flow **write** 定稿。失败时 Runner 可直接 `wr
 
 定稿宜含 `status`（`succeeded` \| `failed`）；失败时宜有 `error`。成功路径宜有 control / structure 快照 / metrics / paths。
 
+Run的write_result沿用既有必需状态枚举VALID_STATUS；validator先检查status为字符串，再做枚举成员判断，任何非法类型均返回原有错误列表，由writer拒绝为ValueError，不让容器型字段逃逸为unhashable TypeError。通用decode_result/load_result仍只要求根mapping，不能对process等通用映射全套Run写校验。status读Run时仅核对该状态字段：缺失/null/空字符串/pending保留已有显示兼容，其余必须满足既有合法状态；非法类型或未知标签沿unreadable→pending+诊断回退，不丢peer、计划mode/seed或旧输入字节。合法部分结果仍可显示，不新增状态、格式、路径或读时修复。
+
 **metrics（摘要）：** 键用稳定名，如 `train_loss`、`accuracy`。`train_loss` 来自 AlgorithmTracker 最后一段 train mean，**不是** last-batch CE。完整曲线在 `assets/tracker/`（§6.9），不在 result。
 
 **Runtime vs 快照（必守）：** `state` 里可有 Loader / Module / AlgorithmTracker / Logger 句柄；result 只接受可序列化投影。summarize 丢弃这些 runtime 对象。大对象走 **asset**，result 只记路径。

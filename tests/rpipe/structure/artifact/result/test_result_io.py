@@ -39,3 +39,18 @@ def test_result_encoding_failure_preserves_target_and_allows_next_write(tmp_path
     assert load_result(target) == new
     assert set(tmp_path.iterdir()) == {target, peer}
     assert peer.read_text(encoding='utf-8') == 'another writer'
+
+
+@pytest.mark.parametrize('status', [[], {}, ['succeeded']], ids=['list', 'object', 'list-label'])
+@pytest.mark.parametrize('existing', [False, True])
+def test_invalid_status_refuses_write_before_touching_target_or_peer(tmp_path, status, existing):
+    """write_result -> invalid schema ValueError; preserve target/peer and create no stage."""
+    target = tmp_path / 'result.json'
+    if existing:
+        write_result(target, {'status': 'succeeded', 'control': {}, 'paths': {}, 'metrics': {}})
+    peer = tmp_path / 'peer.tmp'
+    peer.write_bytes(b'another writer')
+    before = {p: p.read_bytes() for p in tmp_path.iterdir()}
+    with pytest.raises(ValueError, match='invalid result:.*status'):
+        write_result(target, {'status': status})
+    assert {p: p.read_bytes() for p in tmp_path.iterdir()} == before

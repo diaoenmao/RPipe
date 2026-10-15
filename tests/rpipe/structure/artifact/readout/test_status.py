@@ -448,3 +448,51 @@ def test_falsy_non_mapping_config_is_unknown_without_hiding_peer(tmp_path, text)
     assert rows['ok']['metric'] == 'accuracy=0.8000'
     assert body['counts'] == {'planned': 3, 'succeeded': 1, 'failed': 1, 'pending': 1}
     assert {p: p.read_bytes() for p in study.rglob('*') if p.is_file()} == before
+
+
+@pytest.mark.parametrize('status', [[], {}, ['succeeded'], False, 0, 1.0, 'queued'],
+                         ids=['list', 'object', 'list-label', 'bool', 'int', 'float', 'unknown'])
+def test_invalid_result_status_is_unreadable_without_hiding_planned_peer(tmp_path, status):
+    import json
+
+    study = _write_study(tmp_path)
+    path = study / 'runs/wait/result.json'
+    path.write_text(json.dumps({'status': status, 'control': {}, 'paths': {},
+                               'metrics': {'accuracy': 99}}), encoding='utf-8')
+    before = {p: p.read_bytes() for p in study.rglob('*') if p.is_file()}
+    body = list_runs(study)
+    rows = {row['id']: row for row in body['runs']}
+    assert rows['wait']['status'] == 'pending'
+    assert rows['wait']['error'] and 'result unreadable' in rows['wait']['error']
+    assert rows['wait']['mode'] == 'train'
+    assert rows['wait']['seed'] == 1
+    assert rows['wait']['metric'] == '-'
+    assert rows['ok']['status'] == 'succeeded'
+    assert rows['ok']['metric'] == 'accuracy=0.8000'
+    assert body['counts'] == {'planned': 3, 'succeeded': 1, 'failed': 1, 'pending': 1}
+    assert {p: p.read_bytes() for p in study.rglob('*') if p.is_file()} == before
+
+
+@pytest.mark.parametrize('kind', ['missing', 'null', 'empty', 'pending', 'succeeded', 'failed', 'partial'])
+def test_result_status_display_keeps_legacy_and_partial_mappings(tmp_path, kind):
+    import json
+
+    study = _write_study(tmp_path)
+    body = {'control': {}, 'paths': {}, 'metrics': {'accuracy': 0.7}}
+    if kind != 'missing':
+        body['status'] = None if kind == 'null' else '' if kind == 'empty' else 'succeeded' if kind == 'partial' else kind
+    if kind == 'failed':
+        body['error'] = 'original failure'
+    if kind == 'partial':
+        body.pop('control')
+        body.pop('paths')
+    path = study / 'runs/wait/result.json'
+    path.write_text(json.dumps(body), encoding='utf-8')
+    before = {p: p.read_bytes() for p in study.rglob('*') if p.is_file()}
+    rows = {row['id']: row for row in list_runs(study)['runs']}
+    expected = 'succeeded' if kind == 'partial' else kind if kind in ('succeeded', 'failed') else 'pending'
+    assert rows['wait']['status'] == expected
+    assert rows['wait']['error'] == ('original failure' if kind == 'failed' else None)
+    assert rows['wait']['metric'] == ('accuracy=0.7000' if expected == 'succeeded' else '-')
+    assert rows['ok']['status'] == 'succeeded'
+    assert {p: p.read_bytes() for p in study.rglob('*') if p.is_file()} == before

@@ -1,5 +1,9 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 目标active，Run状态候选与activity队列
+
+前四批#77/PR78、#79/PR80、#81/PR83、#82/PR84均已合dev且最终head/实际dev所有实际CI成功；当前验收dev6863f7f。四条结束远程均实际删除，最新codex/saved-plan-read-boundary清理与旧tip详record §99，本地旧分支保留。当前唯一未合codex/result-status-contract修B-081/#85：红fc704fa16失败/13控制，设计50e18f5后最小fixcd06c5d；402相邻、core857通过/1平台skip、Flow175通过，最后head/实际dev按本批PR验收后删远程。新真实B-082/#86是坏activity字段使缺index的status成功退出，只有9小探针（6反例/3控制）、尚未红测试/修生产。所有Issue等后版，不合main/打tag、不测速/GPU、不改layout或删数据；目标持续接续。
+
 ## 2026-10-16 目标active，可选缓存候选完成
 
 #77/PR78、#79/PR80、#81/PR83均已普通合dev且最终head/实际dev所有实际CI成功；当前已验收dev4536ec4。三条结束远程codex/artifact-contracts-correctness、codex/yaml-mapping-roots、codex/declared-batch-contract均实际删除，旧tip/祖先/清单与一次GitHub EOF恢复见record §97；本地分支与数据保留。当前唯一未合codex/saved-plan-read-boundary修B-080/#82：红9add4cc为10失败/12控制，设计ef11eda后fixaf56370；371相邻、core834通过/1平台skip、Flow169通过。最终head/实际dev按本批PR正文分别验收，再删结束远程。四Issue保持open等后版。无测速/GPU/布局变化/main/tag，继续目标，不重复修已合问题或干预下游。
