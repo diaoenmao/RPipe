@@ -6,12 +6,13 @@
 
 ## 开放
 
-### B-089：compare非有限值导致标量/张量错误通过（[#104](https://github.com/DreamSoul-AI/RPipe/issues/104)）
+### B-090：只读文本staging在发布拒绝后残留（[#106](https://github.com/DreamSoul-AI/RPipe/issues/106)）
 
-- 来源：第二类只读比较合同复查，dev233fb2a上三类实际文件18场景中12判定不符；rtol=1e-5有限vs±inf、相反inf错误true，相同inf错误false；输入/peer原字节保留。证据.tmp/audit089（不随clone）。
-- 期望：既有_close/_tree统一非有限值身份，相同无穷值相同，非有限不匹配不受相对界污染；paired-NaN、有限容差/整数、字段/缺失/输出结构、训练计算不变。
-- 先Issue104，红提交19313c7首次96失败包含CLI尾行假设错误；1821c3c修正该测试、生产未动，权威RED2为96项40 failed/56 passed、0error/skip。先设计再最小共享修复，补真实API/CLI指标/history/实数与复数tensor、exact/relative与字节保全；不测速/GPU或改布局。
-- 2444097原compare净+4修复；96项转绿，compare152/core1276+1平台skip/Flow181通过。dc5988c后补12混合控制，全compare164通过，源未变；分开登记不混算完整门，待最终head/实际dev CI。
+- 来源：第三类共享原子文本入口，dev83615d7真实Windows只读旧target保留，但本调用staging复制只读属性后unlink拒绝，遗留完整候选内容；原始REPRO与文件留.tmp/audit090，不随clone。
+- 期望：只在owned独立文本stage的删除遇PermissionError时有界恢复可写属性并再删一次；不触碰旧target/peer、共享hardlink、checkpoint诊断目录，原异常保留；不可恢复IO仍best-effort。
+- 先Issue106，红50aac22共12项5 failed/7 passed、0error/skip；含真实text/config/result只读/正常路径、恢复/再次拒绝/非权限IO、未取得owned的只读碰撞。先设计再最小修复，不测速/GPU/改布局或恢复协议。
+
+B-089/#104已由PR105普通合dev83615d7，最终head和实际dev全部实际矩阵/聚合通过，结束remote已清，见record§121；Issue留至下版。
 
 B-088/#101已由PR102普通合dev ef608468，最终head和实际dev全部实际矩阵/聚合成功，结束remote已清，见record§117；Issue留至下版。
 
