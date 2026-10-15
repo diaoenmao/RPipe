@@ -36,6 +36,8 @@ def bootstrap() -> None:
 
 def export_source() -> dict[str, Any]:
     """Export tracked blobs, refusing to overwrite a different existing file."""
+    from rpipe.structure.artifact._atomic import atomic_write_text
+
     tree = subprocess.check_output(
         ['git', 'ls-tree', '--full-tree', '-r', '-z', COMMIT], cwd=REPO
     )
@@ -82,9 +84,7 @@ def export_source() -> dict[str, Any]:
     if offset != len(stream):
         raise ValueError('unexpected trailing Git batch output')
     manifest = {'commit': COMMIT, 'root': str(ARCHIVE_ROOT), 'files': rows}
-    (ARCHIVE_ROOT / 'SOURCE_MANIFEST.json').write_text(
-        json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
-    )
+    atomic_write_text(ARCHIVE_ROOT / 'SOURCE_MANIFEST.json', json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     return manifest
 
 

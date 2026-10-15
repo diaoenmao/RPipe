@@ -97,6 +97,27 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 79. 全仓替换文本发布合同接续（#53 / B-072）
+
+首个远端head `5aceeda` 的 Unit 38730213954 保留真实失败：Ubuntu/Windows Python3.10各仅新增并发测试失败（stages为空），3.13与包门成功。原因是3.10 pathlib捕获os.replace的预绑定接口，单拦os.replace不能证明同步点到达。测试现同时拦原子发布边界与原生入口，用thread-local防重入，并显式模拟预绑定后端；原生产atomic_replace重试继续执行。中间portable.xml的2项WinError5来自测试替身直接调用os.replace而绕开重试，该候选未推送、原失败保留；portable2.xml相关48 passed /1 POSIX skip。生产八文件与a20efbb完全相同，不将测试钩子修正记为另一个库缺陷。本机没有Python3.10，跨版本验收以新head实际CI为准。
+
+
+按 Enmao 新授权，从实际 dev `2e8d786` 建唯一未合分支 `codex/artifact-contracts-correctness`。#53 原 index 截断已在 PR52/v0.4.0 修复；本轮先重验旧合同，Issue 继续开放至下一版，不重复发布或关闭。
+
+| **范围** | **改前** | **本批改后** |
+| --- | --- | --- |
+| 库 index / jobs / result / profile 等 | 已统一 atomic writer，原回归存在 | 保留原生产实现，重验原编码失败/替换拒绝合同 |
+| 受跟踪 Study recipe / flow / structure | 八文件中的替换报告/清单仍直接写；架构门只扫描库 | 同一 atomic_write_text 发布；架构门同时覆盖 Study 源码，不扫描旧 runs/shared 或修改其中数据 |
+| probe.save_json | 固定 `.writing`，部分写/拒绝会覆盖 peer，成功会移走 peer，并发共用临时文件 | 删除重复 staging/replace 逻辑，复用库随机临时名、finally 与原子替换；JSON/编码/换行和最终路径不变 |
+| 专用协议 | 流式 worker.log、原始 Git blob、下载二进制与 checkpoint 独立合同 | 保持；流式日志精确豁免到 precision.main.execute，不把整个模块豁免 |
+
+先红提交 `19a3fbb`：35项5 failed /29 passed /1 POSIX skip。八文件原字节/hash在本机 .tmp/contract072/before.zip/before.json；初轮 red.xml 的 replace 钩子未覆盖 os.replace，修正后 red2.xml 真实拒绝导致 peer 被覆盖，旧材料保留。候选首轮 green.xml 的唯一失败是日志豁免错写外层 main，后限定真实嵌套函数 main.execute；不把测试清单修正冒充生产修复。
+
+设计/缺陷 `f8e6de1` 先于生产修复 `a20efbb`。相邻原子/引用合同47 passed /1 POSIX skip；core668 passed /1 POSIX skip，8条既有 partial-resume warning。便携用例在 tests/rpipe/structure/artifact/test_atomic.py；Study函数测试只从源码抽取 JSON 发布函数，在合成临时目录执行，不调用配对训练。SOURCE_CHECKED.json 核对除发布表达式/导入及 save_json 本体外，八文件计算 AST 与原字节快照一致；初次通用编辑曾规范化文件既有混合换行，提交前已恢复所有未改行原字节。
+
+临时XML/自动report/源码快照不随clone；本地CPU integration/e2e流程157 passed /0 skipped；head/实际dev CI另补确切结果。没有运行性能入口、下载、GPU、数值研究或重训；不声称新源码完成科学验收。两个Study旧Run/result/provenance全部不改写，新计算须新version/make并按原科学门复验。第二类读取与第一类失败保全继续以同一范围系统核对，不扩大旧成功保留条件或吞咽程序错误。
+
+
 ### 78. v0.4.0 正式发布完成与六项 Issue 关闭
 
 按Enmao本次明确发版授权完成发布，不再沿用§76的“仅准备/监督助手接续”旧边界。发布状态文档经[PR #58](https://github.com/DreamSoul-AI/RPipe/pull/58)正常合dev300308a，最终head b49fed6及实际dev全部实际CI分别通过；[发布PR #59](https://github.com/DreamSoul-AI/RPipe/pull/59)由dev→main正常merge，两个父提交为旧main7a15c46和dev300308a，未squash/rebase/强推。材料与目录合同来源[PR #57](https://github.com/DreamSoul-AI/RPipe/pull/57)及实际dev79bcce0也已独立全绿。

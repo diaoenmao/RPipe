@@ -39,10 +39,9 @@ def sha(path: Path) -> str:
 
 
 def save_json(path: Path, body: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(path.name + '.writing')
-    temporary.write_text(json.dumps(body, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    os.replace(temporary, path)
+    from rpipe.structure.artifact._atomic import atomic_write_text
+
+    atomic_write_text(path, json.dumps(body, ensure_ascii=False, indent=2) + '\n')
 
 
 def source_manifest() -> dict[str, str]:

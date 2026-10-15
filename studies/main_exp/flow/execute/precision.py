@@ -79,6 +79,8 @@ def main(recipe, argv):
 
 
 def _worker(recipe, args):
+    from rpipe.structure.artifact._atomic import atomic_write_text
+
     import torch
     from rpipe.structure.algorithm.config import AlgorithmConfig
     from rpipe.structure.algorithm.eval import EvalAlgorithm
@@ -142,5 +144,5 @@ def _worker(recipe, args):
             'checkpoint_correct_samples': correct_samples(summary['best_accuracy'], 10000),
             'runtime': runtime, 'kernels': kernels, 'kernel_trace_available': bool(kernels)}
     torch.save(torch.cat(tensors), args.output / 'logits.pt')
-    (args.output / 'diagnosis.json').write_text(json.dumps(body, indent=2) + '\n', encoding='utf-8')
+    atomic_write_text(args.output / 'diagnosis.json', json.dumps(body, indent=2) + '\n', encoding='utf-8')
     return 0
