@@ -53,24 +53,41 @@ def test_optional_state_legacy_fallback_contract(tmp_path, raw):
     assert state.read_bytes() == raw
 
 
-@pytest.mark.parametrize('error', [OSError('unreadable'), RuntimeError('programming failure')])
-def test_optional_state_keeps_io_and_programming_error_boundary(tmp_path, monkeypatch, error):
+@pytest.mark.parametrize('reader', [load_curve_series, load_tracker_history])
+@pytest.mark.parametrize('primary', [False, True], ids=['legacy-only', 'valid-jsonl'])
+@pytest.mark.parametrize('operation', ['stat', 'read_text'])
+@pytest.mark.parametrize('error_kind', ['permission', 'io', 'missing', 'programming'])
+def test_optional_state_keeps_io_and_programming_error_boundary(
+        tmp_path, monkeypatch, reader, primary, operation, error_kind):
     state = tmp_path / 'runs/a/assets' / kinds.TRACKER_STATE
     state.parent.mkdir(parents=True)
     state.write_text('{}', encoding='utf-8')
-    original = Path.read_text
+    if primary:
+        scalar = tmp_path / 'runs/a/assets' / kinds.TRACKER_JSONL
+        scalar.parent.mkdir(parents=True, exist_ok=True)
+        scalar.write_text(json.dumps({'split': 'test', 'name': 'Accuracy', 'mean': 75.0,
+                                      'optimizer_step': 1}) + '\n', encoding='utf-8')
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    error = {'permission': PermissionError(13, 'optional state denied'),
+             'io': OSError(5, 'optional state I/O refusal'),
+             'missing': FileNotFoundError(2, 'optional state disappeared'),
+             'programming': RuntimeError('unexpected reader bug')}[error_kind]
+    original = getattr(Path, operation)
     def read(path, *args, **kwargs):
         if path == state:
             raise error
         return original(path, *args, **kwargs)
-    monkeypatch.setattr(Path, 'read_text', read)
-    if isinstance(error, RuntimeError):
-        with pytest.raises(RuntimeError) as caught:
-            load_curve_series(tmp_path, 'a')
-        assert caught.value is error
-    else:
-        assert load_curve_series(tmp_path, 'a') == {}
-
+    with monkeypatch.context() as fault:
+        fault.setattr(Path, operation, read)
+        if error_kind == 'programming':
+            with pytest.raises(RuntimeError) as caught:
+                reader(tmp_path, 'a')
+            assert caught.value is error
+        else:
+            values = [75.0] if reader is load_tracker_history else {
+                'unit': 'step', 'x': [1], 'values': [75.0]}
+            assert reader(tmp_path, 'a') == ({'test': {'Accuracy': values}} if primary else {})
+    assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
 
 
 @pytest.mark.parametrize('reader', [load_curve_series, load_tracker_history])
