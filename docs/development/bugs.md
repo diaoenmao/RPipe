@@ -2,17 +2,25 @@
 
 > 这里只保留尚未解决的缺陷。编号只增不复用；修复并验证后移除条目，开发证据留在 [record.md](record.md)，实验依据留在对应 Study 报告。正常差异或决定不修的事项不列为开放缺陷。权威仍是 [concept.md](../code/concept.md) → [layout.md](../code/layout.md) → 代码。
 
-更新日期：2026-10-15。
+更新日期：2026-10-16。
 
 ## 开放
 
-### B-078：严格YAML mapping读取把falsy非对象误当空配置（[#79](https://github.com/DreamSoul-AI/RPipe/issues/79)）
+### B-080：可选jobs缓存的stat/编码/数值元数据失败越过重建边界（[#82](https://github.com/DreamSoul-AI/RPipe/issues/82)）
 
-- 来源：B-077后同类解析边界复查；配置decoder及Study声明loader均先用`safe_load(...) or {}`，绕过既有mapping验证。
-- 复现/实际：false、0、[]、空字符串四种根值，在两严格入口均误接受为{}；计划Run的status据此无诊断猜train。共两组7个合成文档，原字节不改；空文档/null/{}为必须保留的兼容控制。
-- 期望：两现有入口仅对None回退空dict，其他非mapping由既有CorruptArtifactError/ValueError拒绝；status复用原unreadable→unknown+诊断，不隐藏peer。非空非法标量也保持拒绝，不新增helper、模块、格式或迁移。
-- 先Issue、再红测试9f4d796：24节点，12 failed/12 passed，0error/skip。原字节ZIP、REPRO/STUDY_REPRO、RED.xml/log/COMMAND/计数在.tmp/audit078，不随clone。
-- 调用范围：load_config→prepare/CLI、make写配置/index、data.prepare、resume、schedule/capacity及main_exp capacity；load_study_yaml→make/Runner/provenance/Study process/data.profile。可选load_stats对同类输入已返回None，不改；不扩大科学/schema/容错边界。
+- 来源：持续第二类可选读取复查。load_launch_plan合同为不可用返回None请求make重建；但stat在try外、UTF-8及缓存int转换未在同一边界。
+- 复现：8小探针中坏UTF8、坏init_gpu文本、null num_gpus、坏round文本、Infinity round、注入stat PermissionError共6异常逃逸；坏JSON已返回None、合法空计划可用为2控制。7个物理缓存原字节不改；没有启动进程/GPU或更改ACL。
+- 期望：只在现有函数内把缓存stat/read/decode/已存元数据转换归入明确文件/类型/值/溢出边界；保留合法/缺省参数和缓存不匹配逻辑。调用方非法参数、意外RuntimeError继续上抛，不改缓存字节/格式、实际分组、retry、资源策略或布局。
+- 已先创建Issue82；便携红测试与生产修复尚未执行，待当前#81批次验收后在单一新分支接续。源码/测试原字节ZIP与REPRO.json在.tmp/audit080，不随clone。该问题不同于B-079的jobs/batches一致性，不混写未做验收。
+
+### B-079：显式batches越过声明jobs，可能先失效未列入任务的旧成功（[#81](https://github.com/DreamSoul-AI/RPipe/issues/81)）
+
+- 来源：三类合同全仓接续，schedule.wait_groups直接返回batches；native与render_bash均信任它，缓存loader也未核对jobs/batches一致性。
+- 真实隔离复现：jobs仅planned、batches仅peer，Popen为内存替身；实际mock启动peer，旧peer result从succeeded变failed，原SHA256 c0cf5aa5350fbf1628583326b8a9b4b9cea22d6d0064886e38cdadc2f071f37b→c8d12e2aa95bc93159dfc5987230ab16b992f2c32fe649fb09c1c10799565da0。未启动真实子进程/GPU，未触碰正式数据。生成Bash仅嵌入peer并从groups重建jobs，原planned被丢弃；脚本未执行。
+- 期望：既有wait_groups验证batches与jobs完整多重集/字段相同，允许合法重排；writer在发布前验证，缓存在过滤成功项前验证，不一致请求重建，native/script在失效旧结果/启动/覆盖前拒绝。不修改合法rerun保全范围、默认retry/依赖顺序、格式或布局。
+- 先Issue，再红测试5597727：26节点，23 failed/3 passed，0error/skip；覆盖foreign/missing/metadata/duplicate的共享分组、native旧字节/peer、脚本发布、渲染、两种include_done缓存读取，以及合法/重排控制。原字节ZIP、native REPRO、旧peer bytes/hash、脚本、RED.xml/log/命令在.tmp/audit079，不随clone。首次补充脚本探针少传两个必需参数的调用错误另存，已纠正，不当库失败。
+
+B-078/#79已由[PR80](https://github.com/DreamSoul-AI/RPipe/pull/80)普通merge devf4acb93，最终head与实际dev所有实际矩阵/聚合成功，从未修队列移除；Issue仍open到下版。YAML远程结束分支已删除，详细证据见record §93/95。
 
 B-077/#77已由[PR78](https://github.com/DreamSoul-AI/RPipe/pull/78)普通合dev1667f51，最终head及实际dev全部实际矩阵/聚合成功；从未修队列移除，Issue77留待下版。红绿及分支实际清理见record §92。本轮当前未修验证项为上方B-078，下一新编号B-079；下文“下一B-077”是历史批次快照。
 

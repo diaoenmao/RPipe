@@ -1,5 +1,9 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 目标active，批次一致性候选与可选缓存队列
+
+#77/PR78和#79/PR80均已合dev并分别通过最终head/实际dev全实际CI。远程codex/artifact-contracts-correctness与codex/yaml-mapping-roots均在对应验收后实际删除（清单/旧tip见record §95），本地旧分支保留。当前唯一未合codex/declared-batch-contract修B-079/#81：红5597727为23失败/3控制通过；设计aa6b56b后最小fix0f57ddb，349相邻、core812通过/1平台skip、Flow169通过，准备PR最终验收。另已真实确认并先开B-080/#82（可选jobs缓存stat/UTF8/存储数值转换异常越过重建None边界），只有本机探针，红便携测试/生产修复尚未做。按目标连续接续，不合main/打tag、不测速/GPU、不改layout/格式、不删数据；所有Issue留到后版关闭。
+
 ## 2026-10-15 目标模式active，继续B-078/YAML mapping合同
 
 #77/PR78已普通合dev1667f51，最终head与实际dev全部实际CI成功；已按最新授权删除结束的远程codex/artifact-contracts-correctness，tip与证据见record §92。本地旧分支保留。当前唯一未合分支codex/yaml-mapping-roots处理真实B-078/#79：先红9f4d796（12 failed/12 passed），设计7cedf9f后最小生产fix5d15070仅两原函数+4/-2；323相邻、core786通过/1平台skip、Flow169通过。最后head/实际dev以新PR验收为准，两个Issue留到下版关闭。不测速、不改layout、不合main/打tag；按目标持续修正确性，不制造无反例任务。

@@ -1062,6 +1062,8 @@ Study 编排清单。`rpipe.structure.artifact.index`，**不是** Flow 的 writ
 
 CPU job 的旧计划若仍有 gpu 绑定须重新 make；直接调度 CPU job 也不应用残留 gpu 标签，不覆盖父环境的 GPU 可见性，启动文案使用 CPU。CUDA job 的显式 GPU 分配保持原行为。
 
+显式 batches 必须是所声明 jobs 的同一完整多重集（含每条job字段），允许组内/组间重新排序，不允许漏项、额外Run或同ID字段漂移。在既有wait_groups统一拒绝不一致；写jobs.json前与复用缓存过滤成功Run前调用同一校验。坏缓存返回原有重建请求None，原生launch/脚本生成直接拒绝，均先于旧结果失效、子进程启动或脚本覆盖。
+
 一次 launch 的实际 wait 分组不能重复同一 Run；在启动子进程或失效旧结果之前拒绝重复，维持 Run 单写者合同。计划内的失败重试是后续独立轮次，不算同一清单的重复任务；需要重复实测时使用新 version。
 
 Study 展开也在写入 Run config / index 前拒绝重复内容 ID，包括重复 seed / 轴值，防止顺序执行及聚合重复计入同一产物。Accuracy 按目标形状区分每个样本的标签与类别分数，样本数不一致时报错，不允许广播得到虚假准确率。正预算训练没有 batch 时失败，不定稿零步成功；合法的已恢复 epoch 尾段保持原语义。完整 RNG 恢复仅声明 CPU / CUDA，其他后端属于部分恢复。
