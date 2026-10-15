@@ -103,3 +103,22 @@ def test_logger_constructor_still_rejects_directory(tmp_path):
     target.mkdir(parents=True)
     with pytest.raises(OSError):
         Logger(tmp_path)
+
+
+def test_logger_constructor_does_not_reopen_existing_evidence(tmp_path, monkeypatch):
+    from rpipe.structure.artifact.asset import kinds
+
+    target = tmp_path / kinds.RUN_LOG
+    target.parent.mkdir(parents=True)
+    target.write_bytes(b'existing diagnostic bytes\n')
+    native = Path.open
+
+    def no_reopen(path, *args, **kwargs):
+        if path == target:
+            raise PermissionError('existing evidence must not be reopened by initialization')
+        return native(path, *args, **kwargs)
+
+    with monkeypatch.context() as context:
+        context.setattr(Path, 'open', no_reopen)
+        Logger(tmp_path)
+    assert target.read_bytes() == b'existing diagnostic bytes\n'

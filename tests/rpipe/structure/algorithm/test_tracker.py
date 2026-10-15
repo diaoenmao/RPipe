@@ -107,3 +107,39 @@ def test_tracker_constructor_still_rejects_directory(tmp_path):
     target.mkdir(parents=True)
     with pytest.raises(OSError):
         AlgorithmTracker(tmp_path)
+
+
+def test_tracker_constructor_does_not_reopen_existing_evidence(tmp_path, monkeypatch):
+    from rpipe.structure.artifact.asset import kinds
+
+    target = tmp_path / kinds.TRACKER_JSONL
+    target.parent.mkdir(parents=True)
+    target.write_bytes(b'existing diagnostic bytes\n')
+    native = Path.open
+
+    def no_reopen(path, *args, **kwargs):
+        if path == target:
+            raise PermissionError('existing evidence must not be reopened by initialization')
+        return native(path, *args, **kwargs)
+
+    with monkeypatch.context() as context:
+        context.setattr(Path, 'open', no_reopen)
+        AlgorithmTracker(tmp_path)
+    assert target.read_bytes() == b'existing diagnostic bytes\n'
+
+
+def test_tracker_append_initialization_keeps_checkpoint_raw_suffix_and_marker(tmp_path):
+    import json
+    from rpipe.structure.artifact.asset import kinds
+
+    path = tmp_path / kinds.TRACKER_JSONL
+    path.parent.mkdir(parents=True)
+    prefix = b'{"step": 1}\n'
+    raw = prefix + b'{"interrupted":'
+    path.write_bytes(raw)
+    tracker = AlgorithmTracker(tmp_path)
+    assert path.read_bytes() == raw
+    tracker.begin_run({'jsonl_path': str(path.resolve()), 'jsonl_offset': len(prefix)})
+    data = path.read_bytes()
+    assert data.startswith(raw + b'\n')
+    assert json.loads(data.splitlines()[-1]) == {'event': 'start', 'keep_until': len(prefix)}

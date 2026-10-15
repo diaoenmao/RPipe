@@ -427,3 +427,25 @@ def test_concurrent_nonce_collision_cannot_delete_an_active_writer_stage(tmp_pat
         assert first.result() == target
     assert target.read_text(encoding='utf-8') == 'first'
     assert not stage.exists()
+
+
+def test_owned_text_stage_chmod_refusal_preserves_old_target_and_peer(tmp_path, monkeypatch):
+    from rpipe.structure.artifact import _atomic
+
+    target, peer = tmp_path / 'target.txt', tmp_path / 'peer.tmp'
+    target.write_bytes(b'old target')
+    peer.write_bytes(b'peer evidence')
+    error = PermissionError('stage mode update refused')
+    stages = []
+
+    def refused(path, mode, *args, **kwargs):
+        stages.append(path)
+        assert path not in (target, peer) and path.read_bytes() == b'new target'
+        raise error
+
+    monkeypatch.setattr(Path, 'chmod', refused)
+    with pytest.raises(PermissionError) as caught:
+        _atomic.atomic_write_text(target, 'new target')
+    assert caught.value is error and len(stages) == 1
+    assert target.read_bytes() == b'old target' and peer.read_bytes() == b'peer evidence'
+    assert set(tmp_path.iterdir()) == {target, peer}
