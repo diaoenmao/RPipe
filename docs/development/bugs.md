@@ -6,6 +6,16 @@
 
 ## 开放
 
+### B-073：读数的容器假设与浮点溢出遮蔽正常 Run
+
+- 状态：open；[Issue #62](https://github.com/DreamSoul-AI/RPipe/issues/62)，下个版本发布时再关闭。
+- 来源：全仓第二类显示合同核对，基线 dev fa18404；status._metric_cell / report._fmt 直接 float，report 假定 metrics 可按字符串键索引。
+- 期望：只有 object 指标逐格显示；有限数显示四位小数，溢出/非有限/非法值只显示 -，status 可选后续有效指标；正常 peer、状态/mode、计划匹配和输入字节不变。
+- 实际：10**400 触发 OverflowError；标量/列表对触发 TypeError；NaN/Infinity 被当可用数字。纯合成输入可复现，无训练/计时/GPU。
+- 红回归：原 readout 测试文件新增22项，20 failed /2 passed；.tmp/contract073/red.xml /red.log 和修复前源码快照仅本机，不随clone。
+- 方案：复用现有 report._fmt 作为 status/report 的私有显示格式化；report 仅接受 dict 指标。严格 loader、compare、process 科学聚合与 schema 不改，不添加模块/路径/异常总兜底。
+
+
 ### B-072：Study 替换文本绕过统一原子入口与固定 staging 所有权
 
 - 状态：open；归入 [#53](https://github.com/DreamSoul-AI/RPipe/issues/53#issuecomment-6191251124) 同类发布合同扩展，原库 index 修复已在 v0.4.0，不重复登记为未修。
