@@ -201,6 +201,12 @@ def load_launch_plan(
     stored_round = int(payload.get('round') or 1)
     if int(round_size) > 0 and stored_round != int(round_size):
         return None
+    raw_batches = payload.get('batches')
+    if raw_batches:
+        try:
+            wait_groups(payload['jobs'], stored_round, raw_batches)
+        except (KeyError, TypeError, ValueError):
+            return None
     for job in payload['jobs']:
         if isinstance(job, dict) and not include_done and run_succeeded(study_dir, str(job.get('run_id') or '')):
             continue
@@ -218,7 +224,6 @@ def load_launch_plan(
         return [job for job in kept if not run_succeeded(study_dir, str(job.get('run_id') or ''))]
 
     jobs = _keep(list(payload.get('jobs') or []))
-    raw_batches = payload.get('batches')
     batches = None
     if isinstance(raw_batches, list) and raw_batches and isinstance(raw_batches[0], list):
         batches = [kept for kept in (_keep(list(group)) for group in raw_batches) if kept]
@@ -242,6 +247,8 @@ def write_jobs_json(
     extra: dict[str, Any] | None = None,
     batches: list[list[dict[str, Any]]] | None = None,
 ) -> Path:
+    if batches:
+        wait_groups(jobs, round_size, batches)
     payload = {
         'study_dir': str(study_dir.resolve()),
         'round': int(round_size),
@@ -263,6 +270,10 @@ def wait_groups(
     batches: list[list[dict[str, Any]]] | None = None,
 ) -> list[list[dict[str, Any]]]:
     if batches:
+        grouped = [job for group in batches for job in group]
+        key = lambda job: str(job['run_id'])
+        if sorted(grouped, key=key) != sorted(jobs, key=key):
+            raise ValueError('batches must match declared jobs without missing, extra, or duplicate Run entries')
         return [group for group in batches if group]
     groups: list[list[dict[str, Any]]] = []
     for wave in job_waves(jobs):
