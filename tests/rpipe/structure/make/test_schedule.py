@@ -302,3 +302,93 @@ def test_bash_chunks_execute_shared_launcher_and_process_after_failure(tmp_path,
         assert len(processed) == index  # Only the final chunk processes, even after failure.
     assert launched == [['t0', 't1'], ['e0', 'e1']]
     assert processed == [tmp_path]
+
+
+_BATCH_MISMATCHES = ['foreign', 'missing', 'metadata', 'duplicate']
+
+
+def _mismatched_batches(jobs, kind):
+    rows = [dict(job) for job in jobs]
+    if kind == 'foreign':
+        rows[0]['run_id'] = 'peer'
+    elif kind == 'missing':
+        rows.pop()
+    elif kind == 'metadata':
+        rows[0]['device'] = 'cuda'
+    elif kind == 'duplicate':
+        rows.append(dict(rows[0]))
+    return [rows]
+
+
+@pytest.mark.parametrize('kind', _BATCH_MISMATCHES + ['same', 'reordered'])
+def test_wait_groups_enforces_declared_job_multiset(tmp_path, kind):
+    jobs = _study(tmp_path)
+    batches = _mismatched_batches(jobs, kind)
+    if kind == 'reordered':
+        batches[0].reverse()
+    if kind in _BATCH_MISMATCHES:
+        with pytest.raises(ValueError, match='batches|duplicate Run'):
+            schedule.wait_groups(jobs, 1, batches)
+    else:
+        assert schedule.wait_groups(jobs, 1, batches) == batches
+
+
+@pytest.mark.parametrize('kind', _BATCH_MISMATCHES)
+def test_launch_refuses_batch_mismatch_before_invalidating_any_result(tmp_path, monkeypatch, kind):
+    jobs = _study(tmp_path)
+    for run_id in ['t0', 't1', 'e0', 'e1', 'peer']:
+        _succeed(tmp_path, run_id)
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    started = []
+
+    class Proc:
+        def __init__(self, args, **kwargs):
+            started.append(args[-1])
+
+        def wait(self):
+            return 1
+
+    monkeypatch.setattr(schedule.subprocess, 'Popen', Proc)
+    with pytest.raises(ValueError, match='batches|duplicate Run'):
+        schedule.launch_jobs(tmp_path, jobs, batches=_mismatched_batches(jobs, kind),
+                             retry_failed=False, console='shared')
+    assert started == []
+    assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
+
+
+@pytest.mark.parametrize('kind', _BATCH_MISMATCHES)
+def test_script_publish_refuses_batch_mismatch_preserving_old_plan(tmp_path, kind):
+    jobs = _study(tmp_path)
+    scripts = tmp_path / 'scripts'
+    scripts.mkdir()
+    for name in ['jobs.json', 'launch.sh', 'launch.ps1']:
+        (scripts / name).write_bytes(b'previous artifact')
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    with pytest.raises(ValueError, match='batches|duplicate Run'):
+        schedule.write_launch_scripts(tmp_path, jobs, round_size=1, init_gpu=0,
+                                      num_gpus=0, batches=_mismatched_batches(jobs, kind))
+    assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
+
+
+@pytest.mark.parametrize('kind', _BATCH_MISMATCHES)
+def test_render_refuses_batch_mismatch_before_generating_foreign_commands(tmp_path, kind):
+    jobs = _study(tmp_path)
+    with pytest.raises(ValueError, match='batches|duplicate Run'):
+        schedule.render_bash(tmp_path, jobs, python_exe='python', round_size=1,
+                             split_round=65535, batches=_mismatched_batches(jobs, kind))
+
+
+@pytest.mark.parametrize('kind', _BATCH_MISMATCHES)
+@pytest.mark.parametrize('include_done', [False, True])
+def test_saved_plan_rejects_mismatched_batches_without_rewrite(tmp_path, kind, include_done):
+    jobs = _study(tmp_path)
+    scripts = tmp_path / 'scripts'
+    scripts.mkdir()
+    path = scripts / 'jobs.json'
+    payload = {'jobs': jobs, 'batches': _mismatched_batches(jobs, kind),
+               'init_gpu': 0, 'num_gpus': 0, 'round': 1}
+    path.write_text(json.dumps(payload), encoding='utf-8')
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    assert schedule.load_launch_plan(tmp_path, init_gpu=0, num_gpus=0, round_size=0,
+                                     include_done=include_done) is None
+    assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
