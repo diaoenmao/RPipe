@@ -1,5 +1,9 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-15 目标模式active，继续B-078/YAML mapping合同
+
+#77/PR78已普通合dev1667f51，最终head与实际dev全部实际CI成功；已按最新授权删除结束的远程codex/artifact-contracts-correctness，tip与证据见record §92。本地旧分支保留。当前唯一未合分支codex/yaml-mapping-roots处理真实B-078/#79：先红9f4d796（12 failed/12 passed），设计7cedf9f后最小生产fix5d15070仅两原函数+4/-2；323相邻、core786通过/1平台skip、Flow169通过。最后head/实际dev以新PR验收为准，两个Issue留到下版关闭。不测速、不改layout、不合main/打tag；按目标持续修正确性，不制造无反例任务。
+
 ## 2026-10-15 v0.4.1后B-077共享index容器校验
 
 最新授权要求继续正确性；开放Issue最初为空，真实合成反例确认后新建[#77](https://github.com/DreamSoul-AI/RPipe/issues/77)。红测试f85f6bb为18 failed/6兼容控制passed，设计842dacd先于最小修复823c9b0；仅load_index验证experiments/runs/list条目/factors容器，不改变布局、格式或合法缺省/null语义。299相邻和169 CPU Flow全通过，最终工作head与实际dev CI通过后才算集成完成；#77留待下版关闭，具体见record §92与后续PR正文。

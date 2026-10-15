@@ -1,8 +1,8 @@
-> 现状：#77已由PR78合dev1667f51，实际dev CI独立验收中；继续修新确认的B-078/#79。
-> 最新：两严格YAML入口把4类非法falsy根值当{}；24项红回归12失败/12控制通过，出处§93、9f4d796。
-> 下一步：按既有mapping合同仅统一None判定，针对性/流程正确性验证后PR合dev；完成旧分支验收即清理远程。
-> 阻塞：无；当前唯一未合分支codex/yaml-mapping-roots，保留全部失败和旧字节。
-> 边界：文件架构/layout不变，不测速/GPU、不合main/打tag，不删数据/Run/provenance。
+> 现状：B-077/#77已由PR78合dev1667f51且实际CI全绿，已删结束的远程codex/artifact-contracts-correctness；继续B-078/#79。
+> 最新：#79两处严格YAML小改已完成；24项由12失败/12控制转全绿；相邻323、core786通过/1平台skip、Flow169通过，出处§93。
+> 下一步：codex/yaml-mapping-roots提交PR，验收最终head与实际dev后清理远程；两Issue留待下版关闭。
+> 阻塞：无；目标模式active，当前仅一未合工作分支；旧失败及分支删除证据保留。
+> 边界：只做正确性，不测速/GPU、不改layout/产物格式、不合main/打tag，不删数据/Run/provenance。
 
 # 一、摘要
 
@@ -110,7 +110,7 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 1. 归类：继续第二类共享解析边界，确认decode_config和load_study_yaml两处同一`safe_load(...) or {}`反例。各7个隔离输入中false/0/[]/空字符串误接受，空文档/null/{}是兼容控制。四个坏Run配置令status误显示train且无error；原输入均未改写，不代表真实正式数据已损坏。已先创建[Issue79](https://github.com/DreamSoul-AI/RPipe/issues/79)，不重开旧Issue。
 2. 设计先写structure.md：复用现有类型验证，只把truthiness空值判定改成None判定，保留两入口异常类型与合法mapping。load_config所有调用方和load_study_yaml调用方均搜索核对；stats可选loader已对同类输入返回None，明确不改。文件架构/layout/产物格式、科学聚合、异常分类和默认train合法配置语义不变。
 3. 红测试先提交9f4d796：两严格parser各6非法根值（4falsy反例+true/1已有拒绝控制）与4空文档/null/{}兼容控制，另4个真实status peer/字节保全，共24节点、12 failed/12 passed、0error/skip。源码原字节ZIP、探针与RED.xml/log/命令/计数在.tmp/audit078，本机证据不随clone；portable回归已入库。
-4. 后续只实施上述已有失败支撑的两处小改，按类一PR进dev；不测速/GPU、不合main/打tag、不删除数据/Run/provenance。#77/#79均保留至后续版本，最终head/实际dev验证分别记录，不把历史pending当新失败。
+4. 两处最小修复5d15070已完成（+4/-2），323相邻全部通过、完整core786通过/1 POSIX权限平台skip、CPU Flow169全部通过，无fail/error；24新增节点全部执行，所有旧字节/peer保全。LOCAL_CHECKED记录精确范围，非GPU/科学数值验收。随后按类一PR进dev；不测速/GPU、不合main/打tag、不删除数据/Run/provenance。#77/#79均保留至后续版本，最终head/实际dev验证分别记录，不把历史pending当新失败。
 
 ### 92. v0.4.1后共享index容器合同缺口（B-077 / #77）
 
@@ -124,6 +124,9 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 6. 分支清理复核（本轮新指令）：fetch后以ls-remote列出实际远端，仅main、dev、codex/artifact-contracts-correctness；当前工作分支明确保留，长期分支受保护，没有其他可删分支，本次新增删除0条。此前已删9条为artifact-consistency-design、cache-lock-budget、failure-preservation-policy、maintenance-closeout、open-issue-correctness、safe-readout-contracts、status-metric-shape、status-readout-errors、v040-layout-release（均codex/前缀），完整tip/祖先/删除证据见§82；本轮BRANCH_CHECKED保留实际三条远端SHA，不重复删除或恢复旧分支。
 7. 生产修复823c9b0仅index.py增加15行/删除2行，在第一次dereference前验证容器；299项相邻CPU回归全部通过，0fail/error/skip，24项新增全部执行。第一次绿色命令误指不存在test_resume.py、收集前退出4，GREEN.log/命令保留，不当库失败或已执行回归；纠正为真实test_resume_sibling.py后GREEN2全部通过。CPU Flow现有句柄40809已正常结束，169 passed，0fail/error/skip；FLOW/GREEN等本机材料在.tmp/audit077，不随clone。最终工作提交与实际dev CI仍分别验收，不拿本机通过代替远端矩阵。
 
+
+8. 最终验收：PR78最终head959f2a5675b1f9b309a53d4ee592c7faa659b73d的[Unit38761019602](https://github.com/DreamSoul-AI/RPipe/actions/runs/38761019602)/[Package38761019537](https://github.com/DreamSoul-AI/RPipe/actions/runs/38761019537)/[Branch38761019535](https://github.com/DreamSoul-AI/RPipe/actions/runs/38761019535)全部实际矩阵/聚合成功后普通merge至dev1667f517d8585627ba04639ba14f7612ead8b885；实际dev的[Unit38762035791](https://github.com/DreamSoul-AI/RPipe/actions/runs/38762035791)/[Package38762035520](https://github.com/DreamSoul-AI/RPipe/actions/runs/38762035520)也全部实际矩阵/聚合成功。DEV_CHECKED SHA256 ded731c77c1478b88880524e62148bfdb96a21d2e5ee55cc660bdebbf4271866；无存活验证句柄31287/40304，不重复派发。
+9. 按最新“合dev且CI通过即删已结束远程”指令，实际删除codex/artifact-contracts-correctness（旧远端tip959f2a5已验证为dev祖先，无活动PR引用）；BRANCH_DELETE_BEFORE/log/BRANCH_DELETED_CHECKED保留。本地旧分支、main/dev及全部数据保留，正在用的新批codex/yaml-mapping-roots保留并正常推送。删除后当时远端仅main00e70b1/dev1667f51，随后新批活动分支推送另计；本次实际新增删除1条，早先“可删0”是该分支尚活动时的事实。Issue77与PR78正文已补全真实验收，Issue仍open，不关、不合main/打tag。
 
 ### 90. v0.4.1 正式发布完成与五项 Issue 关闭
 
