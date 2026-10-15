@@ -11,7 +11,7 @@
 | [Research Plan Standard — English](research_plan_standard_en.md) | 译本 | 对应正本第一至八章，含原作者参考依据与核验范围 |
 | [Research Plan Template — English](research_plan_template_en.md) | 译本 | 对应正本第一至十章，含基线/消融/执行表与变更记录 |
 
-来源：用户指定 DEM 原路径 `文档/规范/研发/研究/研究计划/`，本次实际读取监督助手复制到本仓库 `_staging_from_DEM/` 的文件；没有直接访问 DEM Office 源路径。暂存中的中文名与 ASCII 别名逐字节相同。暂存保留作对照，不是正式文档入口，不纳入 Git。以后更新先核对新交付版本与差异，不从网址自动替换正本。
+来源：用户指定 DEM 原路径 `文档/规范/研发/研究/研究计划/`，本次实际读取监督助手复制到本仓库 `_staging_from_DEM/` 的文件；没有直接访问 DEM Office 源路径。暂存中的中文名与 ASCII 别名逐字节相同。暂存保留作对照，不是正式文档入口，不纳入 Git。根.gitattributes仅对这两份正本设置-text，禁止Git自动换行转换；Git blob与工作区都已逐字节核对，不改变其他文件策略。以后更新先核对新交付版本与差异，不从网址自动替换正本。
 
 ## 二、在 RPipe 使用
 
