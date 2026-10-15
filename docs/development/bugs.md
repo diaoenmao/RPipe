@@ -6,13 +6,9 @@
 
 ## 开放
 
-### B-096：调度查询的不可用元数据解析越界（[#118](https://github.com/DreamSoul-AI/RPipe/issues/118)）
+B-096/#118已e3c3c12先红20新项13失败/7控制→2ffeb0b设计→bbd33b4既有调度查询异常边界修复；make157/core1452+1平台skip/CPU Flow189通过，20新项均执行，严格decoder/参数错误/成功peer/原字节保持，见record§134。最终head/实际dev CI待验；Issue留至下版。
 
-- 八个实文件场景5异常/3控制：深层jobs缓存抛RecursionError；result list/null/bool根抛CorruptArtifactError、深层抛RecursionError；原坏JSON语法False、合法成功True与空plan复用正常。源记录/peer字节不变，未启动任何进程/实验，证据.tmp/audit096不随clone。
-- e3c3c12先提交20新合同13失败/7控制，完整80项13失败/67通过；覆盖include_done两值、五种非object根/语法/深层/正常结果、严格decoder原错、成功peer过滤、不可用plan原None及普通RuntimeError传播。
-- 方案先写structure：复用现有_run_result空mapping/False及load_launch_plan None边界，具体加入CorruptArtifactError/RecursionError；不改全局strict decoder/参数错误/路径校验/成功保留/重试或磁盘布局。
-
-B-095/#116已abe24a3首红→f1b0d5f扩展完整红→f64917b编程错误控制→68cee20设计→843daa4三处可选JSON异常列表修复。97针对性/core1432+1平台skip/Flow189通过，27新节点均执行，系统解析限制/strict loader/普通RuntimeError/输入与peer保持，见record§132；最终head/实际devCI待验，Issue留至下版。
+B-095/#116已PR117普通合dev20027af，最终head和实际dev全部实际CI成功，结束remote已清，本地/当前活动分支保持，见record§136；Issue留至下版。
 
 B-094/#114已PR115普通合devb28f6a2，最终head与实际dev全部实际CI成功，结束remote已清，本地与当前工作分支保持，见record§133；Issue留至下版。
 

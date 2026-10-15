@@ -1,8 +1,8 @@
-> 现状：设计说明已按审定标已实施（e44b94d）；PR117已合dev20027af并在验，当前处理B096/#118。
-> 最新：20新调度合同13失败/7控制，红e3c3c12，严格decoder与peer边界均锁定，见§134–135。
-> 已核对：原三类PR52/54/55、B086 PR98、B088 PR102均已合；原锚点与12相对链接保持。
-> 下一步：既有调度查询具体异常边界最小修复，CPU检查/最终及实际devCI，不再等待设计批准。
-> 阻塞：无；不合main/强推/测速/GPU，不改布局、严格输入或旧成功保留范围，目标active。
+> 现状：设计说明已标已实施并提交e44b94d；B096/#118最小修复完成，准备当前批次PR合dev。
+> 最新：20新红13失败/7控制→两个调度查询边界收拢，源码仅三处字节替换，见§134–136。
+> 验证：make157、core1452+1既有平台skip、CPU Flow189通过；20新节点全执行，严格decoder/peer保持。
+> 前批：#116已PR117合dev20027af，实际dev全部实际CI成功并清第20条remote；新已修Issue等下版。
+> 下一步：最终head/实际dev全部实际CI后清结束remote，不等设计批准；无main/强推/测速/GPU/布局变更。
 
 # 一、摘要
 
@@ -104,6 +104,10 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 ## 2026-10-16
 
 
+### 136. PR117实际dev验收与第二十条结束远程清理
+
+PR117实际dev `20027afb231bc5637324e37310dd69e7ec09e1a7` 的 Unit38815660146、Package38815660139全部实际矩阵/聚合成功；DEV_CHECKED SHA256 `5663016e4300ce92377ebbee459dd17a0c7a6904d7282f4ae454a6bf8a7ba6bc`。核对祖先/无开放PR/实际CI后删除结束remote codex/optional-json-decode，原本地tip与当前活动codex/scheduling-query-parse保留，本目标累计20条结束remote已清。Issue116保留open至下版；证据.tmp/audit095不随clone，不重复合并/派发CI。main仍v0.4.1，未合main/tag/发布或删数据。
+
 ### 135. PR117最终head全实际CI后合dev，实际dev验收接续
 
 最终head `000b39a233819fd84ca232dd964c9c7da792da3d` 的 Unit38814885801、Package38814885885、Branch38814885873全部实际矩阵/聚合成功；PR_CHECKED SHA256 `5caef99ad91857cc6098801d3689cc82388e9e6ed590ed78e696a53d443b9f89`。PR117普通merge为dev `20027afb231bc5637324e37310dd69e7ec09e1a7`，实际devUnit/Package在观察，待实际全绿后清结束remote。新B096基于该merge，只有一条未合codex/scheduling-query-parse；不把前批待验文字当当前待审，不重复CI/合并。
@@ -129,6 +133,10 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 | make展开/data profile与来源marker | 声明/来源验证保持，不扩大本批到Study功能或科学输入迁移 |
 
 监督助手本轮明确审定设计已实施：e44b94d单独文档提交修订artifact_consistency_design的过时状态，读取核对PR52/54/55/98/102均MERGED及实际merge commit，原三类实际CI见record§75。B086/B088红数据标明历史修复前，链接对应已合PR；六旧Issue与53/62已发布关闭的状态也核对，main只读确认v0.4.1。全部原标题锚点与12相对链接保持；第七节仍不实施，不因文档状态更新修改代码架构/布局或重新等设计批准。原文/差异/hash/链接核对在.tmp/audit096/DESIGN_STATUS_*，不随clone。
+
+bbd33b4复用artifact已有CorruptArtifactError导出，仅修改schedule既有导入与两个异常元组；不加函数/模块，源码总行数不变，SOURCE_BYTES_CHECKED证明只有三处精确字节替换。make相关157 passed，core1452 passed/1既有POSIX executable mode bits skip，CPU Flow189 passed，无failure/error；20新节点在RED/GREEN/CORE完整执行。严格decoder原错、普通RuntimeError与调用参数错误、include_done、合法成功与peer过滤、原输入字节保持，不启动研究或改变旧成功保留/重试规则。
+
+LOCAL_CHECKED SHA256 `d398e7c2029b52956ee3b1b031e71b3baea7576bfa4230bb30f269b10c2b8741`；原REPRO/before.zip/hash/RED/GREEN/CORE/FLOW、红测试实际CRLF字节与设计状态检查留.tmp/audit096，不随clone。Git测试blob的LF与执行CRLF经精确重建核对，断言修后未改。设计状态原锚点及12相对链接保持；最终head/实际devCI待验，旧CI不替代本批检查。
 
 ### 133. PR115实际dev验收与第十九条结束远程清理
 

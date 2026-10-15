@@ -1,5 +1,12 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 设计状态已实施、PR117验收完成与B096调度查询
+
+监督助手审定无需再审：e44b94d已单独修订artifact_consistency_design，原三类PR52/54/55与B086 PR98、B088 PR102标已实施并补实际merge commit，历史红测试不再称尚未修；标题锚点/12相对链接保留，第七节不实施、文件架构/产物布局不改。
+
+PR117最终head/实际dev20027af全部实际CI全绿，结束remote codex/optional-json-decode已删、本地保留，本目标累计20条，Issue116留至下版。当前唯一未合codex/scheduling-query-parse修B096/#118：8原生元数据场景5异常/3控制；e3c3c12先20新红13失败/7控制→2ffeb0b设计→bbd33b4只改既有导入与两异常元组，schedule总行数不变，strict decoder/普通RuntimeError/非法调用参数保持。make157/core1452+1既有平台skip/Flow189通过，20新项全执行，include_done/成功peer/原输入字节保持，不启动进程/GPU/研究或扩大旧成功保留。证据.tmp/audit096不随clone，见record§134–136；下一最终head/实际devCI后普通合dev、清结束remote，Issue等下版，无main/tag/测速/强推/布局或数据变更。
+
+
 ## 2026-10-16 PR115验收完成、B095三处可选JSON解析合同
 
 PR115实际devb28f6a2全部实际CI全绿，结束remote codex/status-parser-boundary已删、本地保留，累计19条，见record§133；Issue114留至下版。当前唯一未合codex/optional-json-decode修B095/#116：默认整数解析限制导致activity/state的ValueError；更深JSON使activity/state/JSONL均RecursionError。首12红6失败/6控制abe24a3保留，扩展f1b0d5f的26新合同14失败/12控制；f64917b另1普通RuntimeError控制修前通过。68cee20先设计后843daa4仅三行异常列表统一ValueError/RecursionError，不改系统限制/strict loader/恢复指针/科学聚合或布局。97针对性及process/core1432+1既有平台skip/Flow189通过，27新节点均执行；输入/peer/正常旧回退/有效轨迹/缺index诊断/编程错误传播保留。证据.tmp/audit095不随clone，SOURCE_BYTES_CHECKED三处精确替换，RED2字节明确由Git blob重建而非原始快照。下一最终head/实际devCI后普通合dev并清结束remote，Issue等下版；无main/tag/GPU/测速或数据删除。
