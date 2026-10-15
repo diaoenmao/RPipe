@@ -146,3 +146,49 @@ def test_failed_publisher_cleans_only_own_stage_while_peer_is_live(tmp_path, mon
     assert source.read_bytes() == target.read_bytes() == b'immutable payload'
     assert peer.read_bytes() == b'peer writer'
     assert set(tmp_path.iterdir()) == {source, target, peer}
+
+
+@pytest.mark.parametrize('same_bytes', [False, True])
+def test_reference_collision_never_owns_or_deletes_peer(tmp_path, monkeypatch, same_bytes):
+    source, target = (tmp_path / 'source', tmp_path / 'target')
+    source.write_bytes(b'payload')
+    target.write_bytes(b'payload')
+    peer = tmp_path / ('0' * 32 + '.link')
+    peer.write_bytes(b'payload' if same_bytes else b'peer')
+    before = {p: p.read_bytes() for p in [source, target, peer]}
+    monkeypatch.setattr(shared.uuid, 'uuid4', lambda: SimpleNamespace(hex='0' * 32))
+    publish = shared.link_input
+    depth = []
+
+    def bounded(*args, **kwargs):
+        depth.append(True)
+        if len(depth) > 3:
+            raise RecursionError('bounded recursive staging collision')
+        return publish(*args, **kwargs)
+    monkeypatch.setattr(shared, 'link_input', bounded)
+    with pytest.raises(FileExistsError):
+        shared.link_input(source, target)
+    assert {p: p.read_bytes() for p in before} == before
+
+
+def test_migration_collision_cleanup_preserves_arriving_peer(tmp_path, monkeypatch):
+    study = tmp_path / 'project/studies/demo'
+    source = study / 'shared/data/payload'
+    target = tmp_path / 'project/shared/data/payload'
+    source.parent.mkdir(parents=True)
+    target.parent.mkdir(parents=True)
+    source.write_bytes(b'payload')
+    target.write_bytes(b'payload')
+    peer = source.with_name('0' * 32 + '.link')
+    monkeypatch.setattr(shared.uuid, 'uuid4', lambda: SimpleNamespace(hex='0' * 32))
+    link = shared.os.link
+
+    def arriving(src, dst, *args, **kwargs):
+        if Path(dst) == peer:
+            peer.write_bytes(b'peer')
+        return link(src, dst, *args, **kwargs)
+    monkeypatch.setattr(shared.os, 'link', arriving)
+    with pytest.raises(FileExistsError):
+        shared.migrate_shared(study)
+    assert source.read_bytes() == target.read_bytes() == b'payload'
+    assert peer.read_bytes() == b'peer'

@@ -365,3 +365,30 @@ def test_study_json_concurrent_publishers_keep_distinct_stages_and_peer(tmp_path
     assert json.loads(target.read_text(encoding='utf-8')) in bodies
     assert peer.read_bytes() == b'another publisher'
     assert set(tmp_path.iterdir()) == {target, peer}
+
+
+@pytest.mark.parametrize('kind', ['peer', 'target-alias', 'stat-refusal'])
+def test_text_stage_collision_preserves_unowned_bytes(tmp_path, monkeypatch, kind):
+    from types import SimpleNamespace
+    from rpipe.structure.artifact import _atomic
+    monkeypatch.setattr(_atomic.uuid, 'uuid4', lambda: SimpleNamespace(hex='0' * 32))
+    peer = tmp_path / ('0' * 32 + '.tmp')
+    target = peer if kind == 'target-alias' else tmp_path / 'target.txt'
+    target.write_bytes(b'old target')
+    if peer != target:
+        peer.write_bytes(b'peer stage')
+    before = {p: p.read_bytes() for p in [target, peer]}
+    error = PermissionError('target stat refused')
+    if kind == 'stat-refusal':
+        stat = Path.stat
+
+        def denied(path, *a, **kw):
+            if path == target:
+                raise error
+            return stat(path, *a, **kw)
+        monkeypatch.setattr(Path, 'stat', denied)
+    with pytest.raises(PermissionError if kind == 'stat-refusal' else FileExistsError) as caught:
+        _atomic.atomic_write_text(target, 'new target')
+    if kind == 'stat-refusal':
+        assert caught.value is error
+    assert {p: p.read_bytes() for p in before} == before
