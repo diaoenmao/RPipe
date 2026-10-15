@@ -74,3 +74,32 @@ def test_logger_report_after_save_reset_uses_segment(tmp_path: Path, capsys):
     Logger(tmp_path).report(tracker, 'test')
     text = capsys.readouterr().out
     assert '[split] test [metric] Accuracy=0.8000 Loss=0.5000' in text
+
+
+def test_logger_constructor_preserves_evidence_arriving_before_open(tmp_path, monkeypatch):
+    from rpipe.structure.artifact.asset import kinds
+
+    target = tmp_path / kinds.RUN_LOG
+    native = Path.open
+    arrivals = []
+
+    def arriving(path, mode='r', *args, **kwargs):
+        if path == target and mode in ('w', 'a') and not arrivals:
+            arrivals.append(True)
+            with native(path, 'wb') as stream:
+                stream.write(b'prior error evidence\n')
+        return native(path, mode, *args, **kwargs)
+
+    monkeypatch.setattr(Path, 'open', arriving)
+    Logger(tmp_path)
+    assert arrivals == [True]
+    assert target.read_bytes() == b'prior error evidence\n'
+
+
+def test_logger_constructor_still_rejects_directory(tmp_path):
+    from rpipe.structure.artifact.asset import kinds
+
+    target = tmp_path / kinds.RUN_LOG
+    target.mkdir(parents=True)
+    with pytest.raises(OSError):
+        Logger(tmp_path)
