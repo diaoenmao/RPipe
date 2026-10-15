@@ -80,12 +80,25 @@ def _factor_label(factors: dict[str, Any]) -> str:
 
 
 def log_path(study_dir: Path, run: dict[str, Any], run_dir: str) -> Path | None:
-    raw = run.get('log')
-    if raw:
-        return study_dir / str(raw)
     if not run_dir:
         return None
-    return study_dir / RUNS_DIRNAME / run_dir / 'assets' / kinds.RUN_LOG
+    raw = run.get('log')
+    if raw is None or raw == '':
+        raw = f'{RUNS_DIRNAME}/{run_dir}/assets/{kinds.RUN_LOG}'
+    if (not isinstance(raw, str) or any(ord(char) < 32 for char in raw)
+            or raw.splitlines() != [raw]):
+        return None
+    try:
+        study_dir = Path(study_dir).resolve()
+        root = study_dir / RUNS_DIRNAME / run_dir
+        path = study_dir / raw
+        path.relative_to(root)
+        resolved = path.resolve()
+        resolved.relative_to(root.resolve())
+        resolved.relative_to(study_dir)
+    except (OSError, ValueError):
+        return None
+    return path
 
 
 def _note_from_log(path: Path | None, *, errors_only: bool = False) -> str:
@@ -167,11 +180,12 @@ def list_runs(
                 error = result.get('error')
                 if status == STATUS_SUCCEEDED:
                     metrics = result.get('metrics') or {}
+            run_log = log_path(study_dir, run, run_dir)
             note = '-'
             if status == STATUS_PENDING:
-                note = _note_from_log(log_path(study_dir, run, run_dir))
+                note = _note_from_log(run_log)
             elif status == 'failed':
-                note = _note_from_log(log_path(study_dir, run, run_dir), errors_only=True)
+                note = _note_from_log(run_log, errors_only=True)
             error = None if status == STATUS_SUCCEEDED else error
             if result_state == 'unreadable':
                 error = f'result unreadable: {result_path}'
@@ -187,7 +201,7 @@ def list_runs(
                     'metric': _metric_cell(metrics),
                     'error': error,
                     'note': note,
-                    'log': run.get('log'),
+                    'log': run.get('log') if run_log is not None else None,
                 }
             )
     counts = {

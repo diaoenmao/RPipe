@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 from rpipe.structure.artifact._atomic import atomic_write_text
 from rpipe.structure.artifact.errors import CorruptArtifactError
@@ -52,21 +53,25 @@ def _planned_runs(body: dict[str, Any]) -> dict[str, Any]:
     return planned
 
 
-def _log_links(index: dict[str, Any]) -> dict[str, str]:
+def _log_links(index: dict[str, Any], study_dir: Path) -> dict[str, str]:
+    # status imports this module's formatter; reuse its path guard after imports finish.
+    from rpipe.structure.artifact.readout.status import log_path
+
     links: dict[str, str] = {}
     for exp in index.get('experiments') or []:
         for run in exp.get('runs') or []:
             run_id = str(run.get('id') or '')
             if not run_id:
                 continue
-            raw = run.get('log') or f'runs/{run_id}/assets/logs/run.log'
-            links[run_id] = '../' + str(raw).replace('\\', '/')
+            path = log_path(study_dir, run, str(run.get('run_dir') or run_id))
+            links[run_id] = '../' + quote(path.relative_to(study_dir).as_posix(), safe='/') if path is not None else ''
     return links
 
 
 def render_numbers(study_dir: Path | str) -> str:
     study_dir = Path(study_dir)
     try:
+        study_dir = study_dir.resolve()
         body = load_result(study_dir / PROCESS_NAME)
     except CorruptArtifactError as exc:
         raise ValueError(f'Cannot report invalid process: {exc}') from exc
@@ -83,7 +88,7 @@ def render_numbers(study_dir: Path | str) -> str:
     except (TypeError, ValueError) as exc:
         raise ValueError(f'process does not match the current index: {exc}; '
                          'check the plan and rerun process before report') from exc
-    links = _log_links(index)
+    links = _log_links(index, study_dir)
     lines = [
         f'# Numbers: {body.get("study") or study_dir.name}',
         '',
@@ -134,10 +139,11 @@ def render_numbers(study_dir: Path | str) -> str:
             metrics = run.get('metrics')
             metrics = metrics if isinstance(metrics, dict) else {}
             metric_text = ', '.join(f'{key}={_fmt(metrics[key])}' for key in sorted(metrics)) or '-'
-            href = links.get(run_id) or f'../runs/{run_id}/assets/logs/run.log'
+            href = links.get(run_id, f'../runs/{run_id}/assets/logs/run.log')
+            log_text = f'[run.log]({href})' if href else '-'
             seed = '' if run.get('seed') is None else str(run.get('seed'))
             lines.append(
-                f'| {factors} | {seed} | `{run_id}` | {metric_text} | [run.log]({href}) |'
+                f'| {factors} | {seed} | `{run_id}` | {metric_text} | {log_text} |'
             )
     lines.append('')
     return '\n'.join(lines)
