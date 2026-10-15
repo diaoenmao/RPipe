@@ -142,6 +142,7 @@ def test_existing_failure_preservation_decision_table(tmp_path, monkeypatch, pha
 @pytest.mark.parametrize('phase', ['prepare', 'execute', 'collect', 'summarize', 'write', 'process'])
 @pytest.mark.parametrize('secondary', ['encoding', 'commit'])
 def test_phase_and_failure_publication_errors_preserve_original_evidence(tmp_path, monkeypatch, phase, secondary):
+    """Phase failure -> failed Result publication -> original exception, log and evidence survive."""
     from rpipe.structure.artifact import _atomic
 
     from rpipe.flow import runner

@@ -99,7 +99,7 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ### 81. 三类系统合同归纳与第一类双重失败留证
 
-第二类实际dev验收完成：DEV_CHECKED.json SHA256 c2385f49cabfda50d994192e74a3a51fe14b250ea685db9ebdf99c424eeede89；第三类对应f5d5ca315cb450feb700a5ed038ac461eb2f654e69fd9f6aec238ac51ce78443。精确CI与最终验收也入PR61/63正文。B-072/B-073从开放软件缺陷表移除，原失败条目快照仍可追溯；#53/#62按本轮要求保持open到下一版本，不冒充已随v0.4.0发布。main仍54f8d31，无新tag/release。本批第一类测试/文档通过独立PR进入dev，最终head与实际集成CI仍分别核对。
+第二类实际dev验收完成：DEV_CHECKED.json SHA256 c2385f49cabfda50d994192e74a3a51fe14b250ea685db9ebdf99c424eeede89；第三类对应f5d5ca315cb450feb700a5ed038ac461eb2f654e69fd9f6aec238ac51ce78443。精确CI与最终验收也入PR61/63正文。B-072/B-073从开放软件缺陷表移除，原失败条目快照仍可追溯；#53/#62按本轮要求保持open到下一版本，不冒充已随v0.4.0发布。main仍54f8d31，无新tag/release。本批第一类测试/文档经[PR64](https://github.com/DreamSoul-AI/RPipe/pull/64)接续，最终head与实际集成CI仍分别核对。
 
 
 按最新授权，先处理#53，再在库与受跟踪Study源文件中按三类归纳，不以逐个邻接补丁代替共享规则，也不改变[layout](../code/layout.md)。唯一工作分支codex/artifact-contracts-correctness依次复用，全部旧分支、数据、Run与provenance保留。
