@@ -392,3 +392,38 @@ def test_text_stage_collision_preserves_unowned_bytes(tmp_path, monkeypatch, kin
     if kind == 'stat-refusal':
         assert caught.value is error
     assert {p: p.read_bytes() for p in before} == before
+
+
+def test_concurrent_nonce_collision_cannot_delete_an_active_writer_stage(tmp_path, monkeypatch):
+    from concurrent.futures import ThreadPoolExecutor
+    from types import SimpleNamespace
+    import threading
+    from rpipe.structure.artifact import _atomic
+
+    target = tmp_path / 'target.txt'
+    target.write_text('old', encoding='utf-8')
+    stage = tmp_path / ('0' * 32 + '.tmp')
+    monkeypatch.setattr(_atomic.uuid, 'uuid4', lambda: SimpleNamespace(hex='0' * 32))
+    ready, release = threading.Event(), threading.Event()
+    publish = _atomic.atomic_replace
+
+    def hold(source, destination):
+        if ready.is_set():
+            raise AssertionError('colliding writer reached publication')
+        ready.set()
+        assert release.wait(5)
+        return publish(source, destination)
+
+    monkeypatch.setattr(_atomic, 'atomic_replace', hold)
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        first = pool.submit(_atomic.atomic_write_text, target, 'first')
+        try:
+            assert ready.wait(5)
+            with pytest.raises(FileExistsError):
+                _atomic.atomic_write_text(target, 'second')
+            assert stage.read_text(encoding='utf-8') == 'first'
+        finally:
+            release.set()
+        assert first.result() == target
+    assert target.read_text(encoding='utf-8') == 'first'
+    assert not stage.exists()
