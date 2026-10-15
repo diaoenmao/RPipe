@@ -12,7 +12,7 @@
 - 复现：`experiments: [7]` 或 `runs: [7]` 令 status/logs 抛 AttributeError；`experiments: {}` 和非 object factors 可被接受并显示零计划成功。八调用探针为4异常/4误成功，原输入字节均保留。
 - 期望：load_index 在读取边界统一验证 experiments/runs 的 list、条目的 object、factors 的 object；非法索引明确拒绝，CLI 沿用退出2，不把 AttributeError 全局吞掉。保留缺省/null 可选空容器、合法生成索引、路径安全检查与只读职责。
 - 影响/调用方：status、logs、report、Study process、resume、schedule 与 main_probe 的 index 读取；不改文件架构、格式、生产者、科学聚合或调度策略。
-- 红回归已先提交 `f85f6bb`：24节点，18 failed/6 passed，无 error/skip；原字节 ZIP、REPRO.json、RED.xml/log/命令和计数在 `.tmp/audit077/`，不随 clone 提供。修复与最终验收待后续本节记录。
+- 红回归已先提交 `f85f6bb`：24节点，18 failed/6 passed，无 error/skip；原字节 ZIP、REPRO.json、RED.xml/log/命令和计数在 `.tmp/audit077/`，不随 clone 提供。最小修复823c9b0已完成，24新增及299相邻/169 CPU Flow全部通过；最终head与实际dev CI待PR验收，Issue保留到下版。
 
 本轮B-074/B-075/B-076已分别通过PR69/71/70普通合dev，最终工作提交与各实际dev所有实际CPU/包矩阵及聚合门均成功；本轮没有尚未修复的已确认缺陷。原始条目见[三类修复前快照](https://github.com/DreamSoul-AI/RPipe/blob/5d2e174/docs/development/bugs.md)，逐项清单、红绿、专用协议与实际CI见[record §83—87](record.md)。GitHub #53/#62/#66/#67/#68已在v0.4.1正式发布后按明确授权逐项留言引用Release并completed关闭；当前main为00e70b1f83ac23d113b9582a4270a41cfadb1444，验收见[record §90](record.md)。本轮下一编号B-077，近期绿色合同控制不记新缺陷。
 
