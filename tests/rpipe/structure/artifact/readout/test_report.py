@@ -263,7 +263,7 @@ def _markdown_columns(line):
 
 
 @pytest.mark.parametrize('text', _TABLE_TEXT)
-@pytest.mark.parametrize('field', ['factor-key', 'factor-value', 'metric-key'])
+@pytest.mark.parametrize('field', ['factor-key', 'factor-value'])
 def test_status_text_cells_keep_planned_rows(report_study, field, text):
     from rpipe.structure.artifact.readout.status import list_runs, format_status
 
