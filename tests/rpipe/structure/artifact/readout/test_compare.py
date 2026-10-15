@@ -131,7 +131,9 @@ def test_compare_output_refusal_uses_cli_file_error_boundary(tmp_path, monkeypat
         raise PermissionError('comparison output refused')
     monkeypatch.setattr(compare, 'atomic_write_text', refused)
     assert cli.main(['compare', str(a), str(b), '--out', str(output)]) == 2
-    assert 'comparison output refused' in capsys.readouterr().err
+    captured = capsys.readouterr()
+    assert 'comparison output refused' in captured.err
+    assert not captured.out
     assert {p: p.read_bytes() for p in before} == before
 
 

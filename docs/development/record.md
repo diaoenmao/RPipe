@@ -1,8 +1,8 @@
-> 现状：PR74准备0.4.1；已在工作分支普通merge补齐main两个历史发布祖先，生产字节不变，最终CI重新绑定。
-> 最新：五Issue已修；全仓403组/13根边界、43新增合同；core734通过/1跳过、CPU Flow169通过，出处见§83—88及PR69—73。
-> 下一步：版本同步PR合dev→dev到main发布PR→实际main CI→tag/release→引用release关闭五Issue，再继续三类回归复查。
-> 阻塞：无；仅有正常CI验收等待，不强推、不改布局、不测速/GPU；此前“只草稿不发布”已由本次明确发布授权覆盖。
-> 范围：本轮允许v0.4.1发布与关闭#53/#62/#66/#67/#68；保留工作分支、数据/Run/provenance，复查不混入未验证改动。
+> 现状：v0.4.1已发布；main `00e70b1f83ac23d113b9582a4270a41cfadb1444`， [tag](https://github.com/DreamSoul-AI/RPipe/tree/v0.4.1) / [Release](https://github.com/DreamSoul-AI/RPipe/releases/tag/v0.4.1)；五Issue已completed关闭。
+> 最新：近期三类复查336通过/1平台skip，4新控制全部执行且未发现新缺陷；出处§91与测试提交4dd0c87。
+> 下一步：本批测试/记录按独立PR→dev验收；不把复查混入已发布标签，只按真实反例推进正确性。
+> 阻塞：无；首次标签推送网络错误已恢复，原错误/远端核对保留，未移动或覆盖标签。
+> 边界：仅CPU正确性；文件架构/layout不变，保留分支与数据/Run/provenance，不测速/GPU。
 
 # 一、摘要
 
@@ -102,6 +102,38 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-15
+
+### 90. v0.4.1 正式发布完成与五项 Issue 关闭
+
+按Enmao本次明确授权完成[发布PR75](https://github.com/DreamSoul-AI/RPipe/pull/75)：dev7025f62经独立最终/实际dev全实际CI后，发布PR的Unit38754510141 / Package38754509384 / Branch38754509522全部实际矩阵和聚合成功，普通merge main `00e70b1f83ac23d113b9582a4270a41cfadb1444`，保留两个父提交。实际main Unit38755466192 / Package38755466195全部实际矩阵/聚合成功后才发布，MAIN_CHECKED SHA256 0536b6fe48314724f0c948428b151bab69789f894b66dc0a7c62d139bafc29c0。
+
+annotated [tag v0.4.1](https://github.com/DreamSoul-AI/RPipe/tree/v0.4.1) 的tag对象`66c2057b0ad3fd976a3a1e60de1e72330ecb80c0`，remote peeled commit精确指向上述main；[GitHub Release](https://github.com/DreamSoul-AI/RPipe/releases/tag/v0.4.1)编号413944175，published_at=2026-10-15T15:00:36Z（Asia/Shanghai为2026-10-15 23:00:36）。正文取main该提交的docs/releases/v0.4.1.md，只将14个相对链接转为精确提交链接并附发布PR/实际main验收；发布正文SHA256=92e3bc98a338d04164012ef3de842265efcac1ca92cd95a8892a0a2205eb40c8。无二进制/数据附件，只保留GitHub源码归档；未发布PyPI。
+
+首次git push origin refs/tags/v0.4.1因Empty reply from server返回128；在核对远端尚无该ref、本地annotated tag目标不变后，等待并以同一标签对象重试成功。PUBLISH_ATTEMPT1_FAILED与TAG_REMOTE_AFTER_NETWORK_FAILURE证据保留；该失败是网络错误，不是审批拒绝、库失败或通过。没有强推、覆盖旧tag或删除分支/数据。
+
+Release核对后依次留言引用同一Release并以completed关闭五Issue，ISSUES_CLOSED逐项读取state/stateReason核实；原“保持open到下版”已由本次授权发布完成满足，不自动重开：
+
+| **Issue** | **最终状态** | **发布留言** |
+| --- | --- | --- |
+| [#53](https://github.com/DreamSoul-AI/RPipe/issues/53) | completed | [版本留言](https://github.com/DreamSoul-AI/RPipe/issues/53#issuecomment-6195181701) |
+| [#62](https://github.com/DreamSoul-AI/RPipe/issues/62) | completed | [版本留言](https://github.com/DreamSoul-AI/RPipe/issues/62#issuecomment-6195183571) |
+| [#66](https://github.com/DreamSoul-AI/RPipe/issues/66) | completed | [版本留言](https://github.com/DreamSoul-AI/RPipe/issues/66#issuecomment-6195185485) |
+| [#67](https://github.com/DreamSoul-AI/RPipe/issues/67) | completed | [版本留言](https://github.com/DreamSoul-AI/RPipe/issues/67#issuecomment-6195187710) |
+| [#68](https://github.com/DreamSoul-AI/RPipe/issues/68) | completed | [版本留言](https://github.com/DreamSoul-AI/RPipe/issues/68#issuecomment-6195190276) |
+
+草稿PR73最终及实际dev全绿（实际dev Unit38751749854 / Package38751749836）；版本PR74最终head0227e78全实际Unit38753402509 / Package38753402914 / Branch38753402917与实际dev7025f62 Unit38754391374 / Package38754391691也全成功。旧head3633255全绿、main祖先补齐与旧观察者自然完成记录保留，不能替代最终head证明。36项本机版本/布局合同通过。所有原始JSON/XML/log、渲染脚本/正文hash、tag/Release/Issue核对在.tmp/v041-draft-20261015，不随clone；本节和入库发布报告提供便携事实。
+
+### 91. 发布后近期三类修复的正确性复查
+
+以正式main/tag的原字节为基线，复查近期PR61/63/64/69/70/71的交互边界，不重新做无差别全仓扫描。准备四项绿色合同控制：owned staging在chmod拒绝时仅清自己；Logger与Tracker已有文件不重开；Tracker初始化后begin_run保留原始失败后缀并用原offset追加marker。另加强已有compare --out拒绝回归，要求失败发布前不输出成功/失败摘要；重跑既有staging/引用/迁移/长名、status/logs/report/compare、计划模式/读取失败、冻结保全相邻集合。
+
+这些是既有政策的回归控制，不将已通过的控制登记为新缺陷；下一编号B-077暂不占用。未调整生产代码、保留旧成功范围、原格式/目录、恢复协议或数值门。生产及Study跟踪文件逐字节hash保护，4个测试原字节ZIP保留；本地复查子进程CUDA_VISIBLE_DEVICES空串，仅CPU，不改系统或其他会话环境。实际执行与结论在本节补记，不以准备的测试替代执行。
+
+实际复查：测试提交`4dd0c872701ad1feb0600cf49e06fb9090172411`，337节点中336 passed /1 POSIX executable mode bits平台skip，0失败/错误；四个新控制及加强的compare拒绝案例均实际执行。没有发现近期修复引入的新缺陷，不登记B-077、不改生产逻辑。原报告403函数组绑定先前扫描基线，本轮只增加验证控制，不把旧全仓表当作含新增测试的实时统计。
+
+REVIEW_LOCAL_CHECKED核对全部464个跟踪生产/Study文件的原字节SHA不变；layout、版本、README和已发布v0.4.1报告均不变。旧四测试文件ZIP、命令/源码hash和XML/log保留于.tmp/v041-draft-20261015（不随clone）。首个追加脚本在compare已有“错误消息包含”断言锚点拒绝，当时未执行测试，三文件已追加内容保留；仅修正实际断言后首轮检查336/1skip通过，REVIEW_STAGE_ANCHOR_REJECTED保留，不当库失败或新缺陷。
+
+本批仅四测试与四开发文档：发布报告事实/五Issue关闭、当前版本入口、近期复查结论。后续最终工作head和实际dev分别验收全部实际CI，结果以本批PR验收正文为准，不用发布前CI冒充新增控制通过；不重发Release、不改main/tag、不删分支或数据、不测速/GPU。
 
 ### 89. v0.4.1 正式发布授权与版本准备
 
