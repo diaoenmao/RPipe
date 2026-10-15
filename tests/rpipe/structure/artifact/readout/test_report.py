@@ -303,3 +303,56 @@ def test_numbers_text_cells_keep_planned_tables(report_study, field, text):
     assert '`b`' in tables[1][3]
     assert '[run.log](../runs/a/assets/logs/run.log)' in tables[1][2]
     assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('route', ['stat', 'experiment-empty', 'experiment-fallback'])
+@pytest.mark.parametrize('case,value', [
+    ('zero', 0), ('one', 1), ('two', 2), ('large', 10 ** 100), ('missing', None),
+    ('true', True), ('false', False), ('negative', -1), ('null', None),
+    ('fraction', 1.5), ('integral-float', 2.0), ('numeric-text', '2'),
+    ('pipe', '2 | forged'), ('newline', '2' + chr(10) + 'forged'),
+    ('unicode-line', '2' + chr(0x2028) + 'forged'), ('list', [2]),
+    ('object', {'n': 2}), ('surrogate', chr(0xD800)),
+    ('nan', float('nan')), ('infinity', float('inf')),
+])
+def test_report_count_cells_preserve_rows_and_peers(report_study, capsys, route, case, value):
+    from rpipe.structure.artifact.readout.report import render_numbers
+
+    study = report_study
+    index = json.loads((study / 'index.json').read_text())
+    process = json.loads((study / 'process.json').read_text())
+    peer = {'factors': {'model.name': 'mlp'}, 'runs': [{'id': 'c', 'seed': 2}]}
+    index['experiments'].append(peer)
+    process['experiments'].append({**peer, 'n': 1, 'metrics': {
+        'accuracy': {'mean': 80.0, 'std': 0.0, 'min': 80.0, 'max': 80.0, 'n': 1}}})
+    exp = process['experiments'][0]
+    stat = exp['metrics']['accuracy']
+    if route == 'experiment-empty':
+        exp['metrics'] = {}
+    elif route == 'experiment-fallback':
+        stat.pop('n')
+    if case == 'missing':
+        (stat if route == 'stat' else exp).pop('n', None)
+        expected = '1' if route == 'stat' else '0'
+    else:
+        (stat if route == 'stat' else exp)['n'] = value
+        expected = str(value) if case in ('zero', 'one', 'two', 'large') else '-'
+    (study / 'index.json').write_text(json.dumps(index), encoding='utf-8')
+    (study / 'process.json').write_text(json.dumps(process), encoding='utf-8')
+    before = {p: p.read_bytes() for p in [study / 'index.json', study / 'process.json',
+                                         numbers_path(study), study / 'docs/STUDY_REPORT.md']}
+    text = render_numbers(study)
+    assert {p: p.read_bytes() for p in before} == before
+    block = text.split('## Experiments')[1].split('## Runs')[0]
+    rows = [line for line in block.splitlines() if line.startswith('|')]
+    assert len(rows) == 4 and all(line.count('|') == 8 for line in rows)
+    # shortcut: ASCII diagnostics avoid event-writer fault #111, remove after its regression fix.
+    count_is_valid = rows[2].split('|')[-2].strip() == expected
+    assert count_is_valid, 'count cell violates the typed display contract'
+    assert rows[3].split('|')[-2].strip() == '1' and '80.0000' in rows[3]
+    assert all('`' + name + '`' in text for name in ('a', 'b', 'c'))
+    assert main(['report', str(study)]) == 0
+    assert numbers_path(study).read_text(encoding='utf-8') == text
+    assert capsys.readouterr().out.strip() == str(numbers_path(study))
+    assert {p: p.read_bytes() for p in before if p != numbers_path(study)} == {
+        p: value for p, value in before.items() if p != numbers_path(study)}
