@@ -1,5 +1,13 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-15 v0.4.1 已正式发布，随后复查只进 dev
+
+[发布PR75](https://github.com/DreamSoul-AI/RPipe/pull/75)普通merge main `00e70b1f83ac23d113b9582a4270a41cfadb1444`，发布PR与实际main全部实际CPU/包CI成功后，annotated [v0.4.1](https://github.com/DreamSoul-AI/RPipe/tree/v0.4.1)与[Release](https://github.com/DreamSoul-AI/RPipe/releases/tag/v0.4.1)已发布并核验，#53/#62/#66/#67/#68已分别留言版本后completed关闭。精确tag对象/正文hash/原网络失败与五评论见record §90，不重复发布或移动标签、不重开Issue。下方“保持open/仅dev/仅草稿”属于本次发布前阶段。
+
+沿用codex/artifact-contracts-correctness继续三类近期回归复查，仅测试/记录经PR合dev，不改已发布main/tag、布局或生产运行时，不测速/GPU、不删分支/数据。四项控制与实际结果见record §91；没有新反例不造缺陷或大重构。
+
+发布后复查实际336 passed /1 POSIX平台skip，新增4控制和加强的compare输出拒绝案例均执行，测试提交4dd0c87；全部464跟踪生产/Study文件hash不变。未发现近期修复引入新缺陷，不占B-077，测试/记录通过独立PR合dev，最终CI见对应PR正文。
+
 ## 2026-10-15 三类全仓清单已全部集成并实际验收
 
 最终代码dev `fb022a41230ba5c11916941e3a25617b33f04d57`：PR65清理记录及第三类PR69、第二类PR70、第一类PR71均已普通merge，最终head和实际dev的全部实际矩阵/聚合CI分别成功；精确SHA/CI链接与403组清单见record §83—87。B-074/075/076已从未解决队列移除，下一编号B-077；#53/#62/#66/#67/#68保持open至下版，不重修或自动关闭。下方“独立验收/候选”仅为历史阶段。

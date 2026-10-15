@@ -108,4 +108,4 @@ Package Check 在 Actions 里执行 `python -m build`，再在独立虚拟环境
 4. 等待实际 main 集成提交的 CPU / 包 CI 通过，再在该确切提交上建立新 annotated tag，推送标签并创建 GitHub Release；不能移动或覆盖旧标签 / Release。
 5. Release 正文使用入库报告，仓库相对链接转换为指向发布提交的 GitHub 链接，并注明确切提交 / PR / CI。默认仅 GitHub 源码归档，不上传本机数据、Run、缓存或安装包；PyPI / 二进制分发需另行授权。
 
-当前版本报告入口：[v0.4.0](../releases/v0.4.0.md)，前一正式报告为 [v0.3.1](../releases/v0.3.1.md)。手工发布不引入自动发版工作流，历史实测源码与哈希不因包版本号改变而改写；正式标签与最终状态以 GitHub Release 为准。
+当前版本报告入口：[v0.4.1](../releases/v0.4.1.md)，前一正式报告为 [v0.4.0](../releases/v0.4.0.md)。手工发布不引入自动发版工作流，历史实测源码与哈希不因包版本号改变而改写；正式标签与最终状态以 GitHub Release 为准。
