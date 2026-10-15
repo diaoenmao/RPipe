@@ -101,24 +101,28 @@ def link_input(source: Path | str, target: Path | str) -> Path:
     """Reference an immutable input without a second disk copy. Never overwrite."""
     source, target = Path(source), Path(target)
     target.parent.mkdir(parents=True, exist_ok=True)
+    temporary = target
     if target.exists():
-        if not target.samefile(source):
-            if not target.is_file() or _digest(source) != _digest(target):
-                raise FileExistsError(f'different input reference already exists: {target}')
-            temporary = target.with_name(f'{uuid.uuid4().hex}.link')
-            try:
-                link_input(source, temporary)
-                from rpipe.structure.artifact._atomic import atomic_replace
-                atomic_replace(temporary, target)
-            finally:
-                temporary.unlink(missing_ok=True)
-        return target
-    # Symlinks allow cross-volume references; Windows falls back to a hard link.
+        if target.samefile(source):
+            return target
+        if not target.is_file() or _digest(source) != _digest(target):
+            raise FileExistsError(f'different input reference already exists: {target}')
+        temporary = target.with_name(f'{uuid.uuid4().hex}.link')
+    owned = False
     try:
-        target.symlink_to(source.resolve())
-    except OSError:
-        os.link(source, target)
-    return target
+        # Symlinks allow cross-volume references; Windows falls back to a hard link.
+        try:
+            temporary.symlink_to(source.resolve())
+        except OSError:
+            os.link(source, temporary)
+        owned = True
+        if temporary != target:
+            from rpipe.structure.artifact._atomic import atomic_replace
+            atomic_replace(temporary, target)
+        return target
+    finally:
+        if owned and temporary != target:
+            temporary.unlink(missing_ok=True)
 
 
 def reference_tree(source: Path | str, target: Path | str) -> None:
@@ -210,12 +214,15 @@ def migrate_shared(study_dir: Path | str) -> dict[str, object]:
                 # Prepare the reference before replacing the duplicate. A failure
                 # leaves the old source intact, and successful replacement is atomic.
                 tmp = source.with_name(f'{uuid.uuid4().hex}.link')
+                owned = False
                 try:
                     os.link(target, tmp)
+                    owned = True
                     from rpipe.structure.artifact._atomic import atomic_replace
                     atomic_replace(tmp, source)
                 finally:
-                    tmp.unlink(missing_ok=True)
+                    if owned:
+                        tmp.unlink(missing_ok=True)
         return {'study': str(study), 'paths': {k: str(v) for k, v in roots.items()},
                 'files': [{'old': str(s), 'shared': str(t), 'sha256': d,
                            'same_file': s.samefile(t)} for s, t, d in rows]}
