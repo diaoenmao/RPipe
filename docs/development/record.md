@@ -1,8 +1,8 @@
-> 现状：研究PR92与来源证据PR94均已最终head/实际dev全绿并清远程；#95日志引用统一修复本地全绿。
-> 最新：72项前置合同转绿、另6兼容控制；相关874/core1077各1平台skip、Flow175通过，出处§107。
-> 下一步：同一日志引用PR最终head/实际dev全部实际CI验收，合dev后清远程；继续三类正确性复查。
-> 阻塞：无；唯一未合codex/log-reference-contract；8条结束远程清单已记录，当前活动分支保留。
-> 边界：不测速/GPU、不迁shared/logger、不改layout/schema、不合main/打tag，不删数据/Run。
+> 现状：研究PR92、来源PR94均已验收清远程；PR96初候选CI绿后补查发现可用性/Windows别名边界，尚未合dev。
+> 最新：循环链接3项2失败/1通过；目录/Windows同文件别名6项5失败/1通过，出处§108及原生WinError1921证据。
+> 下一步：既有log_path用stat区分缺失/普通文件/不可用对象，再规范化真实归属；同PR重做最终正确性门。
+> 阻塞：无；旧a5b8397的CI/874相关/core1077结果仅历史候选，不替代新head验收；失败均保留。
+> 边界：不测速/GPU、不改布局/schema、不迁logger/shared、不合main/tag，不删数据。
 
 # 一、摘要
 
@@ -102,6 +102,20 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+### 108. 合并前补齐循环/非文件可用性与Windows路径别名（仍B-085 / #95）
+
+记录日期2026-10-16。PR96初候选head `a5b83970e65e948e6eb5c83c8a9c57ca161ad998` 的[Unit38782730979](https://github.com/DreamSoul-AI/RPipe/actions/runs/38782730979)、[Package38782730953](https://github.com/DreamSoul-AI/RPipe/actions/runs/38782730953)、[Branch38782731079](https://github.com/DreamSoul-AI/RPipe/actions/runs/38782731079)全部实际矩阵/聚合成功，proof SHA256 `147b739a52c4e39a887003a8c015e8ce734b502c509cb4b621ba3f302fcbc5c1`备份为.tmp/audit085/ci/PR_CHECKED_a5b8397.json。但合并前复查发现以下真实边界，**初候选不计最终验收、不合此旧head**；不是历史pending重派或取消CI挑结果。
+
+本机Python3.13.9真实循环文件链接：原生stat为OSError errno22/WinError1921，非严格Path.resolve仍返回路径，候选status保留无效log格、report仍输出循环链接；logs已跳过并保留peer。Python官方[3.10 resolve](https://docs.python.org/3.10/library/pathlib.html#pathlib.Path.resolve)说明循环会RuntimeError，[3.13变更](https://docs.python.org/3.13/library/pathlib.html#pathlib.Path.resolve)说明非严格不再因此抛异常。后者为本机实测，前者为文档支持的版本风险，不声称已在本机跑3.10；py launcher查询不可用不等于已枚举全机解释器。LOOP_REPRO保存原生错误与链接身份，无GPU/计时/系统权限变更。
+
+另一个本机实证：Windows命名空间短路径别名与普通本Run日志samefile=True，原v0.4.1后基线reader能读OWN-EXTENDED，但a5候选因词法锚点不同返回'-'。旧reader实际通过冻结snapshot导入并核对来源，EXTENDED_REPRO保存路径/原始事件/两个结果；字节不改。只证明本机短路径extended别名，未改LongPathsEnabled或宣称通用长路径/任意文件系统能力。
+
+继续同一Issue95/PR96、同分支，先补d6bbbae循环链接3项红：2失败/1通过、0error/skip，测试快照用readlink保全链接本体而不跟随坏链接；再790de87的目录/Windows别名6项红：5失败/1通过、0error/skip。首RED_FILES因测试路径字面量转义导致SyntaxError，pytest退出2、collection error1、实际节点执行0；原文件/日志/XML保留FILES_SETUP_FAILURE，不算库失败或通过。修正后先AST检查，再以新basetemp/RED_FILES2执行真实6节点，不覆盖失败。
+
+设计仍在既有log_path统一：原生stat已有对象必须普通文件；FileNotFound允许既有未来日志链接；目录、循环或其他OSError为不可用，随后验证规范物理目标留在Run/Study。逻辑锚点正常时保留原路径拼法，有效命名空间/别名锚点不同则使用已验证的规范路径，不把同文件别名误判成越界；其他Run/Study外实际目标仍拒绝。保持RuntimeError等程序异常原样，不按错误字符串猜测或笼统吞异常；不新建模块/依赖/目录、不更改磁盘合同。该原生预检避免旧版本先走resolve的循环RuntimeError路径，同时缺失文件不误伤为不可用。
+
+原72前置合同与6后补控制保留，新9项在本可用性修订前先红；接着用新输出/独立basetemp跑合并合同、core与Flow，最终head重新验收CI后才合dev。旧代码通过/新反例、首测试收集错误、所有链接和peer证据均保留.tmp/audit085，不随clone。当前仍无B086已登记缺口。
 
 ### 107. 来源证据实际dev验收与日志引用统一修复本地门
 

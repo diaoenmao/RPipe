@@ -299,7 +299,7 @@ conservative 墙钟只在 **make** 打印。本进程实测时间在 Logger 行�
 
 `activity.json` 仅为可选提示：不可读、存在性查询失败、UTF-8解码失败或JSON无效时忽略提示，继续按index/result展示权威状态，不删除或重写该文件。忽略提示不会把缺少index改成成功；缺index且无有效提示仍退出2。非预期编程异常不归为可选IO失败。提示的最低字段合同为非空白字符串phase、可缺省/null/字符串detail；非法字段同样不可用，不能凭坏提示把缺index改成成功。自定义非空阶段名和Unicode/空detail兼容保留，reader返回原mapping，不归一化、改写或删除文件，不增加阶段枚举或ownership/TTL协议。
 
-日志引用在既有`log_path`统一约束并由status/logs/report复用：index.log须为当前Run目录内的字符串路径（可绝对或Study相对），不含行控制字符，词法与解析后的物理路径均不能跳到其他Run或Study外；坏引用为不可用，status的note/log单格为`-`、logs跳过该Run、report对应链接格为`-`，不影响peer、状态或计数。缺省/null/空字符串仍回到本Run默认run.log；合法内部别名、Unicode/空格路径与尚未生成的默认日志链接兼容，report按相对文件URI编码特殊字符。物理解析的OSError/非法路径按可选引用处理，非预期RuntimeError原样传播。这里只验证引用，不扫描其他Run/硬链接所有权或迁移/删除文件；不改变日志追加协议、正文、JSON结构或目录。
+日志引用在既有`log_path`统一约束并由status/logs/report复用：index.log须为当前Run目录内的字符串路径（可绝对或Study相对），不含行控制字符，解析后的物理路径须属于本Run及Study，Windows命名空间等有效别名按规范物理路径核对，不按不同字符串锚点误拒；坏引用为不可用，status的note/log单格为`-`、logs跳过该Run、report对应链接格为`-`，不影响peer、状态或计数。缺省/null/空字符串仍回到本Run默认run.log；合法内部别名、Unicode/空格路径与尚未生成的默认日志链接兼容，report按相对文件URI编码特殊字符。先以原生stat区分已有普通文件、尚未生成文件和不可用对象：缺文件允许既有未来链接，目录/循环链接/其他OSError为不可用，再解析物理归属；不笼统捕获RuntimeError，非预期程序异常仍传播。这里只验证引用，不扫描其他Run/硬链接所有权或迁移/删除文件；不改变日志追加协议、正文、JSON结构或目录。
 
 `python -m rpipe logs <study>` 只读，把各 Run 的事件行按行首时间打到终端，不写 Study 级总 log。缺 index 退出 2。
 
