@@ -1,8 +1,8 @@
-> 现状：v0.4.1已发布；main `00e70b1f83ac23d113b9582a4270a41cfadb1444`， [tag](https://github.com/DreamSoul-AI/RPipe/tree/v0.4.1) / [Release](https://github.com/DreamSoul-AI/RPipe/releases/tag/v0.4.1)；五Issue已completed关闭。
-> 最新：近期三类复查336通过/1平台skip，4新控制全部执行且未发现新缺陷；出处§91与测试提交4dd0c87。
-> 下一步：本批测试/记录按独立PR→dev验收；不把复查混入已发布标签，只按真实反例推进正确性。
-> 阻塞：无；首次标签推送网络错误已恢复，原错误/远端核对保留，未移动或覆盖标签。
-> 边界：仅CPU正确性；文件架构/layout不变，保留分支与数据/Run/provenance，不测速/GPU。
+> 现状：v0.4.1已发布；新正确性缺口B-077/#77已复现，红回归先提交f85f6bb，生产代码尚未修改。
+> 最新：共享index容器缺校验；8次合成调用4异常/4误成功；24项回归18失败/6兼容控制通过，出处§92和.tmp/audit077。
+> 下一步：在既有load_index统一校验并做调用方正确性回归，经PR合dev；#77留到下版关闭。
+> 阻塞：无；当前开放Issue已核查后新建#77，不重复旧修复；保留全部红例。
+> 边界：不测速/GPU，不改文件架构/产物布局，不合main/打tag，不删分支或数据。
 
 # 一、摘要
 
@@ -2295,3 +2295,13 @@ main 原代码 CPU 探针以新输出目录重跑8/8，step2/4参数、train/tes
 第二节、科学报告和 [仓库整理验收](https://github.com/diaoenmao/RPipe/blob/71143ab/docs/REPOSITORY_CLEANUP.md) 中的 refs 与“未合并”描述保留其记录时点；它们不是发布后 main 的动态引用。原 source SHA、数值与失败判定不随发布改写。
 
 本次是公共接口和产物格式的迁移：旧脚本调用需要更新，旧 checkpoint 不能直接作为新 Run resume；旧提交和原产物保留用于读取与回退。具体命令、配置、Stats 精度、std 及恢复边界见 [MAIN_MIGRATION.md](https://github.com/diaoenmao/RPipe/blob/71143ab/docs/MAIN_MIGRATION.md)。该文件已在 2026-10-10 从当前树删除，链接指向删除前的提交。
+
+### 92. v0.4.1后共享index容器合同缺口（B-077 / #77）
+
+记录日期2026-10-15。开始时工作区干净、fetch成功，HEAD与origin/dev均为2c8b6fbeab617dfabfff3db03789b21f6a29c23c；GitHub开放Issue为空。按最新授权继续三类正确性复查，不重开已发布Issue。本批锁定读取类共同边界，不修改发布main00e70b1或v0.4.1标签。
+
+1. 读取入口：已逐一搜索load_index的status/logs/report、Study process、resume、schedule和main_probe调用；根对象与Run路径已有检查，中间experiments/runs/factors的容器检查缺失。status/logs的既有CLI只捕获文件/类型/值错误，标量条目的AttributeError逃逸；空object则经`or []`变成假空计划。
+2. 真实小型复现：两个非法标量条目分别调用status/logs，4次AttributeError；空experiments object与列表对factors分别调用两命令，4次误成功，均未改输入。只用隔离JSON，不运行阶段、GPU或性能测量。原始源码/测试/设计字节在.tmp/audit077/BEFORE.zip，探针在REPRO.json；临时材料不随clone提供。
+3. [Issue #77](https://github.com/DreamSoul-AI/RPipe/issues/77)先于测试/修复创建。红测试提交f85f6bb先于生产改动：10个共享loader拒绝、8个实际CLI拒绝、6个缺省/null/合法空容器兼容控制，总计24节点，18 failed/6 passed，0error/skip。RED.xml/log/COMMAND和RED_CHECKED保留，不将红例当最终CI。
+4. 方案先写入structure.md：仅在现有load_index验证list/object，保留返回原mapping、不补字段、不迁移、不修改生产者或布局。所有调用方统一收到现有TypeError；不增加展示层逐处catch，不吞意外AttributeError。现有report额外科学身份检查、process必须有experiments列表的规则不放宽。
+5. 相邻两类已检查入口：整体替换文本继续走_atomic；Logger/Tracker追加及checkpoint/lock的专用保全合同不改。未复现写入类新缺陷，不把诊断staging或显式单写者限制登记为bug。此批不宣称穷尽任意第三方扩展。

@@ -921,7 +921,7 @@ structure/artifact/
 
 readout 在既有 status.py 内用私有三态读取区分可用、缺失和不可读，logs 复用相同边界；activity 继续原可选读取合同。计划 config 可用时先核对 mode / id / seed，冲突按原 error 字段显示，坏格不遮蔽 peer；仅缺 config 时回退历史 axes / result 信息，见 [record §71](../development/record.md)。
 
-status / logs 的逐文件 I/O 容错同时覆盖存在性查询和内容读取：不可读结果沿用已有计划配置回退，不可用日志不提供 note/event，其他 Run 继续展示；不改写任何输入。当前 index 缺失/不可用仍拒绝，意外编程错误仍向上抛出，不把它们当作缺失文件。 status 的 metric 单元格仅展示 object 中支持的数值字段；非 object 指标直接使用已有不可用占位，不把列表对转换为 mapping，也不因此隐藏 Run 状态或其他有效结果。
+status / logs 的逐文件 I/O 容错同时覆盖存在性查询和内容读取：不可读结果沿用已有计划配置回退，不可用日志不提供 note/event，其他 Run 继续展示；不改写任何输入。共享 load_index 在进入调用方前验证 experiments/runs 为 list、各条目为 object、factors 为 object；缺省/null 的可选容器保留历史空值语义，非法非空或空类型均明确拒绝，不将列表对强转为因素。当前 index 缺失/不可用仍拒绝，意外编程错误仍向上抛出，不把它们当作缺失文件。 status 的 metric 单元格仅展示 object 中支持的数值字段；非 object 指标直接使用已有不可用占位，不把列表对转换为 mapping，也不因此隐藏 Run 状态或其他有效结果。
 
 读数的数字格式只在既有 report._fmt 内统一：有限 int/float 显示四位小数，bool、其他类型、溢出和非有限值显示 `-`，status 复用并保留后续可用指标 fallback。report 的 Experiment / Run metrics 非 object 时仅该格不可用，不隐藏其他 Run；严格 loader、计划一致性、compare 与 process 科学聚合不由此放宽。
 
