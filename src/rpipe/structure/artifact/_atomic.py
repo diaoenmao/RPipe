@@ -40,5 +40,11 @@ def atomic_write_text(path: Path | str, text: str, encoding: str = 'utf-8', *, n
         if owned:
             try:
                 tmp.unlink(missing_ok=True)
+            except PermissionError:
+                try:
+                    tmp.chmod(0o600)
+                    tmp.unlink(missing_ok=True)
+                except OSError:
+                    pass
             except OSError:
                 pass
