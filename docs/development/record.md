@@ -1,8 +1,8 @@
-> 现状：v0.4.1已发布；main `00e70b1f83ac23d113b9582a4270a41cfadb1444`， [tag](https://github.com/DreamSoul-AI/RPipe/tree/v0.4.1) / [Release](https://github.com/DreamSoul-AI/RPipe/releases/tag/v0.4.1)；五Issue已completed关闭。
-> 最新：近期三类复查336通过/1平台skip，4新控制全部执行且未发现新缺陷；出处§91与测试提交4dd0c87。
-> 下一步：本批测试/记录按独立PR→dev验收；不把复查混入已发布标签，只按真实反例推进正确性。
-> 阻塞：无；首次标签推送网络错误已恢复，原错误/远端核对保留，未移动或覆盖标签。
-> 边界：仅CPU正确性；文件架构/layout不变，保留分支与数据/Run/provenance，不测速/GPU。
+> 现状：v0.4.1发布后新确认B-077/#77；红测试f85f6bb、设计842dacd、最小修复823c9b0均在唯一工作分支。
+> 最新：24项新合同由18失败/6通过转为全绿；相邻299项CPU全部通过；远端只3分支、可删0条，出处§92。
+> 下一步：本机CPU Flow169项也已全绿，提交PR并核对最终工作提交/实际dev CI；#77保留到下版关闭。
+> 阻塞：无；首次绿色命令文件名错误未执行用例，已纠正且原错误保留；未重复派发验证。
+> 边界：当前工作分支保留，不测速/GPU，不改layout/产物格式，不合main/打tag，不删数据。
 
 # 一、摘要
 
@@ -102,6 +102,19 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-15
+
+### 92. v0.4.1后共享index容器合同缺口（B-077 / #77）
+
+记录日期2026-10-15。开始时工作区干净、fetch成功，HEAD与origin/dev均为2c8b6fbeab617dfabfff3db03789b21f6a29c23c；GitHub开放Issue为空。按最新授权继续三类正确性复查，不重开已发布Issue。本批锁定读取类共同边界，不修改发布main00e70b1或v0.4.1标签。
+
+1. 读取入口：已逐一搜索load_index的status/logs/report、Study process、resume、schedule和main_probe调用；根对象与Run路径已有检查，中间experiments/runs/factors的容器检查缺失。status/logs的既有CLI只捕获文件/类型/值错误，标量条目的AttributeError逃逸；空object则经`or []`变成假空计划。
+2. 真实小型复现：两个非法标量条目分别调用status/logs，4次AttributeError；空experiments object与列表对factors分别调用两命令，4次误成功，均未改输入。只用隔离JSON，不运行阶段、GPU或性能测量。原始源码/测试/设计字节在.tmp/audit077/BEFORE.zip，探针在REPRO.json；临时材料不随clone提供。
+3. [Issue #77](https://github.com/DreamSoul-AI/RPipe/issues/77)先于测试/修复创建。红测试提交f85f6bb先于生产改动：10个共享loader拒绝、8个实际CLI拒绝、6个缺省/null/合法空容器兼容控制，总计24节点，18 failed/6 passed，0error/skip。RED.xml/log/COMMAND和RED_CHECKED保留，不将红例当最终CI。
+4. 方案先写入structure.md：仅在现有load_index验证list/object，保留返回原mapping、不补字段、不迁移、不修改生产者或布局。所有调用方统一收到现有TypeError；不增加展示层逐处catch，不吞意外AttributeError。现有report额外科学身份检查、process必须有experiments列表的规则不放宽。
+5. 相邻两类已检查入口：整体替换文本继续走_atomic；Logger/Tracker追加及checkpoint/lock的专用保全合同不改。未复现写入类新缺陷，不把诊断staging或显式单写者限制登记为bug。此批不宣称穷尽任意第三方扩展。
+6. 分支清理复核（本轮新指令）：fetch后以ls-remote列出实际远端，仅main、dev、codex/artifact-contracts-correctness；当前工作分支明确保留，长期分支受保护，没有其他可删分支，本次新增删除0条。此前已删9条为artifact-consistency-design、cache-lock-budget、failure-preservation-policy、maintenance-closeout、open-issue-correctness、safe-readout-contracts、status-metric-shape、status-readout-errors、v040-layout-release（均codex/前缀），完整tip/祖先/删除证据见§82；本轮BRANCH_CHECKED保留实际三条远端SHA，不重复删除或恢复旧分支。
+7. 生产修复823c9b0仅index.py增加15行/删除2行，在第一次dereference前验证容器；299项相邻CPU回归全部通过，0fail/error/skip，24项新增全部执行。第一次绿色命令误指不存在test_resume.py、收集前退出4，GREEN.log/命令保留，不当库失败或已执行回归；纠正为真实test_resume_sibling.py后GREEN2全部通过。CPU Flow现有句柄40809已正常结束，169 passed，0fail/error/skip；FLOW/GREEN等本机材料在.tmp/audit077，不随clone。最终工作提交与实际dev CI仍分别验收，不拿本机通过代替远端矩阵。
+
 
 ### 90. v0.4.1 正式发布完成与五项 Issue 关闭
 

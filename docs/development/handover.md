@@ -1,5 +1,11 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-15 v0.4.1后B-077共享index容器校验
+
+最新授权要求继续正确性；开放Issue最初为空，真实合成反例确认后新建[#77](https://github.com/DreamSoul-AI/RPipe/issues/77)。红测试f85f6bb为18 failed/6兼容控制passed，设计842dacd先于最小修复823c9b0；仅load_index验证experiments/runs/list条目/factors容器，不改变布局、格式或合法缺省/null语义。299相邻和169 CPU Flow全通过，最终工作head与实际dev CI通过后才算集成完成；#77留待下版关闭，具体见record §92与后续PR正文。
+
+本轮远端实际仅main/dev/codex/artifact-contracts-correctness，已合并旧9分支早已删除（record §82）；本次新增删除0，当前分支明确保留。不合main、不打tag、不测速/GPU、不改Study数据/Run/provenance。旧已发布Issue不重开。
+
 ## 2026-10-15 v0.4.1 已正式发布，随后复查只进 dev
 
 [发布PR75](https://github.com/DreamSoul-AI/RPipe/pull/75)普通merge main `00e70b1f83ac23d113b9582a4270a41cfadb1444`，发布PR与实际main全部实际CPU/包CI成功后，annotated [v0.4.1](https://github.com/DreamSoul-AI/RPipe/tree/v0.4.1)与[Release](https://github.com/DreamSoul-AI/RPipe/releases/tag/v0.4.1)已发布并核验，#53/#62/#66/#67/#68已分别留言版本后completed关闭。精确tag对象/正文hash/原网络失败与五评论见record §90，不重复发布或移动标签、不重开Issue。下方“保持open/仅dev/仅草稿”属于本次发布前阶段。

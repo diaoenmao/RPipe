@@ -100,8 +100,21 @@ def load_index(study_dir: Path | str) -> dict[str, Any]:
     if not isinstance(data, dict):
         raise TypeError('Study index must be an object')
     from rpipe.structure.artifact.layout import validate_run_directory
-    for experiment in data.get('experiments') or []:
-        for run in experiment.get('runs') or []:
+    experiments = data.get('experiments')
+    if experiments is not None and not isinstance(experiments, list):
+        raise TypeError('Study index experiments must be a list')
+    for experiment in experiments or []:
+        if not isinstance(experiment, dict):
+            raise TypeError('Study index experiment must be an object')
+        factors = experiment.get('factors')
+        if factors is not None and not isinstance(factors, dict):
+            raise TypeError('Study index factors must be an object')
+        runs = experiment.get('runs')
+        if runs is not None and not isinstance(runs, list):
+            raise TypeError('Study index runs must be a list')
+        for run in runs or []:
+            if not isinstance(run, dict):
+                raise TypeError('Study index Run must be an object')
             for key in ('run_dir', 'id'):
                 if run.get(key) is not None:
                     validate_run_directory(run[key])
