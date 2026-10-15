@@ -60,3 +60,75 @@ def test_unexpected_activity_reader_bug_is_not_suppressed(tmp_path, monkeypatch)
     monkeypatch.setattr(Path, 'read_text', broken)
     with pytest.raises(RuntimeError, match='unexpected reader bug'):
         read_activity(tmp_path)
+
+
+
+_BAD_ACTIVITY_FIELDS = [
+    {'phase': True}, {'phase': 1}, {'phase': ['make']}, {'phase': {'name': 'make'}},
+    {'phase': ' '}, {'phase': '\t\n'},
+    {'phase': 'make', 'detail': False}, {'phase': 'make', 'detail': 0},
+    {'phase': 'make', 'detail': []}, {'phase': 'make', 'detail': {}},
+]
+
+
+@pytest.mark.parametrize('body', _BAD_ACTIVITY_FIELDS)
+def test_bad_activity_fields_are_unavailable_without_rewrite(tmp_path, body):
+    path = tmp_path / 'activity.json'
+    raw = json.dumps(body).encode('utf-8')
+    path.write_bytes(raw)
+    assert read_activity(tmp_path) is None
+    assert path.read_bytes() == raw
+    assert list(tmp_path.iterdir()) == [path]
+
+
+@pytest.mark.parametrize('body', _BAD_ACTIVITY_FIELDS)
+def test_bad_activity_cannot_bypass_missing_index_error(tmp_path, capsys, body):
+    from rpipe.flow.cli import main
+
+    path = tmp_path / 'activity.json'
+    raw = json.dumps(body).encode('utf-8')
+    path.write_bytes(raw)
+    assert main(['status', str(tmp_path)]) == 2
+    captured = capsys.readouterr()
+    assert 'missing index' in captured.err
+    assert not captured.out
+    assert path.read_bytes() == raw
+    assert list(tmp_path.iterdir()) == [path]
+
+
+def test_bad_activity_does_not_prefix_or_hide_authoritative_run_table(tmp_path, capsys):
+    from rpipe.flow.cli import main
+    from rpipe.structure.artifact.index import write_index
+    from rpipe.structure.artifact.result import write_result
+
+    write_index(tmp_path, {'study': 'tiny', 'experiments': [
+        {'factors': {'algorithm.mode': 'train'}, 'runs': [{'id': 'peer', 'seed': 0}]}]})
+    write_result(tmp_path / 'runs/peer/result.json',
+                 {'status': 'succeeded', 'control': {}, 'metrics': {'accuracy': 1}, 'paths': {}})
+    (tmp_path / 'activity.json').write_text('{"phase": true}', encoding='utf-8')
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    assert main(['status', str(tmp_path)]) == 0
+    captured = capsys.readouterr()
+    assert captured.out.startswith('tiny  planned=1 succeeded=1 failed=0 pending=0')
+    assert 'accuracy=1.0000' in captured.out and 'peer' in captured.out
+    assert not captured.err
+    assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
+
+
+@pytest.mark.parametrize('body', [
+    {'phase': 'make', 'detail': '准备共享输入'}, {'phase': 'make'},
+    {'phase': 'custom', 'detail': None}, {'phase': ' custom ', 'detail': ''},
+])
+def test_activity_keeps_custom_unicode_and_optional_detail_compatibility(tmp_path, capsys, body):
+    from rpipe.flow.cli import main
+
+    path = tmp_path / 'activity.json'
+    raw = json.dumps(body, ensure_ascii=False).encode('utf-8')
+    path.write_bytes(raw)
+    assert read_activity(tmp_path) == body
+    assert main(['status', str(tmp_path)]) == 0
+    captured = capsys.readouterr()
+    assert captured.out.startswith(body['phase'] + ':')
+    assert not captured.err
+    assert path.read_bytes() == raw
+    assert list(tmp_path.iterdir()) == [path]
