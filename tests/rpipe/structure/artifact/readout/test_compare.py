@@ -226,7 +226,7 @@ def test_compare_unexpected_program_error_is_not_swallowed(tmp_path, monkeypatch
 
 @pytest.mark.parametrize('reference', ['parent', 'absolute', 'file-alias', 'root-alias'])
 @pytest.mark.parametrize('entry', ['api', 'cli'])
-def test_compare_checkpoint_ownership_rejects_external_payload(tmp_path, capsys, reference, entry):
+def test_compare_checkpoint_ownership_rejects_external_payload(tmp_path, capsys, monkeypatch, reference, entry):
     import torch
     a, b = _run(tmp_path, 'a', weight=1.0), _run(tmp_path, 'b', weight=2.0)
     outside = tmp_path / 'outside'
@@ -246,12 +246,19 @@ def test_compare_checkpoint_ownership_rejects_external_payload(tmp_path, capsys,
     output = tmp_path / 'comparison.json'
     output.write_text('old comparison\n', encoding='utf-8')
     before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file() and not p.is_symlink()}
+    reads = []
+    original_load = torch.load
+    def load(path, *args, **kwargs):
+        reads.append(path)
+        return original_load(path, *args, **kwargs)
+    monkeypatch.setattr(torch, 'load', load)
     if entry == 'api':
         with pytest.raises(ValueError, match='checkpoint'):
             compare_runs(a, b, checkpoints=[name])
     else:
         assert cli.main(['compare', str(a), str(b), '--checkpoint', name, '--out', str(output)]) == 2
         assert 'checkpoint' in capsys.readouterr().err
+    assert reads == []
     assert {p: p.read_bytes() for p in before} == before
 
 
