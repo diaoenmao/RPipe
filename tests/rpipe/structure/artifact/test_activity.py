@@ -136,22 +136,24 @@ def test_activity_keeps_custom_unicode_and_optional_detail_compatibility(tmp_pat
 
 
 @pytest.mark.parametrize('planned', [False, True], ids=['missing-index', 'planned-peer'])
-@pytest.mark.parametrize('large', [False, True], ids=['valid-integer', 'integer-limit'])
-def test_optional_activity_integer_decode_keeps_authoritative_status(tmp_path, capsys, planned, large):
+@pytest.mark.parametrize('payload', ['valid-integer', 'integer-limit', 'deep-json'])
+def test_optional_activity_integer_decode_keeps_authoritative_status(tmp_path, capsys, planned, payload):
     import sys
     from rpipe.flow.cli import main
     from rpipe.structure.artifact.index import write_index
     from rpipe.structure.artifact.result import write_result
 
     limit = getattr(sys, 'get_int_max_str_digits', lambda: 0)()
-    if large and not 0 < limit < 5000:
+    large = payload != 'valid-integer'
+    if payload == 'integer-limit' and not 0 < limit < 5000:
         pytest.skip('native integer digit limit is unavailable or outside the 5000-digit probe')
     if planned:
         write_index(tmp_path, {'study': 'tiny', 'experiments': [
             {'factors': {'algorithm.mode': 'train'}, 'runs': [{'id': 'peer', 'seed': 0}]}]})
         write_result(tmp_path / 'runs/peer/result.json',
                      {'status': 'succeeded', 'control': {}, 'metrics': {'accuracy': 1}, 'paths': {}})
-    raw = b'{"phase":"make","unused":' + (b'9' * 5000 if large else b'17') + b'}'
+    raw = b'{"phase":"make","unused":' + (b'[' * 10000 + b'0' + b']' * 10000 if payload == 'deep-json'
+                    else b'9' * 5000 if large else b'17') + b'}'
     path = tmp_path / 'activity.json'
     path.write_bytes(raw)
     before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}

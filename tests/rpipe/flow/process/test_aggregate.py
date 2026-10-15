@@ -75,18 +75,20 @@ def test_optional_state_keeps_io_and_programming_error_boundary(tmp_path, monkey
 
 @pytest.mark.parametrize('reader', [load_curve_series, load_tracker_history])
 @pytest.mark.parametrize('primary', [False, True], ids=['legacy-only', 'valid-jsonl'])
-@pytest.mark.parametrize('large', [False, True], ids=['valid-integer', 'integer-limit'])
-def test_optional_state_integer_decode_keeps_primary_and_legacy(tmp_path, reader, primary, large):
+@pytest.mark.parametrize('payload', ['valid-integer', 'integer-limit', 'deep-json'])
+def test_optional_state_integer_decode_keeps_primary_and_legacy(tmp_path, reader, primary, payload):
     import sys
 
     limit = getattr(sys, 'get_int_max_str_digits', lambda: 0)()
-    if large and not 0 < limit < 5000:
+    large = payload != 'valid-integer'
+    if payload == 'integer-limit' and not 0 < limit < 5000:
         pytest.skip('native integer digit limit is unavailable or outside the 5000-digit probe')
     assets = tmp_path / 'runs/a/assets'
     state = assets / kinds.TRACKER_STATE
     state.parent.mkdir(parents=True)
     raw = (b'{"splits":{"test":{"Accuracy":{"history":[10.0,20.0]}}},"unused":'
-           + (b'9' * 5000 if large else b'17') + b'}')
+           + (b'[' * 10000 + b'0' + b']' * 10000 if payload == 'deep-json'
+                    else b'9' * 5000 if large else b'17') + b'}')
     state.write_bytes(raw)
     scalar = assets / kinds.TRACKER_JSONL
     if primary:
@@ -104,3 +106,26 @@ def test_optional_state_integer_decode_keeps_primary_and_legacy(tmp_path, reader
         expected = {'test': {'Accuracy': series}}
     assert reader(tmp_path, 'a') == expected
     assert {p: p.read_bytes() for p in assets.rglob('*') if p.is_file()} == before
+
+
+
+@pytest.mark.parametrize('reader', [load_curve_series, load_tracker_history])
+@pytest.mark.parametrize('payload', ['valid-integer', 'syntax', 'integer-limit', 'deep-json'])
+def test_optional_jsonl_parser_failure_keeps_later_valid_record(tmp_path, reader, payload):
+    import sys
+
+    limit = getattr(sys, 'get_int_max_str_digits', lambda: 0)()
+    if payload == 'integer-limit' and not 0 < limit < 5000:
+        pytest.skip('native integer digit limit is unavailable or outside the 5000-digit probe')
+    literal = (b'[' * 10000 + b'0' + b']' * 10000 if payload == 'deep-json'
+               else b'9' * 5000 if payload == 'integer-limit' else b'17')
+    first = b'{' if payload == 'syntax' else b'{"unused":' + literal + b'}'
+    scalar = tmp_path / 'runs/a/assets' / kinds.TRACKER_JSONL
+    scalar.parent.mkdir(parents=True)
+    raw = first + b'\n' + (json.dumps({'split': 'test', 'name': 'Accuracy', 'mean': 75.0,
+                                       'optimizer_step': 1}) + '\n').encode('utf-8')
+    scalar.write_bytes(raw)
+    expected = [75.0] if reader is load_tracker_history else {
+        'unit': 'step', 'x': [1], 'values': [75.0]}
+    assert reader(tmp_path, 'a') == {'test': {'Accuracy': expected}}
+    assert scalar.read_bytes() == raw
