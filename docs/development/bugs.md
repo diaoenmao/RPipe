@@ -11,7 +11,7 @@
 - 来源：可选提示有类型合同复查，read_activity仅要求根dict与phase真值，未校验被CLI打印字段。
 - 真实9探针：phase为True、1、非空list/dict、空白串或detail为dict六个坏提示均被接受，index不存在却status退出0；合法缺detail/null detail为2控制，空dict被忽略并退出2为1控制。全部提示原字节不改，真实进程/GPU/ACL变更0。
 - 期望：在既有可选reader验证非空白str phase、可选str/null detail，坏字段沿不可用提示处理；缺index保留退出2、有合法index仍显示peer表。保留Unicode/自定义非空阶段名与缺省/null/空detail，不新增阶段enum、ownership/TTL或格式/目录。
-- Issue86已先开，portable红测试与生产修复尚未执行；所有announce现有调用都给字符串，不重构writer。源码/测试ZIP与REPRO在.tmp/audit082，不随clone。不同于原B-068 stat/编码错误，不重复登记旧反例。当前未验收B-081/#85与本项，下一新编号B-083。
+- Issue86已先开，从已合dev37d0262建立唯一未合codex/activity-hint-fields，先提交红313f826：25节点21 failed/4 passed、0error/skip；生产尚未修改。所有announce现有调用都给字符串，不重构writer。源码/测试ZIP与REPRO在.tmp/audit082，不随clone。不同于原B-068 stat/编码错误，不重复登记旧反例。当前未验收B-081/#85与本项，下一新编号B-083。
 
 ### B-081：Run状态字段的校验/读出类型与枚举约束不一致（[#85](https://github.com/DreamSoul-AI/RPipe/issues/85)）
 

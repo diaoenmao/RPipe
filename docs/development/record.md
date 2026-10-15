@@ -1,7 +1,7 @@
-> 现状：#77/#79/#81/#82均已合dev验收，四条结束远程已清；B-081/#85本地完成按PR验收，B-082/#86已真实复现排队。
-> 最新：#85的29项全绿；相邻402、core857通过/1平台skip、Flow175通过；坏activity6例绕过缺index，出处§99。
-> 下一步：验收状态修复最终head/实际dev并清理远程，再处理#86；Issue留待后版关闭。
-> 阻塞：无；目标active，当前唯一未合codex/result-status-contract，原始失败/删除清单均保留。
+> 现状：前四批已合dev验收并清远程；#85由PR87合dev37d0262，集成CI中；继续B-082/#86。
+> 最新：坏activity字段绕过缺index已复现；25项红合同21失败/4兼容控制通过，出处§100、313f826。
+> 下一步：在既有reader统一最低字段检查，保留合法进度提示/权威Run表，正确性验收后PR合dev并清理远程。
+> 阻塞：无；目标active，当前唯一未合codex/activity-hint-fields，原始失败/输入字节/删除清单保留。
 > 边界：不测速/GPU、不改layout/产物格式、不合main/打tag，不删数据/Run/provenance。
 
 # 一、摘要
@@ -102,6 +102,16 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+### 100. 可选activity字段类型与权威index的边界（B-082 / #86）
+
+记录日期2026-10-16。上一批[PR87](https://github.com/DreamSoul-AI/RPipe/pull/87)最终head49fbf56f9d595728a32b0cf2a1f169999636cecb的Unit38770856180/Package38770856256/Branch38770856234全部实际矩阵/聚合成功后普通merge dev37d0262b58fd1ac8d833b04fbb0fdcdcfce61235，实际dev独立验收中；状态修复remote待该验收后删。当前唯一未合codex/activity-hint-fields，继续已确认#86。
+
+1. 先Issue86及9个真实小探针：6个坏字段（phase布尔/数字/list/object/纯空白或detail object）均被当有效提示，缺index时status退出0；合法缺detail/null detail为2控制，空dict不可用/退出2为1控制。提示原字节全部保留，无模型/真实进程/GPU/ACL变更。旧B-068 stat/编码错误已修，本轮是独立最低结构缺口，不重复登记。
+2. 红回归313f826先于生产：25节点21 failed/4 passed、0error/skip。10非法形状各覆盖reader与缺index CLI（20红），另1合法index/peer不应有坏前缀的红；4个Unicode/custom/缺detail/null/空detail兼容控制，返回原mapping、不归一化。准备稿先在隔离stagecheck编译，未把编译计通过；实际RED.xml/log/命令/计数与原源码ZIP/REPRO在.tmp/audit082，不随clone。
+3. 设计先写flow.md现有activity合同：仅在read_activity验证根mapping后phase为非空白str、detail缺省/null/str，坏字段按原可选不可用None处理。合法index继续权威显示，缺index保留原错误2；合法提示仍可让尚未生成index的make进度可见。保留自定义非空phase和原字节，不新建阶段enum、owner/PID/TTL或读时修复。
+4. 已核对全部调用方：reader仅CLI status；announce在CLI make和data.prepare调用，现有参数都是文字/f-string，producer、clear_activity、阶段/路径/磁盘格式均不改。不反向依赖readout或新建helper/module，原RuntimeError仍上抛，stat/read/解码处理保持。生产修复待做，#77/#79/#81/#82已修dev、#85已合dev验收中、#86当前红合同；全部等后版关Issue。
+5. 目标active，按当前唯一未合分支→PR→dev与最终head/实际dev全部实际CI接续，再删已结束remote；本地旧分支与数据/Run/provenance保留。无测速/GPU/480s调查、layout/文件结构变化、main合并或tag，不因准备稿或历史pending重复派发已有验证。
 
 ### 99. 可选缓存最终验收、第四条远程清理与状态候选
 
