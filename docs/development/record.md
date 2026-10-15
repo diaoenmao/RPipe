@@ -112,7 +112,7 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 设计/缺陷 `f8e6de1` 先于生产修复 `a20efbb`。相邻原子/引用合同47 passed /1 POSIX skip；core668 passed /1 POSIX skip，8条既有 partial-resume warning。便携用例在 tests/rpipe/structure/artifact/test_atomic.py；Study函数测试只从源码抽取 JSON 发布函数，在合成临时目录执行，不调用配对训练。SOURCE_CHECKED.json 核对除发布表达式/导入及 save_json 本体外，八文件计算 AST 与原字节快照一致；初次通用编辑曾规范化文件既有混合换行，提交前已恢复所有未改行原字节。
 
-临时XML/自动report/源码快照不随clone；最终本地流程与head/实际dev CI另补确切结果。没有运行性能入口、下载、GPU、数值研究或重训；不声称新源码完成科学验收。两个Study旧Run/result/provenance全部不改写，新计算须新version/make并按原科学门复验。第二类读取与第一类失败保全继续以同一范围系统核对，不扩大旧成功保留条件或吞咽程序错误。
+临时XML/自动report/源码快照不随clone；本地CPU integration/e2e流程157 passed /0 skipped；head/实际dev CI另补确切结果。没有运行性能入口、下载、GPU、数值研究或重训；不声称新源码完成科学验收。两个Study旧Run/result/provenance全部不改写，新计算须新version/make并按原科学门复验。第二类读取与第一类失败保全继续以同一范围系统核对，不扩大旧成功保留条件或吞咽程序错误。
 
 
 ### 78. v0.4.0 正式发布完成与六项 Issue 关闭
