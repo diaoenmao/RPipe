@@ -138,3 +138,45 @@ def test_existing_failure_preservation_decision_table(tmp_path, monkeypatch, pha
     assert peer.read_bytes() == b'peer evidence'
     log = (layout.assets_dir / 'logs/run.log').read_text(encoding='utf-8')
     assert 'original policy failure' in log and '[flow] succeeded' not in log
+
+@pytest.mark.parametrize('phase', ['prepare', 'execute', 'collect', 'summarize', 'write', 'process'])
+@pytest.mark.parametrize('secondary', ['encoding', 'commit'])
+def test_phase_and_failure_publication_errors_preserve_original_evidence(tmp_path, monkeypatch, phase, secondary):
+    from rpipe.structure.artifact import _atomic
+
+    from rpipe.flow import runner
+
+    layout = artifact_layout(tmp_path, 'failure-publication')
+    prior = _success(layout)
+    peer = layout.root / 'peer.writing'
+    peer.write_bytes(b'peer evidence')
+    original = RuntimeError('original phase failure')
+    state = {}
+    if secondary == 'encoding':
+        state['result_draft'] = {'metrics': {'unencodable': object()}}
+    else:
+        def refuse(*args, **kwargs):
+            raise PermissionError('failure result publication refused')
+        monkeypatch.setattr(_atomic, 'atomic_replace', refuse)
+    failures = []
+    publish = runner.write_result
+    def observe(*args, **kwargs):
+        try:
+            return publish(*args, **kwargs)
+        except (TypeError, PermissionError) as error:
+            failures.append(type(error))
+            raise
+    monkeypatch.setattr(runner, 'write_result', observe)
+    def boom(_ctx):
+        raise original
+    monkeypatch.setattr(import_module(f'rpipe.flow.{phase}'), 'run', boom)
+    with pytest.raises(RuntimeError) as caught:
+        FlowRunner([phase]).run(FlowContext(tmp_path, layout, {}, state=state))
+    assert caught.value is original
+    assert failures == ([] if phase == 'process' else [TypeError if secondary == 'encoding' else PermissionError])
+    assert layout.result_path.read_bytes() == prior
+    assert peer.read_bytes() == b'peer evidence'
+    assert set(layout.root.glob('*.writing')) == {peer}
+    assert not list(layout.root.glob('*.tmp'))
+    log = (layout.assets_dir / 'logs/run.log').read_text(encoding='utf-8')
+    assert 'original phase failure' in log and '[flow] succeeded' not in log
