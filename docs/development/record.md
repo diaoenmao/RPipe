@@ -1,8 +1,8 @@
-> 现状：按新规范/模板完成RPipe中文宏观计划、完整英译及文献证据草案，当前唯一未合分支codex/rpipe-research-plan。
-> 最新：四条定向来源分别记摘要/章节/摘录/整页阅读；中文文献规范34809字节原样落库，出处§118与literature.md。
-> 已验收：PR100/102实际dev全部矩阵与聚合通过；第11/12条结束远程已清，见§117。
-> 下一步：本地103条链接/三正本字节/中英各十章与36项布局合同通过，提交PR验CI合dev；目标active，无阻塞。
-> 边界：不测速/GPU/新科学实验，不改布局/结果格式/历史Study，不合main/tag；已修Issue等下版。
+> 现状：研究计划PR103已合dev233fb2a且实际CI全绿、结束remote已清；正确性目标active。
+> 最新：B089/#104非有限比较18实文件场景12判定不符；96红回归40失败/56控制，出处§120。
+> 验证：compare164通过；core1276通过/1平台skip、CPU Flow181通过；108新增节点执行范围分开登记。
+> 下一步：最终head与实际dev CI验收，普通PR合dev后清结束remote；只有一个未合工作分支。
+> 边界：不测速/GPU、不改训练数值/容差/布局，不合main/tag；Issue等下版，无阻塞。
 
 # 一、摘要
 
@@ -103,6 +103,24 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-16
 
+
+### 120. 只读比较的非有限值合同（B-089 / #104，红回归与设计）
+
+记录日期2026-10-16，按三类合同继续系统复查。当前dev233fb2a的_close/_tree在指标、history、checkpoint tensor共用比较树；有限值与±inf、相反inf在rtol1e-5时因diff与bound都inf而错误通过，相同inf因相减NaN错误失败。实际18场景12判定不符，pairedNaN与有限相等控制正常；原字节不变，所有pt为自建微小CPU载荷。冻结原码ZIP/hash/实际导入路径、脚本/REPRO在.tmp/audit089，不随clone。已检索所有调用，三个读取来源汇入同一比较树，不能只修CLI或屏蔽显示。
+
+先[Issue104](https://github.com/DreamSoul-AI/RPipe/issues/104)，96个API/CLI合同红提交19313c7；首轮96失败中含测试错误：--out后CLI最后一行是输出路径，不是passed/failed。原RED保留；1821c3c更正尾两行断言，生产字节与冻结基线相同，RED2为40 failed/56 passed、0error/skip。该错误测试不当作产品缺陷，18实际复现独立成立。参数覆盖四类来源（metrics/history/real tensor/complex tensor）、exact/relative、双向±inf/同值/NaN/有限控制和所有输入原字节。
+
+设计只改原compare.py共享判断：标量先判NaN/inf身份；tensor将已相同非有限元素差归零，不匹配非有限差归inf且相对界归零，防止inf与NaN界绕过。保持既有pairedNaN、有限值容差、整数精度、字段选择、缺失/错误传播与JSON差值null处理；不新建helper/模块/字段、不改变训练计算或checkpoint恢复。结构合同先更新再生产。复数已有NaN行为沿用，不借此新设逐分量复数协议；任意有限极值算术或精度扩展不伪装为本批已覆盖。
+
+生产2444097仅原compare.py +6/-2（净+4），96前置合同转绿，完整compare152、core1276 passed/1既有POSIX mode skip、CPU Flow181 passed，0fail/error。随后dc5988c补12混合tensor控制：相同±inf/NaN旁仍检有限值inside/outside漂移，冻结原函数实际12场景有4不符，候选全符，输入字节保全；全compare164再通过，源字节未变，未重复整套core/Flow、不把后补12项冒充旧完整门执行。原96项均在core及GREEN_MIXED实际执行。XML/log/LOCAL_CHECKED记录分层范围，平台skip不计通过。
+
+首次直接比较RED2工作区hash与Git blob拒绝：执行为CRLF、Git为LF。RED_NEWLINE_CHECK分记两hash，按Git文本换行策略恢复的红工作区字节与原记录hash逐字节一致；原RED/RED2不覆盖，不把换行差异当库失败。测试差异与错误假设均公开保留。对应新宏观计划RQ2/H2的“错误通过数”合同；这里只修只读判定，不改变训练载荷或旧科学结果。当前最终PR/实际dev验收待办，Issue104留至下版。
+
+### 119. 研究计划PR103实际dev验收与第十三条结束远程清理
+
+[PR103](https://github.com/DreamSoul-AI/RPipe/pull/103)最终head `b631d3a5d81375dba099a112e8d8d263f204c1a7` 的Unit38795995407/Package38795995108/Branch38795995082全部实际矩阵/聚合成功，PR_CHECKED SHA256 `d9b70699720041322e333904a0c71266eec22822eff96e97fe6cf9986767b60c`；普通合实际dev `233fb2a9512520431332cd75873200605b512850`，[Unit38796958288](https://github.com/DreamSoul-AI/RPipe/actions/runs/38796958288)/[Package38796958133](https://github.com/DreamSoul-AI/RPipe/actions/runs/38796958133)也全部实际成功，DEV_CHECKED SHA256 `6328e7c70b2d094a51d5e41fb7326bb5257e5acf71612182971975057e05e512`。中文/英文各十章、36布局合同、103本地链接、三正本字节证明见§118；未跑新科学实验。
+
+祖先/无开放PR/实际CI核对后普通删除结束remote codex/rpipe-research-plan（tipb631d3a），原本地保留；目标累计十三条清理，前十二见§117/114，不重复算§82历史。PR正文与本机五行报告已写实际验收，无其他待清结束remote。原staging未提交/删除，main仍00e70b1/v0.4.1；所有Run/data/provenance/失败证据保留。临时proof/COMPLETION在.tmp/research-plan-20261016，不随clone；文档任务完成后当前唯一未合为非有限值比较合同分支。
 
 ### 118. 按新规范与模板重做 RPipe 研究计划（文档批次）
 

@@ -1,5 +1,10 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 研究计划完成、非有限比较合同批次
+
+PR103中文计划/完整英译/文献证据已普通合dev233fb2a，最终head与实际dev全实际CI通过，结束remote已删、本地保留，累计13条清理见record§119，main仍v0.4.1。当前唯一未合codex/compare-nonfinite-contract修B089/#104：18原生场景12判定不符；红19313c7首96失败包含CLI尾行测试误假设，更正1821c3c后权威红96项40失败/56控制；设计b01ce2c先于原compare净+4修复2444097。compare152/core1276+1平台skip/Flow181通过；dc5988c后补12混合非有限与有限漂移控制，全compare164通过，源未变，未把后补测试混算旧完整门。最终108新增节点由最终CI再验。冻结字节/换行核对/全部失败与LOCAL_CHECKED在.tmp/audit089（不随clone）；下一最终head/实际dev CI合dev清remote，Issue104等下版。仅只读比较判断，不改训练数值、有限容差、pairedNaN或磁盘布局；不测速/GPU，不合main/tag。
+
+
 ## 2026-10-16 PR98实际验收完成、PR100已合dev、compare批次
 
 DEM文档PR92已完成；PR98最终head/实际dev全实际CI成功，结束remote已删，十条清单见record§114。PR100最终8e8ee94全实际CI成功，普通merge dev187bb2e；实际Unit38792231762/Package38792231924观察中，全绿后清remote。当前唯一未合codex/compare-checkpoint-boundary修B088/#101：Run外checkpoint三种引用令完整比较错误true，正常control false；Unicode名称断行，更正§111固定key判断。红17节点10失败/7控制，同字节a0682e3→设计6aea0fc→原compare最小5280815净+9；56compare/983相关/1180core/181Flow通过、平台skip另记。8925e22对8拒绝节点追加零反序列化断言后单文件56通过，源不变，不伪装初始红字节。见§116和.tmp/audit088（本机材料不随clone）。下一最终head/实际dev验收并清结束remote，Issue等下版；不测速/GPU、改文件布局/数值/训练恢复或合main/tag。

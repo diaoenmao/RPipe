@@ -6,18 +6,16 @@
 
 ## 开放
 
-### B-088：compare跨Run checkpoint串读和动态名称断行（[#101](https://github.com/DreamSoul-AI/RPipe/issues/101)）
+### B-089：compare非有限值导致标量/张量错误通过（[#104](https://github.com/DreamSoul-AI/RPipe/issues/104)）
 
-- 来源：第二类引用/展示合同，先前record§111把compare key当代码固定不完整；checkpoint.name实际由参数构造，本轮明确更正。
-- 隔离CPU实际父路径/Run外绝对stem/对外文件alias，会让不同Run读取同一外部pt；补齐相同metrics/history后三场景完整report错误true，实际自身不同权重control false。UnicodeLS合法stem使显示5行而非4；所有源/外部bytes保留。原始REPRO/REPRO2/原码ZIP在.tmp/audit088，不随clone。
-- 期望：既有_checkpoint对存在普通文件加载前核对根属于Run且文件属于该根；合法nested/自身abs/内部alias/missing/Windowsnamespace不退化；format_compare复用_text_cell，JSON原key/数值/容差不变。
-- 先Issue101，原字节冻结17节点10 failed/7 passed、0error/skip，同字节红测试先提交，再设计；5280815原compare.py净+9修复，17节点转绿；56compare/983相关/1180core/181Flow通过、平台skip另记，8拒绝节点后补零反序列化断言全文件56通过；待最终PR/实际dev验收，见record§116。
+- 来源：第二类只读比较合同复查，dev233fb2a上三类实际文件18场景中12判定不符；rtol=1e-5有限vs±inf、相反inf错误true，相同inf错误false；输入/peer原字节保留。证据.tmp/audit089（不随clone）。
+- 期望：既有_close/_tree统一非有限值身份，相同无穷值相同，非有限不匹配不受相对界污染；paired-NaN、有限容差/整数、字段/缺失/输出结构、训练计算不变。
+- 先Issue104，红提交19313c7首次96失败包含CLI尾行假设错误；1821c3c修正该测试、生产未动，权威RED2为96项40 failed/56 passed、0error/skip。先设计再最小共享修复，补真实API/CLI指标/history/实数与复数tensor、exact/relative与字节保全；不测速/GPU或改布局。
+- 2444097原compare净+4修复；96项转绿，compare152/core1276+1平台skip/Flow181通过。dc5988c后补12混合控制，全compare164通过，源未变；分开登记不混算完整门，待最终head/实际dev CI。
 
-### B-087：可选 tracker_state 坏UTF8阻断有效主轨迹和process（[#99](https://github.com/DreamSoul-AI/RPipe/issues/99)）
+B-088/#101已由PR102普通合dev ef608468，最终head和实际dev全部实际矩阵/聚合成功，结束remote已清，见record§117；Issue留至下版。
 
-- 来源：第二类读取合同批次，真实坏UTF8原文件经load_curve_series抛UnicodeDecodeError；缺失/损坏JSON/IO原已空history。3条循环symlink实际正常降级，不登记；普通控制正常。REPRO/原码ZIP/hash/真实导入路径/红日志在`.tmp/audit087`，不随clone。
-- 期望：现有共享_state_history将可选UTF8解码失败纳入同一空history边界，所有series/history/Run/Study/curves调用方复用；有效JSONL/peer/数值/原字节保留，不改磁盘布局或checkpoint恢复，不吞RuntimeError。
-- 先Issue99，冻结原字节与正式同字节测试24项18 failed/6 passed、0error/skip，红回归先提交；设计docs/code/flow.md先于生产。f5f85b7仅1行共享边界修复；24合同全绿、相关966/core1163各1平台skip、Flow181通过；待最终PR/实际dev验收，见record §113。
+B-087/#99已由PR100普通合dev187bb2e，最终head和实际dev全部实际矩阵/聚合成功，结束remote已清，见record§117；Issue留至下版。
 
 B-086/#97已由PR98普通merge dev8dc6a91，最终head和实际dev全部实际矩阵/聚合全绿，结束remote已清；Issue等下版，见record§114。
 
