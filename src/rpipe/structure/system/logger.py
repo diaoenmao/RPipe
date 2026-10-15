@@ -31,7 +31,8 @@ class Logger:
         self.path = self.assets_dir / kinds.RUN_LOG
         self.path.parent.mkdir(parents=True, exist_ok=True)
         if not self.path.is_file():
-            self.path.write_text('', encoding='utf-8')
+            with self.path.open('a', encoding='utf-8'):
+                pass
 
     def _emit(self, level: str, event: str, message: str) -> None:
         stamp = datetime.now().astimezone().isoformat(timespec='milliseconds')
