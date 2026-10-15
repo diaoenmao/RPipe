@@ -186,19 +186,21 @@ def load_launch_plan(
     """
     study_dir = Path(study_dir).resolve()
     path = study_dir / SCRIPTS_DIRNAME / JOBS_NAME
-    if not path.is_file():
-        return None
     try:
+        if not path.is_file():
+            return None
         payload = json.loads(path.read_text(encoding='utf-8'))
-    except (OSError, json.JSONDecodeError, TypeError):
+        if not isinstance(payload, dict) or not isinstance(payload.get('jobs'), list):
+            return None
+        stored_init_gpu = int(payload.get('init_gpu', 0))
+        stored_num_gpus = int(payload.get('num_gpus', 1))
+        stored_round = int(payload.get('round') or 1)
+    except (OSError, TypeError, ValueError, OverflowError):
         return None
-    if not isinstance(payload, dict) or not isinstance(payload.get('jobs'), list):
+    if stored_init_gpu != int(init_gpu):
         return None
-    if int(payload.get('init_gpu', 0)) != int(init_gpu):
+    if stored_num_gpus != int(num_gpus):
         return None
-    if int(payload.get('num_gpus', 1)) != int(num_gpus):
-        return None
-    stored_round = int(payload.get('round') or 1)
     if int(round_size) > 0 and stored_round != int(round_size):
         return None
     raw_batches = payload.get('batches')
