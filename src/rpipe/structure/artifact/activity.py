@@ -23,7 +23,10 @@ def read_activity(study_dir: Path | str) -> dict[str, Any] | None:
         body = json.loads(path.read_text(encoding='utf-8'))
     except (OSError, UnicodeError, json.JSONDecodeError, TypeError):
         return None
-    if not isinstance(body, dict) or not body.get('phase'):
+    if (not isinstance(body, dict)
+            or not isinstance(body.get('phase'), str)
+            or not body['phase'].strip()
+            or (body.get('detail') is not None and not isinstance(body['detail'], str))):
         return None
     return body
 
