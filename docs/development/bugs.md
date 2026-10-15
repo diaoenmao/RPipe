@@ -6,9 +6,14 @@
 
 ## 开放
 
+### B-095：可选JSON解析异常边界不一致（[#116](https://github.com/DreamSoul-AI/RPipe/issues/116)）
+
+- 实文件：5000位未使用整数在默认4300位限制下让activity直接/CLI、tracker state均抛ValueError，JSONL已有保护正常；更深10000层、约20KB JSON在activity/state/JSONL三处均抛RecursionError。先前1200层JSON本机正常的控制仍保留；不改限制、不测速。证据.tmp/audit095及deep-json，不随clone，全部输入保全。
+- 先Issue116；abe24a3首12红6失败/6控制保留；扩展f1b0d5f完整26新合同14失败/12控制（全部78项14失败/64通过）。f64917b另在原源上补1通过的JSONL普通RuntimeError传播控制。三处统一接ValueError/RecursionError，不catch所有RuntimeError，不改strict loader/科学聚合/磁盘布局。
+
 B-094/#114已f5d0e01红→6a34a59设计→74aaa49现有三态读取异常边界修复；九新项全部转绿，readout500/core1405+1平台skip/CPU Flow189通过，严格加载器与普通RuntimeError保持，见record§130。最终head/实际dev CI待验；Issue留至下版。
 
-B-093/#111已按2b4c0d1红→1d57d8b设计→58f9aaf两JSON writer编码边界修复；175针对性/core1396+1平台skip/CPU Flow189通过，20新节点均执行。见record§128，最终head/实际dev CI待验，Issue留至下版。
+B-093/#111已由PR113普通合devbf24574，最终head/实际dev全部实际CI成功，结束remote已清、本地保留，见record§131；Issue留至下版。
 
 B-092/#110已PR112普通合dev49748695，最终head及实际dev全部实际CI通过，结束remote已清，见record§127；Issue留至下版。
 

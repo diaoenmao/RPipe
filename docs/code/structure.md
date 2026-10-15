@@ -921,7 +921,7 @@ Config 与 Study YAML 的严格 mapping 读取仅对解析结果 `None` 保留�
 
 `readout/` 只读 index、result、`run.log`、`process.json`，或把数字表写到 `docs/NUMBERS.md`。不跑阶段链，不 import `flow`。命令仍从 `flow/cli.py` 进来。
 
-readout 在既有 status.py 内用私有三态读取区分可用、缺失和不可读，logs 复用相同边界；实际解析器因输入嵌套抛出的 `RecursionError` 也归不可读，不提高递归上限；普通 `RuntimeError` 仍传播，严格配置加载器不变。activity 继续原可选读取合同。计划 config 可用时先核对 mode / id / seed，冲突按原 error 字段显示，坏格不遮蔽 peer；仅缺 config 时回退历史 axes / result 信息，见 [record §71](../development/record.md)。
+readout 在既有 status.py 内用私有三态读取区分可用、缺失和不可读，logs 复用相同边界；实际解析器因输入嵌套抛出的 `RecursionError` 也归不可读，不提高递归上限；普通 `RuntimeError` 仍传播，严格配置加载器不变。activity 继续原可选读取合同。activity、process旧tracker state与JSONL三处现有可选JSON解析边界统一接住具体的 `ValueError`（含语法/整数转换限制）和 `RecursionError`：不可用提示忽略、不可用state不拖垮有效JSONL、坏JSONL记录跳过后保留后续合法记录；不调高系统限制、不改变严格加载器/轨迹恢复指针或科学聚合，普通 `RuntimeError` 仍传播。计划 config 可用时先核对 mode / id / seed，冲突按原 error 字段显示，坏格不遮蔽 peer；仅缺 config 时回退历史 axes / result 信息，见 [record §71](../development/record.md)。
 
 status / logs 的逐文件 I/O 容错同时覆盖存在性查询和内容读取：不可读结果沿用已有计划配置回退，不可用日志不提供 note/event，其他 Run 继续展示；不改写任何输入。共享 load_index 在进入调用方前验证 experiments/runs 为 list、各条目为 object、factors 为 object；缺省/null 的可选容器保留历史空值语义，非法非空或空类型均明确拒绝，不将列表对强转为因素。当前 index 缺失/不可用仍拒绝，意外编程错误仍向上抛出，不把它们当作缺失文件。 status 的 metric 单元格仅展示 object 中支持的数值字段；非 object 指标直接使用已有不可用占位，不把列表对转换为 mapping，也不因此隐藏 Run 状态或其他有效结果。
 

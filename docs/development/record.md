@@ -1,8 +1,8 @@
-> 现状：PR113已合devbf24574、实际dev CI仍在验；B094/#114唯一未合分支已最小修复。
-> 最新：九新红3失败/6控制→三态异常元组仅加RecursionError，源码逐字节核对，见§130。
-> 验证：readout500、core1405+1既有平台skip、CPU Flow189通过，新九项均执行。
-> 下一步：PR最终head/实际dev全部实际CI后清结束remote；strict loader与普通RuntimeError仍报原错。
-> 阻塞：无；不测速/GPU/main/tag/布局或数据变更，已修Issue留至下版，目标active。
+> 现状：PR115最终全实际CI后合devb28f6a2，实际dev验证中；唯一未合分支处理B095/#116。
+> 最新：三处可选JSON边界归类，26新红14失败/12控制；普通RuntimeError新增控制1通过，见§132。
+> 依据：约5KB整数限制与不足21KB深JSON真实失败，先前较浅JSON控制保留，不改全局限制。
+> 下一步：原activity/state/JSONL三个try统一具体ValueError/RecursionError，再必要CPU正确性与CI。
+> 阻塞：无；PR113已实际验收清第18条remote，不测速/GPU/main/tag/改布局或删数据，目标active。
 
 # 一、摘要
 
@@ -103,6 +103,20 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-16
 
+
+### 132. 三处可选JSON解析失败的统一边界（B-095 / #116）
+
+2026-10-16：在PR115观察期间按类复查可选JSON读取。5000位整数、约5049字节的原生文件超过本机默认4300位安全限制，json.loads抛ValueError而非JSONDecodeError：activity直接/CLI缺index、有效JSONL+坏state三个场景失败；坏JSONL同输入已有ValueError保护正常，4场景3失败/1控制。未改变系统限制或跑Study。进一步不足21KB、10000层的JSON在activity、state、JSONL三处真实RecursionError；1200层JSON本机正常的旧控制保持，不能混称任意深度均失败。原字节/hash/栈/REPRO在.tmp/audit095（不随clone）。
+
+先开Issue116；从最新merge devb28f6a2建立唯一未合codex/optional-json-decode。abe24a3先12红6失败/6控制；新增同类递归复现后f1b0d5f扩为26新合同14 failed/12控制，全部78项14 failed/64 passed，无error/skip。首红日志/字节与扩展RED2分别保留，不覆盖失败；f64917b另在原源码上补1通过的JSONL普通RuntimeError传播合同，三处均要求不掩盖编程错误。原生整数限制若平台未启用或预算外则明确skip，不调高/修改全局限制，不冒充通过。
+
+设计先写structure：复用原有三个JSON try，activity与旧state用ValueError代替过窄的JSONDecodeError，再同JSONL一起具体捕获RecursionError。坏提示忽略但不绕过missing-index错误；坏state不拖垮有效primary，坏JSONL行跳过且保留后续真实轨迹，正常旧回退保持。不建新模块/helper、不改strict loader、恢复指针、科学统计、schema或布局，不catch普通RuntimeError，不新增配置或提高安全上限。
+
+### 131. PR113实际dev验收/第十八条远程清理与PR115接续
+
+PR113实际dev `bf24574c3b3008b82cf65f702b92f055caad32a5` 的 Unit38812391082、Package38812390945全部实际矩阵/聚合成功；DEV_CHECKED SHA256 `01e6e0d66d747783fcde9afdc534439a9f0bf5f94b1772df4d2d2102649d64df`。核对祖先/无开放PR/实际CI后删除结束remote codex/test-evidence-unicode，本地tip保留，当前活动分支未动。本目标累计18条清理；Issue111留至下版，证据.tmp/audit093不随clone。
+
+PR115最终head343012569af65ec2c35cc02c7c0b79448fc8590d的 Unit38813118717、Package38813118918、Branch38813119229全部实际矩阵/聚合成功，PR_CHECKED SHA256 `b22d5c60209619ac0c8f7655d3154ea1254c694a4585e23253dbed8745f32687`；普通merge devb28f6a219ce967472a8d1f6c300995eb2c84e6cf。实际dev Unit/Package仍在观察，全绿后才清结束remote，不能写已完成。新B095基于该merge，只有一条未合工作分支；无main/tag。
 
 ### 130. 可选配置解析递归错误的三态边界（B-094 / #114）
 
