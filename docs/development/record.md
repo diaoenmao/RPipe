@@ -1,8 +1,8 @@
-> 现状：B-077/#77已由PR78合dev1667f51且实际CI全绿，已删结束的远程codex/artifact-contracts-correctness；继续B-078/#79。
-> 最新：#79两处严格YAML小改已完成；24项由12失败/12控制转全绿；相邻323、core786通过/1平台skip、Flow169通过，出处§93。
-> 下一步：codex/yaml-mapping-roots提交PR，验收最终head与实际dev后清理远程；两Issue留待下版关闭。
-> 阻塞：无；目标模式active，当前仅一未合工作分支；旧失败及分支删除证据保留。
-> 边界：只做正确性，不测速/GPU、不改layout/产物格式、不合main/打tag，不删数据/Run/provenance。
+> 现状：#77已合dev并删结束远程；#79已由PR80合devf4acb93，实际集成CI验收中；继续B-079/#81。
+> 最新：不一致batches会mock启动未声明peer并把旧成功改failed；26项红回归23失败/3控制通过，出处§94、5597727。
+> 下一步：在既有分组入口统一批次一致性，覆盖写计划/缓存/native/脚本；正确性验证后PR合dev并清理远程。
+> 阻塞：无；目标模式active，唯一未合分支codex/declared-batch-contract，原始失败/旧字节均保留。
+> 边界：不测速/GPU、不改layout/产物格式、不合main/打tag，不删数据/Run/provenance。
 
 # 一、摘要
 
@@ -102,6 +102,16 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-15
+
+### 94. 声明jobs与显式batches一致性，先拒绝再写入（B-079 / #81）
+
+记录日期2026-10-15。目标模式按Enmao明确指令创建active，不待命、不弹窗。PR80最终head dd8c7f8e72ff28601b9a3d9a8e523b74bbdec28b的Unit38763144958/Package38763144991/Branch38763144864全部实际矩阵/聚合成功后普通merge dev f4acb936ce66ac1db4907bccb4813a073cf80f71，实际dev独立验收中。首次合并工具误传短SHA被GitHub422拒绝，未发生合并；使用验收的完整40位SHA重试成功。MERGE_INVALID_ARGUMENT保留，不当自动审批拒绝、CI失败或强推。
+
+1. 新真实反例：schedule.wait_groups不核对显式batches与jobs，native启动batches投影；jobs仅planned却mock启动peer，并在启动前把未列入任务的旧成功peer失效。只有隔离文件和Popen替身，真实子进程0，GPU/训练/测速0；旧字节和前后hash在.tmp/audit079/REPRO.json/PEER_BEFORE.bin，原始源码/测试在BEFORE.zip，不随clone。
+2. 生成脚本也绕过原jobs：最终只嵌入foreign peer groups，再从groups重建jobs，planned消失。只生成文本、没有执行脚本。首补充调用漏round_size/split_round的TypeError保留并纠正；“同时包含planned/peer”的探针假设为False，已按实际脚本修正Issue正文与SCRIPT_CHECKED，不据该假设作结论。
+3. [Issue81](https://github.com/DreamSoul-AI/RPipe/issues/81)先创建；随后从dev f4acb93建立唯一未合分支codex/declared-batch-contract，红测试5597727共26节点、23 failed/3 passed、0error/skip。三控制为合法同批、合法重排、原生已有重复拒绝；红例分根校验、原生失效/启动前保护、脚本旧文件保护、渲染、缓存include_done两分支，全部保存，不挑通过。
+4. 设计先写structure.md：只在既有wait_groups归纳显式批次的完整多重集与字段一致性；write_jobs_json发布前和load_launch_plan成功过滤前复用。合法重排/成功过滤/缺省batch/retry/依赖合同不变，缓存不一致沿既有None重建路径，直接native/生成明确ValueError。全部调用方wait_groups→native/render、write_jobs_json→write_launch_scripts、load_launch_plan→CLI已核对；不搬模块、新增格式或承诺多文件事务。
+5. 此批只修有红回归支撑的批次一致性，不实施猜测中的其他缓存字段/schema扩展；现有重复Run与路径检查保留。上一批YAML远程分支在实际dev验收通过后清理，本地旧分支和当前未合分支保留。#77/#79/#81修复Issue留到下版，不合main/打tag。
 
 ### 93. 严格YAML mapping读取的空值判定统一（B-078 / #79）
 

@@ -6,6 +6,13 @@
 
 ## 开放
 
+### B-079：显式batches越过声明jobs，可能先失效未列入任务的旧成功（[#81](https://github.com/DreamSoul-AI/RPipe/issues/81)）
+
+- 来源：三类合同全仓接续，schedule.wait_groups直接返回batches；native与render_bash均信任它，缓存loader也未核对jobs/batches一致性。
+- 真实隔离复现：jobs仅planned、batches仅peer，Popen为内存替身；实际mock启动peer，旧peer result从succeeded变failed，原SHA256 c0cf5aa5350fbf1628583326b8a9b4b9cea22d6d0064886e38cdadc2f071f37b→c8d12e2aa95bc93159dfc5987230ab16b992f2c32fe649fb09c1c10799565da0。未启动真实子进程/GPU，未触碰正式数据。生成Bash仅嵌入peer并从groups重建jobs，原planned被丢弃；脚本未执行。
+- 期望：既有wait_groups验证batches与jobs完整多重集/字段相同，允许合法重排；writer在发布前验证，缓存在过滤成功项前验证，不一致请求重建，native/script在失效旧结果/启动/覆盖前拒绝。不修改合法rerun保全范围、默认retry/依赖顺序、格式或布局。
+- 先Issue，再红测试5597727：26节点，23 failed/3 passed，0error/skip；覆盖foreign/missing/metadata/duplicate的共享分组、native旧字节/peer、脚本发布、渲染、两种include_done缓存读取，以及合法/重排控制。原字节ZIP、native REPRO、旧peer bytes/hash、脚本、RED.xml/log/命令在.tmp/audit079，不随clone。首次补充脚本探针少传两个必需参数的调用错误另存，已纠正，不当库失败。
+
 ### B-078：严格YAML mapping读取把falsy非对象误当空配置（[#79](https://github.com/DreamSoul-AI/RPipe/issues/79)）
 
 - 来源：B-077后同类解析边界复查；配置decoder及Study声明loader均先用`safe_load(...) or {}`，绕过既有mapping验证。
