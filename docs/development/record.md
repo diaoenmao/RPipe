@@ -1,8 +1,8 @@
-> 现状：DEM正本/英译及独立调研已PR92完成；PR96实际dev全绿清remote，PR98已按最终CI普通合dev8dc6a91。
-> 最新：B087/#99可选tracker_state坏UTF8会阻断有效JSONL和process，24前置合同18失败/6控制，出处§113。
-> 验证：共享helper仅1行修复；相关966/core1163各1平台skip、CPU Flow181通过，24新节点均执行转绿。
-> 下一步：PR98实际dev CI完成后清remote；本批推送PR验最终head/实际dev；目标active，无阻塞。
-> 边界：不测速/GPU、不迁shared/logger、不改产物布局/统计/训练恢复，不合main/tag；Issue等下版。
+> 现状：DEM原样正本/英译及独立调研PR92已完成；PR98实际dev全绿清remote；PR100已普通合dev187bb2e。
+> 最新：B088/#101三种越界checkpoint令完整compare错误true，合法Unicode名称拆行；17前置项10红/7控制，出处§116。
+> 验证：compare56、相关983/core1180各1平台skip、CPU Flow181通过；8个拒绝节点另强化torch.load零调用，56复查通过。
+> 下一步：PR100实际dev全绿后清remote；compare当前唯一未合分支推送PR验最终head/实际dev，目标active，无阻塞。
+> 边界：不测速/GPU、不迁shared/logger、不改产物布局/数值/训练恢复，不合main/tag；Issue等下版。
 
 # 一、摘要
 
@@ -102,6 +102,27 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+
+### 116. compare checkpoint归属与动态键显示合同（B-088 / #101）
+
+三类系统复查继续到compare参数边界。此前§111将compare key当代码固定的判断不完整：checkpoint.<name>确实由参数参与构造，本节据真实反例更正，不追改旧记录掩盖遗漏。4组原生CPU自建小文件证明父路径/Run外绝对stem/文件symlink读到同一个外部pt而checkpoint项pass，正常自身不同权重control fail；追加5组补齐相同metrics/history后三种场景整个report错误true，Unicode LS合法名称使4行断成5行，正常control false。外部与各Run输入原字节保全，未加载正式模型、不可信payload、GPU或执行测速。原始REPRO/REPRO2/原码ZIP在`.tmp/audit088`，不随clone。
+
+先[Issue101](https://github.com/DreamSoul-AI/RPipe/issues/101)，冻结原源码实际导入与hash核对，17节点10 failed/7 passed、0error/skip。同字节红回归a0682e3先于设计6aea0fc与生产5280815；portable合同在[test_compare.py](../../tests/rpipe/structure/artifact/readout/test_compare.py)。API/CLI父路径、绝对、外部文件alias及checkpoint根目录alias拒绝；合法nested、自身abs、内部文件/目录alias、missing、普通name和真实Windows extended-own为绿色兼容控制。Windows专用extended节点在本机执行，其他平台skip不计通过。
+
+仅原compare.py +11/-2：原regular-file/missing/非文件/IO预检保留，存在普通文件加载前检查解析checkpoint根属于Run、文件属于该根；归属比较复用B085既有Windows namespace key，文件IO仍使用原生路径。format_compare复用B086的_text_cell，只改单行视图；JSON原key、容差、数值与旧--out位置不变。未改变训练checkpoint保存/恢复、结构或产物布局，没有新helper/模块/依赖。不存在的可选文件仍原missing，不新增清理/迁移/锁或安全沙箱协议。
+
+本地完整compare56、相关983 passed/1既有POSIX脚本mode skip、core1180 passed/1同skip、CPU Flow181 passed/0skip，17前置节点全执行转绿，0fail/error。所有完整门结束后，8925e22对既有8个拒绝节点补torch.load调用为零断言，再单独GREEN_LOAD全文件56通过；生产字节不变，未重复整套核心/Flow门，也不把后补断言伪装成初始冻结测试字节。`.tmp/audit088/LOCAL_CHECKED.json`区分原红/完整门/后补断言及源码hash，本机材料不随clone。当前唯一未合codex/compare-checkpoint-boundary，准备最终head/实际dev两轮实际CI后清remote，Issue101等下版。
+
+### 115. 共享可选解码PR100按最终CI普通合dev
+
+[PR100](https://github.com/DreamSoul-AI/RPipe/pull/100)最终head `8e8ee9443d8fb87c3e2db1beea2b3f1bacd0b451`的Unit38791314476 / Package38791314478 / Branch38791314505全部实际矩阵与聚合成功，PR_CHECKED SHA256 `b2d7e2394ade099d2f42e02a28741b959fbf9d6bf436b83d10157fd72e02771a`。普通merge为实际dev `187bb2e562979d1911fa2911702ea35bdae707da`，自动触发Unit38792231762/Package38792231924。本节记录时实际dev仍执行中，不用工作head通过代替集成结果；观察原句柄、不重复派发，实际全绿后立即清optional-tracker-decode远程，当前compare分支保留。24节点与单行修复见§113，Issue99留至下版。
+
+### 114. PR98实际dev验收与第十条结束远程清理
+
+PR98实际dev `8dc6a914a6f0e0f42a2353f43e73505880672087`的[Unit38790569174](https://github.com/DreamSoul-AI/RPipe/actions/runs/38790569174) / [Package38790569148](https://github.com/DreamSoul-AI/RPipe/actions/runs/38790569148)所有实际矩阵及聚合全成功，DEV_CHECKED SHA256 `3de37da86aaa3a95336e7a90c1044b9f6bd2f5088cdfd83a77bb2094e84318c0`；最终head验收见§112。原pending仅历史过程，不重派。祖先/无开放PR核对后已普通删除结束远程codex/readout-text-cells，原本地分支及当前活动分支保留；PR98/Issue97原正文已补实际验收，Issue仍open等下版。
+
+本目标累计十条结束remote已清：artifact-contracts-correctness、yaml-mapping-roots、declared-batch-contract、saved-plan-read-boundary、result-status-contract、activity-hint-fields、research-plan-masters、provenance-declarations、log-reference-contract、readout-text-cells（均codex/前缀）。与§82历史九条清理不重复计数；删除前后main/dev引用不变，main仍00e70b1/v0.4.1。删除证据`.tmp/audit086/BRANCH_DELETED_CHECKED.json`不随clone；全部数据/Run/provenance和旧失败保留。DEM中文原件本轮再与staging逐字节比对仍一致，英译和两项独立调研已PR92正式完成，不部署logger/shared或重复迁移。
 
 
 ### 113. 可选 tracker_state 解码失败的共享读取修复（B-087 / #99）

@@ -1,5 +1,9 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 PR98实际验收完成、PR100已合dev、compare批次
+
+DEM文档PR92已完成；PR98最终head/实际dev全实际CI成功，结束remote已删，十条清单见record§114。PR100最终8e8ee94全实际CI成功，普通merge dev187bb2e；实际Unit38792231762/Package38792231924观察中，全绿后清remote。当前唯一未合codex/compare-checkpoint-boundary修B088/#101：Run外checkpoint三种引用令完整比较错误true，正常control false；Unicode名称断行，更正§111固定key判断。红17节点10失败/7控制，同字节a0682e3→设计6aea0fc→原compare最小5280815净+9；56compare/983相关/1180core/181Flow通过、平台skip另记。8925e22对8拒绝节点追加零反序列化断言后单文件56通过，源不变，不伪装初始红字节。见§116和.tmp/audit088（本机材料不随clone）。下一最终head/实际dev验收并清结束remote，Issue等下版；不测速/GPU、改文件布局/数值/训练恢复或合main/tag。
+
 ## 2026-10-16 PR98已合dev、可选状态解码统一修复
 
 DEM任务PR92已完成；PR96实际验收全绿清remote。PR98最终58d8393的全部实际CI成功，普通merge dev8dc6a91，实际dev Unit38790569174/Package38790569148观察中，成功后立即清remote，不重复派发。当前唯一未合codex/optional-tracker-decode修B087/#99，真实坏UTF8会阻断JSONL/peer；3循环link候选正常不登记。冻结同字节24红合同18失败/6控制，6d11281先提交→设计41e7130→共享helper仅1行fix f5f85b7；966相关/1163core各1平台skip、181Flow通过，24新节点全执行（18unit core/6集成Flow）。见record§112–113与.tmp/audit087（临时证据不随clone）。下一最终head/实际dev验收，Issue留到下版，源坏文件保全，不测速/GPU/改布局或训练恢复、不合main/tag。

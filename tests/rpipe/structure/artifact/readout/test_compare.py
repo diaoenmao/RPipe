@@ -222,3 +222,96 @@ def test_compare_unexpected_program_error_is_not_swallowed(tmp_path, monkeypatch
     with pytest.raises(RuntimeError) as caught:
         cli.main(['compare', str(a), str(b)])
     assert caught.value is error
+
+
+@pytest.mark.parametrize('reference', ['parent', 'absolute', 'file-alias', 'root-alias'])
+@pytest.mark.parametrize('entry', ['api', 'cli'])
+def test_compare_checkpoint_ownership_rejects_external_payload(tmp_path, capsys, monkeypatch, reference, entry):
+    import torch
+    a, b = _run(tmp_path, 'a', weight=1.0), _run(tmp_path, 'b', weight=2.0)
+    outside = tmp_path / 'outside'
+    outside.mkdir()
+    external = outside / 'shared.pt'
+    torch.save({'model': {'w': torch.tensor([37])}}, external)
+    name = {'parent': '../../../outside/shared', 'absolute': str(external.resolve())[:-3]}.get(reference, 'mirror')
+    if reference == 'file-alias':
+        for run in (a, b):
+            (run / 'assets/checkpoints/mirror.pt').symlink_to(external)
+    elif reference == 'root-alias':
+        for run in (a, b):
+            root = run / 'assets/checkpoints'
+            root.rename(run / 'assets/original-checkpoints')
+            root.symlink_to(outside, target_is_directory=True)
+        name = 'shared'
+    output = tmp_path / 'comparison.json'
+    output.write_text('old comparison\n', encoding='utf-8')
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file() and not p.is_symlink()}
+    reads = []
+    original_load = torch.load
+    def load(path, *args, **kwargs):
+        reads.append(path)
+        return original_load(path, *args, **kwargs)
+    monkeypatch.setattr(torch, 'load', load)
+    if entry == 'api':
+        with pytest.raises(ValueError, match='checkpoint'):
+            compare_runs(a, b, checkpoints=[name])
+    else:
+        assert cli.main(['compare', str(a), str(b), '--checkpoint', name, '--out', str(output)]) == 2
+        assert 'checkpoint' in capsys.readouterr().err
+    assert reads == []
+    assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('reference', ['nested', 'absolute-own', 'file-alias', 'root-alias', 'missing'])
+def test_compare_checkpoint_ownership_keeps_local_references(tmp_path, reference):
+    a = _run(tmp_path, 'a')
+    root = a / 'assets/checkpoints'
+    original = root / 'latest.pt'
+    name = 'latest'
+    if reference == 'nested':
+        target = root / 'nested/copy.pt'
+        target.parent.mkdir()
+        target.write_bytes(original.read_bytes())
+        name = 'nested/copy'
+    elif reference == 'absolute-own':
+        name = str(original.resolve())[:-3]
+    elif reference == 'file-alias':
+        (root / 'mirror.pt').symlink_to(original)
+        name = 'mirror'
+    elif reference == 'root-alias':
+        target = a / 'assets/original-checkpoints'
+        root.rename(target)
+        root.symlink_to(target, target_is_directory=True)
+    elif reference == 'missing':
+        name = 'not-created'
+    before = {p: p.read_bytes() for p in a.rglob('*') if p.is_file() and not p.is_symlink()}
+    report = compare_runs(a, a, checkpoints=[name])
+    assert report['passed'] is (reference != 'missing')
+    if reference == 'missing':
+        assert report['items']['checkpoint.not-created.model']['missing'] == 'a'
+    assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('name', ['left\u2028right', 'left\x85right', 'ordinary name'])
+def test_compare_checkpoint_display_keeps_one_line_per_item(tmp_path, name):
+    from rpipe.structure.artifact.readout.compare import format_compare
+    a = _run(tmp_path, 'a')
+    root = a / 'assets/checkpoints'
+    (root / f'{name}.pt').write_bytes((root / 'latest.pt').read_bytes())
+    before = {p: p.read_bytes() for p in a.rglob('*') if p.is_file()}
+    report = compare_runs(a, a, checkpoints=[name])
+    assert report['passed'] is True
+    view = format_compare(report)
+    assert len(view.splitlines()) == len(report['items']) + 1
+    assert f'checkpoint.{name}.model' in report['items']
+    assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.skipif(__import__('os').name != 'nt', reason='native Windows extended path alias')
+def test_compare_checkpoint_ownership_keeps_extended_own_path(tmp_path):
+    a = _run(tmp_path, 'a')
+    original = a / 'assets/checkpoints/latest.pt'
+    native = Path('//?/' + original.resolve().as_posix())
+    assert native.samefile(original)
+    report = compare_runs(a, a, checkpoints=[str(native)[:-3]])
+    assert report['passed'] is True
