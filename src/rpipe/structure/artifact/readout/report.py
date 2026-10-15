@@ -28,6 +28,10 @@ def _fmt(value: Any) -> str:
     return f'{number:.4f}' if math.isfinite(number) else '-'
 
 
+def _count(value: Any) -> str:
+    return str(value) if type(value) is int and value >= 0 else '-'
+
+
 def _text_cell(value: Any) -> str:
     return ' '.join(str(value).splitlines()).replace('\t', ' ')
 
@@ -112,7 +116,7 @@ def render_numbers(study_dir: Path | str) -> str:
         metrics = exp.get('metrics')
         metrics = metrics if isinstance(metrics, dict) else {}
         if not metrics:
-            lines.append(f'| {factors} | - | - | - | - | - | {exp.get("n", 0)} |')
+            lines.append(f'| {factors} | - | - | - | - | - | {_count(exp.get("n", 0))} |')
             continue
         for name in sorted(metrics):
             stat = metrics[name] if isinstance(metrics[name], dict) else {}
@@ -126,7 +130,7 @@ def render_numbers(study_dir: Path | str) -> str:
                         _fmt(stat.get('std')),
                         _fmt(stat.get('min')),
                         _fmt(stat.get('max')),
-                        str(stat.get('n', exp.get('n', 0))),
+                        _count(stat.get('n', exp.get('n', 0))),
                     ]
                 )
                 + ' |'
