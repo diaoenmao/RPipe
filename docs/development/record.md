@@ -1,8 +1,8 @@
-> 现状：前五批均已合 dev、最终 head/实际 dev CI 全绿并清远程；#86 最小字段修复已完成本地门。
-> 最新：25项合同全绿；相关436、core882通过/1平台skip、Flow175通过，出处§101、.tmp/audit082/LOCAL_CHECKED.json。
-> 下一步：#86 经 PR/CI 合 dev；新声明校验反例已隔离复现，按红测试→最小修复接续。
-> 阻塞：无；唯一未合 codex/activity-hint-fields；无关 _staging_from_DEM/ 未跟踪目录原样保留。
-> 边界：不测速/GPU、不改 layout/产物格式、不合 main/打 tag，不删数据/Run/provenance。
+> 现状：#86 已由 PR88 普通合 dev8ee1913；最终head CI全绿，实际dev独立验收中；研究规范文档独立接续。
+> 最新：中文正本25618/9309字节完全一致；英译8/10章、72/29表格行对应；布局36项通过，出处§102。
+> 下一步：规范/译本与两项独立调研经文档PR合dev；继续已复现provenance声明正确性缺口。
+> 阻塞：无；唯一未合codex/research-plan-masters；DEM内部3类引用缺失已明记，暂存保留。
+> 边界：不测速/GPU、不迁shared/logger、不改运行布局、不合main/打tag，不删数据。
 
 # 一、摘要
 
@@ -102,6 +102,18 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+### 102. DEM 研究计划中文正本、英译与两个独立调研议题
+
+记录日期2026-10-16，按Enmao新增授权接续文档任务，正确性目标仍active。B-082/#86 的[PR88](https://github.com/DreamSoul-AI/RPipe/pull/88)最终head `63e2c84097a4db34fc4b5970c8d6be40215be1bb` 的[Unit38774244145](https://github.com/DreamSoul-AI/RPipe/actions/runs/38774244145)、[Package38774244266](https://github.com/DreamSoul-AI/RPipe/actions/runs/38774244266)、[Branch38774244169](https://github.com/DreamSoul-AI/RPipe/actions/runs/38774244169)全部实际矩阵与聚合成功；PR_CHECKED SHA256 `6b36a135c1779f38e8911fcb03cf91fbba16b382f9071c75d23b09eeaeec6ef8`。普通merge为dev8ee1913，实际dev独立验收后立即清远程，不拿候选CI代替；Issue86等下版。
+
+研究规范从用户指定的本机_staging_from_DEM实际读取，未直读Office DEM原路径。两中文文件按原字节复制并保留中文文件名至[正式入口](../research/standards/README.md)，ASCII别名与中文名一致；规范184行/25618字节 SHA256 `61fc9fbe1130810b41ef25d3655eef2f83289b60306458ad5e4c17b9d4658bd3`，模板122行/9309字节 SHA256 `b53a7250fd57f754a57a2ac3ddb918eefe7a0ac7a4c28096f39c858486370f44`。保留中文正本编码/换行/内容/链接；首次add出现autocrlf将转CRLF提示，未把提示当成已转换，随后仅两份原件设置.gitattributes -text并核对Git blob/工作区/原件逐字节一致，避免未来checkout改变正本。新增规范8章与模板10章完整英译；逐章/表核对72与29表格行数量，数量检查不替代语义阅读。research.md明确指向四文件，中文优先，宏观计划与Study PLAN原分工不变，未重写已有Study。新增docs子入口在layout的文档范围说明，不改运行目录/产物。
+
+原规范的四处内部链接涉及三类缺失DEM依赖：文献规范（2处）、通用调研规范、校准调研大纲；为原样保留不改正本，在README逐项说明不可随clone访问，译本用明确依赖说明。其他本次文档相对文件引用全部存在，UTF-8无替换字符、fence配对，中文逐字节一致；36项既有layout正确性测试通过，未新增镜像实现测试，不跑速度/GPU。完整DOCS_CHECKED/LAYOUT XML/命令/来源hash在.tmp/research-docs（不随clone），核心生产/测试/Study/版本/发布材料无变更。
+
+两议题分别开[探索Issue89](https://github.com/DreamSoul-AI/RPipe/issues/89)与[探索Issue90](https://github.com/DreamSoul-AI/RPipe/issues/90)，不是已确认bug、不占B编号，不互相或与模板绑定实施。[跨项目shared调研](../issue/cross_project_shared.md)比较现有shared.root与表层shared symlink，保留跨Study不可变输入/Run状态独立，尚未部署/迁数据；[监控logger调研](../issue/experiment_monitoring.md)只读RPipe与legacy-dayan固定a7a1b40源码以及Python/Microsoft/PyTorch/TensorBoard/MLflow/W&B官方文档，区分文本logger、指标tracker和展示；建议先明确缺失需求，再决定是否最小展示适配，不迁回旧聚合/恢复语义、不启服务或加依赖。下游文件与Git blob经换行归一一致，未干预运行。原文二级论文/skill未重新核验或安装，不把原作者核验日期当本次行为。
+
+暂存保留对照，未纳入Git、未删除；仅docs主题分支，按本次“模板任务可并行开PR”的明确授权独立提交，不等待前批已合PR的实际dev观察；只有一个未合工作分支，结束旧远程仍在实际dev验收成功后立即删。额外用core.autocrlf=true的checkout-index仅导出两份正本再按原字节核对通过，未触碰其他文件。已确认的新provenance声明反例已开Issue91，38合同节点仅在.tmp预备/语法检查尚未实际执行，后续红回归先于修复，不与文档PR混改。
 
 ### 101. activity 字段候选本地验收与第五条结束远程清理
 

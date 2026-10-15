@@ -20,7 +20,7 @@
 | `<project>/.github/` | workflows 与仓库协作配置 | 维护者；Actions 执行配置而不将 Run 写入此处 |
 | `<project>/.tmp/` | 隔离环境、缓存、临时脚本、测试报告与诊断；不随 clone 提供 | Agent、测试入口、开发工具 |
 | `<project>/asset/` | README 使用的已登记静态实例图；不作为新 Study 图目录 | 维护者按已有来源维护 |
-| `<project>/docs/` | code 设计、development 记录、releases 发布材料、research 通用方案；具体 Study 数字和结论不放这里 | 维护者 / Agent |
+| `<project>/docs/` | code 设计、development 记录、releases 发布材料、research 通用方案/原样规范与译本、issue 独立探索；具体 Study 数字和结论不放这里 | 维护者 / Agent |
 | `<project>/shared/` | **供 studies 下各 Study 共用的不可变输入**；不得存训练中的模型对象或 Run 可变状态 | 受锁保护的 data / model 准备入口、显式迁移命令 |
 | `<project>/shared/data/` | 原始数据、按格式和版本区分的可复用派生输入；不共享可变 Dataset / sampler | DataFactory / 注册 data builder、prepare_shared_data、显式迁移 |
 | `<project>/shared/model/` | 固定 revision 的预训练权重 / tokenizer 输入；不放训练 checkpoint | ModelFactory / 注册 model builder、显式迁移 |

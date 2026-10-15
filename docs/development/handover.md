@@ -1,5 +1,9 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 研究计划原件与独立调研接续
+
+#86经PR88合dev8ee1913，最终head63e2c84全部实际CI成功、实际dev独立验收中，完成后删codex/activity-hint-fields远程。唯一未合codex/research-plan-masters按新授权处理DEM中文正本与完整英译、research入口及两个互不绑定的探索Issue89/90，见record §102与docs/research/standards/README。正本按字节保留，3类DEM缺失依赖明确登记；暂存保留不提交。36 layout通过，不迁共享目录/logger、不跑性能/GPU、不改运行格式。已有provenance声明反例.tmp/audit083待后续先Issue/红回归，不混入文档PR；正确性目标active，Issue86及已修工程Issue等下版。
+
 ## 2026-10-16 目标active，activity候选本地验收
 
 前五批至#85/PR87均已合dev37d0262且最终head/实际dev全部实际CI成功，五条结束远程均已删除，本地旧分支保留，见record §101。当前唯一未合codex/activity-hint-fields，#86红313f826为21失败/4控制，设计c16a7e2后最小fix59785be；436相邻、core882通过/1平台skip、Flow175通过，25项新合同全部执行。接着PR最终head和实际dev独立验收后删结束远程；新provenance声明类型反例只在.tmp/audit083复现，尚未开Issue/红测试/修生产，不冒充已修。无关未跟踪_staging_from_DEM/原样保留，只允许该精确项的临时checker不放宽tracked/CI。Issue均等后版，不合main/打tag、不测速/GPU、不改layout或删数据。
