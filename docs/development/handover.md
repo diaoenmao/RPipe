@@ -1,5 +1,9 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 来源证据按类合并验证
+
+研究规范PR92最终head/实际devf303d72全部实际CI成功，文档remote已删、正本原字节/完整英译/独立89/90调研已正式入dev。当前唯一未合codex/provenance-declarations包含B083/#91与新B084/#93，归纳为一批来源证据发布合同。前者最小4f23ae4获717相邻/1skip、core920/1skip、Flow175；后者先Issue再红3804bce，67项56失败/11控制、实际外部文件链接两类均执行。后者将复用load_index/validate_run_directory/_inside，数据错误转既有freeze拒绝并保原cause，内部链接逻辑键兼容，RuntimeError原样。新代码后重新组合验收，不用旧通过替代；见record §104。目标active、不测速/GPU、不改布局/迁logger或shared、不合main/tag。
+
 ## 2026-10-16 来源声明红合同接续
 
 #86/PR88最终head及实际dev8ee1913全部实际CI成功，结束remote已删；PR92研究正本/英译/独立探索已合devf303d72，最终head全部实际CI通过，实际dev观察中。唯一未合codex/provenance-declarations修B-083/#91，同字节红d1baff1为38节点30失败/8控制，先于生产；snapshot首次打包错误发生pytest前，原失败保留，不计库失败。设计统一source_files拒绝非法provenance/include容器，保留None/有效列表与旧来源/peer，不扩大make事务或旧成功保全范围。见record §103，源码仍待最小修复。文档任务已入dev，暂存留对照；#89/#90仅独立调研，不自动实施。目标active，不合main/打tag、不测速/GPU/迁目录/logger。

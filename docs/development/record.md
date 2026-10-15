@@ -1,8 +1,8 @@
-> 现状：#86/PR88与实际dev均CI全绿、远程已删；研究规范PR92合devf303d72，集成CI中；#91红回归已提交。
-> 最新：来源声明38项30失败/8合法控制，出处§103、d1baff1、.tmp/audit083/RED_CHECKED.json。
-> 下一步：既有source_files统一mapping/list校验，保全旧provenance与peer；针对性/core/Flow正确性验证后PR合dev。
-> 阻塞：无；唯一未合codex/provenance-declarations；文档实际dev观察独立接续，暂存保留。
-> 边界：不测速/GPU、不改layout/产物格式、不合main/打tag、不迁shared/logger，不删数据。
+> 现状：DEM正本/英译与两独立调研已PR92合dev并实际CI全绿、清远程；来源证据批次归并#91/#93。
+> 最新：#91红30/38已转绿；#93红67项56失败/11控制，实际外链index/config均执行，出处§104、3804bce。
+> 下一步：plan_files复用既有index/路径校验，统一修同类来源发布边界，再跑组合相邻/core/Flow并PR合dev。
+> 阻塞：无；唯一未合codex/provenance-declarations；新缺口未冒充旧CI通过，原失败均保留。
+> 边界：不测速/GPU、不迁shared/logger、不改layout/格式、不合main/打tag，不删数据/Run。
 
 # 一、摘要
 
@@ -102,6 +102,18 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+### 104. 研究文档实际dev验收与同类来源计划边界红回归（B-084 / #93）
+
+记录日期2026-10-16。[PR92](https://github.com/DreamSoul-AI/RPipe/pull/92)已普通merge至dev `f303d72328d2dafb5f10129c31a776fdcb3b7553`，实际[Unit38776926700](https://github.com/DreamSoul-AI/RPipe/actions/runs/38776926700)/[Package38776927062](https://github.com/DreamSoul-AI/RPipe/actions/runs/38776927062)与最终head三门全部实际矩阵/聚合成功。DEV_CHECKED SHA256 `adb17938a1d2662e02a5a9fdab21c92950b7c89cad003128cdf69da6ed181ac2`。核对tip eadb392在dev、无开放PR且当前为另一个工作分支后，普通删除远程codex/research-plan-masters，本地保留；main/dev未因删除改变。清理前后/命令/proof保留.tmp/research-docs；本目标累计七条结束remote清理（前六条见§101/103），当前活动provenance分支未推时远程只剩main/dev。原PR92和探索89/90均已追加真实文档/CI入口，保持探索open，不自动实施。不合main/打tag。
+
+B-083/#91红d1baff1之后设计2b29e89、最小生产4f23ae4在source_files仅+6/-2统一容器约束；38节点全部执行并转绿，相关717 passed/1 POSIX mode平台skip、core920 passed/1同平台skip、Flow175 passed，0fail/error。完整本机旧批证据.tmp/audit083保留；以下新同类反例使该批不再能替代最终组合验收。
+
+在同一来源证据发布类发现B-084/#93：plan_files自己解析原index，绕过已修load_index。12个隔离小探针中10坏输入：8被接受、2泄漏AttributeError/TypeError；同样10坏输入主load_index均拒绝，另2合法控制通过。`../../external`真实纳入Study外config摘要并允许write_provenance覆盖旧合成来源；外部输入字节不变。2个真实file symlink（index/config各1）也接受外部target。只读合成目录，不触碰正式Run/数据；不是B077主reader重修。
+
+先开Issue93，再提交红3804bce：67节点56 failed/11 passed、0error/skip；48坏index在plan、write-new、write-old、freeze四入口拒绝，8外部链接拒绝（含哈希调用守卫），11合法空/partial/缺config、内部链接逻辑键、缺index与RuntimeError控制。期望复用既有load_index/validate_run_directory/_inside，坏类型仅在plan数据边界转换成ValueError保cause，使既有freeze正确拒绝；必需Run id与物理输入限制在Study内，内部链接仍以逻辑Run键记录。不改index主reader/schema/layout、hash算法、缓存或旧成功决策，不扩make全局事务，RuntimeError不吞。设计先写flow，再最小生产；原ZIP/REPRO/LINK_REPRO/红XML/命令/hash在.tmp/audit084，不随clone。
+
+按Enmao“按类统一修”把#91与#93合在同一未合分支和一个来源证据PR，先前修复提交不改写，新增红先于其生产修复。接着组合回归及最终head/实际dev独立验收，不为同一来源类开零碎PR、不得拿旧717/core920/Flow175冒充新代码通过。当前没有B085已确认缺口。
 
 ### 103. 研究规范合dev、activity实际验收与来源声明红合同（B-083 / #91）
 
