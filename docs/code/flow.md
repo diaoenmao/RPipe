@@ -299,6 +299,8 @@ conservative 墙钟只在 **make** 打印。本进程实测时间在 Logger 行�
 
 `activity.json` 仅为可选提示：不可读、存在性查询失败、UTF-8解码失败或JSON无效时忽略提示，继续按index/result展示权威状态，不删除或重写该文件。忽略提示不会把缺少index改成成功；缺index且无有效提示仍退出2。非预期编程异常不归为可选IO失败。提示的最低字段合同为非空白字符串phase、可缺省/null/字符串detail；非法字段同样不可用，不能凭坏提示把缺index改成成功。自定义非空阶段名和Unicode/空detail兼容保留，reader返回原mapping，不归一化、改写或删除文件，不增加阶段枚举或ownership/TTL协议。
 
+日志引用在既有`log_path`统一约束并由status/logs/report复用：index.log须为当前Run目录内的字符串路径（可绝对或Study相对），不含行控制字符，解析后的物理路径须属于本Run及Study，Windows命名空间等有效别名以同文件/同share的比较键核对，不按不同锚点误拒；原生Path保留用于文件IO，比较/URI去除常见盘符与UNC扩展拼法，不跨server/share合并；坏引用为不可用，status的note/log单格为`-`、logs跳过该Run、report对应链接格为`-`，不影响peer、状态或计数。缺省/null/空字符串仍回到本Run默认run.log；合法内部别名、Unicode/空格路径与尚未生成的默认日志链接兼容，report按相对文件URI编码特殊字符。先以原生stat区分已有普通文件、尚未生成文件和不可用对象：缺文件允许既有未来链接，目录/循环链接/其他OSError为不可用，再解析物理归属；不笼统捕获RuntimeError，非预期程序异常仍传播。这里只验证引用，不扫描其他Run/硬链接所有权或迁移/删除文件；不改变日志追加协议、正文、JSON结构或目录。
+
 `python -m rpipe logs <study>` 只读，把各 Run 的事件行按行首时间打到终端，不写 Study 级总 log。缺 index 退出 2。
 
 `python -m rpipe report <study>` 读 `process.json`，写 `docs/NUMBERS.md`（Experiment 的 mean / std / min / max，以及 Run 表）。导出前必须读取可用的当前 index，核对 Study 名以及所有计划 Run 的 ID、seed 与因素归属；包含未成功 Run 的合法部分聚合仍可导出，不要求 complete=true。不新增格式字段，旧 process 同样按其已有清单核对；Run / Experiment 的排列次序不影响身份。缺失、损坏的 index / process、重复或缺少 Run 以及身份不匹配时退出 2，提示检查并重新 process；保留旧 process、现有 NUMBERS、图和 Run 证据。数字表在校验成功后原子替换，不改 `STUDY_REPORT.md`。该校验只绑定当前计划，不证明同一 Run 重跑后的指标新鲜度或研究质量。

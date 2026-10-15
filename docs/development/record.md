@@ -1,8 +1,8 @@
-> 现状：DEM正本/英译与两独立调研已PR92合dev验收并清远程；#91/#93来源证据批次已完成本地正确性门。
-> 最新：105项原红合同转绿，另补12边界；相关784通过/1skip、core987/1skip、Flow175、追加12通过，出处§105。
-> 下一步：同一来源证据PR最终head/实际dev CI分别验收，合dev后清远程；研究89/90仅探索，不自动实施。
-> 阻塞：无；唯一未合codex/provenance-declarations，原始失败/打包错误/旧门结果均保留。
-> 边界：不测速/GPU、不迁shared/logger、不改layout/格式、不合main/打tag，不删数据/Run。
+> 现状：PR96已补齐合并前循环/目录/Windows别名边界，更新候选bce96cb本地全绿；旧a5仅历史通过。
+> 最新：84前置合同转绿、另6兼容控制；相关886/core1089各1平台skip、Flow175通过，90新节点均执行，出处§109。
+> 下一步：推送同一PR新head，重新验收全部实际CI/实际dev，成功后清remote；继续正确性目标。
+> 阻塞：无；候选别名失败/收集错误/旧CI全保留，不用旧通过替代新代码；当前唯一未合log-reference-contract。
+> 边界：不测速/GPU、不迁logger/shared、不改schema/产物布局、不合main/tag，不删数据。
 
 # 一、摘要
 
@@ -102,6 +102,54 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+### 109. 日志可用性与原生路径别名最终组合本地验收
+
+记录日期2026-10-16，继续同一B085/#95/PR96/工作分支，未合旧a5 head。d6bbbae循环红3项2失败/1通过；790de87目录/真实Windows alias红6项5失败/1通过。首次stat预检实现修正循环/目录，但仍有3个extended别名失败：AVAILABILITY_GREEN为6通过/3失败；PowerShell分行调用未在首子进程失败后阻断扩大GREEN2，该GREEN2也保留同3失败（无CORE2/FLOW2执行），不能算完整通过。已把后续依赖执行改为Python subprocess.run(check=True)，先针对性通过才启动完整门，不以shell最后命令成功掩盖前错。
+
+根因是Path.resolve仍可保留显式Windows namespace锚点，不能把返回字符串和普通锚点直接relative_to后据此判越界，也不能为了比较剥掉用于原生IO的前缀。先补a8eebf0的3个Windows UNC关系合同（同share大小写别名可归属、不同share/server拒绝），初版缺比较函数的3个ImportError为前置合同失败，不额外声称3个真实数据故障；纯Path关系，不挂载/访问网络share。随后最小bce96cb：既有log_path中stat区分普通/缺失/不可用，缺失仍允许未来日志；私有_log_path_key仅供归属比较与href，把常见Windows盘符/UNC扩展拼法对齐，文件IO继续用原生Path。普通本Run拼法/内部父段/别名保留，只有不同锚点但已证明归属时用规范拼法；不猜不同volume/share、不笼统吞RuntimeError，不搬模块或造I/O框架。[Microsoft命名空间说明](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file)作语法核对，真实短路径samefile/原生错误/旧reader对照见§108，不外推任意网络文件系统或长路径能力。
+
+最终只改现有status.py/report.py，相对dev2b7c769共+57/-18，现有函数共用同一引用guard与比较键；没有新依赖/模块/字段/目录/日志追加或科学聚合变更。早前3a5/c89候选、a5全部CI、所有失败实现/测试收集错误及输入/link/peer全保留。原84前置节点（最初72+本次12）跨互不重叠红批为54失败/30通过，修复后均执行转绿；另6既有兼容追加控制执行，共90新节点在GREEN3/CORE3执行。本机Windows最终针对性12通过；相关886 passed/1 POSIX mode平台skip、core1089 passed/1同skip、Flow175 passed/0skip，0fail/error。Windows特有6节点在POSIX明确skip，不当作通过；本机链接创建实际执行，不改权限。
+
+LOCAL_CHECKED_FINAL记录完整范围/最终两源码hash，位于.tmp/audit085，不随clone；旧LOCAL_CHECKED/AVAILABILITY_GREEN/GREEN2/红/命令/XML等未覆盖，portable90节点已提交。新的比较函数有3条纯Windows share归属合同，真实namespace文件有3个公共reader回归；没有把纯路径测试冒充UNC网络实测。正式Study/layout/版本及release正文无变化，GPU/性能测试0，不覆盖下游。接着最终新head全部实际CI及实际dev单独验收后才合dev/清remote；不拿旧a5绿证明本修订，Issue95保留到下版。
+
+### 108. 合并前补齐循环/非文件可用性与Windows路径别名（仍B-085 / #95）
+
+记录日期2026-10-16。PR96初候选head `a5b83970e65e948e6eb5c83c8a9c57ca161ad998` 的[Unit38782730979](https://github.com/DreamSoul-AI/RPipe/actions/runs/38782730979)、[Package38782730953](https://github.com/DreamSoul-AI/RPipe/actions/runs/38782730953)、[Branch38782731079](https://github.com/DreamSoul-AI/RPipe/actions/runs/38782731079)全部实际矩阵/聚合成功，proof SHA256 `147b739a52c4e39a887003a8c015e8ce734b502c509cb4b621ba3f302fcbc5c1`备份为.tmp/audit085/ci/PR_CHECKED_a5b8397.json。但合并前复查发现以下真实边界，**初候选不计最终验收、不合此旧head**；不是历史pending重派或取消CI挑结果。
+
+本机Python3.13.9真实循环文件链接：原生stat为OSError errno22/WinError1921，非严格Path.resolve仍返回路径，候选status保留无效log格、report仍输出循环链接；logs已跳过并保留peer。Python官方[3.10 resolve](https://docs.python.org/3.10/library/pathlib.html#pathlib.Path.resolve)说明循环会RuntimeError，[3.13变更](https://docs.python.org/3.13/library/pathlib.html#pathlib.Path.resolve)说明非严格不再因此抛异常。后者为本机实测，前者为文档支持的版本风险，不声称已在本机跑3.10；py launcher查询不可用不等于已枚举全机解释器。LOOP_REPRO保存原生错误与链接身份，无GPU/计时/系统权限变更。
+
+另一个本机实证：Windows命名空间短路径别名与普通本Run日志samefile=True，原v0.4.1后基线reader能读OWN-EXTENDED，但a5候选因词法锚点不同返回'-'。旧reader实际通过冻结snapshot导入并核对来源，EXTENDED_REPRO保存路径/原始事件/两个结果；字节不改。只证明本机短路径extended别名，未改LongPathsEnabled或宣称通用长路径/任意文件系统能力。
+
+继续同一Issue95/PR96、同分支，先补d6bbbae循环链接3项红：2失败/1通过、0error/skip，测试快照用readlink保全链接本体而不跟随坏链接；再790de87的目录/Windows别名6项红：5失败/1通过、0error/skip。首RED_FILES因测试路径字面量转义导致SyntaxError，pytest退出2、collection error1、实际节点执行0；原文件/日志/XML保留FILES_SETUP_FAILURE，不算库失败或通过。修正后先AST检查，再以新basetemp/RED_FILES2执行真实6节点，不覆盖失败。
+
+设计仍在既有log_path统一：原生stat已有对象必须普通文件；FileNotFound允许既有未来日志链接；目录、循环或其他OSError为不可用，随后验证规范物理目标留在Run/Study。逻辑锚点正常时保留原路径拼法，有效命名空间/别名锚点不同则使用已验证的规范路径，不把同文件别名误判成越界；其他Run/Study外实际目标仍拒绝。保持RuntimeError等程序异常原样，不按错误字符串猜测或笼统吞异常；不新建模块/依赖/目录、不更改磁盘合同。该原生预检避免旧版本先走resolve的循环RuntimeError路径，同时缺失文件不误伤为不可用。
+
+原72前置合同与6后补控制保留，新9项在本可用性修订前先红；接着用新输出/独立basetemp跑合并合同、core与Flow，最终head重新验收CI后才合dev。旧代码通过/新反例、首测试收集错误、所有链接和peer证据均保留.tmp/audit085，不随clone。当前仍无B086已登记缺口。
+
+### 107. 来源证据实际dev验收与日志引用统一修复本地门
+
+记录日期2026-10-16。#91/#93由[PR94](https://github.com/DreamSoul-AI/RPipe/pull/94)普通merge为dev `2b7c76986950fd6242afbf5bfc0bf81892dfeeaa`，最终head三门及实际dev [Unit38780743725](https://github.com/DreamSoul-AI/RPipe/actions/runs/38780743725) / [Package38780743746](https://github.com/DreamSoul-AI/RPipe/actions/runs/38780743746)全部实际矩阵及聚合成功。DEV_CHECKED SHA256 `dd63d4eb87bc6b9ee4613e3b9a8f6f91e33700394ec7e4fc02276c7c5582655c`。祖先/无开放PR/目标非活动分支核对后，普通删除结束remote `codex/provenance-declarations`（tip e59a226）；PR/两个Issue验收正文已追加，Issue保留open至下版。
+
+本目标累计八条已删结束remote清单：codex/artifact-contracts-correctness、codex/yaml-mapping-roots、codex/declared-batch-contract、codex/saved-plan-read-boundary、codex/result-status-contract、codex/activity-hint-fields、codex/research-plan-masters、codex/provenance-declarations。各批清理前后/命令/祖先与CI证据留对应.tmp，不随clone；旧本地分支保留，main/dev未因删除改变，历史§82九条不重复计。当前唯一未合codex/log-reference-contract；推送前远程只剩main/dev，后续本分支保持至实际dev验收。
+
+B085/#95先红1a2fb23（60项34失败/26通过）、9abee79（6项错误边界合同失败），设计fee867e后再补Unicode LS/NEL行分隔6项：4失败/2通过，红6ffed36仍先于生产。三批节点不重叠，共72项44失败/28通过；权限/程序错误是前置守卫合同，不是额外声称实际数据损坏。最小生产3a5c98f仅修改现有status.py与report.py，共+33/-13：既有log_path统一可选引用类型、行字符、Run/Study词法及物理范围，status构建行时复用一次并不展示坏引用；logs沿已有调用自动复用；report函数内复用同一guard避免_fmt模块循环，用标准库quote输出合法文件URI，坏href仅本格'-'。不新建模块、读取层或配置，不改writer追加/字段/schema/布局、状态/计数及科学聚合。OSError/非法路径可选降级，RuntimeError原样。
+
+合法默认/null/空串、相对/自身绝对、Unicode空格、内部别名和未来日志路径已覆盖；再补c89a6d1的6项本Run内合法父段路径/Study目录别名兼容控制（生产后追加，不冒充原红）。相关874 passed/1 POSIX mode平台skip、core1077 passed/1同skip、Flow175 passed/0skip，0fail/error；72前置节点与6后补共78节点均在GREEN及CORE执行。日志外链、文件/目录别名在本机真实执行，未改系统权限；其他平台可选链接skip不算通过。输入及peer字节均保全，report测试只在合成Study渲染，不覆盖正式报告。
+
+完整红/绿/命令/XML/原码与真实输入在.tmp/audit085（本机材料，不随clone），LOCAL_CHECKED记录两份生产hash；78个portable节点已提交。没有GPU/性能测量/服务启动/迁shared或logger，不干预下游vendor/实验。接着本批最终head与实际dev分别全部实际CI验收、正常合dev后删remote，Issue95保持open至下版；当前没有B086已确认问题。
+
+### 106. 来源证据PR合dev与日志引用统一合同红测试（B-085 / #95）
+
+记录日期2026-10-16。[PR94](https://github.com/DreamSoul-AI/RPipe/pull/94)最终head `e59a22694b3fc12053490b3398d47c0842e9c22d` 的[Unit38779395986](https://github.com/DreamSoul-AI/RPipe/actions/runs/38779395986)、[Package38779395962](https://github.com/DreamSoul-AI/RPipe/actions/runs/38779395962)、[Branch38779395955](https://github.com/DreamSoul-AI/RPipe/actions/runs/38779395955)全部实际矩阵及聚合成功，PR_CHECKED SHA256 `061a0e0a5d7ad4aea675af8fc7864c9a2c472e4f0050c0445013ae6f19e232b1`。普通merge至dev `2b7c769`，实际dev独立观察中；验收后立即删结束remote，Issue91/93等后版，不以候选CI代替实际dev。
+
+B085/#95依据现有structure中“index.log指向该Run的run.log”合同复查，共7真实隔离场景：5坏引用为相对Study外、绝对Study外、peer Run、带换行、Run内file symlink指Study外；2合法自身/缺省控制正常。status/logs读出外部合成事件，peer错误可被算入两个Run并重复显示，NUMBERS输出外部/peer错误链接，含换行的单字段使status应有4行变5行、Markdown行也截断。全部index/process/日志/peer原字节不变，无正式日志泄漏证据。source ZIP/REPRO留.tmp/audit085，不随clone。
+
+先开Issue95，在当前PR94最终CI观察期间仅对冻结快照加测试，实际导入快照src，读取文件hash与当前同字节；60节点34 failed/26 passed、0error/skip。数据路径兼容矩阵包括合法默认/null/空串、自身相对/绝对、Unicode空格、内部别名、尚不存在日志，另证实旧report对合法自身绝对/Unicode空格路径产生错误URI。PR94合后从新dev开唯一未合codex/log-reference-contract，同字节portable红由1a2fb23先提交，再补6个解析权限错误/非预期RuntimeError前置合同，6失败、0error/skip，红9abee79先于生产。后6项是设计守卫边界而非6个新实际数据故障；66节点跨两批合计40失败/26通过，不重复跑来挑结果。
+
+设计先明确在既有log_path约束字符串、无行控制符、词法和物理路径留在本Run及Study内，并由status/logs/report共同复用。非法或权限不可用引用仅本格'-'/跳过事件/不输出坏href，peer、状态/计数/其他字段不变；缺省/null/空串仍默认本Run日志，合法别名/Unicode空格/自身绝对路径及未来日志链接兼容。report使用标准库文件URI编码；以函数内导入复用path guard，避免status既有_fmt导入形成模块循环，不搬模块或新造安全读取层。OSError/路径错误可选降级，程序RuntimeError原样。引用检查不扫描硬链接/inode所有权、不承诺任意并发文件树事务、不迁移日志/数据或改共享布局。
+
+本次只读也核对数值_fmt已有OverflowError保护、activity清理已有OSError保护，不将已合规项当新缺陷。正确性目标active；研究89/90仍独立探索，不触发架构改动。接着最小修复、66节点/相邻/core/Flow验收，一个PR合dev，不合main/tag、不测速/GPU。
 
 ### 105. 来源证据两项根边界统一修复与组合本地验收
 

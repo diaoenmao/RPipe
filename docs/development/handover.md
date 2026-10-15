@@ -1,5 +1,17 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 PR96合并前可用性/Windows alias已补齐
+
+同一codex/log-reference-contract、B085/#95；旧a5全部CI绿但发现边界后未合并，CI proof具名备份。循环d6bbbae（3项2红/1绿）、目录/真实extended790de87（6项5红/1绿）、share比较a8eebf0（3前置失败）先于最终bce96cb；stat区分缺失/普通/不可用，比较键只用于归属/URI，文件IO保留原生prefix，RuntimeError原样。source两文件相对dev+57/-18，不改布局/schema/模块/依赖。最终90新节点全执行，针对性12、相邻886/1平台skip、core1089/1skip、Flow175通过，见record §109/LOCAL_CHECKED_FINAL；原别名3失败/收集错误/GREEN2保留，后依赖脚本已check=True避免级联。待推新head并重新验收PR及实际dev后清remote，不能用旧a5代替。研究PR92/来源PR94已完成验收清远程，main/tag不动，89/90仅探索；目标active不测速/GPU/迁logger或shared。
+
+## 2026-10-16 日志引用统一候选本地验收
+
+研究PR92、来源证据PR94均已最终head/实际dev全部实际CI成功并清remote，当前验收dev2b7c769；八条结束remote清单见record §107，旧本地保留。唯一未合codex/log-reference-contract修#95/B085：红1a2fb23/9abee79/6ffed36前置72项44失败/28控制，设计fee867e后最小3a5c98f仅两既有文件+33/-13复用log_path；report合法文件URI编码、坏格'-'，不新模块/字段/布局或吞RuntimeError。后补6兼容c89a6d1；874相邻/1平台skip、core1077/1skip、Flow175通过，78新节点均在GREEN/CORE执行。下一步最终head与实际dev分别验收，成功后清本remote，Issue95等下版；B086尚无确认反例。研究正本/英译已入dev，89/90仅探索，不迁logger/shared、不测速/GPU/合main/tag或删数据。
+
+## 2026-10-16 日志引用合同红测试接续
+
+研究文档PR92已完成最终head/实际dev验收并清远程。来源证据PR94最终heade59a226全部实际CI成功合dev2b7c769，实际dev观察中。唯一未合codex/log-reference-contract修B085/#95：7小场景5真实坏引用/2控制，status/logs可串读Study外/peer事件且表格断行；同字节红1a2fb23为60节点34失败/26控制，另6解析IO/RuntimeError边界红9abee79先于生产。设计复用既有log_path到status/logs/report，坏引用单格降级，保持合法路径/内部别名并修文件URI，不搬模块/改格式或吞RuntimeError；见record §106与.tmp/audit085。生产尚未动，下一编号B086；目标active、不测速/GPU/合main/tag或迁shared/logger。
+
 ## 2026-10-16 来源证据组合候选本地验收
 
 #91/B083与#93/B084共用codex/provenance-declarations，红d1baff1/3804bce先于各自最小fix4f23ae4/2cd634c。仅provenance.py +18/-6，复用index/目录/物理范围helper，不改格式/布局/hash/旧成功决策。105原红合同全执行转绿；784相邻+1平台skip、core987+1平台skip、Flow175通过。追加12身份/配套路径控制单独EXTRA通过，未混算core或原红节点；见record §105与.tmp/audit084/LOCAL_CHECKED。接着一个PR最终head和实际dev各自实际CI验收后清远程，Issue91/93等下版。研究PR92最终head/实际dev均已全绿并清远程，正本/英译和89/90独立探索已入dev；暂存保留，不迁shared/logger。目标active，不合main/tag、测速或GPU。
