@@ -1,5 +1,9 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 日志引用合同红测试接续
+
+研究文档PR92已完成最终head/实际dev验收并清远程。来源证据PR94最终heade59a226全部实际CI成功合dev2b7c769，实际dev观察中。唯一未合codex/log-reference-contract修B085/#95：7小场景5真实坏引用/2控制，status/logs可串读Study外/peer事件且表格断行；同字节红1a2fb23为60节点34失败/26控制，另6解析IO/RuntimeError边界红9abee79先于生产。设计复用既有log_path到status/logs/report，坏引用单格降级，保持合法路径/内部别名并修文件URI，不搬模块/改格式或吞RuntimeError；见record §106与.tmp/audit085。生产尚未动，下一编号B086；目标active、不测速/GPU/合main/tag或迁shared/logger。
+
 ## 2026-10-16 来源证据组合候选本地验收
 
 #91/B083与#93/B084共用codex/provenance-declarations，红d1baff1/3804bce先于各自最小fix4f23ae4/2cd634c。仅provenance.py +18/-6，复用index/目录/物理范围helper，不改格式/布局/hash/旧成功决策。105原红合同全执行转绿；784相邻+1平台skip、core987+1平台skip、Flow175通过。追加12身份/配套路径控制单独EXTRA通过，未混算core或原红节点；见record §105与.tmp/audit084/LOCAL_CHECKED。接着一个PR最终head和实际dev各自实际CI验收后清远程，Issue91/93等下版。研究PR92最终head/实际dev均已全绿并清远程，正本/英译和89/90独立探索已入dev；暂存保留，不迁shared/logger。目标active，不合main/tag、测速或GPU。

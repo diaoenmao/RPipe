@@ -1,8 +1,8 @@
-> 现状：DEM正本/英译与两独立调研已PR92合dev验收并清远程；#91/#93来源证据批次已完成本地正确性门。
-> 最新：105项原红合同转绿，另补12边界；相关784通过/1skip、core987/1skip、Flow175、追加12通过，出处§105。
-> 下一步：同一来源证据PR最终head/实际dev CI分别验收，合dev后清远程；研究89/90仅探索，不自动实施。
-> 阻塞：无；唯一未合codex/provenance-declarations，原始失败/打包错误/旧门结果均保留。
-> 边界：不测速/GPU、不迁shared/logger、不改layout/格式、不合main/打tag，不删数据/Run。
+> 现状：研究规范PR92已验收并清远程；来源证据PR94最终head CI全绿合dev2b7c769，集成CI中；继续#95。
+> 最新：日志引用60项红34失败/26通过，另6项错误边界合同失败；5类真实坏引用/2控制，出处§106。
+> 下一步：在既有log_path/status/report统一引用校验与URI展示，66合同先红后修，正确性门后PR合dev。
+> 阻塞：无；唯一未合codex/log-reference-contract；前批dev观察独立接续，无数据或布局迁移。
+> 边界：不测速/GPU、不迁logger/shared、不改schema/目录、不合main/打tag，不删数据/Run。
 
 # 一、摘要
 
@@ -102,6 +102,18 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+### 106. 来源证据PR合dev与日志引用统一合同红测试（B-085 / #95）
+
+记录日期2026-10-16。[PR94](https://github.com/DreamSoul-AI/RPipe/pull/94)最终head `e59a22694b3fc12053490b3398d47c0842e9c22d` 的[Unit38779395986](https://github.com/DreamSoul-AI/RPipe/actions/runs/38779395986)、[Package38779395962](https://github.com/DreamSoul-AI/RPipe/actions/runs/38779395962)、[Branch38779395955](https://github.com/DreamSoul-AI/RPipe/actions/runs/38779395955)全部实际矩阵及聚合成功，PR_CHECKED SHA256 `061a0e0a5d7ad4aea675af8fc7864c9a2c472e4f0050c0445013ae6f19e232b1`。普通merge至dev `2b7c769`，实际dev独立观察中；验收后立即删结束remote，Issue91/93等后版，不以候选CI代替实际dev。
+
+B085/#95依据现有structure中“index.log指向该Run的run.log”合同复查，共7真实隔离场景：5坏引用为相对Study外、绝对Study外、peer Run、带换行、Run内file symlink指Study外；2合法自身/缺省控制正常。status/logs读出外部合成事件，peer错误可被算入两个Run并重复显示，NUMBERS输出外部/peer错误链接，含换行的单字段使status应有4行变5行、Markdown行也截断。全部index/process/日志/peer原字节不变，无正式日志泄漏证据。source ZIP/REPRO留.tmp/audit085，不随clone。
+
+先开Issue95，在当前PR94最终CI观察期间仅对冻结快照加测试，实际导入快照src，读取文件hash与当前同字节；60节点34 failed/26 passed、0error/skip。数据路径兼容矩阵包括合法默认/null/空串、自身相对/绝对、Unicode空格、内部别名、尚不存在日志，另证实旧report对合法自身绝对/Unicode空格路径产生错误URI。PR94合后从新dev开唯一未合codex/log-reference-contract，同字节portable红由1a2fb23先提交，再补6个解析权限错误/非预期RuntimeError前置合同，6失败、0error/skip，红9abee79先于生产。后6项是设计守卫边界而非6个新实际数据故障；66节点跨两批合计40失败/26通过，不重复跑来挑结果。
+
+设计先明确在既有log_path约束字符串、无行控制符、词法和物理路径留在本Run及Study内，并由status/logs/report共同复用。非法或权限不可用引用仅本格'-'/跳过事件/不输出坏href，peer、状态/计数/其他字段不变；缺省/null/空串仍默认本Run日志，合法别名/Unicode空格/自身绝对路径及未来日志链接兼容。report使用标准库文件URI编码；以函数内导入复用path guard，避免status既有_fmt导入形成模块循环，不搬模块或新造安全读取层。OSError/路径错误可选降级，程序RuntimeError原样。引用检查不扫描硬链接/inode所有权、不承诺任意并发文件树事务、不迁移日志/数据或改共享布局。
+
+本次只读也核对数值_fmt已有OverflowError保护、activity清理已有OSError保护，不将已合规项当新缺陷。正确性目标active；研究89/90仍独立探索，不触发架构改动。接着最小修复、66节点/相邻/core/Flow验收，一个PR合dev，不合main/tag、不测速/GPU。
 
 ### 105. 来源证据两项根边界统一修复与组合本地验收
 

@@ -6,6 +6,14 @@
 
 ## 开放
 
+### B-085：日志引用未校验归属/格式，跨Run/Study串读及表格断行（[#95](https://github.com/DreamSoul-AI/RPipe/issues/95)）
+
+- 来源：第二类只读展示合同复查，log_path把任意truthy log直接拼Path，三个展示消费者未统一引用约束。
+- 真实7隔离场景：5坏引用（Study外相对/绝对、peer、换行、外部target symlink）会串读外部/peer事件、输出坏NUMBERS链接或将status由4行断成5行；2合法/缺省控制正常。输入字节全保留，无正式数据泄漏/损坏证据。数字_fmt已有OverflowError保护、activity清理已有OSError保护，不重复登记。
+- 期望：既有log_path统一类型、行字符、Run/Study词法及物理范围规则；status/logs/report共同复用，坏引用只使本格不可用，peer/状态/计数不变。缺省/null/空串默认、合法自身绝对/相对、Unicode/空格/内部别名兼容，report对文件URI编码，不移动模块或增schema/目录。IO故障可选降级，RuntimeError原样上抛。
+- 先Issue95，隔离冻结快照60节点34 failed/26 passed、0error/skip；除坏引用外还证实原report对合法自身绝对路径/Unicode空格URI输出错误。实际导入/原码hash/测试原字节保留，当前分支按同字节红1a2fb23先提交。再补6个物理解析IO/程序错误前置合同，6失败/0error/skip，由9abee79先提交；它们是新守卫的错误边界约束，不算6种新实际数据故障。
+- 本项生产未修改，source/doc/REPRO/RED与RED_PATH在.tmp/audit085，不随clone；下一新编号B-086。
+
 ### B-084：来源plan绕过权威index校验并读取Study外配置（[#93](https://github.com/DreamSoul-AI/RPipe/issues/93)）
 
 - 来源：来源证据发布的系统复查；不是B077主load_index已修问题重开，而是plan_files另行json.loads绕过它。
