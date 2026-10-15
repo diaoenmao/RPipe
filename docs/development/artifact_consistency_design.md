@@ -2,14 +2,14 @@
 
 ## 一、摘要与硬约束
 
-- **状态：设计已获批准，按第三类→第二类→第一类分 PR 实施。** 本修订依据维护者补充指令，取代 `c9e0141` 中的尝试账本、结果视图和格式迁移方案；旧稿只保留在 Git 历史中，不作为实施计划。
+- **状态：已实施。** 三类已按第三类→第二类→第一类分别经 PR #52 / #54 / #55 合入 dev，后续同类修复继续按已批准合同推进，不再等待设计批准。 本修订依据维护者补充指令，取代 `c9e0141` 中的尝试账本、结果视图和格式迁移方案；旧稿只保留在 Git 历史中，不作为实施计划。
 - **文件架构和产物布局不改。** 不增加文件、目录、模块或格式版本，不移动模块；`result.json` 的位置、格式、含义与现有读写合同保持不变。函数内的内存类型、判断和私有复用可以收敛，不引入持久化新结构。
 - **实施范围：** 在现有函数和文件内归纳保全规则、读取边界及原子发布职责。先保留既有修复，再用统一规则替代重复判断，不恢复逐个相邻路径审计。
 - **实施约束：** 每类先补合同回归；第一类仅提炼现有私有判断，不扩大旧成功保留范围。第三类架构测试仅覆盖可整体替换文本，特殊协议按第五（三）精确豁免。不测速、改性能、调查超时、运行 GPU、迁移数据或重签 provenance。
 
-基线为 dev `d294c1b5aa99b4d7148f991f9a4ac8903fe23374`。#50 已由 [PR #51](https://github.com/DreamSoul-AI/RPipe/pull/51) 合入，最终工作提交和实际 dev 的必需 CI 已通过；实际 dev 依据为 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38633933430) / [Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38633933432)。不重复开 #50 修复 PR。这些 CI 只证明已有修复，不证明本设计已实施。
+初始设计的历史基线为 dev `d294c1b5aa99b4d7148f991f9a4ac8903fe23374`。#50 已由 [PR #51](https://github.com/DreamSoul-AI/RPipe/pull/51) 合入，最终工作提交和实际 dev 的必需 CI 已通过；实际 dev 依据为 [Unit Tests](https://github.com/DreamSoul-AI/RPipe/actions/runs/38633933430) / [Package Check](https://github.com/DreamSoul-AI/RPipe/actions/runs/38633933432)。不重复开 #50 修复 PR。上述历史 CI 是初始基线证据；三类实施与后续修复的已合 PR、提交和验收见第十节及各补充节。
 
-| **类别** | **当前分散处理** | **本修订的收敛方式** | **不采用的结构变更** |
+| **类别** | **初始分散处理** | **已实施的收敛方式** | **不采用的结构变更** |
 | --- | --- | --- | --- |
 | 失败写入与证据保全 | Runner 特定拒绝保留成功；调度失效、阶段失败和重试各有职责 | 在现有失败写入 / 调度入口统一“允许写什么、何时拒绝写”的规则，错误继续追加到原 run.log | 无 attempts 目录、不可变账本、结果指针或双版本 schema |
 | status / logs 安全读取 | stat、打开、解码及类型 guard 分散 | 在现有读取函数内统一三态与字段校验；Run 行先由计划 config 建立内存中的有类型值，再补结果 | 无新读取模块、磁盘 RunView、字段迁移或新结果语义 |
@@ -30,9 +30,11 @@
 | B-062 | 共享引用使用短 UUID 临时名，补齐失败交错回归 | 每个发布者仅处理自己的 staging，保留旧 target 和 peer |
 | B-057 / B-064 | 文本碰撞及合法长 basename 的 staging 问题已修 | 不再各造基于时钟或拼完整目标名的临时文件方案 |
 
-这些已知反例均已在 dev 修复，不能重新登记为开放根因。B-062 / B-067 / B-068 经 [PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46)，后续边界经 [PR #47](https://github.com/DreamSoul-AI/RPipe/pull/47)，B-069 经 [PR #49](https://github.com/DreamSoul-AI/RPipe/pull/49)，B-070 经 PR #51 集成。证据见 [record §40–65](record.md) 和 [维护归档](maintenance_archive_2026-10-15.md)。六个 Issue 保持 open；已发布 main 仍 v0.3.1 / `7a15c46`。B-065 性能去重已撤回，不恢复。
+这些已知反例均已在 dev 修复，不能重新登记为开放根因。B-062 / B-067 / B-068 经 [PR #46](https://github.com/DreamSoul-AI/RPipe/pull/46)，后续边界经 [PR #47](https://github.com/DreamSoul-AI/RPipe/pull/47)，B-069 经 [PR #49](https://github.com/DreamSoul-AI/RPipe/pull/49)，B-070 经 PR #51 集成。证据见 [record §40–65](record.md) 和 [维护归档](maintenance_archive_2026-10-15.md)。这六个 Issue 已随 [v0.4.0](https://github.com/DreamSoul-AI/RPipe/releases/tag/v0.4.0) 发布关闭；当前 main 为 v0.4.1 / `00e70b1`。后续已修 Issue 按各自版本关闭，不因本文重复处理。B-065 性能去重已撤回，不恢复。
 
 ## 三、第一类：现有写入入口统一证据保全规则
+
+**已实施：** [PR #55](https://github.com/DreamSoul-AI/RPipe/pull/55)；后文为持续有效的合同，非待审任务。
 
 ### （一）结果与诊断的现有含义不变
 
@@ -42,7 +44,7 @@
 
 ### （二）统一决策表
 
-在 `FlowRunner._write_failed_result`、`schedule._fail_result` 与调用它们的现有函数内，按下表收敛。可在现有 `artifact/result/io.py` 内复用一个私有判断函数，但不新建文件、移动业务模块或把语义塞进 `_atomic.py`；既有 `write_result` 仍明确校验并写入，不静默忽略调用方要求的写入。
+已在既有 `flow/runner.py` 提炼私有 `_preserve_success`，原表达式等价返回；`FlowRunner._write_failed_result`、`schedule._fail_result` 及调用方保持下表各自职责。不新建文件、移动业务模块或把语义塞进 `_atomic.py`；既有 `write_result` 仍明确校验并写入，不静默忽略调用方要求的写入。
 
 | **事件** | **result 处理** | **诊断与调用结果** |
 | --- | --- | --- |
@@ -63,6 +65,8 @@
 4. make 的配置 / 来源拒绝先验证再写，调用既有原子函数。单文件失败保全与多文件事务是不同保证；不新增 plan generation 或承诺 make 整体回滚。
 
 ## 四、第二类：现有读取函数内统一安全读取
+
+**已实施：** [PR #54](https://github.com/DreamSoul-AI/RPipe/pull/54)；后文为持续有效的合同，非待审任务。
 
 ### （一）三个内存状态
 
@@ -87,11 +91,13 @@
 
 ### （三）函数内复用与旧补丁替换
 
-`status._load_result / _note_from_log` 与 `logs.event_lines` 采用同一 stat→read→decode 边界；如果需要共享文本读取，可放在既有 `readout/status.py` 的私有函数中，`logs.py` 沿用现有依赖方向复用。`activity.read_activity` 在原函数内遵守同一规则，不能为了共用 helper 反向依赖 readout 或制造循环导入。
+`status._read_optional / _note_from_log` 与 `logs.event_lines` 已采用同一 stat→read→decode 边界；共享读取已在既有 `readout/status.py` 的私有 `_read_optional` 中实现，`logs.py` 沿用现有依赖方向复用。`activity.read_activity` 在原函数内遵守同一规则，不能为了共用 helper 反向依赖 readout 或制造循环导入。
 
 #48 的重复 try、#50 的字段 guard、B-068 的可选提示隔离，收敛的是规则与真正重复的代码；必要的字段验证不删除。`load_config / load_result` 的严格读取不改成全局吞错；process / compare / 调度不能把展示回退的 `-` 当真实输入。status / logs 不写盘、不自动修复、不清理文件，现有表头 / 输出字段和有效日志排序保留。
 
 ## 五、第三类：复用现有原子写函数
+
+**已实施：** [PR #52](https://github.com/DreamSoul-AI/RPipe/pull/52)；后文为持续有效的合同，非待审任务。
 
 ### （一）现有职责不搬动
 
@@ -120,9 +126,9 @@
 1. **无需产物迁移。** 所有目录、文件名、schema、Run ID、version、结果含义和 provenance 原字节不变；不存在升级时创建 legacy 快照、重签、重排日志或复制正式数据的步骤。
 2. **不改变公共返回合同。** 内存三态与类型检查止于现有读取函数边界；公共 API、CLI 表格和严格执行失败规则由原用例锁定。旧合法输入按同一路径继续读取，未知 / 非法输入只按已批准规则降级。
 3. **实施顺序：第三类→第二类→第一类。** 在现有测试文件先补三组合同回归，再在对应原文件内收敛规则；每步只移除已被公共规则覆盖的重复判断。无匹配保证时保留保护，不先删后补。
-4. **开发流不变。** 实施仍按工作分支→PR→dev，最终 head 和实际 dev 的全部实际 CI 分别验收；每类独立 PR，CI 通过后合 dev；不合 main、不删分支或数据。
+4. **开发流不变。** 实施仍按工作分支→PR→dev，最终 head 和实际 dev 的全部实际 CI 分别验收；每类独立 PR，CI 通过后合 dev；后续正确性批次不合 main；已结束工作分支按 [cicd](cicd.md) 与当前明确授权清理，不删除数据。
 
-正式代码说明需要在实施时同步相关行为，现有 [layout](../code/layout.md)、[structure](../code/structure.md)、[flow](../code/flow.md) 的文件架构继续有效。本轮不把待审设计写成已实现合同。
+三类已实施合同已同步至 [layout](../code/layout.md)、[structure](../code/structure.md)、[flow](../code/flow.md)；本文件记录已批准并落地的规则，不是待审或暂停实施的入口。文件架构和产物布局继续不变，第七节限制保持。
 
 ## 七、确实需要结构变化才能提供的能力（仅说明，不实施）
 
@@ -138,7 +144,7 @@
 
 ## 八、正确性回归计划
 
-测试围绕固定合同归组，不继续以新编号逐个审计。位置沿用现有测试文件；隔离临时目录、独立 basetemp，无 GPU / 外网 / 正式 Study / 性能测量。
+测试围绕固定合同归组；后续真实反例先登记 Issue 并补回归，不把编号当作独立设计或设计批准等待项。位置沿用现有测试文件；隔离临时目录、独立 basetemp，无 GPU / 外网 / 正式 Study / 性能测量。
 
 | **测试组** | **关键断言** |
 | --- | --- |
@@ -155,13 +161,21 @@
 
 ## 九、本次状态
 
-设计已按“不改文件架构和磁盘合同”修订；`c9e0141` 的结构方案被本稿明确取代。本轮从第三类合同回归开始实施，旧成功保留范围、特殊协议和第七节不实施约束继续有效。每类最终状态以对应 PR、实际 dev CI 和开发记录为准，不用设计批准代替运行验证。
+**已实施。** 本设计已按“不改文件架构和磁盘合同”完成三类收敛；`c9e0141` 的结构方案已撤回。PR #52 / #54 / #55 及后续 PR 是实际实施记录；旧成功保留范围、特殊协议和第七节不实施约束继续有效。后续正确性修复直接按已批准合同和失败回归推进，状态以确切提交、实际 dev CI 与开发记录为准，不重新等待设计批准。
 
 ## 十、实施进度
 
-按第三类→第二类→第一类执行，均复用现有文件和函数：第三类 PR52 的最终 head 与实际 dev 全实际 CI 通过；第二类 PR54 的最终 head 通过并合 dev，实际 dev 独立验收；第一类 [PR55](https://github.com/DreamSoul-AI/RPipe/pull/55) 候选只提取原保全 predicate，基线42与相邻128项通过。完整改前/改后、失败和未完成门见 [record §69–73](record.md)，最终集成状态以对应 PR 的确切提交 / CI 为准。
+**三类均已实施并合入 dev，最终 head 与实际 dev 的全部实际 CI 已验收。** 完整改前/改后和旧失败见 [record §69–75](record.md)，历史候选或待验文字不表示当前待审。
 
-特殊追加、checkpoint、锁协议保持，第七节能力未实施；没有布局、schema或result含义变化，未测速或运行GPU，未合main。
+| **类别** | **已合 PR** | **实际 dev merge commit** |
+| --- | --- | --- |
+| 第三类：原子文本发布 | [PR #52](https://github.com/DreamSoul-AI/RPipe/pull/52) | `ea2210bc27e5456062bdef0ffb331e208c64f838` |
+| 第二类：三态安全读取 | [PR #54](https://github.com/DreamSoul-AI/RPipe/pull/54) | `945c9925c8657b50a7f0906c5cd4fd00b238f1a1` |
+| 第一类：等价保全 predicate | [PR #55](https://github.com/DreamSoul-AI/RPipe/pull/55) | `34e95069a3a2814d0fabf4879b1584f1bdbd0758` |
+
+第一类仅提炼原判断，42格合同与相邻128项锁定原成功保留范围；分支规则随 PR #55 合入。
+
+特殊追加、checkpoint、锁协议保持，第七节能力未实施；没有布局、schema或 result 含义变化，未测速或运行 GPU。上述阶段先合 dev，后按 v0.4.0 / v0.4.1 发布流程进入 main；当前后续正确性工作仍只合 dev，本轮不修改 main。
 
 
 ## 十一、2026-10-15 全仓同类正确性接续
@@ -176,15 +190,15 @@
 
 第一类本批只补合同：六阶段原异常 × 失败结果编码/提交再失败12项，验证原异常身份、原错日志、旧result/peer和本写者清理，与原42项决策表共同锁定既有predicate。原规则全部通过，无新增生产反例，不改Runner/schedule/make的失效语义。全仓归纳及严格compare/process、流式/二进制/锁豁免边界见record §81；不把单文件原子等同多文件事务或任意同Run并发。
 
-本轮第三类PR61与第二类PR63均已普通合dev，最终head和实际dev全部实际CI分别成功；#53/#62保持开放至下版，旧v0.4.0六Issue不重开。第一类新增合同全部通过，生产规则不改。具体源码/红绿/验收链接见record §79—81；main与layout不变。
+本轮第三类PR61与第二类PR63均已普通合dev，最终head和实际dev全部实际CI分别成功；#53/#62 后续已随 [v0.4.1](https://github.com/DreamSoul-AI/RPipe/releases/tag/v0.4.1) 发布关闭，旧 v0.4.0 六 Issue 不重开。第一类新增合同全部通过，生产规则不改。具体源码/红绿/验收链接见record §79—81；main与layout不变。
 
 ## 十二、2026-10-15 逐点清单后的三类边界补齐
 
 以record §83全仓清单为准，所有固定产物位置/schema继续不变。第三类先修B-074：短随机名仍须排他取得所有权，失败不unlink未创建的peer；atomic_write_text先排他创建并记录owned，shared引用去掉递归晋升，软链→硬链创建与原子replace仍在原函数，迁移仅成功link后清自己。第二类B-076维持compare严格错误语义：坏容器拒绝，不降级成空；合法null兼容，整数不用float丢精度，有限容差按数学值比较，普通浮点比较逻辑不变；输出在CLI既有try内。第一类B-075只改日志/曲线构造器的append创建，目录错误与恢复offset不变，不扩大Runner旧成功范围。
 
-三类分别先红合同、主题PR与最终/实际dev CI；#53/#62及本轮新Issue留到下一版关闭。无性能/GPU/原始结果覆盖，不增加账本、锁、目录、模块或第七节能力。
+三类分别先红合同、主题 PR 与最终/实际 dev CI；该阶段 Issue 后续已按 v0.4.1 发布关闭，后续批次按各自发版状态处理。无性能/GPU/原始结果覆盖，不增加账本、锁、目录、模块或第七节能力。
 
-本节三类补齐已按PR69（第三类）、PR70（第二类）、PR71（第一类）普通合dev，最终head与实际dev全实际CPU/包CI分别成功；完整403组清单与验收见record §83—87。三类只在既有入口内部收敛，43项新增合同覆盖原反例和有效控制；既有布局/schema、专用协议与第七节不实施边界保持，GitHub Issue留到下一版关闭。
+本节三类补齐已按PR69（第三类）、PR70（第二类）、PR71（第一类）普通合dev，最终head与实际dev全实际CPU/包CI分别成功；完整403组清单与验收见record §83—87。三类只在既有入口内部收敛，43项新增合同覆盖原反例和有效控制；既有布局/schema、专用协议与第七节不实施边界保持，该阶段 GitHub Issue 已随 v0.4.1 关闭，后续已修 Issue 仍在其下一版关闭。
 
 
 ## 既有文本表格的单元格合同补充（2026-10-16，B-086 / #97）
@@ -193,7 +207,7 @@
 
 status 对标题及全部9个单元格统一应用单行合同，替换 error/note 仅处理 LF/tab 的重复局部逻辑；report 对 factor、metric name/text、seed、Run ID 应用 Markdown 单元格合同，标题仅保持单行。日志链接仍复用 B-085 的 URI 规则，数字格式器与指标白名单不变。只写派生 NUMBERS 的原入口不变，reader 不改 index/process/result、peer 和人工结论。
 
-验收先提交公共渲染红测试：factor key/value、report 自定义 metric、CR/LF/CRLF、tab、NEL/Unicode LS、pipe 与一/二反斜线 pipe及普通控制；校验固定行列、原数值/peer/链接/计数和输入精确字节。初轮误将自定义 metric 纳入 status 既有白名单的10测试假设已撤出，原始证据留存；更正后56项39 failed/17 passed，无error/skip，代码尚未修复。此补充不包含通用富文本清洗、HTML框架、配置schema扩展或本设计第七节结构性能力。
+验收先提交公共渲染红测试：factor key/value、report 自定义 metric、CR/LF/CRLF、tab、NEL/Unicode LS、pipe 与一/二反斜线 pipe及普通控制；校验固定行列、原数值/peer/链接/计数和输入精确字节。初轮误将自定义 metric 纳入 status 既有白名单的10测试假设已撤出，原始证据留存；更正后 56 项 39 failed / 17 passed、无 error / skip 是修复前基线，旧失败保留。**已实施：** [PR #98](https://github.com/DreamSoul-AI/RPipe/pull/98) 已普通合 dev `8dc6a914a6f0e0f42a2353f43e73505880672087`，最终 head 与实际 dev 全部实际 CI 已通过，见 [record §114](record.md)。此补充不包含通用富文本清洗、HTML框架、配置schema扩展或本设计第七节结构性能力。
 
 
 ### compare checkpoint 引用与显示合同（B-088 / #101）
@@ -203,3 +217,5 @@ layout.md已规定checkpoint为每Run的可变状态，compare的参数名称应
 format_compare复用现有_text_cell，仅把动态key显示成单行；JSON原key、比较数值/容差、缺失判定和原输出位置不变。训练checkpoint保存/恢复与strict pickle语义不受影响；不建目录、搬产物或自动迁数据。错误外部引用由CLI既有ValueError边界返回2，旧--out不覆盖。
 
 先Issue101，隔离实际三种外部引用可使完整比较错误true、正常不同权重control false；Unicode LS合法stem使显示5行而非4。再冻结原字节17节点10 failed/7 passed、0error/skip，包含API/CLI父路径/绝对/文件alias/根alias、合法nested/自身abs/内部alias/missing/普通名称/Windowsextendedown控制。原始快照与原始REPRO/REPRO2/导入path/hash/JUnit留.tmp/audit088（不随clone）；正式红测试先提交再改代码。record§111的compare key固定判断不完整，以本轮真实证据明确更正，不把旧结论当新验收。
+
+**已实施：** B-088 / #101 经 [PR #102](https://github.com/DreamSoul-AI/RPipe/pull/102) 普通合 dev `ef6084681160a68588e0b2a359ab7cc07c398879`；checkpoint 归属预检与 compare 单行显示合同均已落地，最终 head 和实际 dev 全部实际 CI 已通过。上述 17 节点 10 failed / 7 passed 明确为修复前证据，不再表示未修或等待批准；后续验收见 [record](record.md)。第七节能力仍不实施，不修改文件架构与产物布局。
