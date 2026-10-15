@@ -1,5 +1,10 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 PR115验收完成、B095三处可选JSON解析合同
+
+PR115实际devb28f6a2全部实际CI全绿，结束remote codex/status-parser-boundary已删、本地保留，累计19条，见record§133；Issue114留至下版。当前唯一未合codex/optional-json-decode修B095/#116：默认整数解析限制导致activity/state的ValueError；更深JSON使activity/state/JSONL均RecursionError。首12红6失败/6控制abe24a3保留，扩展f1b0d5f的26新合同14失败/12控制；f64917b另1普通RuntimeError控制修前通过。68cee20先设计后843daa4仅三行异常列表统一ValueError/RecursionError，不改系统限制/strict loader/恢复指针/科学聚合或布局。97针对性及process/core1432+1既有平台skip/Flow189通过，27新节点均执行；输入/peer/正常旧回退/有效轨迹/缺index诊断/编程错误传播保留。证据.tmp/audit095不随clone，SOURCE_BYTES_CHECKED三处精确替换，RED2字节明确由Git blob重建而非原始快照。下一最终head/实际devCI后普通合dev并清结束remote，Issue等下版；无main/tag/GPU/测速或数据删除。
+
+
 ## 2026-10-16 PR113已合、B094配置递归安全读取合同
 
 PR113最终head335e203全部实际CI成功后普通合devbf24574，实际dev Unit38812391082/Package38812390945仍观察，旧remote尚未清，不能把待验说通过。当前仅一条未合codex/status-parser-boundary，基于该merge修B094/#114：约2435字节深嵌套YAML使status整体RecursionError，JSON三项控制正常。f5d0e01九新红3失败/6控制→6a34a59设计→74aaa49仅现有_read_optional元组加RecursionError；不提高递归上限或吞普通RuntimeError，strict loader原错不变。readout500/core1405+1平台skip/Flow189通过，九新节点全执行；计划行/status/counts/成功指标/失败原error/peer/输入字节均保留。源只一处字节替换，证据.tmp/audit094不随clone，见record§129–130。下一两批各自最终head/实际dev全部实际CI验收并清各自结束remote，保留当前活动分支、旧本地/失败；Issue等下版，无main/tag/GPU/测速/布局改动。

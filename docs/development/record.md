@@ -1,8 +1,8 @@
-> 现状：PR115最终全实际CI后合devb28f6a2，实际dev验证中；唯一未合分支处理B095/#116。
-> 最新：三处可选JSON边界归类，26新红14失败/12控制；普通RuntimeError新增控制1通过，见§132。
-> 依据：约5KB整数限制与不足21KB深JSON真实失败，先前较浅JSON控制保留，不改全局限制。
-> 下一步：原activity/state/JSONL三个try统一具体ValueError/RecursionError，再必要CPU正确性与CI。
-> 阻塞：无；PR113已实际验收清第18条remote，不测速/GPU/main/tag/改布局或删数据，目标active。
+> 现状：PR115实际dev全绿清remote完成；B095/#116唯一未合分支已统一三处可选JSON解析边界。
+> 最新：26新红14失败/12控制，另1编程错误传播控制；三行异常列表修改，见§132–133。
+> 验证：针对性/process97、core1432+1既有平台skip、CPU Flow189通过；27新节点全部执行。
+> 下一步：最终head/实际dev全部实际CI验收后清结束remote；已修Issue留至下版，目标active。
+> 阻塞：无；默认整数/递归限制不改，无测速/GPU/main/tag、布局/科学聚合或数据变更。
 
 # 一、摘要
 
@@ -104,6 +104,10 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 ## 2026-10-16
 
 
+### 133. PR115实际dev验收与第十九条结束远程清理
+
+PR115实际dev `b28f6a219ce967472a8d1f6c300995eb2c84e6cf` 的 Unit38813819579、Package38813819609全部实际矩阵/聚合成功；DEV_CHECKED SHA256 `b240c99b9e6a996cc1df1070c1a9853ed88a65ee02d843fbc0fb7ef4bc9ce243`。核对祖先、无开放PR、实际CI后删除结束remote codex/status-parser-boundary，原本地tip保留，当前唯一未合codex/optional-json-decode未动。本目标累计19条结束remote已清，不与历史§82九条重复计数。Issue114保留至下版，证据.tmp/audit094不随clone。main与v0.4.1不变，无tag/发布/数据删除。
+
 ### 132. 三处可选JSON解析失败的统一边界（B-095 / #116）
 
 2026-10-16：在PR115观察期间按类复查可选JSON读取。5000位整数、约5049字节的原生文件超过本机默认4300位安全限制，json.loads抛ValueError而非JSONDecodeError：activity直接/CLI缺index、有效JSONL+坏state三个场景失败；坏JSONL同输入已有ValueError保护正常，4场景3失败/1控制。未改变系统限制或跑Study。进一步不足21KB、10000层的JSON在activity、state、JSONL三处真实RecursionError；1200层JSON本机正常的旧控制保持，不能混称任意深度均失败。原字节/hash/栈/REPRO在.tmp/audit095（不随clone）。
@@ -111,6 +115,10 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 先开Issue116；从最新merge devb28f6a2建立唯一未合codex/optional-json-decode。abe24a3先12红6失败/6控制；新增同类递归复现后f1b0d5f扩为26新合同14 failed/12控制，全部78项14 failed/64 passed，无error/skip。首红日志/字节与扩展RED2分别保留，不覆盖失败；f64917b另在原源码上补1通过的JSONL普通RuntimeError传播合同，三处均要求不掩盖编程错误。原生整数限制若平台未启用或预算外则明确skip，不调高/修改全局限制，不冒充通过。
 
 设计先写structure：复用原有三个JSON try，activity与旧state用ValueError代替过窄的JSONDecodeError，再同JSONL一起具体捕获RecursionError。坏提示忽略但不绕过missing-index错误；坏state不拖垮有效primary，坏JSONL行跳过且保留后续真实轨迹，正常旧回退保持。不建新模块/helper、不改strict loader、恢复指针、科学统计、schema或布局，不catch普通RuntimeError，不新增配置或提高安全上限。
+
+843daa4只替换activity与aggregate中的三处异常列表，SOURCE_BYTES_CHECKED证明其他字节不变。针对性含原生process97 passed；core1432 passed/1既有平台skip；CPU Flow189 passed，0failure/error，27新合同均在core实际执行且无新增skip。保留正常提示/缺index错误、正常旧回退/有效primary、坏JSONL后的合法记录、输入与peer字节；普通RuntimeError三处均不吞，严格加载器/科学聚合/恢复指针不改。
+
+LOCAL_CHECKED SHA256 `66a718582facb280fc78eaed9252419fe56d86c4c55ce2786f64e0064dfa2d39`；首RED64项6失败/58通过、扩展RED2的78项14失败/64通过、单独编程错误控制1通过以及GREEN/CORE/FLOW全部保留.tmp/audit095，不随clone。首RED实际CRLF字节已冻结；RED2 CRLF按f1b0d5f的Git LF blob重建并核对最终执行字节前缀，明确是重建，不伪装原始快照；最终仅追加f64917b在修前已通过的编程错误控制。最终工作head/实际dev CI待验，不以本机数字代替远端或科学验收。
 
 ### 131. PR113实际dev验收/第十八条远程清理与PR115接续
 
