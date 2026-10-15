@@ -1,8 +1,8 @@
-> 现状：DEM正本/英译和两项独立调研已由PR92验收入dev；PR96日志引用也已实际dev全绿，结束remote已清。
-> 最新：B086/#97合法文本会打破status/NUMBERS行列；修复前56项39失败/17控制，修后全部执行通过，出处§111。
-> 验证：只读306、相关942/core1145各1平台skip、CPU Flow175通过；源码仅两个既有formatter，净增8行。
-> 下一步：同一readout-text-cells推送PR，按最终head/实际dev CI验收后清remote；目标继续，无阻塞。
-> 边界：不测速/GPU、不迁shared/logger、不改schema/产物布局、不合main/tag；Issue待下版。
+> 现状：DEM正本/英译及独立调研已PR92完成；PR96实际dev全绿清remote，PR98已按最终CI普通合dev8dc6a91。
+> 最新：B087/#99可选tracker_state坏UTF8会阻断有效JSONL和process，24前置合同18失败/6控制，出处§113。
+> 验证：共享helper仅1行修复；相关966/core1163各1平台skip、CPU Flow181通过，24新节点均执行转绿。
+> 下一步：PR98实际dev CI完成后清remote；本批推送PR验最终head/实际dev；目标active，无阻塞。
+> 边界：不测速/GPU、不迁shared/logger、不改产物布局/统计/训练恢复，不合main/tag；Issue等下版。
 
 # 一、摘要
 
@@ -102,6 +102,19 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+
+### 113. 可选 tracker_state 解码失败的共享读取修复（B-087 / #99）
+
+在第二类合同扫描中，真实坏UTF8状态文件经load_curve_series触发UnicodeDecodeError；同一_state_history被JSONL主轨迹、legacy history、Run process、Study process与曲线复用，缺失/坏JSON/读取IO原有空history规则未包含解码失败。5原生隔离探针中，3个循环symlink候选均已正常降级、普通result控制正常，只有坏UTF8证实异常，不把正常行为登记为缺陷。原始REPRO/ZIP在`.tmp/audit087`，不随clone。先开[Issue99](https://github.com/DreamSoul-AI/RPipe/issues/99)，再以冻结源码实际导入路径/hash核对后执行24合同：18 failed/6 passed、0error/skip；测试正式同字节提交6d11281，随后设计41e7130、生产f5f85b7。可移植单元测试位于[test_aggregate.py](../../tests/rpipe/flow/process/test_aggregate.py)，Run/Study调用集成在[test_process.py](../../tests/rpipe/flow/process/test_process.py)。
+
+三种坏编码 × 主轨迹有/无 × 两个公共读取函数，以及Run/Study真实入口，均复用同一边界；绿色控制覆盖坏JSON、非对象、缺字段、有效旧history、读取IO和RuntimeError原异常identity。最终只在既有_state_history的except列表加UnicodeError，原单个生产文件1行替换，无新helper/模块/依赖，不扩大stat前置异常规则。有效JSONL主轨迹、peer、数字、旧input字节保全；读取损坏状态不清理/回写它。严格训练checkpoint/RNG恢复、percent、统计、曲线坐标/截断、Run/Study文件布局和失败结果保全规则均不变。
+
+本地隐藏GPU，RELATED966 passed/1既有POSIX脚本mode skip，CORE1163 passed/1同skip，FLOW181 passed/0skip；0fail/error。全部24前置节点在相关门执行，其中18unit在core、6集成在Flow执行，不把未选集成计成core通过。读取者只返回空可选旧history或有效主轨迹，Run/Study仍写各自既有process，peer与所有输入精确字节不变。`.tmp/audit087/LOCAL_CHECKED.json`保存实际JUnit/命令和源码hash，不随clone。当前唯一未合codex/optional-tracker-decode；待最终head/实际dev CI，Issue99保持open至下版。不测速/GPU、不迁logger/shared、不合main/tag。
+
+### 112. 文本单元格PR98按最终head CI合dev，实际集成验收接续
+
+[PR98](https://github.com/DreamSoul-AI/RPipe/pull/98)最终head `58d8393f88db802407958357e134c8bf4333264d`的Unit38789761211/Package38789760971/Branch38789760983全部实际矩阵与聚合成功，PR_CHECKED SHA256 `302079bb740b32d40492db9af884d39a150e6875b3f19129b68c8e5c2efb6eeb`。普通merge为实际dev `8dc6a914a6f0e0f42a2353f43e73505880672087`，自动触发Unit38790569174/Package38790569148；本节记录时仍在执行，不把pending计作通过，不重复派发。实际dev全绿后按祖先/活动保护立即清codex/readout-text-cells远程，当前optional-tracker-decode保留；Issue97等后续版本。完整本地56合同与初轮白名单假设修正见§111，原始证据不覆盖。
 
 
 ### 111. 文本单元格合同统一：先红回归再最小修复（B-086 / #97）

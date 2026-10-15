@@ -10,13 +10,9 @@
 
 - 来源：第二类读取合同批次，真实坏UTF8原文件经load_curve_series抛UnicodeDecodeError；缺失/损坏JSON/IO原已空history。3条循环symlink实际正常降级，不登记；普通控制正常。REPRO/原码ZIP/hash/真实导入路径/红日志在`.tmp/audit087`，不随clone。
 - 期望：现有共享_state_history将可选UTF8解码失败纳入同一空history边界，所有series/history/Run/Study/curves调用方复用；有效JSONL/peer/数值/原字节保留，不改磁盘布局或checkpoint恢复，不吞RuntimeError。
-- 先Issue99，冻结原字节与正式同字节测试24项18 failed/6 passed、0error/skip，红回归先提交；设计docs/code/flow.md先于生产。待单一共享边界最小修复与最终验收。
+- 先Issue99，冻结原字节与正式同字节测试24项18 failed/6 passed、0error/skip，红回归先提交；设计docs/code/flow.md先于生产。f5f85b7仅1行共享边界修复；24合同全绿、相关966/core1163各1平台skip、Flow181通过；待最终PR/实际dev验收，见record §113。
 
-### B-086：合法文本打破只读表格行列（[#97](https://github.com/DreamSoul-AI/RPipe/issues/97)）
-
-- 来源：第二类显示合同批次，dev bf57c88。7组真实隔离探针：factor LF使status4→5行，tab使9→10列；factor/metric pipe使report7/5列各加1，metric LF使表断段；2几何控制正常。输入字节不变，原始`.tmp/audit086/REPRO.json`不随clone。
-- 期望：现有文本格式化函数统一单行、TSV及Markdown单元格规则，数值/peer/状态与输入schema/layout不变。
-- 先Issue97，红测试1801e5b；首轮误假设status支持任意metric已留证并用7b451a7修正，实际56项39 failed/17 passed、0error/skip。status仍只展示原指标白名单；report支持自定义指标，不扩接口。设计见artifact_consistency_design补充；d59cc70最小两formatter修复，56节点全部转绿，306只读/942相关/1145core/175Flow通过、平台skip另记；待最终PR/实际dev验收，见record §111。
+B-086/#97已由PR98按最终head全部实际CI普通合dev8dc6a91，实际dev Unit38790569174/Package38790569148验收中；未计全完成，Issue等下版，见record §112。
 
 B-085/#95已由PR96普通merge devbf57c88，最终head与实际dev全部实际矩阵/聚合成功并清结束remote；Issue留至下版，见record §110。
 

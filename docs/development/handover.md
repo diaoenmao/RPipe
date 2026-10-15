@@ -1,5 +1,9 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 PR98已合dev、可选状态解码统一修复
+
+DEM任务PR92已完成；PR96实际验收全绿清remote。PR98最终58d8393的全部实际CI成功，普通merge dev8dc6a91，实际dev Unit38790569174/Package38790569148观察中，成功后立即清remote，不重复派发。当前唯一未合codex/optional-tracker-decode修B087/#99，真实坏UTF8会阻断JSONL/peer；3循环link候选正常不登记。冻结同字节24红合同18失败/6控制，6d11281先提交→设计41e7130→共享helper仅1行fix f5f85b7；966相关/1163core各1平台skip、181Flow通过，24新节点全执行（18unit core/6集成Flow）。见record§112–113与.tmp/audit087（临时证据不随clone）。下一最终head/实际dev验收，Issue留到下版，源坏文件保全，不测速/GPU/改布局或训练恢复、不合main/tag。
+
 ## 2026-10-16 DEM任务完成、PR96验收及文本合同批次
 
 DEM中文正本byte-for-byte及英译、独立探索89/90已PR92全验收。PR96最终ac1d404/实际devbf57c88全部实际CI成功，结束remote已删；九条目标remote累计清理见record§110。唯一未合codex/readout-text-cells修B086/#97：先红1801e5b，纠正10项status白名单误假设的7b451a7后56节点39红/17控制；设计8bb68a4，最小d59cc70原两formatter净+8，无磁盘合同变更。56节点全执行绿，306只读、942相关/1平台skip、1145core/1skip、175Flow通过，见§111与.tmp/audit086（本机证据不随clone）。下一推送PR验最终head/实际dev后清remote，Issue97等下版；main/tag不动、无测速/GPU/下游写入或shared/logger实施。

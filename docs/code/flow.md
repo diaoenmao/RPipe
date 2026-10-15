@@ -236,7 +236,7 @@ flowchart TD
 
 Study process 必须读取当前 `index.json`，不回退扫描 `runs/`。index 缺失、不能读取/解析，或不是含 `experiments` 列表的对象时，明确失败并提示重新 make；不改已有 process、图或 Run result。当前 index 之外的旧 version Run 不参加统计。Run process 仍只依赖自身，不要求 Study index。
 
-可选tracker_state读取沿既有_state_history统一降级：文件缺失、IO/JSON/Unicode解码失败返回空旧history，不阻断有效JSONL主轨迹、peer或Run/Study派生；程序RuntimeError仍传播。该降级只供process/曲线，不应用到严格checkpoint/RNG恢复，也不改写损坏输入。
+可选tracker_state读取沿既有_state_history统一降级：文件缺失、打开/读取IO及JSON/Unicode解码失败返回空旧history，不阻断有效JSONL主轨迹、peer或Run/Study派生；程序RuntimeError仍传播。该降级只供process/曲线，不应用到严格checkpoint/RNG恢复，也不改写损坏输入。
 
 学习曲线与 history 聚合共用 `scalars.jsonl` 的有效轨迹（start / checkpoint 日志位置规则见 structure §6.9.2）；无对应有效记录时回退到 `tracker_state.json` 的 history。只聚合当前 index 中 succeeded 的 Run。真实记录优先以 `optimizer_step` 为坐标，仅有显式 epoch 时用 epoch；旧记录仍为 observation，不猜 batch 计数。不同单位分开统计与绘图，不混合平均。同一有效轨迹的同坐标重复观测取最后一条，不按数值相同去重。
 
