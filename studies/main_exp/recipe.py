@@ -123,6 +123,8 @@ def preflight(data_root: Path | str, output_dir: Path | str, *, steps: int = 200
     A new output directory is required so prior evidence cannot be overwritten.
     This probe verifies a prefix, never claims historical long-curve reproduction.
     """
+    from rpipe.structure.artifact._atomic import atomic_write_text
+
     bootstrap()
     os.environ.setdefault('CUBLAS_WORKSPACE_CONFIG', ':4096:8')
     import torch
@@ -288,7 +290,7 @@ def preflight(data_root: Path | str, output_dir: Path | str, *, steps: int = 200
         result['runs'].append(row)
         result['passed'] = all(value['passed'] for value in result['runs'])
         result['elapsed_seconds'] = time.perf_counter() - start
-        (output / 'COMPARISON.json').write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        atomic_write_text(output / 'COMPARISON.json', json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
         print(f'preflight {data_name}/{model_name}: passed={row["passed"]} max_parameter_diff={final["max_absolute_difference"]}', flush=True)
     return result
 

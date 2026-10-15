@@ -195,6 +195,8 @@ def split_counts(data_root: Path) -> dict[str, dict[str, int]]:
 
 
 def main(argv: list[str] | None = None) -> int:
+    from rpipe.structure.artifact._atomic import atomic_write_text
+
     from rpipe.structure.artifact.shared import cache_lock, shared_paths
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--data-root', type=Path, default=shared_paths(STUDY)['data'])
@@ -242,7 +244,7 @@ def main(argv: list[str] | None = None) -> int:
         'files': files,
     }
     args.manifest.parent.mkdir(parents=True, exist_ok=True)
-    args.manifest.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+    atomic_write_text(args.manifest, json.dumps(manifest, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
     print(f'verified {len(files)}/{len(expected)} historical raw files; manifest: {args.manifest}', flush=True)
     return 0
 

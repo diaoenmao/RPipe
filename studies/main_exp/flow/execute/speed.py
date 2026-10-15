@@ -39,6 +39,8 @@ def correct_samples(accuracy, count):
 
 
 def main(recipe, argv):
+    from rpipe.structure.artifact._atomic import atomic_write_text
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--data', choices=['MNIST', 'CIFAR10'], default='CIFAR10')
     parser.add_argument('--model', choices=['cnn', 'resnet18'], required=True)
@@ -232,6 +234,6 @@ def main(recipe, argv):
         d['loss_absolute_difference'] <= 1e-6 and d['old_correct_samples'] == d['current_correct_samples'] for d in diffs)
     target = recipe.STUDY / 'docs/speed_measurements' / (ident + '.json')
     target.parent.mkdir(exist_ok=True)
-    target.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    atomic_write_text(target, json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(json.dumps({'report': str(target), 'passed': report['passed']}, ensure_ascii=False), flush=True)
     return 0 if report['passed'] else 1

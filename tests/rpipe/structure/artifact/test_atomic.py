@@ -258,7 +258,7 @@ def _study_sources():
 
 
 def test_study_replaceable_text_artifacts_use_same_atomic_publisher():
-    exemptions = {('main_exp/flow/execute/precision.py', 'main'):
+    exemptions = {('main_exp/flow/execute/precision.py', 'main.execute'):
                   'live subprocess stdout/stderr stream, not replaceable report'}
     found = [(path.relative_to(root).as_posix(), function, line)
              for root, path in _study_sources()
