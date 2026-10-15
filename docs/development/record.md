@@ -97,6 +97,12 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 80. 全仓三类合同第二批：安全数字显示（B-073 / #62）
+
+第三类 PR61 最终head a3e4a140a29c75512d47090e273efc28cf5edbf0 的 Unit38731020292、Package38731020242、Branch38731020233 所有实际矩阵/聚合成功，普通merge到dev fa184045dc09f54c6b296d1f4c914a021853d041；实际dev独立观察中，不以工作head代替验收。旧Python3.10失败保留，未重跑挑通过。
+
+第二类在同一工作分支接续，不另建同质分支。Issue62先登记，22项便携回归先于生产修复，20 failed /2 passed：8项status、4项数字格式、8项非法容器失败，2项空列表控制通过。输入为临时合成index/result/process；没有改正式Study或既有产物。复用已有report._fmt，消除status的重复数值转换；严格执行/比较/聚合的异常不转成显示占位。临时证据.tmp/contract073不随clone。
+
 ### 79. 全仓替换文本发布合同接续（#53 / B-072）
 
 首个远端head `5aceeda` 的 Unit 38730213954 保留真实失败：Ubuntu/Windows Python3.10各仅新增并发测试失败（stages为空），3.13与包门成功。原因是3.10 pathlib捕获os.replace的预绑定接口，单拦os.replace不能证明同步点到达。测试现同时拦原子发布边界与原生入口，用thread-local防重入，并显式模拟预绑定后端；原生产atomic_replace重试继续执行。中间portable.xml的2项WinError5来自测试替身直接调用os.replace而绕开重试，该候选未推送、原失败保留；portable2.xml相关48 passed /1 POSIX skip。生产八文件与a20efbb完全相同，不将测试钩子修正记为另一个库缺陷。本机没有Python3.10，跨版本验收以新head实际CI为准。

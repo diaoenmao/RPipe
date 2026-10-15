@@ -171,3 +171,5 @@
 第三类本批：受跟踪的 Study recipe / flow / structure 中，可整体替换的报告、数据/源码 manifest 和 probe JSON 全部复用已有 atomic_write_text。main_probe 固定 `.writing` 是可复现的 peer 所有权缺陷（B-072）；测试先失败再修。数据下载的二进制 partial、原始 Git blob、OBSERVATIONS.pt、模型/checkpoint 不纳入文本转码，直接字节合同保持。precision.main.execute 的 worker.log 是 subprocess 实时写入流，按函数精确豁免，不作为整体替换报告。
 
 只在隔离合成输入上运行回归；不会触发性能入口、下载数据或计算循环，也不修改旧 provenance。更改源码的后续研究须使用新 version / make 并重新过原门。第二类与第一类核对采用已有三态/保全判断，确认新反例后再补合同，不为制造工作扩大异常吞咽或保留范围。
+
+第二类本批（B-073 / #62）：status 与数字表复用 report.py 既有私有 _fmt，统一有限数显示边界；浮点转换溢出/非有限值显示占位，status 继续寻找可用 fallback。report 对 metrics 先确认 dict，不把列表对强转为对象。只改显示，不放宽严格读取、计划一致性、compare 或 process 科学门；无新增函数层/文件/schema。22项合同先红20失败/2通过，正常peer和原字节由回归锁定。
