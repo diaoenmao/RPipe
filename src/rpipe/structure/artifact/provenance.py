@@ -13,6 +13,8 @@ from typing import Any
 
 from rpipe.structure.artifact import paths
 from rpipe.structure.artifact._atomic import atomic_write_text
+from rpipe.structure.artifact.index import load_index
+from rpipe.structure.artifact.layout import validate_run_directory
 
 PROVENANCE_NAME = 'provenance.json'
 DECLARATION_FILES = ('study.yaml', 'experiment_config.yaml')
@@ -83,16 +85,22 @@ def source_files(study_dir: Path | str, study: dict[str, Any]) -> dict[str, str]
 def plan_files(study_dir: Path | str) -> dict[str, str]:
     """``index.json`` and the config of every Run it lists."""
     study_dir = Path(study_dir).resolve()
-    index = study_dir / paths.INDEX_NAME
+    index = _inside(study_dir, paths.INDEX_NAME)
     if not index.is_file():
         return {}
     out = {paths.INDEX_NAME: _sha256(index)}
-    body = json.loads(index.read_text(encoding='utf-8'))
+    try:
+        body = load_index(study_dir)
+    except TypeError as exc:
+        raise ValueError(str(exc)) from exc
     for experiment in body.get('experiments') or []:
         for run in experiment.get('runs') or []:
-            config = study_dir / paths.RUNS_DIRNAME / str(run['id']) / paths.CONFIG_NAME
+            run_id = run.get('id')
+            validate_run_directory(run_id)
+            relative = f'{paths.RUNS_DIRNAME}/{run_id}/{paths.CONFIG_NAME}'
+            config = _inside(study_dir, relative)
             if config.is_file():
-                out[config.relative_to(study_dir).as_posix()] = _sha256(config)
+                out[relative] = _sha256(config)
     return out
 
 
