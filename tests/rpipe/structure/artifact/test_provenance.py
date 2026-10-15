@@ -295,3 +295,14 @@ def test_plan_manifest_unexpected_hash_bug_propagates(tmp_path, monkeypatch):
     with pytest.raises(RuntimeError) as caught:
         provenance.plan_files(tmp_path)
     assert caught.value is error
+
+
+
+@pytest.mark.parametrize('run', [{}, {'id': None}, {'id': 'safe', 'run_dir': '../outside'}])
+@pytest.mark.parametrize('operation', _PLAN_REFUSAL_OPERATIONS)
+def test_plan_manifest_requires_identity_and_checks_paired_directory(tmp_path, monkeypatch, run, operation):
+    import json
+
+    study = _declaration_study(tmp_path, monkeypatch)
+    (study / 'index.json').write_text(json.dumps({'experiments': [{'runs': [run]}]}), encoding='utf-8')
+    _assert_plan_refusal(study, monkeypatch, operation)
