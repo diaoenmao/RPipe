@@ -1,8 +1,8 @@
-> 现状：研究PR92、来源PR94均已验收清远程；PR96初候选CI绿后补查发现可用性/Windows别名边界，尚未合dev。
-> 最新：循环链接3项2失败/1通过；目录/Windows同文件别名6项5失败/1通过，出处§108及原生WinError1921证据。
-> 下一步：既有log_path用stat区分缺失/普通文件/不可用对象，再规范化真实归属；同PR重做最终正确性门。
-> 阻塞：无；旧a5b8397的CI/874相关/core1077结果仅历史候选，不替代新head验收；失败均保留。
-> 边界：不测速/GPU、不改布局/schema、不迁logger/shared、不合main/tag，不删数据。
+> 现状：PR96已补齐合并前循环/目录/Windows别名边界，更新候选bce96cb本地全绿；旧a5仅历史通过。
+> 最新：84前置合同转绿、另6兼容控制；相关886/core1089各1平台skip、Flow175通过，90新节点均执行，出处§109。
+> 下一步：推送同一PR新head，重新验收全部实际CI/实际dev，成功后清remote；继续正确性目标。
+> 阻塞：无；候选别名失败/收集错误/旧CI全保留，不用旧通过替代新代码；当前唯一未合log-reference-contract。
+> 边界：不测速/GPU、不迁logger/shared、不改schema/产物布局、不合main/tag，不删数据。
 
 # 一、摘要
 
@@ -102,6 +102,16 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+### 109. 日志可用性与原生路径别名最终组合本地验收
+
+记录日期2026-10-16，继续同一B085/#95/PR96/工作分支，未合旧a5 head。d6bbbae循环红3项2失败/1通过；790de87目录/真实Windows alias红6项5失败/1通过。首次stat预检实现修正循环/目录，但仍有3个extended别名失败：AVAILABILITY_GREEN为6通过/3失败；PowerShell分行调用未在首子进程失败后阻断扩大GREEN2，该GREEN2也保留同3失败（无CORE2/FLOW2执行），不能算完整通过。已把后续依赖执行改为Python subprocess.run(check=True)，先针对性通过才启动完整门，不以shell最后命令成功掩盖前错。
+
+根因是Path.resolve仍可保留显式Windows namespace锚点，不能把返回字符串和普通锚点直接relative_to后据此判越界，也不能为了比较剥掉用于原生IO的前缀。先补a8eebf0的3个Windows UNC关系合同（同share大小写别名可归属、不同share/server拒绝），初版缺比较函数的3个ImportError为前置合同失败，不额外声称3个真实数据故障；纯Path关系，不挂载/访问网络share。随后最小bce96cb：既有log_path中stat区分普通/缺失/不可用，缺失仍允许未来日志；私有_log_path_key仅供归属比较与href，把常见Windows盘符/UNC扩展拼法对齐，文件IO继续用原生Path。普通本Run拼法/内部父段/别名保留，只有不同锚点但已证明归属时用规范拼法；不猜不同volume/share、不笼统吞RuntimeError，不搬模块或造I/O框架。[Microsoft命名空间说明](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file)作语法核对，真实短路径samefile/原生错误/旧reader对照见§108，不外推任意网络文件系统或长路径能力。
+
+最终只改现有status.py/report.py，相对dev2b7c769共+57/-18，现有函数共用同一引用guard与比较键；没有新依赖/模块/字段/目录/日志追加或科学聚合变更。早前3a5/c89候选、a5全部CI、所有失败实现/测试收集错误及输入/link/peer全保留。原84前置节点（最初72+本次12）跨互不重叠红批为54失败/30通过，修复后均执行转绿；另6既有兼容追加控制执行，共90新节点在GREEN3/CORE3执行。本机Windows最终针对性12通过；相关886 passed/1 POSIX mode平台skip、core1089 passed/1同skip、Flow175 passed/0skip，0fail/error。Windows特有6节点在POSIX明确skip，不当作通过；本机链接创建实际执行，不改权限。
+
+LOCAL_CHECKED_FINAL记录完整范围/最终两源码hash，位于.tmp/audit085，不随clone；旧LOCAL_CHECKED/AVAILABILITY_GREEN/GREEN2/红/命令/XML等未覆盖，portable90节点已提交。新的比较函数有3条纯Windows share归属合同，真实namespace文件有3个公共reader回归；没有把纯路径测试冒充UNC网络实测。正式Study/layout/版本及release正文无变化，GPU/性能测试0，不覆盖下游。接着最终新head全部实际CI及实际dev单独验收后才合dev/清remote；不拿旧a5绿证明本修订，Issue95保留到下版。
 
 ### 108. 合并前补齐循环/非文件可用性与Windows路径别名（仍B-085 / #95）
 

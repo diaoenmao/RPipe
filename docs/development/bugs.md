@@ -12,7 +12,7 @@
 - 真实7隔离场景：5坏引用（Study外相对/绝对、peer、换行、外部target symlink）会串读外部/peer事件、输出坏NUMBERS链接或将status由4行断成5行；2合法/缺省控制正常。输入字节全保留，无正式数据泄漏/损坏证据。数字_fmt已有OverflowError保护、activity清理已有OSError保护，不重复登记。
 - 期望：既有log_path统一类型、行字符、Run/Study词法及物理范围规则；status/logs/report共同复用，坏引用只使本格不可用，peer/状态/计数不变。缺省/null/空串默认、合法自身绝对/相对、Unicode/空格/内部别名兼容，report对文件URI编码，不移动模块或增schema/目录。IO故障可选降级，RuntimeError原样上抛。
 - 先Issue95，隔离冻结快照60节点34 failed/26 passed、0error/skip；除坏引用外还证实原report对合法自身绝对路径/Unicode空格URI输出错误。实际导入/原码hash/测试原字节保留，当前分支按同字节红1a2fb23先提交。再补6个物理解析IO/程序错误前置合同，6失败/0error/skip，由9abee79先提交；它们是新守卫的错误边界约束，不算6种新实际数据故障。
-- 初候选3a5c98f/a5本地与全部CI虽绿，未合dev；合前补查循环/目录/有效Windows别名，先d6bbbae的3项2失败/1通过，再790de87的6项5失败/1通过。原生Win1921与samefile/旧reader对照均实测，初RED_FILES收集语法错误保留不算库结果。设计以原生stat区分缺失/普通文件/不可用对象，规范物理归属接受同文件别名，不笼统吞RuntimeError；详record §108，待同PR更新最终head验收，下一编号B086。
+- 初候选a5虽全部CI绿，未合dev；先红循环/目录/同文件Windows alias共9项，再3条Windows share比较合同，bce96cb在既有log_path区分stat三态并以私有比较键对齐namespace、原生IO保留前缀。84前置合同转绿+6兼容，共90节点全部在GREEN3/CORE3执行：886相邻/1平台skip、core1089/1skip、Flow175、针对性12通过。原首实现3别名失败、扩大GREEN2同失败及首RED_FILES收集语法错误全保留，不计最终通过；详record §108—109。待同PR新head/实际dev验收，下一B086。
 
 B-083/#91与B-084/#93已由PR94合dev2b7c769，最终head/实际dev全部实际CI成功并清结束remote，已从未解决队列移除；Issue等下版。完整红绿、117新增节点、实际验收与八条远程清单见record §103—107。
 
