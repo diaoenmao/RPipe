@@ -214,3 +214,92 @@ def test_nonobject_metrics_do_not_hide_other_run_or_rewrite_evidence(report_stud
     else:
         assert '`a` | - |' in text
     assert {p: p.read_bytes() for p in before} == before
+
+
+_TABLE_TEXT = [
+    pytest.param('left\nright', id='lf'),
+    pytest.param('left\rright', id='cr'),
+    pytest.param('left\r\nright', id='crlf'),
+    pytest.param('left\tright', id='tab'),
+    pytest.param('left\x85right', id='nel'),
+    pytest.param('left\u2028right', id='line-separator'),
+    pytest.param('left|right', id='pipe'),
+    pytest.param('left\\|right', id='one-backslash-pipe'),
+    pytest.param('left\\\\|right', id='two-backslash-pipe'),
+    pytest.param('left right', id='ordinary'),
+]
+
+
+def _set_table_label(study, field, text):
+    for filename in ('index.json', 'process.json'):
+        path = study / filename
+        body = json.loads(path.read_text(encoding='utf-8'))
+        exp = body['experiments'][0]
+        exp['factors']['algorithm.mode'] = 'train'
+        if field == 'factor-key':
+            exp['factors'][text] = 'value'
+        elif field == 'factor-value':
+            exp['factors']['data.config.prompt'] = text
+        elif filename == 'process.json':
+            exp['metrics'][text] = exp['metrics'].pop('accuracy')
+            exp['runs'][0]['metrics'] = {text: 90.0}
+        path.write_text(json.dumps(body), encoding='utf-8')
+    result = {'status': 'succeeded', 'metrics': {
+        text if field == 'metric-key' else 'accuracy': 90.0}}
+    target = study / 'runs/a/result.json'
+    target.parent.mkdir(parents=True)
+    target.write_text(json.dumps(result), encoding='utf-8')
+    return {p: p.read_bytes() for p in study.rglob('*') if p.is_file()}
+
+
+def _markdown_columns(line):
+    separators = 0
+    escaped = False
+    for char in line:
+        if char == '|' and not escaped:
+            separators += 1
+        escaped = char == '\\' and not escaped
+    return separators - 1
+
+
+@pytest.mark.parametrize('text', _TABLE_TEXT)
+@pytest.mark.parametrize('field', ['factor-key', 'factor-value'])
+def test_status_text_cells_keep_planned_rows(report_study, field, text):
+    from rpipe.structure.artifact.readout.status import list_runs, format_status
+
+    before = _set_table_label(report_study, field, text)
+    body = list_runs(report_study)
+    view = format_status(body)
+    lines = view.splitlines()
+    assert len(lines) == 4
+    assert all(len(line.split('\t')) == 9 for line in lines[1:])
+    assert 'left' in lines[2] and 'right' in lines[2]
+    assert '90.0000' in lines[2]
+    assert lines[3].split('\t')[3] == 'b'
+    assert body['counts'] == {'planned': 2, 'succeeded': 1, 'failed': 0, 'pending': 1}
+    assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('text', _TABLE_TEXT)
+@pytest.mark.parametrize('field', ['factor-key', 'factor-value', 'metric-key'])
+def test_numbers_text_cells_keep_planned_tables(report_study, field, text):
+    from rpipe.structure.artifact.readout.report import render_numbers
+
+    before = _set_table_label(report_study, field, text)
+    view = render_numbers(report_study)
+    tables = []
+    current = []
+    for line in view.splitlines() + ['']:
+        if line.startswith('|'):
+            current.append(line)
+        elif current:
+            tables.append(current)
+            current = []
+    assert len(tables) == 2
+    assert [len(table) for table in tables] == [3, 4]
+    assert [[_markdown_columns(line) for line in table] for table in tables] == [[7] * 3, [5] * 4]
+    assert 'left' in tables[0][2] and 'right' in tables[0][2]
+    assert '90.0000' in tables[0][2]
+    assert '`b`' in tables[1][3]
+    assert '[run.log](../runs/a/assets/logs/run.log)' in tables[1][2]
+    assert {p: p.read_bytes() for p in before} == before

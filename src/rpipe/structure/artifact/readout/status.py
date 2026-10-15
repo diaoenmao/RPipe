@@ -14,7 +14,7 @@ from rpipe.structure.artifact.config import load_config
 from rpipe.structure.artifact.errors import ArtifactError
 from rpipe.structure.artifact.index import index_path, load_index
 from rpipe.structure.artifact.paths import CONFIG_NAME, RESULT_NAME, RUNS_DIRNAME
-from rpipe.structure.artifact.readout.report import _fmt
+from rpipe.structure.artifact.readout.report import _fmt, _text_cell
 from rpipe.structure.artifact.result import STATUS_SUCCEEDED, load_result
 from rpipe.structure.artifact.result.format import VALID_STATUS
 
@@ -240,7 +240,7 @@ def list_runs(
 def format_status(body: dict[str, Any]) -> str:
     counts = body.get('counts') or {}
     lines = [
-        f"{body.get('study')}  "
+        f"{_text_cell(body.get('study'))}  "
         f"planned={counts.get('planned', 0)} "
         f"succeeded={counts.get('succeeded', 0)} "
         f"failed={counts.get('failed', 0)} "
@@ -251,12 +251,12 @@ def format_status(body: dict[str, Any]) -> str:
         seed = row.get('seed')
         seed_text = '' if seed is None else str(seed)
         error = row.get('error')
-        error_text = '-' if not error else str(error).replace('\t', ' ').replace('\n', ' ')
-        note = str(row.get('note') or '-').replace('\t', ' ').replace('\n', ' ')
+        error_text = '-' if not error else str(error)
+        note = str(row.get('note') or '-')
         log = row.get('log') or '-'
         lines.append(
             '\t'.join(
-                [
+                _text_cell(cell) for cell in [
                     str(row.get('status') or '-'),
                     str(row.get('mode') or '-'),
                     seed_text,

@@ -185,3 +185,12 @@
 三类分别先红合同、主题PR与最终/实际dev CI；#53/#62及本轮新Issue留到下一版关闭。无性能/GPU/原始结果覆盖，不增加账本、锁、目录、模块或第七节能力。
 
 本节三类补齐已按PR69（第三类）、PR70（第二类）、PR71（第一类）普通合dev，最终head与实际dev全实际CPU/包CI分别成功；完整403组清单与验收见record §83—87。三类只在既有入口内部收敛，43项新增合同覆盖原反例和有效控制；既有布局/schema、专用协议与第七节不实施边界保持，GitHub Issue留到下一版关闭。
+
+
+## 既有文本表格的单元格合同补充（2026-10-16，B-086 / #97）
+
+合法 factor 的 key/value 和 report metric key 允许多行文本，不应通过限制配置或修改持久化字节修显示问题。现有 status TSV 和 NUMBERS Markdown 是两种视图；格式化时统一将单元格内的 Python splitlines 行界及 tab 转为显示空格，保持普通空格与数字原样。Markdown 再先转义原反斜线、后转义 pipe，避免偶数反斜线让分隔符重新生效。只在现有 report.py 放私有纯文本函数，status 复用（已有 status→report formatter 依赖），不增加模块或输出格式。
+
+status 对标题及全部9个单元格统一应用单行合同，替换 error/note 仅处理 LF/tab 的重复局部逻辑；report 对 factor、metric name/text、seed、Run ID 应用 Markdown 单元格合同，标题仅保持单行。日志链接仍复用 B-085 的 URI 规则，数字格式器与指标白名单不变。只写派生 NUMBERS 的原入口不变，reader 不改 index/process/result、peer 和人工结论。
+
+验收先提交公共渲染红测试：factor key/value、report 自定义 metric、CR/LF/CRLF、tab、NEL/Unicode LS、pipe 与一/二反斜线 pipe及普通控制；校验固定行列、原数值/peer/链接/计数和输入精确字节。初轮误将自定义 metric 纳入 status 既有白名单的10测试假设已撤出，原始证据留存；更正后56项39 failed/17 passed，无error/skip，代码尚未修复。此补充不包含通用富文本清洗、HTML框架、配置schema扩展或本设计第七节结构性能力。
