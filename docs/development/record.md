@@ -1,8 +1,8 @@
-> 现状：PR96已补齐合并前循环/目录/Windows别名边界，更新候选bce96cb本地全绿；旧a5仅历史通过。
-> 最新：84前置合同转绿、另6兼容控制；相关886/core1089各1平台skip、Flow175通过，90新节点均执行，出处§109。
-> 下一步：推送同一PR新head，重新验收全部实际CI/实际dev，成功后清remote；继续正确性目标。
-> 阻塞：无；候选别名失败/收集错误/旧CI全保留，不用旧通过替代新代码；当前唯一未合log-reference-contract。
-> 边界：不测速/GPU、不迁logger/shared、不改schema/产物布局、不合main/tag，不删数据。
+> 现状：DEM正本/英译和两项独立调研已由PR92验收入dev；PR96日志引用也已实际dev全绿，结束remote已清。
+> 最新：B086/#97合法文本会打破status/NUMBERS行列；修复前56项39失败/17控制，修后全部执行通过，出处§111。
+> 验证：只读306、相关942/core1145各1平台skip、CPU Flow175通过；源码仅两个既有formatter，净增8行。
+> 下一步：同一readout-text-cells推送PR，按最终head/实际dev CI验收后清remote；目标继续，无阻塞。
+> 边界：不测速/GPU、不迁shared/logger、不改schema/产物布局、不合main/tag；Issue待下版。
 
 # 一、摘要
 
@@ -102,6 +102,21 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+
+### 111. 文本单元格合同统一：先红回归再最小修复（B-086 / #97）
+
+只读合同批次从dev bf57c88继续，先开[Issue97](https://github.com/DreamSoul-AI/RPipe/issues/97)。7组真实隔离probe确认合法多行factor、tab、pipe或metric名称打破既有TSV/Markdown几何：单Run factor LF令4→5行，tab令9→10列，pipe令report7/5列各增1；metric LF令两表断段。普通/单反斜线pipe为几何控制，index/process/peer原字节均不变。原始REPRO及ZIP保留在`.tmp/audit086`，不随clone；可移植合同进入既有[test_report.py](../../tests/rpipe/structure/artifact/readout/test_report.py)及[test_status.py](../../tests/rpipe/structure/artifact/readout/test_status.py)。
+
+红提交1801e5b首轮66节点49失败/17通过，其中10项误假设status支持任意metric；核对既有accuracy/best_accuracy/train_loss白名单后用7b451a7仅缩窄测试，保留首轮原字节/日志及TEST_ASSUMPTION_CORRECTION。生产不变时权威RED2为56项39 failed/17 passed、0error/skip；不把测试假设错误当缺陷。设计8bb68a4明确只改显示视图、不限制合法配置或改磁盘产物。d59cc70在原report.py放两个私有纯文本formatter，status复用已有report依赖；统一splitlines/tab显示空格、Markdown先反斜线再pipe，替代error/note不完整的局部LF/tab规则。因TSV与Markdown分隔符不同保留两步，未新增模块/依赖或改变数字/状态/指标选择。只有原两生产文件+19/-11、净增8行；日志链接仍复用B085，不移动任何文件或布局。
+
+本地GPU隐藏，GREEN只读306全部通过；RELATED 942 passed/1既有POSIX脚本mode skip，CORE1145 passed/1同skip，FLOW175 passed/0skip。56前置节点在GREEN/RELATED/CORE全执行，0fail/error；比对peer/数字/链接/计数及精确输入字节。`.tmp/audit086/LOCAL_CHECKED.json`与各命令/日志/JUnit保留，不随clone；不是GPU、性能或Study科学验收。当前唯一未合codex/readout-text-cells，准备PR最终head/实际dev两轮实际CI；Issue97留至下版，不提前关闭。compare的item展示键由代码固定且不打印动态problem键，logs已逐行读取，不把两者无依据加入本次TSV/Markdown修复。
+
+### 110. PR96最终head与实际dev验收，结束远程分支清理
+
+[PR96](https://github.com/DreamSoul-AI/RPipe/pull/96)普通merge为dev `bf57c88fdf0694c69c7df6003241a8b19d33db4f`。最终head ac1d404的Unit38787098038 / Package38787098355 / Branch38787098335全部实际矩阵/聚合成功，PR_CHECKED SHA256 `f52bf7fdd56312618ca836be597b073e959b49510834e74521b9fcff538a8d1a`；实际dev [Unit38788640662](https://github.com/DreamSoul-AI/RPipe/actions/runs/38788640662)及[Package38788640570](https://github.com/DreamSoul-AI/RPipe/actions/runs/38788640570)全部实际矩阵/聚合成功，DEV_CHECKED SHA256 `529de1182147730b5d9912b06c94360c5f419f0d09ad2d16c10eee4f297910da`。最终90节点、本地各门与原失败证据见§109，不使用旧a5 CI代替最终代码。
+
+按长期明确授权，核对最终tip已为origin/dev祖先且无开放PR后立即普通删除远程`codex/log-reference-contract`，本地保留，当前readout-text-cells保留。本目标累计九条结束remote已删（前八见§107），与历史§82清单不重复计数；删除前后main/dev SHA一致，main仍00e70b1/v0.4.1。PR96及Issue95原正文已追加验收事实，Issue95保持open等后续版本。`.tmp/audit085/BRANCH_DELETED_CHECKED.json`等本机证据不随clone，原失败/拒绝/旧成功均保留。bugs移出已解决B085，不以GitHub仍open误判未修。DEM源文档/英译及89/90独立调研已在PR92实际验收，不再迁移或重复开PR；staging保持未跟踪供对照。
 
 ### 109. 日志可用性与原生路径别名最终组合本地验收
 

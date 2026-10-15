@@ -1,5 +1,9 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 DEM任务完成、PR96验收及文本合同批次
+
+DEM中文正本byte-for-byte及英译、独立探索89/90已PR92全验收。PR96最终ac1d404/实际devbf57c88全部实际CI成功，结束remote已删；九条目标remote累计清理见record§110。唯一未合codex/readout-text-cells修B086/#97：先红1801e5b，纠正10项status白名单误假设的7b451a7后56节点39红/17控制；设计8bb68a4，最小d59cc70原两formatter净+8，无磁盘合同变更。56节点全执行绿，306只读、942相关/1平台skip、1145core/1skip、175Flow通过，见§111与.tmp/audit086（本机证据不随clone）。下一推送PR验最终head/实际dev后清remote，Issue97等下版；main/tag不动、无测速/GPU/下游写入或shared/logger实施。
+
 ## 2026-10-16 PR96合并前可用性/Windows alias已补齐
 
 同一codex/log-reference-contract、B085/#95；旧a5全部CI绿但发现边界后未合并，CI proof具名备份。循环d6bbbae（3项2红/1绿）、目录/真实extended790de87（6项5红/1绿）、share比较a8eebf0（3前置失败）先于最终bce96cb；stat区分缺失/普通/不可用，比较键只用于归属/URI，文件IO保留原生prefix，RuntimeError原样。source两文件相对dev+57/-18，不改布局/schema/模块/依赖。最终90新节点全执行，针对性12、相邻886/1平台skip、core1089/1skip、Flow175通过，见record §109/LOCAL_CHECKED_FINAL；原别名3失败/收集错误/GREEN2保留，后依赖脚本已check=True避免级联。待推新head并重新验收PR及实际dev后清remote，不能用旧a5代替。研究PR92/来源PR94已完成验收清远程，main/tag不动，89/90仅探索；目标active不测速/GPU/迁logger或shared。
