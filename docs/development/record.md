@@ -112,6 +112,8 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 设计先于生产：report.py现有模块内增私有_count，三分支共享非负int十进制/其他“-”规则；bool、负数、float/非有限、text/分隔符/代理、array/object/null均为坏格。4整数控制含0/大整数及缺失回退控制保留，缺stat.n沿exp.n，缺exp.n默认0仍原语义。不按n_planned重算或改写科学计数，不改_fmt浮点精度、计划一致性、Run归属、peer或JSON/schema/布局；不新增模块。关联研究计划RQ2/H2的类型视图，不把显示可用当数据真实性或科学质量通过。
 
+原部分RED XML细核：suite汇总tests=52、36 failures/1 internalerror；实际命名完成节点51（36失败/15控制），另有1无名占位和1 pytest.internal合成条目，所以testcase标签共有53。初步通用核对器误把无名占位算成第16个pass，LOCAL_BEFORE_RED_ROW_CORRECTION保留，正式LOCAL_CHECKED已拒绝该计法并分列，不把占位/内部错误算实际完成节点；原RED2及GREEN/CORE/FLOW均无此问题。
+
 生产ce72f79只改原report.py +6/-2（净+4）：私有_count一处判断、两处渲染调用覆盖三个来源，输入JSON/聚合计算/_fmt精度和缺失回退不变。readout491 passed/0skip、core1384 passed/1既有POSIX script mode skip、CPU Flow181 passed/0skip，0fail/error；60新节点在RED2、GREEN、CORE完整执行，包含未配对代理字符，旧index/process/人工报告及peer字节保全，NUMBERS是正常替换的派生视图。没有排除“难过”节点或用旧通过覆盖新失败，B093原内部错误仍单独未修；首部分RED与后完整RED2不混算。执行CRLF/Git LF分别hash并保留原执行字节，原源码ZIP/XML/log/LOCAL_CHECKED在.tmp/audit092，不随clone。最终工作head/实际dev CI待验，Issue110留至下版；本批后优先修已确认的Issue111。
 
 ### 125. PR109实际dev验收与第十六条结束远程清理
