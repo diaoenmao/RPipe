@@ -1,8 +1,8 @@
-> 现状：PR115实际dev全绿清remote完成；B095/#116唯一未合分支已统一三处可选JSON解析边界。
-> 最新：26新红14失败/12控制，另1编程错误传播控制；三行异常列表修改，见§132–133。
-> 验证：针对性/process97、core1432+1既有平台skip、CPU Flow189通过；27新节点全部执行。
-> 下一步：最终head/实际dev全部实际CI验收后清结束remote；已修Issue留至下版，目标active。
-> 阻塞：无；默认整数/递归限制不改，无测速/GPU/main/tag、布局/科学聚合或数据变更。
+> 现状：设计说明已按审定标已实施（e44b94d）；PR117已合dev20027af并在验，当前处理B096/#118。
+> 最新：20新调度合同13失败/7控制，红e3c3c12，严格decoder与peer边界均锁定，见§134–135。
+> 已核对：原三类PR52/54/55、B086 PR98、B088 PR102均已合；原锚点与12相对链接保持。
+> 下一步：既有调度查询具体异常边界最小修复，CPU检查/最终及实际devCI，不再等待设计批准。
+> 阻塞：无；不合main/强推/测速/GPU，不改布局、严格输入或旧成功保留范围，目标active。
 
 # 一、摘要
 
@@ -103,6 +103,32 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-16
 
+
+### 135. PR117最终head全实际CI后合dev，实际dev验收接续
+
+最终head `000b39a233819fd84ca232dd964c9c7da792da3d` 的 Unit38814885801、Package38814885885、Branch38814885873全部实际矩阵/聚合成功；PR_CHECKED SHA256 `5caef99ad91857cc6098801d3689cc82388e9e6ed590ed78e696a53d443b9f89`。PR117普通merge为dev `20027afb231bc5637324e37310dd69e7ec09e1a7`，实际devUnit/Package在观察，待实际全绿后清结束remote。新B096基于该merge，只有一条未合codex/scheduling-query-parse；不把前批待验文字当当前待审，不重复CI/合并。
+
+### 134. 调度查询的可恢复解析边界与设计状态订正（B-096 / #118）
+
+2026-10-16：复查剩余解析入口，区分严格输入与原可恢复查询。八个实际文件场景中，深层jobs缓存抛RecursionError；result的list/null/bool根抛CorruptArtifactError、深层抛RecursionError，共5异常；原坏JSON语法保守False、有效succeeded True与有效空plan复用为3正常控制。原config/index/result/jobs及peer字节保全，未执行launch/进程/GPU或改解析限制。原样本/hash/栈/REPRO在.tmp/audit096，不随clone。
+
+先Issue118，e3c3c12先20新回归13 failed/7控制，完整80项13 failed/67 passed、0error/skip。覆盖include_done开关、五种非object根/深层/语法/合法结果，严格load_result保持CorruptArtifactError/RecursionError/JSONDecodeError，run_succeeded保守False与合法成功True，缓存过滤保留坏记录/跳过成功peer，原文件不改；普通RuntimeError与非法调用参数的原控制保持。
+
+设计先更新structure：复用_run_result的原空mapping与load_launch_plan的原None行为，具体捕获解析CorruptArtifactError/RecursionError，不改strict decoder或创建统一parser模块；调用路径校验/当前数字参数错误/合法成功与sibling新鲜度/重试策略/旧成功保留范围保持。
+
+解析入口合同核对（代码分析，不代表所有故障组合已实测）：
+
+| **入口组** | **分类与当前处理** |
+| --- | --- |
+| status/logs | 既有三态，PR115隔离解析递归；配置优先、单格/peer合同保留 |
+| activity/process旧state/JSONL | 可选提示/回退/记录，PR117统一具体JSON值/递归解析异常 |
+| schedule成功查询/保存计划 | 既有保守False/None，B096本批真实反例锁定再最小修复 |
+| index/config/result/provenance、readout report/compare | 权威输入严格读取或身份校验，不把拒绝坏输入当需吞错的缺陷 |
+| shared路径声明/不可变cache manifest | 配置/身份严格拒绝并保全诊断，不默默重建覆盖缓存 |
+| checkpoint分片meta/tracker/logger | 恢复权威可变状态，不能忽略坏片继续假恢复 |
+| make展开/data profile与来源marker | 声明/来源验证保持，不扩大本批到Study功能或科学输入迁移 |
+
+监督助手本轮明确审定设计已实施：e44b94d单独文档提交修订artifact_consistency_design的过时状态，读取核对PR52/54/55/98/102均MERGED及实际merge commit，原三类实际CI见record§75。B086/B088红数据标明历史修复前，链接对应已合PR；六旧Issue与53/62已发布关闭的状态也核对，main只读确认v0.4.1。全部原标题锚点与12相对链接保持；第七节仍不实施，不因文档状态更新修改代码架构/布局或重新等设计批准。原文/差异/hash/链接核对在.tmp/audit096/DESIGN_STATUS_*，不随clone。
 
 ### 133. PR115实际dev验收与第十九条结束远程清理
 
