@@ -437,3 +437,89 @@ def test_study_keeps_legacy_empty_yaml_document_or_mapping(tmp_path, text):
     path.write_text(text, encoding='utf-8')
     assert load_study_yaml(tmp_path) == {}
     assert path.read_text(encoding='utf-8') == text
+
+
+
+def _saved_plan_file(root, payload, *, raw=None):
+    import json
+
+    path = root / 'scripts/jobs.json'
+    path.parent.mkdir()
+    path.write_bytes(raw if raw is not None else json.dumps(payload).encode('utf-8'))
+    return path
+
+
+@pytest.mark.parametrize('field,value', [
+    ('init_gpu', 'bad'), ('init_gpu', None), ('init_gpu', float('inf')),
+    ('num_gpus', 'bad'), ('num_gpus', None), ('num_gpus', float('inf')),
+    ('round', 'bad'), ('round', float('inf')),
+])
+def test_saved_plan_bad_stored_numbers_request_rebuild_without_rewrite(tmp_path, field, value):
+    path = _saved_plan_file(tmp_path, {'jobs': [], field: value})
+    before = path.read_bytes()
+    assert load_launch_plan(tmp_path, init_gpu=0, num_gpus=1, round_size=0) is None
+    assert path.read_bytes() == before
+
+
+@pytest.mark.parametrize('raw', [b'\xff', b'{', b'[]'])
+def test_saved_plan_bad_encoding_json_or_root_requests_rebuild(tmp_path, raw):
+    path = _saved_plan_file(tmp_path, {}, raw=raw)
+    assert load_launch_plan(tmp_path, init_gpu=0, num_gpus=1, round_size=0) is None
+    assert path.read_bytes() == raw
+
+
+@pytest.mark.parametrize('operation', ['is_file', 'read_text'])
+def test_saved_plan_stat_or_read_refusal_is_optional(tmp_path, monkeypatch, operation):
+    path = _saved_plan_file(tmp_path, {'jobs': []})
+    before = path.read_bytes()
+    original = getattr(Path, operation)
+
+    def refused(self, *args, **kwargs):
+        if self == path:
+            raise PermissionError('injected saved-plan refusal')
+        return original(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, operation, refused)
+    assert load_launch_plan(tmp_path, init_gpu=0, num_gpus=1, round_size=0) is None
+    assert path.read_bytes() == before
+
+
+@pytest.mark.parametrize('extra', [{}, {'round': None}, {'round': 0},
+                                  {'init_gpu': '0', 'num_gpus': '1', 'round': '2'}])
+def test_saved_plan_legacy_defaults_and_integer_strings_still_reuse(tmp_path, extra):
+    path = _saved_plan_file(tmp_path, {'jobs': [], **extra})
+    before = path.read_bytes()
+    plan = load_launch_plan(tmp_path, init_gpu=0, num_gpus=1, round_size=0)
+    assert plan is not None
+    assert plan['job_list'] == []
+    assert plan['round'] == (2 if extra.get('round') == '2' else 1)
+    assert path.read_bytes() == before
+
+
+@pytest.mark.parametrize('field', ['init_gpu', 'num_gpus', 'round_size'])
+def test_saved_plan_invalid_caller_numbers_are_not_swallowed(tmp_path, field):
+    _saved_plan_file(tmp_path, {'jobs': []})
+    args = {'init_gpu': 0, 'num_gpus': 1, 'round_size': 0, field: 'bad'}
+    with pytest.raises(ValueError):
+        load_launch_plan(tmp_path, **args)
+
+
+def test_saved_plan_unexpected_reader_error_propagates(tmp_path, monkeypatch):
+    path = _saved_plan_file(tmp_path, {'jobs': []})
+    original = Path.read_text
+    error = RuntimeError('unexpected cache-reader program error')
+
+    def broken(self, *args, **kwargs):
+        if self == path:
+            raise error
+        return original(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, 'read_text', broken)
+    with pytest.raises(RuntimeError) as caught:
+        load_launch_plan(tmp_path, init_gpu=0, num_gpus=1, round_size=0)
+    assert caught.value is error
+
+
+def test_missing_saved_plan_still_requests_rebuild(tmp_path):
+    assert load_launch_plan(tmp_path, init_gpu=0, num_gpus=1, round_size=0) is None
+    assert list(tmp_path.iterdir()) == []
