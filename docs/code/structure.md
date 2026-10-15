@@ -1058,6 +1058,8 @@ Study 编排清单。`rpipe.structure.artifact.index`，**不是** Flow 的 writ
 
 校准后可在 `system.config.vram_bytes`（或同名顶层扩展）显式声明单个 Run 进程的显存预算，单位 byte，必须为不小于固定开销的整数；嵌套配置优先。该值替代经验估算，仍由同一个装箱器分配，不改变数值计算或强制并发数。当前参考实现默认 safety=0.5，这是实现默认值，不是下游必须遵守的固定比例；容量函数允许调整 safety，项目须按实测接入，当前 CLI 没有独立 safety 开关。预算应覆盖同设备、模型 / source、batch、精度下的训练、完整 test、checkpoint 峰值，包含 reserved、CUDA context / 驱动等进程开销，并保留余量；不能只填 allocated，也不能把其他数据 / 设备的测量直接套用。未配置保持启发式，不自动读取旧报告或学习历史结果；采用新预算须重新 make，正式实测换新 version。
 
+复用可选jobs缓存时，存在性查询、文件读取/解码及已存init_gpu/num_gpus/round数值转换处于同一文件错误边界；明确IO、编码、类型、值或溢出错误返回既有None重建请求，loader不写回或修文件。合法缺省/整数文本/round空值兼容保留；当前调用参数的int转换在该边界外，意外RuntimeError等继续传播，不把程序错误当坏缓存。
+
 复用已有 jobs.json 时，存在的 config 所声明的 mode / 实际 device 必须与保存计划一致；不一致返回重建请求，不继续沿用错误 CPU / CUDA 分配。旧计划的显存与估时不会自动升级，使用新估算需重新 make；正式实测仍用新的 version，不能重写旧验收基线。
 
 CPU job 的旧计划若仍有 gpu 绑定须重新 make；直接调度 CPU job 也不应用残留 gpu 标签，不覆盖父环境的 GPU 可见性，启动文案使用 CPU。CUDA job 的显式 GPU 分配保持原行为。

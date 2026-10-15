@@ -11,7 +11,7 @@
 - 来源：持续第二类可选读取复查。load_launch_plan合同为不可用返回None请求make重建；但stat在try外、UTF-8及缓存int转换未在同一边界。
 - 复现：8小探针中坏UTF8、坏init_gpu文本、null num_gpus、坏round文本、Infinity round、注入stat PermissionError共6异常逃逸；坏JSON已返回None、合法空计划可用为2控制。7个物理缓存原字节不改；没有启动进程/GPU或更改ACL。
 - 期望：只在现有函数内把缓存stat/read/decode/已存元数据转换归入明确文件/类型/值/溢出边界；保留合法/缺省参数和缓存不匹配逻辑。调用方非法参数、意外RuntimeError继续上抛，不改缓存字节/格式、实际分组、retry、资源策略或布局。
-- 已先创建Issue82；便携红测试与生产修复尚未执行，待当前#81批次验收后在单一新分支接续。源码/测试原字节ZIP与REPRO.json在.tmp/audit080，不随clone。该问题不同于B-079的jobs/batches一致性，不混写未做验收。
+- 已先创建Issue82；现已从#81已合dev4536ec4建立单一未合codex/saved-plan-read-boundary，先提交红9add4cc，22节点10 failed/12 passed、0error/skip，生产修复尚未执行。源码/测试原字节ZIP与REPRO.json在.tmp/audit080，不随clone。该问题不同于B-079的jobs/batches一致性，不混写未做验收。
 
 ### B-079：显式batches越过声明jobs，可能先失效未列入任务的旧成功（[#81](https://github.com/DreamSoul-AI/RPipe/issues/81)）
 
@@ -24,7 +24,7 @@ B-078/#79已由[PR80](https://github.com/DreamSoul-AI/RPipe/pull/80)普通merge 
 
 B-077/#77已由[PR78](https://github.com/DreamSoul-AI/RPipe/pull/78)普通合dev1667f51，最终head及实际dev全部实际矩阵/聚合成功；从未修队列移除，Issue77留待下版。红绿及分支实际清理见record §92。本轮当前未修验证项为上方B-078，下一新编号B-079；下文“下一B-077”是历史批次快照。
 
-本轮B-074/B-075/B-076已分别通过PR69/71/70普通合dev，最终工作提交与各实际dev所有实际CPU/包矩阵及聚合门均成功；本轮没有尚未修复的已确认缺陷。原始条目见[三类修复前快照](https://github.com/DreamSoul-AI/RPipe/blob/5d2e174/docs/development/bugs.md)，逐项清单、红绿、专用协议与实际CI见[record §83—87](record.md)。GitHub #53/#62/#66/#67/#68已在v0.4.1正式发布后按明确授权逐项留言引用Release并completed关闭；当前main为00e70b1f83ac23d113b9582a4270a41cfadb1444，验收见[record §90](record.md)。本轮下一编号B-077，近期绿色合同控制不记新缺陷。
+本轮B-074/B-075/B-076已分别通过PR69/71/70普通合dev，最终工作提交与各实际dev所有实际CPU/包矩阵及聚合门均成功；本轮没有尚未修复的已确认缺陷。原始条目见[三类修复前快照](https://github.com/DreamSoul-AI/RPipe/blob/5d2e174/docs/development/bugs.md)，逐项清单、红绿、专用协议与实际CI见[record §83—87](record.md)。GitHub #53/#62/#66/#67/#68已在v0.4.1正式发布后按明确授权逐项留言引用Release并completed关闭；当前main为00e70b1f83ac23d113b9582a4270a41cfadb1444，验收见[record §90](record.md)。该历史批次当时下一编号B-077；当前已使用至B-080，下一新编号B-081，绿色合同控制不记新缺陷。
 
 上一批B-072/B-073分别经PR61/63合dev，修复与证据保留于record §79—81；#53原始index反例已随v0.4.0发布，其后Study发布扩展仅在dev，#62也仅在dev。B-065性能去重仍撤回不恢复。
 

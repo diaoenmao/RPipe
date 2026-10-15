@@ -1,8 +1,8 @@
-> 现状：#77/#79已合dev并各自通过实际CI，结束的两远程已删；当前B-079/#81准备PR，B-080/#82已真实复现排队。
-> 最新：#81合同26项全绿，相邻349、core812通过/1平台skip、Flow169通过；缓存新探针6异常/2控制，出处§95和.tmp/audit079—080。
-> 下一步：批次一致性PR合dev并清理远程，再处理#82；修复Issue留待下版关闭。
-> 阻塞：无；目标模式active，唯一未合分支codex/declared-batch-contract，原始失败和删除清单保留。
-> 边界：只做正确性，不测速/GPU、不改layout/产物格式、不合main/打tag，不删数据/Run/provenance。
+> 现状：#77/#79已合dev验收且远程已清；#81已由PR83合dev4536ec4，实际集成CI验收中；继续B-080/#82。
+> 最新：#82的22项红合同10失败/12控制通过，明确缓存文件边界与调用参数/程序错误分离，出处§96、9add4cc。
+> 下一步：在既有可选loader统一错误边界，正确性回归后PR合dev并清理结束远程；Issue留待下版。
+> 阻塞：无；目标模式active，唯一未合分支codex/saved-plan-read-boundary，旧失败/输入字节/删除证据均保留。
+> 边界：不测速/GPU、不改layout/产物格式、不合main/打tag，不删数据/Run/provenance。
 
 # 一、摘要
 
@@ -102,6 +102,16 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+### 96. 可选缓存读取的完整文件错误边界（B-080 / #82）
+
+记录日期2026-10-16。上一批[PR83](https://github.com/DreamSoul-AI/RPipe/pull/83)最终headf617d4366ebf9570080996dc36fdba3d1b2bff75的Unit38765832139/Package38765831882/Branch38765831857全部实际矩阵/聚合成功后普通merge dev4536ec497cce48c56db77ead6f8ce3009a186142，实际dev独立验收中。当前codex/saved-plan-read-boundary是唯一未合分支，先处理已确认#82，不重开已修Issue或转去无反例新任务。
+
+1. 先Issue82及.tmp/audit080的8小探针：坏UTF8、坏init_gpu文本、null num_gpus、坏round文本、Infinity round、注入stat拒绝共6异常逃逸；坏JSON→None及合法空计划为2控制。只有7个物理缓存，均保留原字节；stat为显式注入，不改真实ACL，不启动子进程/GPU。
+2. 便携红回归9add4cc先于生产改动：22节点，10 failed/12 passed、0error/skip。8个存储数值错误、1坏UTF8和1stat拒绝为红；已有坏JSON/坏根、read拒绝、4合法缺省/整数文本、3非法当前调用参数、意外RuntimeError同对象传播及缺缓存为控制。真实Run/数据不参与。
+3. 设计先写structure.md：仅扩大现有load_launch_plan读取边界，stat/read/jsondecode/已存数值转换归到同一明确OSError/TypeError/ValueError/OverflowError处理，返回既有None让CLI依原逻辑make；只读loader不重写缓存、不宣称完成恢复。当前调用参数转换仍在错误边界外，合法整数文本、round缺省/null/0兼容不改，程序RuntimeError不吞。
+4. 调用方为CLI复用计划入口、生成PowerShell经CLI；producer是现有write_jobs_json/write_launch_scripts，B-079显式jobs/batches一致性与过滤/依赖/retry规则不改。不新增helper/模块/API/格式，不做其他缓存schema或资源规划改动；复用已有函数和错误分类。
+5. 原源码/测试字节ZIP、REPRO/RED.xml/log/命令/计数在.tmp/audit080，不随clone；portable合同已入库。#77/#79/#81修复后仍open等后版，当前#82生产修复待做。目标active，不测速、GPU、main/tag、数据/Run/provenance删除；旧结束远程在实际dev通过后即清理并保留清单。
 
 ### 95. 两批dev验收、远端清理及持续正确性队列
 
