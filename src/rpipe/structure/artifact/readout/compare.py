@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import math
+import pickle
+from fractions import Fraction
 from pathlib import Path
 from typing import Any
 
@@ -19,6 +21,9 @@ def _number(value: Any) -> bool:
 
 
 def _close(a: float, b: float, atol: float, rtol: float) -> tuple[bool, float]:
+    if isinstance(a, int) and isinstance(b, int):
+        diff = abs(a - b)
+        return diff <= Fraction(atol) + Fraction(rtol) * abs(b), diff
     if math.isnan(a) or math.isnan(b):
         same = math.isnan(a) and math.isnan(b)
         return same, 0.0 if same else math.inf
@@ -90,26 +95,42 @@ def _tree(a: Any, b: Any, atol: float, rtol: float, path: str, problems: list[st
 
 def _compare_tree(a: Any, b: Any, atol: float, rtol: float, label: str) -> dict[str, Any]:
     problems: list[str] = []
-    worst = _tree(a, b, atol, rtol, label, problems)
+    try:
+        worst = _tree(a, b, atol, rtol, label, problems)
+    except OverflowError as exc:
+        raise ValueError(f'cannot compare {label}: {exc}') from exc
     return _item(not problems, worst, problems=problems[:20], n_problems=len(problems))
 
 
-def _load_json(path: Path) -> dict[str, Any] | None:
+def _load_json(path: Path, field: str | None = None) -> dict[str, Any] | None:
     if not path.is_file():
+        if path.exists():
+            raise ValueError(f'not a regular file: {path}')
         return None
     body = json.loads(path.read_text(encoding='utf-8'))
-    return body if isinstance(body, dict) else None
+    if not isinstance(body, dict):
+        raise ValueError(f'expected an object: {path}')
+    if field is not None:
+        body = body.get(field)
+        body = {} if body is None else body
+        if not isinstance(body, dict):
+            raise ValueError(f'{field} must be an object: {path}')
+    return body
 
 
 def _history(run: Path) -> dict[str, dict[str, list[Any]]] | None:
-    body = _load_json(run / ASSETS_DIRNAME / kinds.TRACKER_STATE)
+    body = _load_json(run / ASSETS_DIRNAME / kinds.TRACKER_STATE, 'splits')
     if body is None:
         return None
     out: dict[str, dict[str, list[Any]]] = {}
-    for split, meters in (body.get('splits') or {}).items():
-        for name, meter in (meters or {}).items():
-            if isinstance(meter, dict) and isinstance(meter.get('history'), list):
-                out.setdefault(str(split), {})[str(name)] = list(meter['history'])
+    for split, meters in body.items():
+        meters = {} if meters is None else meters
+        if not isinstance(meters, dict):
+            raise ValueError(f'tracker split must be an object: {run}: {split}')
+        for name, meter in meters.items():
+            if not isinstance(meter, dict) or not isinstance(meter.get('history'), list):
+                raise ValueError(f'tracker history must be a list: {run}: {split}.{name}')
+            out.setdefault(str(split), {})[str(name)] = list(meter['history'])
     return out
 
 
@@ -118,8 +139,13 @@ def _checkpoint(run: Path, name: str) -> dict[str, Any] | None:
 
     path = run / ASSETS_DIRNAME / kinds.CHECKPOINTS / f'{name}.pt'
     if not path.is_file():
+        if path.exists():
+            raise ValueError(f'not a checkpoint file: {path}')
         return None
-    payload = torch.load(path, map_location='cpu', weights_only=False)
+    try:
+        payload = torch.load(path, map_location='cpu', weights_only=False)
+    except (EOFError, pickle.UnpicklingError, RuntimeError) as exc:
+        raise ValueError(f'cannot read checkpoint {path}: {type(exc).__name__}: {exc}') from exc
     return payload if isinstance(payload, dict) else {'model': payload}
 
 
@@ -135,15 +161,14 @@ def compare_runs(
     for run in (a, b):
         if not run.is_dir():
             raise FileNotFoundError(f'missing Run dir: {run}')
-    if atol < 0 or rtol < 0:
-        raise ValueError('atol and rtol must be >= 0')
+    if not math.isfinite(atol) or not math.isfinite(rtol) or atol < 0 or rtol < 0:
+        raise ValueError('atol and rtol must be finite and >= 0')
     items: dict[str, dict[str, Any]] = {}
 
-    result_a, result_b = _load_json(a / RESULT_NAME), _load_json(b / RESULT_NAME)
-    if result_a is None or result_b is None:
-        items['metrics'] = _missing('a' if result_a is None else 'b')
+    ma, mb = _load_json(a / RESULT_NAME, 'metrics'), _load_json(b / RESULT_NAME, 'metrics')
+    if ma is None or mb is None:
+        items['metrics'] = _missing('a' if ma is None else 'b')
     else:
-        ma, mb = result_a.get('metrics') or {}, result_b.get('metrics') or {}
         keys = sorted(key for key in set(ma) & set(mb) if _number(ma[key]) and _number(mb[key]))
         items['metrics'] = _compare_tree(
             {key: ma[key] for key in keys}, {key: mb[key] for key in keys}, atol, rtol, 'metrics',
@@ -188,7 +213,9 @@ def format_compare(report: dict[str, Any]) -> str:
         if item.get('missing'):
             detail = f'missing in {item["missing"]}'
         else:
-            detail = f'max abs diff {item["max_abs_diff"]:g}'
+            difference = item['max_abs_diff']
+            value = str(difference) if isinstance(difference, int) else f'{difference:g}'
+            detail = f'max abs diff {value}'
         lines.append(f'{state}  {key}  {detail}')
     lines.append('passed' if report['passed'] else 'failed')
     return '\n'.join(lines) + '\n'

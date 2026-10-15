@@ -342,12 +342,13 @@ def _execute_compare(args: argparse.Namespace) -> int:
             rtol=float(args.rtol),
             checkpoints=list(args.checkpoints or ['latest']),
         )
+        written = write_compare(args.out, report) if args.out is not None else None
     except (OSError, ValueError) as exc:
         print(exc, file=sys.stderr)
         return 2
     print(format_compare(report), end='')
-    if args.out is not None:
-        print(write_compare(args.out, report), flush=True)
+    if written is not None:
+        print(written, flush=True)
     return 0 if report['passed'] else 1
 
 
