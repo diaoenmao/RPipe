@@ -28,9 +28,17 @@ def _fmt(value: Any) -> str:
     return f'{number:.4f}' if math.isfinite(number) else '-'
 
 
+def _text_cell(value: Any) -> str:
+    return ' '.join(str(value).splitlines()).replace('\t', ' ')
+
+
+def _markdown_cell(value: Any) -> str:
+    return _text_cell(value).replace('\\', '\\\\').replace('|', '\\|')
+
+
 def _factors(factors: dict[str, Any]) -> str:
     parts = [f'{key}={value}' for key, value in sorted((factors or {}).items())]
-    return ', '.join(parts) or '-'
+    return _markdown_cell(', '.join(parts)) or '-'
 
 
 def _planned_runs(body: dict[str, Any]) -> dict[str, Any]:
@@ -90,7 +98,7 @@ def render_numbers(study_dir: Path | str) -> str:
                          'check the plan and rerun process before report') from exc
     links = _log_links(index, study_dir)
     lines = [
-        f'# Numbers: {body.get("study") or study_dir.name}',
+        f'# Numbers: {_text_cell(body.get("study") or study_dir.name)}',
         '',
         'Generated from `process.json`. The conclusion stays in `STUDY_REPORT.md`.',
         '',
@@ -113,7 +121,7 @@ def render_numbers(study_dir: Path | str) -> str:
                 + ' | '.join(
                     [
                         factors,
-                        str(name),
+                        _markdown_cell(name),
                         _fmt(stat.get('mean')),
                         _fmt(stat.get('std')),
                         _fmt(stat.get('min')),
@@ -138,12 +146,12 @@ def render_numbers(study_dir: Path | str) -> str:
             run_id = str(run.get('id') or '')
             metrics = run.get('metrics')
             metrics = metrics if isinstance(metrics, dict) else {}
-            metric_text = ', '.join(f'{key}={_fmt(metrics[key])}' for key in sorted(metrics)) or '-'
+            metric_text = _markdown_cell(', '.join(f'{key}={_fmt(metrics[key])}' for key in sorted(metrics))) or '-'
             href = links.get(run_id, f'../runs/{run_id}/assets/logs/run.log')
             log_text = f'[run.log]({href})' if href else '-'
-            seed = '' if run.get('seed') is None else str(run.get('seed'))
+            seed = '' if run.get('seed') is None else _markdown_cell(run['seed'])
             lines.append(
-                f'| {factors} | {seed} | `{run_id}` | {metric_text} | {log_text} |'
+                f'| {factors} | {seed} | `{_markdown_cell(run_id)}` | {metric_text} | {log_text} |'
             )
     lines.append('')
     return '\n'.join(lines)
