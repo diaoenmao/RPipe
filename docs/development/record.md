@@ -1,8 +1,8 @@
-> 现状：#77/#79已合dev并各自通过实际CI，结束的两远程已删；当前B-079/#81准备PR，B-080/#82已真实复现排队。
-> 最新：#81合同26项全绿，相邻349、core812通过/1平台skip、Flow169通过；缓存新探针6异常/2控制，出处§95和.tmp/audit079—080。
-> 下一步：批次一致性PR合dev并清理远程，再处理#82；修复Issue留待下版关闭。
-> 阻塞：无；目标模式active，唯一未合分支codex/declared-batch-contract，原始失败和删除清单保留。
-> 边界：只做正确性，不测速/GPU、不改layout/产物格式、不合main/打tag，不删数据/Run/provenance。
+> 现状：#77/#79/#81均已合dev并通过实际CI，结束远程已清；B-080/#82实现和本地检查完成，按PR流程验收。
+> 最新：#82的22项由10失败/12控制转全绿；相邻371、core834通过/1平台skip、Flow169通过；本轮新删3远程，出处§97。
+> 下一步：验收缓存读取修复最终head/实际dev并清理该远程，再按目标继续正确性；Issue留待后版。
+> 阻塞：无；GitHub查询EOF退避后恢复，未重跑CI；目标active，当前仅codex/saved-plan-read-boundary未合。
+> 边界：不测速/GPU、不改layout/产物格式、不合main/打tag，不删数据/Run/provenance。
 
 # 一、摘要
 
@@ -102,6 +102,26 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 按日期保留阶段事实，最新日期在前。较早记录中的“尚未完成”只描述当时范围；当前累计状态以上方摘要为准。
 
 ## 2026-10-16
+
+### 97. 批次证据保护最终验收与可选缓存候选完成
+
+记录日期2026-10-16。目标模式active；先处理已确认队列，所有四个Issue77/79/81/82保持open，已合dev不等同下版正式发布。
+
+1. B-079/#81通过[PR83](https://github.com/DreamSoul-AI/RPipe/pull/83)普通merge dev4536ec497cce48c56db77ead6f8ce3009a186142。最终headf617d4366ebf9570080996dc36fdba3d1b2bff75的[Unit38765832139](https://github.com/DreamSoul-AI/RPipe/actions/runs/38765832139)/[Package38765831882](https://github.com/DreamSoul-AI/RPipe/actions/runs/38765831882)/[Branch38765831857](https://github.com/DreamSoul-AI/RPipe/actions/runs/38765831857)及实际dev的[Unit38766766425](https://github.com/DreamSoul-AI/RPipe/actions/runs/38766766425)/[Package38766766311](https://github.com/DreamSoul-AI/RPipe/actions/runs/38766766311)均全部实际矩阵/聚合成功。DEV_CHECKED SHA256 b99811e3e81e77e47248049f072fd88319ff7eaedeee5f76a39582924ecdc840，Issue81/PR83正文已补全验收。
+2. 一次查询故障：观察29334因`gh pr view83`的GraphQL POST EOF退出1，最后已知Unit38766766425为pending，未重派CI、未当测试失败/通过、未提前删分支。DEV_OBSERVER_NETWORK_EOF.json保留；退避30秒后重查同组既有流程，全实际通过才验收。不是自动审批拒绝，不需要弹窗或调整计费。
+3. 实际新增删除远程codex/declared-batch-contract，删除前tipf617d4366ebf9570080996dc36fdba3d1b2bff75已是dev祖先，无活动PR引用；普通push --delete后main00e70b1/dev4536ec4未变，本地分支与数据保留。本轮累计新删3条：artifact-contracts-correctness、yaml-mapping-roots、declared-batch-contract（均codex/前缀，逐项SHA/验证见§92/95/本节）；早前9条另见§82。当前唯一未合codex/saved-plan-read-boundary保留，正常推送。原始删除前/日志/复核在.tmp/audit079，不随clone。
+4. B-080/#82候选完成：红9add4cc为22节点10 failed/12 passed；设计ef11eda先于fixaf56370（load_launch_plan原函数+10/-8，缓存stat/读取/解码/存储数值转换归入现有错误边界）。371相邻通过、core834通过/1 POSIX权限平台skip、CPU Flow169通过，0fail/error，22新增节点全执行；输入/peer字节不改，非法当前参数与原RuntimeError仍抛出。既有batch一致性、合法缺省/整数文本/round空值与模式/依赖/retry不变。LOCAL_CHECKED/原红/源码ZIP在.tmp/audit080，本机证据不随clone。最终head与实际dev以本批PR正文实际CI验收为准。
+5. 只读核查dayan、量化、output-space三会话最新反馈，内容为其各自研究/集成；未从中取得新的已复现RPipe反例，未发任何消息、覆盖vendor或干预实验。本批没有测速、GPU、480s调查、布局/格式迁移、main/tag或数据/Run/provenance删除；保留原失败、网络错误与全部旧证据。
+
+### 96. 可选缓存读取的完整文件错误边界（B-080 / #82）
+
+记录日期2026-10-16。上一批[PR83](https://github.com/DreamSoul-AI/RPipe/pull/83)最终headf617d4366ebf9570080996dc36fdba3d1b2bff75的Unit38765832139/Package38765831882/Branch38765831857全部实际矩阵/聚合成功后普通merge dev4536ec497cce48c56db77ead6f8ce3009a186142，实际dev独立验收中。当前codex/saved-plan-read-boundary是唯一未合分支，先处理已确认#82，不重开已修Issue或转去无反例新任务。
+
+1. 先Issue82及.tmp/audit080的8小探针：坏UTF8、坏init_gpu文本、null num_gpus、坏round文本、Infinity round、注入stat拒绝共6异常逃逸；坏JSON→None及合法空计划为2控制。只有7个物理缓存，均保留原字节；stat为显式注入，不改真实ACL，不启动子进程/GPU。
+2. 便携红回归9add4cc先于生产改动：22节点，10 failed/12 passed、0error/skip。8个存储数值错误、1坏UTF8和1stat拒绝为红；已有坏JSON/坏根、read拒绝、4合法缺省/整数文本、3非法当前调用参数、意外RuntimeError同对象传播及缺缓存为控制。真实Run/数据不参与。
+3. 设计先写structure.md：仅扩大现有load_launch_plan读取边界，stat/read/jsondecode/已存数值转换归到同一明确OSError/TypeError/ValueError/OverflowError处理，返回既有None让CLI依原逻辑make；只读loader不重写缓存、不宣称完成恢复。当前调用参数转换仍在错误边界外，合法整数文本、round缺省/null/0兼容不改，程序RuntimeError不吞。
+4. 调用方为CLI复用计划入口、生成PowerShell经CLI；producer是现有write_jobs_json/write_launch_scripts，B-079显式jobs/batches一致性与过滤/依赖/retry规则不改。不新增helper/模块/API/格式，不做其他缓存schema或资源规划改动；复用已有函数和错误分类。
+5. 原源码/测试字节ZIP、REPRO/RED.xml/log/命令/计数在.tmp/audit080，不随clone；portable合同已入库。#77/#79/#81修复后仍open等后版，当前#82生产修复待做。目标active，不测速、GPU、main/tag、数据/Run/provenance删除；旧结束远程在实际dev通过后即清理并保留清单。
 
 ### 95. 两批dev验收、远端清理及持续正确性队列
 
