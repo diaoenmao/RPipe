@@ -97,6 +97,26 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 82. Enmao 授权清理九条已合并远程分支
+
+2026-10-15 按 Enmao 本次明确授权，只删除本仓库已合入 dev 的远程分支，保留当前工作分支 `codex/artifact-contracts-correctness`。删除前 fetch origin，核对远端12条heads、恰好9条候选、无活动PR使用候选；逐条 `merge-base --is-ancestor` 确认以下tip均已包含在 dev `401af5e553f7a5024ab7b68c3000d718327c3399`。使用普通 `git push --atomic origin --delete` 一次删除，不使用 force push，不删除本地分支。
+
+| **已删除的远程分支** | **删除前 tip（均由 dev 历史保全）** |
+| --- | --- |
+| `codex/artifact-consistency-design` | `eb52c65b9128cd60b8eb2ab84592dbd9f4da8161` |
+| `codex/cache-lock-budget` | `90b7d75323d266c4d272f786c28f4c00959d0432` |
+| `codex/failure-preservation-policy` | `bbb2f41fa8af7107eada339f412ecefb05653ddb` |
+| `codex/maintenance-closeout` | `b8648d54296ffe3a0050e8e570d8aa9cdb524495` |
+| `codex/open-issue-correctness` | `8a3f21342ced528a885001629d2643df0127e0b2` |
+| `codex/safe-readout-contracts` | `41982bfb62cc562d4005093dc6c8a57a3f190d29` |
+| `codex/status-metric-shape` | `cbc8c0ae13c998e74b178209de0abd14a74cf8e7` |
+| `codex/status-readout-errors` | `ed96c8ccbe388dba4fe07f0598a5c93bcb712af5` |
+| `codex/v040-layout-release` | `fb15d6efd20fa97904c62b4b151e693495a7328a` |
+
+删除后以 `git ls-remote --heads origin` 复核：远程只剩 `main`、`dev`、`codex/artifact-contracts-correctness`。删除操作未改变main `54f8d31c0f5505742677dd2ce6dec323ee114c61`、dev或保留工作分支的tip；后续报告提交正常追加到保留分支。所有本地分支、数据、Run、provenance与Git对象均保留，#53/#62仍open；没有改自动删除设置或其他仓库。
+
+本轮仅清理远程引用与补文档，未修改源码、布局、版本或产物，不重跑代码测试/CI/性能/科学实验。报告提交并推送至保留工作分支，本轮不额外发起文档集成PR；后续入dev仍遵循正常PR流程。原始删除前/后清单、祖先核对与DELETE.log在本机.tmp/branch-cleanup-20261015，不随clone；本节保留全部分支名/tip与dev基线，正式清单不依赖临时材料。
+
 ### 81. 三类系统合同归纳与第一类双重失败留证
 
 第二类实际dev验收完成：DEV_CHECKED.json SHA256 c2385f49cabfda50d994192e74a3a51fe14b250ea685db9ebdf99c424eeede89；第三类对应f5d5ca315cb450feb700a5ed038ac461eb2f654e69fd9f6aec238ac51ce78443。精确CI与最终验收也入PR61/63正文。B-072/B-073从开放软件缺陷表移除，原失败条目快照仍可追溯；#53/#62按本轮要求保持open到下一版本，不冒充已随v0.4.0发布。main仍54f8d31，无新tag/release。本批第一类测试/文档经[PR64](https://github.com/DreamSoul-AI/RPipe/pull/64)接续，最终head与实际集成CI仍分别核对。
