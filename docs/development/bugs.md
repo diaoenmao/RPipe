@@ -6,11 +6,7 @@
 
 ## 开放
 
-### B-094：配置解析递归失败越过status三态边界（[#114](https://github.com/DreamSoul-AI/RPipe/issues/114)）
-
-- 实文件复现：1200层未使用YAML字段使一个Run的config.yaml解析抛RecursionError，整体list_runs中断并隐藏正常peer。三项同深度JSON控制正常，不误报。约2435字节，不修改递归上限/系统/运行Study。首次探针漏建tracker父目录属setup错误，单独保留；完整repro-v2和原字节在.tmp/audit094，不随clone。
-- 先Issue114，再红f5d0e01：新增九项为三个Run状态×深/浅/语法坏配置，实际3失败/6控制；既有普通RuntimeError传播测试保留。期望仅将解析RecursionError纳入既有_read_optional的unreadable，使mode unknown/error而不改变status/counts、peer或磁盘，strict load_config仍抛原错，不catch所有RuntimeError。
-- 先structure设计，后现有异常元组最小修复；不改schema/布局/精度/执行，不测速/GPU/main/tag。
+B-094/#114已f5d0e01红→6a34a59设计→74aaa49现有三态读取异常边界修复；九新项全部转绿，readout500/core1405+1平台skip/CPU Flow189通过，严格加载器与普通RuntimeError保持，见record§130。最终head/实际dev CI待验；Issue留至下版。
 
 B-093/#111已按2b4c0d1红→1d57d8b设计→58f9aaf两JSON writer编码边界修复；175针对性/core1396+1平台skip/CPU Flow189通过，20新节点均执行。见record§128，最终head/实际dev CI待验，Issue留至下版。
 

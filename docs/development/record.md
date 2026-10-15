@@ -1,8 +1,8 @@
-> 现状：PR113最终head全实际CI后合devbf24574，实际dev验证中；唯一未合分支处理B094/#114。
-> 最新：真实YAML递归解析隐藏peer；九新回归3失败/6控制，红f5d0e01，见§130。
-> 依据：三个JSON同深度对照正常；原probe setup错误单独留证，未改递归上限。
-> 下一步：现有三态读取元组仅加入RecursionError，保留strict loader与普通RuntimeError，再CPU正确性/CI。
-> 阻塞：无；不测速/GPU/main/tag/布局或数据变更，Issue留至下版，目标active。
+> 现状：PR113已合devbf24574、实际dev CI仍在验；B094/#114唯一未合分支已最小修复。
+> 最新：九新红3失败/6控制→三态异常元组仅加RecursionError，源码逐字节核对，见§130。
+> 验证：readout500、core1405+1既有平台skip、CPU Flow189通过，新九项均执行。
+> 下一步：PR最终head/实际dev全部实际CI后清结束remote；strict loader与普通RuntimeError仍报原错。
+> 阻塞：无；不测速/GPU/main/tag/布局或数据变更，已修Issue留至下版，目标active。
 
 # 一、摘要
 
@@ -111,6 +111,10 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 先开Issue114；在PR113已merge后的最新devbf24574开唯一未合codex/status-parser-boundary。f5d0e01先提交九项真实配置回归（ok/bad/wait三个状态×deep/shallow/syntax），新3 failed/6控制、0error；严格load_config深层RecursionError与语法错误仍明示，普通RuntimeError既有传播合同保留。RED.xml与RED_CHECKED保留。
 
 设计先更新structure：仅现有_read_optional异常元组具体加入RecursionError，把不可解析配置按既有unreadable→mode unknown/error降级，正常peer/status/counts、失败Run原error和所有磁盘字节保留。不catch普通RuntimeError、不提高递归上限、不改变严格加载器或执行者，不新建模块/helper/持久化格式；不从本机JSON可解析案例倒推其他平台边界。
+
+74aaa49仅向_read_optional现有异常元组加入具体RecursionError；原文件before.zip和SOURCE_BYTES_CHECKED证明除这一处字节替换外无变化。九新节点全部转绿，readout500 passed、core1405 passed/1既有平台skip、CPU Flow189 passed，0failure/error。三个状态的计划行/计数、成功指标、失败原error、CLI行列及所有输入字节保全；strict load_config仍抛原解析错误，既有decoder普通RuntimeError传播测试通过。
+
+LOCAL_CHECKED SHA256 `6a10bc4f96bd2fce6209776cac4bcde704e7bdbfa5a57088f65a185fc986034e`；RED90项3失败/87通过（新九项3失败/6控制），GREEN500/Core/Flow/JUnit及红测试执行CRLF字节均在.tmp/audit094，不随clone。先红→设计→fix→本机验收，最终head/实际dev CI尚待验，不把本机通过或对照计数当科学验收。
 
 ### 129. PR113最终head全实际CI后合dev，实际dev验收接续
 
