@@ -6,7 +6,9 @@
 
 ## 开放
 
-B-096/#118已e3c3c12先红20新项13失败/7控制→2ffeb0b设计→bbd33b4既有调度查询异常边界修复；make157/core1452+1平台skip/CPU Flow189通过，20新项均执行，严格decoder/参数错误/成功peer/原字节保持，见record§134。最终head/实际dev CI待验；Issue留至下版。
+B-097/#120已764a613先32矩阵红8失败/24控制（扩原2项净增30）→0a18f85设计→06dfe86仅原is_file移入try。process104/core1482+1平台skip/Flow189通过，32矩阵均执行；异常列表/普通RuntimeError/有效primary/原字节保持，见record§137。最终head/实际devCI待验，Issue留至下版；故障注入未改系统ACL。
+
+B-096/#118与设计状态订正已PR119普通合dev4d12719，最终head与实际dev全部实际CI通过，结束remote已清，本地/当前分支保持，见record§139；Issue留至下版。
 
 B-095/#116已PR117普通合dev20027af，最终head和实际dev全部实际CI成功，结束remote已清，本地/当前活动分支保持，见record§136；Issue留至下版。
 
