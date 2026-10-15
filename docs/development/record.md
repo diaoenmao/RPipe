@@ -113,7 +113,7 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 4. 方案先写入structure.md：仅在现有load_index验证list/object，保留返回原mapping、不补字段、不迁移、不修改生产者或布局。所有调用方统一收到现有TypeError；不增加展示层逐处catch，不吞意外AttributeError。现有report额外科学身份检查、process必须有experiments列表的规则不放宽。
 5. 相邻两类已检查入口：整体替换文本继续走_atomic；Logger/Tracker追加及checkpoint/lock的专用保全合同不改。未复现写入类新缺陷，不把诊断staging或显式单写者限制登记为bug。此批不宣称穷尽任意第三方扩展。
 6. 分支清理复核（本轮新指令）：fetch后以ls-remote列出实际远端，仅main、dev、codex/artifact-contracts-correctness；当前工作分支明确保留，长期分支受保护，没有其他可删分支，本次新增删除0条。此前已删9条为artifact-consistency-design、cache-lock-budget、failure-preservation-policy、maintenance-closeout、open-issue-correctness、safe-readout-contracts、status-metric-shape、status-readout-errors、v040-layout-release（均codex/前缀），完整tip/祖先/删除证据见§82；本轮BRANCH_CHECKED保留实际三条远端SHA，不重复删除或恢复旧分支。
-7. 生产修复823c9b0仅index.py增加15行/删除2行，在第一次dereference前验证容器；299项相邻CPU回归全部通过，0fail/error/skip，24项新增全部执行。第一次绿色命令误指不存在test_resume.py、收集前退出4，GREEN.log/命令保留，不当库失败或已执行回归；纠正为真实test_resume_sibling.py后GREEN2全部通过。CPU Flow现有句柄40809已正常结束，169 passed，0fail/error/skip；FIELD/GREEN等本机材料在.tmp/audit077，不随clone。最终工作提交与实际dev CI仍分别验收，不拿本机通过代替远端矩阵。
+7. 生产修复823c9b0仅index.py增加15行/删除2行，在第一次dereference前验证容器；299项相邻CPU回归全部通过，0fail/error/skip，24项新增全部执行。第一次绿色命令误指不存在test_resume.py、收集前退出4，GREEN.log/命令保留，不当库失败或已执行回归；纠正为真实test_resume_sibling.py后GREEN2全部通过。CPU Flow现有句柄40809已正常结束，169 passed，0fail/error/skip；FLOW/GREEN等本机材料在.tmp/audit077，不随clone。最终工作提交与实际dev CI仍分别验收，不拿本机通过代替远端矩阵。
 
 
 ### 90. v0.4.1 正式发布完成与五项 Issue 关闭
