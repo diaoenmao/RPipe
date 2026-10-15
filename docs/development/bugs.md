@@ -6,6 +6,12 @@
 
 ## 开放
 
+### B-097：可选tracker state存在性查询越过I/O边界（[#120](https://github.com/DreamSoul-AI/RPipe/issues/120)）
+
+- 实际两个公共reader×有无primary四场景，在目标state的Path.stat点注入PermissionError均整体失败，输入/peer字节保持；明确是故障注入，未改系统ACL，不当原生OS权限复现。证据.tmp/audit097，不随clone。
+- 764a613先红：把既有2项IO/编程错误控制收成同一32实例矩阵（净增30），stat/read×Permission/EIO/missing/RuntimeError×curve/history×primary；8失败/24控制，完整69项8失败/61通过，0error/skip。
+- 方案：只将既有is_file放入原_state_history try，保留原OSError/解析回退与普通RuntimeError传播，无新增helper/异常类型/路径/恢复指针或科学聚合变化。
+
 B-096/#118已e3c3c12先红20新项13失败/7控制→2ffeb0b设计→bbd33b4既有调度查询异常边界修复；make157/core1452+1平台skip/CPU Flow189通过，20新项均执行，严格decoder/参数错误/成功peer/原字节保持，见record§134。最终head/实际dev CI待验；Issue留至下版。
 
 B-095/#116已PR117普通合dev20027af，最终head和实际dev全部实际CI成功，结束remote已清，本地/当前活动分支保持，见record§136；Issue留至下版。

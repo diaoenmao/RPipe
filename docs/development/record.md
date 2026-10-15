@@ -1,8 +1,8 @@
-> 现状：设计说明已标已实施并提交e44b94d；B096/#118最小修复完成，准备当前批次PR合dev。
-> 最新：20新红13失败/7控制→两个调度查询边界收拢，源码仅三处字节替换，见§134–136。
-> 验证：make157、core1452+1既有平台skip、CPU Flow189通过；20新节点全执行，严格decoder/peer保持。
-> 前批：#116已PR117合dev20027af，实际dev全部实际CI成功并清第20条remote；新已修Issue等下版。
-> 下一步：最终head/实际dev全部实际CI后清结束remote，不等设计批准；无main/强推/测速/GPU/布局变更。
+> 现状：设计状态更新已PR119合dev4d12719，实际dev CI在验；当前唯一未合分支处理B097/#120。
+> 最新：既有2项控制归并为32合同实例（净增30），红764a613为8失败/24控制，见§137–138。
+> 依据：公共reader的stat故障注入，不改系统ACL；read/missing/普通RuntimeError控制保持，原输入保全。
+> 下一步：仅把state存在性查询移入原I/O try，必要CPU/最终与实际devCI，不再等设计批准。
+> 阻塞：无；无main/强推/tag/测速/GPU/布局或科学聚合变更，已修Issue等下版，目标active。
 
 # 一、摘要
 
@@ -103,6 +103,18 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-16
 
+
+### 138. PR119最终全实际CI后合dev，设计状态更新已集成
+
+最终head `fdf4f8fb30a7b42fb15809206a22c2798d4a21a8` 的 Unit38816839360、Package38816839047、Branch38816839074全部实际矩阵/聚合成功；PR_CHECKED SHA256 `69da6b1a97a063212dbce7c93e6e9ff5b3dd88e01f5edde1426dbc76156bdd27`。PR119普通merge为dev `4d12719d7eba4f94fa279d75614e3a108a38fe10`，包含已审定的设计状态订正文档与B096修复；实际devUnit/Package观察中，全绿后才清结束remote。当前新B097基于该merge，仅一条未合分支，不再等设计批准，不把待验CI误记为完成。
+
+### 137. 可选state完整I/O边界与合同矩阵收敛（B-097 / #120）
+
+2026-10-16：沿可选读取合同核对metadata/read/decode是否同一边界。_state_history的is_file在原try外；对实际load_curve_series/load_tracker_history、两种primary状态，在该state的Path.stat点注入PermissionError，四场景均整体抛错且原文件/peer字节保持。明确这是目标方法点的文件系统故障注入，未改系统ACL/权限，不宣称原生OS拒绝复现。原REPRO/栈/原输入在.tmp/audit097，不随clone。
+
+先Issue120，764a613先红。复用既有test_optional_state_keeps_io_and_programming_error_boundary，不新增平行测试函数：原2项扩成stat/read×Permission/EIO/missing/RuntimeError×curve/history×primary，共32合同实例，净增30。矩阵8 failed/24控制（只有stat的Permission/EIO失败）；全文件69项8 failed/61 passed，无error/skip。read侧原回退、FileNotFound空回退与RuntimeError同对象传播均有正控制；输入核对在故障上下文退出后执行，不因注入遮蔽证据检查。旧2项函数原文另保留，未删除失败样本或挑选通过。
+
+设计先更新structure：仅把原_state_history存在性检查放入既有try，沿原OSError/ValueError/RecursionError/UnicodeError/TypeError边界回退；不新增异常吞咽、helper、文件或架构依赖。普通RuntimeError仍传播，既有JSONL读取/恢复指针、正常state fallback、科学聚合与所有产物位置/字节合同保持。先红后最小移动，再针对性及必要CPU门，不运行真实Study/GPU/性能测试。
 
 ### 136. PR117实际dev验收与第二十条结束远程清理
 
