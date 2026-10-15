@@ -130,7 +130,8 @@ def load_study_yaml(study_dir: Path) -> dict[str, Any]:
     path = study_dir / 'study.yaml'
     if not path.is_file():
         raise FileNotFoundError(f'missing study.yaml: {path}')
-    data = yaml.safe_load(path.read_text(encoding='utf-8')) or {}
+    data = yaml.safe_load(path.read_text(encoding='utf-8'))
+    data = {} if data is None else data
     if not isinstance(data, dict):
         raise ValueError(f'study.yaml must be a mapping: {path}')
     return data

@@ -917,6 +917,8 @@ structure/artifact/
     report.py
 ```
 
+Config 与 Study YAML 的严格 mapping 读取仅对解析结果 `None` 保留历史空文档/null→`{}` 兼容；`false`、`0`、空字符串、空列表均为非法非 mapping，沿用既有异常类型拒绝，不能先按 truthiness 转成空配置。返回合法 mapping 原内容，不新建格式、路径或全局 YAML 适配层。可选 stats 的缺字段返回 None 合同不变。
+
 `readout/` 只读 index、result、`run.log`、`process.json`，或把数字表写到 `docs/NUMBERS.md`。不跑阶段链，不 import `flow`。命令仍从 `flow/cli.py` 进来。
 
 readout 在既有 status.py 内用私有三态读取区分可用、缺失和不可读，logs 复用相同边界；activity 继续原可选读取合同。计划 config 可用时先核对 mode / id / seed，冲突按原 error 字段显示，坏格不遮蔽 peer；仅缺 config 时回退历史 axes / result 信息，见 [record §71](../development/record.md)。

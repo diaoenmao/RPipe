@@ -417,3 +417,23 @@ def test_expand_rejects_origin_under_data():
     assert sum(1 for p in patches if p.get('tags') == ['baseline']) == 1
     assert patches[0]['description'] == 'model=linear mode=train seed=0'
 
+
+
+@pytest.mark.parametrize('text', ['false', '0', '[]', "''", 'true', '1'],
+                         ids=['false', 'zero', 'empty-list', 'empty-string', 'true', 'one'])
+def test_study_rejects_non_mapping_yaml_root_without_writes(tmp_path, text):
+    path = tmp_path / 'study.yaml'
+    raw = text.encode('utf-8')
+    path.write_bytes(raw)
+    with pytest.raises(ValueError, match='mapping'):
+        load_study_yaml(tmp_path)
+    assert path.read_bytes() == raw
+    assert list(tmp_path.iterdir()) == [path]
+
+
+@pytest.mark.parametrize('text', ['', '# empty document', 'null', '{}'])
+def test_study_keeps_legacy_empty_yaml_document_or_mapping(tmp_path, text):
+    path = tmp_path / 'study.yaml'
+    path.write_text(text, encoding='utf-8')
+    assert load_study_yaml(tmp_path) == {}
+    assert path.read_text(encoding='utf-8') == text

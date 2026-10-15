@@ -10,7 +10,8 @@ from rpipe.structure.artifact.errors import CorruptArtifactError
 
 
 def decode_config(text: str) -> dict[str, Any]:
-    data = yaml.safe_load(text) or {}
+    data = yaml.safe_load(text)
+    data = {} if data is None else data
     if not isinstance(data, dict):
         raise CorruptArtifactError('Config must be a mapping')
     return data
