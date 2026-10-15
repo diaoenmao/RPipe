@@ -203,3 +203,32 @@ def test_log_reference_bad_metadata_is_one_unavailable_cell(tmp_path, variant, r
 def test_log_reference_supported_paths_remain_usable(tmp_path, variant, reader):
     study, relative = _reference_study(tmp_path, variant)
     _assert_reference_view(study, variant, reader, False, relative)
+
+
+
+@pytest.mark.parametrize('reader', _REFERENCE_READERS)
+@pytest.mark.parametrize('fault', ['io', 'programming'])
+def test_log_reference_path_resolution_error_boundary(tmp_path, monkeypatch, reader, fault):
+    from pathlib import Path
+    from rpipe.structure.artifact.readout.status import list_runs
+    from rpipe.structure.artifact.readout.logs import event_lines
+    from rpipe.structure.artifact.readout.report import render_numbers
+
+    study, relative = _reference_study(tmp_path, 'valid')
+    bad = study / 'runs/bad/assets/logs/run.log'
+    original = Path.resolve
+    error = PermissionError('optional reference unavailable') if fault == 'io' else RuntimeError('programming bug')
+
+    def broken_resolve(path, *args, **kwargs):
+        if path == bad:
+            raise error
+        return original(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, 'resolve', broken_resolve)
+    if fault == 'io':
+        _assert_reference_view(study, 'valid', reader, True, relative)
+    else:
+        call = {'status': list_runs, 'logs': event_lines, 'report': render_numbers}[reader]
+        with pytest.raises(RuntimeError) as caught:
+            call(study)
+        assert caught.value is error
