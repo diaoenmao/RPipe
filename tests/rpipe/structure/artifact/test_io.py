@@ -217,3 +217,12 @@ def test_config_keeps_legacy_empty_yaml_document_or_mapping(tmp_path, text):
     path.write_text(text, encoding='utf-8')
     assert load_config(path) == {}
     assert path.read_text(encoding='utf-8') == text
+
+
+@pytest.mark.parametrize('status', [[], {}, ['succeeded'], None, False, 0, 1.0, '', 'queued'],
+                         ids=['list', 'object', 'list-label', 'null', 'bool', 'int', 'float', 'empty', 'unknown'])
+def test_result_validator_reports_invalid_status_without_type_escape(status):
+    errors = validate_result({'status': status})
+    assert isinstance(errors, list)
+    assert errors and all(isinstance(error, str) for error in errors)
+    assert any('status' in error for error in errors)
