@@ -357,3 +357,20 @@ def test_compare_nonfinite_evidence_keeps_value_identity(tmp_path, capsys, kind,
     assert json.loads(output.read_text())['passed'] is passed
     assert capsys.readouterr().out.splitlines()[-2:] == [('passed' if passed else 'failed'), str(output)]
     assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('dtype', ['float64', 'complex128'])
+@pytest.mark.parametrize('lead', [float('inf'), -float('inf'), float('nan')], ids=['posinf', 'neginf', 'nan'])
+@pytest.mark.parametrize('delta,passed', [(1e-7, True), (1.0, False)], ids=['finite-inside', 'finite-outside'])
+def test_compare_nonfinite_matches_do_not_hide_finite_tensor_drift(tmp_path, dtype, lead, delta, passed):
+    import torch
+
+    a, b = _run(tmp_path, 'a'), _run(tmp_path, 'b')
+    for run, value in [(a, 1.0), (b, 1.0 + delta)]:
+        path = run / 'assets/checkpoints/latest.pt'
+        body = torch.load(path, weights_only=False)
+        body['model']['w'] = torch.tensor([lead, value], dtype=getattr(torch, dtype))
+        torch.save(body, path)
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    assert compare_runs(a, b, rtol=1e-5)['passed'] is passed
+    assert {p: p.read_bytes() for p in before} == before
