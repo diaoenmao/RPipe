@@ -1,5 +1,12 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-15 全仓三类正确性接续
+
+以Enmao最新“先#53、全仓按类统一”的授权为准，下方停止审计/等main等状态是历史。沿用唯一未合工作分支codex/artifact-contracts-correctness：第三类PR61已普通合dev fa18404且最终head/实际dev全部实际CI成功；第二类PR63最终716a95c全部实际CI成功、普通合dev72e4307，实际dev72e4307的Unit38733284739/Package38733284680也全部实际成功；第一类只补12项双重失败合同，103相邻回归及169项CPU流程全部通过，不改保留旧成功的范围。最终状态见[record §81](record.md#81-三类系统合同归纳与第一类双重失败留证)及对应PR确切CI。
+
+B-072扩展在#53、B-073在#62；两Issue保持open至下个版本发布，不自动关闭。main保持v0.4.0/54f8d31，旧六Issue已经v0.4.0发布关闭，不重开。无性能/测速/GPU/480s调查；layout是唯一磁盘依据，不改路径/schema/模块，不覆盖Study旧Run/provenance。后续有新真实反例仍按三类合同接续，不扩大第七节结构能力或制造无失败支撑的重构。
+
+
 ## 2026-10-15 v0.4.0 已正式发布
 
 发布[PR #59](https://github.com/DreamSoul-AI/RPipe/pull/59)已dev→main正常merge为54f8d31c0f5505742677dd2ce6dec323ee114c61，实际main全部CPU/包CI成功后建立annotated [tag v0.4.0](https://github.com/DreamSoul-AI/RPipe/tree/v0.4.0)并发布[同名Release](https://github.com/DreamSoul-AI/RPipe/releases/tag/v0.4.0)。正文取自该提交发布报告，转换相对链接并附验收。#36/#37/#38/#41/#48/#50均已分别留言版本后completed关闭，#53保持open；准确链接和hash见[record §78](record.md#78-v040-正式发布完成与六项-issue-关闭)。

@@ -97,12 +97,31 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-15
 
+### 81. 三类系统合同归纳与第一类双重失败留证
+
+第二类实际dev验收完成：DEV_CHECKED.json SHA256 c2385f49cabfda50d994192e74a3a51fe14b250ea685db9ebdf99c424eeede89；第三类对应f5d5ca315cb450feb700a5ed038ac461eb2f654e69fd9f6aec238ac51ce78443。精确CI与最终验收也入PR61/63正文。B-072/B-073从开放软件缺陷表移除，原失败条目快照仍可追溯；#53/#62按本轮要求保持open到下一版本，不冒充已随v0.4.0发布。main仍54f8d31，无新tag/release。本批第一类测试/文档通过独立PR进入dev，最终head与实际集成CI仍分别核对。
+
+
+按最新授权，先处理#53，再在库与受跟踪Study源文件中按三类归纳，不以逐个邻接补丁代替共享规则，也不改变[layout](../code/layout.md)。唯一工作分支codex/artifact-contracts-correctness依次复用，全部旧分支、数据、Run与provenance保留。
+
+| **类别** | **统一规则与实际处理** | **回归与边界** |
+| --- | --- | --- |
+| 原子写与并发（第三类） | B-072的八个Study发布文件复用既有atomic_write_text；删除probe固定staging；原#53 index合同重验 | 先红19a3fbb、生产a20efbb；PR61最终a3e4a14全实际CI成功，实际dev fa18404的Unit38731981263/Package38731981260全实际成功。三态读取/二进制/日志协议不混入文本架构门 |
+| status/log安全读取（第二类） | B-073把status/report的数值显示收为既有report._fmt；只接收object指标与有限数，不隐藏peer | 红a201d2f为20失败/2通过；生产8605fc3；119相邻、core691通过/1平台skip、CPU Flow157通过。PR63最终716a95c的Unit38732603420/Package38732603458/Branch38732603454全部实际成功，正常合dev72e4307；实际dev的[Unit38733284739](https://github.com/DreamSoul-AI/RPipe/actions/runs/38733284739)与[Package38733284680](https://github.com/DreamSoul-AI/RPipe/actions/runs/38733284680)全部实际矩阵/聚合成功 |
+| 失败写入留证（第一类） | 保留既有_preserve_success决策，不新增生产函数或修改保留范围 | 新e6817b1加12项阶段失败+失败结果编码/提交再失败合同，连同Runner/CLI/schedule相邻共103通过；同时核对42项原决策表。完整CPU流程169 passed /0 skip；生产和layout逐字节差异检查为空，未重复本地core（生产未改），本批最终head仍执行全实际CI |
+
+第一类核对范围：Runner外层/prepare/execute/collect/summarize/write/process；result验证→编码→原子提交；launch的rerun与train→eval屏障；make的全配置预验证与逐文件提交；Study输出调用方。二次写入失败仍返回原始阶段异常，原错日志、旧result和peer字节不变，只清本写者staging。process的旧成功短路仍按既有合同，不假称发生二次提交。
+
+第二类核对status/logs/activity的三态I/O与mode/计划一致性，以及report显示；compare是严格比较，process是科学聚合，保持拒绝/判定，不套用显示层降级。第三类架构门覆盖src/rpipe与Study recipe/flow/structure；precision.main.execute流式worker.log、tracker追加/恢复offset、下载二进制、原Git blob、checkpoint与锁按既有协议精确豁免。
+
+本批未发现第一类新的生产反例，因此只补合同测试，不新造Issue或扩大异常吞咽。单文件原子不承诺多文件事务或任意同Run多写者；不加attempts/锁/模块/字段，不动第七节结构能力。新Study源码的科学使用仍须新version/make与原科学门，未重签旧来源。临时证据.tmp/contract072—074不随clone；便携回归已进入原镜像测试文件。没有测速、性能修改、GPU、下载或正式研究计算。
+
 ### 80. 全仓三类合同第二批：安全数字显示（B-073 / #62）
 
 最小生产修复8605fc3只改status/report两个文件；119项相邻回归全部通过，22新节点全部执行。core691 passed /1 POSIX skip /161 deselected，8条既有partial-resume warning；CPU Flow157 passed /0 skip。本机LOCAL_CHECKED.json逐项验证红20失败/2通过与三个绿色集合；临时XML、原字节快照和清单不随clone。科学计算、严格load/compare和process聚合均未改；无GPU/性能/正式Study执行。
 
 
-第三类 PR61 最终head a3e4a140a29c75512d47090e273efc28cf5edbf0 的 Unit38731020292、Package38731020242、Branch38731020233 所有实际矩阵/聚合成功，普通merge到dev fa184045dc09f54c6b296d1f4c914a021853d041；实际dev独立观察中，不以工作head代替验收。旧Python3.10失败保留，未重跑挑通过。
+第三类 PR61 最终head a3e4a140a29c75512d47090e273efc28cf5edbf0 的 Unit38731020292、Package38731020242、Branch38731020233 所有实际矩阵/聚合成功，普通merge到dev fa184045dc09f54c6b296d1f4c914a021853d041；实际dev随后Unit38731981263/Package38731981260全部实际成功，不以工作head代替验收。旧Python3.10失败保留，未重跑挑通过。
 
 第二类在同一工作分支接续，不另建同质分支。Issue62先登记，22项便携回归先于生产修复，20 failed /2 passed：8项status、4项数字格式、8项非法容器失败，2项空列表控制通过。输入为临时合成index/result/process；没有改正式Study或既有产物。复用已有report._fmt，消除status的重复数值转换；严格执行/比较/聚合的异常不转成显示占位。临时证据.tmp/contract073不随clone。
 
