@@ -355,5 +355,5 @@ def test_compare_nonfinite_evidence_keeps_value_identity(tmp_path, capsys, kind,
     output = tmp_path / 'compare.json'
     assert cli.main(['compare', str(a), str(b), f'--rtol={rtol}', '--out', str(output)]) == (0 if passed else 1)
     assert json.loads(output.read_text())['passed'] is passed
-    assert capsys.readouterr().out.endswith('passed\n' if passed else 'failed\n')
+    assert capsys.readouterr().out.splitlines()[-2:] == [('passed' if passed else 'failed'), str(output)]
     assert {p: p.read_bytes() for p in before} == before
