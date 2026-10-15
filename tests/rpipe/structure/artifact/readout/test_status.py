@@ -496,3 +496,22 @@ def test_result_status_display_keeps_legacy_and_partial_mappings(tmp_path, kind)
     assert rows['wait']['metric'] == ('accuracy=0.7000' if expected == 'succeeded' else '-')
     assert rows['ok']['status'] == 'succeeded'
     assert {p: p.read_bytes() for p in study.rglob('*') if p.is_file()} == before
+
+
+@pytest.mark.parametrize('field', ['study', 'error', 'note'])
+@pytest.mark.parametrize('text', ['left\rright', 'left\u2028right'])
+def test_status_all_text_fields_keep_one_line(field, text):
+    body = {'study': 'demo', 'counts': {'planned': 1}, 'runs': [
+        {'id': 'a', 'seed': 0, 'status': 'failed', 'mode': 'train', 'error': '-', 'note': '-'}]}
+    if field == 'study':
+        body['study'] = text
+    else:
+        body['runs'][0][field] = text
+    import copy
+    before = copy.deepcopy(body)
+    lines = format_status(body).splitlines()
+    assert len(lines) == 3
+    assert len(lines[2].split('\t')) == 9
+    target = lines[0] if field == 'study' else lines[2]
+    assert 'left' in target and 'right' in target
+    assert body == before
