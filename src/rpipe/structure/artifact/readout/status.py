@@ -15,6 +15,7 @@ from rpipe.structure.artifact.index import index_path, load_index
 from rpipe.structure.artifact.paths import CONFIG_NAME, RESULT_NAME, RUNS_DIRNAME
 from rpipe.structure.artifact.readout.report import _fmt
 from rpipe.structure.artifact.result import STATUS_SUCCEEDED, load_result
+from rpipe.structure.artifact.result.format import VALID_STATUS
 
 STATUS_PENDING = 'pending'
 _EVENT = re.compile(r'\[(epoch|error|flow)\]\s*(.*)$')
@@ -142,6 +143,12 @@ def list_runs(
             run_dir = str(run.get('run_dir') or run.get('id') or '')
             result_path = study_dir / RUNS_DIRNAME / run_dir / RESULT_NAME
             result_state, result = _read_optional(result_path if run_dir else None, load_result)
+            recorded_status = result.get('status') if result is not None else None
+            if recorded_status is not None and (
+                not isinstance(recorded_status, str)
+                or (recorded_status not in VALID_STATUS and recorded_status not in ('', STATUS_PENDING))
+            ):
+                result_state, result = 'unreadable', None
             config_path = study_dir / RUNS_DIRNAME / run_dir / CONFIG_NAME
             mode_error = None
             seed = run.get('seed')
@@ -156,7 +163,7 @@ def list_runs(
             error = None
             metrics: dict[str, Any] = {}
             if result is not None:
-                status = str(result.get('status') or STATUS_PENDING)
+                status = result.get('status') or STATUS_PENDING
                 error = result.get('error')
                 if status == STATUS_SUCCEEDED:
                     metrics = result.get('metrics') or {}
