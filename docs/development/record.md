@@ -1,8 +1,8 @@
-> 现状：DEM原样正本/英译及独立调研PR92已完成；PR98实际dev全绿清remote；PR100已普通合dev187bb2e。
-> 最新：B088/#101三种越界checkpoint令完整compare错误true，合法Unicode名称拆行；17前置项10红/7控制，出处§116。
-> 验证：compare56、相关983/core1180各1平台skip、CPU Flow181通过；8个拒绝节点另强化torch.load零调用，56复查通过。
-> 下一步：PR100实际dev全绿后清remote；compare当前唯一未合分支推送PR验最终head/实际dev，目标active，无阻塞。
-> 边界：不测速/GPU、不迁shared/logger、不改产物布局/数值/训练恢复，不合main/tag；Issue等下版。
+> 现状：按新规范/模板完成RPipe中文宏观计划、完整英译及文献证据草案，当前唯一未合分支codex/rpipe-research-plan。
+> 最新：四条定向来源分别记摘要/章节/摘录/整页阅读；中文文献规范34809字节原样落库，出处§118与literature.md。
+> 已验收：PR100/102实际dev全部矩阵与聚合通过；第11/12条结束远程已清，见§117。
+> 下一步：本地103条链接/三正本字节/中英各十章与36项布局合同通过，提交PR验CI合dev；目标active，无阻塞。
+> 边界：不测速/GPU/新科学实验，不改布局/结果格式/历史Study，不合main/tag；已修Issue等下版。
 
 # 一、摘要
 
@@ -103,6 +103,22 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-16
 
+
+### 118. 按新规范与模板重做 RPipe 研究计划（文档批次）
+
+记录日期2026-10-16。Enmao当晚优先任务改为项目研究计划，暂停新增审计批次，正确性目标仍active。原仓库仅有通用研究要求、规范/模板和历史Study计划，没有统一宏观课题计划；按layout既有职责新建[中文计划](../research/research_plan.md)和[完整英文](../research/research_plan_en.md)，逐章覆盖新模板十章。RQ1–RQ3为失败证据保全、可选/严格读取与引用归属、原子发布；RQ4为条件性历史原码科学对照。明确不扩旧成功保留范围、不更改结构或落盘，历史main_probe/main_exp计划/结果不事后重写；旧版科学验收与当前dev未重跑分开。
+
+[文献证据](../research/literature.md)登记2026-10-16四组实际查询、四条来源的版本/阅读范围/六方面/用途/缺口。L1仅官方摘要；L2固定arXiv v2定向章节；L3仅官方检索摘录且直读失败，不比较系统能力；L4固定PyTorch2.9整页，不据此升级Study依赖。ACM候选原页访问失败不作依据，不称系统综述、独立复现或外部优越性。没有下载PDF、安装工具或新建论文库/科学数据。完整读取本地Knowledge 0d7c68d的检索skill、研究笔记模板与wiki，仅作方法参考，不采用引用量排名。
+
+可读DEM文献规范完整623行/34809字节原样加入[standards](../research/standards/README.md)，SHA256 `2605cf562aee59b2023ecb0954c3639658958c1874ddce79a623dd3df63489a8`；与两份既有研究计划中文正本一同用-text保全字节，未用本机较旧同名计划覆盖新交付正本。原件内部缺失DEM链接保留，导航单独说明，不复制未读规范。同步research.md、根README、Studies入口，正式资料不依赖_staging_from_DEM；暂存保留不提交。文档批次仅校验文档/来源/布局与必要CI，不为填模板启动训练、测速、GPU或外部基线实验。临时证据.tmp/research-plan-20261016不随clone。
+
+本地验收：中文/英文各十章，RQ/H、D1–D4、E0–E4关键对应齐备；103条新增/修改本地链接及锚点通过，UTF-8/代码围栏/改动范围通过；三个中文正本工作区、Git index blob和强制autocrlf=true隔离checkout逐字节一致。既有layout合同36项实际执行通过，0失败/错误/跳过；src/tests、版本、layout合同与两个历史Study均无改动。仅文档更改未重复全套本地core/Flow，最终head/实际dev仍按CI验收。首次文档辅助脚本因旧目标文本不匹配而assert停止，未写目标文件；更正后检查通过，记为文档脚本边界而非库缺陷。开放Issue逐项核对均为待下版已修项或探索89/90，无依据批量关闭；无其他开放PR。
+
+### 117. PR100/102实际dev验收及第十一、十二条结束远程清理
+
+PR100普通merge的dev `187bb2e562979d1911fa2911702ea35bdae707da`，[Unit38792231762](https://github.com/DreamSoul-AI/RPipe/actions/runs/38792231762)/[Package38792231924](https://github.com/DreamSoul-AI/RPipe/actions/runs/38792231924)全部实际矩阵/聚合成功；DEV_CHECKED SHA256 `2c3822b240f2b9eebb14d4de04db84ac3b0f297e413376b5f18c3461e60092af`。PR102最终head00500c325676fbe2f38ed522d69236c2d9d5fa04的Unit38793099410/Package38793099261/Branch38793099281全部实际矩阵/聚合通过后普通merge dev `ef6084681160a68588e0b2a359ab7cc07c398879`，实际dev[Unit38793891029](https://github.com/DreamSoul-AI/RPipe/actions/runs/38793891029)/[Package38793891048](https://github.com/DreamSoul-AI/RPipe/actions/runs/38793891048)也全部实际成功，DEV_CHECKED SHA256 `634cde73338bb11e8e76ec570f4c78ee1d6e33b1e4ac647d3b75709d5f14dcd0`。§115/116的待验收仅为历史过程，不重复派发。
+
+祖先、无开放PR、实际CI核对后，普通删除远程codex/optional-tracker-decode（tip8e8ee94）与codex/compare-checkpoint-boundary（tip00500c3），原本地分支保留，当前rpipe-research-plan保留。两PR/Issue99/101原正文已补实际验收，Issue保持open至下版，不作为“过期”关闭；探索89/90保持独立。当前目标累计十二条结束remote清理，前十见§114，不重复计§82历史九条。main/dev未因删除改变，main仍00e70b1/v0.4.1；数据、Run、provenance和旧失败均保留。临时proof/清理前后/命令在.tmp/audit087、audit088，不随clone。
 
 ### 116. compare checkpoint归属与动态键显示合同（B-088 / #101）
 
