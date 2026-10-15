@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import stat
 from pathlib import Path
 from typing import Any
 
@@ -79,6 +80,15 @@ def _factor_label(factors: dict[str, Any]) -> str:
     return ','.join(parts) or '-'
 
 
+def _log_path_key(path: Path) -> Path:
+    text = path.as_posix()
+    if path.drive and text[:8].lower() == '//?/unc/':
+        return Path('//' + text[8:])
+    if len(path.drive) == 6 and text.startswith('//?/') and path.drive.endswith(':'):
+        return Path(text[4:])
+    return path
+
+
 def log_path(study_dir: Path, run: dict[str, Any], run_dir: str) -> Path | None:
     if not run_dir:
         return None
@@ -92,10 +102,19 @@ def log_path(study_dir: Path, run: dict[str, Any], run_dir: str) -> Path | None:
         study_dir = Path(study_dir).resolve()
         root = study_dir / RUNS_DIRNAME / run_dir
         path = study_dir / raw
-        path.relative_to(root)
+        try:
+            if not stat.S_ISREG(path.stat().st_mode):
+                return None
+        except FileNotFoundError:
+            pass
         resolved = path.resolve()
-        resolved.relative_to(root.resolve())
-        resolved.relative_to(study_dir)
+        key = _log_path_key(resolved)
+        key.relative_to(_log_path_key(root.resolve()))
+        key.relative_to(_log_path_key(study_dir))
+        try:
+            _log_path_key(path).relative_to(_log_path_key(root))
+        except ValueError:
+            path = resolved
     except (OSError, ValueError):
         return None
     return path

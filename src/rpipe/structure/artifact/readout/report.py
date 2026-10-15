@@ -55,7 +55,7 @@ def _planned_runs(body: dict[str, Any]) -> dict[str, Any]:
 
 def _log_links(index: dict[str, Any], study_dir: Path) -> dict[str, str]:
     # status imports this module's formatter; reuse its path guard after imports finish.
-    from rpipe.structure.artifact.readout.status import log_path
+    from rpipe.structure.artifact.readout.status import _log_path_key, log_path
 
     links: dict[str, str] = {}
     for exp in index.get('experiments') or []:
@@ -64,7 +64,7 @@ def _log_links(index: dict[str, Any], study_dir: Path) -> dict[str, str]:
             if not run_id:
                 continue
             path = log_path(study_dir, run, str(run.get('run_dir') or run_id))
-            links[run_id] = '../' + quote(path.relative_to(study_dir).as_posix(), safe='/') if path is not None else ''
+            links[run_id] = '../' + quote(_log_path_key(path).relative_to(_log_path_key(study_dir)).as_posix(), safe='/') if path is not None else ''
     return links
 
 
