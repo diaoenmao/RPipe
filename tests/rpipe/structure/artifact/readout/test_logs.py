@@ -107,7 +107,7 @@ def test_log_decoder_programming_typeerror_is_not_optional_io(tmp_path, monkeypa
 
 _BAD_LOG_REFERENCES = [
     'outside-relative', 'outside-absolute', 'peer', 'newline', 'tab',
-    'symlink-outside', 'false', 'zero', 'true', 'empty-list', 'empty-map', 'nonempty-map',
+    'symlink-outside', 'unicode-line', 'unicode-next-line', 'false', 'zero', 'true', 'empty-list', 'empty-map', 'nonempty-map',
 ]
 _GOOD_LOG_REFERENCES = ['missing', 'null', 'empty', 'valid', 'absolute-own', 'unicode-space', 'internal-alias', 'nonexistent']
 _REFERENCE_READERS = ['status', 'logs', 'report']
@@ -127,7 +127,7 @@ def _reference_study(tmp_path, variant):
     own = 'runs/bad/assets/logs/run.log'
     raw = {'outside-relative': '../outside.log', 'outside-absolute': str(outside.resolve()),
            'peer': 'runs/peer/assets/logs/run.log', 'newline': own + '\nFAKE-ROW',
-           'tab': own + '\tFAKE-CELL', 'false': False, 'zero': 0, 'true': True,
+           'tab': own + '\tFAKE-CELL', 'unicode-line': own + '\u2028FAKE-ROW', 'unicode-next-line': own + '\x85FAKE-ROW', 'false': False, 'zero': 0, 'true': True,
            'empty-list': [], 'empty-map': {}, 'nonempty-map': {'path': own},
            'null': None, 'empty': '', 'valid': own, 'absolute-own': str((study / own).resolve()),
            'nonexistent': 'runs/bad/assets/logs/later.log'}.get(variant)
