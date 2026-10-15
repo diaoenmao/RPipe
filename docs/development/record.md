@@ -1,8 +1,8 @@
 > 现状：B092/#110已PR112合dev49748695并实际CI全绿；当前唯一未合分支修B093/#111。
 > 最新：20新合同回归15失败/5控制，另5既有测试通过；红提交2b4c0d1，出处§128。
 > 依据：原生入口exit3、空事件、peer未执行；manifest同类编码边界也复现。
-> 下一步：仅两JSON writer采用backslashreplace；保留有效UTF8、JSON解码值与原失败语义，完整正确性验收。
-> 阻塞：无；不测速/GPU/main/tag/布局变更，已修Issue等下版，目标active。
+> 验证：175针对性、core1396+1既有平台skip、CPU Flow189通过；12单元/8原生与60计数节点均执行。
+> 下一步：最终head与实际dev全部实际CI验收后清remote，Issue111保留至下版。 无阻塞；不测速/GPU/main/tag/布局变更。
 
 # 一、摘要
 
@@ -111,6 +111,10 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 2b4c0d1 先提交红回归：20新节点15 failed/5正常Unicode控制 passed；连同5既有节点为25项15 failed/10 passed、0error/skip，RED.xml/RED_CHECKED 保留。覆盖8事件、4manifest、8真实复制入口；call/setup、高/低/混合代理与有效中文/emoji全部执行。子进程原退出3的真实故障由外层断言失败记录，未排除坏输入或挑选通过。
 
 方案先写入 testing：不增加helper/模块/目录，两个现有JSON文本写入点加 errors=backslashreplace，保留 ensure_ascii=False 与有效UTF8，只把非法代理转成可无损解码的JSON转义。既有4000字符上限/状态/phase起点/来源优先级不变。修复后删除B092计数测试的临时ASCII诊断shortcut，恢复相同直接断言；src生产代码不变。终端编码设置仅保障采集，不掩盖显式JSON writer故障。
+
+58f9aaf只在manifest write_text和events append open各加一个errors参数；原ensure_ascii=False保持。计数测试同步删2行绕行/注释、恢复原直接相等断言，src生产树与基线49748695完全相同。针对性175 passed；core1396 passed/1既有POSIX mode skip；CPU Flow189 passed，无failure/error。12新unit在core、8新native在Flow、60计数在core均实执行。8独立native子进程各退出1，事件failed1+passed1且peer执行，报告同样失败1/通过1；这是预期失败测试的正确落盘，不是子任务质量通过。有效中文/emoji原UTF8与代理解码字符串均核验。
+
+LOCAL_CHECKED SHA256 `cea6fe304c936747d6deaff3dc0389c11c9aaf8f9510fb39f86234c1e76b41cc`；原始before.zip/hash/RED/GREEN/CORE/FLOW及红测试实际CRLF字节保留.tmp/audit093，不随clone。首次核对器把pytest的current目录别名重复计入为9条而拒绝；原脚本及LOCAL_CHECK_REFUSED保留，按resolve去重后确认8独立结果，未重跑测试或删结果。此核对拒绝不当库失败。最终工作head与实际dev CI待验，不把本机通过替代远端。
 
 ### 127. PR112实际dev验收与第十七条结束远程清理
 

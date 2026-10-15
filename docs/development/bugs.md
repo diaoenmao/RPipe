@@ -6,10 +6,7 @@
 
 ## 开放
 
-### B-093：测试失败事件的代理字符导致pytest内部错误（[#111](https://github.com/DreamSoul-AI/RPipe/issues/111)）
-
-- 当前B092回归首次RED在第52节点中止：36 failed/1 error/15控制；失败诊断含U+D800，conftest事件json ensure_ascii=False写UTF8时报UnicodeEncodeError，原RED/log/原测试字节留.tmp/audit092，不随clone。XML有51个命名完成节点（36失败/15控制）、一个未完成无名占位及一个pytest.internal；suite汇总52不代表52个正常完成节点，见record§126。
-- 2b4c0d1已提交20新红回归15 failed/5控制，完整25项15 failed/10 passed，无error/skip；先补原生pytest复制入口红回归，再最小修复日志编码，验证失败原语义/后续节点/JSON解码值与layout。当前计数批次用等价布尔断言和ASCII诊断运行全部原坏输入，未删除U+D800案例，不混入本批生产修改。
+B-093/#111已按2b4c0d1红→1d57d8b设计→58f9aaf两JSON writer编码边界修复；175针对性/core1396+1平台skip/CPU Flow189通过，20新节点均执行。见record§128，最终head/实际dev CI待验，Issue留至下版。
 
 B-092/#110已PR112普通合dev49748695，最终head及实际dev全部实际CI通过，结束remote已清，见record§127；Issue留至下版。
 
