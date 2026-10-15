@@ -389,6 +389,10 @@ make 在 Study 根写 `provenance.json`（与 `index.json` 同级，不进 Git�
 
 文件键用相对路径：库源码相对 `rpipe` 包根，加前缀 `rpipe/`；Study 文件相对 Study 根。 rpipe/是库来源保留键域；Study输入使用该前缀时，必须能核验为对应库路径的同一物理文件（包括硬链接），否则以既有ProvenanceChangedError拒绝采集/冻结。即使当前库尚无同名文件或副本字节相同，也不能占用该键域，避免后续库新增/删除被掩盖。身份查询OSError保留cause并转为冻结拒绝；初始拒绝沿用旧成功结果保全。旧歧义清单不自动改写，须恢复对应库身份或将Study输入移到无冲突路径（如rpipe_inputs/），保留旧证据并按计划使用新version/fresh make。
 
+`provenance` 声明缺省/null按空mapping处理，其余必须为mapping；其中`include`缺省/null按空列表处理，其余必须为list，不能将false/0/字符串/映射当空配置或逐元素模式。此检查统一在既有`source_files`，被写入与freeze比较复用；非法声明以ValueError拒绝，`write_provenance`在发布之前失败，保留已有provenance及peer字节，缺目标时不新建。合法列表的模式展开、Path转字符串、未匹配/越界拒绝及来源键域不变。这里只约束来源写入入口，不将make前面已完成的config/index写入扩成多文件事务，不改变旧成功结果保全决策、错误转换或磁盘结构。
+
+来源`plan_files`复用权威`load_index`的容器与Run路径校验，并要求每个计划条目有可用Run id；不自行宽松解析另一套index。index及被哈希的Run config物理路径须留在当前Study内，拒绝`..`/绝对Run路径及指向Study外的链接，先拒绝再哈希。Study内config链接仍以声明的`runs/<id>/config.yaml`逻辑键记清单，不因解析物理路径改键。坏index类型在本入口转ValueError保留原cause，供已有freeze拒绝边界使用；非预期RuntimeError原样上抛。缺index仍为空plan、合法历史空/partial结构及缺失config仍保留既有语义；不改schema/目录、hash或旧成功保全决策。
+
 `plan` 是执行清单与 Run 配置，不是人写的 `docs/PLAN.md`。根目录额外 helper、参考 JSON、依赖清单或计划等需要冻结时显式加入 `provenance.include`；模式未匹配任何路径会报错，解析后的文件必须留在 Study 内。原始数据、历史报告和 Run 产物不自动进入来源清单。库源码覆盖当前导入的整个 `rpipe` 包，非本 Study 使用的 Python 模块变化也会影响 freeze。
 
 来源采集允许声明与自动发现路径重叠，结果按相对路径键记录；每个输入仍须通过 Study 内路径边界验证。每次冻结检查重新发现并读取文件，检测新增、修改、删除，不复用前次清单或 hash。不承诺单次采集的读取次数；先前 B-065 的次数去重优化已按只做正确性的要求暂缓。

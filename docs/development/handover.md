@@ -1,5 +1,17 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 来源证据组合候选本地验收
+
+#91/B083与#93/B084共用codex/provenance-declarations，红d1baff1/3804bce先于各自最小fix4f23ae4/2cd634c。仅provenance.py +18/-6，复用index/目录/物理范围helper，不改格式/布局/hash/旧成功决策。105原红合同全执行转绿；784相邻+1平台skip、core987+1平台skip、Flow175通过。追加12身份/配套路径控制单独EXTRA通过，未混算core或原红节点；见record §105与.tmp/audit084/LOCAL_CHECKED。接着一个PR最终head和实际dev各自实际CI验收后清远程，Issue91/93等下版。研究PR92最终head/实际dev均已全绿并清远程，正本/英译和89/90独立探索已入dev；暂存保留，不迁shared/logger。目标active，不合main/tag、测速或GPU。
+
+## 2026-10-16 来源证据按类合并验证
+
+研究规范PR92最终head/实际devf303d72全部实际CI成功，文档remote已删、正本原字节/完整英译/独立89/90调研已正式入dev。当前唯一未合codex/provenance-declarations包含B083/#91与新B084/#93，归纳为一批来源证据发布合同。前者最小4f23ae4获717相邻/1skip、core920/1skip、Flow175；后者先Issue再红3804bce，67项56失败/11控制、实际外部文件链接两类均执行。后者将复用load_index/validate_run_directory/_inside，数据错误转既有freeze拒绝并保原cause，内部链接逻辑键兼容，RuntimeError原样。新代码后重新组合验收，不用旧通过替代；见record §104。目标active、不测速/GPU、不改布局/迁logger或shared、不合main/tag。
+
+## 2026-10-16 来源声明红合同接续
+
+#86/PR88最终head及实际dev8ee1913全部实际CI成功，结束remote已删；PR92研究正本/英译/独立探索已合devf303d72，最终head全部实际CI通过，实际dev观察中。唯一未合codex/provenance-declarations修B-083/#91，同字节红d1baff1为38节点30失败/8控制，先于生产；snapshot首次打包错误发生pytest前，原失败保留，不计库失败。设计统一source_files拒绝非法provenance/include容器，保留None/有效列表与旧来源/peer，不扩大make事务或旧成功保全范围。见record §103，源码仍待最小修复。文档任务已入dev，暂存留对照；#89/#90仅独立调研，不自动实施。目标active，不合main/打tag、不测速/GPU/迁目录/logger。
+
 ## 2026-10-16 研究计划原件与独立调研接续
 
 #86经PR88合dev8ee1913，最终head63e2c84全部实际CI成功、实际dev独立验收中，完成后删codex/activity-hint-fields远程。唯一未合codex/research-plan-masters按新授权处理DEM中文正本与完整英译、research入口及两个互不绑定的探索Issue89/90，见record §102与docs/research/standards/README。正本按字节保留，3类DEM缺失依赖明确登记；暂存保留不提交。36 layout通过，不迁共享目录/logger、不跑性能/GPU、不改运行格式。已有provenance声明反例.tmp/audit083待后续先Issue/红回归，不混入文档PR；正确性目标active，Issue86及已修工程Issue等下版。
