@@ -113,7 +113,7 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 两议题分别开[探索Issue89](https://github.com/DreamSoul-AI/RPipe/issues/89)与[探索Issue90](https://github.com/DreamSoul-AI/RPipe/issues/90)，不是已确认bug、不占B编号，不互相或与模板绑定实施。[跨项目shared调研](../issue/cross_project_shared.md)比较现有shared.root与表层shared symlink，保留跨Study不可变输入/Run状态独立，尚未部署/迁数据；[监控logger调研](../issue/experiment_monitoring.md)只读RPipe与legacy-dayan固定a7a1b40源码以及Python/Microsoft/PyTorch/TensorBoard/MLflow/W&B官方文档，区分文本logger、指标tracker和展示；建议先明确缺失需求，再决定是否最小展示适配，不迁回旧聚合/恢复语义、不启服务或加依赖。下游文件与Git blob经换行归一一致，未干预运行。原文二级论文/skill未重新核验或安装，不把原作者核验日期当本次行为。
 
-暂存保留对照，未纳入Git、未删除；仅docs主题分支，待前批实际dev验收清旧远程后再推送。已确认的新provenance声明反例保留.tmp/audit083，后续先Issue/红回归再最小修，不与文档PR混改。
+暂存保留对照，未纳入Git、未删除；仅docs主题分支，按本次“模板任务可并行开PR”的明确授权独立提交，不等待前批已合PR的实际dev观察；只有一个未合工作分支，结束旧远程仍在实际dev验收成功后立即删。额外用core.autocrlf=true的checkout-index仅导出两份正本再按原字节核对通过，未触碰其他文件。已确认的新provenance声明反例已开Issue91，38合同节点仅在.tmp预备/语法检查尚未实际执行，后续红回归先于修复，不与文档PR混改。
 
 ### 101. activity 字段候选本地验收与第五条结束远程清理
 
