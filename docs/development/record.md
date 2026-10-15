@@ -1,8 +1,8 @@
-> 现状：B092/#110已PR112合dev49748695并实际CI全绿；当前唯一未合分支修B093/#111。
-> 最新：20新合同回归15失败/5控制，另5既有测试通过；红提交2b4c0d1，出处§128。
-> 依据：原生入口exit3、空事件、peer未执行；manifest同类编码边界也复现。
-> 验证：175针对性、core1396+1既有平台skip、CPU Flow189通过；12单元/8原生与60计数节点均执行。
-> 下一步：最终head与实际dev全部实际CI验收后清remote，Issue111保留至下版。 无阻塞；不测速/GPU/main/tag/布局变更。
+> 现状：PR113已合devbf24574、实际dev CI仍在验；B094/#114唯一未合分支已最小修复。
+> 最新：九新红3失败/6控制→三态异常元组仅加RecursionError，源码逐字节核对，见§130。
+> 验证：readout500、core1405+1既有平台skip、CPU Flow189通过，新九项均执行。
+> 下一步：PR最终head/实际dev全部实际CI后清结束remote；strict loader与普通RuntimeError仍报原错。
+> 阻塞：无；不测速/GPU/main/tag/布局或数据变更，已修Issue留至下版，目标active。
 
 # 一、摘要
 
@@ -103,6 +103,24 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 
 ## 2026-10-16
 
+
+### 130. 可选配置解析递归错误的三态边界（B-094 / #114）
+
+2026-10-16：PR113等待实际dev CI期间，只读扫描现有安全读取层，发现具体未捕获解析异常。在现有三Run fixture的单一config.yaml写入约2435字节、1200层未使用序列字段，yaml.safe_load真实抛RecursionError，list_runs整体中断，peer无法展示。三个同深度JSON（result/trajectory/state）在本机Python3.13正常，明确不算缺陷。原始输入/栈/hash/脚本在.tmp/audit094/repro-v2，不随clone。初次探针漏建tracker子目录而setup失败，其部分样本和HARNESS_SETUP_FAILURE保留，不当库证据。
+
+先开Issue114；在PR113已merge后的最新devbf24574开唯一未合codex/status-parser-boundary。f5d0e01先提交九项真实配置回归（ok/bad/wait三个状态×deep/shallow/syntax），新3 failed/6控制、0error；严格load_config深层RecursionError与语法错误仍明示，普通RuntimeError既有传播合同保留。RED.xml与RED_CHECKED保留。
+
+设计先更新structure：仅现有_read_optional异常元组具体加入RecursionError，把不可解析配置按既有unreadable→mode unknown/error降级，正常peer/status/counts、失败Run原error和所有磁盘字节保留。不catch普通RuntimeError、不提高递归上限、不改变严格加载器或执行者，不新建模块/helper/持久化格式；不从本机JSON可解析案例倒推其他平台边界。
+
+74aaa49仅向_read_optional现有异常元组加入具体RecursionError；原文件before.zip和SOURCE_BYTES_CHECKED证明除这一处字节替换外无变化。九新节点全部转绿，readout500 passed、core1405 passed/1既有平台skip、CPU Flow189 passed，0failure/error。三个状态的计划行/计数、成功指标、失败原error、CLI行列及所有输入字节保全；strict load_config仍抛原解析错误，既有decoder普通RuntimeError传播测试通过。
+
+LOCAL_CHECKED SHA256 `6a10bc4f96bd2fce6209776cac4bcde704e7bdbfa5a57088f65a185fc986034e`；RED90项3失败/87通过（新九项3失败/6控制），GREEN500/Core/Flow/JUnit及红测试执行CRLF字节均在.tmp/audit094，不随clone。先红→设计→fix→本机验收，最终head/实际dev CI尚待验，不把本机通过或对照计数当科学验收。
+
+### 129. PR113最终head全实际CI后合dev，实际dev验收接续
+
+最终head335e203cbbc0903468607b5f19a9f80a6709514c的 Unit38811546168、Package38811546209、Branch38811546234全部实际矩阵/聚合成功；PR_CHECKED SHA256 `1f24bc8917729d9c16d37d089bbcba0e23797ecc5514bec3709f986f01af23a6`。PR113普通merge为devbf24574c3b3008b82cf65f702b92f055caad32a5，实际dev的Unit/Package仍在验证，不能写已验收或清分支完成。
+
+已合旧分支codex/test-evidence-unicode只等实际dev CI后清remote；新B094从该实际merge基线开始，仅一条未合工作分支。Issue111保留至下版，生产src在PR113未变。
 
 ### 128. 测试证据 Unicode 传输合同（B-093 / #111）
 

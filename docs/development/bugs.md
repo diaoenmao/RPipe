@@ -6,6 +6,8 @@
 
 ## 开放
 
+B-094/#114已f5d0e01红→6a34a59设计→74aaa49现有三态读取异常边界修复；九新项全部转绿，readout500/core1405+1平台skip/CPU Flow189通过，严格加载器与普通RuntimeError保持，见record§130。最终head/实际dev CI待验；Issue留至下版。
+
 B-093/#111已按2b4c0d1红→1d57d8b设计→58f9aaf两JSON writer编码边界修复；175针对性/core1396+1平台skip/CPU Flow189通过，20新节点均执行。见record§128，最终head/实际dev CI待验，Issue留至下版。
 
 B-092/#110已PR112普通合dev49748695，最终head及实际dev全部实际CI通过，结束remote已清，见record§127；Issue留至下版。

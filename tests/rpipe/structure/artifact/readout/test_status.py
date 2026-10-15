@@ -515,3 +515,41 @@ def test_status_all_text_fields_keep_one_line(field, text):
     target = lines[0] if field == 'study' else lines[2]
     assert 'left' in target and 'right' in target
     assert body == before
+
+
+
+@pytest.mark.parametrize('run_id', ['ok', 'bad', 'wait'])
+@pytest.mark.parametrize('payload', ['deep', 'shallow', 'syntax'])
+def test_config_parse_failure_keeps_planned_status_and_peers(tmp_path, capsys, run_id, payload):
+    import yaml
+    from rpipe.structure.artifact.config import load_config
+
+    study = _write_study(tmp_path)
+    path = study / 'runs' / run_id / 'config.yaml'
+    mode = 'eval' if run_id == 'bad' else 'train'
+    depth = 1200 if payload == 'deep' else 4
+    unused = '[' if payload == 'syntax' else '[' * depth + '0' + ']' * depth
+    path.write_text('algorithm: {mode: ' + mode + '}\nunused: ' + unused + '\n', encoding='utf-8')
+    before = {p: p.read_bytes() for p in study.rglob('*') if p.is_file()}
+    if payload == 'deep':
+        with pytest.raises(RecursionError):
+            load_config(path)
+    elif payload == 'syntax':
+        with pytest.raises(yaml.YAMLError):
+            load_config(path)
+    else:
+        assert load_config(path)['algorithm']['mode'] == mode
+    body = list_runs(study)
+    rows = {row['id']: row for row in body['runs']}
+    assert set(rows) == {'ok', 'bad', 'wait'}
+    assert body['counts'] == {'planned': 3, 'succeeded': 1, 'failed': 1, 'pending': 1}
+    assert rows[run_id]['mode'] == (mode if payload == 'shallow' else 'unknown')
+    if payload != 'shallow':
+        assert 'mode config unreadable' in rows[run_id]['error']
+    assert rows['ok']['metric'] == 'accuracy=0.8000'
+    assert 'RuntimeError: boom' in rows['bad']['error']
+    assert main(['status', str(study)]) == 0
+    lines = capsys.readouterr().out.splitlines()
+    assert len(lines) == 5
+    assert all(len(line.split('\t')) == 9 for line in lines[1:])
+    assert {p: p.read_bytes() for p in before} == before

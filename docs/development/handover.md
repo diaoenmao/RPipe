@@ -1,5 +1,10 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 PR113已合、B094配置递归安全读取合同
+
+PR113最终head335e203全部实际CI成功后普通合devbf24574，实际dev Unit38812391082/Package38812390945仍观察，旧remote尚未清，不能把待验说通过。当前仅一条未合codex/status-parser-boundary，基于该merge修B094/#114：约2435字节深嵌套YAML使status整体RecursionError，JSON三项控制正常。f5d0e01九新红3失败/6控制→6a34a59设计→74aaa49仅现有_read_optional元组加RecursionError；不提高递归上限或吞普通RuntimeError，strict loader原错不变。readout500/core1405+1平台skip/Flow189通过，九新节点全执行；计划行/status/counts/成功指标/失败原error/peer/输入字节均保留。源只一处字节替换，证据.tmp/audit094不随clone，见record§129–130。下一两批各自最终head/实际dev全部实际CI验收并清各自结束remote，保留当前活动分支、旧本地/失败；Issue等下版，无main/tag/GPU/测速/布局改动。
+
+
 ## 2026-10-16 PR112验收完成、B093测试证据编码合同
 
 PR112实际dev49748695及最终head全部实际CI全绿，结束remote codex/report-count-cells已删，本地保留，累计17条。Issue110留至下版。当前唯一未合codex/test-evidence-unicode修Issue111：先红2b4c0d1，20新节点15失败/5Unicode控制；设计1d57d8b后58f9aaf只改conftest两个JSON writer的errors=backslashreplace，保留有效UTF8/解码代理/失败状态和现有布局。删除计数测试临时ASCII诊断shortcut，src树无变化。175针对性、core1396+1既有平台skip、CPU Flow189通过；12unit/8原生/60计数均执行。8原生子进程预期失败exit1、failed1+passed1和peer/报告完整；初次核对因pytest current别名重复计数拒绝已留证，以resolve确认8独立记录，不重跑挑选。证据.tmp/audit093不随clone，详record§127–128/testing。下一最终head/实际devCI后普通合dev、清结束remote；无main/tag、测速/GPU或数据删除。
