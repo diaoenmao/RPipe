@@ -11,7 +11,7 @@
 - 来源：第二类引用/展示合同，先前record§111把compare key当代码固定不完整；checkpoint.name实际由参数构造，本轮明确更正。
 - 隔离CPU实际父路径/Run外绝对stem/对外文件alias，会让不同Run读取同一外部pt；补齐相同metrics/history后三场景完整report错误true，实际自身不同权重control false。UnicodeLS合法stem使显示5行而非4；所有源/外部bytes保留。原始REPRO/REPRO2/原码ZIP在.tmp/audit088，不随clone。
 - 期望：既有_checkpoint对存在普通文件加载前核对根属于Run且文件属于该根；合法nested/自身abs/内部alias/missing/Windowsnamespace不退化；format_compare复用_text_cell，JSON原key/数值/容差不变。
-- 先Issue101，原字节冻结17节点10 failed/7 passed、0error/skip，同字节红测试先提交，再设计；待最小修复和最终验收。不改训练保存/恢复、schema/模块/文件布局、不跑GPU/测速。
+- 先Issue101，原字节冻结17节点10 failed/7 passed、0error/skip，同字节红测试先提交，再设计；5280815原compare.py净+9修复，17节点转绿；56compare/983相关/1180core/181Flow通过、平台skip另记，8拒绝节点后补零反序列化断言全文件56通过；待最终PR/实际dev验收，见record§116。
 
 ### B-087：可选 tracker_state 坏UTF8阻断有效主轨迹和process（[#99](https://github.com/DreamSoul-AI/RPipe/issues/99)）
 
@@ -19,7 +19,7 @@
 - 期望：现有共享_state_history将可选UTF8解码失败纳入同一空history边界，所有series/history/Run/Study/curves调用方复用；有效JSONL/peer/数值/原字节保留，不改磁盘布局或checkpoint恢复，不吞RuntimeError。
 - 先Issue99，冻结原字节与正式同字节测试24项18 failed/6 passed、0error/skip，红回归先提交；设计docs/code/flow.md先于生产。f5f85b7仅1行共享边界修复；24合同全绿、相关966/core1163各1平台skip、Flow181通过；待最终PR/实际dev验收，见record §113。
 
-B-086/#97已由PR98按最终head全部实际CI普通合dev8dc6a91，实际dev Unit38790569174/Package38790569148验收中；未计全完成，Issue等下版，见record §112。
+B-086/#97已由PR98普通merge dev8dc6a91，最终head和实际dev全部实际矩阵/聚合全绿，结束remote已清；Issue等下版，见record§114。
 
 B-085/#95已由PR96普通merge devbf57c88，最终head与实际dev全部实际矩阵/聚合成功并清结束remote；Issue留至下版，见record §110。
 
