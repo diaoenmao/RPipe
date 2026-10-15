@@ -170,7 +170,8 @@ def _assert_reference_view(study, variant, reader, invalid, relative):
     from rpipe.structure.artifact.readout.logs import event_lines
     from rpipe.structure.artifact.readout.report import render_numbers
 
-    before = {p: p.read_bytes() for p in study.parent.rglob('*') if p.is_file()}
+    before = {p: p.readlink() if p.is_symlink() else p.read_bytes()
+              for p in study.parent.rglob('*') if p.is_symlink() or p.is_file()}
     unavailable = invalid or variant == 'nonexistent'
     if reader == 'status':
         body = list_runs(study)
@@ -196,7 +197,8 @@ def _assert_reference_view(study, variant, reader, invalid, relative):
             assert row.endswith('| - |')
         else:
             assert '[run.log](../' + quote(relative, safe='/') + ')' in row
-    assert {p: p.read_bytes() for p in study.parent.rglob('*') if p.is_file()} == before
+    assert {p: p.readlink() if p.is_symlink() else p.read_bytes()
+              for p in study.parent.rglob('*') if p.is_symlink() or p.is_file()} == before
 
 
 @pytest.mark.parametrize('variant', _BAD_LOG_REFERENCES)
@@ -240,3 +242,24 @@ def test_log_reference_path_resolution_error_boundary(tmp_path, monkeypatch, rea
         with pytest.raises(RuntimeError) as caught:
             call(study)
         assert caught.value is error
+
+
+
+@pytest.mark.parametrize('reader', _REFERENCE_READERS)
+def test_log_reference_cycle_is_unavailable_without_hiding_peer(tmp_path, reader):
+    from pathlib import Path
+    import json
+
+    study, _ = _reference_study(tmp_path, 'valid')
+    linked = study / 'runs/bad/assets/logs/cyclic.log'
+    try:
+        linked.symlink_to(linked)
+    except OSError:
+        pytest.skip('host does not allow file symlinks')
+    index = study / 'index.json'
+    body = json.loads(index.read_text(encoding='utf-8'))
+    body['experiments'][0]['runs'][0]['log'] = 'runs/bad/assets/logs/cyclic.log'
+    index.write_text(json.dumps(body), encoding='utf-8')
+    target = linked.readlink()
+    _assert_reference_view(study, 'cycle', reader, True, 'runs/bad/assets/logs/cyclic.log')
+    assert linked.is_symlink() and linked.readlink() == target
