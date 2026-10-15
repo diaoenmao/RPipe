@@ -6,6 +6,12 @@
 
 ## 开放
 
+### B-087：可选 tracker_state 坏UTF8阻断有效主轨迹和process（[#99](https://github.com/DreamSoul-AI/RPipe/issues/99)）
+
+- 来源：第二类读取合同批次，真实坏UTF8原文件经load_curve_series抛UnicodeDecodeError；缺失/损坏JSON/IO原已空history。3条循环symlink实际正常降级，不登记；普通控制正常。REPRO/原码ZIP/hash/真实导入路径/红日志在`.tmp/audit087`，不随clone。
+- 期望：现有共享_state_history将可选UTF8解码失败纳入同一空history边界，所有series/history/Run/Study/curves调用方复用；有效JSONL/peer/数值/原字节保留，不改磁盘布局或checkpoint恢复，不吞RuntimeError。
+- 先Issue99，冻结原字节与正式同字节测试24项18 failed/6 passed、0error/skip，红回归先提交；设计docs/code/flow.md先于生产。待单一共享边界最小修复与最终验收。
+
 ### B-086：合法文本打破只读表格行列（[#97](https://github.com/DreamSoul-AI/RPipe/issues/97)）
 
 - 来源：第二类显示合同批次，dev bf57c88。7组真实隔离探针：factor LF使status4→5行，tab使9→10列；factor/metric pipe使report7/5列各加1，metric LF使表断段；2几何控制正常。输入字节不变，原始`.tmp/audit086/REPRO.json`不随clone。
