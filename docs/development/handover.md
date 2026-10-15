@@ -1,5 +1,11 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 PR109完成、计数格合同与测试证据编码队列
+
+PR109已普通合devfccccc4，最终head/实际dev全实际CI成功，结束remote已删、本地保留，累计16条清理见record§125；Issue108留至下版。当前唯一未合codex/report-count-cells修B092/#110：三个n来源15实文件场景12违反格/行列合同，完整红c1add39为60项45失败/15控制→设计ea15e1b→report净+4 ce72f79统一_count，仅非负int十进制/其他“-”，缺失回退/默认0、科学聚合/JSON/布局不改。readout491/core1384+1平台skip/CPU Flow181通过，60原案例含U+D800全部执行；输入/peer/人工报告保全。
+
+首RED在第52节点因conftest事件writer对失败longrepr含U+D800写UTF8崩溃（36失败/1error/15控制），原日志/测试字节保留.tmp/audit092，不能当完整60。已单独开B093/#111排队紧接本批修：当前测试只把相同条件先算bool、诊断ASCII，shortcut明确关联#111，原坏数据/断言均不删不放宽。新测试事件编码须另补原生pytest复制入口红回归，覆盖manifest/event与后续节点、解码字符串保持，不混入当前report生产变更。见§126/bugs；临时证据不随clone。下一最终head/实际devCI后清结束remote，Issue110等下版，然后立即处理#111；不测速/GPU、main/tag、改布局或删数据。
+
 ## 2026-10-16 PR107完成、共享链接清理结果保全批次
 
 PR107已普通合dev3a72bd8，最终head/实际dev全部实际CI成功，结束remote已删、本地保留；累计十五条清理见record§123，Issue106留至下版。当前唯一未合codex/shared-cleanup-errors修B091/#108：真实Windows引用hardlink回退与迁移均被后续unlink错误遮蔽原发布失败，原字节/权限完整。先Issue→红f1c6426（24项15失败/9控制）→设计2061395→生产a8fb381只在shared.py两处owned finally净+6捕获清理OSError，保留原发布错误或已提交成功，RuntimeError不吞；禁止chmod共享硬链接，不改原replace重试/锁/布局。联合120+1平台skip、core1324+1同skip、Flow181通过，24新增本机全部执行，其他平台4原生只读节点skip不计通过。证据见§124与.tmp/audit091（不随clone）；下一最终head/实际devCI后清remote，Issue108等下版，不测速/GPU、不合main/tag、不删数据。

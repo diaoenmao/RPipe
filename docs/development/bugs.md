@@ -16,6 +16,7 @@
 - 来源：第二类report三计数分支，15原生场景12坏输入违反计数/行列合同，3整数控制正常；竖线扩列、换行拆行、bool/负数当n显示，输入JSON原字节保全。REPRO及实际rendered在.tmp/audit092，不随clone。
 - 期望：同一_count只显示非负int，其他类型/负数单格“-”；保持缺n的既有回退/默认0、peer/计划校验、producer统计/JSON/布局不变。
 - 先Issue110，首RED触发上方独立B093；保留原失败，c1add39用等价ASCII诊断后的完整RED2为60项45 failed/15 passed、0error/skip，全部原案例保留含U+D800。先设计再最小现有report格式化修复，不测速/GPU或改科学聚合。
+- ce72f79既有report净+4统一_count；60新节点完整转绿，readout491/core1384+1平台skip/Flow181通过，输入/peer/人工报告保全，待最终head/实际devCI。B093独立未修。
 
 B-091/#108已由PR109普通合devfccccc4，最终head与实际dev全部实际矩阵/聚合成功，结束remote已清，见record§125；Issue留至下版。
 

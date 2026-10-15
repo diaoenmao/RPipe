@@ -1,7 +1,7 @@
 > 现状：PR109实际dev全绿清远程；唯一未合report-count-cells处理B092/#110，B093/#111独立排队。
 > 最新：三计数格15原生场景12不符；完整RED2共60项45失败/15控制，出处§126。
 > 保留：首RED因失败事件的U+D800编码故障中止，52节点36失败/1error，原日志/字节未覆盖。
-> 下一步：统一report计数格，完整回归/必要CPU门与最终CI；随后修#111测试证据编码。
+> 验证：readout491、core1384+1平台skip、CPU Flow181通过，60新节点全执行；下一CI合dev后紧接#111。
 > 边界：不改科学聚合/JSON/布局，不测速/GPU，不合main/tag；已修Issue等下版，目标active。
 
 # 一、摘要
@@ -111,6 +111,8 @@ PR #25 已合入 dev `d73b217`，绑定 head `1fef2ff` 的 Unit Tests（37998120
 先[Issue110](https://github.com/DreamSoul-AI/RPipe/issues/110)，首60回归在第52节点因测试证据writer编码崩溃中止：RED.xml记36 failed/1error/15控制，不当作完整60执行。原测试FIRST_RED_TEST_BYTES/RED/log/hash保留；tests/conftest.py ensure_ascii=False序列化失败longrepr含U+D800，UTF8写失败造成pytest internalerror。另开[Issue111](https://github.com/DreamSoul-AI/RPipe/issues/111)登记B093，紧接当前批次处理，不把测试设施失败当计数产品失败或吞掉。当前断言将同一单元格相等判断先存bool，仅诊断用ASCII（shortcut明确关联#111），所有原数据及案例含U+D800保留，不排除节点、不放宽判断。c1add39正式红提交，完整RED2为60项45 failed/15 passed、0error/skip，源码仍冻结原字节。
 
 设计先于生产：report.py现有模块内增私有_count，三分支共享非负int十进制/其他“-”规则；bool、负数、float/非有限、text/分隔符/代理、array/object/null均为坏格。4整数控制含0/大整数及缺失回退控制保留，缺stat.n沿exp.n，缺exp.n默认0仍原语义。不按n_planned重算或改写科学计数，不改_fmt浮点精度、计划一致性、Run归属、peer或JSON/schema/布局；不新增模块。关联研究计划RQ2/H2的类型视图，不把显示可用当数据真实性或科学质量通过。
+
+生产ce72f79只改原report.py +6/-2（净+4）：私有_count一处判断、两处渲染调用覆盖三个来源，输入JSON/聚合计算/_fmt精度和缺失回退不变。readout491 passed/0skip、core1384 passed/1既有POSIX script mode skip、CPU Flow181 passed/0skip，0fail/error；60新节点在RED2、GREEN、CORE完整执行，包含未配对代理字符，旧index/process/人工报告及peer字节保全，NUMBERS是正常替换的派生视图。没有排除“难过”节点或用旧通过覆盖新失败，B093原内部错误仍单独未修；首部分RED与后完整RED2不混算。执行CRLF/Git LF分别hash并保留原执行字节，原源码ZIP/XML/log/LOCAL_CHECKED在.tmp/audit092，不随clone。最终工作head/实际dev CI待验，Issue110留至下版；本批后优先修已确认的Issue111。
 
 ### 125. PR109实际dev验收与第十六条结束远程清理
 
