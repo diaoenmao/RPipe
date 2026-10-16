@@ -3498,3 +3498,12 @@ SOURCE_CHECKED核对相对于上个完整候选只有recipe动态绑定改变，
 删除后远端与本地均不存在该主题；main7a15c46、本地dev9324014、origin/main00e70b1原值保持，没有worktree、数据、Run、结果或provenance删除。remote累计结束43条。清理基线仍PR161/dev8480d79，已验收累计1/约5；本批即时清理完成，不重复触发全面第5批清理。实际开放Issue快照为空，下一缺陷编号B122，不为活跃制造Issue。
 
 从实际dev建立唯一活动未合分支codex/correctness-next-milestone，继续三类正确性复查；本节收尾及后续同类内容先本地按主题积累，随下一个完整里程碑统一PR，不为几行文档另开PR。目标保持active，无决策阻塞；无GPU/测速/下载/正式Study/main/tag/发布/数据删除或文件架构与产物布局更改。
+
+
+## 204. B122 / #167末条Runner日志失败留证复现与红回归（2026-10-16）
+
+PR165验收/清理后，工作区65ed4e6仅多收尾文档；fetch正常、开放Issue快照为空，继续第一类边界复查。实际FlowRunner/Logger/result IO，合成collect/process无计算body，末条stdout拒绝×新旧结果四探针全部原异常传播但无error诊断；collect旧succeeded残留、新Run无failed，process旧成功仍保留但无诊断，新Run同样无failed。原始REPRO.json/log、runner.py ZIP/hash在.tmp/audit122（不随clone），无GPU/训练/下载/测速或正式Study执行。
+
+先开#167，再4ac6883提交portable12节点红回归：真实末条stdout/file-write两拒绝×collect/process×新旧结果8失败，正常末条4对照通过，0error/skip；phase body均实际调用一次、真实peer/原异常身份与process旧成功原字节均锁定。并非再开已修B101启动Issue，根因是同一Runner的最后一条日志未纳入既有失败处理。
+
+按已批准第一类合同只缩进原语句进入try，保持所有阶段完成后输出时机，_preserve_success/原except/failed IO完全原样，不引入更多保全范围或吞日志错误。实施方案见artifact_consistency_design§204；当前先本地同主题合批，不单bug开PR。接受基线dev70a8750，清理基线161计数1，活动codex/correctness-next-milestone保留；不动main/tag/布局/数据结果，下一编号B123。

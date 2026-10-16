@@ -456,3 +456,10 @@ load_recipe在上述上下文内执行spec前，将自己的既有模块名临�
 
 
 2026-10-16已实施并验收：B119/#163、B120/#164、B121/#166统一PR165，最终head3a74728与实际dev70a8750全部实际矩阵/聚合CI均成功；三Issue已关闭且已合主题本地/remote清理。动态入口、私有模块生命周期、旧/迁移checkpoint兼容的候选反例与方案修正均保留；这不是待审/待修状态，不改变第七节未实施能力。详record§203，后续三类复查仍先确认真实反例再同主题合批。
+
+
+## 204. B122 / #167：Runner末条日志纳入同一失败留证边界（2026-10-16）
+
+第一类新反例：最后logger.info('succeeded')位于run既有try/except之外。真实Logger的末条stdout或文件write被拒时，原异常虽传播，却绕过_log_failure/_write_failed_result；普通collect新Run无failed、旧Run残留succeeded，process旧成功按原规则应保留但也没有原错诊断。四个原生Runner/Logger合成探针确认stdout路径，正式12节点（stdout/file-write/正常×collect/process×新旧结果）先红8失败/4正常对照，4ac6883已提交。与B101启动日志处不同：原修复保留末条时机，本批保持该时机，只补末条异常范围。
+
+最小方案：将末条info原语句缩进到现有try内、仍在全部阶段/Study hook之后；已有except原样记录并按当前最后phase调用_preserve_success。process旧成功仍逐字节保全；其他普通阶段仍failed，首错对象/既有诊断fallback/failed写二错规则不变。没有新catch、helper、phase名、依赖、结果字段、路径、文件或目录。日志本身失败仍对调用方失败，不吞错或伪造成功。只在同主题下一里程碑分支积累，先本机定向+core/CPU Flow，后续完整批次一个PR验最终head/实际dev；不为单个相邻bug立刻开PR。
