@@ -6,7 +6,9 @@
 
 ## 开放
 
-B-098 / [#122](https://github.com/DreamSoul-AI/RPipe/issues/122)：非零容差int64/uint64转float64丢位，真实25新合同修前20失败/5控制；ff6b92e/56bbfe7红→f351121设计→7f3c391复用原标量树/Fraction，生产净增3行，bool/零容差/其他路径保持。readout525/core1507+1平台skip/CPU Flow189通过，最终head/实际dev CI待验，Issue留至下版。首次fixture收集错误单独保留，不当库反例；详record§140–142。
+B-099 / [#124](https://github.com/DreamSoul-AI/RPipe/issues/124)：有限±1.7e308在rtol1.5时，差值和界均inf导致四类公共compare/CLI假通过。与B089非有限输入不同，本例输入均有限。decd552先30新合同，15 failed/15控制，另189既有控制通过；全部219节点执行，无error/skip。拟在现有_close中仅对算术溢出复用Fraction精确界，复数用等价范数平方判断，张量仅溢出格调用同规则；不改NaN/inf身份、普通值、整数合同或布局。原输入/peer/hash保留，详record§143。
+
+B-098/#122已PR123普通合dev17460b1，最终head与实际dev全部实际CI成功；结束remote已核验删除，本地保留，累计23。DEV_CHECKED 3b7d04dad80c16ee1d33813b785835cd137f327c41a4f6c587d00b0260f4dd9f，Issue留至下版，见record§144。
 
 B-097/#120已PR121普通合dev039db15，最终head与实际dev全部实际CI成功；结束remote已核验删除，本地保留。DEV_CHECKED SHA256 09f769a2e8168852f9e1a9151108d543268a915a46dabec9d28e3c3ed768d3e6，Issue留至下版，详record§141。
 
