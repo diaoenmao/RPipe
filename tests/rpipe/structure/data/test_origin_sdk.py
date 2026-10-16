@@ -417,6 +417,7 @@ def test_aiohttp_actual_redirect_loop_checks_before_next_connection(monkeypatch,
 def _dataset_worker_policy_probe(batch):
     import os
     import requests
+    import threading
     from rpipe.structure import origin
     entered = []
 
@@ -437,20 +438,25 @@ def _dataset_worker_policy_probe(batch):
             client.get('https://huggingface.co/synthetic-worker')
         except RuntimeError:
             pass
-    return [dict(policy=origin._download_origin.get(), pid=os.getpid(), transport=bool(entered))
+    return [dict(policy=origin._download_origin.get(), pid=os.getpid(),
+                 thread=threading.get_ident(), transport=bool(entered))
             for _ in batch]
 
 
-def test_dataset_spawn_download_workers_keep_domestic_policy(monkeypatch):
+@pytest.mark.parametrize('backend', ['spawn', 'threads'])
+def test_dataset_download_workers_keep_domestic_policy(monkeypatch, backend):
     import importlib
     import multiprocessing
     import os
+    import threading
+    from multiprocessing.pool import ThreadPool
     datasets = pytest.importorskip('datasets')
     from datasets.download import download_manager
     from huggingface_hub import constants
     from rpipe.structure.origin import load_hf_dataset
     parallel = importlib.import_module('datasets.parallel.parallel')
-    monkeypatch.setattr(parallel, 'Pool', multiprocessing.get_context('spawn').Pool)
+    pool = multiprocessing.get_context('spawn').Pool if backend == 'spawn' else ThreadPool
+    monkeypatch.setattr(parallel, 'Pool', pool)
     monkeypatch.setattr(constants, 'ENDPOINT', 'https://hf-mirror.com')
     monkeypatch.setattr(datasets.config, 'HF_ENDPOINT', 'https://hf-mirror.com')
 
@@ -462,5 +468,48 @@ def test_dataset_spawn_download_workers_keep_domestic_policy(monkeypatch):
     monkeypatch.setattr(datasets, 'load_dataset', load_dataset)
     result = load_hf_dataset('synthetic/data')
     assert len(result) == 4
-    assert all(row['pid'] != os.getpid() for row in result), 'probe did not reach child processes'
+    if backend == 'spawn':
+        assert all(row['pid'] != os.getpid() for row in result), 'probe did not reach child processes'
+    else:
+        assert all(row['thread'] != threading.get_ident() for row in result), 'probe ran on caller thread'
     assert all(row['policy'] == 'mirror' and not row['transport'] for row in result)
+
+
+@pytest.mark.parametrize('primary,close_error', [
+    (OSError('read failed'), OSError('close failed')),
+    (KeyboardInterrupt('cancel'), OSError('close failed')),
+    (ValueError('decode failed'), OSError('close failed')),
+    (None, OSError('close failed')),
+    (OSError('read failed'), ValueError('programming close error')),
+    (None, None),
+])
+def test_dataset_generator_close_keeps_primary_failure_and_context(primary, close_error):
+    from rpipe.structure import origin
+    closed = []
+
+    class Iterator:
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            assert origin._download_origin.get() == 'mirror'
+            if primary is not None:
+                raise primary
+            raise StopIteration
+
+        def close(self):
+            closed.append(origin._download_origin.get())
+            if close_error is not None:
+                raise close_error
+
+    iterator = origin._DomesticDatasetGenerator(Iterator)()
+    expected = close_error if primary is None or isinstance(close_error, ValueError) else primary
+    if expected is None:
+        assert list(iterator) == []
+    else:
+        with pytest.raises(type(expected)) as caught:
+            next(iterator)
+        assert caught.value is expected
+    assert closed == ['mirror']
+    assert origin._download_origin.get() is None
+    assert origin._download_transports_installed is False

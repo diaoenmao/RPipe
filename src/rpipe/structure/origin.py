@@ -185,6 +185,7 @@ def _md5(path: Path) -> str:
 
 
 _download_lock = RLock()
+_download_transports_installed = False
 _download_origin: ContextVar[str | None] = ContextVar('rpipe_download_origin', default=None)
 
 
@@ -219,6 +220,7 @@ class _DownloadConstants:
 @contextmanager
 def _domestic_transfers(policy: str) -> Iterator[None]:
     """Guard SDK transports without reconfiguring their shared clients."""
+    global _download_transports_installed
     with _download_lock, ExitStack() as stack:
         token = _download_origin.set(policy)
         stack.callback(_download_origin.reset, token)
@@ -297,7 +299,24 @@ def _domestic_transfers(policy: str) -> Iterator[None]:
 
             replace(file_download, 'is_xet_available', xet_available)
             replace(file_download, 'constants', _DownloadConstants(file_download.constants))
-        yield
+        manager = sys.modules.get('datasets.download.download_manager')
+        if manager is not None:
+            original_map = manager.map_nested
+
+            @wraps(original_map)
+            def map_nested(function: Any, *args: Any, **kwargs: Any) -> Any:
+                chosen = _download_origin.get()
+                if chosen is not None:
+                    function = _DomesticDatasetCall(function, chosen)
+                return original_map(function, *args, **kwargs)
+
+            replace(manager, 'map_nested', map_nested)
+        previous_installed = _download_transports_installed
+        _download_transports_installed = True
+        try:
+            yield
+        finally:
+            _download_transports_installed = previous_installed
 
 
 def download_model(repo_id: str, cache_dir: Path | str, *, revision: str | None = None) -> str:
@@ -335,6 +354,22 @@ def load_hf_dataset(*args: Any, **kwargs: Any) -> Any:
     with _domestic_transfers('mirror'):
         result = load_dataset(*args, **kwargs)
     return _bind_dataset_transfers(result) if kwargs.get('streaming') else result
+
+
+@dataclass
+class _DomesticDatasetCall:
+    function: Any
+    policy: str
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        if _download_transports_installed:
+            token = _download_origin.set(self.policy)
+            try:
+                return self.function(*args, **kwargs)
+            finally:
+                _download_origin.reset(token)
+        with _domestic_transfers(self.policy):
+            return self.function(*args, **kwargs)
 
 
 @dataclass
