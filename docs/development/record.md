@@ -3578,3 +3578,14 @@ expected-head正常merge到实际devbef7de966a0cea0e86b1e2392222ddf8bfeff920，�
 删除后本地与远端均无此主题，main7a15c46、本地dev9324014、origin/main00e70b1原值保持；没有worktree、Run、数据、结果或provenance删除。remote累计结束44条。周期清理基线仍PR161/dev8480d79，已验收PR165/169共2/约5，本批即时主题清理完成，不重复触发全面盘点。
 
 最新实际开放Issue快照为空。唯一活动未合codex/correctness-review-next从实际dev建立，继续三类正确性复查，下一缺陷B124；先确认反例再开Issue/红回归，不为活跃制造任务。本节收尾与后续相关工作本地主题积累，随下个完整里程碑合批，不单独文档PR。20:56后PR165为加载/兼容里程碑、PR169为日志失败/读回里程碑，未按每bug拆PR；继续控制每日少量完整批次。目标active，无决策阻塞；不合main、不打tag、不force push，不动GPU任务/数据/结果与文件架构/产物布局。
+
+
+## 209. B124 / #170：合法多行消息逐行保留Logger原生记录身份（2026-10-16，本地设计）
+
+原生Logger.info的合法多行字符串仅第一行带完整header，后续[error]正文变成独立错误事件，errors_only读出一个从未由Logger.error发出的错误。REPRO使用真实Logger/index/logs/status，原始ZIP/hash/log保留.tmp/audit124（不随clone）；事件闭集与有效Run身份仍按既有合同，不把无效event或Run配置扩展成支持能力。
+
+先开#170，8ca7187提交14项正式红回归11失败/3正常对照：info/warning/error、exception多行上下文/异常值、report extra六条真实调用路径，加CRLF与Unicode行分隔；原生Runner collect→Logger→logs/status三条集成确认事件不能被正文改名。普通/空消息和原f-string对象只格式化一次是兼容对照。均合成CPU/IO，无训练/GPU/数据或性能运行。
+
+方案沿已有exception traceback逐行_emit规则：只在原_emit外加一层消息行循环，使用原f-string转换一次后splitlines，空消息保留一次原记录；每行复用原完整emit主体。正常单行记录字节/事件/级别/Run身份/编码/newline/权限、末条失败边界、可读尾行分隔及readable限制、write/flush/close首错规则均保持。多行内容不压平/转义、不通过修改只读parser猜事件，逐行保留文本及原拥有事件/级别；失败仍传播，不吞消息或放宽科学门。
+
+不新增helper/模块/文件/schema/配置或磁盘位置，不改变Tracker/checkpoint与各Study方案。代码只做一层循环及既有主体机械缩进，精确字节证明除缩进外主体不变。当前先本地原分支积累字段边界主题，不立即为单bug开PR；本机定向和完整core/CPU Flow后，后续完整里程碑仍须最终head/实际dev全部实际CI再验收，不等待设计批准。
