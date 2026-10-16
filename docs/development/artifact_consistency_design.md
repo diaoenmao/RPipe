@@ -527,3 +527,6 @@ B123补强与本机实施（2026-10-16）：3ad90d3在原Logger/已有B122 Runne
 最小方案：在既有status.py共用_traceback_detail，只将完全相同的标准Traceback头或File "...", line 数字（可带, in 函数）的整行识别为细节；logs复用此helper。其他含File/Traceback首词的正文仍是原error记录。保留原选择事件、native/legacy匹配、时间排序、文件/只读边界与其他逻辑，不做traceback状态重建、不增加结构化格式或重写旧日志。与标准细节形态完全相同的非结构化文本仍按原显示策略略过，不承诺无法辨别的来源归属。
 
 仅两个现有readout文件，把共同规则收敛一次而非在两个入口散改；先红后最小修，再与B124/B125/B126统一当前core/CPU Flow和完整里程碑最终head/实际devCI，未验收四Issue不关闭，不单bug PR、不等待设计批准。不改schema/布局、生产者或数值/科学门，不测速/跑GPU/Study。
+
+
+2026-10-17本机已实施B124–B127：38d1e09/1a4cce4/62d0f47/a94622d在五个既有生产文件完成逐行身份/提示投影/native字段/标准细节规则；相邻420/core2009 passed+1既有skip/CPU Flow354 passed，78新全执行。原legacy/日志字节不重写，未知归属不猜，完全同形的细节文本仍按既有政策；未改变科学门或文件/产物布局。四Issue待完整里程碑最终head/实际devCI，不是待设计批准。字段展示点清单及原字节核对见record§213，不逐bug拆PR。

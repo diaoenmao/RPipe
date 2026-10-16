@@ -6,7 +6,25 @@
 
 ## 开放
 
-当前开放Issue快照为空。B122/#167、B123/#168已由[PR169](https://github.com/DreamSoul-AI/RPipe/pull/169)合devbef7de9，最终head/实际dev全部实际矩阵/聚合成功，已验收关闭并清理已合主题本地/remote；原始独立红/联动红及半行/首错证据保留，详[record§204–208](record.md)。不可读日志尾仍沿原追加行为，不保证该限制下半行修复。下一编号B124，继续三类复查；未确认的假设不列为缺陷。
+### B-124：多行消息丢失原生记录身份（本机已修，待完整里程碑CI）
+
+- Issue：[170](https://github.com/DreamSoul-AI/RPipe/issues/170)。仅info正文也可被读成error；14红11失败/3控制，38d1e09复用原_emit逐行记录主体，保留单行/空消息/一次f-string转换及原IO规则。
+
+### B-125：activity提示额外行列混入状态展示（本机已修，待同批CI）
+
+- Issue：[171](https://github.com/DreamSoul-AI/RPipe/issues/171)。合法字符串换行/tab经两输出点插入行列；18红16失败/2控制，1a4cce4只共享显示投影，原mapping/JSON/缺index/peer合同保持。
+
+### B-126：原生event被Run名字或正文tag抢占（本机已修，待同批CI）
+
+- Issue：[172](https://github.com/DreamSoul-AI/RPipe/issues/172)。warning/split误作error，合法含tag Run名可隐藏记录；28红20失败/8控制，62d0f47在两reader共用真实event起点与已知Run上下文，所选集合/legacy/时间排序及只读行为保持。
+
+### B-127：traceback噪声过滤丢普通业务错误（本机已修，待同批CI）
+
+- Issue：[173](https://github.com/DreamSoul-AI/RPipe/issues/173)。File/Traceback首词普通ERROR被滤；18红12失败/6标准形态控制，a94622d只共用标准细节判别，不重建或重写日志。
+
+以上四项统一字段边界里程碑，本机420相邻/core2009+1既有skip/Flow354通过，78新全部执行；170–173仍OPEN，未跑最终head/实际devCI，不拆单bug PR。完整证据与限制见[record§209–213](record.md)，临时.tmp/audit124–127不随clone。旧不完整头日志不猜归属，完全同形traceback文本仍沿原噪声政策；文件架构/产物布局、数值门保持。
+
+B122/#167、B123/#168已PR169双侧全实际CI验收关闭并清本地/remote，详[record§208](record.md)。
 
 B119/#163、B120/#164、B121/#166已PR165双侧全实际CI验收并关闭，已合主题本地+remote清理，详[record§203](record.md)。
 

@@ -1,5 +1,12 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-17 B124–B127字段/事件身份完整本机里程碑
+
+当前codex/correctness-review-next：四Issue170–173分别先Issue/独立红/设计/最小修，原生消息行身份、可选activity行投影、native event字段与严格traceback形态已统一收敛。合批相邻420/core2009 passed+1既有skip/CPU Flow354 passed，新78全执行（21 unit+57 integration），40258/60788终结exit0，范围/字段展示点清单见record§213；原始.tmp/audit124–127不随clone。
+
+尚未推送/开PR，170–173保持OPEN；准备一个完整主题里程碑，不逐bug/几行文档拆PR，后续仍验最终head/实际dev所有实际矩阵/聚合再关Issue/清分支。接受devbef7de9/PR169，周期基线161计数2、remote44；下一编号B128，目标active，无决策阻塞。旧日志不重写、未知legacy不猜、标准细节完全同形文本仍依旧过滤；不改schema/布局/Tracker/checkpoint/数值门，不合main/tag、不跑GPU/测速/Study、不删数据/结果。
+
+
 ## 2026-10-16 PR169双侧验收与清理；下一完整里程碑复查
 
 B122/#167、B123/#168统一PR169，最终head05341f8的Branch38923564342/Package38923564221/Unit38923564299和实际devbef7de9的Package38924513921/Unit38924513792全部实际矩阵/聚合success；两Issue各一次验收评论后关闭。本机298相邻/core1988+1既有skip/CPU Flow297通过，32新全执行，原始.tmp/audit122/123不随clone，详record§208。

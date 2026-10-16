@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：B124–B127/#170–#173同分支字段/事件身份里程碑本机完成，尚未推送/开PR；接受dev仍bef7de9。
+> 最新：合法消息/提示的行边界、原生事件字段定位、标准traceback过滤四项统一收敛，详§209–213，独立红证据保留。
+> 验证：相邻420 passed；core2009 passed/1既有skip、CPU Flow354 passed，新增78（21 unit+57 integration）全执行/0新skip。
+> 下一步：完整主题一个PR，最终head/实际dev全部实际CI验收后关170–173、清已合主题；无决策阻塞。
+> 保护：清理基线161计数2、remote44；旧日志不重写、legacy不猜，main/tag/GPU/数据/结果/文件与产物布局不动。
+
 > 当前：PR169双侧全部实际CI验收，devbef7de9；#167/#168已关闭，已合主题本地/remote均清理。
 > 最新：末条Runner失败留证与半行日志独立error读回统一完成；正常日志/原字节/追加权限保持，见§206–208。
 > 验证：相邻298、core1988 passed/1既有skip、CPU Flow297 passed；32新全执行，最终head与实际dev所有矩阵/聚合成功。
@@ -3622,3 +3628,32 @@ expected-head正常merge到实际devbef7de966a0cea0e86b1e2392222ddf8bfeff920，�
 最小方案：在既有status.py共用_traceback_detail，只将完全相同的标准Traceback头或File "...", line 数字（可带, in 函数）的整行识别为细节；logs复用此helper。其他含File/Traceback首词的正文仍是原error记录。保留原选择事件、native/legacy匹配、时间排序、文件/只读边界与其他逻辑，不做traceback状态重建、不增加结构化格式或重写旧日志。与标准细节形态完全相同的非结构化文本仍按原显示策略略过，不承诺无法辨别的来源归属。
 
 仅两个现有readout文件，把共同规则收敛一次而非在两个入口散改；先红后最小修，再与B124/B125/B126统一当前core/CPU Flow和完整里程碑最终head/实际devCI，未验收四Issue不关闭，不单bug PR、不等待设计批准。不改schema/布局、生产者或数值/科学门，不测速/跑GPU/Study。
+
+
+## 213. B124–B127字段/事件身份里程碑与展示点清单（2026-10-17，本机完整验收）
+
+2026-10-16夜间至17日按同主题收敛四个确认反例，而非逐bug开PR：B124/#170合法多行消息丢完整记录身份；B125/#171 activity提示增加额外行列；B126/#172 Run名字/正文tag覆盖实际原生事件字段；B127/#173普通File/Traceback错误被过宽过滤。分别先开Issue、提交独立红、记录设计再最小修：14红11失败/3控制（8ca7187）、18红16失败/2控制（c2dfbdb）、28红20失败/8控制（4fcca9c）、18红12失败/6控制（2d7295f）。这些是四个真实生产状态，不冒称统一一场78红；原失败与每阶段目标绿保留。
+
+38d1e09仅给原Logger._emit加消息行循环、其余主体机械缩进；1a4cce4只在原activity内共用小formatter并接入两个现有打印点；62d0f47/a94622d在原status/logs共用原生字段定位和标准traceback形态规则。没有新生产文件/依赖/公开接口/配置/schema/路径，不搬代码或新增I/O框架。旧不完整头的多行日志不重写、不猜归属；原legacy兼容回退保留，标准细节完全同形文本仍按原噪声策略；既有不可读尾保留原append-only能力而不保证半行修复。
+
+### 当前字段展示点核对
+
+| **既有入口** | **字段边界与当前状态** | **本批依据/限制** |
+| --- | --- | --- |
+| Logger._emit，info/warning/error/exception/report | 本机已修；多行内容每行保留完整级别/Run/event，不压平或改名 | B124六调用路径、LF/CRLF/Unicode分隔、空/普通/一次f-string控制；原每条IO主体保持 |
+| activity.announce与CLI status提示行 | 本机已修；两输出点共用单行投影，JSON/mapping未规范化 | B125缺index/正常peer、phase/detail/tab/行分隔、正常Unicode与空detail控制 |
+| status._note_from_log与logs.event_lines | 本机已修；原生header按已知Run身份定位event，正文/Run名tag不能抢占 | B126三类合法Run组件、默认/自定义受限log、所选/忽略事件、peer和原字节；legacy不猜 |
+| 两reader的traceback细节过滤 | 本机已修；仅标准头/quoted File数字line形态抑制，普通首词错误保留 | B127 native/legacy六普通与三标准形态，完全同形非结构化文本不可辨别 |
+| status.format_status/mode/metric与path guard | 既有代码未改，本次相邻/完整回归通过 | SOURCE_CHECKED锁定原字节，表头/列/统计/严格config/输入路径合同不变 |
+| report.render_numbers/text/Markdown/link和计划绑定 | 既有代码未改，现有回归通过 | 不更改格式、有限数/计数、计划/Run身份门，不借显示修复放宽科学校验 |
+| compare.format_compare与严格数值比较 | 既有代码未改，现有回归通过 | key已有_text_cell；其余detail来自内部类型化报告，不把任意坏report当支持输入 |
+| activity.read_activity | 既有代码原字节未改 | 最低字段/Unicode/自定义phase/None与缺省detail、坏JSON/IO回退保持，reader无反向readout依赖 |
+| 原子写/共享锁/Tracker/checkpoint写协议 | 源码未改，既有故障/取消/恢复回归通过 | 不承诺多文件或任意同Run多写者事务；不做性能/实验运行 |
+
+该清单是本轮字段边界复核，承接原record§83–87的403组全仓I/O清单，不将源码检索当作所有未来输入已穷尽。CLI其他路径/错误自由文本保持原功能，不凭无协议的新假设制造缺陷。
+
+当前合批相邻420 passed；完整core2009 passed/1既有Windows POSIX模式skip、CPU Flow354 passed，均0failure/error；新增78全执行（21 unit+57 integration）、0新skip。Core/Flow进程40258/60788均exit0终结。B124/B125早先core2009+1/Flow308已单独保存，只证明当时两个修复，不能代替当前包含两reader改动及新增46集成节点的完整集合。
+
+SOURCE_CHECKED核对仅五个现有生产文件：Logger原主体逐行字节相同仅加循环缩进；activity reader/JSON写前缀、CLI其他功能、status的mode/metric/path/表/统计及logs排序/格式原字节保持；不改其余源码、numeric/Tracker/checkpoint或任何科学门。原REPRO/ZIP/hash/各场红绿/XML/源码证明在.tmp/audit124/125/126/127，不随clone；portable回归/方案/双语计划随Git提供。
+
+四Issue170/171/172/173仍OPEN，尚未推送/开本批PR；按完整字段/事件身份里程碑一次流转，最终head/实际dev都需全部实际矩阵/聚合验收后再关闭及清理。接受dev仍PR169/bef7de9，清理基线161计数2、remote累计44；下一编号B128。无决策阻塞，不等待设计审批；无GPU/测速/下载/正式Study/科学数字或结论新增，不合main/tag/发布、不force push、不删Run/数据/结果/provenance、不改文件架构和产物布局。

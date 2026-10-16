@@ -1122,3 +1122,6 @@ Study comparison PNG退出合同（Issue146）：main_exp/flow/process/curves.pl
 
 
 Logger中断尾行边界（B123/#168）：既有_emit在可读的非空尾字节既非LF也非CR时，以原append文本写在新record前补一个分隔；不截断/重写旧字节，合法记录的stdout/文件内容、编码/newline、追加权限及首错规则保持。可选尾读OSError沿原append-only行为继续，不能读旧日志时不保证修复中断半行；不因此新增读取权限要求。Tracker恢复协议与只读解析不改，非任意多写者事务。当前本机与合批状态见[record§207](../development/record.md)。
+
+
+Logger多行消息（B124/#170，2026-10-17本机修复）：内容行复用原完整record主体，保持同级别/Run/event、原行文本与每条IO错误规则；空/普通单行及原f-string转换保持。此规则沿用已有traceback逐行记录政策，不改变文件格式或Tracker；既有旧日志不重写/重建。当前工程验收状态见[record§213](../development/record.md)。

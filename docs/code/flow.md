@@ -450,3 +450,6 @@ Study process读取indexed sibling result时，缺失、IO、坏语法、非obje
 
 
 Run process无有效内存result时，磁盘自身result同样沿原可选回读规则处理stat/IO、domain与JSON递归解析失败；继续生成自身history且不改result字节。有效内存mapping仍优先，不要求Study index。Runner的普通失败及旧成功保全规则、metrics转换与history读取不变，见B113/#153。
+
+
+状态/日志字段边界补充（B125–B127，2026-10-17本机）：activity仅在announce/status两个显示点共用单行投影，reader仍返回原mapping、不改JSON，正常行空格与缺index行为保持；native日志在已知Run目录身份后定位真实event，再用原选择集合，未知legacy回退保持。Traceback噪声只认标准头或quoted File数字line形态，普通File/Traceback首词错误保留；完全同形非结构化文本无法辨别，旧日志不重写。未改变模式/路径/数值门或产物布局，当前完整工程结果与待CI状态见[record§213](../development/record.md)。
