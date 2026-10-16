@@ -271,3 +271,19 @@ Issue132后，1e8c5d1先提交22项合同：unit12覆盖RuntimeError/KeyboardInt
 在5762925上复现：子进程替身写出合法succeeded结果后返回1，schedule错误行stdout再抛BrokenPipeError，原实现先print导致既有失效写回完全未执行，run_succeeded仍真。没有真实子进程、训练或数据。Issue138后e599e4b先提交八项：BrokenPipe/Permission/UnicodeEncode三类×retry开关6 failed，正常输出两控制passed；peer与config原字节保持。
 
 最小方案：仅把非零退出分支的print移到已有success→failed纠正之后。stdout原异常仍按原方式传播，不吞掉异常、不增加新logging策略；retry和codes、已有failed结果/无结果的处理、spawn语义、train/eval屏障和磁盘格式保持。不把诊断失败当成功；若纠正写入本身拒绝，原有严格写错误仍传播。相邻blocked依赖已先写failed再输出，announce/report/compare已先发布再输出，Runner日志二错已有B101/B102合同，不重复改动。当前设计已实施后按本机与最终/实际dev全部实际CI验收。
+
+
+## B106 / #140：PNG单文件原子发布与自有figure释放（2026-10-16）
+
+90078c8上已复现：有效旧PNG被savefig部分写覆盖，原OSError传播但新figure遗留。Issue140后5eef63d先提交19项C2回归：构造axes/绘制/部分保存/取消/替换/排他创建失败×新旧目标、UUID碰撞、清理拒绝、两项有效PNG控制及真实Windows只读目标；正式17 failed/2控制passed、0error/skip，首轮18项原红亦保留。测试放既有flow/process镜像目录的test_curves_publication.py，单独C2避免给原C1文件叠加两个cost marker，不新增生产模块。
+
+实施方案沿用已批准第三类合同：只改curves.py，在原figsize下取得figure后立即进入finally所有权范围，再以等价fig.subplots取得axes；绘制主体原样缩进，不改数据、坐标/标注、dpi140或路径。短UUID的同目录.tmp用xb排他取得所有权，savefig向该文件句柄以显式PNG格式写入，关闭后复用既有atomic_replace发布。目标原mode沿用；新目标沿用普通open的umask。临时创建失败不unlink peer，自有文件才best-effort清理；PermissionError只对自有独立临时文件恢复0o600并重试一次，其余OS拒绝留诊断，不遮原保存/替换异常。最外finally始终只关闭本次取得的figure，peer figure保留。现有checkpoint诊断staging、共享硬链接和日志追加均不改；不加通用I/O框架、文件夹或schema。
+
+验证：19新节点全部执行、旧图/缺目标/输入/peer bytes和mode，PNG有效控制及原绘图合同；本机另用冻结旧函数与新函数对相同合成输入比较PNG原字节。随后core、CPU Flow及最终head/实际dev全部实际CI分别验收。源ZIP/失败、原始PNG和哈希在.tmp/audit106，不随clone；无GPU、测速、正式Study或main/tag。
+
+
+### B106同批补充：临时流关闭IO二错（2026-10-16）
+
+9da02b4相邻故障注入确认：with临时流的__exit__/close再抛OSError，会替换savefig已经抛出的RuntimeError或KeyboardInterrupt。a095ef0先提交6项补充回归（两种首错×新旧目标4 failed，成功保存后close错误的2控制passed），与最初19项红分开保存；仍属Issue140/PR141，不另起主题。
+
+仅把临时流上下文改为显式取得/关闭：保存已有BaseException时尽力close，只有关闭OSError不替换首错，随后bare raise；保存正常时close仍严格传播，未关闭成功不发布。捕获BaseException只为取消也释放资源且原样重抛，不吞新的终止信号或关闭中的非IO程序错误。PNG绘制/权限/所有权规则不变。原head9da02b4的CI快照保留，新代码应更新同一PR并重新接受最终head的实际CI，不能沿用旧head绿作为验收。

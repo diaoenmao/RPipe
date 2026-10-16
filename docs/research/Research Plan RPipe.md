@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
 > Version 1.4; updated 2026-10-16. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `576292503d1a128fae61410466e87b2f9233f4fd`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `90078c81421fd39e746212c16d84bf2b3c9a44de`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -542,3 +542,17 @@ PR137 final-head and actual-dev CI passed all actual jobs; Issue136 is closed an
 
 
 B105 local completion: scheduler88/core1709/CPU Flow207 passed, with one existing core platform skip. All eight new nodes executed. Final-head and actual-dev CI acceptance remains pending.
+
+
+## B105 acceptance and B106 PNG evidence, 2026-10-16
+
+PR139 final-head/actual-dev CI passed all real jobs; Issue138 is closed and its local/remote branch removed. The fifth-batch cleanup baseline is now139. B106/Issue140 reproduces partial PNG saving destroying the previous figure and leaking its owned figure. Nineteen test-first nodes gave17 failures/2 valid controls, then all19 passed after local atomic publication/owned-figure cleanup; core passed1728 with one existing platform skip. Flow/CI remain pending. Frozen-old/current rendering produced identical95233-byte PNGs for the same synthetic input; plot data/coordinates/dpi, Study protocols and layout are unchanged. This is not a new scientific result; see [record§163–164](../development/record.md).
+
+
+B106 local completion:19 new nodes/core1728/CPU Flow207 passed; core has one existing platform skip. All19 new nodes, including native Windows readonly cleanup, executed. Final-head/actual-dev CI remains pending.
+
+
+B106 remains one PR141: six supplemental close-error regressions yielded4 failures/2 valid controls before66f6f16 retained the original save/cancellation error; close failure after successful saving stays strict. All25 new nodes and core1734 with one existing skip pass; final Flow/CI remain pending. Old-head green is not new-head acceptance. Frozen-old/current PNG bytes still match at95233 bytes; no new scientific experiment or layout change.
+
+
+B106 final local acceptance after stream-close supplement:25 new nodes/core1734/CPU Flow207 passed; core has one existing platform skip. All25 new nodes executed, including native readonly cleanup. PNG bytes remain identical. Final updated-head and actual-dev CI remain required; old9da02b4 green is historical.

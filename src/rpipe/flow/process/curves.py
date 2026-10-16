@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import uuid
 from pathlib import Path
 from typing import Any
 
 from rpipe.flow.process.aggregate import collect_from_index, load_curve_series, summarize_curve_series
+from rpipe.structure.artifact._atomic import atomic_replace
 from rpipe.structure.artifact.paths import DOCS_DIRNAME
 from rpipe.structure.artifact.result import STATUS_SUCCEEDED
 
@@ -89,38 +91,73 @@ def write_learning_curves(
     dest = learning_curves_path(study_dir)
     dest.parent.mkdir(parents=True, exist_ok=True)
     palette = plt.rcParams['axes.prop_cycle'].by_key()['color']
-    fig, axes = plt.subplots(2, 2 * len(units), figsize=(9.2 * len(units), 6.4))
-    colors = {group['label']: palette[i % len(palette)] for i, group in enumerate(groups)}
-    for column, unit in enumerate(units):
-        for panel, (split, name, panel_title) in enumerate(_PANELS):
-            ax = axes[panel // 2, column * 2 + panel % 2]
-            for label, summary in panels.get((unit, split, name), []):
-                means, stds, points = summary['mean'], summary['std'], summary['x']
-                counts = summary['n_at_point']
-                varying = len(set(counts)) > 1
-                color = colors[label]
-                label = f'{label} · {unit} · n={min(counts)}' + (f'–{max(counts)}' if varying else '')
-                ax.plot(points, means, color=color, label=label, linewidth=1.8,
-                        marker='o' if len(means) == 1 or varying else None)
-                ax.fill_between(points, [m - s for m, s in zip(means, stds)],
-                                [m + s for m, s in zip(means, stds)], color=color, alpha=0.18)
-                if varying:
-                    for x, y, n in zip(points, means, counts):
-                        ax.annotate(f'n={n}', (x, y), xytext=(0, 6), textcoords='offset points',
-                                    ha='center', fontsize=7, color=color)
-            ax.set_title(panel_title)
-            ax.set_xlabel({'step': 'optimizer step', 'epoch': 'epoch', 'observation': 'history point'}[unit])
-            ax.grid(True, alpha=0.3)
-            if name == 'Accuracy':
-                ax.set_ylim(0.0, 102.0)
-                ax.set_ylabel('Accuracy (%)')
-    handles = {}
-    for ax in fig.axes:
-        lines, labels = ax.get_legend_handles_labels()
-        handles.update(zip(labels, lines))
-    fig.legend(handles.values(), handles.keys(), loc='lower center', ncol=2, fontsize=8)
-    fig.suptitle(title or f'{study_dir.name} · mean ± std', fontsize=11)
-    fig.tight_layout(rect=(0, 0.12, 1, 1))
-    fig.savefig(dest, dpi=140)
-    plt.close(fig)
-    return dest
+    tmp = dest.with_name(f'{uuid.uuid4().hex}.tmp')
+    owned = False
+    fig = plt.figure(figsize=(9.2 * len(units), 6.4))
+    try:
+        axes = fig.subplots(2, 2 * len(units))
+        colors = {group['label']: palette[i % len(palette)] for i, group in enumerate(groups)}
+        for column, unit in enumerate(units):
+            for panel, (split, name, panel_title) in enumerate(_PANELS):
+                ax = axes[panel // 2, column * 2 + panel % 2]
+                for label, summary in panels.get((unit, split, name), []):
+                    means, stds, points = summary['mean'], summary['std'], summary['x']
+                    counts = summary['n_at_point']
+                    varying = len(set(counts)) > 1
+                    color = colors[label]
+                    label = f'{label} · {unit} · n={min(counts)}' + (f'–{max(counts)}' if varying else '')
+                    ax.plot(points, means, color=color, label=label, linewidth=1.8,
+                            marker='o' if len(means) == 1 or varying else None)
+                    ax.fill_between(points, [m - s for m, s in zip(means, stds)],
+                                    [m + s for m, s in zip(means, stds)], color=color, alpha=0.18)
+                    if varying:
+                        for x, y, n in zip(points, means, counts):
+                            ax.annotate(f'n={n}', (x, y), xytext=(0, 6), textcoords='offset points',
+                                        ha='center', fontsize=7, color=color)
+                ax.set_title(panel_title)
+                ax.set_xlabel({'step': 'optimizer step', 'epoch': 'epoch', 'observation': 'history point'}[unit])
+                ax.grid(True, alpha=0.3)
+                if name == 'Accuracy':
+                    ax.set_ylim(0.0, 102.0)
+                    ax.set_ylabel('Accuracy (%)')
+        handles = {}
+        for ax in fig.axes:
+            lines, labels = ax.get_legend_handles_labels()
+            handles.update(zip(labels, lines))
+        fig.legend(handles.values(), handles.keys(), loc='lower center', ncol=2, fontsize=8)
+        fig.suptitle(title or f'{study_dir.name} · mean ± std', fontsize=11)
+        fig.tight_layout(rect=(0, 0.12, 1, 1))
+        try:
+            mode = dest.stat().st_mode
+        except FileNotFoundError:
+            mode = None
+        stream = tmp.open('xb')
+        owned = True
+        try:
+            fig.savefig(stream, format='png', dpi=140)
+        except BaseException:
+            try:
+                stream.close()
+            except OSError:
+                pass
+            raise
+        else:
+            stream.close()
+        if mode is not None:
+            tmp.chmod(mode)
+        return atomic_replace(tmp, dest)
+    finally:
+        try:
+            if owned:
+                try:
+                    tmp.unlink(missing_ok=True)
+                except PermissionError:
+                    try:
+                        tmp.chmod(0o600)
+                        tmp.unlink(missing_ok=True)
+                    except OSError:
+                        pass
+                except OSError:
+                    pass
+        finally:
+            plt.close(fig)
