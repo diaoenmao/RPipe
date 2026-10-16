@@ -116,3 +116,33 @@ def test_sibling_lookup_ignores_previous_version_outside_index(tmp_path: Path, c
     found = sibling_train_checkpoint(SimpleNamespace(assets_dir=eval_assets), stem='best')
     assert found == (current_best if current_checkpoint else None)
     assert old_best.read_bytes() == b'previous version checkpoint'
+
+
+@pytest.mark.parametrize('spelling', ['Eval', 'eval', 'Other'])
+@pytest.mark.parametrize('route', ['ids', 'dependency', 'checkpoint'])
+def test_sibling_ownership_follows_native_run_component(tmp_path, spelling, route):
+    from rpipe.structure.algorithm.resume import sibling_train_ids, sibling_train_dependency
+    from rpipe.structure.artifact import artifact_layout
+    import json
+    import os
+
+    for name, mode in [('Train', 'train'), ('Eval', 'eval'), (spelling, 'eval')]:
+        layout = artifact_layout(tmp_path, name)
+        layout.config_path.write_text(json.dumps({'algorithm': {'mode': mode}, 'system': {'device': 'cpu'}}), encoding='utf-8')
+    best = tmp_path / 'runs/Train/assets/checkpoints/best.pt'
+    best.parent.mkdir(parents=True)
+    best.write_bytes(b'path selection only; never loaded')
+    write_index(tmp_path, {'study': 'native-sibling', 'experiments': [
+        {'factors': {'algorithm.mode': mode}, 'runs': [{'id': name, 'run_dir': name, 'seed': 0}]}
+        for name, mode in [('Train', 'train'), ('Eval', 'eval')]]})
+    same_run = (tmp_path / 'runs/Eval').samefile(tmp_path / 'runs' / spelling)
+    assert same_run == (spelling == 'Eval' or (os.name == 'nt' and spelling == 'eval'))
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    if route == 'ids':
+        assert sibling_train_ids(tmp_path, spelling) == (['Train'] if same_run else [])
+    elif route == 'dependency':
+        assert sibling_train_dependency(tmp_path, spelling) == ('Train' if same_run else None)
+    else:
+        assert sibling_train_checkpoint(SimpleNamespace(assets_dir=tmp_path / 'runs' / spelling / 'assets'),
+                                        stem='best', current_id=spelling) == (best if same_run else None)
+    assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
