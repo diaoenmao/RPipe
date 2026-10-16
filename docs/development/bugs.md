@@ -6,12 +6,14 @@
 
 ## 开放
 
-### B-101：Runner日志初始化失败绕过failed结果与原异常传播
+### B-102：原生训练结束flush替换原执行异常
 
-- Issue：[130](https://github.com/DreamSoul-AI/RPipe/issues/130)，修复前正式红提交8a351df，10 failed/0error/skip。
-- 复现：有效旧succeeded结果，assets/logs/run.log为目录，run(collect)抛日志打开错误却保留旧success；新Run同样缺failed result。诊断_ensure_logger失败还会覆盖阶段原错。
-- 期望：原错误继续传播，result可写则尽力failed；collect普通失败写回，process已有成功仍原字节保全；日志坏对象/peer不改。
-- 方案：仅把启动日志纳入run既有try，诊断Logger构造失败在_log_failure内返回；设计见artifact_consistency_design的B101补充及record§152。9e345c8已完成最小修复，本机相邻123/core1679+1既有平台skip/CPU Flow199通过，正式10新节点全执行；待最终head与实际dev CI。
+- Issue：[132](https://github.com/DreamSoul-AI/RPipe/issues/132)，正式红1e8c5d1：22项20 failed/2 passed、0error/skip。
+- 复现：非stub CPU数据首个iter_batches抛RuntimeError，finally的tracker状态编码/发布再失败，对外异常与result.error变成二次错误；原错只留chain。更正探针零批次/零优化步，最初stub无效探针保留。
+- 期望：已有原错时尽力flush且保留原异常身份/failed error；成功体最终flush失败仍传播。旧tracker/peer和日志二次错误留证保持，日志不可用不覆盖原错。
+- 方案：原finally拆成except BaseException中的best-effort flush/Logger与原raise，else直接flush；设计先入库，生产待改。不改训练数值、周期flush、checkpoint/RNG、schema或layout。
+
+B101/#130已PR131合dev并验收关闭，正式记录与分支清理见[record§154](record.md)。
 
 前一轮已关闭26个已处理Issue（24正确性+2初步调研），完整清单与旧反例见[record§150–151](record.md)及[清理前索引](https://github.com/DreamSoul-AI/RPipe/blob/2008753c3c2b11321a3da3811102cf5c20b646ff/docs/development/bugs.md)。关闭不等同main发布或授权探索后续实施。
 
@@ -39,6 +41,6 @@ B-055 的原生 launch 重试关闭入口已通过 [PR #42](https://github.com/D
 
 B-002、B-021 / B-024及B-025至B-029的既有修复证据仍在 [record.md](record.md)。B-022 / B-023 的代表性容量、精度合同与探索边界保留各自报告；本轮新的设备 / 并发结果见 [本轮执行记录](../../studies/main_exp/docs/v030_execution.md)。未实测支持范围不是已通过，缺环境依赖的导入失败也不自动列为库缺陷。
 
-已使用至 B-101，编号不复用；下次新增问题从 **B-102** 起编号。历史段落的旧“下一编号”仅表当时状态。
+已使用至 B-102，编号不复用；下次新增问题从 **B-103** 起编号。历史段落的旧“下一编号”仅表当时状态。
 
 新增条目一条一事，记录编号、open / investigating状态、复现条件、期望 / 实际、影响落点、方案和实际验证证据。

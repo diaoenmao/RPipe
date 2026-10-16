@@ -437,6 +437,8 @@ flush **必须有**，与 print 同一套间隔，不能攒到 Run 结束：
 - **epoch 末**：`save`+`reset`，再 flush state
 - **execute 结束 / 尽量在失败时**：再 flush 一遍
 
+原生 supervised train 结束时区分成功与已有异常：已有训练异常（含终止）时尽力 flush state，二次编码/发布失败不能替换原异常，已有 Logger 可用时尽力记录二次 traceback；无 Logger 或日志也失败时原异常仍继续。训练体正常完成后，最终 state 写失败仍传播并阻止成功，不静默吞掉。只调整现有结束收尾的异常优先级，不改训练步骤、周期内 flush、checkpoint/RNG 或 tracker 格式。
+
 native train 日志的 `lr` 记录刚完成的 optimizer step 实际使用的第一参数组学习率；周期 train / test 及该轮收尾保持同一口径。step 调度时不能复用 epoch 开始的缓存值。没有执行新 step 的恢复评测使用恢复后 optimizer 当前值。此日志修正不改变 optimizer / scheduler 的更新顺序。
 
 不允许：log 只打终端不写文件；jsonl / state 只在 Run 结束写一次。不必每个 batch 都 rewrite 整份 state。
