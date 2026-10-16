@@ -68,3 +68,11 @@ B104/#136已PR137实际dev全CI验收关闭。B105/[Issue138](https://github.com
 
 
 B105本机验收：调度88/core1709/CPU Flow207 passed，core另1既有平台skip；八新节点全执行。最终head与实际dev CI仍待验收。
+
+
+## 2026-10-16 B106 当前开放项
+
+B105/#138已PR139实际dev全CI验收关闭并完成周期清理。B106/[Issue140](https://github.com/DreamSoul-AI/RPipe/issues/140)：savefig直接写旧PNG时部分失败破坏旧图、遗留自有figure；19项先红17/2，最小局部原子发布/释放修复已本机19绿、core1728+1既有skip。待Flow与两侧CI；见[record§163–164](record.md)。
+
+
+B106本机验收：19新节点/core1728/CPU Flow207 passed，core另1既有平台skip；含真实Windows只读清理的19新节点全执行。最终head/实际dev CI待验收。

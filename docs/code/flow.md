@@ -436,3 +436,6 @@ compare 不重跑计算，不改任何 Run 文件。和外部实现（例如旧 
 
 
 launch对非零run-one退出的既有成功结果纠正须先于辅助错误行输出；stdout拒绝仍按原方式向上传播，但不能因此保留本次非零退出的成功结果。既有failed/无结果策略、codes、retry、spawn与依赖屏障不扩大。见B105/Issue138。
+
+
+Study曲线PNG单文件发布使用同目录短随机.tmp，xb排他取得所有权后以既有PNG/dpi写入，关闭句柄再复用atomic_replace；失败保留旧图或缺目标、peer staging及输入字节。目标原mode与新文件umask保持；finally只清自有独立临时文件并关闭本次figure，OS清理拒绝留诊断、不覆盖原保存/发布错误。绘制数据、坐标、标签、格式和docs/figures/learning_curves.png路径不变；不承诺PNG与process.json多文件事务，也不改变checkpoint诊断保留。见B106/Issue140。

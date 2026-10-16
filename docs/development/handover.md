@@ -437,3 +437,11 @@ PR137实际dev5762925全实际CI成功，Issue136关闭，shared-migration-lock-
 
 
 B105本机验收：调度88/core1709/CPU Flow207 passed，core另1既有平台skip；八新节点全执行。最终head与实际dev CI仍待验收。
+
+
+## 2026-10-16 B106 PNG发布；B105与周期清理已完成
+
+PR139实际dev90078c8全CI验收，Issue138关闭，launch-failure-evidence本地/remote普通删；五批盘点基线139、累计归0。当前Issue140唯一工作分支codex/curve-publication-ownership：5eef63d先红17/2→39d9c15设计→fba35b8局部PNG原子发布/figure所有权。19新节点全绿、core1728+1既有skip；待CPU Flow/两侧CI。冻结旧/新PNG95233字节同hash，绘制数据/坐标/dpi、布局均保持。详record§163–164；目标active，无GPU/main/tag。
+
+
+B106本机验收：19新节点/core1728/CPU Flow207 passed，core另1既有平台skip；含真实Windows只读清理的19新节点全执行。最终head/实际dev CI待验收。

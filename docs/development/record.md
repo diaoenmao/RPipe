@@ -1,7 +1,7 @@
-> 当前：B104/PR137最终及实际dev全CI验收完成，Issue136关闭、工作分支本地/remote已删。
-> 最新：B105/Issue138确认stdout拒绝会跳过非零退出留证；正式6 failed/2控制passed。
-> 修复：02f84e4只移动一行诊断输出，调度88 passed；peer/config原字节保持。
-> 下一步：core/CPU Flow、两侧全CI与约5PR清理；目标active，无代码阻塞。
+> 当前：PR139两侧全实际CI成功、Issue138关闭并完成五批清理；新基线139。
+> 最新：B106/Issue140 PNG部分保存破坏旧图/遗留figure，正式19节点17红/2控制。
+> 修复：fba35b8局部原子PNG发布/figure释放后19绿，core1728+1既有skip；原绘图字节一致。
+> 下一步：CPU Flow、最终head与实际dev全CI；目标active，无代码阻塞，见§163–164。
 > 保护：无GPU/测速/正式Study、main/tag或产物布局变更；以下旧状态保留。
 
 > 当前：PR135实际dev已全CI验收、Issue134关闭，工作分支本地/remote普通删。
@@ -3044,3 +3044,21 @@ PR137 正常合dev 576292503d1a128fae61410466e87b2f9233f4fd。最终head aa59894
 
 
 B105本机验收：调度88/core1709/CPU Flow207 passed，core另1既有平台skip；八新节点全执行。最终head与实际dev CI仍待验收。
+
+
+## 163. B105 / PR139 实际dev验收与五批周期清理（2026-10-16）
+
+PR139正常合dev90078c81421fd39e746212c16d84bf2b3c9a44de。最终head5af40d1的Branch38876118376 / Package38876118190 / Unit38876118273，以及实际dev Package38876987073 / Unit38876986912全部实际矩阵和聚合成功；Issue138验收关闭。DEV_CHECKED SHA256：e62d34c82d21014c3d76806f09f9976ac7ec4ab200f04872b5bd23dc0b40b689。
+
+PR129后五批PR131/133/135/137/139均已验收，对应runner-log-failure、train-failure-finalizer、cache-lock-path-identity、shared-migration-lock-order、launch-failure-evidence工作分支的本地/remote均逐批普通删除（均有codex/前缀）；本轮实际删除最后1条的本地/remote各1。周期盘点结束仅main/dev、1主登记工作目录、0废弃worktree/额外积压已合分支、0开放PR；新Issue140未修而保留，不关闭。新基线PR139/dev90078c8，后续合入累计0。main、独立GPU副本、数据/结果/Run/provenance及_staging_from_DEM不动。原始清单与核验.tmp/audit105/PERIODIC_CHECKED.json不随clone，PR139正文提供可携带验收记录。此前pending仅历史。
+
+## 164. B106 / Issue140：PNG原子发布与figure所有权（2026-10-16）
+
+90078c8上真实Agg合成输入复现：savefig部分写失败破坏有效旧PNG且遗留1个本次figure，原OSError与peer figure保留。先Issue140，5eef63d提交19项C2回归，正式17 failed/2有效控制passed，0error/skip；首轮18项原红保留。39d9c15设计后fba35b8仅curves.py加入自有figure finally和同目录xb排他staging，经既有atomic_replace发布；保留mode、默认umask、原错误、peer/输入字节与既有路径。不可恢复自有临时清理OS错误留诊断、不遮原错；不是多文件事务或断电保证，不改checkpoint诊断staging/共享硬链接。
+
+19新节点全执行/通过，core1728 passed/1既有Windows POSIX模式位skip，0failure/error；CPU Flow和最终head/实际dev CI待分别验收。冻结旧函数与新函数对含step/epoch/observation及变n标注的同一合成输入，PNG95233字节完全一致，SHA256均2c5c48b4a46b29c3273df0ea601483bd289cdcd811afc23803f2c26eabaff0d2；绘制主体除新增try缩进外逐行原样。此为本环境工程验证，不是跨环境图片金标或新科学实验。调用方仅Study process；既有207项CPU Flow将验证其实际职责。临时原始PNG/ZIP/红绿和哈希在.tmp/audit106，不随clone；正式测试与设计已入库。
+
+本批将渲染/构造/部分保存/取消/替换/创建失败、新旧目标、碰撞、清理拒绝和真实Windows只读目标统一验收；测试在既有flow/process镜像目录新增publication文件声明C2，避免改动原C1用例或叠加两个cost marker。生产没有新模块/依赖、文件夹或schema；坐标/数据/标签/dpi140与最终PNG路径保持，未跑GPU、测速、正式Study，未动main/tag。
+
+
+B106本机验收：19新节点/core1728/CPU Flow207 passed，core另1既有平台skip；含真实Windows只读清理的19新节点全执行。最终head/实际dev CI待验收。
