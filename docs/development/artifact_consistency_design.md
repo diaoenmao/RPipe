@@ -628,3 +628,6 @@ PR184已正常合dev28f3dde，实际devCI尚待；本项在其后唯一未合cod
 B135方案修正（2026-10-17，先补回归再实施）：首个仅补wait候选257相邻通过，但审查指出其遗漏既有非零退出→成功结果纠正。232ff08新增红1/1：已启动peer在wait中写succeeded后返回7，后续spawn原错传播而结果仍succeeded；这是本地候选不完整，未提交生产/未推送/未验收，不另立B或PR。WAIT_ONLY_CANDIDATE.py、首GREEN与EVIDENCE_RED保留于.tmp/audit135，不能被后绿覆盖。
 
 改为继续复用同一原wait/非零结果纠正循环，不另造wait-only收尾分支：捕获组启动最初BaseException后仍进入原等待循环；每个wait/结果纠正/退出诊断也保留首个异常并继续其余已启动peer，循环结束再raise原异常对象。正常等待返回/结果处理不变，成功wait仅一次；OS wait持续拒绝仍只有尝试保证。两处try与一个primary变量位于原_run_groups，原spawn/非零纠正正文不丢失，无新helper/import/进程杀停/全局锁/超时/布局。先记录本修正，再替换未提交候选；此前成功wait计数方案属于被拒候选，不作为最终已实施描述。
+
+
+B135本机实施状态（2026-10-17）：最终ba04ae3按修正方案复用原循环实施，258相邻/core2164 passed+1既有skip/Flow425 passed，新28全执行。仅wait候选及补红保留，未冒充验收；185仍OPEN且未推送/开PR，按少量PR规则本地积累。PR184已双侧实际CI验收清理，详record§229–230；无待设计批准。

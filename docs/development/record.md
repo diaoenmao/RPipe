@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR184双侧全部实际CI验收，dev28f3dde；182/183已关闭，codex/launch-plan-validation本地+remote已删。
+> 最新：B135/#185六类异常子进程所有权已先红后本地修ba04ae3；wait-only候选漏非零纠正已另红并修，详§228–230。
+> 验证：258相邻/core2164 passed+1既有skip/CPU Flow425 passed，新28全执行；原始失败/候选拒绝保留。
+> 下一：当前唯一未合codex/launch-failure-ownership继续同主题本地积累，完整里程碑再一个PR；185仍OPEN，未推送/无阻塞。
+> 保护：周期基线181计数1/remote48；main/tag/GPU/数据/结果/布局不动，OS wait持续不可用仅保证尝试。
+
 > 当前（2026-10-17）：B133/#182+B134/#183启动计划完整里程碑本机验收，生产6349765；接受dev593385f，尚未推送/开PR。
 > 最新：共用wait_groups校验缓存/启动/脚本发布；两红批39项28失败、20项12失败，详§226–227。
 > 验证：相邻230 passed；core2137 passed+1既有skip；CPU Flow424 passed；新59全执行/0新skip。
@@ -3898,3 +3904,20 @@ f9ce20d先红27项25失败/2控制通过，26unit+1原生CLI integration全执�
 
 
 B135本地候选审查补记（2026-10-17）：仅补wait的未提交候选257相邻通过，但缺少cleanup非零peer的既有成功→失败纠正；232ff08新增红1/1（wait写succeeded后code7），保留原spawn异常但留下succeeded。WAIT_ONLY_CANDIDATE.py、首次GREEN及EVIDENCE_RED独立留存，不冒称最终验收。方案文末已修正为“保留首次异常、继续同一原wait+结果纠正循环、最后原样raise”，不另立Issue/PR；先本条修正再最小实现，候选生产尚未提交或推送。
+
+
+## 229. PR184双侧实际CI、182/183验收关闭及已合分支清理（2026-10-17）
+
+PR184最终head67c77c2c6e008474d060de2871926fa806f32737，Branch38948310761/Package38948310834/Unit38948310816所有实际矩阵及聚合success，PR_CHECKED SHA25654b374d8d16c45a68ad315fba51c61c01a712b41676cb0707b9a4f3e5d2df99d。正常merge到实际dev28f3dde57d38a84898bbc74b85beca20722eb9da，独立Package38949180199/Unit38949180244所有实际矩阵/聚合success，DEV_CHECKED SHA25614d84e4fe77e4d00ae325a550dd26b4aa15f00ff9f1f13d52feb6f5d2f16b607。原生Windows大小写别名/POSIX不同实体分支均实际执行；不以本机或聚合单状态替代矩阵。
+
+182/183各发一次带真实head/dev CI链接验收评论并关闭，原Issue正文逐字保留，fresh读回CLOSED及marker各1。PR原正文保留、仅追加一次实际验收/清理/下一185说明；首次GitHub正文raw-prefix校验在成功edit后因GitHub返回CRLF而拒绝，保留PR_BODY_CHECK_REJECTED；fresh读回仅对GitHub prose换行标准化后与完整预期exact match、marker1，不重复edit。源码CRLF字节校验不受影响，此为校验器边界而非库/CI失败。
+
+清理清单：codex/launch-plan-validation远端普通delete、本地git branch -d；tip67c77c2已纳actualdev、检查原main/dev/origin-main三保护引用不变、单primary worktree、workspace仅既有_staging_from_DEM。当前codex/launch-failure-ownership未合且保留（含本地185进度），无worktree/数据/结果/Run/provenance删除，无force/main/tag/release/GPU。fresh for-each-ref及ls-remote验证旧主题两端不存在。周期基线仍PR181，累计1个合入PR/约5再盘点；累计remote结束48。证据.tmp/audit134的PR_CHECKED/DEV_CHECKED/ISSUE_*_ACCEPTED/PR_ACCEPTED/CLEANUP_PRECHECK/BRANCH_DELETED_CHECKED仅本机不随clone。
+
+## 230. B135/#185完整本机验收，继续本地合批而不立即开PR（2026-10-17）
+
+先f9ce20d红27项25失败/2控制、e49e51c方案；未提交wait-only候选257相邻虽绿，但232ff08另红1/1证明漏既有非零退出纠正，4aa4102先修方案；最终ba04ae3复用原启动与wait/非零纠正正文（除缩进外原字节相同），每组保留最初BaseException，启动异常仍等待已启动句柄，每个等待/结果纠正/诊断异常保留首错并继续peer，最后raise原对象。正常codes/顺序/波次/重试保持，首次异常不启动后续group/wave/retry。没有新helper/import/框架/锁/timeout/schema/磁盘布局。
+
+最终相邻258 passed/0fail/error/skip；core2164 passed/1既有skip、0fail/error；CPU Flow425 passed/0fail/error/skip。28新增（27unit+1真实CLI integration）逐节点全执行通过，无新skip。45079/23497/71759终结exit0，独立basetemp，core与Flow未竞争清理。LOCAL_CHECKED SHA2563c50fd400b91302cae140ca35e6633a324a74ed0cc39d3b248978a28e9fcf59c；SOURCE_CHECKED证明原spawn/wait/非零纠正正文仅缩进变化、block外byte-identical、原CRLF保持。原两红、补红、WAIT_ONLY_CANDIDATE、首GREEN及GREEN2/CORE/FLOW均在.tmp/audit135保留，不随clone；便携回归、方案与主题commit已入本地历史。
+
+当前185仍OPEN、当前分支未推送/未开PR；下一继续同主题失败所有权/相邻证据复查并本地积累完整里程碑，遵守少量PR规则，不为一B/几行文档马上开PR。未声称远端验收/发布/科学复验。取消时尝试自然wait所有本次owned handles，不杀停进程；OS wait持续拒绝仅有attempt保证，真实hang/强制取消/任意跨调用互斥不增加保证。main/tag/GPU/测速/训练/下载及文件架构/产物布局不动，新编号B136，目标active，无用户决策阻塞。

@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
 > Version 1.4; updated 2026-10-17. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `593385f1f0eb002a7a7ef937bf6de4e4a9f09264`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `28f3dde57d38a84898bbc74b85beca20722eb9da`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -729,3 +729,12 @@ Next: finish adjacent/core/CPU Flow checks, submit one complete milestone PR to 
 
 
 Local validation completed: adjacent230 passed; core2137 passed/1 pre-existing skip; CPU Flow424 passed; all59 new nodes executed and passed (57unit+2integration). Production scope is schedule.py only,14 additions/12 deletions. Exact final-head and actual-dev CI, including native POSIX distinct-case ownership, remain pending. Sources and limits: record section227; local-only LOCAL_CHECKED SHA256 d06bee3fe299748a6207f3126fd70f64fff4e6b8d182af9a5d280ebb0189fa11.
+
+
+### 2026-10-17 acceptance and next exceptional-ownership milestone
+
+PR184 accepted B133/B134 at actual dev28f3dde after every actual final-head and merged-dev CPU/package matrix and aggregate succeeded, including native Windows/POSIX ownership controls. Issues182/183 closed with original bodies preserved and one acceptance comment each; codex/launch-plan-validation deleted locally/remotely. Active unmerged codex/launch-failure-ownership retained; cleanup baseline181/count1/cumulative remote48. A GitHub-prose CRLF prefix verifier rejection was retained and corrected by fresh full-content verification, without repeating the edit. Exact source-byte checks remained unchanged. Evidence: record section229.
+
+New B135/Issue185 unifies six exceptional launch/wait ownership exits. A real CPU sleep-only child survived the second-spawn error until the probe waited for natural completion; no research run or corruption was observed. Red27 cases25fail/2controls preceded design; an unpublished wait-only candidate passed257 adjacent checks but omitted existing nonzero-exit success correction, proven by an additional red1/1. Final local ba04ae3 retains the original spawn/wait/nonzero-result bodies except indentation, records the first exception, attempts the remaining owned handles through the same original loop, then propagates the original error. No forced termination, new lock/helper/framework/dependency/schema/layout or numerical change.
+
+Final local validation: adjacent258 passed, core2164 passed/1 pre-existing skip, CPU Flow425 passed; all28 new nodes executed (27unit/1native CLI integration). LOCAL_CHECKED SHA2563c50fd400b91302cae140ca35e6633a324a74ed0cc39d3b248978a28e9fcf59c; raw failed candidates/red/green/XML/source proofs are local-only .tmp/audit135, portable regressions and engineering facts are committed locally. Issue185 remains open, with no push or PR yet. Continue related local accumulation before one complete milestone PR; this is not remote acceptance. Persistent OS wait refusal guarantees attempts only, not child termination or recovery from hung processes. No GPU/timing/training/download/main/tag or new scientific result; literature status, scientific gaps and E3/E4 authorization gates remain unchanged.

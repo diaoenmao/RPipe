@@ -1,7 +1,7 @@
 > **RPipe 研究计划：研究执行与证据一致性的可验证合同**
 > 版本：1.4；更新：2026-10-17；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
 > 当前阶段：完成计划重做和定向文献初筛；继续代码正确性，尚未执行本计划的新科学实验。
-> 当前实现基线：dev `593385f1f0eb002a7a7ef937bf6de4e4a9f09264`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
+> 当前实现基线：dev `28f3dde57d38a84898bbc74b85beca20722eb9da`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
 > 本轮零 GPU、零测速、零训练、零数据下载；保持既有文件架构与产物布局。
 
 ## 本次人工审阅摘要（2026-10-16，按12:53更新）
@@ -730,3 +730,12 @@ B131–B132两项身份修复已PR181正常合dev593385f，最终head7e231ca及�
 
 
 本机验证完成：相邻230 passed、core2137 passed/1既有skip、CPU Flow424 passed；新59（57unit+2integration）全执行通过。生产仅schedule.py，14行加/12行删。最终head/实际dev实际CI（含POSIX不同大小写实体）仍待，出处/边界见record§227；本机LOCAL_CHECKED SHA256 d06bee3fe299748a6207f3126fd70f64fff4e6b8d182af9a5d280ebb0189fa11，原始临时证据不随clone。
+
+
+### 2026-10-17 双侧验收与下一异常子进程所有权里程碑
+
+PR184的B133/B134已在实际dev28f3dde验收：最终head与实际dev全部实际CPU/安装包矩阵及聚合成功，含Windows/POSIX原生所有权控制。182/183原正文保持、各1评论验收关闭，codex/launch-plan-validation本地/远端已删；活动未合codex/launch-failure-ownership保留。清理基线181计数1/累计remote48；GitHub prose CRLF触发的prefix校验拒绝单独保留，fresh全文核对后确认内容完整且未重复edit，源码原字节验证不变。出处record§229。
+
+新B135/#185统一六类启动/等待异常的子进程收尾缺口：真实CPU仅sleep子进程在第二spawn抛错后仍存活，探针等其自然完成；无正式研究运行/损坏结论。先红27项25失败/2控制再方案；未提交wait-only候选257相邻虽通过，却遗漏既有非零退出成功纠正，另红1/1证明后修正。最终本地ba04ae3原spawn/wait/非零纠正文仅缩进变化，保存首错并经原循环尝试其余owned句柄，末尾传播原错；无强制杀停、新锁/helper/框架/依赖/schema/布局或数值变化。
+
+最终本机相邻258 passed、core2164 passed/1既有skip、CPU Flow425 passed，新28（27unit+1原生CLI integration）全执行。LOCAL_CHECKED SHA2563c50fd400b91302cae140ca35e6633a324a74ed0cc39d3b248978a28e9fcf59c；拒候选/红/绿/XML/源码证明在本机.tmp/audit135，不随clone，便携回归和工程事实已本地提交。185仍OPEN、尚未推送/开PR，继续相关主题本地积累、完整里程碑再单PR，不冒称远端验收。OS wait持续拒绝仅attempt保证，不保证子进程终结或解决hang；无GPU/测速/训练/下载/main/tag及新增科学结果，文献现状、科学缺口与E3/E4授权门不变。
