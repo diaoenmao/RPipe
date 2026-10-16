@@ -137,11 +137,24 @@ def _recipe_package(root: Path, recipe_root: Path) -> ModuleType:
         package.__spec__.submodule_search_locations = package.__path__
         package._recipe_namespace = True
 
+        owner = package
+        importlib_view = ModuleType('importlib')
+
+        def dynamic_import(name, package=None):
+            if not name.startswith('.') and _local_module(owner, name):
+                name = owner.__name__ + '.' + name
+            return importlib.import_module(name, package)
+
         def local_import(module_name, globals=None, locals=None, fromlist=(), level=0):
             if level == 0 and _local_module(package, module_name):
                 imported = builtins.__import__(name + '.' + module_name, globals, locals, fromlist, 0)
                 return imported if fromlist else sys.modules[name + '.' + module_name.partition('.')[0]]
-            return builtins.__import__(module_name, globals, locals, fromlist, level)
+            imported = builtins.__import__(module_name, globals, locals, fromlist, level)
+            if imported is importlib:
+                importlib_view.__dict__.update(vars(importlib))
+                importlib_view.import_module = dynamic_import
+                return importlib_view
+            return imported
 
         package._recipe_import = local_import
         sys.modules[name] = package
