@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import sys
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -61,6 +62,12 @@ def model_hub(origin: Any) -> str:
 def apply_model_origin(origin: Any) -> str:
     """Point this process at the Study's model hub. Returns the hub URL."""
     hub = model_hub(origin)
+    if normalize_origin(origin) == DOMESTIC:
+        for name, attr in (('huggingface_hub.constants', 'ENDPOINT'),
+                           ('datasets.config', 'HF_ENDPOINT')):
+            module = sys.modules.get(name)
+            if module is not None and getattr(module, attr, hub) != hub:
+                raise RuntimeError(f'select domestic origin before importing {name}; start a fresh worker')
     os.environ['HF_ENDPOINT'] = hub
     return hub
 
@@ -174,3 +181,34 @@ def _md5(path: Path) -> str:
                 break
             digest.update(block)
     return digest.hexdigest()
+
+
+def download_model(repo_id: str, cache_dir: Path | str, *, revision: str | None = None) -> str:
+    """Resolve a local input or download via ModelScope, then hf-mirror only."""
+    if Path(repo_id).exists():
+        return str(repo_id)
+    try:
+        from modelscope import snapshot_download
+
+        return snapshot_download(model_id=repo_id, revision=revision, cache_dir=str(cache_dir))
+    except Exception as modelscope_error:
+        # SDK failures permit a domestic fallback; cancellation still propagates.
+        try:
+            from huggingface_hub import snapshot_download
+
+            return snapshot_download(repo_id=repo_id, revision=revision,
+                                     cache_dir=str(cache_dir), endpoint=DOMESTIC_MODEL_HUB)
+        except Exception as mirror_error:
+            raise RuntimeError(
+                f'ModelScope failed ({modelscope_error}); hf-mirror failed ({mirror_error}); '
+                'no overseas fallback is permitted'
+            ) from mirror_error
+
+
+def load_hf_dataset(*args: Any, **kwargs: Any) -> Any:
+    """Load HF datasets after selecting the domestic endpoint before import."""
+    apply_model_origin(DOMESTIC)
+    from datasets import load_dataset
+
+    apply_model_origin(DOMESTIC)
+    return load_dataset(*args, **kwargs)

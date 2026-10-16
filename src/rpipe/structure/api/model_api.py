@@ -5,3 +5,5 @@ from rpipe.structure.model import Model, ModelConfig, ModelFactory, ModelRegistr
 
 def build(model_config: ModelConfig, assets_dir, data_meta=None, origin=None):
     return ModelFactory.build(model_config, assets_dir, data_meta=data_meta, origin=origin)
+
+from rpipe.structure.origin import download_model
