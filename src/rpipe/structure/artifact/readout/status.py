@@ -131,7 +131,9 @@ def _event_match(line: str, pattern, run_dir: str | None = None):
     if native is not None:
         record = native.group(1)
         for identity in (run_dir, '-'):
-            if identity is not None and record.startswith(identity + ' ['):
+            if (identity is not None
+                    and Path(record[:len(identity)]) == Path(identity)
+                    and record[len(identity):].startswith(' [')):
                 return pattern.match(record[len(identity) + 1:])
     return pattern.search(line)
 
