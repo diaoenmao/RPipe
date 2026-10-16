@@ -398,3 +398,47 @@ def test_missing_study_checkpoint_class_does_not_use_foreign_cache(tmp_path, mon
     with pytest.raises(AttributeError):
         reader.Unpickler(io.BytesIO(blob)).load()
     assert sys.modules[helper] is foreign
+
+
+@pytest.mark.parametrize('from_import', [False, True], ids=['importlib-module', 'import-module-function'])
+@pytest.mark.parametrize('stage', ['load', 'register', 'late', 'helper'])
+def test_dynamic_imports_keep_their_study_after_registration(tmp_path, from_import, stage):
+    target = '_recipe_dynamic_' + uuid4().hex
+    helper = '_recipe_dynamic_helper_' + uuid4().hex
+    binding = ('from importlib import import_module as dynamic\n' if from_import else
+               'import importlib\ndynamic = importlib.import_module\n')
+    observed, functions = [], []
+    for value in ('first', 'second'):
+        root = tmp_path / value
+        root.mkdir()
+        (root / f'{target}.py').write_text(f'VALUE = {value!r}\n', encoding='utf-8')
+        expression = f'dynamic({target!r}).VALUE'
+        if stage == 'helper':
+            (root / f'{helper}.py').write_text(binding + f'def read():\n    return {expression}\n', encoding='utf-8')
+            source = f'from {helper} import read\ndef register(ctx):\n    ctx.functions.append(read)\n'
+        elif stage == 'load':
+            source = binding + f'VALUE = {expression}\ndef register(ctx):\n    ctx.observed.append(VALUE)\n'
+        elif stage == 'register':
+            source = binding + f'def register(ctx):\n    ctx.observed.append({expression})\n'
+        else:
+            source = binding + f'def register(ctx):\n    ctx.functions.append(lambda: {expression})\n'
+        (root / 'recipe.py').write_text(source, encoding='utf-8')
+        assert apply_recipe(root, {'recipe': 'recipe.py'}, SimpleNamespace(observed=observed, functions=functions))
+    if stage in ('late', 'helper'):
+        observed = [function() for function in functions]
+    assert observed == ['first', 'second']
+    assert target not in sys.modules
+
+
+@pytest.mark.parametrize('from_import', [False, True])
+def test_dynamic_nonlocal_import_uses_canonical_runtime(tmp_path, from_import):
+    import json
+    root = tmp_path / 'runtime'
+    root.mkdir()
+    binding = ('from importlib import import_module as dynamic\n' if from_import else
+               'import importlib\ndynamic = importlib.import_module\n')
+    (root / 'json.py').write_text('raise AssertionError("unused local stdlib shadow")\n', encoding='utf-8')
+    (root / 'recipe.py').write_text(binding + 'def register(ctx):\n    ctx.observed.append(dynamic("json"))\n', encoding='utf-8')
+    observed = []
+    apply_recipe(root, {'recipe': 'recipe.py'}, SimpleNamespace(observed=observed))
+    assert observed == [json]
