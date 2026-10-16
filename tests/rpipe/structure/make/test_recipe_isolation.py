@@ -72,3 +72,50 @@ def test_single_study_recipe_helper_control(tmp_path, package, at_register):
         for name in list(sys.modules):
             if name == helper or name.startswith(helper + '.'):
                 sys.modules.pop(name)
+
+
+@pytest.mark.parametrize('package', [False, True], ids=['module', 'package'])
+@pytest.mark.parametrize('at_register', [False, True], ids=['import-on-load', 'import-on-register'])
+def test_local_recipe_import_preserves_preexisting_foreign_module(tmp_path, package, at_register):
+    from types import ModuleType
+    import json
+
+    helper = '_recipe_isolation_' + uuid4().hex
+    previous = ModuleType(helper)
+    previous.VALUE = 'foreign'
+    sys.modules[helper] = previous
+    json_module = sys.modules['json']
+    paths = list(sys.path)
+    observed = []
+    try:
+        study = tmp_path / 'local'
+        _recipe(study, helper, 'local', package, at_register)
+        assert apply_recipe(study, {'recipe': 'recipe.py'}, SimpleNamespace(observed=observed))
+        assert observed == ['local']
+        assert sys.modules[helper] is previous
+        assert sys.modules['json'] is json_module is json
+        assert sys.path == paths
+    finally:
+        for name in list(sys.modules):
+            if name == helper or name.startswith(helper + '.'):
+                sys.modules.pop(name)
+
+
+@pytest.mark.parametrize('package', [False, True], ids=['module', 'package'])
+def test_registered_functions_keep_each_studies_helper_globals(tmp_path, package):
+    helper = '_recipe_isolation_' + uuid4().hex
+    registered = []
+    try:
+        for value in ('first', 'second'):
+            study = tmp_path / value
+            _recipe(study, helper, value, package, False)
+            (study / 'recipe.py').write_text(
+                f'from {helper} import VALUE\n'
+                'def build():\n    return VALUE\n'
+                'def register(ctx):\n    ctx.registered.append(build)\n', encoding='utf-8')
+            assert apply_recipe(study, {'recipe': 'recipe.py'}, SimpleNamespace(registered=registered))
+        assert [build() for build in registered] == ['first', 'second']
+    finally:
+        for name in list(sys.modules):
+            if name == helper or name.startswith(helper + '.'):
+                sys.modules.pop(name)
