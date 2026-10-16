@@ -11,7 +11,7 @@
 - Issue：[132](https://github.com/DreamSoul-AI/RPipe/issues/132)，正式红1e8c5d1：22项20 failed/2 passed、0error/skip。
 - 复现：非stub CPU数据首个iter_batches抛RuntimeError，finally的tracker状态编码/发布再失败，对外异常与result.error变成二次错误；原错只留chain。更正探针零批次/零优化步，最初stub无效探针保留。
 - 期望：已有原错时尽力flush且保留原异常身份/failed error；成功体最终flush失败仍传播。旧tracker/peer和日志二次错误留证保持，日志不可用不覆盖原错。
-- 方案：原finally拆成except BaseException中的best-effort flush/Logger与原raise，else直接flush；设计先入库，生产待改。不改训练数值、周期flush、checkpoint/RNG、schema或layout。
+- 方案：原finally拆成except BaseException中的best-effort flush/Logger与原raise，else直接flush；已按75e9885设计实施384bf2c，22新合同全绿，core1693+1既有平台skip/CPU Flow207通过；待最终head与实际dev全部实际CI。不改训练数值、周期flush、checkpoint/RNG、schema或layout。
 
 B101/#130已PR131合dev并验收关闭，正式记录与分支清理见[record§154](record.md)。
 

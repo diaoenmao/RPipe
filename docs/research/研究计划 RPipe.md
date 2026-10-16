@@ -1,7 +1,7 @@
 > **RPipe 研究计划：研究执行与证据一致性的可验证合同**
-> 版本：1.3；更新：2026-10-16；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
+> 版本：1.4；更新：2026-10-16；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
 > 当前阶段：完成计划重做和定向文献初筛；继续代码正确性，尚未执行本计划的新科学实验。
-> 当前实现基线：dev `76f7b3b7ce2bbb6d288c0fc254fdff6c8bcb68e6`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
+> 当前实现基线：dev `a458eae998e25a908250ed3da887bdd8cd5bf451`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
 > 本轮零 GPU、零测速、零训练、零数据下载；保持既有文件架构与产物布局。
 
 ## 本次人工审阅摘要（2026-10-16，按12:53更新）
@@ -180,7 +180,9 @@ DOE/OR/BO/贝叶斯实验设计本轮不采用；无需为合同修复搭搜索�
 
 2026-10-16后续正确性补充：[PR128](https://github.com/DreamSoul-AI/RPipe/pull/128)已正常合dev2008753，最终head及实际dev [Unit38857214651](https://github.com/DreamSoul-AI/RPipe/actions/runs/38857214651)/[Package38857214660](https://github.com/DreamSoul-AI/RPipe/actions/runs/38857214660)全部实际矩阵/聚合成功。B100混合数值精度138新合同全部执行，最终本机readout697/core1679+1既有平台skip/CPU Flow189通过；原红与冻结极值补充证据区分，见[record§148–150](../development/record.md)。Issue127及其他已处理Issue按最新清理授权关闭，代码只在dev、未发布main；这是工程验收，不是新科学实验或文献结论。
 
-2026-10-16继续复查：[Issue130](https://github.com/DreamSoul-AI/RPipe/issues/130)/B101确认Runner日志初始化/首条输出绕过failed回写、诊断日志初始化可覆盖原阶段错误。先红8a351df的10节点全失败，再设计77986d9和最小修复9e345c8；本机相邻123/core1679+1既有平台skip/CPU Flow199通过，全部新节点执行。当前仅工作分支本机完成，待最终head/实际dev CI；不改布局、日志协议、科学门或原成功保全范围，不作为新实验结论。PR129已实际dev76f7b3b验收并完成37本地/2remote清理，详[record§151–153](../development/record.md)。
+2026-10-16继续复查：[Issue130](https://github.com/DreamSoul-AI/RPipe/issues/130)/B101确认Runner日志初始化/首条输出绕过failed回写、诊断日志初始化可覆盖原阶段错误。先红8a351df的10节点全失败，再设计77986d9和最小修复9e345c8；本机相邻123/core1679+1既有平台skip/CPU Flow199通过，全部新节点执行。已通过PR131合dev a458eae，最终head及实际dev全部实际CI成功；Issue130已验收关闭、工作分支本地/remote已清。不改布局、日志协议、科学门或原成功保全范围，不作为新实验结论。PR129已实际dev76f7b3b验收并完成37本地/2remote清理，详[record§151–153](../development/record.md)。
+
+2026-10-16再续：[Issue132](https://github.com/DreamSoul-AI/RPipe/issues/132)/B102确认原生训练finally的tracker状态写入二错会替换原执行错。1e8c5d1先红22项20 failed/2控制passed，75e9885设计后384bf2c只改已有异常/正常结束的flush优先级；原错及终止保留，成功写失败仍传播。22新节点全绿、core1693+1既有平台skip/CPU Flow207通过；a758de4加3条实际staging断言，冻结旧函数20失败/2控制与当前22绿分开记录。当前本机完成待最终/实际dev CI，不改数学/周期flush、checkpoint/RNG、schema/layout，无新正式实验，详[record§155–156](../development/record.md)。
 
 <a id="gaps-next"></a>
 ## （二）未完成项、今晚审阅与下一步实验

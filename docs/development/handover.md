@@ -1,5 +1,12 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 B102训练finalizer本机完成；B101已实际dev验收
+
+Issue132→1e8c5d1先红22项20 failed/2控制passed→75e9885设计→384bf2c仅原finally错误优先级。22新节点全执行/通过；core1693+1既有Windows POSIX skip/CPU Flow207通过。a758de4只加3条实际tracker staging清理断言，冻结旧函数回放20 failed/2控制passed不是HEAD红，当前22绿；生产未再变。原先无效stub探针/过早控制注入拒绝均保留.tmp/audit102，不随clone；见record§155–156。当前唯一未合codex/train-failure-finalizer待最终/实际dev全部实际CI，之后关闭132并清自身本地/remote。
+
+PR131已正常合dev a458eae，最终head及实际dev全实际CI成功，Issue130已关闭、runner-log-failure本地/remote已普通删，累计结束remote28；原状态见record§154。PR129周期清理基线后已合1批，本批将是第2批。不动main/tag、GPU任务、数据结果、训练数值/周期flush、恢复/checkpoint或布局。此前旧pending文字只表当时状态。
+
+
 ## 2026-10-16 B101日志失败留证本机完成；PR129清理已验收
 
 Issue130→8a351df先红10 failed/0error/skip→77986d9设计→9e345c8仅Runner两个异常边界。正式相邻123/core1679+1既有POSIX skip/CPU Flow199通过，新10节点全部执行，红断言、坏log对象、peer、初始冻结/process保全、布局/schema保持。原始证据与初稿夹具拒绝在.tmp/audit101，不随clone；仅本机工程合同，待PR最终head/实际dev全部实际CI，之后关闭Issue130并普通清本地/remote。唯一未合codex/runner-log-failure；无main/tag/GPU/测速或科学重跑。

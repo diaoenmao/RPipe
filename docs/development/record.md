@@ -1,8 +1,8 @@
-> 当前：PR131/B101已实际dev a458eae全实际CI验收、关闭130并清本地/remote；继续Issue132/B102。
-> 最新：正式红1e8c5d1共22项20 failed/2成功路径控制passed、0error/skip；原生训练finalizer二错覆盖原错。
-> 下一步：按已入库方案最小修复训练结束flush，随后相邻/core/CPU Flow及最终/实际dev CI；无阻塞。
-> 清理：PR129周期基线后已合1批，B101结束remote累计28条；当前活动codex/train-failure-finalizer保留。
-> 边界：不改训练数值/周期flush、checkpoint/RNG、格式或布局；未动main/tag/GPU任务与数据结果。
+> 当前：B102/#132已红1e8c5d1→设计75e9885→最小生产384bf2c完成本机；待PR最终/实际dev CI。
+> 最新：22新节点全执行/通过；core1693+1既有POSIX skip、CPU Flow207通过；成功路径错误仍传播。
+> 补强：a758de4只加3条实际tracker staging清理断言，冻结旧函数20 failed/2控制passed；当前22绿。
+> 下一步：PR→dev，最终head及实际dev全部实际CI后关闭132、普通清本地/remote；无阻塞。
+> 保护：原训练/数值/周期flush、checkpoint/RNG、schema/layout保持；无main/tag/GPU/测速/正式Study。
 
 # 一、摘要
 
@@ -2963,3 +2963,14 @@ PR131普通合dev `a458eae998e25a908250ed3da887bdd8cd5bf451`；最终head `25601
 设计已明确后再改代码：仅现有finally分成except BaseException/else；前者尽力flush，二次普通异常尽力Logger.exception，日志也失败不遮原错，再原raise；后者直接flush，错误继续传播。BaseException用于保持原finally对终止的收尾尝试与原终止身份，不变成成功或吞新终止。无需helper/模块/依赖/新状态，训练循环、数学、周期内flush、checkpoint/RNG、tracker schema与产物布局不改。
 
 已读TrainAlgorithm原生/legacy调用方与execute/eval_hook/Trainer flush；只有原生既有finally有本轮已确认反例。原始探针/拒绝、正式RED与源码ZIP/hash在.tmp/audit102，不随clone；portable测试已入库。下一步最小生产修复、训练/恢复/checkpoint/Runner相邻和core/CPU Flow，最终head/actualdev全部实际CI分别验收，正常PR合dev后关闭132并普通清本地/remote；不跑GPU、测速、下载或正式Study。
+
+
+## 156. 2026-10-16 B102本机修复与清理断言补强验收
+
+384bf2c仅在train/__init__.py替换一处原finally，11 insertions/1 deletion。已有训练/终止错误时尽力flush，二次编码/发布错误通过已有Logger尽力留traceback，Logger不可用不盖原错，最后原raise；成功体else仍直接flush并报错。原源码ZIP按CRLF原字节精确单替换验证，除此以外训练体、数值、周期flush、checkpoint/RNG、summary代码字节保持；无helper/依赖/新状态/schema/layout。
+
+正式红1e8c5d1：22项20 failed/2成功路径控制passed、0error/skip；NEW_GREEN22 passed。core1693 passed+1既有Windows不支持POSIX executable mode bits的skip；CPU Flow207 passed，均0fail/error。训练、精确恢复、checkpoint/tracker和Runner冻结/旧成功保全均由本次完整core/Flow覆盖。KeyboardInterrupt为单元内显式捕获的合成终止，不是实际任务取消，也不变成成功；成功路径两控制执行单步CPU合成训练来验证最终写错误仍报错，不是正式Study。
+
+复查测试后a758de4仅增3条tracker.state_path.parent实际staging目录断言，原root/peer及所有红断言保留。冻结原源码函数回放22项20 failed/2控制passed，明确不是HEAD红；当前补强22 passed。完整core/Flow运行于同一384bf2c生产源码、补强前断言集，补强后只重跑受影响22节点；生产未再改，最终CI将执行完整最终断言集。原始RED_INITIAL两控制注入拒绝、无效stub探针、更正正式红、冻结回放和全部原始日志/XML/hash/ZIP均保留.tmp/audit102，不随clone。
+
+LOCAL_CHECKED SHA256 `fd535488c7f66d6b29dff899681bd7916cabd74978c44bbeb8a55d244662144c`；实际模块物理路径和源文件hash已核对。结果可写才尽力生成failed，tracker本身拒绝写入时保留旧state与peer、本写者staging清干净；secondary诊断不能写时仅保证原错误优先，不承诺日志总能落盘。未放宽严格恢复或科学门。待最终head及实际dev全部实际矩阵/聚合分别验收后正常合dev、关闭132并普通清本地/remote；PR129全面清理基线后本批合入将累计2个PR，仍逐批清自身结束分支。
