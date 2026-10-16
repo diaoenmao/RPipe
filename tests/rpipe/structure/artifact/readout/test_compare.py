@@ -479,3 +479,28 @@ def test_complex_norm_overflow_preserves_finite_and_nonfinite_cells(tmp_path, le
     before = {p: p.read_bytes() for run in (a, b) for p in run.rglob('*') if p.is_file()}
     assert compare_runs(a, b, rtol=rtol)['passed'] is passed
     assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('case', ['exact-drift', 'absolute-outside', 'absolute-boundary', 'identical'])
+def test_finite_complex_norm_overflow_keeps_zero_relative_bound(tmp_path, case):
+    import math
+    import torch
+
+    high = 1.7e308
+    low = high if case == 'identical' else math.nextafter(high, 0.0)
+    difference = high - low
+    atol = {'exact-drift': 0.0, 'absolute-outside': difference / 2,
+            'absolute-boundary': difference, 'identical': 0.0}[case]
+    passed = case in ('absolute-boundary', 'identical')
+    a, b = _run(tmp_path, 'a'), _run(tmp_path, 'b')
+    for run, value in [(a, complex(high, high)), (b, complex(high, low))]:
+        torch.save({'model': {'w': torch.tensor([value, 2.0], dtype=torch.complex128)}},
+                   run / 'assets/checkpoints/latest.pt')
+    before = {p: p.read_bytes() for run in (a, b) for p in run.rglob('*') if p.is_file()}
+    report = compare_runs(a, b, atol=atol)
+    assert report['passed'] is passed
+    assert report['items']['checkpoint.latest.model']['max_abs_diff'] == difference
+    output = tmp_path / 'comparison.json'
+    assert cli.main(['compare', str(a), str(b), f'--atol={atol}', '--out', str(output)]) == (0 if passed else 1)
+    assert json.loads(output.read_text())['passed'] is passed
+    assert {p: p.read_bytes() for p in before} == before
