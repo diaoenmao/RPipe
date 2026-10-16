@@ -1,7 +1,7 @@
-> 当前：PR145最终head/实际dev全CI验收，Issue144关闭、主题本地/remote已清；基线139后累计3。
-> 最新：B109/Issue146四合成探针2次毁旧PNG/3次泄漏figure，25正式节点23红/2有效正常控制。
-> 修复：1db97b1后新25/PNG相邻67/core1814+1既有skip/Flow207绿；PNG76906字节同SHA、科学函数保持。
-> 下一步：B109同主题PR→dev，最终head与实际dev分别验CI后关146/清分支；目标active，见§169–170。
+> 当前：PR147最终head/实际dev全CI验收，Issue146关闭、主题本地/remote已清；基线139后累计4。
+> 最新：B110/Issue148深JSON在outer/native prepare零构建仍覆盖旧成功；12正式节点5红/7有效控制。
+> 修复：e99691d后12新节点/相邻204/core1818+1既有skip/Flow215绿；strict loader/schema/限额保持。
+> 下一步：B110同主题PR→dev，分别验最终head与实际devCI后关148/清分支；目标active，见§171–172。
 > 保护：无GPU/测速/正式Study、main/tag或产物布局变更；以下旧状态保留。
 
 > 当前：PR135实际dev已全CI验收、Issue134关闭，工作分支本地/remote普通删。
@@ -3121,3 +3121,21 @@ B108最终本机验收：30新节点全部执行/通过；相邻98 passed/1既�
 PR145实际dev fc2b9b6095910aba9c93629c43c6a58b73f19ca9的Package38887059572 / Unit38887059522全部实际矩阵与聚合成功；DEV_CHECKED SHA256 7dc81633fdb9a8e0a9548afd44e75b3a5f7ab72f1a4b0e75cb5e33b0ee207c93。最终head f81bd8f此前Branch38886373086/Package38886373046/Unit38886373084全绿，两侧验收已追加PR145正文。Issue144验收关闭，核对tip/祖先/唯一worktree后codex/writer-close-errors本地/remote各1条普通删除；当前未合codex/study-plot-publication与Issue146保留。清理基线仍PR139，已验收累计3，未达到下一次约5批门；无数据/结果/provenance/worktree删除。
 
 B109最终本机：25新节点全部执行/通过（含原生Windows只读目标），PNG相邻67 passed，core1814 passed/1既有Windows POSIX模式skip，CPU Flow207 passed；全部0failure/error。LOCAL_CHECKED保留原XML/hash、新节点执行、原绘图/其他科学函数源码保持、同环境PNG76906字节同SHA证据。最终head/实际dev全部实际CI仍须分别验收，不以本机/图像对照代替科学或发布验收。原始.tmp/audit109不随clone；正式回归/设计/本记录随Git提供。
+
+
+## 171. B110 / Issue148：深层provenance解析拒绝保全旧成功（2026-10-16）
+
+前序PR147最终head87a8e91的Branch38887954486 / Package38887954478 / Unit38887954518全部实际矩阵和聚合成功，正常合dev9a7af374ee6b1354c1c9aea37858059c03c8f329；实际devPackage38888713101仍待验，不能提前关闭Issue146或清其主题分支。
+
+check_frozen只归一化OSError/ValueError。真实深层provenance JSON触发RecursionError时，outer gate与study phases关闭时的native prepare gate都未归为冻结校验拒绝，实际Runner在零execute/data/model调用时覆盖旧succeeded为failed；四个新旧结果探针均确认，坏输入字节不变。首轮2000层在本机Python3.13被接受，仅触发正常changed-provenance拒绝，属于无效反例且脚本/log/目录保留；更正12000层用真实JSON解析、不调递归限额，不能把首轮当库失败。原始证据.tmp/audit110不随clone。
+
+先Issue148，再dadb558正式12项5 failed/7有效控制passed、0error/skip；32f7a54设计，e99691d仅check_frozen既有except元组加RecursionError。仍使用原ProvenanceChangedError from exc，不改strict load_provenance/json/schema/解析限额、freeze真假判据、Runner既有初始/prepare保全决策表或真实phase失败规则，不吞任意RuntimeError。调用方Runner/prepare/launch/Study process继续复用公共门；旧字节只一处替换、其余原样保留，无模块/框架/依赖或路径变更。
+
+12新节点全执行/通过，provenance/freeze相邻204 passed、0fail/error/skip；覆盖outer/native prepare、新旧结果、坏JSON既有控制、freeze关闭不读取、strict loader仍真实RecursionError与程序RuntimeError原身份。core/CPU Flow及最终head/实际dev全部实际CI待验。新回归不执行data/model/algorithm；后续全套既有CPU Toy检查不是正式Study复跑，无GPU/测速、正式Study、main/tag、数据/Run/provenance删除或布局变化。
+
+
+## 172. B109 / PR147 实际dev验收及B110本机收尾（2026-10-16）
+
+PR147实际dev9a7af374ee6b1354c1c9aea37858059c03c8f329的Package38888713101 / Unit38888713125全部实际矩阵/聚合成功；DEV_CHECKED SHA256 adaa67489558cc5dcb0901043f6e6879fa5ffa1156772eaeea08173791f722d8。最终head87a8e91此前Branch38887954486/Package38887954478/Unit38887954518全绿，两侧验收已追加PR147正文。Issue146验收关闭，核对tip/祖先/唯一worktree后codex/study-plot-publication本地/remote各1条普通删除；未合codex/freeze-parser-refusal与Issue148保留。清理基线仍PR139，已验收累计4；下一次验收达到约5批时做完整本地/远端分支、worktree与已处理PR/Issue盘点。无数据/结果/provenance/worktree删除。
+
+B110最终本机验收：12新节点全部执行，core实际选择其中4项unit、CPU Flow实际选择8项integration；新12及相邻204通过，core1818 passed/1既有Windows POSIX模式skip，CPU Flow215 passed，全部0failure/error。LOCAL_CHECKED保存XML/hash、新节点执行与源码原字节仅一处异常元组替换证明。strict loader/JSON解析限额/schema、freeze真假、真实phase失败和所有调用方原样；原始无效探针/更正证据均保留，不挑选失败记录。最终head与实际dev全部实际CI仍待分别验收，不以本机通过当发布或科学验收。原始.tmp/audit110不随clone，正式测试/设计/记录随Git提供。
