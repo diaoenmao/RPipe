@@ -323,3 +323,104 @@ def test_checkpoint_hook_normalizes_best_metric_for_all_train_callers(metric):
         assert saved[0]['best_accuracy'] == 0.25
     else:
         assert 'best_accuracy' not in saved[0]
+
+
+@pytest.mark.parametrize('primary_type', [RuntimeError, KeyboardInterrupt])
+@pytest.mark.parametrize('secondary_kind', ['publication', 'serialization'])
+@pytest.mark.parametrize('log_mode', ['available', 'refused', 'absent'])
+def test_train_final_flush_cannot_replace_primary_failure(tmp_path, monkeypatch, primary_type, secondary_kind, log_mode):
+    """Supervised train failure -> final flush refusal -> original error and old state survive."""
+    from types import SimpleNamespace
+    import torch
+    from rpipe.structure.artifact import _atomic
+    from rpipe.structure.system.factory import SystemFactory
+    from rpipe.structure.system.config import SystemConfig
+
+    tracker = AlgorithmTracker(tmp_path)
+    tracker.flush_state()
+    old = tracker.state_path.read_bytes()
+    peer = tmp_path / 'peer.tmp'
+    peer.write_bytes(b'peer evidence')
+    system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
+    log_path = system.logger.path
+    if log_mode == 'absent':
+        system.logger = None
+    elif log_mode == 'refused':
+        def no_log(*args, **kwargs):
+            raise OSError('diagnostic log refused')
+        monkeypatch.setattr(system.logger, 'exception', no_log)
+    primary = primary_type('original iterator failure')
+    calls = []
+    def batches(split):
+        calls.append(split)
+        raise primary
+    data = SimpleNamespace(meta={'train_size': 1, 'batch_size': 1}, steps_per_epoch=lambda: 1, iter_batches=batches)
+    if secondary_kind == 'publication':
+        replace = _atomic.atomic_replace
+        def refuse(source, target):
+            if target == tracker.state_path:
+                raise PermissionError('final state publication refused')
+            return replace(source, target)
+        monkeypatch.setattr(_atomic, 'atomic_replace', refuse)
+    else:
+        state_dict = tracker.state_dict
+        def bad_state():
+            return {**state_dict(), 'unserializable': object()}
+        monkeypatch.setattr(tracker, 'state_dict', bad_state)
+    algorithm = TrainAlgorithm(AlgorithmConfig.from_mapping({'mode': 'train', 'num_steps': 1}))
+    with pytest.raises(BaseException) as caught:
+        algorithm.run(data, SimpleNamespace(module=torch.nn.Linear(2, 2)), system, tracker)
+    assert calls == ['train']
+    assert tracker.state_path.read_bytes() == old
+    assert peer.read_bytes() == b'peer evidence'
+    assert set(tmp_path.glob('*.tmp')) == {peer}
+    assert not list(tracker.state_path.parent.glob('*.tmp'))
+    assert caught.value is primary
+    if log_mode == 'available':
+        text = log_path.read_text(encoding='utf-8')
+        assert 'tracker final flush failed' in text
+        assert ('PermissionError' if secondary_kind == 'publication' else 'TypeError') in text
+        assert 'original iterator failure' in text
+
+
+@pytest.mark.parametrize('secondary_kind', ['publication', 'serialization'])
+def test_successful_train_final_flush_failure_still_propagates(tmp_path, monkeypatch, secondary_kind):
+    """Successful tiny CPU train body -> failed final flush -> publication error still propagates."""
+    from types import SimpleNamespace
+    import torch
+    from rpipe.structure.artifact import _atomic
+    from rpipe.structure.system.factory import SystemFactory
+    from rpipe.structure.system.config import SystemConfig
+
+    class Batches:
+        meta = {'train_size': 2, 'batch_size': 2}
+        def steps_per_epoch(self):
+            return 1
+        def iter_batches(self, split):
+            yield torch.eye(2), torch.tensor([0, 1])
+    tracker = AlgorithmTracker(tmp_path)
+    system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
+    algorithm = TrainAlgorithm(AlgorithmConfig.from_mapping({'mode': 'train', 'num_steps': 1, 'eval_period': 0, 'checkpoint_period': 0}))
+    armed = []
+    def final_checkpoint(*args):
+        armed.append(tracker.state_path.read_bytes())
+    monkeypatch.setattr(algorithm, 'on_checkpoint', final_checkpoint)
+    if secondary_kind == 'publication':
+        replace = _atomic.atomic_replace
+        def refuse(source, target):
+            if armed and target == tracker.state_path:
+                raise PermissionError('final state publication refused')
+            return replace(source, target)
+        monkeypatch.setattr(_atomic, 'atomic_replace', refuse)
+    else:
+        state_dict = tracker.state_dict
+        def bad_state():
+            body = state_dict()
+            return {**body, 'unserializable': object()} if armed else body
+        monkeypatch.setattr(tracker, 'state_dict', bad_state)
+    with pytest.raises(PermissionError if secondary_kind == 'publication' else TypeError):
+        algorithm.run(Batches(), SimpleNamespace(module=torch.nn.Linear(2, 2)), system, tracker)
+    assert len(armed) == 1
+    assert tracker.state_path.read_bytes() == armed[0]
+    assert not list(tmp_path.glob('*.tmp'))
+    assert not list(tracker.state_path.parent.glob('*.tmp'))

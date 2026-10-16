@@ -205,3 +205,65 @@ def test_exception_logger_setup_cannot_replace_phase_error(tmp_path, monkeypatch
         assert result['status'] == 'failed'
         assert result['error'] == 'RuntimeError: phase failed first'
         assert validate_result(result) == []
+
+
+@pytest.mark.parametrize('old_success', [False, True])
+@pytest.mark.parametrize('primary_type', [RuntimeError, ValueError])
+@pytest.mark.parametrize('secondary_kind', ['publication', 'serialization'])
+def test_train_finalizer_keeps_original_failed_result(tmp_path, monkeypatch, old_success, primary_type, secondary_kind):
+    """Runner execute -> native train iterator failure plus state refusal -> original failed Result/log."""
+    from types import SimpleNamespace
+    import torch
+    from rpipe.structure.artifact import _atomic, write_result
+    from rpipe.structure.algorithm.config import AlgorithmConfig
+    from rpipe.structure.algorithm.train import TrainAlgorithm
+    from rpipe.structure.algorithm.tracker import AlgorithmTracker
+    from rpipe.structure.system.factory import SystemFactory
+    from rpipe.structure.system.config import SystemConfig
+
+    layout = artifact_layout(tmp_path, 'train-failure')
+    if old_success:
+        write_result(layout.result_path, {'status': 'succeeded', 'control': {}, 'metrics': {}, 'paths': {}})
+    tracker = AlgorithmTracker(layout.assets_dir)
+    tracker.flush_state()
+    old_tracker = tracker.state_path.read_bytes()
+    peer = layout.root / 'evidence.bin'
+    peer.write_bytes(b'preserve peer')
+    system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), layout.assets_dir)
+    primary = primary_type('original train failure')
+    calls = []
+    def batches(split):
+        calls.append(split)
+        raise primary
+    data = SimpleNamespace(meta={'train_size': 1, 'batch_size': 1}, steps_per_epoch=lambda: 1, iter_batches=batches)
+    if secondary_kind == 'publication':
+        replace = _atomic.atomic_replace
+        def refuse(source, target):
+            if target == tracker.state_path:
+                raise PermissionError('tracker publication refused')
+            return replace(source, target)
+        monkeypatch.setattr(_atomic, 'atomic_replace', refuse)
+    else:
+        state_dict = tracker.state_dict
+        def bad_state():
+            return {**state_dict(), 'unserializable': object()}
+        monkeypatch.setattr(tracker, 'state_dict', bad_state)
+    ctx = FlowContext(tmp_path, layout, {}, control=SimpleNamespace(to_dict=lambda: {}), state={
+        'data': data, 'model': SimpleNamespace(module=torch.nn.Linear(2, 2)), 'system': system,
+        'tracker': tracker, 'algorithm': TrainAlgorithm(AlgorithmConfig.from_mapping({'mode': 'train', 'num_steps': 1})),
+        'logger': system.logger,
+    })
+    with pytest.raises(Exception) as caught:
+        FlowRunner(phases=('execute',)).run(ctx)
+    result = load_result(layout.result_path)
+    text = system.logger.path.read_text(encoding='utf-8')
+    assert calls == ['train']
+    assert tracker.state_path.read_bytes() == old_tracker
+    assert peer.read_bytes() == b'preserve peer'
+    assert not list(layout.assets_dir.glob('*.tmp'))
+    assert not list(tracker.state_path.parent.glob('*.tmp'))
+    assert caught.value is primary
+    assert result['status'] == 'failed'
+    assert result['error'] == f'{primary_type.__name__}: original train failure'
+    assert 'tracker final flush failed' in text and 'original train failure' in text
+    assert validate_result(result) == []

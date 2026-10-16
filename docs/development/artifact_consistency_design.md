@@ -239,3 +239,14 @@ tensor保留原CPU输入再转现有float64/complex128供普通格和非有限�
 实施方案：将原构造与首条输出移入run既有try，current仍先None；_log_failure对_ensure_logger再失败直接返回，让外层_write_failed_result和原bare raise继续。既有日志exception→error fallback、failure_logged去重、_preserve_success初始冻结拒绝/process规则、result/schema/路径、append日志与最终succeeded输出时机保持。不引入新helper/模块/logger框架，不改文件架构和产物布局。
 
 原草稿六节点被夹具重复mkdir阻断的证据保留且排除；更正草稿10红与隔离候选10绿只供方案验证，不替代正式入库红/绿。正式RED.xml/log、修复前源码ZIP/hash和最初无效success夹具拒绝在.tmp/audit101（不随clone）；portable回归已入库。后续先验证现有42项保全决策表、12项结果写二次失败及Runner/execute/Logger相邻合同，再CPU Flow和最终head/actualdev全部实际CI；不跑GPU、性能或Study。
+
+
+### 原生训练结束flush的异常优先级（B-102 / #132）
+
+第一类继续复查：_run_supervised的finally无条件flush_state，训练迭代器先失败、tracker编码/原子发布再失败时，后者成为对外异常和result.error；前者仅留在traceback chain。execute外层best-effort flush无法还原已经被替换的异常。首个stub探针走_run_stub未执行迭代器，作为无效夹具保留；更正非stub零批次/零优化步CPU探针确认原错确已执行。
+
+Issue132后，1e8c5d1先提交22项合同：unit12覆盖RuntimeError/KeyboardInterrupt原错、编码/发布二错、Logger可用/拒绝/缺省；Runner8覆盖两种原错×两种二错×新旧成功；另2项正常训练体完成后最终flush拒绝的控制。正式20 failed/2 passed、0error/skip。初轮两控制在默认周期checkpoint过早注入导致夹具失败，原始RED_INITIAL与说明保留，更正checkpoint_period=0只在终点注入；未放宽生产判据。
+
+实施方案：仅把原finally拆成except BaseException与else。已有异常时在嵌套try尽力flush；二次普通Exception时使用现有Logger.exception尽力记traceback，Logger本身再失败不遮原错，最后原bare raise。成功体的else仍直接flush并传播错误。捕获BaseException仅为保留原finally在终止时的flush动作和原异常身份，原终止不转为成功或新failed；不吞新的终止信号。不用sys.exc_info或共享状态推断失败，不加helper/模块/格式/路径，不改数值、checkpoint/RNG或周期内flush。
+
+相邻调用方已核对TrainAlgorithm.run/legacy run、execute的finally，以及eval_hook/Trainer回调；当前只在原生训练已有finally确认同类反例，其他路径无反例不修改。正式红、原始探针/拒绝、源码ZIP/hash在.tmp/audit102，不随clone。后续训练/恢复/checkpoint/Runner相邻、CPU core/Flow及最终head/实际dev全部实际CI分别验收后合dev、关闭Issue、普通清理本地/remote；无main/tag/GPU/测速或正式Study。
