@@ -195,3 +195,57 @@ def test_single_line_announcement_keeps_existing_print_and_persistence(tmp_path,
     announce(tmp_path, ' custom ', detail)
     assert capsys.readouterr().out == f' custom : {detail}\n'
     assert read_activity(tmp_path) == {'phase': ' custom ', 'detail': detail}
+
+
+@pytest.mark.parametrize('text,expected', [
+    pytest.param('left' + chr(0xD800) + 'right', r'left\ud800right', id='high'),
+    pytest.param('left' + chr(0xDC00) + 'right', r'left\udc00right', id='low'),
+    pytest.param('left' + chr(0xD800) + 'mid' + chr(0xDC00) + 'right', r'left\ud800mid\udc00right', id='mixed'),
+    pytest.param('left-ASCII-right', 'left-ASCII-right', id='ascii'),
+    pytest.param('left研究😀right', 'left研究😀right', id='unicode'),
+    pytest.param(r'left\ud800right', r'left\ud800right', id='literal-backslash'),
+])
+@pytest.mark.parametrize('field', ['phase', 'detail'])
+def test_activity_display_unicode_cannot_hide_status_table(tmp_path, field, text, expected):
+    import contextlib
+    import io
+    from rpipe.flow.cli import main
+    from rpipe.structure.artifact.index import write_index
+    from rpipe.structure.artifact.result import write_result
+
+    class StrictOutput:
+        def __init__(self):
+            self.buffer = io.BytesIO()
+            self.stream = io.TextIOWrapper(self.buffer, encoding='utf-8', errors='strict', newline='\n')
+        def write(self, value):
+            return self.stream.write(value)
+        def flush(self):
+            self.stream.flush()
+
+    write_index(tmp_path, {'study': 'display', 'experiments': [
+        {'factors': {'algorithm.mode': 'train'}, 'runs': [{'id': 'peer', 'seed': 0}]}]})
+    write_result(tmp_path / 'runs/peer/result.json',
+                 {'status': 'succeeded', 'control': {}, 'metrics': {'accuracy': 1}, 'paths': {}})
+    hint = {'phase': 'make', 'detail': 'ready', field: text}
+    (tmp_path / 'activity.json').write_text(json.dumps(hint), encoding='utf-8')
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    sink = StrictOutput()
+    with contextlib.redirect_stdout(sink):
+        assert main(['status', str(tmp_path)]) == 0
+    sink.flush()
+    view = sink.buffer.getvalue().decode('utf-8')
+    assert expected in view and 'peer' in view and 'succeeded=1' in view
+    assert 'accuracy=1.0000' in view
+    assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('value', [chr(0xD800), chr(0xDC00)], ids=['high', 'low'])
+def test_activity_writer_keeps_strict_encoding_despite_display_fallback(tmp_path, value):
+    from rpipe.structure.artifact.activity import announce
+    target = tmp_path / 'activity.json'
+    target.write_bytes(b'{"phase": "make", "detail": "old evidence"}\r\n')
+    old = target.read_bytes()
+    with pytest.raises(UnicodeEncodeError):
+        announce(tmp_path, 'make', value)
+    assert target.read_bytes() == old
+    assert not list(tmp_path.glob('*.tmp'))
