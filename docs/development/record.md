@@ -4164,3 +4164,10 @@ finalhead26dd6d28f2f865c22a8cf137c2054c6189593bae的Branch38966619127/Package389
 本轮后续三类只读复查关联10组源码/既有测试：Logger/Runner/execute失败留证、_atomic/shared/curves所有权及close、status/logs/report/compare读取展示。源码审阅未确认其他新反例，不把已声明的legacy回退或checkpoint单writer约定当新缺陷，也不以文件/测试数量证明所有并发。FOLLOWUP_SCAN/COVERAGE在同临时目录；无新增科学/文献/下载/GPU实验或布局变更。
 
 验收记录在新codex/correctness-milestone-next本地按主题提交，保留到下一完整相关里程碑再统一PR，遵少量PR规则，不单开纯文档小PR。当前无开放Issue，按三类继续实际复查、确认后先Issue/红回归/方案/最小修；下一B141，goal active，无用户/设计阻塞。PR190国内源合同已验收不重做；零真实下载，不能据本轮声明服务可用。
+
+
+## 248. 实际dev后的三类原生对照复查（2026-10-17）
+
+PR194双侧验收及周期清理完成后，当前correctness-milestone-next仅验收文档本地提交，源码仍为已接受devf2c286d。继续在.tmp/audit140/followup-native隔离复查，不读写正式Study、数据或实验产物：原生Windows只读目标使atomic_write_text抛PermissionError时，原目标字节和peer保持、自有临时文件清理；三个独立写入者共享同一目标时，观察到的文本及最终目标均为一份完整合法payload、无临时残留；含坏UTF-8字节的可选run.log经现有replace读取仍展示健康peer和权威计数，全部源文件字节与文件集合不变。
+
+以上三个有限原生对照全部通过，未确认新缺陷；不以此证明所有时序/存储故障，不增加生产代码/框架/锁或checkpoint并发承诺，没有计时/吞吐测量、GPU/下载/训练。FOLLOWUP_NATIVE_CHECKED SHA256 c32ef725ffaf152e04167495b3d33cc915582030f813449051b897c22889ec99，脚本/输入/结果在上述.tmp目录不随clone，不能代替便携回归或既有完整CI。继续三类实际审计，确认反例才登记B141/Issue并先红；本地文档随下一完整里程碑合批，不单开小PR。无新Issue/用户阻塞，goal active。
