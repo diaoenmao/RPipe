@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
-> Version 1.2; updated 2026-10-16. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
+> Version 1.3; updated 2026-10-16. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `2008753c3c2b11321a3da3811102cf5c20b646ff`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `76f7b3b7ce2bbb6d288c0fc254fdff6c8bcb68e6`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -177,6 +177,9 @@ Earlier overnight integrations also matter: [PR103](https://github.com/DreamSoul
 Historical scientific scope: main_probe's complete eight-cell60-step acceptance at v0.3.0 / `804b3823` passed, with maximum parameter difference0 and maximum train/test Loss difference4.44e-16. Subsequent shared-input CPU single/two-cell checks in its report are not a new complete matrix. main_exp at the same release passed eight-cell600-step preflight,32 continuous80000-step train Runs,32 own-best eval Runs and fixed curve gates; maximum endpoint-mean difference from the old figure estimates was0.254999 percentage points, not bitwise identity with all original historical weights. Neither complete scientific matrix was rerun at current dev. Formal numbers remain in the [probe report](../../studies/main_probe/docs/STUDY_REPORT.md) and [exp report](../../studies/main_exp/docs/STUDY_REPORT.md); original Runs/JSON/figures and failures are neither moved nor rewritten.
 
 Later correctness update,2026-10-16: [PR128](https://github.com/DreamSoul-AI/RPipe/pull/128) merged normally into dev2008753; final-head CI and actual-dev [Unit38857214651](https://github.com/DreamSoul-AI/RPipe/actions/runs/38857214651)/[Package38857214660](https://github.com/DreamSoul-AI/RPipe/actions/runs/38857214660) passed all real matrices and aggregates. All138 B100 mixed-numeric contracts executed; local readout697/core1679 plus one existing platform skip/CPU Flow189 passed. Original red and frozen-old extreme-value replay are distinguished in [record §§148–150](../development/record.md). Issue127 and other completed Issues are closed under the latest cleanup authorization. Code remains dev-only; this is engineering acceptance, not a new scientific experiment, literature conclusion or main release.
+
+
+Further review on 2026-10-16: [Issue130](https://github.com/DreamSoul-AI/RPipe/issues/130) / B101 reproduces startup logging bypassing failed-result publication and diagnostic logger initialization replacing a phase error. Red commit `8a351df` has 10 failed nodes, followed by design `77986d9` and minimal production fix `9e345c8`. Local adjacent checks passed 123 cases; core passed 1679 with one existing platform skip; CPU Flow passed 199. All 10 new nodes executed. This is a working-branch result awaiting final-head and actual-dev CI, with no layout, logging-protocol, scientific-gate or success-preservation expansion. PR129 was accepted on actual dev `76f7b3b`; cleanup removed 37 local and 2 remote branches; see [record§151–153](../development/record.md).
 
 <a id="gaps-next"></a>
 ## 2. Open gaps, tonight's review and next experiments

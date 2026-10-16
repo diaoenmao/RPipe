@@ -1,8 +1,8 @@
-> 当前：PR129已合dev76f7b3b并完成最终head/实际dev全部实际CI；清理验收完成。
-> 清理：本地37条/远程2条/worktree0，26个已处理Issue关闭；完整清单§150–151。
-> 新反例：B101/#130，正式红8a351df的10项全部失败、0error/skip；范围为Runner日志失败留证。
-> 下一步：按本节方案修现有两个异常边界，再相邻/CPU Flow/最终与实际dev CI；无阻塞。
-> 保护：codex/runner-log-failure活动分支保留，未动main/tag/GPU任务、数据和结果。
+> 当前：B101/#130已按Issue→红8a351df→设计77986d9→最小修复9e345c8完成本机验收，待PR/实际dev CI。
+> 最新：10新合同全执行；相邻123/core1679+1既有POSIX skip/CPU Flow199通过，0fail/error。
+> 清理：上一PR129最终与实际dev76f7b3b全实际CI成功，本地37/远程2已删，见§150–151。
+> 下一步：本批PR→dev，最终head和实际dev全部实际CI后关闭130、清本地/远端；无阻塞。
+> 保护：活动codex/runner-log-failure保留；未动main/tag、GPU任务、数据结果、布局或科学门。
 
 # 一、摘要
 
@@ -2933,3 +2933,14 @@ PR129已普通合dev `76f7b3b7ce2bbb6d288c0fc254fdff6c8bcb68e6`。最终head `8b
 先开Issue130，再在唯一未合分支codex/runner-log-failure提交8a351df正式红：6项启动错误×新旧result，4项collect/process诊断再失败×新旧result，10 failed/0error/skip。每项锁定原异常/peer/旧成功策略；真正目录对象保留。早期草稿6项因冗余mkdir停在夹具，原DRAFT_RED/GREEN和拒绝说明保留，不计正式回归；更正草稿和隔离候选只供设计试验。正式RED.xml/log、原源码ZIP/hash、复现及拒绝在.tmp/audit101，不随clone。
 
 已明确方案后再改生产：原Logger构造与start info移入run既有try，current先None；_log_failure的_ensure_logger出错则返回，外层failed写回和原raise继续。无新helper/依赖/模块，不改变任何文件架构、产物布局、schema、Logger追加协议、最终成功日志时机或初始冻结/process保全条件。正式生产仍待实施；验收覆盖Runner旧42项决策表、12项二次写失败、execute/Logger及CPU Flow，最终head与实际dev分别全部实际CI后合并清理；不GPU/测速/科学重跑。
+
+
+## 153. 2026-10-16 B101本机修复验收完成，待最终与实际dev CI
+
+9e345c8仅改runner.py：原Logger构造/start info移入既有run try，诊断_ensure_logger失败返回，让failed写回与原异常传播继续。生产6 insertions/3 deletions，原CRLF、_preserve_success、日志追加、最终成功输出、API/schema/layout与所有原红断言保持。无其他生产者、模块、依赖、GPU/性能或科学门改动。
+
+正式RED10 failed/0error/skip；GREEN123 passed，其中10新节点全部执行；core1679 passed+1既有Windows不支持POSIX executable mode bits的skip；原生CPU Flow199 passed，均0fail/error。相邻包含原42项决策表、12项结果写二次失败与Logger/execute/Study调用方；结果可写才保证尽力failed，结果位置本身坏时仍保留原错，不承诺一定落盘。原日志目录/peer与process旧success原字节锁定。LOCAL_CHECKED SHA256 `4f55ec3870e6698ec0bb96b3443a5ebd40e6874262d3663271722b598d0a8633`，XML/log/冻结原源码/初稿夹具拒绝与隔离候选试验证据均在.tmp/audit101，不随clone。
+
+附加核验：Git保存红测试为LF、工作区为CRLF，直接原字节checker的拒绝留存NEWLINE_CHECK_REJECTED.json；双边换行规范化一致且相对8a351df的Git diff为空，未修改红断言，不当成库失败。五份Study协议和五份规范/模板原文保全；链接扫描1649个既存路径，273个旧历史/本机候选保留，本批新增坏链接另核。
+
+上述为本机工程合同验收，不替代最终head与实际dev全部实际矩阵/聚合CI；后续PR正常合dev并验收后关闭Issue130、清自身远端/本地分支。PR129周期基线后本批仅算1个新合入PR，不做无依据额外清理。

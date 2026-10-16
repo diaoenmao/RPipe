@@ -11,7 +11,7 @@
 - Issue：[130](https://github.com/DreamSoul-AI/RPipe/issues/130)，修复前正式红提交8a351df，10 failed/0error/skip。
 - 复现：有效旧succeeded结果，assets/logs/run.log为目录，run(collect)抛日志打开错误却保留旧success；新Run同样缺failed result。诊断_ensure_logger失败还会覆盖阶段原错。
 - 期望：原错误继续传播，result可写则尽力failed；collect普通失败写回，process已有成功仍原字节保全；日志坏对象/peer不改。
-- 方案：仅把启动日志纳入run既有try，诊断Logger构造失败在_log_failure内返回；设计见artifact_consistency_design的B101补充及record§152。正式源码尚未修复，后续本机与CI验收。
+- 方案：仅把启动日志纳入run既有try，诊断Logger构造失败在_log_failure内返回；设计见artifact_consistency_design的B101补充及record§152。9e345c8已完成最小修复，本机相邻123/core1679+1既有平台skip/CPU Flow199通过，正式10新节点全执行；待最终head与实际dev CI。
 
 前一轮已关闭26个已处理Issue（24正确性+2初步调研），完整清单与旧反例见[record§150–151](record.md)及[清理前索引](https://github.com/DreamSoul-AI/RPipe/blob/2008753c3c2b11321a3da3811102cf5c20b646ff/docs/development/bugs.md)。关闭不等同main发布或授权探索后续实施。
 
