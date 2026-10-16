@@ -1,8 +1,8 @@
-> 现状：优先完成 Enmao 12:53 的唯一项目计划；中英文已完整收纳5份 Study/历史/模板协议，原独立文件移除。
-> 最新：#117/119/121/123/125 已合 dev82205cbe且各自实际CI通过；#125 readout559/core1541+1平台skip/Flow189，见§146及计划第九章。
-> 检查：5份中文内容保全、英译章节、原规范字节与运行文件不变；36布局测试通过，迁移修正8处链接，见§147。
-> 下一步：统一研究指南与全部入口，本批PR合dev后独立验收实际dev CI，再清结束远程分支。
-> 边界：当前文档集成未完成；无GPU/测速/main/tag/Run或JSON证据改写，未阻断运行任务。
+> 现状：B100/#127混合数值精度修复c5687b6本机已验收；上一批PR126/实际dev全绿且remote已清。
+> 最新：120先红72失败/48控制；另18项冻结修前回放6失败/12控制，共138新合同，见§148–149。
+> 检查：readout697/core1679+1既有POSIX skip/CPU Flow189通过；138新节点全部执行，原红断言保持。
+> 下一步：同一分支PR合dev，最终head和实际dev全部实际CI后清remote，Issue留至下版。
+> 边界：无GPU/测速/main/tag/布局/原产物改写；补充回放不冒充当前HEAD红，全部失败证据保留。
 
 # 一、摘要
 
@@ -2805,3 +2805,21 @@ readout525 passed、core1507 passed/1既有POSIX executable-mode skip、CPU Flow
 同步AGENTS、README、research、layout/concept/flow及Study/规范入口；历史报告只更新迁移链接，不改实测正文。修正历史快照4处原失效相对链接（中英文共8处），历史recipe入口固定在迁移前dev并说明不能代替旧Run冻结来源。5段中文移除新增锚点、还原标题层级并归一迁移链接后，与原文逐字相等；英译五节标题映射匹配。五份原规范/译本文件与迁移前Git内容保持；运行代码、配置、JSON、Run、图和失败证据零改动，_staging_from_DEM保留。
 
 本机tests/rpipe/test_layout.py实际36 passed，独立basetemp，无fail/error/skip；git diff --check及UTF-8检查通过。链接扫描1651个可取得目标，本次变更新增失效链接0；273条旧引用/锚点或缺本机临时材料的扫描候选未算本批通过，不冒称全库链接零问题。保全映射、原字节、检查与XML在 `.tmp/research-consolidation-20261016`，不会随clone提供；正式计划内固定Git来源可核验。本批文档PR及实际dev CI仍待后续执行，不提前声称合入；无main/tag/性能/GPU/数据删除或运行时布局变更。
+
+
+## 148. 2026-10-16 B-100：混合整数/浮点比较精度，先红合同
+
+统一计划PR126已正常合dev8c9cb99f3105645457c5207ddf931521e8778224，最终head及实际devPackage38854919745/Unit38854919785全部实际矩阵/聚合成功；DEV_CHECKED SHA256 2f7439a3f61353d952c7414260cfc69445e76313a28b47921614a277f5388a14。结束remote codex/unified-research-plan核对提交保全后已删，本地保留，累计25；main00e70b1不变。完成后三种非连续张量溢出探针均正确拒绝，没有为该假设开Issue。
+
+继续复查确认新的混合数值反例：2**60+1的整数与float(2**60)，数学差1，atol0.5应拒绝；五入口两向共10实际API均false-pass/差0。Issue127后031571a先红，120新合同实际72 failed/48 passed、0error/skip，覆盖signed正负/unsigned、标量/实数/复数tensor、正反向、零及绝对/相对界，并执行API+CLI/JSON与原输入/peer字节检查。设计见artifact_consistency_design.md文末；生产修复尚未实施，原REPRO/ZIP/hash/红结果在.tmp/audit100不随clone。既有开发/科学证据保留，不改布局/main/tag，不跑GPU或性能。
+
+
+## 149. 2026-10-16 B-100统一修复与极值补充、本机验收
+
+84c44cd设计后c5687b6只改原compare.py：混合int/float按实际表示值用既有Fraction算差和界；浮点非有限身份单独保持，纯int分支不变。有限complex精确范数判据复用实/虚Fraction差，显示norm不先抹掉整数位。tensor保留CPU原值，有限混合非bool整数/实数或复数格与原溢出格共同调用_close，写回判定与差值；纯float/complex、整数、bool、shape/empty、非有限身份与归属/严格读取保持。生产25新增/8删除，无helper/模块/依赖/格式/布局变化，精确CRLF替换与其他字节检查保留。
+
+120项031571a先红72失败/48控制，原断言逐字保留。复核新混合分支后，f3829a9补18项：metrics/history/checkpoint标量×两向×超大整数10**400对有限float/普通整数对inf或NaN；冻结原实现回放6失败/12控制、0error/skip，明确不是当前HEAD红。现有生产修复原样通过，无追加生产变化；有效数字差异应返回CLI1而非文件错误2，超范围显示差值inf/JSON null沿既有格式，非有限身份控制不变。
+
+最终readout697 passed、core1679 passed/1既有Windows上POSIX executable-mode skip、CPU Flow189 passed，0fail/error；138新增全部在最终green/core执行，原输入与peer字节保持。初轮readout679/core1661+1与最终结果均保留；补充只增加readout测试且生产不再变，Flow用例/源码未变不重复执行。LOCAL_CHECKED SHA256 6e16f46d8340a026d1bff0adfbad16134743ba72e6e65f40b8af2aaa91b5ab74；原REPRO/ZIP/hash、真实RED与冻结补充RED、GREEN/CORE/FLOW/XML在.tmp/audit100，不随clone。正式portable测试随Git。集成仍待本批最终head/实际dev全部实际矩阵/聚合，完成后清结束remote，Issue127保持open至下一版本；不合main/tag，不做GPU/性能或完整科学复验。
+
+本机证据checker曾单边把工作源CRLF归一为LF，与Git内CRLF blob比较而拒绝；NEWLINE_CHECK_REJECTED保留。随后原字节核对确认工作文件与c5687b6 Git blob SHA256同为2fe4095710df56da89d59b4650149b1e163d03d7dc54b65dcbf3bba25310bb01，精确相等，未改生产文件；不记为库测试失败。

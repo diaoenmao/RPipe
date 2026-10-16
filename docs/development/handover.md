@@ -1,5 +1,10 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 B100混合数值精度本机完成，待最终与实际dev CI
+
+Issue127后031571a先红120项72失败/48控制，84c44cd先设计，c5687b6统一混合int/float与整数-实数/复数tensor原值精度。f3829a9补18极值，冻结旧实现回放6失败/12控制，明确不冒充HEAD红；生产不再变。readout697/core1679+1既有POSIX skip/Flow189通过，138新节点全执行；证据.tmp/audit100不随clone，详record§148–149。唯一未合codex/mixed-numeric-precision，下一PRdev，最终head与实际dev全部实际CI后清remote，Issue等下版；无main/tag/GPU/测速/布局或原数据改写。上一批PR126已实际验收并清结束remote，累计25，统一研究计划已交付。
+
+
 ## 2026-10-16 优先交付统一研究计划；PR125已实际验收
 
 PR125已正常合dev82205cbe，最终与实际dev全部实际CI成功；结束remote finite-tolerance-overflow已清，本地保留，累计24条，Issue124等下版。当前唯一工作分支codex/unified-research-plan，按Enmao12:53要求：两份项目计划git mv改为指定中文/英文名称，5份独立Study/历史/模板方案全文并入第十一章，中英文完整对应；第九章补#117–#125修复、文献缺口和后续实验条件。原Markdown移除且入口统一，Run/JSON/结果/源代码不改，36布局测试通过。接下来本批文档PRdev及实际dev CI，完成后清结束remote；无main/tag/GPU/测速。详record§146–147及[唯一中文计划](<../research/研究计划 RPipe.md>)。

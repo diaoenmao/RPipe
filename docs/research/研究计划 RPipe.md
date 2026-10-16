@@ -178,6 +178,8 @@ DOE/OR/BO/贝叶斯实验设计本轮不采用；无需为合同修复搭搜索�
 
 历史科学结果的实际边界：main_probe 在 v0.3.0 / `804b3823` 的八格60-step完整验收通过，参数最大差0、train/test Loss最大差4.44e-16；后续共享输入只做了报告中列出的CPU单格/两格检查，不是新完整八格。main_exp 同一发布来源的八格600-step、32 train各80000-step及32自身best eval、固定曲线门通过；旧图估读最大终点均值差0.254999个百分点，不等于全部原始历史权重逐位相同。当前 dev 的上述两套完整科学矩阵均未重跑。数字的正式来源仍为 [probe报告](../../studies/main_probe/docs/STUDY_REPORT.md) 与 [exp报告](../../studies/main_exp/docs/STUDY_REPORT.md)，原 Run/JSON/图和失败不迁移、不重写。
 
+2026-10-16后续正确性补充：统一计划已经[PR126](https://github.com/DreamSoul-AI/RPipe/pull/126)合dev8c9cb99，最终/实际dev全部CI通过。随后[Issue127](https://github.com/DreamSoul-AI/RPipe/issues/127)确认混合整数数值丢位，五入口/两向实际反例；先红120项72失败/48控制、补18极值冻结旧实现6失败/12控制。原比较器内统一修复后本机readout697/core1679+1平台skip/Flow189通过；本批最终head/实际dev CI尚待验收，详[record§148–149](../development/record.md)。这是工程正确性补充，不是新的科学实验或文献结论。
+
 <a id="gaps-next"></a>
 ## （二）未完成项、今晚审阅与下一步实验
 

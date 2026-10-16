@@ -28,15 +28,27 @@ def _close(a: float, b: float, atol: float, rtol: float) -> tuple[bool, float]:
         return diff <= Fraction(atol) + Fraction(rtol) * abs(b), diff
     if isinstance(a, complex) or isinstance(b, complex):
         # Finite overflowing tensor cells: square the bound without taking a root.
-        distance2 = (Fraction(a.real) - Fraction(b.real))**2 + (Fraction(a.imag) - Fraction(b.imag))**2
+        real = Fraction(a.real) - Fraction(b.real)
+        imag = Fraction(a.imag) - Fraction(b.imag)
+        distance2 = real**2 + imag**2
         reference2 = Fraction(b.real)**2 + Fraction(b.imag)**2
         absolute, relative = Fraction(atol), Fraction(rtol)
         remainder = distance2 - absolute**2 - relative**2 * reference2
         try:
-            diff = abs(a - b)
+            diff = math.hypot(float(real), float(imag))
         except OverflowError:
             diff = math.inf
         return remainder <= 0 or remainder**2 <= 4 * absolute**2 * relative**2 * reference2, diff
+    if isinstance(a, int) or isinstance(b, int):
+        floating = b if isinstance(a, int) else a
+        if not math.isfinite(floating):
+            return False, math.inf
+        distance = abs(Fraction(a) - Fraction(b))
+        try:
+            diff = float(distance)
+        except OverflowError:
+            diff = math.inf
+        return distance <= Fraction(atol) + Fraction(rtol) * abs(Fraction(b)), diff
     if math.isnan(a) or math.isnan(b):
         same = math.isnan(a) and math.isnan(b)
         return same, 0.0 if same else math.inf
@@ -78,18 +90,23 @@ def _tree(a: Any, b: Any, atol: float, rtol: float, path: str, problems: list[st
             if a.dtype != torch.bool and b.dtype != torch.bool:
                 return _tree(a.tolist(), b.tolist(), atol, rtol, path, problems)
         dtype = torch.complex128 if a.is_complex() or b.is_complex() else torch.float64
-        left, right = a.detach().cpu().to(dtype), b.detach().cpu().to(dtype)
+        original_left, original_right = a.detach().cpu(), b.detach().cpu()
+        left, right = original_left.to(dtype), original_right.to(dtype)
         both_nan = torch.isnan(left) & torch.isnan(right)
         same = both_nan | (left == right)
         nonfinite = ~torch.isfinite(left) | ~torch.isfinite(right)
         diff = (left - right).abs().masked_fill(same, 0.0).masked_fill(nonfinite & ~same, math.inf)
         bound = (atol + rtol * right.abs()).masked_fill(nonfinite, 0.0)
-        overflow = ~nonfinite & (~torch.isfinite(diff) | ~torch.isfinite(bound))
+        mixed = (a.dtype != torch.bool and b.dtype != torch.bool
+                 and (a.is_floating_point() or a.is_complex()) != (b.is_floating_point() or b.is_complex()))
+        precise = ~nonfinite & (~torch.isfinite(diff) | ~torch.isfinite(bound) | mixed)
         different = diff > bound
-        for index in overflow.reshape(-1).nonzero().reshape(-1).tolist():
-            different.reshape(-1)[index] = not _close(
-                left.reshape(-1)[index].item(), right.reshape(-1)[index].item(), atol, rtol)[0]
-        diff = diff.masked_fill(overflow & torch.isnan(diff), math.inf)
+        for index in precise.reshape(-1).nonzero().reshape(-1).tolist():
+            passed, distance = _close(
+                original_left.reshape(-1)[index].item(), original_right.reshape(-1)[index].item(), atol, rtol)
+            different.reshape(-1)[index] = not passed
+            diff.reshape(-1)[index] = distance
+        diff = diff.masked_fill(precise & torch.isnan(diff), math.inf)
         worst = float(diff.max())
         if math.isnan(worst) or bool(different.any()):
             problems.append(f'{path}: max abs diff {worst:g}')

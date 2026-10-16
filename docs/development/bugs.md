@@ -6,6 +6,8 @@
 
 ## 开放
 
+B-100 / [#127](https://github.com/DreamSoul-AI/RPipe/issues/127)：混合整数/浮点减法及tensor提升丢位，2**60+1与float(2**60)差1被报0。031571a先红120项72失败/48控制→84c44cd设计→c5687b6统一数值边界；另18极值冻结旧实现回放6失败/12控制，不冒充HEAD红。readout697/core1679+1平台skip/CPU Flow189通过，138新增全执行；最终head/实际dev CI待验，Issue留至下版。原输入/peer与格式保持，见record§148–149。
+
 B-099 / [#124](https://github.com/DreamSoul-AI/RPipe/issues/124)：有限输入±1.7e308的差值/界同时溢出，使公开compare/CLI假通过；同类复数rtol0可0×inf=NaN。decd552先30红15失败/15控制→f200686设计→ba5892a原_close精确回退；fbe1285补4合同用冻结原比较器回放2失败/2控制，当前修复原样全绿，不冒充HEAD红。readout559/core1541+1既有平台skip/CPU Flow189通过，34新增全执行；PR125最终head/实际dev82205cbe全部实际矩阵与聚合成功，Issue留至下版。原字节/peer、普通/非有限/整数路径保持，详record§143–145。
 
 B-098/#122已PR123普通合dev17460b1，最终head与实际dev全部实际CI成功；结束remote已核验删除，本地保留，累计23。DEV_CHECKED 3b7d04dad80c16ee1d33813b785835cd137f327c41a4f6c587d00b0260f4dd9f，Issue留至下版，见record§144。

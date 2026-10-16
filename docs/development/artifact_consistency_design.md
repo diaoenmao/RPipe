@@ -219,3 +219,14 @@ format_compare复用现有_text_cell，仅把动态key显示成单行；JSON原k
 先Issue101，隔离实际三种外部引用可使完整比较错误true、正常不同权重control false；Unicode LS合法stem使显示5行而非4。再冻结原字节17节点10 failed/7 passed、0error/skip，包含API/CLI父路径/绝对/文件alias/根alias、合法nested/自身abs/内部alias/missing/普通名称/Windowsextendedown控制。原始快照与原始REPRO/REPRO2/导入path/hash/JUnit留.tmp/audit088（不随clone）；正式红测试先提交再改代码。record§111的compare key固定判断不完整，以本轮真实证据明确更正，不把旧结论当新验收。
 
 **已实施：** B-088 / #101 经 [PR #102](https://github.com/DreamSoul-AI/RPipe/pull/102) 普通合 dev `ef6084681160a68588e0b2a359ab7cc07c398879`；checkpoint 归属预检与 compare 单行显示合同均已落地，最终 head 和实际 dev 全部实际 CI 已通过。上述 17 节点 10 failed / 7 passed 明确为修复前证据，不再表示未修或等待批准；后续验收见 [record](record.md)。第七节能力仍不实施，不修改文件架构与产物布局。
+
+
+### 混合整数数值的比较精度（B-100 / #127）
+
+dev8c9cb99上，整数2**60+1与实际可表示浮点float(2**60)差1；metrics/history/checkpoint标量和整数-实数/复数tensor共五入口、两向十个公开API反例均错误通过并显示差0。不是#122同类整数张量容差或#124有限运算溢出；这里在减法/张量提升前已经丢失整数位。统一在现有compare边界保全表示值，不改生产者/格式/容差定义。
+
+Issue127先开，031571a先提交120个公开API+CLI/输出JSON回归：五入口×正负×两向，另unsigned实数/复数两入口正向值×两向；各覆盖零容差、绝对界外/界上、相对界外/界上。实际72失败/48有效边界控制通过，0error/skip；每项均先执行API和CLI再断言，输入与peer原字节保持。红XML/log、原REPRO/原源码ZIP与SHA在.tmp/audit100，不随clone。
+
+实施方案：整数/整数既有Fraction分支保持；现有_close对混合int/float先处理唯一浮点的非有限身份，再用现有Fraction按表示值计算差及绝对+相对界，输出可表示差转float、超范围仍inf/原JSON null。现有有限complex精确分支保留平方范数判据，用精确实/虚差分量计算显示norm，避免先把整数转complex后报告差0。Python complex标量原严格比较不扩展。
+
+tensor保留原CPU输入再转现有float64/complex128供普通格和非有限身份处理。只在一个输入为非bool整数、另一个为float/complex时，将该有限格与原溢出格一并复用_close；从原输入item取值，同时写回passed格和显示diff。纯float/complex、纯整数、bool、shape/empty、配对NaN/inf、checkpoint归属及严格读写合同保持。无需helper/模块/依赖/新schema，不改变Run产物/科学门；本批只CPU合同，不测速/GPU。
