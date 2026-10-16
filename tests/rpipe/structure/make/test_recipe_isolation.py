@@ -184,3 +184,23 @@ def test_recipe_import_scope_preserves_all_preexisting_unrelated_cache_entries(t
             if name == helper or name.startswith(helper + '.'):
                 sys.modules.pop(name)
     assert changed == []
+
+
+@pytest.mark.parametrize('package', [False, True], ids=['module', 'package'])
+def test_registered_functions_can_later_import_their_studies_helper(tmp_path, package):
+    helper = '_recipe_isolation_' + uuid4().hex
+    registered = []
+    try:
+        for value in ('first', 'second'):
+            study = tmp_path / value
+            _recipe(study, helper, value, package, False)
+            (study / 'recipe.py').write_text(
+                f'import {helper}\n'
+                f'def build():\n    from {helper} import VALUE\n    return VALUE\n'
+                'def register(ctx):\n    ctx.registered.append(build)\n', encoding='utf-8')
+            assert apply_recipe(study, {'recipe': 'recipe.py'}, SimpleNamespace(registered=registered))
+        assert [build() for build in registered] == ['first', 'second']
+    finally:
+        for name in list(sys.modules):
+            if name == helper or name.startswith(helper + '.'):
+                sys.modules.pop(name)
