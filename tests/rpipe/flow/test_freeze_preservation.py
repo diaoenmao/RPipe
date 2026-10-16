@@ -181,3 +181,44 @@ def test_phase_and_failure_publication_errors_preserve_original_evidence(tmp_pat
     assert not list(layout.root.glob('*.tmp'))
     log = (layout.assets_dir / 'logs/run.log').read_text(encoding='utf-8')
     assert 'original phase failure' in log and '[flow] succeeded' not in log
+
+
+@pytest.mark.parametrize('outer_gate', [False, True])
+@pytest.mark.parametrize('prior_success', [False, True])
+@pytest.mark.parametrize('corruption', ['deep', 'syntax'])
+def test_unreadable_provenance_freeze_gate_preserves_success_or_writes_first_failure(tmp_path, monkeypatch, outer_gate, prior_success, corruption):
+    """Actual outer/native prepare gate -> unreadable provenance refusal; no data/model or execute calls, preserve success or fail a new Run."""
+    import json
+    from rpipe.structure.api import data_api, model_api
+    from rpipe.structure.artifact.provenance import provenance_path
+
+    write_config(tmp_path / 'study.yaml', {'freeze': True, 'flow': {'study_phases': outer_gate}})
+    layout = artifact_layout(tmp_path, 'one')
+    write_config(layout.config_path, {
+        'id': 'one', 'seed': 0, 'data': {'name': 'Toy', 'source': 'stub'},
+        'model': {'name': 'linear'}, 'algorithm': {'mode': 'train', 'source': 'custom_torch', 'num_steps': 1},
+        'system': {'device': 'cpu'},
+    })
+    before = _success(layout) if prior_success else None
+    raw = (b'{"files":{},"plan":{},"metadata":' + b'[' * 12000 + b'0' + b']' * 12000 + b'}'
+           if corruption == 'deep' else b'{broken provenance')
+    path = provenance_path(tmp_path)
+    path.write_bytes(raw)
+    calls = []
+    def forbidden(*args, **kwargs):
+        calls.append(True)
+        raise AssertionError('execution/build must not pass the freeze gate')
+    monkeypatch.setattr(data_api, 'build', forbidden)
+    monkeypatch.setattr(model_api, 'build', forbidden)
+    monkeypatch.setattr(import_module('rpipe.flow.execute'), 'run', forbidden)
+    with pytest.raises(ProvenanceChangedError) as caught:
+        FlowRunner(['execute'] if outer_gate else ['prepare']).run(FlowContext(tmp_path, layout, {}))
+    assert isinstance(caught.value.__cause__, RecursionError if corruption == 'deep' else json.JSONDecodeError)
+    assert not calls and path.read_bytes() == raw
+    if prior_success:
+        assert layout.result_path.read_bytes() == before
+    else:
+        result = load_result(layout.result_path)
+        assert result['status'] == 'failed' and 'ProvenanceChangedError' in result['error']
+    log = (layout.assets_dir / 'logs/run.log').read_text(encoding='utf-8')
+    assert 'ProvenanceChangedError' in log and '[flow] succeeded' not in log
