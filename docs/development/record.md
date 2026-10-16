@@ -1,8 +1,8 @@
-> 现状：B100/#127混合数值精度修复c5687b6本机已验收；上一批PR126/实际dev全绿且remote已清。
-> 最新：120先红72失败/48控制；另18项冻结修前回放6失败/12控制，共138新合同，见§148–149。
-> 检查：readout697/core1679+1既有POSIX skip/CPU Flow189通过；138新节点全部执行，原红断言保持。
-> 下一步：同一分支PR合dev，最终head和实际dev全部实际CI后清remote，Issue留至下版。
-> 边界：无GPU/测速/main/tag/布局/原产物改写；补充回放不冒充当前HEAD红，全部失败证据保留。
+> 现状：PR128/B100最终与实际dev2008753全部实际CI已验收；按最新清理授权完成本轮盘点。
+> 删除：36条已合本地分支、本轮remote mixed-numeric-precision；无废弃worktree，未合候选0，完整清单见§150。
+> 收尾：26个已处理Issue已关闭（24修复+2初步调研）；原开放PR0，无main/tag或数据/结果删除。
+> 保留：主工作区、main/dev及仓库外GPU任务；当前维护工作分支未合，保留至验收。
+> 后续：本维护PR记录清单与约每5个dev PR的全面清理规则，继续三类真实反例复查。
 
 # 一、摘要
 
@@ -2823,3 +2823,96 @@ readout525 passed、core1507 passed/1既有POSIX executable-mode skip、CPU Flow
 最终readout697 passed、core1679 passed/1既有Windows上POSIX executable-mode skip、CPU Flow189 passed，0fail/error；138新增全部在最终green/core执行，原输入与peer字节保持。初轮readout679/core1661+1与最终结果均保留；补充只增加readout测试且生产不再变，Flow用例/源码未变不重复执行。LOCAL_CHECKED SHA256 6e16f46d8340a026d1bff0adfbad16134743ba72e6e65f40b8af2aaa91b5ab74；原REPRO/ZIP/hash、真实RED与冻结补充RED、GREEN/CORE/FLOW/XML在.tmp/audit100，不随clone。正式portable测试随Git。集成仍待本批最终head/实际dev全部实际矩阵/聚合，完成后清结束remote，Issue127保持open至下一版本；不合main/tag，不做GPU/性能或完整科学复验。
 
 本机证据checker曾单边把工作源CRLF归一为LF，与Git内CRLF blob比较而拒绝；NEWLINE_CHECK_REJECTED保留。随后原字节核对确认工作文件与c5687b6 Git blob SHA256同为2fe4095710df56da89d59b4650149b1e163d03d7dc54b65dcbf3bba25310bb01，精确相等，未改生产文件；不记为库测试失败。
+
+
+## 150. 2026-10-16 周期性清理授权更新、PR128验收与完整清单
+
+按Enmao最新清理指示及13:52时间戳澄清：此前保留已合分支/Issue等发版的阶段要求被本轮授权取代。已合dev且提交保全的本地/远程分支清理；未合分支不删，过时项仅列PR说明再定；GPU任务使用中的分支/worktree保留，不删实验数据、结果或provenance，不force push、不动main。后续从本轮清理完成基线起，每累计约5个实际合入dev的PR全面盘点一次；逐PR结束分支仍按CI验收后及时清理。没有修改GitHub自动删除设置或增加定时弹窗。
+
+B100 [PR128](https://github.com/DreamSoul-AI/RPipe/pull/128)最终head38e2a995b3474a82550d7734c682f4b453e80d4b的Branch38856579327/Package38856579274/Unit38856579276全部实际矩阵/聚合成功，PR_CHECKED SHA256 d8ad2e72893d640bd02833446abefdb599b740dc111d0c0100e9ea6d9b263d91。普通合dev2008753c3c2b11321a3da3811102cf5c20b646ff，实际dev [Unit38857214651](https://github.com/DreamSoul-AI/RPipe/actions/runs/38857214651) / [Package38857214660](https://github.com/DreamSoul-AI/RPipe/actions/runs/38857214660)全实际矩阵/聚合成功，DEV_CHECKED SHA256 59ce01011475ad4c94a0742fb8f987f8db91b903cd7e7154a39ac6c0528ba6ca。readout697/core1679+1平台skip/Flow189、138新增执行与原失败边界见§148–149；新原始证据.tmp/audit100不随clone。结束remote codex/mixed-numeric-precision已删除，目标累计26条历史remote删除；本节下表是这次新授权的本地清理清单，不把历史remote重复算本轮。
+
+### （一）本轮删除的36条本地分支
+
+逐条验证tip为当前origin/dev祖先、无工作区占用；普通git branch -d成功，不使用-D。提交均可从dev历史取得；本地main7a15c46与dev9324014未改，remote main00e70b1/v0.4.1未改。当前维护分支codex/periodic-cleanup在盘点后新建且未合，暂保留；本PR合入并核对实际dev CI后再普通删除其本地/远程分支，作为本轮收尾另记报告。
+
+| **删除本地分支** | **已保全tip** | **关联已合PR** |
+|---|---|---|
+| `codex/activity-hint-fields` | `8ee1913de698` | [#88](https://github.com/DreamSoul-AI/RPipe/pull/88) |
+| `codex/artifact-consistency-design` | `eb52c65b9128` | [#52](https://github.com/DreamSoul-AI/RPipe/pull/52) |
+| `codex/artifact-contracts-correctness` | `1667f517d858` | [#61](https://github.com/DreamSoul-AI/RPipe/pull/61), [#63](https://github.com/DreamSoul-AI/RPipe/pull/63), [#64](https://github.com/DreamSoul-AI/RPipe/pull/64), [#65](https://github.com/DreamSoul-AI/RPipe/pull/65), [#69](https://github.com/DreamSoul-AI/RPipe/pull/69), [#70](https://github.com/DreamSoul-AI/RPipe/pull/70), [#71](https://github.com/DreamSoul-AI/RPipe/pull/71), [#72](https://github.com/DreamSoul-AI/RPipe/pull/72), [#73](https://github.com/DreamSoul-AI/RPipe/pull/73), [#74](https://github.com/DreamSoul-AI/RPipe/pull/74), [#76](https://github.com/DreamSoul-AI/RPipe/pull/76), [#78](https://github.com/DreamSoul-AI/RPipe/pull/78) |
+| `codex/atomic-readonly-cleanup` | `168456adf0fb` | [#107](https://github.com/DreamSoul-AI/RPipe/pull/107) |
+| `codex/cache-lock-budget` | `90b7d75323d2` | [#46](https://github.com/DreamSoul-AI/RPipe/pull/46) |
+| `codex/compare-checkpoint-boundary` | `ef6084681160` | [#102](https://github.com/DreamSoul-AI/RPipe/pull/102) |
+| `codex/compare-nonfinite-contract` | `39f132bfa242` | [#105](https://github.com/DreamSoul-AI/RPipe/pull/105) |
+| `codex/declared-batch-contract` | `4536ec497cce` | [#83](https://github.com/DreamSoul-AI/RPipe/pull/83) |
+| `codex/failure-preservation-policy` | `bbb2f41fa8af` | [#55](https://github.com/DreamSoul-AI/RPipe/pull/55) |
+| `codex/finite-tolerance-overflow` | `460741347265` | [#125](https://github.com/DreamSoul-AI/RPipe/pull/125) |
+| `codex/integer-tensor-tolerance` | `e2376234d40b` | [#123](https://github.com/DreamSoul-AI/RPipe/pull/123) |
+| `codex/log-reference-contract` | `bf57c88fdf06` | [#96](https://github.com/DreamSoul-AI/RPipe/pull/96) |
+| `codex/maintenance-closeout` | `b8648d54296f` | [#56](https://github.com/DreamSoul-AI/RPipe/pull/56) |
+| `codex/mixed-numeric-precision` | `38e2a995b347` | [#128](https://github.com/DreamSoul-AI/RPipe/pull/128) |
+| `codex/open-issue-correctness` | `8a3f21342ced` | [#47](https://github.com/DreamSoul-AI/RPipe/pull/47) |
+| `codex/optional-json-decode` | `000b39a23381` | [#117](https://github.com/DreamSoul-AI/RPipe/pull/117) |
+| `codex/optional-state-stat` | `09549cd1f1a0` | [#121](https://github.com/DreamSoul-AI/RPipe/pull/121) |
+| `codex/optional-tracker-decode` | `187bb2e56297` | [#100](https://github.com/DreamSoul-AI/RPipe/pull/100) |
+| `codex/provenance-declarations` | `2b7c76986950` | [#94](https://github.com/DreamSoul-AI/RPipe/pull/94) |
+| `codex/readout-text-cells` | `8dc6a914a6f0` | [#98](https://github.com/DreamSoul-AI/RPipe/pull/98) |
+| `codex/report-count-cells` | `07a32762ec77` | [#112](https://github.com/DreamSoul-AI/RPipe/pull/112) |
+| `codex/research-plan-masters` | `f303d72328d2` | [#92](https://github.com/DreamSoul-AI/RPipe/pull/92) |
+| `codex/result-status-contract` | `37d0262b58fd` | [#87](https://github.com/DreamSoul-AI/RPipe/pull/87) |
+| `codex/rpipe-research-plan` | `b631d3a5d813` | [#103](https://github.com/DreamSoul-AI/RPipe/pull/103) |
+| `codex/safe-readout-contracts` | `41982bfb62cc` | [#54](https://github.com/DreamSoul-AI/RPipe/pull/54) |
+| `codex/saved-plan-read-boundary` | `6863f7ffe5f2` | [#84](https://github.com/DreamSoul-AI/RPipe/pull/84) |
+| `codex/scheduling-query-parse` | `fdf4f8fb30a7` | [#119](https://github.com/DreamSoul-AI/RPipe/pull/119) |
+| `codex/shared-cleanup-errors` | `9e2f0efbe546` | [#109](https://github.com/DreamSoul-AI/RPipe/pull/109) |
+| `codex/status-metric-shape` | `cbc8c0ae13c9` | [#51](https://github.com/DreamSoul-AI/RPipe/pull/51) |
+| `codex/status-parser-boundary` | `343012569af6` | [#115](https://github.com/DreamSoul-AI/RPipe/pull/115) |
+| `codex/status-readout-errors` | `ed96c8ccbe38` | [#49](https://github.com/DreamSoul-AI/RPipe/pull/49) |
+| `codex/test-evidence-unicode` | `335e203cbbc0` | [#113](https://github.com/DreamSoul-AI/RPipe/pull/113) |
+| `codex/unified-research-plan` | `b7f527031762` | [#126](https://github.com/DreamSoul-AI/RPipe/pull/126) |
+| `codex/v030-local-studies` | `406d7a000bc8` | [#32](https://github.com/DreamSoul-AI/RPipe/pull/32) |
+| `codex/v040-layout-release` | `fb15d6efd20f` | [#57](https://github.com/DreamSoul-AI/RPipe/pull/57), [#58](https://github.com/DreamSoul-AI/RPipe/pull/58), [#60](https://github.com/DreamSoul-AI/RPipe/pull/60) |
+| `codex/yaml-mapping-roots` | `f4acb936ce66` | [#80](https://github.com/DreamSoul-AI/RPipe/pull/80) |
+
+本轮已删除remote清单：codex/mixed-numeric-precision（PR128验收后，tip38e2a995b347）；其本地tip同时在上表中删除。无其他待清理remote；新维护PR的远端仍为活动分支，合入验收后清理。
+
+### （二）PR、Issue与未合候选
+
+盘点时开放PR为0，所有已处理PR已是MERGED/CLOSED，不重复关闭；未合工作分支为0，无待定删除候选。新维护PR为当前工作，不当过时项关闭。以下26个Issue逐项核对对应PR已合dev、merge commit为当前dev祖先，及独立实际dev Unit/Package所有实际job/聚合成功证据后completed关闭；关闭评论引用对应PR和最新授权，不重复旧验收评论。
+
+| **已关闭Issue** | **对应已合PR** | **已验收实际dev** | **完成范围** |
+|---|---|---|---|
+| [#77](https://github.com/DreamSoul-AI/RPipe/issues/77) | [#78](https://github.com/DreamSoul-AI/RPipe/pull/78) | `1667f517d858` | 正确性修复已合/CI已验收 |
+| [#79](https://github.com/DreamSoul-AI/RPipe/issues/79) | [#80](https://github.com/DreamSoul-AI/RPipe/pull/80) | `f4acb936ce66` | 正确性修复已合/CI已验收 |
+| [#81](https://github.com/DreamSoul-AI/RPipe/issues/81) | [#83](https://github.com/DreamSoul-AI/RPipe/pull/83) | `4536ec497cce` | 正确性修复已合/CI已验收 |
+| [#82](https://github.com/DreamSoul-AI/RPipe/issues/82) | [#84](https://github.com/DreamSoul-AI/RPipe/pull/84) | `6863f7ffe5f2` | 正确性修复已合/CI已验收 |
+| [#85](https://github.com/DreamSoul-AI/RPipe/issues/85) | [#87](https://github.com/DreamSoul-AI/RPipe/pull/87) | `37d0262b58fd` | 正确性修复已合/CI已验收 |
+| [#86](https://github.com/DreamSoul-AI/RPipe/issues/86) | [#88](https://github.com/DreamSoul-AI/RPipe/pull/88) | `8ee1913de698` | 正确性修复已合/CI已验收 |
+| [#89](https://github.com/DreamSoul-AI/RPipe/issues/89) | [#92](https://github.com/DreamSoul-AI/RPipe/pull/92) | `f303d72328d2` | 初步调研文档交付；实施另授权 |
+| [#90](https://github.com/DreamSoul-AI/RPipe/issues/90) | [#92](https://github.com/DreamSoul-AI/RPipe/pull/92) | `f303d72328d2` | 初步调研文档交付；实施另授权 |
+| [#91](https://github.com/DreamSoul-AI/RPipe/issues/91) | [#94](https://github.com/DreamSoul-AI/RPipe/pull/94) | `2b7c76986950` | 正确性修复已合/CI已验收 |
+| [#93](https://github.com/DreamSoul-AI/RPipe/issues/93) | [#94](https://github.com/DreamSoul-AI/RPipe/pull/94) | `2b7c76986950` | 正确性修复已合/CI已验收 |
+| [#95](https://github.com/DreamSoul-AI/RPipe/issues/95) | [#96](https://github.com/DreamSoul-AI/RPipe/pull/96) | `bf57c88fdf06` | 正确性修复已合/CI已验收 |
+| [#97](https://github.com/DreamSoul-AI/RPipe/issues/97) | [#98](https://github.com/DreamSoul-AI/RPipe/pull/98) | `8dc6a914a6f0` | 正确性修复已合/CI已验收 |
+| [#99](https://github.com/DreamSoul-AI/RPipe/issues/99) | [#100](https://github.com/DreamSoul-AI/RPipe/pull/100) | `187bb2e56297` | 正确性修复已合/CI已验收 |
+| [#101](https://github.com/DreamSoul-AI/RPipe/issues/101) | [#102](https://github.com/DreamSoul-AI/RPipe/pull/102) | `ef6084681160` | 正确性修复已合/CI已验收 |
+| [#104](https://github.com/DreamSoul-AI/RPipe/issues/104) | [#105](https://github.com/DreamSoul-AI/RPipe/pull/105) | `83615d727122` | 正确性修复已合/CI已验收 |
+| [#106](https://github.com/DreamSoul-AI/RPipe/issues/106) | [#107](https://github.com/DreamSoul-AI/RPipe/pull/107) | `3a72bd8cef7e` | 正确性修复已合/CI已验收 |
+| [#108](https://github.com/DreamSoul-AI/RPipe/issues/108) | [#109](https://github.com/DreamSoul-AI/RPipe/pull/109) | `fccccc4c28f9` | 正确性修复已合/CI已验收 |
+| [#110](https://github.com/DreamSoul-AI/RPipe/issues/110) | [#112](https://github.com/DreamSoul-AI/RPipe/pull/112) | `4974869527bf` | 正确性修复已合/CI已验收 |
+| [#111](https://github.com/DreamSoul-AI/RPipe/issues/111) | [#113](https://github.com/DreamSoul-AI/RPipe/pull/113) | `bf24574c3b30` | 正确性修复已合/CI已验收 |
+| [#114](https://github.com/DreamSoul-AI/RPipe/issues/114) | [#115](https://github.com/DreamSoul-AI/RPipe/pull/115) | `b28f6a219ce9` | 正确性修复已合/CI已验收 |
+| [#116](https://github.com/DreamSoul-AI/RPipe/issues/116) | [#117](https://github.com/DreamSoul-AI/RPipe/pull/117) | `20027afb231b` | 正确性修复已合/CI已验收 |
+| [#118](https://github.com/DreamSoul-AI/RPipe/issues/118) | [#119](https://github.com/DreamSoul-AI/RPipe/pull/119) | `4d12719d7eba` | 正确性修复已合/CI已验收 |
+| [#120](https://github.com/DreamSoul-AI/RPipe/issues/120) | [#121](https://github.com/DreamSoul-AI/RPipe/pull/121) | `039db15f4df4` | 正确性修复已合/CI已验收 |
+| [#122](https://github.com/DreamSoul-AI/RPipe/issues/122) | [#123](https://github.com/DreamSoul-AI/RPipe/pull/123) | `17460b1b579d` | 正确性修复已合/CI已验收 |
+| [#124](https://github.com/DreamSoul-AI/RPipe/issues/124) | [#125](https://github.com/DreamSoul-AI/RPipe/pull/125) | `82205cbe7fc8` | 正确性修复已合/CI已验收 |
+| [#127](https://github.com/DreamSoul-AI/RPipe/issues/127) | [#128](https://github.com/DreamSoul-AI/RPipe/pull/128) | `2008753c3c2b` | 正确性修复已合/CI已验收 |
+
+89/90只关闭PR92已交付的初步调研任务，不表示批准shared迁移、logger替换、外部服务或新的实验；文档保留缺口、条件性建议和后续准入合同。24项正确性修复仍仅在dev，不冒充main发版；本次没有tag/release。
+
+### （三）worktree、GPU与证据
+
+Git worktree登记仅本物理主工作区；本会话无托管worktree附件，prune --dry-run无废弃条目，所以删除worktree0个，主工作区保留。只读核对进程元数据时检测到GPU Python任务，其cwd/PYTHONPATH为仓库外独立副本；进程、分支/工作区和数据均未触碰。没有执行GPU计算、测速、训练或终止任务。
+
+本轮快照、全部tip/祖先判断、对应CI证据路径与SHA、删除日志、Issue关闭结果、GPU保护核对在.tmp/cleanup-20261016，不随clone；正式清单与公共PR/Issue链接在本节。原Bug索引完整保留于清理前Git commit2008753及各历史记录。AutoResearch额外本机技能正本未找到，本轮按用户明确给出的周期性清理规则执行，不声称读取了其他规范。后续按AGENTS/cicd中累计约5 PR规则继续；运行代码/测试/配置及机器证据格式不改，本机文档验收：5份Study协议全文保全、5份规范/模板原文未改，1647个既存路径链接扫描，变更文档新增坏链接0（273个既有历史/本机证据候选未冒充全仓链接全绿）；布局36 passed/0fail/error/skip，git diff --check通过。本维护PR最终head与实际dev CI仍分别验收。本维护PR合入并清自身分支后作为下一次约5个dev PR清理的累计基线。

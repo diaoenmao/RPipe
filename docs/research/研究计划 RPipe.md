@@ -1,7 +1,7 @@
 > **RPipe 研究计划：研究执行与证据一致性的可验证合同**
-> 版本：1.1；更新：2026-10-16；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
+> 版本：1.2；更新：2026-10-16；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
 > 当前阶段：完成计划重做和定向文献初筛；继续代码正确性，尚未执行本计划的新科学实验。
-> 当前实现基线：dev `82205cbe7fc89a46853eb61c1734d123b7d153f0`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
+> 当前实现基线：dev `2008753c3c2b11321a3da3811102cf5c20b646ff`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
 > 本轮零 GPU、零测速、零训练、零数据下载；保持既有文件架构与产物布局。
 
 ## 本次人工审阅摘要（2026-10-16，按12:53更新）
@@ -162,7 +162,7 @@ DOE/OR/BO/贝叶斯实验设计本轮不采用；无需为合同修复搭搜索�
 <a id="overnight-correctness"></a>
 ## （一）截至本次人工审阅的夜间 PR、结果与结论
 
-工程基线已更新为 dev `82205cbe7fc89a46853eb61c1734d123b7d153f0`（PR125），main 仍为已发布 v0.4.1 / `00e70b1`。下表五批最终 head 和各自实际 dev 全部实际矩阵/聚合均已通过；本机 skip 不算通过。Issue 固定后保留 open 等下一版本，不是仍待修。
+夜间五批修复的验收截止来源为 dev `82205cbe7fc89a46853eb61c1734d123b7d153f0`（PR125），main 仍为已发布 v0.4.1 / `00e70b1`。下表五批最终 head 和各自实际 dev 全部实际矩阵/聚合均已通过；本机 skip 不算通过。按2026-10-16最新清理指示，已修且验收完成的 Issue 已关闭；关闭不等同发布。
 
 | **已合 PR / Issue** | **真实缺口** | **实际 dev 与独立 CI** | **本机 CPU 检查口径** | **结论及保留边界** |
 |---|---|---|---|---|
@@ -178,7 +178,7 @@ DOE/OR/BO/贝叶斯实验设计本轮不采用；无需为合同修复搭搜索�
 
 历史科学结果的实际边界：main_probe 在 v0.3.0 / `804b3823` 的八格60-step完整验收通过，参数最大差0、train/test Loss最大差4.44e-16；后续共享输入只做了报告中列出的CPU单格/两格检查，不是新完整八格。main_exp 同一发布来源的八格600-step、32 train各80000-step及32自身best eval、固定曲线门通过；旧图估读最大终点均值差0.254999个百分点，不等于全部原始历史权重逐位相同。当前 dev 的上述两套完整科学矩阵均未重跑。数字的正式来源仍为 [probe报告](../../studies/main_probe/docs/STUDY_REPORT.md) 与 [exp报告](../../studies/main_exp/docs/STUDY_REPORT.md)，原 Run/JSON/图和失败不迁移、不重写。
 
-2026-10-16后续正确性补充：统一计划已经[PR126](https://github.com/DreamSoul-AI/RPipe/pull/126)合dev8c9cb99，最终/实际dev全部CI通过。随后[Issue127](https://github.com/DreamSoul-AI/RPipe/issues/127)确认混合整数数值丢位，五入口/两向实际反例；先红120项72失败/48控制、补18极值冻结旧实现6失败/12控制。原比较器内统一修复后本机readout697/core1679+1平台skip/Flow189通过；本批最终head/实际dev CI尚待验收，详[record§148–149](../development/record.md)。这是工程正确性补充，不是新的科学实验或文献结论。
+2026-10-16后续正确性补充：[PR128](https://github.com/DreamSoul-AI/RPipe/pull/128)已正常合dev2008753，最终head及实际dev [Unit38857214651](https://github.com/DreamSoul-AI/RPipe/actions/runs/38857214651)/[Package38857214660](https://github.com/DreamSoul-AI/RPipe/actions/runs/38857214660)全部实际矩阵/聚合成功。B100混合数值精度138新合同全部执行，最终本机readout697/core1679+1既有平台skip/CPU Flow189通过；原红与冻结极值补充证据区分，见[record§148–150](../development/record.md)。Issue127及其他已处理Issue按最新清理授权关闭，代码只在dev、未发布main；这是工程验收，不是新科学实验或文献结论。
 
 <a id="gaps-next"></a>
 ## （二）未完成项、今晚审阅与下一步实验
@@ -187,10 +187,10 @@ DOE/OR/BO/贝叶斯实验设计本轮不采用；无需为合同修复搭搜索�
 |---|---|---|---|
 | P0 人工审阅 | Enmao 审本计划中英文、五个完整Study章节、夜间修复与缺口；指出方向变化再改计划 | 单一项目计划；历史授权与当前授权分开 | 本轮文档整理；不是新的实验验收 |
 | P1 E0 文献证据 | 先补L3可读原文/相关工作流语义，再做定向引文追踪；记录版本、实际阅读、纳排依据 | 先确定同故障/同语义协议，未做跨工具实验不称外部优越性 | L1摘要/L2定向章节/L3摘录/L4整页的既有阅读沿用；本轮未新增网络检索或全文阅读 |
-| P2 E1/E2 正确性 | 只接续真实可复现反例；先Issue/红合同、最小统一修复、本机CPU及最终head/实际dev CI | 三类合同、原输入字节与peer、普通错误不吞、严格前置输入不降级；独立basetemp | 已修Issue等下版；无新反例不制造代码/空PR；不查480s或测速 |
+| P2 E1/E2 正确性 | 只接续真实可复现反例；先Issue/红合同、最小统一修复、本机CPU及最终head/实际dev CI | 三类合同、原输入字节与peer、普通错误不吞、严格前置输入不降级；独立basetemp | 已修且验收完成的Issue按最新授权关闭；无新反例不制造代码/空PR；不查480s或测速 |
 | P3 E3 main_probe | 另获明确GPU/新运行授权后，核对原代码归档、raw/Stats、环境、实际FP32及来源；新version/make | 八组合×seed0，连续60 steps，step30/60完整test10000，各自Loss-best eval，原atol1e-6/rtol1e-5及Loss≤1e-6/整数严格门 | 当前未执行，不把v0.3.0旧结果算当前验收；任何缺格/来源或数值异常即停止，不放宽门 |
 | P4 E4 main_exp | P3及自身八格600-step/eval200前置门通过、另获全预算/资源授权后才启动；新version且保留旧身份 | 八模型/数据组合×4seed，32连续80000-step train+32自身best eval，400完整test点；原TARGET/REFERENCE_CURVES估读门 | 当前未执行；200-step两格不解锁；自定义sampler精确resume未验收，训练中断换新身份从头，不续写旧证据 |
-| 独立探索 | 跨项目shared [#89](https://github.com/DreamSoul-AI/RPipe/issues/89)、TensorBoard/legacy logger [#90](https://github.com/DreamSoul-AI/RPipe/issues/90) 继续独立文献/协议调研 | 不绑定三类修复，不先迁目录或替换logger | 未授权实施；shared仍项目根不可变输入，Run可变状态独立 |
+| 独立探索 | 跨项目shared [#89](https://github.com/DreamSoul-AI/RPipe/issues/89)、TensorBoard/legacy logger [#90](https://github.com/DreamSoul-AI/RPipe/issues/90) 继续独立文献/协议调研 | 不绑定三类修复，不先迁目录或替换logger | 89/90初步调研交付已完成并关闭；实施仍未授权，shared仍项目根不可变输入、Run可变状态独立 |
 
 未完成的研究能力还包括：当前源码完整科学复验、历史全部原始权重/seed的可取得性、custom sampler精确恢复、异机/独立外部复现和系统文献覆盖。不得由工程通过推断这些已完成。四任务共享24GB GPU只作为已知资源约束；本轮不申请、不占用、不终止GPU任务。未来排程须先确认授权、实际设备资源和同机任务，不能把历史吞吐或旧缓存状态称为新的冷启动/速度证据。
 
@@ -198,7 +198,7 @@ DOE/OR/BO/贝叶斯实验设计本轮不采用；无需为合同修复搭搜索�
 
 本计划是本仓库唯一宏观计划正本；英文只是对应译本。位置沿既有 `docs/research/`，不再并行创建 `docs/research-plan.md`；每个项目只维护本中文计划及完整英译；当前、模板与历史 Study 计划全文统一在第十一章，原独立计划已迁入并移除，不再生成平行 PLAN.md。研究工作流程仍见 [research.md](../development/research.md)，目录以 [layout.md](../code/layout.md) 为准。
 
-后续 Issue 说明关联 RQ/H、输入、失败预测、验证与产物；PR 保留红/绿、实际检查及边界，普通合 dev。已修工程 Issue 按发布决策处理，不批量关闭有实际反例或未完成验收的 Issue；探索 #89/#90 不作为“过期”删除。清理结束远程分支必须核对已纳入 dev、实际验收与当前活动分支保护。不得因本计划发布新 tag/main 或删除数据。
+后续 Issue 说明关联 RQ/H、输入、失败预测、验证与产物；PR 保留红/绿、实际检查及边界，普通合 dev。已修且验收完成的工程 Issue 按最新清理授权关闭，仍有实际反例或未完成验收的 Issue 保留；#89/#90 仅初步调研交付已完成并关闭，实施未获授权。清理本地/远程分支必须核对已纳入 dev、实际验收与当前活动分支及 GPU 使用保护；未合分支保留，每约 5 个合入 dev 的 PR 全面盘点。不得因本计划发布新 tag/main 或删除数据。
 
 | **日期** | **变更与原因** | **影响** |
 |---|---|---|

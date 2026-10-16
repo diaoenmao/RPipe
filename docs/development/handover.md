@@ -1,5 +1,10 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 最新清理授权与PR128完成
+
+PR128实际dev2008753的Unit/Package及全部实际矩阵/聚合成功，B100本机697/core1679+1/Flow189、138新合同全执行。按最新授权已删36条已合本地分支和本轮remote mixed-numeric-precision；26个已处理Issue已关闭，其中89/90仅初步调研交付，未批准迁移。无开放旧PR/未合候选/废弃worktree；主工作区和仓库外GPU任务保留。main/dev保护、不删数据结果、不force push；完整清单见record§150，后续约每5个dev PR全面清理。当前唯一工作分支codex/periodic-cleanup待维护PR/实际dev CI，之后清自身本地和remote；此前“本地保留/Issue等发版”只表历史状态，不再作为当前指令。
+
+
 ## 2026-10-16 B100混合数值精度本机完成，待最终与实际dev CI
 
 Issue127后031571a先红120项72失败/48控制，84c44cd先设计，c5687b6统一混合int/float与整数-实数/复数tensor原值精度。f3829a9补18极值，冻结旧实现回放6失败/12控制，明确不冒充HEAD红；生产不再变。readout697/core1679+1既有POSIX skip/Flow189通过，138新节点全执行；证据.tmp/audit100不随clone，详record§148–149。唯一未合codex/mixed-numeric-precision，下一PRdev，最终head与实际dev全部实际CI后清remote，Issue等下版；无main/tag/GPU/测速/布局或原数据改写。上一批PR126已实际验收并清结束remote，累计25，统一研究计划已交付。
