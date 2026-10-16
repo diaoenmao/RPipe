@@ -3921,3 +3921,12 @@ PR184最终head67c77c2c6e008474d060de2871926fa806f32737，Branch38948310761/Pack
 最终相邻258 passed/0fail/error/skip；core2164 passed/1既有skip、0fail/error；CPU Flow425 passed/0fail/error/skip。28新增（27unit+1真实CLI integration）逐节点全执行通过，无新skip。45079/23497/71759终结exit0，独立basetemp，core与Flow未竞争清理。LOCAL_CHECKED SHA2563c50fd400b91302cae140ca35e6633a324a74ed0cc39d3b248978a28e9fcf59c；SOURCE_CHECKED证明原spawn/wait/非零纠正正文仅缩进变化、block外byte-identical、原CRLF保持。原两红、补红、WAIT_ONLY_CANDIDATE、首GREEN及GREEN2/CORE/FLOW均在.tmp/audit135保留，不随clone；便携回归、方案与主题commit已入本地历史。
 
 当前185仍OPEN、当前分支未推送/未开PR；下一继续同主题失败所有权/相邻证据复查并本地积累完整里程碑，遵守少量PR规则，不为一B/几行文档马上开PR。未声称远端验收/发布/科学复验。取消时尝试自然wait所有本次owned handles，不杀停进程；OS wait持续拒绝仅有attempt保证，真实hang/强制取消/任意跨调用互斥不增加保证。main/tag/GPU/测速/训练/下载及文件架构/产物布局不动，新编号B136，目标active，无用户决策阻塞。
+
+
+## 231. B135二次复查：短暂wait失败后原child仍活，先补强红回归（2026-10-17）
+
+本轮先核工作区/fetch（有界成功），GitHub开放仅185；上一轮184验收/清理与185本地提交是实际进展。当前唯一未合codex/launch-failure-ownership，保留_staging_from_DEM，无新增远端主题/PR。沿185调用链（CLI/生成Bash/公共launch_jobs同根）核对发现ba04ae3首次wait失败后不恢复同句柄，原测试只断言attempt，不能支持取消不遗弃child的完整结论。
+
+真实CPU仅sleep的两探针：注入首次KeyboardInterrupt/OSError，下一wait可成功；均原异常对象保留、wait1次、返回时原child仍活，随后由探针等自然退出0。1215806先提交红28项8失败/20控制，0error/skip；4个原生CLI覆盖首错两类×child真实exit0/7，另原等待类4项增强失败，其余20控制通过。原始WAIT_FAILURE_REPRO、BEFORE_TRANSIENT_WAIT.zip、TRANSIENT_RED XML/log在.tmp/audit135保留，不随clone；上一轮LOCAL_CHECKED与候选证据保留为历史，未推送/未验收。
+
+方案已先补design：首次wait抛错追加一次同句柄恢复wait，保留首错；恢复成功继续原非零退出纠正、恢复仍失败继续其余peer。正常wait和完成后诊断不重复wait，无进程重跑/kill/suspend/新配置/helper/全局锁/布局/科学门变化。持续wait拒绝或真实hang仍不能保证完成，需明确限制。当前185仍OPEN、本轮先修该已有范围再重新完整检查，继续本地积累，未另立Issue/PR；无用户/设计阻塞，新B136。
