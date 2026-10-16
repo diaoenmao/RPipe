@@ -1,3 +1,11 @@
+## 2026-10-17 B143/#198 SDK 阶段已修，媒体消费新红待同批补全（当前）
+
+当前唯一未合 codex/domestic-sdk-transfers；生产阶段 d52526c（模型/native/线程）→2384a4b（eager/streaming 根与 aiohttp）→5452322（spawn/线程任务）。模型首红 ef3c500，native 红 6621e12，数据根红 f174b8c，spawn 红 024b20d；各自方案先于实现，无审批等待。5452322 完整 core2384passed+1既有skip / CPU Flow466passed，33新SDK节点全部执行；HF0.34.4模型/requests控制另17passed。39195/83435 terminal。不是 #198 完整验收。
+
+最新0582ab5：真实 Dataset/IterableDataset 图片字段返回后解码两反例（合成1pxPNG、xopen/requests传输替身、零网络），4正式回归2failed/2passed。根生成器 guard 不覆盖该格式化/decoder，继续媒体延迟/native/派生消费同类修复，不能拒绝所有媒体、改返回类型或靠已绿矩阵收尾。198远端仍OPEN、无PR；下一B144。原始XML/log/拒夹具/SDK代码在.tmp/audit143，不随clone；详record§257。
+
+保护引用main/dev/origin-main未动，origin/dev e8cebcb；cleanup上次基线194后1/remote53，本轮未全面重盘。PR197/195196已验收旧事实不重发；未合当前分支和用户_staging_from_DEM保留。无真实模型/数据/GPU/性能/Study/main/tag/布局/删除动作，无活观察句柄。
+
 ## 2026-10-17 PR197验收完成；转B143/#198真实SDK边界（当前）
 
 PR197 finald824e14：Branch38971530628/Package38971530518/Unit38971530496，actualdev e8cebcb：Package38972302844/Unit38972302789全部实际矩阵/聚合success。195/196各一次评论验收关闭、原body保全；旧correctness-milestone-next本地+remote普通删，tip已入dev，main/dev/origin-main保护引用原样，未删worktree/数据/结果/provenance。remote53/周期基线194计数1，无活观察句柄；全部raw在.tmp/audit142不随clone，详record§254。不要重发评论或重删。

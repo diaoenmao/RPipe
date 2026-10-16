@@ -1,8 +1,8 @@
-> 当前（2026-10-17）：PR197 已合 dev e8cebcb 并完成双侧实际 CI；195/196 已验收关闭，旧主题本地与远端已清理。
-> 最新：B143/#198 的真实 HF SDK 传输回归已落库；第一批 ef3c500 为 6 项、4 failed/2 passed，扩展取消控制后 7 项、4 failed/3 passed，均 0 error/skip。
-> 证据：tests/rpipe/structure/data/test_origin_sdk.py；原始 XML/log 位于 .tmp/audit143，不随 clone 提供；全部合成传输，零真实模型/数据下载。
-> 下一：在 domestic-sdk-transfers 同一分支统一完成 SDK 重定向、原生传输与客户端所有权约束，未修复项保持 #198 开放，不提前开零碎 PR。
-> 状态：无审批阻塞、无存活 CI 观察句柄；生产代码未改。旧版 SDK 隔离工具安装报 WinError32 已留证，未改变现有运行环境，不当作 RPipe 失败。
+> 当前（2026-10-17）：B143/#198 在同一 domestic-sdk-transfers 分支完成模型 SDK、eager/streaming 根读取及 spawn 下载任务阶段修复；尚未 PR。
+> 验证：5452322 阶段 core 2384 passed+1 既有 skip / CPU Flow 466 passed，33 个新 SDK 节点全执行；HF 0.34.4 模型控制另 17 passed。
+> 最新：真实 Dataset 与 IterableDataset 的图片字段在返回后解码仍可越界；0582ab5 已提交 4 项红回归（2 failed/2 passed，0 error/skip）。
+> 下一：把媒体延迟读取并入 #198 同类修复，覆盖原生解码/派生消费与来源/缓存合同后再完整检查和一个里程碑 PR；198 保持 OPEN。
+> 状态：无审批阻塞、无活观察句柄；前述绿色仅阶段证据。无真实模型/数据下载、GPU、测速、main/tag、布局或数据删除动作，用户暂存保留。
 
 > 当前（2026-10-17）：B139/#191三处已证消费反例同类里程碑本机验收完成，唯一未合evidence-boundaries-next，准备统一PR→dev。
 > 最新：Numbers/status/compare文本、派生compare JSON、可选activity提示均修；strict producer/atomic与科学数值/输入身份保持。
@@ -4254,3 +4254,20 @@ PR197完成验收/清理后从actualdev建立唯一新codex/domestic-sdk-transfe
 ef3c500 先提交真实 HF 1.33.0 / httpx 0.28.1 下载链的 6 项回归，4 failed/2 passed；随后补传输 KeyboardInterrupt 原对象传播、共享客户端未关闭、原 hook 列表与后续独立调用保持的控制，扩展 7 项为 4 failed/3 passed、0 error/skip。四项失败为 huggingface.co、cdn-lfs.huggingface.co、HTTP 降级和伪装 mirror 域名；国内重定向与缓存、普通 foreign consumer、取消为控制。只替代 ModelScope 不可用、仓库元数据和网络 transport，真实 snapshot/file/redirect/cache 逻辑执行，socket.connect 禁止。可移植测试见 tests/rpipe/structure/data/test_origin_sdk.py；原始 RED_SDK/RED_SDK2 XML/log 留 .tmp/audit143，不随 clone 提供。此批不是生产修复或完整 SDK 兼容验收。
 
 fetch origin 成功，当前真实 dev 仍 e8cebcb，本地单主题分支保留文档与红测试；用户 _staging_from_DEM 保持。SDK 传输实现还须覆盖旧版 requests 每线程 Session、现代共享 httpx Client、原生 Xet 和 datasets 的延迟读取，不能用替换/关闭全局客户端或只检查最终返回值冒充请求前拦截。HF 0.34.4 代码从清华国内 PyPI 隔离放 .tmp/audit143/sdk034，pip 跨盘移动 CLI 后遇 WinError32、exit2；日志和已落包保留，仅源码可读核对，不把 pip 的前段 Successfully installed 当安装验收成功，不修改现有 venv、不删临时文件、不换海外源。无设计批准等待，继续同类里程碑而非逐方法 PR；198 保持开放，main/tag/布局/数据结果不动。
+
+
+## 257. 2026-10-17：B143 / #198 SDK 模型、数据与并发阶段修复；媒体返回后消费继续同批
+
+6621e12 在 ef3c500/82b9876 后补真实 SDK Xet 元数据选择回归：8 项 5 failed/3 passed；613a240 先明确上下文拥有传输检查方案，再 d52526c 实施。保留 ModelScope 优先、同 ID/revision/cache_dir、双源故障链、本地路径及取消合同；requests 每次 send / httpx 单次 transport 入口按 ContextVar 校验 HTTPS/host/authority；ThreadPoolExecutor.submit 把策略复制给 SDK 文件 worker。不 reset client factory、不关闭共享 client、不改认证/代理/hook 列表；无标记的并发 foreign 调用维持原函数、常量和 native 可用性。国内 HF 用可检查的 HTTP，不让 Xet 或旧 hf_transfer 接管；file_download 的配置代理/availability 只读本次上下文，退出还原，缓存树快捷分支也受同一 availability 约束。
+
+902f73d 补旧版真实 SDK 与并发控制：从国内 PyPI 隔离的 HF 0.34.4 包实际可 import，原 dev e8cebcb 源码用相同真实 SDK 测试为 9 项 5 failed/4 passed；当前实现旧 SDK 模型及 ModelScope requests 栈控制 17 passed。先前 pip CLI 跨盘移动 WinError32/exit2 仍留证，不当成 pip 完整安装成功；现有 venv 没替换。现代 HF 1.33.0/httpx 0.28.1、缓存/取消/客户端/foreign 同时调用和 ModelScope CN/OSS 区域控制均实际执行；未联系真实服务，不证明 ModelScope 或镜像当前可用性。
+
+f174b8c 补 eager / streaming 根请求逃逸，2 failed；24b4dba 方案后 2384a4b 修复调用期策略与可 pickle 的原生根生成器绑定，保留原 Dataset/IterableDataset 对象，不重建 schema/info/state。每次创建/next/close 才启用策略，yield 给用户前退出；close IO 不覆盖原错或取消，正常 close 故障和未知程序错误保留。aiohttp ClientRequest 构造早于 connector/DNS 校验目标，实际 redirect response 的 Location 也核验；真实 Session 重定向循环用合成连接/原生响应控制。第一 aiohttp 夹具在 Windows 事件循环自身 socket 建立前禁止 connect，第二夹具误把未消费响应标 released：两次无效夹具原 log/XML 保留，修正后 4 项通过，不记为库反例。
+
+真实 datasets 5.0.0 本地 JSON 验证原生 streaming shuffle/shard/batch/map/Torch format、pickle 与 state_dict 恢复保持；返回后请求用真实 IterableDataset + 合成源确认。024b20d 再证真实 download_manager.map_nested / Pool(spawn) 的子进程丢策略（1 failed、子 PID 已确认、合成 adapter 无网络）；9348af1 方案后 5452322 用模块级任务 callable 在子进程安装 guard，已装传输的线程只设/还原策略，保留 num_proc/原函数/返回顺序。真实 spawn 和原生线程池均通过，6 个生成器首错/取消/正常 close/程序 close 控制通过，无父锁等待死锁或上下文泄漏。
+
+5452322 阶段完整 core：2384 passed、1 既有 skip、0 failed/error；CPU Flow：466 passed、0 skip/failed/error。XML 逐项确认新 SDK 文件 33 节点均执行。原始 CORE_MODEL_DATA / FLOW_MODEL_DATA / GREEN_SDK034_STAGE / MODEL_DATA_STAGE_CHECKED 在 .tmp/audit143，不随 clone；39195/83435 均 exit0，无存活观察句柄。不是最终 #198 验收，媒体后续新红不在该 466 中。
+
+相邻原生消费复查确认未完成边界：真实 Dataset.__getitem__ 与 IterableDataset 格式化 Image 字段均在根生成器 yield 后解码；替代 xopen/requests transport、使用自造 1 像素 PNG，两者策略 None，进入海外合成请求并成功解码。MEDIA_REPRO.json/脚本/log 保留；首脚本仅结尾记录漏导入 Path，原脚本/log 保留后修正重验，不把日志故障当库缺陷。0582ab5 先提交 4 项正式回归：国内两项正控制通过，海外 eager/streaming 两项 failed，0 error/skip。该媒体消费属于 #198 既定数据 SDK 传输合同，继续同类批次，不能以根生成器检查或已有绿色声称闭合；须覆盖适用 native 媒体路径、原 schema/缓存/派生消费，不以拒绝所有媒体或改变返回类型代替修复。
+
+198 远端重新核对仍 OPEN，未开 PR、不推小文档 PR、不关闭 Issue；main/dev/origin-main 保护引用未动，origin/dev 仍 e8cebcb。PR197 及 195/196 的旧验收/评论/分支清理不重复。cleanup 基线194后1、remote53 仅沿上次确认值，本轮未重做全面盘点；未合主题不删，用户 _staging_from_DEM 原样保留。goal active，无设计审批/用户决策阻塞；下一 B144，实际模型/数据服务、GPU、性能、正式 Study、main/tag/release、布局/schema迁移均未执行。
