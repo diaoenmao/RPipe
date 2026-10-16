@@ -528,6 +528,15 @@ def launch_jobs(
             for job, proc in procs:
                 try:
                     code = int(proc.wait())
+                except BaseException as error:
+                    if primary_error is None:
+                        primary_error = error
+                    try:
+                        code = int(proc.wait())
+                    except BaseException:
+                        # shortcut: repeated wait failure leaves completion unknown; revisit for forced cancellation.
+                        continue
+                try:
                     pairs.append((job, code))
                     if code != 0:
                         if _run_result(study_dir, str(job['run_id'])).get('status') == STATUS_SUCCEEDED:
