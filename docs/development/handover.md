@@ -1,3 +1,9 @@
+## 2026-10-17 B135补强与B136同主题本机验收（当前）
+
+唯一未合codex/launch-failure-ownership，仍未推送/开PR：B135先补强1215806红28项8失败/20控制，再0df9943首wait失败一次恢复、继续原非零纠正；B136/#186先7ae8a6d红30项10失败/20控制，再3594c1e平台Path组件统一sibling/调度依赖身份。295相邻/core2194 passed+1既有skip/Flow429 passed，新62（57unit+5integration）全执行。旧wait-only候选/首wait漏child反例与各红均保留，最新LOCAL_CHECKED在.tmp/audit136，临时证据不随clone，正式record§231–233。所有本地句柄终结，无阻塞；185/186仍OPEN、待后续完整里程碑双侧实际CI，不提前关。
+
+当天已4PR（174/178/181/184），本批继续本地同主题积累，不马上开第五个、不逐B/tiny-doc拆PR。接收基线仍PR184/dev28f3dde，双侧实际CI/182183关闭/本地+remote清理已完成；周期基线181计数1/remote48。下一B137，目标active；不合main/tag/GPU/测速/实验/数据删除，不改布局。OS wait持续拒绝仅attempt保证，POSIX大小写独立实体分支待实际CI，任意junction/跨独立launch互斥不增保证。不要重复PR184评论/清理。
+
 ## 2026-10-17 PR184完整验收及B135本地继续
 
 PR184 final67c77c2与actualdev28f3dde全部实际矩阵/聚合success，182/183原正文保持、各1评论验收关闭。已删codex/launch-plan-validation本地/remote，当前唯一未合codex/launch-failure-ownership保留；基线181计数1/remote48，约5PR再周期盘点。正文CRLF造成一次校验器误拒绝，fresh全文归一prose验证后确认无重复edit，原证据保留，非库失败。

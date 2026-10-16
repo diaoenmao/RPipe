@@ -647,3 +647,6 @@ B135二次复查修正（2026-10-17，仍未推送）：ba04ae3对启动错误�
 最小方案不改产物/metadata字符串：resume.sibling_train_ids原同Run判断用Path(rid)==Path(run_id)；现有schedule.dependencies临时mapping以Path(run_id)为key，三处查询使用Path，遍历时转回原字符串传既有安全validator/结果写与诊断，train rerun比较也按Path。父ID仍用index原字符串，不改seed/factor匹配、current-index范围、外部/本地显式checkpoint独立控制、mtime新鲜度或训练评估波次。无新helper/import/schema/全局lower-case/任意symlink或短名探测，不扩大跨调用互斥。
 
 全部调用者已核：sibling_train_checkpoint和sibling_train_dependency共用ID选择；run_succeeded/plan/cache/CLI经原依赖入口，launcher依赖lookup/旧eval失效/失败重试过滤用同平台key。与B135异常子进程所有权同一启动正确性里程碑、本地同分支累积，再完整验证；不另开一个bug一个PR。先本方案再最小修，不待设计批准。
+
+
+B135–B136本机实施状态（2026-10-17）：0df9943/3594c1e按最后修正方案实施，295相邻/core2194 passed+1既有skip/Flow429 passed，新62全执行；先前候选失败及原生首wait反例均保留。186不改变metadata/布局，只在原两文件统一平台组件身份；185/186仍OPEN、未推送/未开PR，当天4PR后继续本地积累，完整主题后统一PR。双侧实际CI及POSIX实体分支尚待，不提前验收。详record§231–233，无待设计批准。

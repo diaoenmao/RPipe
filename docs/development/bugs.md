@@ -6,9 +6,13 @@
 
 ## 开放
 
-### B-135：组异常退出遗漏本次已启动子进程收尾（本机已修，待完整里程碑验收）
+### B-135：组异常退出遗漏本次子进程收尾（本机已修，待同主题里程碑验收）
 
-- Issue：[185](https://github.com/DreamSoul-AI/RPipe/issues/185)。六类启动/输出/env/失效写入/wait/退出诊断异常绕过已启动peer等待；原生CPU sleep反例自然退出。先红27项25失败/2控制及补红1/1（wait-only候选遗漏非零纠正），再ba04ae3复用原wait/结果纠正循环保留首错并尝试全部owned peers。258相邻/core2164 passed+1既有skip/Flow425 passed，新28全执行；仍OPEN，尚未推送/开PR，继续本地同主题积累。OS wait持续拒绝仅保证尝试，不杀停/GPU/扩布局。详[record§228–230](record.md)，本机.tmp/audit135不随clone。
+- Issue：[185](https://github.com/DreamSoul-AI/RPipe/issues/185)。六类异常统一复用原wait/非零纠正保首错；1215806补强红证明首次wait短暂失败仍漏child，0df9943追加一次同句柄恢复wait。保留25红失败与额外非零纠正补红、8补强红失败及拒候选，不能用旧绿替代。最终合批295相邻/core2194 passed+1既有skip/Flow429 passed，新62全执行；未推送/未开PR，仍OPEN，持续OS wait拒绝仅attempt保证，不杀停或扩布局。详[record§228–233](record.md)，本机.tmp/audit135/136不随clone。
+
+### B-136：Windows Run别名丢sibling身份、误成功并绕过eval屏障（本机已修，待同主题里程碑验收）
+
+- Issue：[186](https://github.com/DreamSoul-AI/RPipe/issues/186)。原生Eval/eval samefile，alias丢父Train依赖/权重选择、父failed时readiness True且可派发替身。7ae8a6d先红30项10失败/20控制，再3594c1e将原sibling比较及调度依赖key/lookup/失效比较用平台Path；metadata原字符串、因素/seed/显式checkpoint/mtime/布局不变。原生POSIX不同大小写实体独立控制待实际CI；与185同批继续本地积累不另PR。详[record§232–233](record.md)，原始.tmp/audit136不随clone。
 
 B133–B134/#182/#183已随[PR184](https://github.com/DreamSoul-AI/RPipe/pull/184)最终head及实际dev28f3dde所有实际CI验收关闭，主题本地+remote已清；详[record§226–229](record.md)。
 

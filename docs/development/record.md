@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：B135/#185+B136/#186同一启动所有权里程碑本机验收，生产0df9943/3594c1e；仍未推送/开PR。
+> 最新：补齐首次wait短暂失败恢复，并修Windows Run别名丢sibling依赖/误成功/绕过eval屏障；先红与原生证据见§231–233。
+> 验证：295相邻/core2194 passed+1既有skip/CPU Flow429 passed，新62（57unit+5integration）全执行/0新skip。
+> 下一：同主题继续本地积累后统一里程碑PR；当天已4PR，185/186仍OPEN，无决策阻塞、无活测试/观察句柄。
+> 保护：接受dev28f3dde/PR184；基线181计数1/remote48，main/tag/GPU/数据/结果/布局不动，持续wait拒绝仅attempt保证。
+
 > 当前（2026-10-17）：PR184双侧全部实际CI验收，dev28f3dde；182/183已关闭，codex/launch-plan-validation本地+remote已删。
 > 最新：B135/#185六类异常子进程所有权已先红后本地修ba04ae3；wait-only候选漏非零纠正已另红并修，详§228–230。
 > 验证：258相邻/core2164 passed+1既有skip/CPU Flow425 passed，新28全执行；原始失败/候选拒绝保留。
@@ -3939,3 +3945,29 @@ B135由1215806先红28项8失败/20控制→df62f80方案→0df9943仅追加9行
 同一调用链新B136/#186：Windows Eval/eval samefile时alias丢sibling parents/依赖/checkpoint，父failed时readiness误True并可派发Popen替身；canonical拒绝。只读字节保持，无实际child/权重加载/训练。初探针漏failed.error由严格writer正确拒绝后，保留DRIVER_SETUP_REJECTED并补正确synthetic配置；不是库失败。72条全状态Issue清单去重，已开186；与已修183计划内重复、179日志身份分属不同合同。
 
 7ae8a6d先红30项10失败/20控制，0error/skip：IDs/依赖/checkpoint、父failed/newer/valid与include_done、启动拒绝、train rerun失效、重试耗尽屏障；均原生文件系统fixture，POSIX不同大小写实体独立控制待CI，不新增skip。原始ZIP/REPRO/RED在.tmp/audit136不随clone。方案先写design：同平台Path组件用于sibling匹配与现有调度依赖key/lookup/失效比较，metadata保留原字符串；原factor/seed/显式checkpoint/mtime/模式/波次/布局/科学门不动。当前唯一未合分支同批185+186，不拆PR；新B137，无审批阻塞。
+
+
+## 233. B135–B136启动所有权合批本机验收与调用点清单（2026-10-17）
+
+B135补强按1215806红28项8失败/20控制→df62f80方案→0df9943生产9行加；首次wait失败追加同句柄一次恢复wait，保留首错，恢复成功继续原非零结果纠正。正常wait仅一次，完成后诊断失败不重wait；持续OS拒绝只保证所有peer的尝试，不宣称终结/解决hang或强制取消。原两真实CPU探针“child仍活”与此前wait-only候选漏非零纠正的失败均保留，不挑旧绿当验收。
+
+B136按Issue186→7ae8a6d红30项10失败/20控制→9e93586方案→3594c1e最小生产：resume同Run比较一处Path，调度临时依赖mapping用Path key及lookup/失效比较；遍历保留原字符串传原validator/写入/诊断。两文件8行加/7行删，无helper/import/依赖/schema/布局/科学门新增；metadata字符串、seed/factor/current-index筛选、外部/本地显式checkpoint、mtime新鲜度、训练评估波次与重试语义保持。原生Windows同实体alias现保留父依赖，POSIX不同大小写实体测试分支待实际CI，不能提前用Windows结果替代。
+
+最终相邻295 passed/0fail/error/skip（resume/schedule/make/CLI），retry-key后4项复核通过；完整core2194 passed/1既有skip、0fail/error，CPU Flow429 passed/0fail/error/skip。62新（B13532+B13630；57unit+5integration）逐XML节点确认全执行通过/0新skip。90848/5752/98264均终结exit0；各basetemp独立。LOCAL_CHECKED SHA25613470efbdff9f5b780f6c879243fa935472b6533bb34cf651dc3c798c7058007；新旧红/拒候选/原生REPRO/ZIP/各轮XML/log及SOURCE_CHECKED分属.tmp/audit135/136，仅本机不随clone，便携回归和方案已本地提交。
+
+### 共同调用与副作用清单（仅本里程碑相关点，沿用§83全仓清单）
+
+| **调用点** | **读写职责** | **当前合同与证据** |
+| --- | --- | --- |
+| sibling_train_ids | 只读index | 原生组件身份；seed/factor/current-index不变，9原生helper节点及resume单处原字节替换证明 |
+| sibling_train_checkpoint/dependency | 只读配置/路径存在性 | 复用ID选择；显式外部/本地权重独立性沿既有控制；不加载探针权重 |
+| run_succeeded | 只读result/config/index/mtime | 同Run alias不得丢父依赖，failed/newer保守pending；12缓存/就绪节点及输入字节快照 |
+| plan_jobs/load_launch_plan/CLI | 先只读再原派发 | 复用修后readiness，不改jobs配置或ID，make/CLI现有回归覆盖 |
+| launch依赖mapping | 内存身份与结果失效 | Path key/lookup/比较一致；eval拒绝、train别名失效、重试耗尽控制 |
+| _run_groups启动 | Popen本次句柄与既有失效写入 | 保存首错仍收尾已启动peer，无下一组/重试；24异常节点及真实CLI spawn节点 |
+| _run_groups等待 | 句柄wait与既有result纠正 | 首wait失败一次恢复，持续失败仍尝试peer；4真实CLI取消/IO×exit0/7及增强unit |
+| _run_groups非零诊断 | 原_fail_result/原print | 继续原成功→失败纠正，保primary；额外红1/1防wait-only候选遗漏 |
+| 生成Bash/公共CLI | 原launch_jobs共同调用 | 不造新编排层，原脚本/CLI相邻与全Flow覆盖 |
+| atomic/shared锁相邻 | 本轮只读复查 | 原owned staging/主错保全/诊断合同保持，未确认新反例、未改代码 |
+
+GitHub当天PR盘点原始PR_CADENCE_INVENTORY：本地2026-10-17零点后已创建/合入174/178/181/184共4个；当前批不马上新开第五个，不按B拆PR，继续同主题本地积累到后续完整里程碑统一PR。185/186保持OPEN，尚无本批远端CI，不冒称合dev/发布。接受基线仍PR184/dev28f3dde双侧实际全绿，旧主题已清；周期基线181计数1/累计remote48，当前唯一未合分支保留。记录和唯一中文/完整英文研究计划同步，不改文献阅读范围/科学缺口，不以CPU合同宣称新实验。新编号B137，目标active，无用户/设计审批阻塞。

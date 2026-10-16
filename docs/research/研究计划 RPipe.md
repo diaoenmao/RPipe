@@ -739,3 +739,12 @@ PR184的B133/B134已在实际dev28f3dde验收：最终head与实际dev全部实�
 新B135/#185统一六类启动/等待异常的子进程收尾缺口：真实CPU仅sleep子进程在第二spawn抛错后仍存活，探针等其自然完成；无正式研究运行/损坏结论。先红27项25失败/2控制再方案；未提交wait-only候选257相邻虽通过，却遗漏既有非零退出成功纠正，另红1/1证明后修正。最终本地ba04ae3原spawn/wait/非零纠正文仅缩进变化，保存首错并经原循环尝试其余owned句柄，末尾传播原错；无强制杀停、新锁/helper/框架/依赖/schema/布局或数值变化。
 
 最终本机相邻258 passed、core2164 passed/1既有skip、CPU Flow425 passed，新28（27unit+1原生CLI integration）全执行。LOCAL_CHECKED SHA2563c50fd400b91302cae140ca35e6633a324a74ed0cc39d3b248978a28e9fcf59c；拒候选/红/绿/XML/源码证明在本机.tmp/audit135，不随clone，便携回归和工程事实已本地提交。185仍OPEN、尚未推送/开PR，继续相关主题本地积累、完整里程碑再单PR，不冒称远端验收。OS wait持续拒绝仅attempt保证，不保证子进程终结或解决hang；无GPU/测速/训练/下载/main/tag及新增科学结果，文献现状、科学缺口与E3/E4授权门不变。
+
+
+### 2026-10-17 启动所有权本地里程碑补强（B135–B136）
+
+B135没有只凭旧绿验收：真实CPU仅sleep子进程在首wait短暂抛错后仍存活，旧断言只有attempt而无恢复完成证据。1215806先红28项8失败/20控制，含4真实CLI（首次KeyboardInterrupt/OSError×child实际exit0/7）；先文档修正再0df9943对同一已知句柄增加一次恢复wait，保首错且继续原非零结果纠正。正常wait/完成后诊断不重试；持续wait拒绝仍只有attempt保证，不杀停进程。
+
+新B136/#186原生Windows独立复现：Eval/eval同物理Run，literal sibling身份丢父依赖/权重、父failed时误返回success并可派发eval替身。修正后的synthetic metadata只读调用字节不变，不加载权重/训练/GPU；初探针漏failed.error被严格writer正确拒绝，单独保留driver错误。72条Issue去重后7ae8a6d先红30项10失败/20控制，3594c1e仅在原sibling比较及调度依赖key/lookup/失效比较用平台Path组件。metadata原字符串、因素/seed/current-index归属、独立显式checkpoint/mtime/布局保持，原生POSIX不同大小写目录控制仍待实际CI。
+
+合批本机相邻295 passed、core2194 passed/1既有skip、CPU Flow429 passed，新62（57unit+5integration）全执行/0新skip。LOCAL_CHECKED SHA25613470efbdff9f5b780f6c879243fa935472b6533bb34cf651dc3c798c7058007；原始/拒候选/红/绿/原字节证明在本机.tmp/audit135/136不随clone，便携回归、设计及调用/副作用清单见record§231–233。两Issue保持OPEN，未推送/开PR；GitHub盘点本地零点后已4PR（174/178/181/184），继续同主题本地积累到后续完整里程碑，不逐bug拆PR。接受基线仍PR184/dev28f3dde双侧实际CI/已合分支清理完成；本机工程证据不冒称远端验收或科学结果，文献/缺口/E3/E4门不变。无GPU/测速/训练/下载/main/tag、数据结果删除或文件/产物布局改动。
