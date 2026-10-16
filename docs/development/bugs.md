@@ -76,3 +76,9 @@ B105/#138已PR139实际dev全CI验收关闭并完成周期清理。B106/[Issue14
 
 
 B106本机验收：19新节点/core1728/CPU Flow207 passed，core另1既有平台skip；含真实Windows只读清理的19新节点全执行。最终head/实际dev CI待验收。
+
+
+B106同批补充确认关闭IO二错可遮原保存错/取消；6项先红4/2后修复，当前25新节点绿、core1734+1既有skip，最终Flow/新headCI待验收。仍仅Issue140/PR141。
+
+
+B106含流关闭补充的最终本机验收：25新节点/core1734/CPU Flow207 passed，core另1既有平台skip；25新节点含原生只读清理全执行，PNG字节仍一致。更新后最终head/实际dev CI仍须验收；旧9da02b4绿仅历史。

@@ -445,3 +445,9 @@ PR139实际dev90078c8全CI验收，Issue138关闭，launch-failure-evidence本�
 
 
 B106本机验收：19新节点/core1728/CPU Flow207 passed，core另1既有平台skip；含真实Windows只读清理的19新节点全执行。最终head/实际dev CI待验收。
+
+
+B106同PR补充：a095ef0先红6项4/2→e9cae39设计→66f6f16保留首错/取消，正常关闭失败仍严格；25新节点全绿，core1734+1既有skip，最终Flow/新headCI待验收。9da02b4旧head全绿仅历史，不代最终验收。
+
+
+B106含流关闭补充的最终本机验收：25新节点/core1734/CPU Flow207 passed，core另1既有平台skip；25新节点含原生只读清理全执行，PNG字节仍一致。更新后最终head/实际dev CI仍须验收；旧9da02b4绿仅历史。

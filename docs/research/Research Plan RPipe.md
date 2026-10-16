@@ -550,3 +550,9 @@ PR139 final-head/actual-dev CI passed all real jobs; Issue138 is closed and its 
 
 
 B106 local completion:19 new nodes/core1728/CPU Flow207 passed; core has one existing platform skip. All19 new nodes, including native Windows readonly cleanup, executed. Final-head/actual-dev CI remains pending.
+
+
+B106 remains one PR141: six supplemental close-error regressions yielded4 failures/2 valid controls before66f6f16 retained the original save/cancellation error; close failure after successful saving stays strict. All25 new nodes and core1734 with one existing skip pass; final Flow/CI remain pending. Old-head green is not new-head acceptance. Frozen-old/current PNG bytes still match at95233 bytes; no new scientific experiment or layout change.
+
+
+B106 final local acceptance after stream-close supplement:25 new nodes/core1734/CPU Flow207 passed; core has one existing platform skip. All25 new nodes executed, including native readonly cleanup. PNG bytes remain identical. Final updated-head and actual-dev CI remain required; old9da02b4 green is historical.

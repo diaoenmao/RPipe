@@ -1,7 +1,7 @@
 > 当前：PR139两侧全实际CI成功、Issue138关闭并完成五批清理；新基线139。
-> 最新：B106/Issue140 PNG部分保存破坏旧图/遗留figure，正式19节点17红/2控制。
-> 修复：fba35b8局部原子PNG发布/figure释放后19绿，core1728+1既有skip；原绘图字节一致。
-> 下一步：CPU Flow、最终head与实际dev全CI；目标active，无代码阻塞，见§163–164。
+> 最新：B106/Issue140同PR收敛PNG破坏/figure释放与关闭二错遮首错，原19红17/2、补6红4/2。
+> 修复：66f6f16后25新节点全绿，core1734+1既有skip；冻结旧/新PNG字节一致。
+> 下一步：更新后的最终head与实际dev全CI；最终Flow207通过，目标active，无阻塞，见§163–164。
 > 保护：无GPU/测速/正式Study、main/tag或产物布局变更；以下旧状态保留。
 
 > 当前：PR135实际dev已全CI验收、Issue134关闭，工作分支本地/remote普通删。
@@ -3062,3 +3062,13 @@ PR129后五批PR131/133/135/137/139均已验收，对应runner-log-failure、tra
 
 
 B106本机验收：19新节点/core1728/CPU Flow207 passed，core另1既有平台skip；含真实Windows只读清理的19新节点全执行。最终head/实际dev CI待验收。
+
+
+### B106同批流关闭补充（2026-10-16）
+
+原head9da02b4最终CI已全绿，但相邻故障注入发现临时流close的OSError可替换savefig首错/取消（原错仅在context）。仍属Issue140/PR141，不另开分支/Issue：a095ef0先补6项红回归4 failed/2有效控制passed，e9cae39先补设计，66f6f16显式close保留首错；正常保存后的关闭错误仍严格传播、不发布。BaseException仅为释放取消资源并bare raise，不吞新的终止信号或非IO关闭程序错误。
+
+当前25新节点全绿，补充后core1734 passed/1既有平台skip，最终CPU Flow及新最终head/实际dev CI待验收。原19红/绿、原core/Flow与旧head CI均保留，不冒充补充后的验证。冻结旧函数/当前66f6f16对同一组合成曲线仍95233字节同SHA2562c5c48b4a46b29c3273df0ea601483bd289cdcd811afc23803f2c26eabaff0d2；绘图主体原行仅缩进。补充原始探针CLOSE_REPRO、CLOSE_RED与GREEN_FINAL等在.tmp/audit106，不随clone。
+
+
+B106含流关闭补充的最终本机验收：25新节点/core1734/CPU Flow207 passed，core另1既有平台skip；25新节点含原生只读清理全执行，PNG字节仍一致。更新后最终head/实际dev CI仍须验收；旧9da02b4绿仅历史。
