@@ -724,3 +724,41 @@ eba0d3a先红32项24失败/8控制、0error/skip：Logger18个真实OS管道/关
 
 
 B140本机实施完成（2026-10-17）：2fa9f0a只改既有Logger两方法，ADJ257/core2304passed+1既有skip/CPU Flow433passed，32新全执行，原生pipe/closed/readonly三反例转绿；首错/取消/原close/execute去重合同保持。当前待整类里程碑双侧实际CI，193保持OPEN，非待设计批准。详record§246。
+
+
+B140已实施并双侧验收（2026-10-17）：PR194 finalhead26dd6d2及actualdevf2c286d所有实际矩阵/聚合success，193已按授权关闭，旧主题本地+remote普通删除。无待审/待CI；单writer checkpoint/程序错/取消等原合同不扩大，详record§247。
+
+
+### B141 / #195：独立raw准备入口的国内下载边界（2026-10-17，实施方案）
+
+用户03:16国内下载规则也覆盖baseline/手动脚本。PR190/B138只修库factory及HF/ModelScope入口，独立studies/main_exp/flow/prepare_data.py仍硬编码ossci S3/toronto。77条全状态Issue去重、原Issue189范围核对后先195登记；调用实际prepare_mnist/cifar并在urllib传输前拦截，两个海外首请求确认。另用真实urllib重定向流程配合合成HTTPS响应确认国内起点302可继续发往海外；未发真实网络，不声称现有国内镜像实际这样重定向。源码ZIP/REPRO在.tmp/audit141不随clone，正式Study/历史manifest/归档原字节不动。
+
+80009d7先红20项11失败/9有效控制、0error/skip：两默认路径、六越界authority、HTTPS/HTTP/FTP海外redirect；正常大小写/default443、同国内redirect、缓存/坏缓存、长度/MD5拒绝保partial、verify-only保原下载来源为控制。仅网络transport替身，urllib请求/redirect/哈希/文件发布实际执行，socket.connect禁止作为后备。
+
+最小方案只改现有手动prepare_data.py，不改src/rpipe原有foreign显式兼容：MNIST_URL/CIFAR_URL复用domestic_endpoint已有登记镜像，归档/MD5及raw SHA256原样。一个私有URL校验点要求HTTPS、hostname属于这两个已登记endpoint、端口缺省或443、无userinfo；有效host大小写不误拒。校验仅在真实下载前（有效缓存继续不联网复用，即使旧来源字符串是海外），并用标准库HTTPRedirectHandler薄子类在redirect_request进入下一transport之前复用同一校验，覆盖HTTP/FTP重定向逃逸。使用本次download独立build_opener，不install全局opener，不加配置/依赖/重试/海外fallback。
+
+保留既有60秒timeout、headers、Content-Length/MD5校验、.part证据、同目录发布、cache_lock、raw路径与manifest字段；拒绝时要求本地预备已校验raw，不换海外源。记录新实际国内URL；verify-only仍保留原downloads/reused_caches来源，不就地重写历史证据。国内镜像可用性/下载数据一致性尚未实测，不拿mock代替；源码冻结后实际复跑须新version，当前不运行正式Study/GPU/训练/测速。此变更只落实已授权下载合同，不扩展科学目标/布局。
+
+完成该入口后继续同类/相关失败留证复查，本地按主题累积到完整里程碑再PR，不为这个脚本单开小PR。当前唯一未合codex/correctness-milestone-next，195待最终里程碑本机/双侧CI，下一B142；无设计审批等待。
+
+
+### B142 / #196：手动raw复制类的首错与owned退出（2026-10-17，实施方案）
+
+B141路由修9e2bcd2之后，继续同脚本复制失败边界：实际download流/gzip解压/tar提取配合真实.part部分写入，再在真实descriptor关闭后注入OSError，三条均把首个write OSError改成secondary close OSError。partial/peer/自有文件关闭虽保全，调用者首错身份丢失。是可定位I/O注入，不声称真实存储坏；源ZIP/REPRO在.tmp/audit142不随clone。原144仅四普通artifact/logger/tracker writer，142是锁退出；登记196收这组三binary raw helper，不重复旧Issue。
+
+bce353a先红35项14失败/21控制、0error/skip：download/mnist/cifar各destination/source退出，以及cifar外层archive退出七边界×write-error/cancel/normal-close/programming-close/ok。复用stream_close_fault真实落3字节再拒绝，源用实际GzipFile/ExFileObject/TarFile与合成HTTP响应；全部应检查原异常对象、owned close一次、源archive/peer字节、partial及成功发布。normal archive close失败时raw已按原顺序发布，控制保持，不伪造回滚。
+
+最小方案在同手动模块内放一个私有owned-stream上下文包装，因七个既有owned流边界重复此语义，标准contextlib.closing会同样遮首错，不够。使用标准ExitStack，先保留原manager.__enter__返回/失败语义，再注册原__exit__调用：仅在已有body异常且__exit__另抛OSError时保留原错；正常body的close失败继续传播，非IO程序close错误和原有__exit__抑制语义保持。保留LIFO退出、外层源关闭与目标打开失败的行为，不重试close、不删partial、不新增全局I/O框架/模块/依赖。
+
+只包装download响应和partial、MNIST gzip和partial、CIFAR TarFile及extracted source/partial共七边界。digest/split_counts普通读取非本已复现copy范围，仍可继续相邻审计，不以本批声称所有读取已修。原60秒网络预算、国内初始/redirect guard、缓存/hash/发布顺序/manifest/布局/单writer合同保持。未知错误不得只藏__context__。本地先上述方案再修，再完整55新回归与相邻/核心/CPU Flow；此前B14120新节点的core2324+1既有skip/Flow433仅中间阶段证据。195/196同分支合批、不逐bug PR，无设计审批等待，下一B143。
+
+
+B141–B142本机实施检查点（2026-10-17）：9e2bcd2/4954933在同一手动raw模块完成上述路由/七owned copy退出；55新全执行，最终166相邻+1既有skip/core2359passed+1既有skip/CPU Flow433passed。无设计等待，195/196仍待完整批次PR双侧CI；接续相邻严格读取验证，不扩展未测合同。详record§251；真实下载/服务/GPU/实验未执行。
+
+
+B142同类严格读取补全（2026-10-17）：原digest及split_counts四个显式binary reader（MNIST images/labels、CIFAR batch/meta）同样close IO遮住原read/struct/pickle错误，归196原body一个追加区，保原文不另Issue/B编号。实际digest及精确读取AST块配真实文件/解码、close后注入OSError，五处均确认；不是完整科学数据验证。第一候选meta夹具误指input.bin，FileNotFoundError已拒绝；更正为batches.meta后五处重验，拒候选/log及Issue正文校验更正说明保留，不当库失败。
+
+正式补红25项10失败/15控制、0error/skip：五读取边界×原IO/解码错、取消、正常close拒绝、程序close错误、成功。输入/peer字节、owned descriptor/close一次及真实解码控制均核对。沿已批准同一私有_owned_stream，仅给这五个既有with表达式加包装，不增helper/读fallback/宽容解码，复用原__enter__/__exit__语义及IO首错策略。完整显式binary stream共12边界统一；cache_lock沿原OS协议、隐式Path.read_text等标准库内部I/O不冒称全覆盖，既有字段/字节/数值校验与布局保持。此前4954933完整2359core+1/433Flow为copy七边界阶段，补后80新节点需重新完整验收。仍195/196同分支一个手动数据准备类别里程碑PR，无设计等待。
+
+
+B141–B142完整类别本机验收（2026-10-17）：最终84389b0含12显式owned流与既有路由修，80新全执行，191相邻+1既有skip/core2384passed+1既有skip/CPU Flow433passed。所有原AST/hash/strict gate核对，三批red/拒候选保留；无设计等待，准备一个完整类别PR，195/196待双侧实际CI。细节与限制见record§253。

@@ -159,3 +159,22 @@ B139同类补全（2026-10-17）：可选activity提示亦真实strict stdout编
 ### B140 / Issue #193：Logger单路拒绝阻断健康日志证据（2026-10-17）
 
 实际Runner→execute→Logger，真实OS pipe reader关闭/closed stdout使可写run.log缺原原因和traceback；只读临时log使健康stdout缺完整trace。先eba0d3a红32/24失败/8控制，再3dbd9a6方案、2fa9f0a仅Logger独立双输出和完整诊断尝试；首IO对象/程序错/取消/close策略保持。相邻257、core2304passed+1既有skip、CPU Flow433passed，32新全执行，原生三反例转绿。详record§245–246；原始.tmp/audit140不随clone。待同类里程碑最终head/实际dev全部CI，193仍OPEN，不等设计审批。
+
+
+2026-10-17 B140验收：PR194 finalhead26dd6d2/actualdevf2c286d全部实际CI成功；193原body保持、一次评论后关闭，旧主题本地/remote正常删，详record§247。上文待CI为历史阶段，非当前阻塞。无新开放Issue，不代表所有可能故障已排除。
+
+
+### B141 / Issue #195：独立历史raw下载脚本绕过国内源（2026-10-17）
+
+PR190库入口不覆盖手动prepare_data.py。实际prepare_mnist/cifar在传输替身处暴露S3/toronto首请求，真实urllib重定向流程配合合成响应亦可从国内起点继续请求海外。零实际网络/下载，不声称实际镜像重定向。77全状态Issue去重后195登记，80009d7红20项11失败/9控制，设计见artifact_consistency_design末B141；先复用已有domestic_endpoint并在初始/redirect传输前统一校验，缓存/hash/raw/layout/manifest schema不改。原始.tmp/audit141不随clone，正式数据/归档/报告不动，继续本地合批而非单bug PR。
+
+
+### B142 / Issue #196：raw下载/解压的close IO遮首错（2026-10-17）
+
+download/prepare_mnist/prepare_cifar真实.part部分写入+注入close OSError，三条caller均收到secondary而非原write error，原文件close/partial/peer保持。区别144普通writer/142锁退出，先登记196再bce353a红35项14失败/21控制，覆盖七owned退出×原错/取消/正常close/程序close/成功。设计见artifact_consistency_design末B142；同195路由修复在当前唯一分支累积，未推送/PR。证据.tmp/audit142不随clone，零实际网络/模型数据/GPU/训练，保持raw/layout/发布顺序。
+
+
+2026-10-17 B141–B142本机检查点：195/196同分支路由9e2bcd2及owned退出4954933已相邻166passed+1既有skip/core2359passed+1既有skip/Flow433passed，55新全执行；原生反例转绿，未推送/PR，仍OPEN。继续相关读取边界复查后统一完整里程碑，不单bug PR。详record§251，临时证据不随clone；无真实下载或服务可用性声明。
+
+
+B142同类读取补全/本机最终验收（2026-10-17）：196原body追加digest与四strict reader范围，首个meta夹具路径拒绝及过早范围表述已明确更正并留证；2d018de先25红10失败后84389b0只给五with复用guard。与195合批共80新全执行，191相邻+1既有skip/core2384passed+1既有skip/Flow433passed。当前尚无PR，195/196保持OPEN，详record§252–253，原反例及校验拒绝均不删。

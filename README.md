@@ -676,7 +676,7 @@ Study process 只聚合当前 index 列出的 Run，不扫描旧 version 目录�
 
 Study 可在 `study.yaml` 写 `flow: {study_phases: true}`。库加载 `flow/` 下的 `prepare/`、`execute/`、`collect/`、`summarize/`、`write/`、`process/` 包；每包在 `run.py` 定义 `run(ctx)`，`__init__.py` 仅通过 `from .run import run` 导出，不能承载函数或业务实现。空目录或没有包入口的手动工具目录不加载，但库默认阶段仍执行，不需要在 Study 复制默认链或填入空 hook。专用建构代码放在 `structure/`。prepare 的 `run.py` 可定义 `before(ctx)`，由包入口一并导出，在库初始化后、recipe / Factory 构造前准备；`run(ctx)` 检查已构造对象。write 先跑 Study 再由库定稿，其他阶段先跑库再跑 Study；未启用时不会自动加载目录。建构前注册通过项目适配接入，现有模板合同见技术分册。两柱全部 Python 源码自动进入来源清单，无须再写重复的 `provenance.include`；固定参考文件等额外输入仍需声明。
 
-`ctx.scope == 'run'` 时是单条 Run 上下文；整轮聚合后还会调用一次 `process.run(ctx)`，此时 `ctx.scope == 'study'`，使用 `ctx.study_dir` 和 `ctx.state['process']`，没有单条 Run 的 layout。只在 Study scope 做终验，避免每条 Run 重复执行矩阵或跨 seed 统计。make 前的下载、数据预检使用显式手动入口（`main_exp` 为 `flow/prepare_data.py`），不接入阶段链。加载、失败和 freeze 的完整合同见 [flow.md §14.0](docs/code/flow.md#140-study-阶段目录)。
+`ctx.scope == 'run'` 时是单条 Run 上下文；整轮聚合后还会调用一次 `process.run(ctx)`，此时 `ctx.scope == 'study'`，使用 `ctx.study_dir` 和 `ctx.state['process']`，没有单条 Run 的 layout。只在 Study scope 做终验，避免每条 Run 重复执行矩阵或跨 seed 统计。make 前的下载、数据预检使用显式手动入口（`main_exp` 为 `flow/prepare_data.py`），不接入阶段链。main_exp 的 raw 准备复用已登记国内镜像并在传输前拒绝海外重定向；镜像不可用时需预备已校验的本地 raw，不转海外。有效旧缓存继续复用，archive MD5/raw SHA256、manifest 字段和路径保持，已完成 Study 证据不自动重写。加载、失败和 freeze 的完整合同见 [flow.md §14.0](docs/code/flow.md#140-study-阶段目录)。
 
 | **你想做的** | **怎么做** |
 |----------|--------|
