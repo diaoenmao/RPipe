@@ -108,6 +108,7 @@ flowchart TD
 - 失败：`_write_failed_result` 尽最大努力写入 `status: failed` + `error`（类型名 + 消息），补齐已知 `paths`；**不得吞掉原异常**。落盘自己再失败则静默，优先保证异常向上。
 - 失败时 **traceback 进该 Run 的 `run.log`**（与 stdout 同一套；每一行都是 `[error]`，并带时间和 Run `id`）。execute 失败由 execute 写；prepare 等阶段由 Runner 写。prepare 尚未挂 System 时 Runner 先打开同一路径的 Logger。
 - 失败时若已有 `control` / `collected.metrics`，写入 result，便于对照哪次 Run 挂了。
+- Logger 初始化或首条 start 日志失败同样进入 Runner 失败回写；异常报告所需 Logger 再初始化失败只能放弃日志，不能替换原异常或阻断 failed result。坏日志对象与 peer 保留，result 自身不可写时仍只尽力回写；旧成功保全条件不扩大。
 - Runner 的初始冻结拒绝 / process 旧成功保全条件由 runner.py 的私有判断统一表达，范围不变；普通执行失败仍按原合同写 failed。
 - process 发生异常时，Runner 保留已有 `status: succeeded` 的 result，记录日志并重新抛出异常。影响本 Run 成功判定的门限须在 write 定稿之前执行；process 的派生失败另行报告。
 - Issue #36：Runner 尚未开始任何阶段且来源冻结检查抛出 `ProvenanceChangedError` 时，保留已有成功 result 的原始字节，仍记录失败日志并抛出异常；无旧成功结果仍写 failed。阶段内的实际执行失败沿用原写回规则。

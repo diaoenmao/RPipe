@@ -6,9 +6,15 @@
 
 ## 开放
 
-截至 2026-10-16 本轮清理，当前没有已确认而尚未修复的开放缺陷；GitHub 的 26 个已处理 Issue 已按最新授权关闭，其中 24 项为已合 dev 且验收完成的正确性修复，2 项为已交付的独立初步调研。这不表示全仓没有潜在缺陷，也不表示已发布 main 或批准调研的后续实施。
+### B-101：Runner日志初始化失败绕过failed结果与原异常传播
 
-逐项 Issue/PR、实际 dev CI 与清理清单见 [record §150](record.md)。原反例、红绿与历史阶段状态在 [清理前索引](https://github.com/DreamSoul-AI/RPipe/blob/2008753c3c2b11321a3da3811102cf5c20b646ff/docs/development/bugs.md) 和开发记录保留；不删除 Run、JSON、图或失败证据。新反例继续先开 Issue、提交红回归、最小修复与 PR→dev 验收。
+- Issue：[130](https://github.com/DreamSoul-AI/RPipe/issues/130)，修复前正式红提交8a351df，10 failed/0error/skip。
+- 复现：有效旧succeeded结果，assets/logs/run.log为目录，run(collect)抛日志打开错误却保留旧success；新Run同样缺failed result。诊断_ensure_logger失败还会覆盖阶段原错。
+- 期望：原错误继续传播，result可写则尽力failed；collect普通失败写回，process已有成功仍原字节保全；日志坏对象/peer不改。
+- 方案：仅把启动日志纳入run既有try，诊断Logger构造失败在_log_failure内返回；设计见artifact_consistency_design的B101补充及record§152。9e345c8已完成最小修复，本机相邻123/core1679+1既有平台skip/CPU Flow199通过，正式10新节点全执行；待最终head与实际dev CI。
+
+前一轮已关闭26个已处理Issue（24正确性+2初步调研），完整清单与旧反例见[record§150–151](record.md)及[清理前索引](https://github.com/DreamSoul-AI/RPipe/blob/2008753c3c2b11321a3da3811102cf5c20b646ff/docs/development/bugs.md)。关闭不等同main发布或授权探索后续实施。
+
 
 ## 暂缓（不进入正确性修复队列）
 
@@ -33,6 +39,6 @@ B-055 的原生 launch 重试关闭入口已通过 [PR #42](https://github.com/D
 
 B-002、B-021 / B-024及B-025至B-029的既有修复证据仍在 [record.md](record.md)。B-022 / B-023 的代表性容量、精度合同与探索边界保留各自报告；本轮新的设备 / 并发结果见 [本轮执行记录](../../studies/main_exp/docs/v030_execution.md)。未实测支持范围不是已通过，缺环境依赖的导入失败也不自动列为库缺陷。
 
-已使用至 B-100，编号不复用；下次新增问题从 **B-101** 起编号。历史段落的旧“下一编号”仅表当时状态。
+已使用至 B-101，编号不复用；下次新增问题从 **B-102** 起编号。历史段落的旧“下一编号”仅表当时状态。
 
 新增条目一条一事，记录编号、open / investigating状态、复现条件、期望 / 实际、影响落点、方案和实际验证证据。

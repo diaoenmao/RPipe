@@ -1,5 +1,12 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 B101日志失败留证本机完成；PR129清理已验收
+
+Issue130→8a351df先红10 failed/0error/skip→77986d9设计→9e345c8仅Runner两个异常边界。正式相邻123/core1679+1既有POSIX skip/CPU Flow199通过，新10节点全部执行，红断言、坏log对象、peer、初始冻结/process保全、布局/schema保持。原始证据与初稿夹具拒绝在.tmp/audit101，不随clone；仅本机工程合同，待PR最终head/实际dev全部实际CI，之后关闭Issue130并普通清本地/remote。唯一未合codex/runner-log-failure；无main/tag/GPU/测速或科学重跑。
+
+PR129已实际dev76f7b3b全CI验收，本轮清理最终37本地/2remote/worktree0、26已处理Issue关闭，活动新分支保留；清单record§150–151与.tmp/cleanup-20261016。每约5个dev PR周期基线129；下述旧“待CI/Issue等发版/保留已合分支”仅历史，不作当前授权。
+
+
 ## 2026-10-16 最新清理授权与PR128完成
 
 PR128实际dev2008753的Unit/Package及全部实际矩阵/聚合成功，B100本机697/core1679+1/Flow189、138新合同全执行。按最新授权已删36条已合本地分支和本轮remote mixed-numeric-precision；26个已处理Issue已关闭，其中89/90仅初步调研交付，未批准迁移。无开放旧PR/未合候选/废弃worktree；主工作区和仓库外GPU任务保留。main/dev保护、不删数据结果、不force push；完整清单见record§150，后续约每5个dev PR全面清理。当前唯一工作分支codex/periodic-cleanup待维护PR/实际dev CI，之后清自身本地和remote；此前“本地保留/Issue等发版”只表历史状态，不再作为当前指令。

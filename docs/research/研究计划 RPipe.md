@@ -1,7 +1,7 @@
 > **RPipe 研究计划：研究执行与证据一致性的可验证合同**
-> 版本：1.2；更新：2026-10-16；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
+> 版本：1.3；更新：2026-10-16；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
 > 当前阶段：完成计划重做和定向文献初筛；继续代码正确性，尚未执行本计划的新科学实验。
-> 当前实现基线：dev `2008753c3c2b11321a3da3811102cf5c20b646ff`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
+> 当前实现基线：dev `76f7b3b7ce2bbb6d288c0fc254fdff6c8bcb68e6`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
 > 本轮零 GPU、零测速、零训练、零数据下载；保持既有文件架构与产物布局。
 
 ## 本次人工审阅摘要（2026-10-16，按12:53更新）
@@ -179,6 +179,8 @@ DOE/OR/BO/贝叶斯实验设计本轮不采用；无需为合同修复搭搜索�
 历史科学结果的实际边界：main_probe 在 v0.3.0 / `804b3823` 的八格60-step完整验收通过，参数最大差0、train/test Loss最大差4.44e-16；后续共享输入只做了报告中列出的CPU单格/两格检查，不是新完整八格。main_exp 同一发布来源的八格600-step、32 train各80000-step及32自身best eval、固定曲线门通过；旧图估读最大终点均值差0.254999个百分点，不等于全部原始历史权重逐位相同。当前 dev 的上述两套完整科学矩阵均未重跑。数字的正式来源仍为 [probe报告](../../studies/main_probe/docs/STUDY_REPORT.md) 与 [exp报告](../../studies/main_exp/docs/STUDY_REPORT.md)，原 Run/JSON/图和失败不迁移、不重写。
 
 2026-10-16后续正确性补充：[PR128](https://github.com/DreamSoul-AI/RPipe/pull/128)已正常合dev2008753，最终head及实际dev [Unit38857214651](https://github.com/DreamSoul-AI/RPipe/actions/runs/38857214651)/[Package38857214660](https://github.com/DreamSoul-AI/RPipe/actions/runs/38857214660)全部实际矩阵/聚合成功。B100混合数值精度138新合同全部执行，最终本机readout697/core1679+1既有平台skip/CPU Flow189通过；原红与冻结极值补充证据区分，见[record§148–150](../development/record.md)。Issue127及其他已处理Issue按最新清理授权关闭，代码只在dev、未发布main；这是工程验收，不是新科学实验或文献结论。
+
+2026-10-16继续复查：[Issue130](https://github.com/DreamSoul-AI/RPipe/issues/130)/B101确认Runner日志初始化/首条输出绕过failed回写、诊断日志初始化可覆盖原阶段错误。先红8a351df的10节点全失败，再设计77986d9和最小修复9e345c8；本机相邻123/core1679+1既有平台skip/CPU Flow199通过，全部新节点执行。当前仅工作分支本机完成，待最终head/实际dev CI；不改布局、日志协议、科学门或原成功保全范围，不作为新实验结论。PR129已实际dev76f7b3b验收并完成37本地/2remote清理，详[record§151–153](../development/record.md)。
 
 <a id="gaps-next"></a>
 ## （二）未完成项、今晚审阅与下一步实验

@@ -1,8 +1,8 @@
-> 现状：PR128/B100最终与实际dev2008753全部实际CI已验收；按最新清理授权完成本轮盘点。
-> 删除：36条已合本地分支、本轮remote mixed-numeric-precision；无废弃worktree，未合候选0，完整清单见§150。
-> 收尾：26个已处理Issue已关闭（24修复+2初步调研）；原开放PR0，无main/tag或数据/结果删除。
-> 保留：主工作区、main/dev及仓库外GPU任务；当前维护工作分支未合，保留至验收。
-> 后续：本维护PR记录清单与约每5个dev PR的全面清理规则，继续三类真实反例复查。
+> 当前：B101/#130已按Issue→红8a351df→设计77986d9→最小修复9e345c8完成本机验收，待PR/实际dev CI。
+> 最新：10新合同全执行；相邻123/core1679+1既有POSIX skip/CPU Flow199通过，0fail/error。
+> 清理：上一PR129最终与实际dev76f7b3b全实际CI成功，本地37/远程2已删，见§150–151。
+> 下一步：本批PR→dev，最终head和实际dev全部实际CI后关闭130、清本地/远端；无阻塞。
+> 保护：活动codex/runner-log-failure保留；未动main/tag、GPU任务、数据结果、布局或科学门。
 
 # 一、摘要
 
@@ -2916,3 +2916,31 @@ B100 [PR128](https://github.com/DreamSoul-AI/RPipe/pull/128)最终head38e2a995b3
 Git worktree登记仅本物理主工作区；本会话无托管worktree附件，prune --dry-run无废弃条目，所以删除worktree0个，主工作区保留。只读核对进程元数据时检测到GPU Python任务，其cwd/PYTHONPATH为仓库外独立副本；进程、分支/工作区和数据均未触碰。没有执行GPU计算、测速、训练或终止任务。
 
 本轮快照、全部tip/祖先判断、对应CI证据路径与SHA、删除日志、Issue关闭结果、GPU保护核对在.tmp/cleanup-20261016，不随clone；正式清单与公共PR/Issue链接在本节。原Bug索引完整保留于清理前Git commit2008753及各历史记录。AutoResearch额外本机技能正本未找到，本轮按用户明确给出的周期性清理规则执行，不声称读取了其他规范。后续按AGENTS/cicd中累计约5 PR规则继续；运行代码/测试/配置及机器证据格式不改，本机文档验收：5份Study协议全文保全、5份规范/模板原文未改，1647个既存路径链接扫描，变更文档新增坏链接0（273个既有历史/本机证据候选未冒充全仓链接全绿）；布局36 passed/0fail/error/skip，git diff --check通过。本维护PR最终head与实际dev CI仍分别验收。本维护PR合入并清自身分支后作为下一次约5个dev PR清理的累计基线。
+
+
+## 151. 2026-10-16 周期清理最终验收与自身分支清理
+
+PR129已普通合dev `76f7b3b7ce2bbb6d288c0fc254fdff6c8bcb68e6`。最终head `8b9d0e78126b336fdb76be1836d3261408893d18` 的Branch38859169439/Package38859169741/Unit38859169540与实际dev [Package38859816227](https://github.com/DreamSoul-AI/RPipe/actions/runs/38859816227)/[Unit38859816255](https://github.com/DreamSoul-AI/RPipe/actions/runs/38859816255)全部实际矩阵/聚合成功。DEV_CHECKED SHA256 b9235e907082b859f9de7eef546ac59d2f88e3e642fa0e581637e6d9912fca54。
+
+已在验收后普通删除本维护分支codex/periodic-cleanup本地/远端，tip8b9d0e7保存在dev；加§150前36条本地与remote mixed-numeric-precision，本轮最终合计本地37条、远程2条、废弃worktree0。完整前36条清单与26个Issue/PR在§150；第37条即periodic-cleanup。最新活动codex/runner-log-failure红回归8a351df保留，当前remote仅main/dev；main00e70b1、local main/dev、主工作区、仓库外独立GPU任务和数据结果均未触碰。当前新Issue130不在已处理关闭清单。PR129是下次约5个dev PR全面清理的基线；每批验收后清自身分支规则继续。
+
+正式报告追加于[PR129](https://github.com/DreamSoul-AI/RPipe/pull/129)原正文一次；完整本机清单、祖先/CI/删除核验和报告在.tmp/cleanup-20261016，不随clone；不是新的main发布。
+
+## 152. 2026-10-16 B101 / Issue130 Runner日志失败留证先红与设计
+
+既有flow.md §3要求失败尽力写result并传播原错。PR129清理验收等待期间在隔离Run复现：有效旧success+run.log目录，Logger构造PermissionError发生于run try前，旧success原字节不变。初始合成success缺control/paths被校验拒绝，已保留并更正；此拒绝不是库缺陷。进一步核对调用方prepare/execute/System Logger与现有Runner保全合同，诊断_ensure_logger同样在try外可阻断留证并覆盖原错。
+
+先开Issue130，再在唯一未合分支codex/runner-log-failure提交8a351df正式红：6项启动错误×新旧result，4项collect/process诊断再失败×新旧result，10 failed/0error/skip。每项锁定原异常/peer/旧成功策略；真正目录对象保留。早期草稿6项因冗余mkdir停在夹具，原DRAFT_RED/GREEN和拒绝说明保留，不计正式回归；更正草稿和隔离候选只供设计试验。正式RED.xml/log、原源码ZIP/hash、复现及拒绝在.tmp/audit101，不随clone。
+
+已明确方案后再改生产：原Logger构造与start info移入run既有try，current先None；_log_failure的_ensure_logger出错则返回，外层failed写回和原raise继续。无新helper/依赖/模块，不改变任何文件架构、产物布局、schema、Logger追加协议、最终成功日志时机或初始冻结/process保全条件。正式生产仍待实施；验收覆盖Runner旧42项决策表、12项二次写失败、execute/Logger及CPU Flow，最终head与实际dev分别全部实际CI后合并清理；不GPU/测速/科学重跑。
+
+
+## 153. 2026-10-16 B101本机修复验收完成，待最终与实际dev CI
+
+9e345c8仅改runner.py：原Logger构造/start info移入既有run try，诊断_ensure_logger失败返回，让failed写回与原异常传播继续。生产6 insertions/3 deletions，原CRLF、_preserve_success、日志追加、最终成功输出、API/schema/layout与所有原红断言保持。无其他生产者、模块、依赖、GPU/性能或科学门改动。
+
+正式RED10 failed/0error/skip；GREEN123 passed，其中10新节点全部执行；core1679 passed+1既有Windows不支持POSIX executable mode bits的skip；原生CPU Flow199 passed，均0fail/error。相邻包含原42项决策表、12项结果写二次失败与Logger/execute/Study调用方；结果可写才保证尽力failed，结果位置本身坏时仍保留原错，不承诺一定落盘。原日志目录/peer与process旧success原字节锁定。LOCAL_CHECKED SHA256 `4f55ec3870e6698ec0bb96b3443a5ebd40e6874262d3663271722b598d0a8633`，XML/log/冻结原源码/初稿夹具拒绝与隔离候选试验证据均在.tmp/audit101，不随clone。
+
+附加核验：Git保存红测试为LF、工作区为CRLF，直接原字节checker的拒绝留存NEWLINE_CHECK_REJECTED.json；双边换行规范化一致且相对8a351df的Git diff为空，未修改红断言，不当成库失败。五份Study协议和五份规范/模板原文保全；链接扫描1649个既存路径，273个旧历史/本机候选保留，本批新增坏链接另核。
+
+上述为本机工程合同验收，不替代最终head与实际dev全部实际矩阵/聚合CI；后续PR正常合dev并验收后关闭Issue130、清自身远端/本地分支。PR129周期基线后本批仅算1个新合入PR，不做无依据额外清理。

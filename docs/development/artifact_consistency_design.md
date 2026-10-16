@@ -230,3 +230,12 @@ Issue127先开，031571a先提交120个公开API+CLI/输出JSON回归：五入�
 实施方案：整数/整数既有Fraction分支保持；现有_close对混合int/float先处理唯一浮点的非有限身份，再用现有Fraction按表示值计算差及绝对+相对界，输出可表示差转float、超范围仍inf/原JSON null。现有有限complex精确分支保留平方范数判据，用精确实/虚差分量计算显示norm，避免先把整数转complex后报告差0。Python complex标量原严格比较不扩展。
 
 tensor保留原CPU输入再转现有float64/complex128供普通格和非有限身份处理。只在一个输入为非bool整数、另一个为float/complex时，将该有限格与原溢出格一并复用_close；从原输入item取值，同时写回passed格和显示diff。纯float/complex、纯整数、bool、shape/empty、配对NaN/inf、checkpoint归属及严格读写合同保持。无需helper/模块/依赖/新schema，不改变Run产物/科学门；本批只CPU合同，不测速/GPU。
+
+
+### Runner日志失败留证（B-101 / #130）
+
+第一类相邻复查确认：Logger构造/首条start info在run既有try之外，日志路径为目录或IO被拒时，即便result可写仍不进入failed回写；旧成功保留成误导状态。_log_failure中的_ensure_logger也在诊断try之外，阶段原错可被二次日志初始化错误替换并阻断结果留证。先开Issue130，再以8a351df提交10项正式红回归，10 failed/0error/skip；六启动节点（初始化拒绝/首条输出拒绝/真实目录×新旧result）与四诊断节点（collect/process×新旧result）均实际执行。
+
+实施方案：将原构造与首条输出移入run既有try，current仍先None；_log_failure对_ensure_logger再失败直接返回，让外层_write_failed_result和原bare raise继续。既有日志exception→error fallback、failure_logged去重、_preserve_success初始冻结拒绝/process规则、result/schema/路径、append日志与最终succeeded输出时机保持。不引入新helper/模块/logger框架，不改文件架构和产物布局。
+
+原草稿六节点被夹具重复mkdir阻断的证据保留且排除；更正草稿10红与隔离候选10绿只供方案验证，不替代正式入库红/绿。正式RED.xml/log、修复前源码ZIP/hash和最初无效success夹具拒绝在.tmp/audit101（不随clone）；portable回归已入库。后续先验证现有42项保全决策表、12项结果写二次失败及Runner/execute/Logger相邻合同，再CPU Flow和最终head/actualdev全部实际CI；不跑GPU、性能或Study。
