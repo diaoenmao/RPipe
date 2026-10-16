@@ -289,3 +289,90 @@ def test_manual_raw_copy_preserves_primary_across_owned_close(tmp_path, monkeypa
         assert not target.exists()
         assert partial.read_bytes() == (payload[:3] if primary is not None else payload)
     assert {path: path.read_bytes() for path in before} == before
+
+
+@pytest.mark.parametrize('kind', ['digest', 'mnist-images', 'mnist-labels', 'cifar-batch', 'cifar-meta'])
+@pytest.mark.parametrize('outcome', ['error', 'cancel', 'normal-close', 'programming-close', 'ok'])
+def test_manual_strict_raw_readers_preserve_primary_exit(tmp_path, monkeypatch, raw_prepare, kind, outcome):
+    import ast
+    import pickle
+    import struct
+
+    valid = {'digest': b'raw bytes', 'mnist-images': struct.pack('>IIII', 2051, 1, 28, 28),
+             'mnist-labels': struct.pack('>II', 2049, 1),
+             'cifar-batch': pickle.dumps({'data': 'synthetic', 'labels': [0]}),
+             'cifar-meta': pickle.dumps({'label_names': ['class'] * 10})}
+    target = tmp_path / ('batches.meta' if kind == 'cifar-meta' else 'input.bin')
+    payload = b'' if kind != 'digest' and outcome in ('error', 'programming-close') else valid[kind]
+    target.write_bytes(payload)
+    peer = tmp_path / 'peer.bin'
+    peer.write_bytes(b'peer evidence')
+    namespace = {}
+    if kind == 'digest':
+        invoke = lambda: raw_prepare.digest(target)
+    else:
+        # Exercise exact strict read blocks without constructing scientific datasets.
+        source = Path(raw_prepare.__file__)
+        tree = ast.parse(source.read_text(encoding='utf-8'))
+        function = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'split_counts')
+        blocks = sorted((node for node in ast.walk(function) if isinstance(node, ast.With)), key=lambda node: node.lineno)
+        assert len(blocks) == 4
+        block = blocks[['mnist-images', 'mnist-labels', 'cifar-batch', 'cifar-meta'].index(kind)]
+        namespace.update(images=target, labels=target, cifar=tmp_path, name=target.name,
+                         struct=struct, pickle=pickle, _owned_stream=raw_prepare._owned_stream)
+        code = compile(ast.Module(body=[block], type_ignores=[]), str(source), 'exec')
+        invoke = lambda: exec(code, namespace)
+    primary = KeyboardInterrupt('original read cancellation') if outcome == 'cancel' else OSError('original digest read error')
+    secondary = RuntimeError('unexpected reader exit bug') if outcome == 'programming-close' else OSError('secondary reader close IO')
+    original_open = Path.open
+    handles, body_errors, calls = [], [], []
+    class Stream:
+        def __init__(self, raw):
+            self.raw = raw
+        def __getattr__(self, name):
+            return getattr(self.raw, name)
+        def __enter__(self):
+            return self
+        def __exit__(self, typ, error, tb):
+            body_errors.append(error)
+            calls.append('close')
+            self.raw.close()
+            if outcome != 'ok':
+                raise secondary
+        def read(self, *args):
+            if outcome == 'cancel' or (kind == 'digest' and outcome in ('error', 'programming-close')):
+                raise primary
+            return self.raw.read(*args)
+    def opening(path, mode='r', *args, **kwargs):
+        raw = original_open(path, mode, *args, **kwargs)
+        if path == target and mode == 'rb':
+            handles.append(raw)
+            return Stream(raw)
+        return raw
+    with monkeypatch.context() as fault:
+        fault.setattr(Path, 'open', opening)
+        if outcome == 'ok':
+            value = invoke()
+            if kind == 'digest':
+                assert value == hashlib.sha256(payload).hexdigest()
+        else:
+            with pytest.raises(BaseException) as caught:
+                invoke()
+            if outcome in ('error', 'cancel'):
+                assert len(body_errors) == 1 and body_errors[0] is not None
+                assert caught.value is body_errors[0]
+                if kind == 'digest' or outcome == 'cancel':
+                    assert caught.value is primary
+                else:
+                    assert isinstance(caught.value, (struct.error, EOFError))
+            else:
+                assert caught.value is secondary
+    assert len(handles) == 1 and all(handle.closed for handle in handles)
+    assert calls == ['close']
+    assert target.read_bytes() == payload and peer.read_bytes() == b'peer evidence'
+    if outcome == 'ok' and kind == 'mnist-images':
+        assert (namespace['magic'], namespace['n'], namespace['rows'], namespace['cols']) == (2051, 1, 28, 28)
+    elif outcome == 'ok' and kind == 'mnist-labels':
+        assert (namespace['label_magic'], namespace['label_n']) == (2049, 1)
+    elif outcome == 'ok' and kind == 'cifar-batch':
+        assert namespace['batch'] == {'data': 'synthetic', 'labels': [0]}
