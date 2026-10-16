@@ -13,6 +13,7 @@ The legacy datasets create their own pickle-format ``processed`` caches later.
 from __future__ import annotations
 
 import argparse
+import contextlib
 from datetime import datetime, timezone
 import gzip
 import hashlib
@@ -79,6 +80,21 @@ class _DomesticRedirect(urllib.request.HTTPRedirectHandler):
         return super().redirect_request(request, response, code, message, headers, newurl)
 
 
+@contextlib.contextmanager
+def _owned_stream(stream):
+    """Preserve a body failure when an owned stream exits with an I/O error."""
+    with contextlib.ExitStack() as stack:
+        value = stream.__enter__()
+        def finish(exc_type, exc, tb):
+            try:
+                return stream.__exit__(exc_type, exc, tb)
+            except OSError:
+                if exc_type is None:
+                    raise
+        stack.push(finish)
+        yield value
+
+
 def download(url: str, destination: Path, md5: str) -> dict[str, str]:
     if verify_file(destination, md5, 'md5'):
         print(f'cached archive: {destination}', flush=True)
@@ -91,7 +107,7 @@ def download(url: str, destination: Path, md5: str) -> dict[str, str]:
     print(f'download: {url}', flush=True)
     request = urllib.request.Request(url, headers={'User-Agent': 'RPipe historical data preparation'})
     opener = urllib.request.build_opener(_DomesticRedirect())
-    with opener.open(request, timeout=60) as response, partial.open('wb') as handle:
+    with _owned_stream(opener.open(request, timeout=60)) as response, _owned_stream(partial.open('wb')) as handle:
         actual_url = response.geturl()
         expected_size = response.headers.get('Content-Length')
         total = 0
@@ -146,7 +162,7 @@ def prepare_mnist(data_root: Path, expected: dict[str, str]) -> list[dict[str, s
         if extracted.exists():
             raise ValueError(f'existing IDX checksum mismatch: {extracted}')
         partial = extracted.with_name(extracted.name + '.part')
-        with gzip.open(archive, 'rb') as source, partial.open('wb') as destination:
+        with _owned_stream(gzip.open(archive, 'rb')) as source, _owned_stream(partial.open('wb')) as destination:
             shutil.copyfileobj(source, destination)
         if not verify_file(partial, expected[relative]):
             raise ValueError(f'extracted IDX checksum mismatch: {partial}')
@@ -161,7 +177,7 @@ def prepare_cifar(data_root: Path, expected: dict[str, str]) -> list[dict[str, s
     folder = data_root / 'CIFAR10' / 'raw'
     archive = folder / 'cifar-10-python.tar.gz'
     record = download(CIFAR_URL, archive, CIFAR_MD5)
-    with tarfile.open(archive, 'r:gz') as handle:
+    with _owned_stream(tarfile.open(archive, 'r:gz')) as handle:
         for relative, expected_hash in required.items():
             destination = data_root / relative
             if verify_file(destination, expected_hash):
@@ -177,7 +193,7 @@ def prepare_cifar(data_root: Path, expected: dict[str, str]) -> list[dict[str, s
                 raise ValueError(f'cannot read dataset member: {member_name}')
             destination.parent.mkdir(parents=True, exist_ok=True)
             partial = destination.with_name(destination.name + '.part')
-            with source, partial.open('wb') as target:
+            with _owned_stream(source), _owned_stream(partial.open('wb')) as target:
                 shutil.copyfileobj(source, target)
             if not verify_file(partial, expected_hash):
                 raise ValueError(f'extracted CIFAR checksum mismatch: {partial}')
