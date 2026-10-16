@@ -3999,3 +3999,10 @@ finalhead1314e4159260da158a522f0d13d4c0defb35bf5f的Branch38953094391/Package389
 188按dbab1ff先红→a398e07设计→0a266a1仅两处errors='replace'，SOURCE_CHECKED精确原始CRLF字节比对通过。155相邻、core2204 passed+1既有skip、Flow429 passed，0fail/error，10新节点全执行；LOCAL_CHECKED SHA256d8711abce4abcf072baaf1be44b94da652d8f56e8ceab5812b77dc3523c5bd45。原ZIP/REPRO/红绿XML及driver拒绝保留于.tmp/audit137，不随clone；未开PR/未冒称远端验收。
 
 用户03:16国内源要求并入本批，登记189；先核已跟踪Python下载入口（无HF原生实现）与origin全部caller、两factory/API/CLI/prepare、torchvision镜像、optional依赖。03bb7ce先红7新失败/5旧控制通过。方案在artifact_consistency_design末B138，先方案再改代码；下载替身，无实际模型数据请求。ModelScope/HF官方源码读取范围见设计，不凭浏览结果宣称服务可用。188/189均OPEN，本地同一分支完整里程碑后统一PR，不拆小PR，新B139。
+
+
+## 237. B138/#189国内源首轮实施与完整回归修正（2026-10-17）
+
+03bb7ce先红7新失败/5旧控制→c97eb6d方案→c859b8e最小生产。Model/Data factory在builder前设置显式origin，原origin模块增加ModelScope优先/显式hf-mirror兜底和HF datasets入口，API复用；本地模型路径不下载、取消不换源、两源失败保异常链。hf可选依赖增加modelscope/datasets，新模板domestic；不改历史Run/共享根/布局，未实际下载。
+
+增强相邻126通过；首完整core7失败/2209passed/1既有skip，发现通用origin对既有HF模块旧端点拒绝过宽，阻挡纯CPU/torch。已保留CORE.xml/log，将检查限于实际HF dataset入口导入前/后，模型fallback显式endpoint。测试独立控制已导入模块；首修正替身不完整触发真实datasets import失败亦保留，随后67定向通过。原Flow检查仍执行，期间源码调整，不能作为最终源码验收；新完整core独立basetemp执行，之后重跑final Flow。早先文档批处理SyntaxError发生在任何写入前，修正后重做，不作库失败。当前两IssueOPEN，不拆小PR，真实服务可用性/第三方脚本URL未验证。

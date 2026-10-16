@@ -1,7 +1,7 @@
 > **RPipe 研究计划：研究执行与证据一致性的可验证合同**
 > 版本：1.4；更新：2026-10-17；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
 > 当前阶段：完成计划重做和定向文献初筛；继续代码正确性，尚未执行本计划的新科学实验。
-> 当前实现基线：dev `28f3dde57d38a84898bbc74b85beca20722eb9da`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
+> 当前实现基线：dev `cd0a8a0185820f74a75c932d7d5ff373fb580255`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
 > 本轮零 GPU、零测速、零训练、零数据下载；保持既有文件架构与产物布局。
 
 ## 本次人工审阅摘要（2026-10-16，按12:53更新）
@@ -748,3 +748,8 @@ B135没有只凭旧绿验收：真实CPU仅sleep子进程在首wait短暂抛错�
 新B136/#186原生Windows独立复现：Eval/eval同物理Run，literal sibling身份丢父依赖/权重、父failed时误返回success并可派发eval替身。修正后的synthetic metadata只读调用字节不变，不加载权重/训练/GPU；初探针漏failed.error被严格writer正确拒绝，单独保留driver错误。72条Issue去重后7ae8a6d先红30项10失败/20控制，3594c1e仅在原sibling比较及调度依赖key/lookup/失效比较用平台Path组件。metadata原字符串、因素/seed/current-index归属、独立显式checkpoint/mtime/布局保持，原生POSIX不同大小写目录控制仍待实际CI。
 
 合批本机相邻295 passed、core2194 passed/1既有skip、CPU Flow429 passed，新62（57unit+5integration）全执行/0新skip。LOCAL_CHECKED SHA25613470efbdff9f5b780f6c879243fa935472b6533bb34cf651dc3c798c7058007；原始/拒候选/红/绿/原字节证明在本机.tmp/audit135/136不随clone，便携回归、设计及调用/副作用清单见record§231–233。两Issue保持OPEN，未推送/开PR；GitHub盘点本地零点后已4PR（174/178/181/184），继续同主题本地积累到后续完整里程碑，不逐bug拆PR。接受基线仍PR184/dev28f3dde双侧实际CI/已合分支清理完成；本机工程证据不冒称远端验收或科学结果，文献/缺口/E3/E4门不变。无GPU/测速/训练/下载/main/tag、数据结果删除或文件/产物布局改动。
+
+
+## 国内源工程检查点（2026-10-17）
+
+PR187启动所有权最终head/实际dev全部实际CI验收，185/186关闭，旧主题本地/远端已清。B137/#188本地相邻155/core2204 passed+1既有skip/CPU Flow429，新10全执行。当前B138/#189落实03:16要求：模型ModelScope优先、仅hf-mirror兜底，HF datasets走镜像。7新节点先红后实现，相邻126通过；完整core发现旧import拒绝过宽导致7失败，保留并限于实际HF数据入口，修正定向67通过，最终源码全检待完成、尚未PR。共用API保原共享缓存根/revision并拒绝HF数据旧海外端点，任意第三方脚本内URL仍须逐项审国内来源；可选hf含ModelScope/datasets，新模板domestic，历史输入/结果保留。无真实下载/GPU/训练/科学实验；未来获授权实验先固定国内输入，两源皆无则报告缺口不换海外。替身路由不证明服务可用性或数值有效性。

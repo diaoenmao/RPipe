@@ -25,6 +25,14 @@ pytestmark = [
 ]
 
 
+@pytest.fixture(autouse=True)
+def isolate_hf_endpoint_modules(monkeypatch):
+    import sys
+    import types
+    for name, attr in (('datasets.config', 'HF_ENDPOINT'), ('huggingface_hub.constants', 'ENDPOINT')):
+        monkeypatch.setitem(sys.modules, name, types.SimpleNamespace(**{attr: 'https://hf-mirror.com'}))
+
+
 def test_study_origin_selects_model_hub(monkeypatch):
     monkeypatch.setenv('HF_ENDPOINT', 'https://example.invalid')
     assert model_hub('foreign') == 'https://huggingface.co'
@@ -173,4 +181,48 @@ def test_domestic_refuses_already_imported_foreign_dataset_endpoint(monkeypatch)
     from rpipe.structure import origin
     monkeypatch.setitem(sys.modules, 'datasets.config', types.SimpleNamespace(HF_ENDPOINT='https://huggingface.co'))
     with pytest.raises(RuntimeError, match='import'):
-        origin.apply_model_origin('domestic')
+        origin.load_hf_dataset('org/data')
+
+
+@pytest.mark.parametrize('module_name,attr', [('datasets.config', 'HF_ENDPOINT'), ('huggingface_hub.constants', 'ENDPOINT')])
+def test_domestic_accepts_cached_mirror_endpoint(monkeypatch, module_name, attr):
+    import sys
+    import types
+    monkeypatch.setitem(sys.modules, module_name, types.SimpleNamespace(**{attr: 'https://hf-mirror.com'}))
+    assert apply_model_origin('domestic') == 'https://hf-mirror.com'
+
+
+def test_domestic_model_local_input_never_downloads(tmp_path, monkeypatch):
+    import sys
+    from rpipe.structure.origin import download_model
+    local = tmp_path / 'model'
+    local.mkdir()
+    monkeypatch.setitem(sys.modules, 'modelscope', None)
+    monkeypatch.setitem(sys.modules, 'huggingface_hub', None)
+    assert download_model(str(local), tmp_path) == str(local)
+
+
+def test_domestic_model_missing_modelscope_uses_mirror(monkeypatch, tmp_path):
+    import sys
+    import types
+    from rpipe.structure.origin import download_model
+    monkeypatch.setitem(sys.modules, 'modelscope', None)
+    calls = []
+    def mirror(**kwargs):
+        calls.append(kwargs['endpoint'])
+        return 'local-snapshot'
+    monkeypatch.setitem(sys.modules, 'huggingface_hub', types.SimpleNamespace(snapshot_download=mirror))
+    assert download_model('org/model', tmp_path) == 'local-snapshot'
+    assert calls == ['https://hf-mirror.com']
+
+
+def test_domestic_model_cancellation_does_not_try_another_source(monkeypatch, tmp_path):
+    import sys
+    import types
+    from rpipe.structure.origin import download_model
+    def cancel(**kwargs):
+        raise KeyboardInterrupt('cancel')
+    monkeypatch.setitem(sys.modules, 'modelscope', types.SimpleNamespace(snapshot_download=cancel))
+    monkeypatch.setitem(sys.modules, 'huggingface_hub', None)
+    with pytest.raises(KeyboardInterrupt, match='cancel'):
+        download_model('org/model', tmp_path)

@@ -62,12 +62,6 @@ def model_hub(origin: Any) -> str:
 def apply_model_origin(origin: Any) -> str:
     """Point this process at the Study's model hub. Returns the hub URL."""
     hub = model_hub(origin)
-    if normalize_origin(origin) == DOMESTIC:
-        for name, attr in (('huggingface_hub.constants', 'ENDPOINT'),
-                           ('datasets.config', 'HF_ENDPOINT')):
-            module = sys.modules.get(name)
-            if module is not None and getattr(module, attr, hub) != hub:
-                raise RuntimeError(f'select domestic origin before importing {name}; start a fresh worker')
     os.environ['HF_ENDPOINT'] = hub
     return hub
 
@@ -208,7 +202,16 @@ def download_model(repo_id: str, cache_dir: Path | str, *, revision: str | None 
 def load_hf_dataset(*args: Any, **kwargs: Any) -> Any:
     """Load HF datasets after selecting the domestic endpoint before import."""
     apply_model_origin(DOMESTIC)
+    _check_hf_endpoint()
     from datasets import load_dataset
 
-    apply_model_origin(DOMESTIC)
+    _check_hf_endpoint()
     return load_dataset(*args, **kwargs)
+
+
+def _check_hf_endpoint() -> None:
+    for name, attr in (('huggingface_hub.constants', 'ENDPOINT'),
+                       ('datasets.config', 'HF_ENDPOINT')):
+        module = sys.modules.get(name)
+        if module is not None and getattr(module, attr, DOMESTIC_MODEL_HUB) != DOMESTIC_MODEL_HUB:
+            raise RuntimeError(f'select domestic origin before importing {name}; start a fresh worker')

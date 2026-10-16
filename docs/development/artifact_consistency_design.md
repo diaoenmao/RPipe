@@ -674,3 +674,6 @@ B135–B136本机实施状态（2026-10-17）：0df9943/3594c1e按最后修正�
 先Issue189→03bb7ce红回归：7新节点均失败（builder时序2、ModelScope优先/镜像兜底/双失败3、datasets路由/旧import拒绝2），5旧控制通过，原始XML/log在.tmp/audit138不随clone。无真实下载/训练/GPU。与本分支#188合批，完整本机和双侧实际CI之后一个里程碑验收；不改layout、持久化格式或正式实验数字。
 
 依据：ModelScope官方snapshot_download源码 https://github.com/modelscope/modelscope/blob/master/modelscope/hub/snapshot_download.py （实际阅读签名/cache_dir/revision）；HF datasets官方config.py https://github.com/huggingface/datasets/blob/main/src/datasets/config.py （实际阅读HF_ENDPOINT/HUB_DATASETS_URL导入期定义）。SDK当前主分支阅读不等于安装版本实测，回归使用下载替身，真实服务可用性不由本轮保证。
+
+
+B138完整core首候选修正：7failed/2209passed/1既有skip，通用apply_model_origin检查已导入海外端点过宽，阻挡纯torch/CPU。现仅在实际load_hf_dataset下载边界导入前/后检查；模型fallback使用显式endpoint，不受旧HF默认常量影响。所有factory仍在builder前设置环境，不假装能约束任意自定义HTTP。新增测试以独立模块状态控制缓存端点；第一次替身不完整导致真实datasets初始化失败亦保留，修正后67定向通过，重新完整core执行中。上述限制替代原方案“通用origin拒绝”表述，不吞实际HF入口违规。

@@ -508,7 +508,7 @@ system:
 
 ```yaml
 study: mnist_train_size
-origin: foreign                 # Study 级。domestic 时数据走国内镜像，模型 hub 为 hf-mirror.com
+origin: domestic                # Study 级；模型优先 ModelScope、hf-mirror 兜底，数据走国内镜像
 description: MNIST train_size sweep → test accuracy
 
 experiment:
@@ -639,7 +639,7 @@ python -m <project_entry> status studies/<name> --mode eval
 
 `python -m <project_entry> logs studies/<name>` 把各 Run 的事件行按时间打到终端，不写 Study 级总 log。`python -m <project_entry> report studies/<name>` 从 `process.json` 写 `docs/NUMBERS.md`（Experiment 的 mean / std / min / max，以及 Run 表）。模板 report 先核对当前 index 与聚合的 Study、全部计划 Run ID / seed / 因素归属；缺失、损坏或不匹配时退出 2，不覆盖已有数字表。换 version / fresh make 后先重新 process，再 report；合法部分聚合仍可导出，不要求所有 Run 已成功。不改 `STUDY_REPORT.md` 里的结论，不以清单匹配证明指标新鲜度或科学验收。
 
-`make` 进行中会立刻打出阶段（flush），并写 study 根上的 `activity.json`（不进 Git）：`make: origin <foreign|domestic> model <hub>`、`make: expand`、`make: shared <name> download <origin> <url>` / `ready` / `cached`、`make: pack`。另开一个终端跑上面的 `status`，有这份文件时第一行就是当前阶段；index 还没写出时只打这一行也退出 0。make 成功结束后删掉它。下载仍不刷 tqdm。`origin` 写在 `study.yaml` 顶层，不写在 `data` 下。`foreign` 用 torchvision 官方地址和 `https://huggingface.co`；`domestic` 用国内数据镜像和 `https://hf-mirror.com`。缺省 `foreign`，且不改本机已有的 `HF_ENDPOINT`。只有 `.ready` 才跳过；半截包会删掉再下。
+`make` 进行中会立刻打出阶段（flush），并写 study 根上的 `activity.json`（不进 Git）：`make: origin <foreign|domestic> model <hub>`、`make: expand`、`make: shared <name> download <origin> <url>` / `ready` / `cached`、`make: pack`。另开一个终端跑上面的 `status`，有这份文件时第一行就是当前阶段；index 还没写出时只打这一行也退出 0。make 成功结束后删掉它。下载仍不刷 tqdm。`origin` 写在 `study.yaml` 顶层，不写在 `data` 下。`foreign` 用 torchvision 官方地址和 `https://huggingface.co`；`domestic` 用国内数据镜像；注册模型 builder 可调用 `model_api.download_model(repo_id, cache_dir, revision=...)`，优先 ModelScope，失败只兜底 `https://hf-mirror.com`。HF 数据 builder 调用 `data_api.load_hf_dataset(...)`，在导入 datasets 前设置镜像；已导入的旧海外端点会明确拒绝，须先设 origin 再启动新 worker。可选 `hf` 依赖包含 modelscope / datasets；没有两个国内源时报告失败，不换海外地址。新 Study 模板默认 domestic。缺省 `foreign`，且不改本机已有的 `HF_ENDPOINT`。只有 `.ready` 才跳过；半截包会删掉再下。
 
 `metrics.train_loss` 应是 AlgorithmTracker **最后一段 train mean**，不是最后一个 batch 的 CE。完整曲线在 `runs/<id>/assets/tracker/`；终端同款文本**必写** `assets/logs/run.log`（`时间 级别 Run id [事件] 内容`）。
 

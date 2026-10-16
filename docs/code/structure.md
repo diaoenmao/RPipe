@@ -1134,3 +1134,8 @@ Logger多行消息（B124/#170，2026-10-17本机修复）：内容行复用原�
 
 
 NUMBERS.md既有Run ID代码单元格沿用原文本投影；对合法反引号ID选择正文不含的反引号分隔符并必要padding，以保留字面身份。普通ID的原Markdown字节、其他列/数值/链接/计划绑定和原子发布保持，无新依赖或通用富文本框架。协议依据[CommonMark §6.1](https://spec.commonmark.org/0.31.2/#code-spans)，B132/#180及同批读取身份边界证据见record§224。
+
+
+### 国内源扩展入口（2026-10-17）
+
+origin=domestic在Data/Model注册builder前设置HF_ENDPOINT。模型builder可复用model_api.download_model(repo_id,cache_dir,revision=None)：现有本地路径不下载，远端先ModelScope snapshot_download，同ID/revision/cache_dir失败仅显式hf-mirror兜底，双失败保留异常链报错，取消不换源。HF数据builder复用data_api.load_hf_dataset，导入前/后核对已缓存HF端点，海外旧常量明确拒绝，要求新worker导入前选domestic。不reload第三方全局模块，不声称能管住任意builder/第三方脚本的自定义HTTP，接入作者须逐项审查外部URL并改国内源。ID不自动猜映射。可选hf包含modelscope/datasets，纯torch不强加依赖；没有国内镜像的torchvision类型仍拒绝。共享目录/历史配置/结果不变，新Study模板domestic。
