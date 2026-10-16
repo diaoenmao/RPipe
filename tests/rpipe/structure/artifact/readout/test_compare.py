@@ -626,3 +626,34 @@ def test_compare_display_labels_are_utf8_and_keep_peer(label, expected):
     assert expected in view
     assert 'pass  peer  max abs diff 0' in view
     assert view.endswith('failed\n')
+
+
+@pytest.mark.parametrize('label', [
+    pytest.param('left' + chr(0xD800) + 'right', id='high'),
+    pytest.param('left' + chr(0xDC00) + 'right', id='low'),
+    pytest.param('left' + chr(0xD800) + 'mid' + chr(0xDC00) + 'right', id='mixed'),
+    pytest.param('left-ASCII-right', id='ascii'),
+    pytest.param('left研究😀right', id='unicode'),
+    pytest.param(r'left\ud800right', id='literal-backslash'),
+])
+def test_derived_compare_json_preserves_surrogate_labels_and_peer(tmp_path, label):
+    from rpipe.structure.artifact.readout.compare import compare_runs, write_compare
+    inputs = {}
+    for name in ['a', 'b']:
+        run = tmp_path / name
+        run.mkdir()
+        path = run / 'result.json'
+        path.write_text(json.dumps({'status': 'succeeded', 'control': {}, 'paths': {},
+                                    'metrics': {label: 0.5, 'peer': 1.0}}), encoding='utf-8')
+        inputs[path] = path.read_bytes()
+    report = compare_runs(tmp_path / 'a', tmp_path / 'b')
+    target = tmp_path / 'comparison.json'
+    target.write_bytes(b'{"passed": true, "items": {}}\r\n')
+    assert write_compare(target, report) == target
+    decoded = json.loads(target.read_text(encoding='utf-8'))
+    assert decoded == report
+    assert decoded['items']['metrics']['passed'] is True
+    assert label in decoded['items']['metrics']['keys']
+    assert 'peer' in decoded['items']['metrics']['keys']
+    assert {p: p.read_bytes() for p in inputs} == inputs
+    assert not list(tmp_path.glob('*.tmp'))
