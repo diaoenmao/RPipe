@@ -742,3 +742,43 @@ def test_lock_unexpected_release_programming_error_is_not_silenced(tmp_path, mon
         assert calls == ['acquire', 'unlock']
         assert len(handles) == 1 and handles[0].closed
     _reacquire_shared_lock_on_other_thread(tmp_path)
+
+
+@pytest.mark.parametrize('budget', [0, 0.05])
+def test_empty_shared_lock_contender_does_not_initialize_before_ownership(tmp_path, budget):
+    lock = tmp_path / '.rpipe.lock'
+    lock.touch()
+    script = """
+from pathlib import Path
+import os, sys
+handle = (Path(sys.argv[1]) / '.rpipe.lock').open('a+b')
+if os.name == 'nt':
+    import msvcrt
+    msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+else:
+    import fcntl
+    fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+print('locked', flush=True)
+sys.stdin.readline()
+handle.close()
+"""
+    process = subprocess.Popen([sys.executable, '-c', script, str(tmp_path)],
+                               stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                               text=True)
+    try:
+        assert process.stdout.readline().strip() == 'locked'
+        with pytest.raises(TimeoutError):
+            with cache_lock(tmp_path, timeout=budget):
+                pytest.fail('contender acquired another process lock')
+    finally:
+        stdout, stderr = process.communicate('release\n', timeout=10)
+    assert process.returncode == 0, (stdout, stderr)
+    assert lock.read_bytes() == b''
+    identity = lock.stat().st_ino
+    with cache_lock(tmp_path, timeout=0):
+        assert lock.read_bytes() == b'0'
+        with cache_lock(tmp_path, timeout=0):
+            assert lock.read_bytes() == b'0'
+    assert lock.stat().st_ino == identity
+    with cache_lock(tmp_path, timeout=0):
+        assert lock.read_bytes() == b'0'
