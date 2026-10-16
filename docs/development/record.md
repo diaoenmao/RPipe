@@ -1,3 +1,27 @@
+> 当前：B119/#163、B120/#164、B121/#166统一PR165，动态导入候选回归已补修，本机完整检查完成。
+> 最新：原dev动态helper返回37、原候选ModuleNotFoundError；先红10项8失败/2控制，再9166cbd修复，见§202。
+> 验证：当前core1974 passed/1既有skip，CPU Flow279 passed，新增61全执行、0新skip；目标67含6既有节点。
+> 下一步：推同一PR新head验全部实际CI，再正常合dev并验实际dev；三Issue仍OPEN，无决策阻塞。
+> 保护：清理基线161计数0，活动未合分支保留；不合main/打tag/跑GPU或测速，不删数据/结果、不改布局。
+
+> 当前：#163/#164同分支本机修复与完整回归完成，尚未推送PR；已验收dev仍PR161/8480d79。
+> 最新：Study私有导入生命周期、dataclass模块身份及旧/迁移checkpoint兼容统一修；原候选晚导入/运行时误接管反例均保留，见§198–201。
+> 验证：当前core1964 passed/1既有skip，CPU Flow279 passed，新增51（45 unit+6 integration）全执行、0新skip；4源码范围已核对。
+> 下一步：按20:56在原分支完整里程碑合批、少量PR；最终head/实际devCI未执行，163/164仍OPEN，无外部决策阻塞。
+> 保护：清理基线161/计数0，活动未合分支保留；无GPU/测速/下载/Study/main/tag/数据删除或文件架构/产物布局变更。
+
+> 当前：PR161已双侧验收/关160与162/清已合主题/第5批盘点；本地继续B119/#163、B120/#164加载隔离。
+> 最新：31节点候选通过后，4a53165补晚导入2红均失败，确认候选回归；当前33节点未验收，详§197。
+> 验证：此前core1950 passed/1既有skip、Flow273 passed不含新增2红，不能替代当前验收；所有反例保留。
+> 下一步：修正注册函数晚导入的私有模块生命周期，再跑当前完整集合；仅本地合批，不立即推新PR，无外部决策阻塞。
+> 保护：活动未合study-loader-isolation保留，清理基线161；无GPU/测速/下载/Study/main/tag/数据删除或布局变更。
+
+> 当前：PR161已双侧全实际CI验收，160/162关闭、已合主题本地/remote清理，第5批盘点完成，新基线161。
+> 最新：B119/#163顺序helper串用，18红14失败/4控制；B120/#164合法dataclass加载失败，8红4失败/4控制，见§192–195。
+> 验证：PR161合批core1919 passed/1既有skip、Flow273 passed；新加载回归仅红执行，生产修改尚未开始。
+> 下一步：按§195实现并核对加载隔离，相关B项在同一本地分支积累，遵循20:56少量PR规则，不立即开PR。
+> 保护：活动未合study-loader-isolation保留；无GPU/测速/下载/Study/main/tag/数据或布局变化，无外部决策阻塞。
+
 > 当前：PR161统一收尾B117/#160与B118/#162临时进程状态并发修复，唯一未合codex/correctness-followup。
 > 最新：两次独立正式红8项4失败/4控制、9项4失败/5控制；fffd872/0aaae0b后两处相邻27项全绿。
 > 验证：合批core1919 passed/1既有skip、CPU Flow273 passed，新17全执行；详§188–191，原证据含拒绝均保留。
@@ -3352,3 +3376,99 @@ PR152继续同一分支收敛#150/#151/#153，生产总计3个现有文件14行�
 B118按b6edba0设计，以0aaae0b在prepare.py增加RLock及完整保存/设置/资产锁内body/恢复范围，13行增加/10行删除；SOURCE_CHECKED精确证明其他原字节保持。B117/B118分别保护类端点和临时环境变量，不改root锁合同、数据构造、端点内容、下载/hash、marker、返回值、异常或科学门。27项两处及相邻回归全执行/通过，新17项均执行；合批core1919 passed/1既有平台skip，CPU Flow273 passed，0failure/error/skip。两次正式红独立保留：B117为8项4失败/4控制；B118为9项4失败/5控制，不冒称一场17项红执行。
 
 新一轮20:56频率指令已收录cicd：本地正常按主题提交，同主题按一批相关B项完整里程碑后开少量PR；已开的PR161同时收尾#160/#162，不拆PR。先前e8dd7cf的CI只是B117阶段，不作为新增B118后最终head验收。原始失败、无效夹具/收集拒绝、ZIP/hash/XML保留.tmp/audit117与audit118，不随clone；正式回归与记录可携带。无下载/GPU/性能/Study/main/tag/数据删除或布局变化。
+
+
+## 192. B119 / Issue163：顺序Study配方串用已缓存helper（2026-10-16）
+
+按flow§14.1已支持同目录import及顺序run/子进程一致性，两个独立合成Study在真实load_recipe中导入同名helper，第二个读到第一个值与__file__；新进程第二Study读到自己的值，sys.path两种方式均正确恢复，问题在sys.modules。先Issue163，再5c8f5fd提交12项正式红：8 failed/4单Study控制passed、0error/skip；模块/包、加载时/注册时import、第一次注册成功/原错退出的8个串用反例均执行。原源码ZIP/hash/probe/新进程对照/红XML在.tmp/audit119不随clone；未运行数据/GPU/下载/正式Study。
+
+当前生产代码未改，正在比对既有独立Study阶段命名空间与recipe绝对import合同；修复必须避免清空第三方全局模块或破坏注册后的运行对象，先明确临时模块缓存的所有权/恢复范围，再实现。不是等待人工批准，也不以文档替代修复。唯一未合codex/study-loader-isolation本地积累，按20:56规则与相关加载隔离问题形成完整里程碑后再PR，不立即另开小PR。PR161最终head d42072f的Branch38904767623/Package38904767492/Unit38904767906已全实际CI成功，正常合dev8480d795d0cb09714deb9bdd4bd79f41bdc5b2a9，实际devCI仍在执行；#160/#162与已合主题待双侧验收清理。
+
+
+## 193. PR161 双侧验收与第5批周期盘点（2026-10-16）
+
+最终head d42072fd2f1b5ec5392c1f239e6c0cb150215d67的Branch38904767623/Package38904767492/Unit38904767906全部实际矩阵/聚合成功，正常合dev8480d795d0cb09714deb9bdd4bd79f41bdc5b2a9；实际dev Package38905658240/Unit38905658071亦全部实际成功，DEV_CHECKED SHA256 5005764c673784eecc110d4f459b10762616b0eaa70c1429bcf7d2d4cf604a0e。#160/#162均验收关闭，PR正文仅追加验收；不表示main发布或科学运行授权。
+
+双侧CI后核对tip/祖先、当前活动分支/唯一worktree及无未保全改动，普通删除codex/correctness-followup本地/remote各1条，tip d42072f已保全在dev。当前未合codex/study-loader-isolation及本地红回归保留，main/dev/远端main不动；worktree/数据/结果/provenance/_staging_from_DEM删除0。累计结束remote42。
+
+从149基线完整盘点已验收PR152/155/157/159/161共5批，五个merge均为实际dev祖先；对应已处理Issue150/151/153/154/156/158/160/162均已CLOSED，未完成163/164保持OPEN。实际远端仅main/dev，实际本地仅main/dev和活动未合study-loader-isolation，唯一主worktree，无废弃worktree可清；开放PR0。未合保留清单及理由随下个里程碑PR说明提供，不删除。新周期基线161/dev8480d79，计数归0；原始PERIODIC_CHECKED及验收/清理证据.tmp/audit118不随clone，记录本地积累随下个完整里程碑合入，不另开文档PR。
+
+## 194. B120 / Issue164：配方缺失模块身份使标准dataclass失败（2026-10-16）
+
+load_recipe从spec构造ModuleType后未将其注册sys.modules即exec；合法的future annotations+标准库dataclass在读取定义模块字典时抛AttributeError。合成配方真实load_recipe复现；已核对历史路径别名导入的源码与当前工作区samefile为真，不把另一克隆当证据。先Issue164，再5bb02f5正式8红4 failed/4 eager注解控制passed、0error/skip，覆盖根/嵌套recipe与直接/模块别名dataclass；ClassVar字段解析也保留期望。无数据/GPU/外网/正式Study。原ZIP/hash/traceback/红XML在.tmp/audit120不随clone。
+
+B119已补ace8485边界：18正式红14 failed/4控制，补既有外部模块原样保留和注册返回函数仍引用各Study实现。此前12红8失败/4控制保留，不互相替代。两个加载问题在同一未合本地分支积累，当前生产recipe.py尚未改，不立即另开PR。
+
+
+## 195. B119/B120 配方临时导入状态所有权方案（2026-10-16，实施方案）
+
+目标同时修同目录helper串用和执行时缺失recipe模块身份，保留现有load_recipe/apply_recipe调用、路径/来源清单/注册时机与正常异常行为。只在原recipe.py复用标准库contextmanager/RLock建立私有临时导入上下文，不新增架构模块、公开配置或产物目录。
+
+进入load/register现有sys.path范围时，在同一个可重入进程锁内登记当前目录可导入的本地顶层模块/包名；仅暂存并移开这些名字及子模块的现有cache项，执行结束清理该范围新项、原对象原样恢复，路径亦恢复。内建/标准库名字保持原Python优先级，不批量清空sys.modules或第三方cache。其它非冲突第三方模块不进入所有权范围。锁在当前模块保存/移开/导入/恢复全程持有，支持同线程嵌套。
+
+load_recipe在上述上下文内执行spec前，将自己的既有模块名临时注册sys.modules；无论exec/校验成败都恢复此前同名项（包括不存在），使dataclass可解析定义模块。load后返回ModuleType、注册后已捕获的函数/模块全局引用继续有效；测试明确核对两个Study注册函数各自返回原值和既有外部模块身份。register时的同目录import同样走该上下文。保留当前load使用recipe父目录、register使用Study根的路径行为；不把此修复扩展为新公共namespace API、清空外部模块、任意后端的序列化保证或跨进程解释器改造。
+
+按先红与方案后改生产，完整测试须包含正常/原错、模块/包、load/register、外部cache保全、注册引用和dataclass根/嵌套/eager/future，以及已有Study hooks/来源冻结/core/CPU Flow。现有Study phase私有namespace只作设计参考，不为了复用反向依赖flow层或搬文件。当前仍本地积累，不立即新PR；进一步反例保留并修合同，不能以测试全绿替代边界核对。
+
+
+## 196. 配方加载候选验证边界（2026-10-16，本地未推送）
+
+初版私有上下文26项通过后，register内部定义future dataclass仍失败；6e9fff7先补该边界4红2失败/2 eager控制，再将模块身份保存/注册/恢复统一放进load/register共用上下文。另一次未提交候选复用了name作为循环变量和配方模块身份，误改隔离pytest进程cache而使报告中断，GREEN_COMPLETE.log及INTERMEDIATE_CANDIDATE_FAILURE保留；这是本轮候选实现错误，不计原始库红测试或CI失败，未提交/推送。纠正为module_name后30项通过，再补所有既有非本地cache项身份保全检查，防止以绿用例掩盖外部cache污染。未改正式Run/数据或外部解释器。
+
+
+## 197. B119候选晚导入回归：不接受31项基线替代新边界（2026-10-16）
+
+候选da6d0b0在31项定向测试、core1950 passed/1既有skip、CPU Flow273 passed上通过，但随后的注册对象生命周期复查确认：配方顶层已导入helper，注册的builder稍后执行时再次from helper import，会因上下文已清cache而ModuleNotFoundError。4a53165新增模块/包2红均failed、0error/skip；这是新候选引入的支持行为回归，不计原始14/4红，也不以先前全绿接受候选。两个新节点不在此前CORE/FLOW收集清单中，当前33项边界未通过，不能冒称整体全绿。候选及红测试只在本地，未推送、未开新PR、未影响dev8480d79。
+
+§195暂存/恢复设计须继续覆盖注册函数晚导入的生命周期，不能简单清掉本地cache就作为最终实现，也不能改成禁止已支持的late import或粗暴清空外部模块。下一步先扩展私有导入绑定/模块所有权方案，保留这两个反例及原始预期，再修代码并重新执行当前全部节点/相关Flow。不是外部审批/网络阻塞，不因实现复杂而暂停；继续按20:56在当前唯一未合分支合批本地积累，不立即推PR。原始与候选失败、XML/hash均在.tmp/audit119/120不随clone。
+
+
+## 198. 加载隔离生命周期与checkpoint兼容方案修正（2026-10-16，本地里程碑）
+
+隔离namespace原型在.tmp中通过现有33项（非生产验收），但真实System save/load探针发现必要兼容边界：原裸helper类的model._extra_state可原生写读，namespace原型注册成功后读旧bundle却ModuleNotFoundError。首次探针误把device传SystemConfig构造器，另存无效夹具；改用既有from_mapping后复现。随后正式Flow prepare→System旧状态/新状态换Study根恢复两回归均红，不能靠只通过纯import测试接受namespace方案。
+
+修正方案仍只改既有文件内容、不增模块/产物布局：recipe.py按物理Study根复用独立私有包，标准库source loader给该包的Python helper绑定本地import；普通import/from/包相对导入与注册后的晚导入都解析该Study，不清外部裸名cache。每Study固定包/recipe键复用，不按每Run无限增新包；不同Study物理根分离。finder只处理该私有前缀，不触碰第三方模块的__getattr__；load失败恢复此前recipe模块项，正常Python模块生命周期承载注册对象和dataclass定义模块。既有Run对象仍由Factory逐次构造，不把module代码cache当data/model/RNG对象cache。
+
+私有类模块身份会影响含自定义Python对象的pickle全局引用，因此同步提供限定当前Study的兼容Unpickler：裸本地helper或历史私有包前缀映射当前Study同名helper/recipe类，非本地/标准库走原pickle查找。system_api新增私有桥，仅在标准Run assets位置且该Study recipe包已加载时提供reader；System.load_checkpoint全部已有torch.load点和compare checkpoint reader通过此桥取可选pickle_module，默认无recipe时kwargs/行为保持。System层不反向import make，仍经API跨层。Flow既有prepare注册顺序保持，不新增配置/公开选项/Run字段/序列化版本，不重写旧checkpoint；原torch.save、piece/bundle/diagnostic路径及恢复/科学门不改。
+
+该桥须验证旧裸helper对象、不同物理根的新私有类型对象，以及外部cache保全；比较reader同步兼容，不把修改限于刚好测试的System入口。外部绕过RPipe直接反序列化自定义类仍需加载其定义代码，不能宣称任意plugin/宿主均可无上下文反序列化；native RPipe读取合同必须兼容，未通过之前不接受整批、不推PR。当前按20:56同分支本地积累，进一步反例先保留再修，任何旧绿色检查不代替新边界。
+
+
+## 199. namespace候选的兼容与所有权反例（2026-10-16，本地）
+
+命名空间原型先通过33项，但旧helper自定义model._extra_state的真实System兼容探针失败；39cacdb补Flow prepare→System旧类/迁移后类两正式红均failed。当前候选的私有recipe模块曾用合法helper名_recipe，7e7ad8f红复现其遮蔽Study现有_recipe.py；内部身份改为非Python标识符<recipe>，不新增用户文件名保留限制，标准注解反射与pickle回归验证可用。
+
+进一步给合成Study加未被配方导入的torch.py，并在原checkpoint同时保存Tensor，暴露兼容reader按文件名重解释全局torch._utils：6项都红，RED_PICKLE_OWNERSHIP保留。已限定bare引用的已加载模块所有权与完整module spec，未被namespace接管的既有全局模块走标准Unpickler；不是把所有同名文件当pickle类来源。外部缺失类按原严格错误，不吞恢复失败。system_api桥只查询已加载recipe模块，不因普通System IO额外安装recipe import机制。
+
+当前49项定向节点全通过（43源镜像unit、6实际Flow prepare/System/compare集成）：含legacy bundle、pieces/model.pt/meta.pt、payload.pt，自定义类和Tensor、搬到不同Study根后的类型归属、只读compare reader、helper内部晚导入/包相对导入、相同Study basename不同项目、重复加载模块键不逐Run增长、失败替换保全旧module、注解反射/pickle、双线程及原错退出。源码尚未提交生产新修复；不是完整core/Flow或CI验收，旧31项全绿不能替代本批。当前仅本地合批，不开新PR。
+
+
+## 200. B119/B120模块生命周期与原生reader统一候选（2026-10-16，本地未推送）
+
+现有4个源码文件内完成：recipe按物理Study根私有包隔离，定义模块和helper保持标准模块生命周期；source loader仅给私有模块绑定本地导入，外部import仍调用当前Python hook（a892cea先补钩子被绕过的候选红）。内部recipe身份使用<recipe>，不遮蔽合法_recipe.py；每Study固定键，重复4次加载键数不增长。源码热重载不在本合同内，不把代码cache当Run可变对象cache。
+
+system_api私有桥只检查已加载recipe及标准Run assets，System原4处torch.load与compare1处读取使用可选reader；无recipe时参数保持原样。兼容裸helper和跨根私有类，保留已加载外部cache及完整global module spec，避免未使用的torch.py误接管Tensor解码。torch.save、bundle/pieces/诊断布局、payload键/协议、恢复指纹和科学门原字节保持；没有迁移/覆写旧数据。输入checkpoint字节保全加入实际Flow回归。
+
+当前50项定向节点通过（44 unit+6 integration），0fail/error/skip；legacy bundle/pieces/meta.pt/payload.pt、Tensor与自定义_extra_state、跨根恢复/compare，以及late import/相对包/同basename/模块数量/失败替换/反射/pickle/并发均执行。此为新候选本机定向结果，完整core/Flow与更大兼容范围仍待检，不宣称已合dev或关闭163/164。只本地积累，20:56频率规则下不另开PR。
+
+
+## 201. B119/B120当前完整本机验收（2026-10-16，仍未推送）
+
+当前源码ac65eb1/041e8c1及aa75064边界测试后重新执行完整检查：core1964 passed、1既有Windows POSIX模式skip，CPU Flow279 passed，均0failure/error。新增51节点全部实际执行（45 unit+6 integration）、0新skip；这次CORE_CURRENT/FLOW_CURRENT包含全部当前边界，不用旧31节点/旧候选结果替代。LOCAL_CURRENT_CHECKED保留XML/hash及节点归属；FINAL_SCOPE51全通过。Runtime优先级候选6红、外部import hook红、旧/迁移checkpoint红、晚导入红和所有无效夹具/报告中断仍保留，不冒称它们是原始同一场红测试。
+
+原字节核对SOURCE_CURRENT_CHECKED：只4个既有源码文件变更。recipe的phase校验、RecipeContext字段、路径拒绝等原字节保持；System.save_checkpoint全部原字节保持，load只在4处既有torch.load加可选reader参数；compare只加同类reader，整个数学树、容差/非有限/整数精度、格式和错误门其他字节保持；system_api既有导出/build签名保持，仅附私有桥。无新源模块/配置/Run字段/产物路径，未改producer协议、checkpoint布局/恢复指纹或科学门。正常代码helper按Study模块缓存，不承诺热改源码自动reload；原生reader已验证旧helper和迁移后私有类，外部直接反序列化自定义类仍需要定义代码可导入。
+
+全部仅本地codex/study-loader-isolation主题提交，当前open163/164保留；本批未开PR、未跑最终head/实际devCI、未合dev/main、未打tag。接受的dev仍8480d79/PR161，清理基线161计数0。按20:56相关B项完整里程碑和每日少量PR规则继续本地收敛，不以多次验证拆更多PR；后续流转仍须最终head/实际dev全实际CI验收后再关闭Issue和清已合分支。原始.tmp/audit119/120不随clone，正式回归/设计/记录可携带；无GPU/测速/下载/正式Study或数据/结果删除。
+
+
+## 202. PR165验收前补齐B121 / #166动态导入候选回归（2026-10-16）
+
+B119/#163、B120/#164完整本机检查后统一开PR165，最终候选d385c410在实际CI执行期间继续审查相邻入口，发现recipe在register内用importlib.import_module加载同目录helper：dev8480d79独立子进程成功返回37，候选报ModuleNotFoundError。PR未合并、Issue未关闭，未将任何旧head绿色结果当作本批完成。此为加载隔离候选引入的回归，与原B119/B120失败分开；登记#166后f32416d先提交10节点红回归，8失败/2非本地对照通过，8f37360记录同批设计，不拆新PR。
+
+9166cbd只在原recipe.py增加14行/替换1行：当前Study私有代码导入importlib时持有局部模块视图，其import_module沿同一归属判定解析本地绝对名，其他名/相对名委托当前原生函数；不修改全局importlib及其cache。importlib子模块仍是原模块，现有标准运行时与外部导入hook继续委托。加载、register、注册后、helper内动态导入×2取用方式均覆盖；未引入源模块/依赖/目录或checkpoint写入改变。视图并非原生importlib对象本身，属于私有recipe执行环境，不宣称全局模块身份被替换。
+
+当前源码重新完整检查：core1974 passed/1既有Windows POSIX模式skip，CPU Flow279 passed，均0failure/error；当前新增61（55 unit+6 integration）全部执行、0新skip。目标两个文件67 passed，含6既有Flow节点，不冒称67都是新增。原始动态探针的前后子进程、RED8失败、TARGET_GREEN、CORE、FLOW、hash和SOURCE_CHECKED保存在.tmp/audit121及.tmp/audit119，不随clone；两个探针驱动的import sys遗漏均发生在子进程调用之前，单独保留、不算库失败。修复后独立子进程返回37。
+
+SOURCE_CHECKED核对相对于上个完整候选只有recipe动态绑定改变，其余3个生产文件hash完全不变；此前System保存、compare数值/格式、API已有字节及文件架构/磁盘产物布局合同仍保持。没有数据迁移、GPU、测速、下载、正式Study/科学结论、main/tag/发布或数据/结果删除。
+
+三项作为同一完整加载里程碑继续PR165普通推送，不amend/force push。待新最终head的全部实际矩阵/聚合CI，再正常合dev并另验实际dev；目前163/164/166都OPEN，已接受基线仍PR161/dev8480d79，清理基线161计数0。旧候选CI即使通过亦不可替代当前head。验收后的收尾记录随下一里程碑入库，不为几行文档再拆PR。

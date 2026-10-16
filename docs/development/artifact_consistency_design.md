@@ -399,3 +399,57 @@ B116已本地实施ba665de：28新节点全执行/通过，core1902 passed/1既�
 方案仅在prepare.py增加标准库RLock，以独立的进程内环境所有权范围包住原保存、设置、cache_lock内_prepare和finally恢复；必须在原资产根锁之前取得环境锁，维持一致顺序。同线程嵌套仍可重入，异常和返回值原样。与bind_endpoint锁分别保护不同全局对象，不引入通用全局状态框架、配置或路径，不改_prepare/body、下载/hash、数据/结果/科学门。与B117统一归入当前PR161临时进程状态并发里程碑，原已触发CI保留，新增代码后以新最终head重新验收；不因观察超时取消或重跑CI。
 
 B118实施补记：0aaae0b已按方案实施；与B117统一里程碑的新旧相邻27项全执行/通过，合批core1919 passed/1既有skip、CPU Flow273 passed，新17全执行。两个原始生产文件各自精确字节核对，仅锁和原上下文范围改变；不改body/端点/下载/hash/格式/布局或科学门。最终head与实际devCI仍待分别验收。
+
+
+## 195. B119/B120 配方临时导入状态所有权方案（2026-10-16，实施方案）
+
+目标同时修同目录helper串用和执行时缺失recipe模块身份，保留现有load_recipe/apply_recipe调用、路径/来源清单/注册时机与正常异常行为。只在原recipe.py复用标准库contextmanager/RLock建立私有临时导入上下文，不新增架构模块、公开配置或产物目录。
+
+进入load/register现有sys.path范围时，在同一个可重入进程锁内登记当前目录可导入的本地顶层模块/包名；仅暂存并移开这些名字及子模块的现有cache项，执行结束清理该范围新项、原对象原样恢复，路径亦恢复。内建/标准库名字保持原Python优先级，不批量清空sys.modules或第三方cache。其它非冲突第三方模块不进入所有权范围。锁在当前模块保存/移开/导入/恢复全程持有，支持同线程嵌套。
+
+load_recipe在上述上下文内执行spec前，将自己的既有模块名临时注册sys.modules；无论exec/校验成败都恢复此前同名项（包括不存在），使dataclass可解析定义模块。load后返回ModuleType、注册后已捕获的函数/模块全局引用继续有效；测试明确核对两个Study注册函数各自返回原值和既有外部模块身份。register时的同目录import同样走该上下文。保留当前load使用recipe父目录、register使用Study根的路径行为；不把此修复扩展为新公共namespace API、清空外部模块、任意后端的序列化保证或跨进程解释器改造。
+
+按先红与方案后改生产，完整测试须包含正常/原错、模块/包、load/register、外部cache保全、注册引用和dataclass根/嵌套/eager/future，以及已有Study hooks/来源冻结/core/CPU Flow。现有Study phase私有namespace只作设计参考，不为了复用反向依赖flow层或搬文件。当前仍本地积累，不立即新PR；进一步反例保留并修合同，不能以测试全绿替代边界核对。
+
+实施前边界补充：模块身份须在load exec与register调用两个上下文均可见，不只加载时；中间候选26项通过后，register内dataclass新4项仍2失败/2控制，此反例RED_REGISTER保留。统一由同一私有上下文保存/注册/恢复当前ModuleType，保留每次上下文前的同名cache项。生产提交在此修正和验证之后。
+
+
+## 197. B119候选晚导入回归：不接受31项基线替代新边界（2026-10-16）
+
+候选da6d0b0在31项定向测试、core1950 passed/1既有skip、CPU Flow273 passed上通过，但随后的注册对象生命周期复查确认：配方顶层已导入helper，注册的builder稍后执行时再次from helper import，会因上下文已清cache而ModuleNotFoundError。4a53165新增模块/包2红均failed、0error/skip；这是新候选引入的支持行为回归，不计原始14/4红，也不以先前全绿接受候选。两个新节点不在此前CORE/FLOW收集清单中，当前33项边界未通过，不能冒称整体全绿。候选及红测试只在本地，未推送、未开新PR、未影响dev8480d79。
+
+§195暂存/恢复设计须继续覆盖注册函数晚导入的生命周期，不能简单清掉本地cache就作为最终实现，也不能改成禁止已支持的late import或粗暴清空外部模块。下一步先扩展私有导入绑定/模块所有权方案，保留这两个反例及原始预期，再修代码并重新执行当前全部节点/相关Flow。不是外部审批/网络阻塞，不因实现复杂而暂停；继续按20:56在当前唯一未合分支合批本地积累，不立即推PR。原始与候选失败、XML/hash均在.tmp/audit119/120不随clone。
+
+
+## 198. 加载隔离生命周期与checkpoint兼容方案修正（2026-10-16，本地里程碑）
+
+隔离namespace原型在.tmp中通过现有33项（非生产验收），但真实System save/load探针发现必要兼容边界：原裸helper类的model._extra_state可原生写读，namespace原型注册成功后读旧bundle却ModuleNotFoundError。首次探针误把device传SystemConfig构造器，另存无效夹具；改用既有from_mapping后复现。随后正式Flow prepare→System旧状态/新状态换Study根恢复两回归均红，不能靠只通过纯import测试接受namespace方案。
+
+修正方案仍只改既有文件内容、不增模块/产物布局：recipe.py按物理Study根复用独立私有包，标准库source loader给该包的Python helper绑定本地import；普通import/from/包相对导入与注册后的晚导入都解析该Study，不清外部裸名cache。每Study固定包/recipe键复用，不按每Run无限增新包；不同Study物理根分离。finder只处理该私有前缀，不触碰第三方模块的__getattr__；load失败恢复此前recipe模块项，正常Python模块生命周期承载注册对象和dataclass定义模块。既有Run对象仍由Factory逐次构造，不把module代码cache当data/model/RNG对象cache。
+
+私有类模块身份会影响含自定义Python对象的pickle全局引用，因此同步提供限定当前Study的兼容Unpickler：裸本地helper或历史私有包前缀映射当前Study同名helper/recipe类，非本地/标准库走原pickle查找。system_api新增私有桥，仅在标准Run assets位置且该Study recipe包已加载时提供reader；System.load_checkpoint全部已有torch.load点和compare checkpoint reader通过此桥取可选pickle_module，默认无recipe时kwargs/行为保持。System层不反向import make，仍经API跨层。Flow既有prepare注册顺序保持，不新增配置/公开选项/Run字段/序列化版本，不重写旧checkpoint；原torch.save、piece/bundle/diagnostic路径及恢复/科学门不改。
+
+该桥须验证旧裸helper对象、不同物理根的新私有类型对象，以及外部cache保全；比较reader同步兼容，不把修改限于刚好测试的System入口。外部绕过RPipe直接反序列化自定义类仍需加载其定义代码，不能宣称任意plugin/宿主均可无上下文反序列化；native RPipe读取合同必须兼容，未通过之前不接受整批、不推PR。当前按20:56同分支本地积累，进一步反例先保留再修，任何旧绿色检查不代替新边界。
+
+
+## 199. namespace候选的兼容与所有权反例（2026-10-16，本地）
+
+命名空间原型先通过33项，但旧helper自定义model._extra_state的真实System兼容探针失败；39cacdb补Flow prepare→System旧类/迁移后类两正式红均failed。当前候选的私有recipe模块曾用合法helper名_recipe，7e7ad8f红复现其遮蔽Study现有_recipe.py；内部身份改为非Python标识符<recipe>，不新增用户文件名保留限制，标准注解反射与pickle回归验证可用。
+
+进一步给合成Study加未被配方导入的torch.py，并在原checkpoint同时保存Tensor，暴露兼容reader按文件名重解释全局torch._utils：6项都红，RED_PICKLE_OWNERSHIP保留。已限定bare引用的已加载模块所有权与完整module spec，未被namespace接管的既有全局模块走标准Unpickler；不是把所有同名文件当pickle类来源。外部缺失类按原严格错误，不吞恢复失败。system_api桥只查询已加载recipe模块，不因普通System IO额外安装recipe import机制。
+
+当前49项定向节点全通过（43源镜像unit、6实际Flow prepare/System/compare集成）：含legacy bundle、pieces/model.pt/meta.pt、payload.pt，自定义类和Tensor、搬到不同Study根后的类型归属、只读compare reader、helper内部晚导入/包相对导入、相同Study basename不同项目、重复加载模块键不逐Run增长、失败替换保全旧module、注解反射/pickle、双线程及原错退出。源码尚未提交生产新修复；不是完整core/Flow或CI验收，旧31项全绿不能替代本批。当前仅本地合批，不开新PR。
+
+当前实施/验收补记（record§201）：§195的短暂清cache候选已由§198/200的模块生命周期与兼容reader方案替代；当前core1964 passed/1既有平台skip、CPU Flow279 passed，新51节点全部执行/通过。只4个既有源码文件，生产写入/数学门/布局原字节核对保持。这里只是本机验收，尚无本批PR/最终head/实际devCI，不表示163/164已关闭或已发布，也不等待人工设计批准。
+
+
+## 202. B121 / #166：动态导入继续绑定所属Study（2026-10-16，PR165候选回归）
+
+最终验收前复查确认：recipe在register内用importlib.import_module加载同目录helper，实际dev8480d79的独立子进程返回37，d385c410候选报ModuleNotFoundError。原导入隔离方案仅绑定Python import语句，漏掉标准动态入口；PR165不合并，保持同一分支补齐，不单独拆PR。最初探针驱动漏import sys、未调用库，单独保留且不算库失败。
+
+方案：复用每Study私有包的导入归属判定，在recipe/helper导入importlib时提供仅当前私有代码持有的模块视图，import_module将绝对本地名映射到自己的私有空间；相对名和非本地名委托当前原生importlib.import_module。视图复制原模块属性，不修改sys.modules['importlib']或其函数，不改变其他调用方；importlib子模块继续使用原模块。Python import语句、标准库/已加载运行时优先级、外部导入hook、旧/迁移checkpoint读取合同不变。动态导入类与普通导入类使用同一稳定身份。
+
+先提交10节点红回归：2种importlib取用方式×加载/注册/注册后/辅助模块4时机为8失败，2个非本地json对照通过。修复后运行当前全部新增集合与core/CPU Flow，再推同一个PR165重验最终head；此前d385c410的CI即使通过也不能替代新head。原始红/前后子进程/无效驱动证据在.tmp/audit121和.tmp/audit119（不随clone），portable回归已入库。不改变文件架构/产物布局，不等待设计审批。
+
+
+2026-10-16本机实施：9166cbd在同一recipe文件补动态入口绑定；当前core1974 passed/1既有skip、CPU Flow279 passed，新增61全执行。该importlib视图仅属于私有代码执行环境，不替换全局模块身份；原生子模块与当前外部动态函数继续委托。最终PR165新head/实际devCI仍待验，不是等待设计批准，详record§202。

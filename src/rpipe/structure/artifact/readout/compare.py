@@ -195,8 +195,11 @@ def _checkpoint(run: Path, name: str) -> dict[str, Any] | None:
         _log_path_key(path.resolve()).relative_to(base)
     except ValueError as exc:
         raise ValueError(f'checkpoint must stay inside its Run checkpoint directory: {path}') from exc
+    from rpipe.structure.api.system_api import _checkpoint_pickle_module
+    reader = _checkpoint_pickle_module(run / ASSETS_DIRNAME)
+    pickle_options = {} if reader is None else {'pickle_module': reader}
     try:
-        payload = torch.load(path, map_location='cpu', weights_only=False)
+        payload = torch.load(path, map_location='cpu', weights_only=False, **pickle_options)
     except (EOFError, pickle.UnpicklingError, RuntimeError) as exc:
         raise ValueError(f'cannot read checkpoint {path}: {type(exc).__name__}: {exc}') from exc
     return payload if isinstance(payload, dict) else {'model': payload}

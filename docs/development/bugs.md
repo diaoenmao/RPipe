@@ -6,17 +6,23 @@
 
 ## 开放
 
-### B-117：并发临时端点绑定串用 origin 并残留类状态
+### B-119：Study配方同名helper缓存与导入生命周期隔离（本机已修，待里程碑CI）
 
-- Issue：[160](https://github.com/DreamSoul-AI/RPipe/issues/160)。两个线程绑定同一数据集类的国内/国外url或mirrors，两次上下文读取均可串值，退出后保留错误端点；不同缓存根的Factory锁不能保护进程全局类字段。
-- 9c95667先提交8项正式红（4 failed/4有效嵌套控制passed）；1fe29ba设计；fffd872仅用RLock覆盖保存/绑定/构造/恢复。55ad528只修正测试文件名；收集同名拒绝另存，不计库失败。
-- 13项新旧端点回归全执行/通过，core1910 passed/1既有skip；CPU Flow273 passed，最终head/实际devCI待验收。真实Factory双根+合成builder原版失败/当前正确；不下载数据、不访问正式缓存。证据[record§188–189](record.md)，临时.tmp/audit117不随clone。
+- Issue：[163](https://github.com/DreamSoul-AI/RPipe/issues/163)。原顺序加载第二Study复用第一个helper，原始红与候选晚导入等反例见[record§192–201](record.md)。
+- 当前ac65eb1/041e8c1以Study私有包和绑定导入覆盖加载/注册/晚导入，不占外部裸名cache，保留标准库/自身/已加载安装运行时优先级。原生System/compare reader兼容旧helper和跨根私有类；缺失自有类严格拒绝，不从外国cache借类。
+- 当前core1974 passed/1既有skip、CPU Flow279 passed，新61全部执行，范围/原始字节已核对。PR165同批补B121动态导入，等待新最终head与实际devCI，Issue保留OPEN；临时.tmp/audit119不随clone，不用旧绿色结果替代当前边界。
 
-### B-118：并发共享准备泄漏临时环境变量
+### B-120：合法延迟注解dataclass配方缺少定义模块身份（本机已修，待里程碑CI）
 
-- Issue：[162](https://github.com/DreamSoul-AI/RPipe/issues/162)。独立项目根并发时后一个准备body失去TQDM_DISABLE=1，结束后变量残留；初值缺失/自定义均复现。首个探针错误共享同一缓存根造成交错等待超时，另存无效夹具，不计库失败。
-- b04a5cd正式红9项4失败/5控制→b6edba0设计→0aaae0b在原prepare.py以RLock保护临时环境全上下文，原_prepare/body/返回/异常保持。与B117合批PR161，见[record§190–191](record.md)。
-- 两处相邻27项全执行/通过，合批core1919 passed/1既有skip、CPU Flow273 passed；最终/实际devCI待验，原始.tmp/audit118不随clone。
+- Issue：[164](https://github.com/DreamSoul-AI/RPipe/issues/164)。原spec.exec无模块注册，future/dataclass加载及register内部定义失败；正式加载8红4失败/4控制与注册4红2失败/2控制保留。
+- 与B119统一模块生命周期实现；加载、注册、后续注解反射/pickle、失败替换保全与合法_helper文件名均验过，同一批完整结果见上。同一PR165主题分支、未合dev/不关闭Issue；[record§194–201](record.md)，原始.tmp/audit120不随clone。
+
+### B-121：私有recipe候选漏掉importlib动态入口（本机已修，待PR165验收）
+
+- Issue：[166](https://github.com/DreamSoul-AI/RPipe/issues/166)。最终验收复查发现原dev可用的动态helper导入在候选失败；先红10项8失败/2控制，9166cbd复用私有Study命名空间补动态绑定，当前完整本机结果见上。
+- 与B119/B120同PR165，不拆新PR；原始/候选/驱动错误分开保留，详[record§202](record.md)。三Issue仍OPEN，最终head/实际devCI尚待验收，不改变布局或科学门。
+
+B117/#160、B118/#162已PR161双侧全部实际CI验收关闭且主题本地/remote清理，第5批周期盘点见[record§193](record.md)。
 
 B116/#158已由PR159双侧全部实际CI验收关闭并清本地/remote，见[record§187](record.md)。
 

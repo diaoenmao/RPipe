@@ -1,5 +1,28 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 PR165同批B119/B120/B121，当前完整本机验收
+
+PR165已开；d385c410验收前复查发现importlib动态helper候选回归，登记#166，先f32416d红10项8失败/2控制、8f37360设计、9166cbd最小修。原分支普通累积，不拆新PR；core1974 passed/1既有skip、CPU Flow279 passed，新61全执行，目标67含6既有节点。四生产文件范围保全，详record§202及.tmp/audit121（本机证据不随clone）。
+
+新最终head/实际devCI待验，163/164/166仍OPEN，已接受PR161/dev8480d79，清理基线161计数0、累计remote42。旧候选绿色不可替代新head。无决策阻塞，不长watch；合后双侧验收再关Issue并清本地/远端主题。下一编号B122。无GPU/测速/下载/正式Study/main/tag/数据删除或文件/产物布局变化。
+
+
+## 2026-10-16 B119/B120本机完整验收；尚未推送
+
+当前codex/study-loader-isolation：ac65eb1/041e8c1修模块生命周期及兼容reader，aa75064补严格类归属。current core1964 passed/1既有skip、CPU Flow279 passed，新增51（45 unit+6 integration）全执行/0新skip，SOURCE_CURRENT_CHECKED验证只4既有源码、System保存/compare数学门/布局原字节保持。旧候选31绿后晚导入2红、namespace checkpoint/运行时/钩子/保留名反例全部保留，不以旧结果替代当前验收，详record§198–201。
+
+只本地主题提交，未推PR/未跑本批CI，163/164保持OPEN；按20:56相关B项完整里程碑/每日少量PR，不立即拆新PR。已接受基线dev8480d79/PR161，160/162关闭、correctness-followup本地/remote清理和第5批盘点已完成，新清理基线161计数0，remote累计42。唯一活动未合分支保留，数据/结果/worktree不删；无GPU/测速/下载/正式Study/main/tag/架构或产物布局变更。
+
+
+
+## 2026-10-16 PR161验收完成；B119/B120候选晚导入回归待修
+
+PR161最终d42072f/实际dev8480d79全部实际矩阵/聚合成功，160/162关闭、correctness-followup本地/remote清理，第5批盘点完成，新基线161，累计remote42；活动未合study-loader-isolation保留，不删数据/结果/worktree，详record§193。
+
+本地加载隔离#163/#164先红/设计后候选da6d0b0，31定向/core1950 passed+1既有skip/Flow273 passed；后4a53165新增注册builder晚导入模块/包2红均失败，确认候选回归。旧完整检查不包含新增2红，当前33节点未验收，必须继续收敛模块生命周期，不能禁late import或清外部cache换绿。所有原失败、候选错误/报告中断与XML保留.tmp/audit119/120，不随clone；不等待人工审，不新开PR，只本地合批，详record§194–197。无GPU/测速/下载/正式Study/main/tag/布局变化。
+
+
+
 ## 2026-10-16 B117 本机验证中；PR159双侧验收
 
 PR159最终head33cf72f与实际dev ab5c825全部实际CI成功，#158关闭，readout-time-order本地/remote均普通删除；周期基线149累计4，remote累计结束41。record§187验收本地提交ac48da2随本里程碑合批，不单开文档PR。唯一未合主题codex/correctness-followup继续本地积累。

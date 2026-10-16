@@ -131,3 +131,110 @@ def test_without_freeze_change_only_warns(tmp_path: Path, capsys):
     (study / 'notes' / 'a.txt').write_text('changed\n', encoding='utf-8')
     assert cli._provenance_gate(study.resolve()) is True
     assert 'provenance: 1 changed' in capsys.readouterr().out
+
+
+@pytest.mark.parametrize('form', ['bundle', 'pieces', 'payload'])
+@pytest.mark.parametrize('relocated', [False, True], ids=['legacy-helper-state', 'relocated-new-helper-state'])
+def test_recipe_checkpoint_state_keeps_legacy_and_relocated_imports(tmp_path, monkeypatch, relocated, form):
+    import importlib.util
+    import sys
+    from rpipe.flow.context import FlowContext
+    from rpipe.flow.prepare.run import run as prepare_run
+    from rpipe.structure.artifact import artifact_layout, load_config
+    from rpipe.structure.system.config import SystemConfig
+    from rpipe.structure.system.factory import SystemFactory
+
+    recipe = (
+        'from helper import State\n'
+        'from rpipe.structure.model.factory import ModelRegistry, _build_linear\n'
+        'def register(ctx):\n'
+        '    def build(model_config, assets_dir, data_meta=None):\n'
+        '        model = _build_linear(model_config, assets_dir, data_meta)\n'
+        '        model._recipe_state_type = State\n'
+        '        return model\n'
+        '    ModelRegistry.register("linear", "recipe_src", build)\n'
+    )
+
+    def create(parent, label):
+        parent.mkdir()
+        study = _study(parent, recipe=recipe)
+        (study / 'helper.py').write_text(
+            'import torch\nfrom dataclasses import dataclass\n@dataclass\nclass State:\n'
+            f'    value: int\n    tensor_type = torch.Tensor\n    label = {label!r}\n', encoding='utf-8')
+        (study / 'torch.py').write_text('MARK = "unused local source"\n', encoding='utf-8')
+        (study / 'rpipe.py').write_text('MARK = "unused local source"\n', encoding='utf-8')
+        declaration = study / 'study.yaml'
+        declaration.write_text(declaration.read_text(encoding='utf-8').replace(
+            'notes/*.txt', 'notes/*.txt, helper.py'), encoding='utf-8')
+        return study
+
+    study = create(tmp_path / 'original', 'original')
+    spec = importlib.util.spec_from_file_location('helper', study / 'helper.py')
+    legacy_module = importlib.util.module_from_spec(spec)
+    monkeypatch.setitem(sys.modules, 'helper', legacy_module)
+    spec.loader.exec_module(legacy_module)
+    legacy = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}),
+                                 study / 'runs' / 'legacy' / 'assets')
+    import torch
+    bundle = legacy.save_checkpoint({'model': {'_extra_state': legacy_module.State(7),
+                                                'tensor': torch.tensor([1, 2])},
+                                     'metadata': legacy_module.State(9)}, 'legacy')
+    if form != 'bundle':
+        import shutil
+        folder = legacy.checkpoint_dir() / ('legacy-' + form)
+        if form == 'pieces':
+            shutil.copytree(bundle.with_suffix(''), folder)
+        else:
+            folder.mkdir()
+            shutil.copy2(bundle, folder / 'payload.pt')
+        bundle = folder
+    monkeypatch.delitem(sys.modules, 'helper')
+    input_root = legacy.checkpoint_dir()
+    before = {path.relative_to(input_root).as_posix(): path.read_bytes()
+              for path in input_root.rglob('*') if path.is_file()}
+
+    def prepared(study):
+        out = expand_study(study)
+        config = out['configs'][0]
+        ctx = FlowContext(study_dir=study, layout=artifact_layout(study, config.parent.name),
+                          config=load_config(config))
+        prepare_run(ctx)
+        return ctx
+
+    ctx = prepared(study)
+    loaded = ctx.state['system'].load_checkpoint(str(bundle))
+    assert loaded['model']['_extra_state'].value == 7
+    assert loaded['metadata'].value == 9
+    assert loaded['model']['_extra_state'].tensor_type is torch.Tensor
+    assert torch.equal(loaded['model']['tensor'], torch.tensor([1, 2]))
+    if form == 'bundle':
+        from rpipe.structure.artifact.readout.compare import _checkpoint
+        displayed = _checkpoint(study / 'runs' / 'legacy', 'legacy')
+        assert type(displayed['model']['_extra_state']) is ctx.state['model']._recipe_state_type
+    assert type(loaded['model']['_extra_state']) is ctx.state['model']._recipe_state_type
+    if relocated:
+        bundle = ctx.state['system'].save_checkpoint(loaded, 'with-recipe-state')
+        target = create(tmp_path / 'relocated', 'relocated')
+        target_ctx = prepared(target)
+        original_namespace = ctx.state['model']._recipe_state_type.__module__.partition('.')[0]
+        original_modules = {name: module for name, module in list(sys.modules.items())
+                            if name == original_namespace or name.startswith(original_namespace + '.')}
+        for name in original_modules:
+            sys.modules.pop(name)
+        try:
+            restored = target_ctx.state['system'].load_checkpoint(str(bundle))
+            assert restored['model']['_extra_state'].value == 7
+            assert type(restored['model']['_extra_state']) is target_ctx.state['model']._recipe_state_type
+            assert restored['model']['_extra_state'].label == 'relocated'
+            import shutil
+            from rpipe.structure.artifact.readout.compare import _checkpoint
+            shutil.copy2(bundle, target_ctx.state['system'].checkpoint_dir() / 'copied.pt')
+            copied = target_ctx.state['system'].checkpoint_dir() / 'copied.pt'
+            copied_before = copied.read_bytes()
+            displayed = _checkpoint(target_ctx.layout.root, 'copied')
+            assert type(displayed['model']['_extra_state']) is target_ctx.state['model']._recipe_state_type
+            assert copied.read_bytes() == copied_before
+        finally:
+            sys.modules.update(original_modules)
+    assert {path.relative_to(input_root).as_posix(): path.read_bytes()
+            for path in input_root.rglob('*') if path.is_file()} == before
