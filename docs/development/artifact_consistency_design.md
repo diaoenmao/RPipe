@@ -623,3 +623,8 @@ PR184已正常合dev28f3dde，实际devCI尚待；本项在其后唯一未合cod
 复用_run_groups原有procs列表与等待循环：同组启动/等待放入同一try；记录已成功wait数量（在退出诊断前递增），异常时只对尚未成功wait的本次owned handles依次尝试wait，再原样raise最初BaseException。secondary wait异常不遮蔽primary且仍尝试其余peer；已成功wait不重复，正常路径与codes/配对/重试/波次顺序不变。取消也不遗弃已知owned child；等待自然退出，不kill/suspend任何进程，不增全局锁/进程管理框架/timeout配置或磁盘产物。
 
 若OS wait本身持续不可用，仅能保证尝试所有已知句柄，不能声称子进程已终结；最初异常仍严格向上传播。本项不承诺强制取消、解决hang子进程或跨独立launch互斥。无schema/文件架构/产物布局、科学门或GPU/性能变化。按本地主题commit积累完整失败所有权里程碑，再考虑单PR→dev，遵守少量PR频率；不立即为单B另开PR，不待设计审批。
+
+
+B135方案修正（2026-10-17，先补回归再实施）：首个仅补wait候选257相邻通过，但审查指出其遗漏既有非零退出→成功结果纠正。232ff08新增红1/1：已启动peer在wait中写succeeded后返回7，后续spawn原错传播而结果仍succeeded；这是本地候选不完整，未提交生产/未推送/未验收，不另立B或PR。WAIT_ONLY_CANDIDATE.py、首GREEN与EVIDENCE_RED保留于.tmp/audit135，不能被后绿覆盖。
+
+改为继续复用同一原wait/非零结果纠正循环，不另造wait-only收尾分支：捕获组启动最初BaseException后仍进入原等待循环；每个wait/结果纠正/退出诊断也保留首个异常并继续其余已启动peer，循环结束再raise原异常对象。正常等待返回/结果处理不变，成功wait仅一次；OS wait持续拒绝仍只有尝试保证。两处try与一个primary变量位于原_run_groups，原spawn/非零纠正正文不丢失，无新helper/import/进程杀停/全局锁/超时/布局。先记录本修正，再替换未提交候选；此前成功wait计数方案属于被拒候选，不作为最终已实施描述。

@@ -3895,3 +3895,6 @@ PR184 finalhead67c77c2全部实际CI（Branch38948310761/Package38948310834/Unit
 新B135/#185：真实CPU sleep子进程在第二Popen抛OSError后仍存活，随后由探针等自然退出0，无kill/实验/GPU；六类spawn/输出/env/失效写入/wait/退出诊断替身复现同根收尾遗漏。71条Issue全状态去重未发现重复；gh search参数误解析单独留证，非库失败。原始ZIP/REPRO/ADJACENT_REPRO与两红XML/log在.tmp/audit135，仅本机不随clone。
 
 f9ce20d先红27项25失败/2控制通过，26unit+1原生CLI integration全执行、0error/skip；初RED保留，RED2加强secondary-wait failure情形，仍同25失败。方案已在artifact_consistency_design文末：共用原procs列表，成功wait计数，在组异常时尝试剩余本次owned handles并原样raise初始BaseException，secondary wait不能盖primary/阻止其余peer尝试；正常分组/重试/波次不动，不kill/suspend。不保证OS wait持续拒绝时已终结或解决hang，不新增全局锁/timeout/布局。下一本地最小修及验证，相关主题累积而不立即开一个bug一个PR；无审批/用户决策阻塞。新编号B136。
+
+
+B135本地候选审查补记（2026-10-17）：仅补wait的未提交候选257相邻通过，但缺少cleanup非零peer的既有成功→失败纠正；232ff08新增红1/1（wait写succeeded后code7），保留原spawn异常但留下succeeded。WAIT_ONLY_CANDIDATE.py、首次GREEN及EVIDENCE_RED独立留存，不冒称最终验收。方案文末已修正为“保留首次异常、继续同一原wait+结果纠正循环、最后原样raise”，不另立Issue/PR；先本条修正再最小实现，候选生产尚未提交或推送。
