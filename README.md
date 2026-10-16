@@ -49,7 +49,7 @@ Agent 的文档导航与通用工作约定见 [AGENTS.md](AGENTS.md)。
 2. [layout.md](docs/code/layout.md)：仓库和 Study 的目录契约
 3. [code.md](docs/code/code.md)：模块边界与依赖方向
 4. [structure.md](docs/code/structure.md) / [flow.md](docs/code/flow.md)：两柱的详细契约
-5. [研究工作要求](docs/development/research.md)：研究流程、六方面计划和证据要求；[Study 使用指南](#study-使用指南)说明如何设计和运行一轮 Study，[Study 导航](studies/README.md)列出现有研究的计划、报告和代码。项目宏观方案见 [中文研究计划](docs/research/research_plan.md)、[English](docs/research/research_plan_en.md)及[文献证据](docs/research/literature.md)。
+5. [研究工作要求](docs/development/research.md)：研究流程、六方面计划和证据要求；[Study 使用指南](#study-使用指南)说明如何设计和运行一轮 Study，[Study 导航](studies/README.md)列出现有研究的计划、报告和代码。项目宏观方案见 [中文研究计划](<docs/research/研究计划 RPipe.md>)、[English](<docs/research/Research Plan RPipe.md>)及[文献证据](docs/research/literature.md)。
 6. [testing.md](docs/development/testing.md)：测试策略、标签和结果持久化
 
 已知缺陷见 [bugs.md](docs/development/bugs.md)，开发记录见 [record.md](docs/development/record.md)，Flow/Study 重构交接见 [handover.md](docs/development/handover.md)，阶段性想法见 [brainstorm.md](docs/development/brainstorm.md)。
@@ -94,7 +94,7 @@ python -c "import rpipe; print(rpipe.__version__, rpipe.__file__)"
 
 导入路径必须落在当前下游仓库的 `src/rpipe/`，不能实际使用另一个 checkout 或已安装的旧包。已有打包/开发环境同样须核对这一点。
 
-在下游仓库创建 `studies/smoke/`，先在 `studies/smoke/docs/PLAN.md` 说明这只是源码接入与产物合同验证。以下两个文件即可跑离线 CPU Toy/Stub，不下载数据或使用 GPU。
+在下游仓库创建 `studies/smoke/`，先在项目唯一研究计划的 smoke 章节说明这只是源码接入与产物合同验证。以下两个文件即可跑离线 CPU Toy/Stub，不下载数据或使用 GPU。
 
 `studies/smoke/study.yaml`：
 
@@ -186,7 +186,6 @@ my_project/
       write/
       process/
     docs/
-      PLAN.md
       STUDY_REPORT.md
 ```
 
@@ -225,7 +224,7 @@ my_project/
 
 并行复用 make/launch 的 wait 组，先按目标设备和配方校准显存、主存、线程及 I/O；不照搬示例并发数或显存预算，不让多个进程写同一个 Run。库的 train/eval 依赖保护不是通用 DAG，专项多步依赖需由项目明确处理。性能对照期间不并行运行竞争资源的任务。自定义采样器或专项 Algorithm 的精确恢复须单独验证，不能由库的 resume 能力直接推定。
 
-正式计划、报告、图和复跑代码放自己的 Study。将本 README 的 [Study 忽略项](#study-中什么进-git)落实到下游 `.gitignore`，临时输出放 `.tmp/`；复制 src 不会复制忽略规则或 GitHub 设置。新建项目可参考模板，但模板会复制 workflow 文件，不继承本仓库的开关和分支规则，详见[模板接入说明](docs/development/cicd.md#模板派生仓库)。继续运行 RPipe 自身的历史对照应 clone 原仓库，不能用只有新历史的模板替代。
+正式计划统一放项目 `docs/` 的唯一研究计划及完整英译，各 Study 方案是其中独立章节；报告、图和复跑代码放自己的 Study。将本 README 的 [Study 忽略项](#study-中什么进-git)落实到下游 `.gitignore`，临时输出放 `.tmp/`；复制 src 不会复制忽略规则或 GitHub 设置。新建项目可参考模板，但模板会复制 workflow 文件，不继承本仓库的开关和分支规则，详见[模板接入说明](docs/development/cicd.md#模板派生仓库)。继续运行 RPipe 自身的历史对照应 clone 原仓库，不能用只有新历史的模板替代。
 
 ### 5. 将下游发现反馈给 RPipe
 
@@ -295,7 +294,6 @@ studies/<name>/
     write/
     process/
   docs/
-    PLAN.md
     STUDY_REPORT.md
     figures/
 ```
@@ -340,7 +338,6 @@ studies/_template/
     write/
     process/
   docs/
-    PLAN.md
     STUDY_REPORT.md
     figures/
 ```
@@ -353,7 +350,7 @@ PLAN 按[研究工作要求](docs/development/research.md)补齐本轮问题与�
 
 ### 3. 高效率实验设计
 
-追求的是**这一轮 Study 的实验效率**：在质量和资源边界内提高总吞吐、缩短墙钟，不规定必须占满显存或使用固定资源系数。并行是排班手段，写进 `docs/PLAN.md`，和「比什么、几个 seed」一起定。
+追求的是**这一轮 Study 的实验效率**：在质量和资源边界内提高总吞吐、缩短墙钟，不规定必须占满显存或使用固定资源系数。并行是排班手段，写进项目研究计划的对应 Study 章节，和「比什么、几个 seed」一起定。
 
 | **先分清** | **是什么** | **不是什么** |
 |--------|--------|----------|
@@ -658,7 +655,7 @@ Study process 只聚合当前 index 列出的 Run，不扫描旧 version 目录�
 
 1. 复制 `studies/_template/` 为 `studies/<name>/`，对照本指南 §1–§3。
 2. 在 src 的研究包实现需要的同名 structure/flow 模块；Study 的建构与阶段入口导入这些实现。改 `experiment_config.yaml` 的基底；改 `study.yaml` 的 `axes` / `seeds` / `tags`。
-3. 在 `docs/PLAN.md` 写清：比什么、什么固定、成功标准，以及 **§3 高效率排班**（同类一组、按校准配置并行、error 后在本波重试，成功后才放行依赖 eval）。`make` 之后、`launch` 之前，把每条 Run 的预估秒数写进 **时长预估** 表。同一 `wait` 的墙钟是组内最慢的一条，整轮是各组相加。不含显存。
+3. 在项目研究计划的对应 Study 章节写清：比什么、什么固定、成功标准，以及 **§3 高效率排班**（同类一组、按校准配置并行、error 后在本波重试，成功后才放行依赖 eval）。`make` 之后、`launch` 之前，把每条 Run 的预估秒数写进 **时长预估** 表。同一 `wait` 的墙钟是组内最慢的一条，整轮是各组相加。不含显存。
 4. `python -m <project_entry> run studies/<name> --skip-launch`，核对 index。
 5. `python -m <project_entry> make studies/<name>`，看打印的 `pack N waits`，再 `python -m <project_entry> launch studies/<name>`（launch 不应再印 pack）。
 6. `python -m <project_entry> status studies/<name>` 看谁 `succeeded` / `failed` / `pending`。`python -m <project_entry> report studies/<name>` 把数字表写到 `docs/NUMBERS.md`。读 `process.json` + `docs/figures/learning_curves.png`，按 Experiment 写 `docs/STUDY_REPORT.md`：图做成可点链接，Run 表带各 `run.log` 链接。结论仍由人写。
@@ -669,7 +666,7 @@ Study process 只聚合当前 index 列出的 Run，不扫描旧 version 目录�
 - [ ] `axes` 与 `seeds` 分开
 - [ ] 每个 Run 的 config 含 `seed`
 - [ ] 结论按 Experiment 聚合，而不是按扁平 run 列表
-- [ ] `PLAN.md` / `STUDY_REPORT.md` 写清本轮怎么并行（同类一组、error 后续跑）
+- [ ] 项目计划的 Study 章节 / `STUDY_REPORT.md` 写清本轮怎么并行（同类一组、error 后续跑）
 - [ ] `STUDY_REPORT.md` 的「怎么跑的」写整轮预估和实际；Runs 表每行有 `est` 和 `actual`。不另开时长记录，不含显存
 - [ ] `STUDY_REPORT.md` 有可点开的 learning curve，以及各 Run 的 `run.log` 链接
 
@@ -704,14 +701,15 @@ Study 可在 `study.yaml` 写 `flow: {study_phases: true}`。库加载 `flow/` �
 | **内容** | **是否入库** | **原因** |
 |------|----------|------|
 | `study.yaml`、`experiment_config.yaml`、项目适配、阶段源码 | 是 | 可复现实验声明与 Study 自己的注册配方 |
-| `docs/PLAN.md`、`docs/STUDY_REPORT.md`、报告图片 | 是 | 人写的研究计划与结论 |
+| 项目 `docs/` 中唯一研究计划及完整英译 | 是 | 宏观方案与各 Study 的独立章节；RPipe 使用上述中文/英文计划名 |
+| Study 的 `docs/STUDY_REPORT.md`、报告图片 | 是 | 人写的研究结论 |
 | `docs/NUMBERS.md` | 可以 | `rpipe report` 从 `process.json` 生成的数字表，不是结论 |
 | `runs/`、`shared/`、`scripts/` | 否 | 可重新生成或体积较大的运行产物 |
 | `index.json`、`process.json`、`activity.json`、`provenance.json` | 否 | make / process 重建；`activity.json` 只在 make 进行中存在 |
 | `.tmp/` | 否 | 本地测试、缓存和临时验证 |
 | `docs/*.tmp`、`docs/*.claim` | 否 | 本地事务暂存和执行占用标记；正式恢复/失败快照单独保留 |
 
-数据、运行产物、计划、报告和复跑代码都保存在各自 Study 目录中，不放到 `docs/` 或仓库根目录。
+项目计划及完整英译统一在项目 `docs/` 中，各 Study 只在计划内增设章节。数据、运行产物、报告和复跑代码仍按现有布局保存在对应位置，不随计划整合搬迁。
 
 `studies/` 保留正式研究与模板，通用测试声明放在 `tests/_data/studies/`。一次性的文件占用、环境开关等排错放 `.tmp/diagnostics/`，结论合并到相关 Study 报告；本地证据链接不会随 Git clone 提供。
 

@@ -1,6 +1,6 @@
 # main_probe
 
-固定 main `98648f3` 原代码与当前 RPipe 的 60-step 同设备数值探针。目标、配方、门限见 [计划](docs/PLAN.md)。本轮固定发布 `v0.3.0` / `804b3823`，version 为 `main-probe-v030-20261013-final`；八组合成对数值门、库 compare 和完整 Study 终验均已通过，实际环境与证据见 [实测报告](docs/STUDY_REPORT.md) 和 [本轮执行记录](docs/v030_execution.md)。
+固定 main `98648f3` 原代码与当前 RPipe 的 60-step 同设备数值探针。目标、配方、门限见 [计划](<../../docs/research/研究计划 RPipe.md#study-main-probe>)。本轮固定发布 `v0.3.0` / `804b3823`，version 为 `main-probe-v030-20261013-final`；八组合成对数值门、库 compare 和完整 Study 终验均已通过，实际环境与证据见 [实测报告](docs/STUDY_REPORT.md) 和 [本轮执行记录](docs/v030_execution.md)。
 
 ## 一、流程
 

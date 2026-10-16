@@ -67,7 +67,7 @@ Study            一轮研究：编排壳 + artifact 根
 | **文本日志** | 无总 log | 无 | `assets/logs/run.log`（index.`log` 指向它） |
 | **数字曲线** | `docs/figures/`（按 Experiment 画 mean±std） | 跨 seed 对齐后的 history **mean / std / min / max** | `assets/tracker/`（这一次的 history / jsonl） |
 | **process** | 根 `process.json`：`scope: study` 的信封（是否 complete、图路径） | 信封里的 `experiments[]`：**跨 seed** 的 metrics 与 history 的 mean / std / min / max（及 Δ baseline） | `runs/<id>/process.json`：只这一次 |
-| **人文** | `docs/PLAN.md`、`docs/STUDY_REPORT.md`（按 Experiment 写结论） | 报告里的一格：该取值点的表与图 | 不单独写报告 |
+| **人文** | 项目唯一研究计划内的 Study 章节、Study 的 `docs/STUDY_REPORT.md`（按 Experiment 写结论） | 报告里的一格：该取值点的表与图 | 不单独写报告 |
 
 读数顺序：单次数字看 **Run** `result`；该格子稳不稳、该报哪个数，看 **Experiment** 的 mean / std / min / max；整轮是否跑完、图在哪，看 **Study** 信封。
 

@@ -397,7 +397,7 @@ make 在 Study 根写 `provenance.json`（与 `index.json` 同级，不进 Git�
 
 来源`plan_files`复用权威`load_index`的容器与Run路径校验，并要求每个计划条目有可用Run id；不自行宽松解析另一套index。index及被哈希的Run config物理路径须留在当前Study内，拒绝`..`/绝对Run路径及指向Study外的链接，先拒绝再哈希。Study内config链接仍以声明的`runs/<id>/config.yaml`逻辑键记清单，不因解析物理路径改键。坏index类型在本入口转ValueError保留原cause，供已有freeze拒绝边界使用；非预期RuntimeError原样上抛。缺index仍为空plan、合法历史空/partial结构及缺失config仍保留既有语义；不改schema/目录、hash或旧成功保全决策。
 
-`plan` 是执行清单与 Run 配置，不是人写的 `docs/PLAN.md`。根目录额外 helper、参考 JSON、依赖清单或计划等需要冻结时显式加入 `provenance.include`；模式未匹配任何路径会报错，解析后的文件必须留在 Study 内。原始数据、历史报告和 Run 产物不自动进入来源清单。库源码覆盖当前导入的整个 `rpipe` 包，非本 Study 使用的 Python 模块变化也会影响 freeze。
+`plan` 是执行清单与 Run 配置，不是人写的项目研究计划（各 Study 协议统一在项目 docs/research 内）。根目录额外 helper、参考 JSON、依赖清单或计划等需要冻结时显式加入 `provenance.include`；模式未匹配任何路径会报错，解析后的文件必须留在 Study 内。原始数据、历史报告和 Run 产物不自动进入来源清单。库源码覆盖当前导入的整个 `rpipe` 包，非本 Study 使用的 Python 模块变化也会影响 freeze。
 
 来源采集允许声明与自动发现路径重叠，结果按相对路径键记录；每个输入仍须通过 Study 内路径边界验证。每次冻结检查重新发现并读取文件，检测新增、修改、删除，不复用前次清单或 hash。不承诺单次采集的读取次数；先前 B-065 的次数去重优化已按只做正确性的要求暂缓。
 

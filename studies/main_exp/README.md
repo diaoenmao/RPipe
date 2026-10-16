@@ -1,6 +1,6 @@
 # main_exp
 
-历史 main `4ccb28d` 配方的四 seed、80000-step 曲线复现。目标、配方和门限见 [计划](docs/PLAN.md)，原图估读与固定门见 [TARGET.md](docs/TARGET.md)。
+历史 main `4ccb28d` 配方的四 seed、80000-step 曲线复现。目标、配方和门限见 [计划](<../../docs/research/研究计划 RPipe.md#study-main-exp>)，原图估读与固定门见 [TARGET.md](docs/TARGET.md)。
 
 本 Study 使用库调度、六阶段链与来源冻结，recipe 提供固定来源适配，prepare 和 process 提供研究检查与终验。本轮固定发布 `v0.3.0` / `804b3823`，version 为 `main-exp-v030-20261013-final`；完整八格 600-step 前置门通过，32 条连续 80000-step train、32 条自身 best eval、完整性及固定曲线终验均通过。当前状态、资源与完成边界见 [本轮执行记录](docs/v030_execution.md) 和 [实测报告](docs/STUDY_REPORT.md)。
 

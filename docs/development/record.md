@@ -1,8 +1,8 @@
-> 现状：B099/#124有限算术溢出统一修复完成，本机正确性门通过；PR123已实际验收。
-> 最新：30先红15失败/15控制，另4补充冻结原比较器回放2失败/2控制，共34新增合同，见§143–145。
-> 验证：readout559/core1541+1既有POSIX skip/CPU Flow189通过，原输入/peer与非有限/整数合同保持。
-> 下一步：推同一分支、PRdev，最终提交和实际dev全部实际CI后清结束remote，Issue等下版。
-> 边界：无GPU/测速/main/tag/布局或原产物更改；首轮及补充全部结果保留。
+> 现状：优先完成 Enmao 12:53 的唯一项目计划；中英文已完整收纳5份 Study/历史/模板协议，原独立文件移除。
+> 最新：#117/119/121/123/125 已合 dev82205cbe且各自实际CI通过；#125 readout559/core1541+1平台skip/Flow189，见§146及计划第九章。
+> 检查：5份中文内容保全、英译章节、原规范字节与运行文件不变；36布局测试通过，迁移修正8处链接，见§147。
+> 下一步：统一研究指南与全部入口，本批PR合dev后独立验收实际dev CI，再清结束远程分支。
+> 边界：当前文档集成未完成；无GPU/测速/main/tag/Run或JSON证据改写，未阻断运行任务。
 
 # 一、摘要
 
@@ -62,7 +62,7 @@ RPipe 已从旧 main 的独立训练脚本演进为可安装的研究执行库�
 | **范围** | **改前** | **改后** | **依据** |
 | --- | --- | --- | --- |
 | 探针入口 | 独立 probe.py prepare/run，普通 CLI 只跑当前侧 16 Run | 删除脚本入口；统一 CLI 展开八个成对 Run，recipe + Algorithm 接入完整阶段链 | [main_probe](../../studies/main_probe/README.md) |
-| 准备与执行 | 临时工作区、脚本自建当前侧对象 | Run assets 内隔离准备；成对执行复用 Flow 的 Data / Model / System / Tracker，恢复初始化 RNG，原版先、当前版后 | [计划](../../studies/main_probe/docs/PLAN.md) |
+| 准备与执行 | 临时工作区、脚本自建当前侧对象 | Run assets 内隔离准备；成对执行复用 Flow 的 Data / Model / System / Tracker，恢复初始化 RNG，原版先、当前版后 | [计划](<../research/研究计划 RPipe.md#study-main-probe>) |
 | 状态与终验 | 脚本退出码和矩阵 JSON | 数值失败由 Flow 写 failed，保留原始证据；process 只读当前 index，齐全八组且同来源、同设备、同 Torch 才完整通过 | [process](../../studies/main_probe/flow/process/) |
 
 CPU 核心 286 项与集成 32 项通过。隔离 CPU 验证覆盖单组合调度、真实 Flow 对象与 RNG 交接、两侧 artifact compare、保留已有证据、数值失败落盘、子集拒绝和八组终验（使用伪计算与微小张量，未训练正式模型）。本轮不重跑正式 main_probe/main_exp，尚无本版本数值验收。临时证据在 `.tmp/probe-flow/`，不随 Git clone 提供。
@@ -288,7 +288,7 @@ B09260新节点完整红45失败/15控制，修复后readout491、core1384+1既�
 
 ### 118. 按新规范与模板重做 RPipe 研究计划（文档批次）
 
-记录日期2026-10-16。Enmao当晚优先任务改为项目研究计划，暂停新增审计批次，正确性目标仍active。原仓库仅有通用研究要求、规范/模板和历史Study计划，没有统一宏观课题计划；按layout既有职责新建[中文计划](../research/research_plan.md)和[完整英文](../research/research_plan_en.md)，逐章覆盖新模板十章。RQ1–RQ3为失败证据保全、可选/严格读取与引用归属、原子发布；RQ4为条件性历史原码科学对照。明确不扩旧成功保留范围、不更改结构或落盘，历史main_probe/main_exp计划/结果不事后重写；旧版科学验收与当前dev未重跑分开。
+记录日期2026-10-16。Enmao当晚优先任务改为项目研究计划，暂停新增审计批次，正确性目标仍active。原仓库仅有通用研究要求、规范/模板和历史Study计划，没有统一宏观课题计划；按layout既有职责新建[中文计划](<../research/研究计划 RPipe.md>)和[完整英文](<../research/Research Plan RPipe.md>)，逐章覆盖新模板十章。RQ1–RQ3为失败证据保全、可选/严格读取与引用归属、原子发布；RQ4为条件性历史原码科学对照。明确不扩旧成功保留范围、不更改结构或落盘，历史main_probe/main_exp计划/结果不事后重写；旧版科学验收与当前dev未重跑分开。
 
 [文献证据](../research/literature.md)登记2026-10-16四组实际查询、四条来源的版本/阅读范围/六方面/用途/缺口。L1仅官方摘要；L2固定arXiv v2定向章节；L3仅官方检索摘录且直读失败，不比较系统能力；L4固定PyTorch2.9整页，不据此升级Study依赖。ACM候选原页访问失败不作依据，不称系统综述、独立复现或外部优越性。没有下载PDF、安装工具或新建论文库/科学数据。完整读取本地Knowledge 0d7c68d的检索skill、研究笔记模板与wiki，仅作方法参考，不采用引用量排名。
 
@@ -2790,3 +2790,18 @@ readout525 passed、core1507 passed/1既有POSIX executable-mode skip、CPU Flow
 初轮readout555/core1537+1skip/Flow189已通过；补4新合同后保留初轮XML/log，更新readout559、core1541+1同一既有POSIX executable-mode skip，0fail/error，34新节点全部执行。生产源码未变、Flow用例未变，189 CPU Flow不重复。额外两个微型连续/转置checkpoint均拒绝界外差异，仅该场景布局控制，不称任意layout全覆盖。原所有Run/result/tracker/checkpoint/peer字节保持。LOCAL_CHECKED SHA256 67db96bec8732148fccd11991fcd17f5418515ebb9392b6c54a4fea930d1c9b4；原ZIP、REPRO、两批红、两轮GREEN/CORE及FLOW、源码三块精确替换与红测试LF/CRLF证明在.tmp/audit099（不随clone）。
 
 后续按唯一分支PR到dev，最终head与实际dev全部实际矩阵/聚合后才完成集成验收；Issue124留至下版。无测速/GPU/原始Study运行或科学结论，不合main/tag/强推/改布局；提交保全后仅清结束remote，不删本地/数据。
+
+
+## 146. 2026-10-16 PR125最终与实际dev验收、结束remote清理
+
+最终head460741347265dde2c3998382843801752c504fb5 的 Branch38851935543/Package38851935380/Unit38851935399全部实际矩阵/聚合成功；PR_CHECKED SHA256 50248ecc78fe3d9e7b3589bb4cda79e27297118e3cb81c0d15b7ab7dd17f8c2d。普通合 [PR125](https://github.com/DreamSoul-AI/RPipe/pull/125) 到dev82205cbe7fc89a46853eb61c1734d123b7d153f0，实际dev [Package38852496728](https://github.com/DreamSoul-AI/RPipe/actions/runs/38852496728) / [Unit38852496656](https://github.com/DreamSoul-AI/RPipe/actions/runs/38852496656)全部实际矩阵/聚合成功；DEV_CHECKED SHA256 9ca50aa8ee8f3a0af01480167eec251d89db7517be292d1d526ddee3c688e60f。核对祖先、无开放PR、提交保全后删除结束remote `codex/finite-tolerance-overflow`，本地tip保留；累计24条，清理时remote仅main/dev。main00e70b1/v0.4.1不变，Issue124保持open等下一版；PR/Issue原正文已附验收，不重复评论。证据 `.tmp/audit099` 不随clone，所有观察句柄已结束。
+
+## 147. 2026-10-16 单一项目研究计划、完整Study归并与夜间结果更新
+
+按Enmao12:53最新要求，优先交付今晚人工审阅的计划。1ac5293先用git mv原样改名为[研究计划 RPipe.md](<../research/研究计划 RPipe.md>) / [Research Plan RPipe.md](<../research/Research Plan RPipe.md>)，仍在docs/research。现行main_probe、main_exp、Study模板及两份v030-before-local历史PLAN共5份，全文进入同一计划第十一章，英文逐节完整对应；原5个Markdown用git rm移除。第十一章保留每份原路径的固定Git来源和SHA256、全部表格/命令/预算/停止条件/历史授权，明确当前授权优先；没有把历史排班转成新执行任务。
+
+第九章补齐PR117/119/121/123/125对应Issue116/118/120/122/124的反例、红/控制/绿边界、最终与实际dev验收；另归纳夜间PR103/105/107/109/112/113/115。区分当前CPU工程验收与v0.3.0历史科学数字；当前dev完整科学矩阵未重跑。保留文献实际阅读深度与L3全文/引文追踪缺口，列人工审阅→文献→CPU正确性→另获授权后的E3八格60-step→E4八格600-step前置与32 train/32 eval完整预算。shared/logger的89/90不绑定实施，不新增文献全文阅读或GPU任务。
+
+同步AGENTS、README、research、layout/concept/flow及Study/规范入口；历史报告只更新迁移链接，不改实测正文。修正历史快照4处原失效相对链接（中英文共8处），历史recipe入口固定在迁移前dev并说明不能代替旧Run冻结来源。5段中文移除新增锚点、还原标题层级并归一迁移链接后，与原文逐字相等；英译五节标题映射匹配。五份原规范/译本文件与迁移前Git内容保持；运行代码、配置、JSON、Run、图和失败证据零改动，_staging_from_DEM保留。
+
+本机tests/rpipe/test_layout.py实际36 passed，独立basetemp，无fail/error/skip；git diff --check及UTF-8检查通过。链接扫描1651个可取得目标，本次变更新增失效链接0；273条旧引用/锚点或缺本机临时材料的扫描候选未算本批通过，不冒称全库链接零问题。保全映射、原字节、检查与XML在 `.tmp/research-consolidation-20261016`，不会随clone提供；正式计划内固定Git来源可核验。本批文档PR及实际dev CI仍待后续执行，不提前声称合入；无main/tag/性能/GPU/数据删除或运行时布局变更。
