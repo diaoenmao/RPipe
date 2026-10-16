@@ -1,3 +1,7 @@
+## 2026-10-17 B143/#198完整修复本机验证中（最新）
+
+唯一codex/domestic-sdk-transfers，生产28b107f已commit；此前模型/数据根/spawn阶段补全媒体decoder/延迟file、后台lease、实际客户端继承与ModelScope显式CN。红0582ab5/4837cc6/52b3f72/a43405b/fd90f37均保留；104针对性+24旧HF控制通过，core2384passed+1既有skip。Flow516passed/83新SDK全执行、16027终结0，CI/使用文档变更随本里程碑提交，下一§258完整本机checker→一个PR双侧实际CI，不提前关198/清分支。原始失败夹具与协议替身限制详§258；真实codec/镜像服务未验。63582终结0，protected refs/用户暂存保持，下一B144。无设计/用户等待、无GPU/下载/性能/Study/main/tag或数据删除。
+
 ## 2026-10-17 B143/#198 SDK 阶段已修，媒体消费新红待同批补全（当前）
 
 当前唯一未合 codex/domestic-sdk-transfers；生产阶段 d52526c（模型/native/线程）→2384a4b（eager/streaming 根与 aiohttp）→5452322（spawn/线程任务）。模型首红 ef3c500，native 红 6621e12，数据根红 f174b8c，spawn 红 024b20d；各自方案先于实现，无审批等待。5452322 完整 core2384passed+1既有skip / CPU Flow466passed，33新SDK节点全部执行；HF0.34.4模型/requests控制另17passed。39195/83435 terminal。不是 #198 完整验收。

@@ -185,3 +185,6 @@ B142同类读取补全/本机最终验收（2026-10-17）：196原body追加dige
 ### B143 / Issue #198：真实HF SDK镜像参数不约束海外transfer（2026-10-17）
 
 实际download_model→HF snapshot/file client1.33.0/httpx0.28.1，ModelScope失败替身后mirror响应可使后续HEAD/GET访问huggingface.co，仍返回成功的合成config snapshot。国内控制3请求皆mirror，反例3中2海外；transport/repo tree合成、socket禁止，零真实网络/模型下载。79条去重后198登记，区别189初始选择/195手动urllib；原始.tmp/audit143不随clone。当前唯一OPEN，尚无测试/生产修改，先SDK兼容public transport设计和红回归，不全局关闭共享client、不扩布局/科学门。详record§255。
+
+
+2026-10-17 B143本机实施进展：真实SDK重定向/native选择、eager/streaming根、spawn任务、返回后媒体解码与后台提前卸载已统一在原origin.py修复；另先红52b3f72（ModelScope显式CN endpoint）、a43405b（配置客户端子类越界）、fd90f37（退出后继承属性残留）后补全。28b107f已针对104passed、HF0.34.4兼容24passed；完整core2384passed+1既有skip，CPU Flow516passed/83新SDK全执行。198保持OPEN，未PR/双侧CI验收；旧“尚无测试/生产修改”仅为初次复现阶段记录。详record§258；未真实下载或改变产物布局。

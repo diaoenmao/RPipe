@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：B143/#198国内SDK完整类别修复已本地提交28b107f，唯一domestic-sdk-transfers；尚未PR。
+> 最新：真实媒体延迟读/后台scope/配置客户端及还原已统一；104针对性与HF0.34.4兼容24项通过（§258、GREEN_COMPLETE_TARGET3/GREEN_SDK034_FINAL）。
+> 验证：最终core2384passed+1既有skip，CPU Flow516passed/83新SDK全执行；旧阶段466Flow不当最终验收，CI补SDK依赖确保实际执行。
+> 下一：完成最终本机checker，统一PR后分别验收final-head/actual-dev全部CI，再关闭198与清主题；不拆小PR。
+> 状态：goal active、无审批阻塞；零真实模型/数据下载、原生codec解码、GPU/测速/Study/main/tag或数据删除；用户暂存保留。
+
 > 当前（2026-10-17）：B143/#198 在同一 domestic-sdk-transfers 分支完成模型 SDK、eager/streaming 根读取及 spawn 下载任务阶段修复；尚未 PR。
 > 验证：5452322 阶段 core 2384 passed+1 既有 skip / CPU Flow 466 passed，33 个新 SDK 节点全执行；HF 0.34.4 模型控制另 17 passed。
 > 最新：真实 Dataset 与 IterableDataset 的图片字段在返回后解码仍可越界；0582ab5 已提交 4 项红回归（2 failed/2 passed，0 error/skip）。
@@ -4271,3 +4277,17 @@ f174b8c 补 eager / streaming 根请求逃逸，2 failed；24b4dba 方案后 238
 相邻原生消费复查确认未完成边界：真实 Dataset.__getitem__ 与 IterableDataset 格式化 Image 字段均在根生成器 yield 后解码；替代 xopen/requests transport、使用自造 1 像素 PNG，两者策略 None，进入海外合成请求并成功解码。MEDIA_REPRO.json/脚本/log 保留；首脚本仅结尾记录漏导入 Path，原脚本/log 保留后修正重验，不把日志故障当库缺陷。0582ab5 先提交 4 项正式回归：国内两项正控制通过，海外 eager/streaming 两项 failed，0 error/skip。该媒体消费属于 #198 既定数据 SDK 传输合同，继续同类批次，不能以根生成器检查或已有绿色声称闭合；须覆盖适用 native 媒体路径、原 schema/缓存/派生消费，不以拒绝所有媒体或改变返回类型代替修复。
 
 198 远端重新核对仍 OPEN，未开 PR、不推小文档 PR、不关闭 Issue；main/dev/origin-main 保护引用未动，origin/dev 仍 e8cebcb。PR197 及 195/196 的旧验收/评论/分支清理不重复。cleanup 基线194后1、remote53 仅沿上次确认值，本轮未重做全面盘点；未合主题不删，用户 _staging_from_DEM 原样保留。goal active，无设计审批/用户决策阻塞；下一 B144，实际模型/数据服务、GPU、性能、正式 Study、main/tag/release、布局/schema迁移均未执行。
+
+
+## 258. 2026-10-17：B143/#198媒体、后台消费者与配置客户端统一补全
+
+在已提交0582ab5媒体红与4837cc6父scope提前退出红之后，72770e0先记录消费者所有权方案；52b3f72/a43405b再先红ModelScope站点与实际SDK客户端子类，2c93222先设计，fd90f37再红继承方法还原（2项1failed/1passed）。最终28b107f只在原origin.py补全：实际消费者独立计数scope、安装/还原短锁、fork继承清理；原生features decoder按实例绑定，嵌套/派生view保持，xopen文件代理在read/seek/close期间续guard；实际HF session getter保留原factory和client并检查实际class，退出按原属性所有权还原。ModelScope公开签名支持endpoint时显式CN，旧签名原参数不改。
+
+针对104passed/0fail/error/skip（GREEN_COMPLETE_TARGET3.xml），旧HF0.34.4 requests路径24passed/0fail/error/skip（GREEN_SDK034_FINAL.xml）；core2384passed+1既有skip/0fail/error（CORE_FINAL.xml），CPU Flow516passed/83新SDK全执行，句柄16027终结0。此前5452322阶段466Flow不是最终验收。CI四CPU环境补实测SDK测试依赖，防止新integration节点全被可选缺依赖跳过；不锁生产extra。仍一个198里程碑、无PR/远端CI、Issue唯一OPEN。
+
+夹具与边界如实保留：初始media deepcopy失败经DEBUG_PREBIND_COPY确认在未经RPipe绑定的原SDK同样dictionary changed size（共享HfFileSystem._cache）；正式夹具只替换本次拥有的空cache并先验证原生deepcopy，不清真实用户cache，不将warm后绿冒称库修复。Audio/Video/PDF真实datasets feature配延迟file协议backend替身；三次不完整可选backend导出造成的夹具失败和原日志均保留，更正后13协议节点通过，不当库缺陷或本机C++/FFmpeg/PDF解码成功。TorchCodec源码仅核对read/seek协议，未实际安装/解码。原图像/输入Arrow/feature序列化/fingerprint、缓存/revision/来源、foreign并发/取消保持，无磁盘布局/schema迁移。
+
+全部原红/失败夹具/取消/脚本/XML在.tmp/audit143，不随clone；portable测试和设计入库。没有真实模型/数据下载、服务可用性、GPU/性能/科学Study/训练、main/tag或数据删除。新GPU资源门仅记入计划，不触发实验。下一完成最终CPU Flow与完整本机checker后统一PR，最终head和actualdev所有实际CI分别验收再关闭198/正常清本主题。用户_staging_from_DEM保留，下一B144，无设计审批等待。
+
+
+B143完整本机验收补记：最终源码28b107f的CORE_FINAL2384passed+1既有skip、FLOW_FINAL516passed/0skip，GREEN_COMPLETE_TARGET3为104passed（21既有origin unit+83新SDK integration）；83新节点在完整Flow XML逐项同集核对、无漏收/skip。HF0.34.4隔离compat24passed。FINAL_LOCAL_CHECKED.json保存源码/测试/XML SHA256、节点和未验证边界；.tmp证据不随clone。63582/16027均terminal0，无活句柄。下一仅统一PR/双侧实际CI验收，当前不能声称已合/198已关闭。
