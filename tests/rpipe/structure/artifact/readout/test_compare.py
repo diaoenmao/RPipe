@@ -374,3 +374,32 @@ def test_compare_nonfinite_matches_do_not_hide_finite_tensor_drift(tmp_path, dty
     before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
     assert compare_runs(a, b, rtol=1e-5)['passed'] is passed
     assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('shape', [(), (1,), (1, 1)], ids=['scalar-tensor', 'vector', 'matrix'])
+@pytest.mark.parametrize('base,delta,atol,rtol,passed', [
+    (2**60, 1, 0.5, 0.0, False),
+    (2**60, 1, 1.0, 0.0, True),
+    (-(2**60), 2, 1.0, 0.0, False),
+    (-(2**63), 2**64 - 1, 1.0, 0.0, False),
+    (2**60, 2, 0.0, 2**-60, False),
+    (2**60, 1, 0.0, 2**-60, True),
+], ids=['absolute-outside', 'absolute-boundary', 'negative-outside', 'signed-range', 'relative-outside', 'relative-boundary'])
+def test_integer_tensor_tolerance_matches_exact_scalar_contract(tmp_path, capsys, shape, base, delta, atol, rtol, passed):
+    import torch
+
+    a, b = _run(tmp_path, 'a'), _run(tmp_path, 'b')
+    for run, number in [(a, base + delta), (b, base)]:
+        torch.save({'model': {'counter': torch.tensor(number, dtype=torch.int64).reshape(shape)},
+                   run / 'assets/checkpoints/latest.pt')
+    before = {p: p.read_bytes() for run in (a, b) for p in run.rglob('*') if p.is_file()}
+    report = compare_runs(a, b, atol=atol, rtol=rtol)
+    assert report['passed'] is passed
+    item = report['items']['checkpoint.latest.model']
+    assert item['max_abs_diff'] == delta
+    output = tmp_path / 'comparison.json'
+    assert cli.main(['compare', str(a), str(b), f'--atol={atol}', f'--rtol={rtol}', '--out', str(output)]) == (0 if passed else 1)
+    saved = json.loads(output.read_text(encoding='utf-8'))
+    assert saved['passed'] is passed
+    assert saved['items']['checkpoint.latest.model']['max_abs_diff'] == delta
+    assert {p: p.read_bytes() for p in before} == before
