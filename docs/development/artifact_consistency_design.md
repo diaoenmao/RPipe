@@ -774,3 +774,8 @@ B141–B142已实施并双侧验收（2026-10-17）：PR197 finald824e14/actuald
 实现边界：每次模型/数据下载及重定向的目标在传输前核验；响应元数据中选出的下载 URL 同样核验；来源未获国内许可时在发请求前失败并保留双源故障说明。复用 SDK 现有认证、代理、缓存与连接生命周期，不关闭或替换其他调用者的共享客户端。回调只清理本次拥有的对象，普通成功、失败、KeyboardInterrupt 与并发调用均须核验。HF 0.x 每线程 requests Session 与 1.x 共享 httpx Client 不能用同一个未经验证的全局 factory 替换方案；Xet/native、datasets/fsspec/aiohttp 和 streaming 延迟读取另按实际调用路径验证，不能把 Python HTTP hook 自动视为 native 约束。不可保证国内传输的 SDK 路径须明确报错，不静默转海外，不伪造可用性；能力边界写入使用文档并以控制用例验收，不任意改依赖版本掩盖兼容问题。
 
 本批仍在一个 domestic-sdk-transfers 分支累积，未完成原生/旧版/数据读取验证前不声称 #198 修完，也不另开细碎 PR。源码依据为 HF 版本化 utilities 文档及实际安装源码，ModelScope/ModelScope Hub 官方源码；.tmp/audit143/PRIMARY_SOURCE_NOTES.json 保留阅读范围和来源，临时材料不随 clone。没有真实模型/数据下载或科学实验，未新增布局/公共配置字段。
+
+
+B143 模型阶段实施选择（2026-10-17）：在既有 origin.py 内用 ContextVar 标记本次来源策略；只在同步 SDK 调用期间安装、退出时还原 requests.Session.send 与 httpx 单次传输检查。每次重定向或元数据选出的 URL 都在该次 transport 进入前核验 HTTPS、无用户信息、默认 443 和来源 host；HF 只允许 hf-mirror，ModelScope 允许 modelscope.cn 子域及 OSS 的 cn 区域 host，不允许泛 aliyuncs 或 modelscope.ai。SDK 使用的 ThreadPoolExecutor.submit 复制本次上下文到文件 worker，包括已存在的线程；无标记的其他线程按原逻辑运行。临时安装由独立 RLock 管理，同类入口串行，worker 不取锁；不重置 client factory、不关闭客户端、不触碰认证/代理/hook 列表。
+
+HF 文件下载模块的 native availability 与配置读取按上下文隔离：国内调用使用标准 HTTP，Xet/旧 hf_transfer 不接管；其他调用读原函数/原常量，不改全局 flags/env。这样 cache-tree 的 Xet 快捷路径也不能绕过请求检查。以真实 SDK Xet 元数据选择的红回归 6621e12 先证（扩展后 8 项，5 failed/3 passed），修后需控制并发/取消/异常还原。ModelScope、旧 HF 及数据 eager/lazy 消费仍须分别补证；该选择不是任意自定义 builder 的网络防火墙，也不以模型阶段 green 声称 #198 全面完成。
