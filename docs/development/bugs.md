@@ -143,3 +143,8 @@ B109/#146已PR147最终head与实际dev全CI验收关闭，主题本地/remote�
 
 
 2026-10-17验收补充：B137/#188及B138/#189已PR190合dev e31fbf5，最终head/实际dev所有真实矩阵与聚合通过；两Issue各一次验收评论关闭、原正文保留，旧主题本地/远端正常删。详record§239；不表示发布/真实下载成功，历史失败不删。当前开放Issue为空，下一编号B139，未确认新反例不制造任务。
+
+
+### B139 / Issue #191：可解析JSON中的surrogate标签阻断readout发布（2026-10-17）
+
+真实write_numbers和compare_runs→write_compare：正常label可发布peer，ASCII JSON转义的未配对代理label可解析却真实UnicodeEncodeError，旧目标/输入保持。75全状态Issue去重（111是测试证据JSON，非readout）；191一处范围追加保原文。先红a55f38a36项18失败、c0dc4016项3失败，方案f2bf035/0cfea56；4926b81修共用display文本、9b2246c修派生compare JSON，strictResult/config/provenance及atomic writer不变。814最终相邻passed，42新全执行；原生roundtrip/正常字节/peer保持。最终core/Flow进行中，未推送/PR，保持OPEN。证据.tmp/audit139不随clone，详record§240–241。

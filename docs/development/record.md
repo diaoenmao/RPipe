@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：B139/#191在唯一未合evidence-boundaries-next分支本地修复，尚未推送/PR；已接受dev e31fbf5。
+> 最新：同类surrogate标签使Numbers及派生compare JSON发布失败，两处消费边界修4926b81/9b2246c；源输入/数值/严格writer不变。
+> 验证：两批先红36项18失败、6项3失败；最终相邻814 passed，新42节点全执行/0skip；最终core/Flow进行中，详§240–241。
+> 下一：完整本机检查后继续相关主题本地累积，再完整里程碑PR；191仍OPEN，无设计/用户决策阻塞。
+> 保护：PR190/188189已验收关闭/旧主题已清，remote50/基线181后3；main/tag/GPU/数据/结果/布局不动，临时原始失败保留。
+
 > 当前（2026-10-17）：PR190双侧全部实际CI验收，dev e31fbf5；#188/#189关闭，已合主题本地+远端正常删除。
 > 最新：B137可选Git解码+B138国内源完整里程碑完成；真实datasets5.0.0离线2行JSON检查通过，禁止socket、输入字节不变。
 > 验证：core2220 passed+1既有skip/Flow429 passed，26新回归全执行；PR及实际dev矩阵/聚合全绿，详§239。
@@ -4060,3 +4066,12 @@ B137/#188与B138/#189完整合批PR190最终head6f66f37f55643691d11bcc5180ff35ed
 
 
 B139同类扩展：4926b81先使808相邻通过、首core2256passed+1既有skip；沿同一标签追到compare_runs→write_compare派生JSON仍实际UnicodeEncodeError，正常label/peer可发布，旧比较目标和输入保留。已一次追加191原body，仍同B139，不拆新B/Issue/PR。c0dc401先6项红3失败/3有效控制，完整decoded report==原report作为code unit保真门；补全方案先写design，再仅派生JSON序列化边界加backslashreplace，不改strict atomic或Result/config/provenance writer。原阶段红/绿/完整检查均保留，不冒充最终两处fix验收。
+
+
+## 241. B139展示与派生JSON消费边界本地修复（2026-10-17）
+
+a55f38a红36项18失败/18控制→f2bf035方案→4926b81一处_text_cell UTF-8 backslashreplace roundtrip；808相邻、初core2256passed+1既有skip/Flow429passed是此阶段证据，原始RED/GREEN/CORE/FLOW保留。继续实际compare_runs→write_compare同类复现补全191范围；c0dc401红6项3失败/3控制→0cfea56补方案→9b2246c仅派生JSON序列化后roundtrip再交原strict atomic writer。没有把整份JSON交_text_cell归一，不改原始source/producer。两个文件各一块原字节替换，FINAL_SOURCE_CHECKED验证CRLF，未放宽编码拒绝。
+
+最终readout+Result IO+atomic相邻814passed/0fail/error/skip，42新（report18/status12/compareformat6/compareJSON6）逐XML节点全执行通过；原生Numbers/compare旧失败反例均转绿，源JSON/peer数据不变，compare json.loads完整等于原report且正常对照文件原字节一致。strictResult真实UnicodeEncodeError仍按既有测试拒绝并保旧目标，非编码程序错原样传播。原始ZIP/两类输入归档/REPRO/GREEN_REPRO/COMPARE_REPRO/COMPARE_GREEN_REPRO和各红阶段都在.tmp/audit139，不随clone。
+
+两个最终全检以独立basetemp运行FINAL_CORE/FINAL_FLOW（48760/82148），尚在执行；不把初阶段完整绿冒充两处最终fix验收。当前只本地主题提交，191仍OPEN，继续相关主题累积后一个完整里程碑PR，符合每天少量PR规则；新B140尚未登记，不为活跃制造反例。无GPU/下载/测速/训练、main/tag或布局变化。

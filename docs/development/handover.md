@@ -670,3 +670,8 @@ PR187双侧实际CI全绿，185/186各一次验收评论关闭，codex/launch-fa
 actualdev e31fbf5927dfea94472c712d249a48e05212a66d，PR190 finalhead6f66f37与actualdev全部实际CPU/包矩阵/聚合success；188/189关闭、原body保持/各一次comment、PRbody一次验收追加。codex/optional-metadata-correctness本地/remote已普通删除，累计remote50/周期基线181后3；仅primary worktree，无数据/结果删除。新唯一未合codex/evidence-boundaries-next自actualdev创建，当前收尾docs只本地提交，随下个完整里程碑PR，不拆tiny-doc PR。原始.tmp/audit138 STATE/COMPLETION和PR/DEV_CHECKED/BRANCH_DELETED_CHECKED/ISSUE_ACCEPTED均保留，无活本机句柄。
 
 当前开放Issue为空，继续三类只读复查，确认真实反例才用B139登记先红再修。六相邻点未确认新反例；B131未知legacy回退是既定兼容，不再当新缺陷。真实datasets5.0.0/hub1.33.0离线2行JSON验证socket禁用/端点mirror/输入字节不变；不代表真实下载或ModelScope服务已测。main/tag/GPU/数据/正式结果/架构布局不动，无等待设计批准。
+
+
+## 2026-10-17 B139/#191当前本地批次
+
+唯一未合codex/evidence-boundaries-next在接受dev e31fbf5上；10691e1保PR190收尾文档，未单独PR。B139同类readout surrogate边界：a55f38a36红18失败→f2bf035→4926b81展示textcell；继续实际compare派生JSON复现追加191body一次，c0dc4016红3失败→0cfea56→9b2246c派生JSON序列化边界。原producer/strictatomic/JSONschema/数值/路径保持；正常字节与json.loads的原code units保真。最终相邻814通过，42新全执行；FINAL_CORE48760/FINAL_FLOW82148尚活，复用原句柄观察、不重派、不用初阶段2256/429替代最终验收。191仍OPEN、未推送/PR，继续本地合批；新B140。原始.tmp/audit139全部失败/ZIP/原生重现保留，无GPU/训练/下载/测速/布局变更。
