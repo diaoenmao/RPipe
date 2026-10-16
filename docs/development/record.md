@@ -3709,3 +3709,12 @@ Issue170/171/172/173/175逐项验收说明各发一次后关闭，原正文保�
 当前唯一未合主题codex/failure-evidence-next基于实际dev9d78fb4。#176先有十场隔离REPRO，再c76e8fd提交36项原生Runner回归，24 failed/12有效控制passed：坏YAML、非mapping、shared/root错误、解码与read IO拒绝六类×fresh/旧success/已知draft shared/旧success且已知shared四状态；有效默认/custom shared及缺声明三类控制×四状态全部通过。失败结果路径可写，原异常仍被抛出并记log；坏声明/peer字节保留，不能把secondary shared元数据错误当result本身不可写。
 
 设计只隔离失败写回缺省shared元数据，已有键免求值；解析Exception时跳过可选shared键，继续原failed/error与已知路径落盘，不猜根、不放宽原输入或正常write严格路径，不改冻结/process旧成功保全或BaseException取消。具体见artifact_consistency_design文末；先本条方案再最小实现。RED.xml/log、原ZIP/REPRO在.tmp/audit129，不随clone。PR174已全验收/清理见§216，不重派；当前#176仍OPEN，尚无本主题PR。
+
+
+## 218. B129完整本机验收与B130/#177同类红回归/方案（2026-10-17）
+
+B129/#176经方案236ef3c后3743b59仅将Runner失败回写中paths.shared求值改成有键保留/无键尽力解析、Exception略过不可用可选元数据。相邻155 passed，完整core2015 passed/1既有skip、CPU Flow390 passed，36新integration全执行，28174/21912均exit0；raw SOURCE_CHECKED证明只替换原一处，_preserve_success、其余异常/日志/metrics/control/路径及正常write严格shared代码原字节不改。这些只证明B129源码状态，后续B130修改仍须新完整验收。
+
+继续同类扫描确认B130/#177：schedule._fail_result写已知Run result前调用artifact_layout，二次解析损坏shared声明导致旧success不失效，公开launch也在启动前被阻断。原生helper/公开launch六场REPRO四失败/二控制，先Issue再27d263d红27项18失败/9控制；906b72b补真实result发布错误严格传播控制后29项19失败/10控制，原红保留。覆盖fresh/旧success/公开rerun、坏YAML/非mapping/shared/root/decode/readIO、有效默认/custom/缺声明；进程仅stub，无实验或GPU。
+
+方案只将既有安全Run路径直接交原write_result，删除此处多余artifact_layout依赖；_run_result前置组件校验、全部失效化调用点、原body/原子写错误/重试/依赖/console/env和正常make/prepare布局不变，不猜shared根。方案先于生产修，详artifact_consistency_design文末。原.zip/REPRO/两场红在.tmp/audit130，不随clone。B129/#176、B130/#177同一主题合批，当前无新PR；接受dev9d78fb4，周期基线161计数3/remote45，下一新编号B131。无main/tag/GPU/测速/数据/结果/布局变更。

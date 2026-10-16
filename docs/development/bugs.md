@@ -6,9 +6,13 @@
 
 ## 开放
 
-### B-129：失败回写被共享路径二次解析阻断（确认未修）
+### B-129：失败回写被共享路径二次解析阻断（本机已修，待同批验收）
 
-- Issue：[176](https://github.com/DreamSoul-AI/RPipe/issues/176)。现有Run的study.yaml损坏/不可解码或shared字段无效时，Runner原异常虽保留并记log，_write_failed_result补paths.shared再次解析声明而放弃可写result；fresh结果缺失、旧success可错误保留。现有10场隔离反例，含已有draft shared仍被eager setdefault求值；原声明与peer字节保留。下一完整失败留证批次先红回归再最小隔离可选元数据，不猜默认根/不放宽输入或旧成功保全。见[record§216](record.md)，本机.tmp/audit129不随clone。
+- Issue：[176](https://github.com/DreamSoul-AI/RPipe/issues/176)。坏Study声明/共享映射使Runner补可选shared路径而放弃可写failed结果；原生36项先红24失败/12有效控制，3743b59仅隔离可选元数据，原异常/已知路径/旧成功保全/严格输入不变。相邻155、core2015+1既有skip、CPU Flow390本机通过，36新全执行。待B129+B130完整主题最终head及实际dev全部CI，见[record§217–218](record.md)。
+
+### B-130：launcher失效化被共享布局初始化阻断（已红，未修）
+
+- Issue：[177](https://github.com/DreamSoul-AI/RPipe/issues/177)。_fail_result通过完整artifact_layout重读坏声明，旧success未失效、公开launch在子进程前中止；29项红19失败/10控制，包含真实result发布错误不能被secondary声明错误替换。计划仅复用原validated Run路径交write_result，不改重试/依赖/布局或吞真实写错误，与B129同主题统一修。原REPRO/ZIP/红在.tmp/audit130不随clone，见[record§218](record.md)。
 
 B124–B128/#170–#173/#175已随[PR174](https://github.com/DreamSoul-AI/RPipe/pull/174)最终head与实际dev9d78fb4全部实际CI验收关闭，已清本地/远程主题分支；原Windows失败与回归证据留[record§209–216](record.md)。
 
