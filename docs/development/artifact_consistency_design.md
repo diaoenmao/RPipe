@@ -334,3 +334,6 @@ Issue148后dadb558先提交12项正式回归5 failed/7有效控制passed、0erro
 严格CLI：status/logs/report/compare四个既有错误出口只补已知RecursionError，仍拒绝坏权威index/process/result、返回2并输出原诊断，不把strict loader降级为默认数据，不写旧NUMBERS/compare结果。可选_print_launch_counts则在其既有best-effort元组补同一解析错误，保留语法失败不输出、有效计数照常输出。非递归RuntimeError程序错误仍传播。仅改既有aggregate.py与cli.py，不加通用helper/框架/模块/依赖、schema或路径，不修改checkpoint/RNG恢复、Study科学审计或JSON限额。
 
 44主回归覆盖6解码/缺失/有效结果、stat/read的permission/IO/disappeared/编程错误、strict公共loader、实际process partial/complete、四CLI的深层/语法/非object、正常输出和编程错误；补4计数显示深层/语法/正常/程序错。全部用合成临时输入，不跑data/model/algorithm或正式Study；compare正常控制仅CPU序列化空checkpoint字典。随后可选读取及strict readout相邻、core/CPU Flow、最终head与实际dev全部实际CI分别验收。原探针/源码ZIP/hash、44红与4补红在.tmp/audit111不随clone；不删除原失败/校验拒绝。
+
+
+本机实施与验收：00f3ddf仅修改上述两个现有文件，9行增加/8行删除；48新节点全部执行/通过，core1834 passed/1既有平台skip，CPU Flow247 passed。其他aggregate函数原源码及CLI五个异常元组之外AST均保持。§174清单中的两个待修项已本地实施，最终head/实际dev CI仍待统一里程碑PR验收；不是待设计批准。详record§175，原红/绿/hash在.tmp/audit111不随clone。

@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
 > Version 1.4; updated 2026-10-16. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `9a7af374ee6b1354c1c9aea37858059c03c8f329`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `afa3a639d85450c24a37244ed92b1182a14228f3`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -585,3 +585,10 @@ PR147 passed all actual final-head CI and merged into dev9a7af37; actual-dev acc
 
 
 PR147 final head and actual dev passed all actual CI; Issue146 closed and its local/remote branch was deleted normally. B110 final checks executed all12 new nodes (core4/Flow8), adjacent204, core1818 passed/1 existing platform skip, CPU Flow215 passed. Final-head/actual-dev CI remain pending. Freeze classification preservation does not execute a formal Study, relax scientific gates or change JSON limits; see record §172.
+
+
+## 2026-10-16 engineering update: consolidated read-boundary milestone
+
+PR149 passed all actual final-head and merged-dev CI jobs; Issue148 is closed. The five-PR cleanup completed with baseline149. B111/#150 and B112/#151 share one milestone branch for optional peer-result reads and strict CLI parse diagnostics. The 20-entry inventory distinguishes source review, existing contracts and executed evidence; checkpoint/scientific evidence remains strict. All48 new nodes executed and passed; core1834 passed with1 existing platform skip, CPU Flow247 passed. Final-head and actual-dev CI await one consolidated PR. See[record§173–175](../development/record.md); raw.tmp evidence is not included in clones.
+
+These are engineering contract results, not new scientific experiments or complete Study numerical revalidation on current dev. ChapterIX literature gaps, experiment order, actual precision/provenance, new versions and existing numerical gates remain unchanged. No GPU, timing study, training or download was performed. Next accept both CI sides of this milestone, then continue reproducible correctness checks in the three authorized classes; scientific execution still follows the existing plan and resource authorization.

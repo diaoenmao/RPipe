@@ -1,7 +1,7 @@
-> 当前：PR147最终head/实际dev全CI验收，Issue146关闭、主题本地/remote已清；基线139后累计4。
-> 最新：B110/Issue148深JSON在outer/native prepare零构建仍覆盖旧成功；12正式节点5红/7有效控制。
-> 修复：e99691d后12新节点/相邻204/core1818+1既有skip/Flow215绿；strict loader/schema/限额保持。
-> 下一步：B110同主题PR→dev，分别验最终head与实际devCI后关148/清分支；目标active，见§171–172。
+> 当前：PR149最终head/实际dev全CI验收，Issue148关闭；五批清理完成，基线149累计0。
+> 最新：B111/#150与B112/#151集中修复；48新回归全绿，读取边界20项清单见§174。
+> 验证：core1834 passed/1既有平台skip，CPU Flow247 passed；全部48新节点实际执行，见§175。
+> 下一步：同一完整里程碑统一PR→dev，分别验最终head和实际dev CI；目标active，无代码阻塞。
 > 保护：无GPU/测速/正式Study、main/tag或产物布局变更；以下旧状态保留。
 
 > 当前：PR135实际dev已全CI验收、Issue134关闭，工作分支本地/remote普通删。
@@ -3177,3 +3177,14 @@ PR149最终head0c37aada60aab6dc9cb253488766ff012b310650的Branch38889723895 / Pa
 | historical archive/source exports / source manifest | 原字节、固定Git对象与恢复合同，非optional展示数据 | 仅源审；不加载历史代码或改归档/正式产物 |
 
 同主题B111/#150与B112/#151已先开Issue，8062f71先提交44正式回归12 failed/32有效控制passed；c79b17b补4计数回归1 failed/3有效控制passed，均0error/skip，两套原红分别保留，不冒充单次48红。新18:53频率规则已同步cicd：本地主题节点照常留存，两个根因、清单、验证与文档在一个分支积累到完整里程碑后再统一PR，不立即推单行文档/拆PR。生产尚未修改，按已实施读取合同先记设计再最小修复；正常聚合公式、指标转换、计数与科学门不动。
+
+
+## 175. B111/#150 与 B112/#151 集中里程碑本机验收（2026-10-16）
+
+§174保留设计时快照，其中“待修/生产尚未修改”表示当时状态；现已按bfc851b设计实施00f3ddf：仅aggregate.py原读取try纳入is_file并补CorruptArtifactError/RecursionError，cli.py五个原异常元组补RecursionError，生产共9行增加/8行删除。可选peer结果不可用时仍沿原缺失策略，n/n_planned/complete和所有聚合公式不变；四strict CLI仍诊断并返回2，可选launch计数仍best-effort。strict公共loader、checkpoint恢复/诊断、科学门与任意RuntimeError传播保持。
+
+正式红分两次保留：8062f71的44项12 failed/32控制passed；c79b17b的4项1 failed/3控制passed，均0error/skip。修复后48新节点全部执行/通过；core1834 passed、1项既有Windows POSIX模式skip、0failure/error，CPU Flow247 passed、0failure/error/skip。新增节点实际分配core16、Flow32，无新节点跳过。SOURCE_CHECKED验证其他aggregate函数原源码相同，CLI除五个异常元组外AST相同；未改变数值算法或正常输出路径。LOCAL_CHECKED保留两套红与三套绿的XML/hash及节点清单。
+
+§174共20项读取边界已逐项标注源审/既有合同与本轮实测；本批两个已确认缺陷均已本地修复，其余未发现新可复现反例，未把源审当成全部故障矩阵实测。原始探针、无效/失败证据、源码ZIP/hash和验证输出在.tmp/audit111，不随clone；正式回归与本记录随Git提供。无正式Study/GPU/测速、布局/schema、数据/Run/provenance改写；本机通过不代替最终head与实际dev全部实际CI。
+
+按18:53规则，两个Issue、完整清单、周期清理和验证文档在唯一codex/optional-read-boundaries分支形成一个完整里程碑，统一推送/PR，不拆纯文档PR。Issue150/151保持open到双侧CI验收；PR149和五批清理已完成，当前清理基线149累计0，见§173。
