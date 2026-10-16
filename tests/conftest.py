@@ -255,3 +255,44 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     lines.append('数值测量完成记 `measured`，质量判定为 null。通过率的分母不含 skipped 与 measured。')
     lines.append('')
     (out_dir / 'report.md').write_text('\n'.join(lines), encoding='utf-8')
+
+
+@pytest.fixture
+def stream_close_fault(monkeypatch):
+    def inject(select, primary, secondary, *, phase='write'):
+        original = Path.open
+        handles, calls = [], []
+        class Stream:
+            def __init__(self, raw):
+                self.raw = raw
+            def __getattr__(self, name):
+                return getattr(self.raw, name)
+            def __enter__(self):
+                return self
+            def __exit__(self, *_args):
+                self.close()
+            def write(self, value):
+                calls.append('write')
+                if phase == 'write' and primary is not None:
+                    self.raw.write(value[:3])
+                    self.raw.flush()
+                    raise primary
+                return self.raw.write(value)
+            def flush(self):
+                calls.append('flush')
+                self.raw.flush()
+                if phase == 'flush' and primary is not None:
+                    raise primary
+            def close(self):
+                calls.append('close')
+                self.raw.close()
+                raise secondary
+        def opening(path, mode='r', *args, **kwargs):
+            raw = original(path, mode, *args, **kwargs)
+            if select(path, mode):
+                handles.append(raw)
+                return Stream(raw)
+            return raw
+        monkeypatch.setattr(Path, 'open', opening)
+        return handles, calls
+    return inject

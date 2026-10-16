@@ -122,3 +122,24 @@ def test_logger_constructor_does_not_reopen_existing_evidence(tmp_path, monkeypa
         context.setattr(Path, 'open', no_reopen)
         Logger(tmp_path)
     assert target.read_bytes() == b'existing diagnostic bytes\n'
+
+
+@pytest.mark.parametrize('phase', ['write', 'flush'])
+@pytest.mark.parametrize('outcome', ['error', 'cancel', 'normal', 'programming'])
+def test_logger_stream_close_preserves_write_or_flush_failure(tmp_path, stream_close_fault, phase, outcome):
+    import errno
+    logger = Logger(tmp_path)
+    logger.path.write_bytes(b'old log evidence\n')
+    peer = tmp_path / 'peer.log'
+    peer.write_bytes(b'peer evidence')
+    primary = KeyboardInterrupt('cancel log') if outcome == 'cancel' else None if outcome == 'normal' else OSError(errno.ENOSPC, 'log IO')
+    secondary = RuntimeError('unexpected close error') if outcome == 'programming' else OSError(errno.EIO, 'close IO')
+    expected = secondary if outcome in ('normal', 'programming') else primary
+    handles, calls = stream_close_fault(lambda path, mode: path == logger.path and mode == 'a', primary, secondary, phase=phase)
+    with pytest.raises(type(expected)) as caught:
+        logger.info('new log event')
+    assert caught.value is expected
+    assert len(handles) == 1 and handles[0].closed and calls.count('close') == 1
+    assert logger.path.read_bytes().startswith(b'old log evidence\n')
+    assert peer.read_bytes() == b'peer evidence'
+    assert calls[0] == 'write' and (phase != 'flush' or 'flush' in calls)
