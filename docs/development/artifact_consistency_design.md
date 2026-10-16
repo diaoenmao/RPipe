@@ -612,3 +612,14 @@ PR181实际验收状态（2026-10-17）：B131–B132已正常合dev593385f，�
 
 
 B133–B134本机已实施（2026-10-17）：6349765按本节统一边界完成，230相邻/core2137 passed+1既有skip/Flow424 passed，新59全执行；POSIX实体分支及双侧实际CI待PR，不提前验收。详record§227，原始坏缓存与重复派发证据保留。方案已实施，不待设计批准。
+
+
+### B135 / #185：异常 wait 分组保全本次已启动子进程的收尾（2026-10-17，实施方案）
+
+PR184已正常合dev28f3dde，实际devCI尚待；本项在其后唯一未合codex/launch-failure-ownership本地推进，不追加到已合PR。当前_run_groups先启动整组再等待：后续spawn、输出、env、失效写入或wait/退出诊断抛错时，已启动peer不再wait。真实临时CPU子进程只sleep2秒，第二spawn注入OSError后launcher已返回异常而child仍存活，探针随后等其自然退出0；不声称实际研究损坏。六失败入口替身反例同根因，合为一B，不另拆Issue/PR。
+
+先Issue185，再f9ce20d红27项25失败/2正常批次控制通过（26unit+1原生CLI integration），0error/skip。首次RED与加强secondary-wait分支的RED2均留存，未改生产代码。首gh search参数被CLI错误解析，保留失败，再用71条全状态Issue清单去重成功；不是库或CI失败。证据.tmp/audit135不随clone，便携回归已提交。
+
+复用_run_groups原有procs列表与等待循环：同组启动/等待放入同一try；记录已成功wait数量（在退出诊断前递增），异常时只对尚未成功wait的本次owned handles依次尝试wait，再原样raise最初BaseException。secondary wait异常不遮蔽primary且仍尝试其余peer；已成功wait不重复，正常路径与codes/配对/重试/波次顺序不变。取消也不遗弃已知owned child；等待自然退出，不kill/suspend任何进程，不增全局锁/进程管理框架/timeout配置或磁盘产物。
+
+若OS wait本身持续不可用，仅能保证尝试所有已知句柄，不能声称子进程已终结；最初异常仍严格向上传播。本项不承诺强制取消、解决hang子进程或跨独立launch互斥。无schema/文件架构/产物布局、科学门或GPU/性能变化。按本地主题commit积累完整失败所有权里程碑，再考虑单PR→dev，遵守少量PR频率；不立即为单B另开PR，不待设计审批。

@@ -3886,3 +3886,12 @@ e86727a：#182 红39项28失败/11控制通过（含2 CLI integration）；8b99b
 拒绝覆盖缓存/脚本/Run旧结果/peer前后逐字节一致，CLI在provenance/process/dispatch前进入rebuild sentinel，合法空和完成过滤控制保持；原生Windows Owner/owner同实体拒绝，真正不同Run允许。实际POSIX不同大小写实体分支待远端CI，不能用本机Windows替代。任意junction/短名别名、跨独立launch调用互斥、真实不可用存储/大规模并发故障未扩大保证；不运行实验/训练/测速/GPU，不改科学门。
 
 完整同主题准备一个PR，不为每个Issue或几行文档拆PR。同步structure、bugs、handover与项目唯一中文/完整英译计划；文献和科学缺口/下一步实验按既有计划保留，CPU工程合同不作科学结论。182/183仍OPEN，最终head和实际dev全部实际CI后才验收关闭/清主题；新B135，目标active，无设计批准阻塞。已合PR181五PR盘点见§225，不重复清理。
+
+
+## 228. B135/#185 六类异常退出共用子进程所有权：先红与方案（2026-10-17）
+
+PR184 finalhead67c77c2全部实际CI（Branch38948310761/Package38948310834/Unit38948310816所有实际jobs/聚合success），PR_CHECKED SHA25654b374d8d16c45a68ad315fba51c61c01a712b41676cb0707b9a4f3e5d2df99d；已正常合dev28f3dde，实际devPackage38949180199等仍执行，不提前关闭182/183或删其已合主题分支。下一唯一未合codex/launch-failure-ownership从该实际dev创建，旧PR/head不追加变化。
+
+新B135/#185：真实CPU sleep子进程在第二Popen抛OSError后仍存活，随后由探针等自然退出0，无kill/实验/GPU；六类spawn/输出/env/失效写入/wait/退出诊断替身复现同根收尾遗漏。71条Issue全状态去重未发现重复；gh search参数误解析单独留证，非库失败。原始ZIP/REPRO/ADJACENT_REPRO与两红XML/log在.tmp/audit135，仅本机不随clone。
+
+f9ce20d先红27项25失败/2控制通过，26unit+1原生CLI integration全执行、0error/skip；初RED保留，RED2加强secondary-wait failure情形，仍同25失败。方案已在artifact_consistency_design文末：共用原procs列表，成功wait计数，在组异常时尝试剩余本次owned handles并原样raise初始BaseException，secondary wait不能盖primary/阻止其余peer尝试；正常分组/重试/波次不动，不kill/suspend。不保证OS wait持续拒绝时已终结或解决hang，不新增全局锁/timeout/布局。下一本地最小修及验证，相关主题累积而不立即开一个bug一个PR；无审批/用户决策阻塞。新编号B136。
