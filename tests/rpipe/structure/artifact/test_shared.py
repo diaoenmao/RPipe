@@ -544,3 +544,32 @@ def test_shared_native_readonly_cleanup_keeps_original_replace_error(tmp_path, m
         assert invoke() and source.samefile(target)
         assert not list(tmp_path.rglob('*.link'))
     assert {p: (p.read_bytes(), p.stat().st_mode) for p in before} == before
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='requires native Windows extended paths')
+@pytest.mark.parametrize('extended_first', [False, True])
+@pytest.mark.parametrize('interrupted', [False, True])
+def test_cache_lock_extended_alias_reentry_keeps_thread_ownership(tmp_path, extended_first, interrupted):
+    from concurrent.futures import ThreadPoolExecutor
+
+    root = tmp_path.resolve()
+    alias = Path('\\\\?\\' + str(root))
+    assert root.samefile(alias)
+    first, second = (alias, root) if extended_first else (root, alias)
+
+    def acquire():
+        with cache_lock(root, timeout=0):
+            return 'acquired'
+
+    with ThreadPoolExecutor(max_workers=1) as worker:
+        with cache_lock(first, timeout=0):
+            if interrupted:
+                with pytest.raises(ValueError, match='inner interrupted'):
+                    with cache_lock(second, timeout=0):
+                        raise ValueError('inner interrupted')
+            else:
+                with cache_lock(second, timeout=0):
+                    pass
+            with pytest.raises(TimeoutError):
+                worker.submit(acquire).result(timeout=10)
+        assert worker.submit(acquire).result(timeout=10) == 'acquired'
