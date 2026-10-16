@@ -683,3 +683,10 @@ B122/#167、B123/#168统一PR169最终head05341f8和实际devbef7de9全部实际
 B124–B128完整里程碑已PR174正常合dev9d78fb4，最终head5dab50a和实际dev全部实际CPU/安装包矩阵及聚合成功；五Issue170–173/175已关闭。原Windows3.10空锁竞争失败仍保留，修正后本机共享相邻123/core2015 passed+1既有skip/Flow354 passed、84新全执行。已普通清理codex/correctness-review-next本地+远端，周期基线161计数3/remote45。来源与hash见record§216，临时证据不随clone。
 
 下一工程缺口B129/#176确认未修：Runner失败回写补shared路径再次解析坏声明，十场反例呈现无failed结果/旧success不变；新主题先红回归，隔离不可用的可选元数据，保持原错误/严格输入/既有成功保全和布局。尚无新GPU、性能或正式Study实验，不更新科学结论；此前研究缺口及下一步实验仍按本计划原章节执行。
+
+
+### 2026-10-17 B129–B130失败留证与共享元数据解耦（本机里程碑）
+
+基于接受dev9d78fb4，#176 Runner与#177 launcher两处failed证据被非必要共享声明/布局解析阻断，已分别先Issue/原生红/方案，再3743b59与1b6885c最小修。仅两个既有生产文件，原Result格式、严格输入/正常写入、原异常、冻结/process旧成功保全、调度依赖/重试与共享不可变输入/Run独立可变状态均保持。相邻272 passed、core2044 passed/1既有skip、CPU Flow390 passed，65新（29 unit+36 integration）全执行。独立两场红不是一场65红；详record§217–219。
+
+当前尚未推送/开本批PR，两Issue176/177保持开放，待完整主题PR及最终head/实际dev全部实际CI；原始.tmp/audit129/130不随clone。修复只使可写failed证据免受不可用可选shared元数据阻断，不保证真实不可写介质落盘，不增加CLI原前置拒绝写回或改变文件架构/产物布局。无GPU、性能或正式Study实验，科学结论/缺口/下一步实验仍按既有研究章节，不能由工程检查代替。

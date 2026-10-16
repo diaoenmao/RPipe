@@ -453,3 +453,6 @@ Run process无有效内存result时，磁盘自身result同样沿原可选回读
 
 
 状态/日志字段边界补充（B125–B127，2026-10-17本机）：activity仅在announce/status两个显示点共用单行投影，reader仍返回原mapping、不改JSON，正常行空格与缺index行为保持；native日志在已知Run目录身份后定位真实event，再用原选择集合，未知legacy回退保持。Traceback噪声只认标准头或quoted File数字line形态，普通File/Traceback首词错误保留；完全同形非结构化文本无法辨别，旧日志不重写。未改变模式/路径/数值门或产物布局，当前完整工程结果与待CI状态见[record§213](../development/record.md)。
+
+
+失败证据与共享元数据边界（B129/#176、B130/#177）：Runner失败回写保留已有paths.shared；缺键且解析不可用时省略此可选元数据，继续原failed/error及已知Run路径，不猜默认根。正常write的实际共享路径仍严格。launcher失败/失效化在原_run_result组件验证后直接写既有Run result路径，不为失败证据建立完整共享布局；旧Result body与真实发布错误保持，五个调用点/重试/依赖屏障/console/env不变。CLI原上下文前拒绝与冻结/process保全政策不扩大；不可写存储仍按原best-effort/严格writer合同。见record§219。

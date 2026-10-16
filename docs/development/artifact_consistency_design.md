@@ -563,3 +563,6 @@ PR174验收状态（2026-10-17）：B124–B128均已实施并合dev9d78fb4，�
 最小方案：_fail_result已先调用_run_result，其validate_run_directory仍原字节执行；复用该函数既有Path(study_dir)/runs/run_id/result.json表达式，直接交给原write_result，不调用不相关的完整layout建立；删仅用于此处的artifact_layout import。Result旧body/metrics/paths仅status/error更新保持，原子发布/父目录建立仍由既有writer负责。所有rerun、依赖失效化、blocked与非零退出调用点统一经过原helper，不改启动/重试/console/env/训练屏障，不猜shared根或复制输入，不吞实际write_result错误。
 
 这是失败留证与配置元数据独立的同批合同，和B129保持同一未合主题，完成完整本机与远端验收后统一PR；不改make/prepare正常共享布局创建、文件路径/schema或科学门。输入声明/peer/config/index字节保留，非法Run组件仍在_run_result前置拒绝。已有路径消费者不依赖失败失效化额外建立shared目录。
+
+
+B129–B130本机实施状态（2026-10-17）：3743b59与1b6885c已按上文最小实施，合批272相邻/core2044 passed+1既有skip/CPU Flow390 passed，新65全执行，原独立红和源码字节证明保留；两Issue176/177仍OPEN，等待完整主题PR及最终head/实际dev所有实际CI。上文方案已实施，不再等待设计批准；真实存储不可写仍遵循原best-effort/严格writer边界，不承诺不可写介质必有结果。见record§219。
