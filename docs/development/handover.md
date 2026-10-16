@@ -1,5 +1,14 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 PR169双侧验收与清理；下一完整里程碑复查
+
+B122/#167、B123/#168统一PR169，最终head05341f8的Branch38923564342/Package38923564221/Unit38923564299和实际devbef7de9的Package38924513921/Unit38924513792全部实际矩阵/聚合success；两Issue各一次验收评论后关闭。本机298相邻/core1988+1既有skip/CPU Flow297通过，32新全执行，原始.tmp/audit122/123不随clone，详record§208。
+
+已合codex/correctness-next-milestone本地+remote普通删除，tip05341f8保全于dev；main/local dev/origin main、_staging_from_DEM和数据结果保持，remote累计44。周期基线161，已接受PR165/169计数2。实际开放Issue快照为空，唯一活动未合codex/correctness-review-next从实际dev建立，下一编号B124；目标active，无决策阻塞，继续三类复查，先复现再开Issue/红回归，同主题本地合批、每日少量完整PR，本收尾不单独开PR。
+
+日志限制：可读非空非LF/CR尾分隔修复；不可读尾保持原追加能力，不保证半行修复。无GPU/测速/下载/正式Study/main/tag/数据删除或文件架构/产物布局变动，不等待设计批准。
+
+
 ## 2026-10-16 B122/B123日志失败/半行恢复完整本机里程碑
 
 #167（末条日志未进Runner失败边界）与#168（半行把新error并入旧flow）同分支合批。B122先12红8失败/4控制；B123先14/16红，再补真实部分写入→Runner留证→native读取联动，20红10失败/10控制；761700f/97a1443仅原Runner末条缩进与Logger可选尾读/原append补分隔。不可读尾保持原追加能力，不承诺该限制下修复；有效日志/原字节/权限/异常优先级/布局不变，详record§204–207。

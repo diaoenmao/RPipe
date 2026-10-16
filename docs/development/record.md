@@ -1,3 +1,9 @@
+> 当前：PR169双侧全部实际CI验收，devbef7de9；#167/#168已关闭，已合主题本地/remote均清理。
+> 最新：末条Runner失败留证与半行日志独立error读回统一完成；正常日志/原字节/追加权限保持，见§206–208。
+> 验证：相邻298、core1988 passed/1既有skip、CPU Flow297 passed；32新全执行，最终head与实际dev所有矩阵/聚合成功。
+> 下一步：开放Issue快照为空，codex/correctness-review-next继续三类复查，本地主题积累、完整里程碑再PR，无决策阻塞。
+> 保护：已删codex/correctness-next-milestone本地+remote，累计remote44，基线161计数2；main/tag/GPU/数据/结果/布局不动。
+
 > 当前：B122/#167、B123/#168同主题日志失败/中断读回里程碑，本机完整检查完成，准备统一一个PR。
 > 最新：末条IO拒绝绕过留证与旧半行吞新ERROR身份均复现；先独立红回归再761700f/97a1443最小修，详§204–207。
 > 验证：相邻298 passed；core1988 passed/1既有skip、CPU Flow297 passed，32新全执行（14 unit+18 integration）/0新skip。
@@ -3552,3 +3558,23 @@ B123/#168的原生Logger/index/logs/status探针确认：中断半行和新ERROR
 SOURCE_CHECKED精确原字节比较：src只Runner末条info缩进1增1删、Logger可选尾读/原追加11增1替换，其余源码/原异常处理和持久化格式不变。原始REPRO、源码ZIP/hash、各场红/绿、XML、源码证明在.tmp/audit122/123，不随clone；portable回归/设计/记录和双语研究计划随Git提供，无科学运行或结论新增。
 
 目前167/168仍OPEN，接受dev70a8750/PR165，当前两B是同一个完整“末条失败→半行保全→独立error事件读回”里程碑，不单bug或几行文档拆PR。本机验收后统一PR，仍须新最终head/实际dev全部实际矩阵/聚合验收再关闭及清分支。清理基线161计数1、remote累计43；下一编号B124。无GPU/测速/下载/正式Study/main/tag/数据/结果/架构或产物布局变化，不等待设计审批。
+
+
+## 208. PR169日志失败/原生读回里程碑双侧验收与已合主题清理（2026-10-16）
+
+B122/#167与B123/#168统一[PR169](https://github.com/DreamSoul-AI/RPipe/pull/169)，最终head05341f85691d1ad41aa54fe4a7a70f55a96b14e6的[Branch38923564342](https://github.com/DreamSoul-AI/RPipe/actions/runs/38923564342)、[Package38923564221](https://github.com/DreamSoul-AI/RPipe/actions/runs/38923564221)、[Unit38923564299](https://github.com/DreamSoul-AI/RPipe/actions/runs/38923564299)及所有实际矩阵/聚合均success。PR_CHECKED SHA256 d5d2a52a47560e1f9303adba1a0bd714e5eee1d908c5a52e139918174ad66c4b。
+
+expected-head正常merge到实际devbef7de966a0cea0e86b1e2392222ddf8bfeff920，实际dev的[Package38924513921](https://github.com/DreamSoul-AI/RPipe/actions/runs/38924513921)、[Unit38924513792](https://github.com/DreamSoul-AI/RPipe/actions/runs/38924513792)及所有实际矩阵/聚合也success。DEV_CHECKED SHA256 905d10c06fef037b85a3a20de90b32f4818f11025246c5d4698fbd310ba3a6e7；不是仅靠PR绿色验集成。167/168各一次验收评论后关闭，不表示main/tag/发布。PR原正文保留，追加真实验收与清理事实，不重复评论。
+
+本机相邻298/core1988 passed+1既有Windows POSIX模式skip/CPU Flow297 passed，32新全部实际执行（14 unit+18 integration），0新skip。原始独立红/原Logger与已修Runner联动红、原ZIP/hash/REPRO、XML与严格checker证据均保留.tmp/audit122/123，不随clone；正式回归/设计/记录已入库。只改两个现有生产文件，原日志有效记录/权限/首错与process旧成功例外、Tracker/checkpoint/readout解析/数值门/架构/产物布局保持；不可读尾保留原追加行为，不宣称此时能够修复半行。没有GPU/测速/下载/正式Study/科学结论或数据迁移。
+
+双侧验收后核对本地/实际远端tip=05341f8且为dev祖先、工作区只保留_staging_from_DEM、一个primary worktree、无命令引用RPipe的活动Python进程；先detach实际dev，再普通删除以下已合主题：
+
+| **范围** | **删除分支** | **提交保全位置** |
+| --- | --- | --- |
+| 本地 | codex/correctness-next-milestone | devbef7de9包含tip05341f8 |
+| origin远端 | codex/correctness-next-milestone | devbef7de9包含tip05341f8 |
+
+删除后本地与远端均无此主题，main7a15c46、本地dev9324014、origin/main00e70b1原值保持；没有worktree、Run、数据、结果或provenance删除。remote累计结束44条。周期清理基线仍PR161/dev8480d79，已验收PR165/169共2/约5，本批即时主题清理完成，不重复触发全面盘点。
+
+最新实际开放Issue快照为空。唯一活动未合codex/correctness-review-next从实际dev建立，继续三类正确性复查，下一缺陷B124；先确认反例再开Issue/红回归，不为活跃制造任务。本节收尾与后续相关工作本地主题积累，随下个完整里程碑合批，不单独文档PR。20:56后PR165为加载/兼容里程碑、PR169为日志失败/读回里程碑，未按每bug拆PR；继续控制每日少量完整批次。目标active，无决策阻塞；不合main、不打tag、不force push，不动GPU任务/数据/结果与文件架构/产物布局。

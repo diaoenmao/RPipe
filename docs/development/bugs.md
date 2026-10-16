@@ -6,17 +6,7 @@
 
 ## 开放
 
-### B-122：Runner终末日志错误绕过失败留证（本机已修，待同主题里程碑CI）
-
-- Issue：[167](https://github.com/DreamSoul-AI/RPipe/issues/167)。终末stdout/file-write失败发生在run既有try之外，普通阶段无failed/残留旧成功，process缺诊断。4原始探针和12红（8失败/4正常控制）保留，4ac6883先测试、01b394f设计、761700f最小修。
-- 当前仅将原末条info纳入既有try，保持输出时机及process旧成功例外、原首错/诊断/failed写规则；Runner49、core1974 passed/1既有skip、CPU Flow291 passed，12新节点全部执行。详[record§204–205](record.md)，原始.tmp/audit122不随clone。
-- 167仍OPEN，本机检查不代替最终head/实际devCI；同一codex/correctness-next-milestone本地积累，不为单bug开PR，不改布局或科学门。
-
-### B-123：旧半行日志吞掉新ERROR的原生事件身份（本机已修，待同批CI）
-
-- Issue：[168](https://github.com/DreamSoul-AI/RPipe/issues/168)。原生Logger追加后logs把新error归到旧flow，status错误提示为'-'；原始REPRO和14/16/20节点各场红留证。
-- 97a1443只在既有_emit探查可读末字节并于原a写入中补必要分隔，保留旧字节、有效行尾、stdout/格式、append-only权限及原首错规则；不可读尾仍沿原追加，不声称此时修复半行。与B122联动32新全部执行；相邻298/core1988+1既有skip/Flow297通过，详[record§206–207](record.md)。
-- 167/168同一完整里程碑，等待最终head/实际devCI，尚未合dev或关闭Issue；不改readout解析或布局，不拆单bug PR。
+当前开放Issue快照为空。B122/#167、B123/#168已由[PR169](https://github.com/DreamSoul-AI/RPipe/pull/169)合devbef7de9，最终head/实际dev全部实际矩阵/聚合成功，已验收关闭并清理已合主题本地/remote；原始独立红/联动红及半行/首错证据保留，详[record§204–208](record.md)。不可读日志尾仍沿原追加行为，不保证该限制下半行修复。下一编号B124，继续三类复查；未确认的假设不列为缺陷。
 
 B119/#163、B120/#164、B121/#166已PR165双侧全实际CI验收并关闭，已合主题本地+remote清理，详[record§203](record.md)。
 
