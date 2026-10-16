@@ -565,3 +565,19 @@ def test_failure_invalidation_does_not_require_shared_layout(tmp_path, monkeypat
     assert {p: p.read_bytes() for p in before} == before
     if declaration == 'missing':
         assert not source.exists()
+
+
+@pytest.mark.parametrize('damaged_shared', [False, True])
+def test_failure_invalidation_keeps_result_publish_error_strict(tmp_path, monkeypatch, damaged_shared):
+    layout = artifact_layout(tmp_path, 'target')
+    write_result(layout.result_path, {'status': 'succeeded', 'control': {}, 'metrics': {}, 'paths': {}})
+    before = layout.result_path.read_bytes()
+    (tmp_path / 'study.yaml').write_text('shared: []\n' if damaged_shared else '{}\n', encoding='utf-8')
+    primary = PermissionError('result publication refused')
+    def refuse(*args, **kwargs):
+        raise primary
+    monkeypatch.setattr(schedule, 'write_result', refuse)
+    with pytest.raises(PermissionError) as caught:
+        schedule._fail_result(tmp_path, 'target', 'primary run failure')
+    assert caught.value is primary
+    assert layout.result_path.read_bytes() == before
