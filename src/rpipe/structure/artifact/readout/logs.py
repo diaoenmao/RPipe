@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 
 from rpipe.structure.artifact.index import load_index
@@ -33,7 +34,16 @@ def event_lines(study_dir: Path | str) -> list[str]:
                 ):
                     continue
                 stamp = _STAMP.match(line)
-                rows.append((stamp.group(1) if stamp else '9999', line))
+                key = stamp.group(1) if stamp else '9999'
+                # shortcut: keep sub-microsecond legacy text order; revisit if Logger emits that precision.
+                if stamp and not re.search(r'[.,]\d{7}', key):
+                    try:
+                        instant = datetime.fromisoformat(key.replace('Z', '+00:00'))
+                        if instant.tzinfo is not None:
+                            key = instant.astimezone(timezone.utc).isoformat(timespec='microseconds')
+                    except (ValueError, OverflowError):
+                        pass
+                rows.append((key, line))
     rows.sort(key=lambda item: item[0])
     return [line for _, line in rows]
 
