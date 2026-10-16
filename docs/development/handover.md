@@ -1,3 +1,7 @@
+## 2026-10-17 PR199跨Python CI修正中；B144/#200已确认排队（最新）
+
+PR199原3639ae0的Branch/Package全成功、Unit38980543735两个3.10实际pickle失败、两3.13成功，完整日志保留。先77da8d5设计，再69ec7e4显式proxy自身pickle state，5978164限定原生BytesIO支持协议2–5（0/1夹具拒绝保留），107针对性通过。新core2384passed+1既有skip/Flow519passed、86新SDK全执行，两个句柄已终结，尚未push新head/合dev/关198；继续同一个199，不另PR。§259记录原因/官方合同/边界。200另确认五库reader close遮首错及optional吞取消，20探针/全80Issue去重保全，仅排下一类别，199验收清理后再从actualdev先红后修。下一B145；无设计等待/GPU/性能/真实下载/Study/main/tag/数据删除，用户暂存保留。
+
 ## 2026-10-17 B143/#198完整修复本机验证中（最新）
 
 唯一codex/domestic-sdk-transfers，生产28b107f已commit；此前模型/数据根/spawn阶段补全媒体decoder/延迟file、后台lease、实际客户端继承与ModelScope显式CN。红0582ab5/4837cc6/52b3f72/a43405b/fd90f37均保留；104针对性+24旧HF控制通过，core2384passed+1既有skip。Flow516passed/83新SDK全执行、16027终结0，CI/使用文档变更随本里程碑提交，下一§258完整本机checker→一个PR双侧实际CI，不提前关198/清分支。原始失败夹具与协议替身限制详§258；真实codec/镜像服务未验。63582终结0，protected refs/用户暂存保持，下一B144。无设计/用户等待、无GPU/下载/性能/Study/main/tag或数据删除。

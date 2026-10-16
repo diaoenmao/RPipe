@@ -1,8 +1,9 @@
-> 当前（2026-10-17）：B143/#198国内SDK完整类别修复已本地提交28b107f，唯一domestic-sdk-transfers；尚未PR。
-> 最新：真实媒体延迟读/后台scope/配置客户端及还原已统一；104针对性与HF0.34.4兼容24项通过（§258、GREEN_COMPLETE_TARGET3/GREEN_SDK034_FINAL）。
-> 验证：最终core2384passed+1既有skip，CPU Flow516passed/83新SDK全执行；旧阶段466Flow不当最终验收，CI补SDK依赖确保实际执行。
-> 下一：完成最终本机checker，统一PR后分别验收final-head/actual-dev全部CI，再关闭198与清主题；不拆小PR。
-> 状态：goal active、无审批阻塞；零真实模型/数据下载、原生codec解码、GPU/测速/Study/main/tag或数据删除；用户暂存保留。
+> 当前（2026-10-17）：PR199首head3639ae0被实际Python3.10矩阵拒绝，未合dev/未关198；仍同分支补全。
+> 最新：Linux/Windows3.10均pickle state错误（Unit38980543735），3.13通过；69ec7e4显式proxy自身状态，107针对性通过（§259）。
+> 检查：新源码core2384+1既有skip/CPU Flow519passed，86新SDK全执行，原2384+1/516为上版证据；原失败与协议0/1夹具拒绝均保留。
+> 下一：最终本机后更新同一PR，双侧全部实际CI再验收清理；B144/#200五读取边界已确认排下一批，不污染本PR。
+> 状态：goal active、无审批阻塞；未真实下载/原生codec/GPU/测速/Study/main/tag或数据删除，用户暂存保留。
+
 
 > 当前（2026-10-17）：B143/#198 在同一 domestic-sdk-transfers 分支完成模型 SDK、eager/streaming 根读取及 spawn 下载任务阶段修复；尚未 PR。
 > 验证：5452322 阶段 core 2384 passed+1 既有 skip / CPU Flow 466 passed，33 个新 SDK 节点全执行；HF 0.34.4 模型控制另 17 passed。
@@ -4291,3 +4292,17 @@ f174b8c 补 eager / streaming 根请求逃逸，2 failed；24b4dba 方案后 238
 
 
 B143完整本机验收补记：最终源码28b107f的CORE_FINAL2384passed+1既有skip、FLOW_FINAL516passed/0skip，GREEN_COMPLETE_TARGET3为104passed（21既有origin unit+83新SDK integration）；83新节点在完整Flow XML逐项同集核对、无漏收/skip。HF0.34.4隔离compat24passed。FINAL_LOCAL_CHECKED.json保存源码/测试/XML SHA256、节点和未验证边界；.tmp证据不随clone。63582/16027均terminal0，无活句柄。下一仅统一PR/双侧实际CI验收，当前不能声称已合/198已关闭。
+
+
+## 259. 2026-10-17：PR199跨Python真实CI拒绝、最小修正与下一类读退出反例
+
+PR199首finalhead3639ae09cebd1406f6320169bcdab400bc2ab436：Branch38980543681和Package38980543683所有实际job成功；Unit38980543735的Linux/Windows3.13成功，Linux3.10 job117240125624、Windows3.10 job117240125651均在已提交的reader pickle回归抛UnpicklingError（state is not a dictionary），聚合failure。实际失败完整日志/CI_OLD_FINAL_STATUS保留.tmp/audit143，不rerun旧head掩盖。官方pickle3.10/3.11合同与状态委托原因见设计B143文末；先77da8d5记录方案，再69ec7e4显式返回代理自己的__dict__，保持底层stream的原序列化/资源生命周期。没有本机3.10解释器，用实际远端3.10矩阵验收，不拿本机3.13替代。
+
+扩协议0–5时，本地初候选2失败/107通过；原生BytesIO同样拒绝0/1，是夹具要求超出底层协议，不当库缺陷。5978164改为原生支持的2–5，GREEN_PY310_FIX2107passed/0fail/error/skip，新增控制未绕开原来默认协议失败点。完整core2384passed+1既有skip/Flow519passed、86新SDK全执行；旧28b107f的最终本机证据有效但只是上一源版本，当前不得提前声称最终全绿。此修正仍PR199同完整SDK类别，不另小PR。
+
+冻结head等待期间继续三类只读复查，全src显式with-open清单发现下一B144/#200：origin._md5、shared._digest、index.load_index三strict reader的read error/KeyboardInterrupt会被owned close OSError替换；aggregate JSONL和Logger尾部optional reader会因此吞掉KeyboardInterrupt、正常返回（Logger还追加新记录）。16+4=20真实临时文件/实际公共入口探针留.tmp/audit144/REPRO与LOGGER_REPRO/sourceZIP，均owned close一次、输入/peer字节保持（Logger旧前缀保持，正常追加合同单独检查）；I/O错误是注入，不声称实盘故障。optional普通read/close IO回退本来有效，不能把它修成strict；下一类只保首错/取消且正常strict close失败和未知程序错保持。
+
+检查80全状态Issue并逐读144/142/196/116/120范围，200独立登记库显式reader，旧writer/lock/手动script问题不重开。200正文保原文一次补第五Logger边界、非重复评论。仍等199最终双侧验收清理后才从actualdev开一个下一类别分支、先提交红回归和方案；不为后续候选修改已冻结PR的生产范围。当前open198/200，下一B145；原用户暂存/未合分支/数据保留，无GPU/性能/科学Study/真实下载/main/tag动作。
+
+
+B143跨版本修正后完整本机检查：5978164（生产69ec7e4）CORE_PICKLE_FINAL2384passed+1既有skip/0fail/error、FLOW_PICKLE_FINAL519passed/0skip；86新SDK节点与107针对性XML同集核验全执行。FINAL_LOCAL_PICKLE_CHECKED保源码/测试/XML hash与限制，旧FINAL_LOCAL_CHECKED/原失败CI不覆盖；65922/86008均terminal0。没有本机3.10，不将此证明跨版本，下一更新同一PR199后必须四实际CPU矩阵/包/聚合全成功，actualdev另验收。86中四pickle协议均原生BytesIO支持，0/1原生拒绝证据单独保留。
