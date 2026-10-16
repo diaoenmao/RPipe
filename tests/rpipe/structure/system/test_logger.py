@@ -1,4 +1,7 @@
 import re
+import contextlib
+import io
+import os
 
 import pytest
 
@@ -238,3 +241,150 @@ def test_logger_formats_message_object_only_once(tmp_path, capsys):
     logger.info(message)
     assert message.calls == 1
     assert logger.path.read_text(encoding='utf-8') == capsys.readouterr().out
+
+
+@contextlib.contextmanager
+def _native_logger_stdout(kind):
+    reader, writer = os.pipe()
+    raw = os.fdopen(writer, 'wb', buffering=0)
+    stream = io.TextIOWrapper(raw, encoding='utf-8', write_through=True, newline='\n')
+    errors, captured = [], []
+    class Sink:
+        def write(self, text):
+            try:
+                return stream.write(text)
+            except (OSError, ValueError) as error:
+                errors.append(error)
+                raise
+        def flush(self):
+            try:
+                return stream.flush()
+            except (OSError, ValueError) as error:
+                errors.append(error)
+                raise
+    try:
+        if kind == 'pipe':
+            os.close(reader)
+            reader = None
+        elif kind == 'closed':
+            stream.close()
+        yield Sink(), errors, captured
+    finally:
+        try:
+            stream.close()
+        except (OSError, ValueError):
+            raw.close()
+        if reader is not None:
+            try:
+                captured.append(os.read(reader, 65536).decode('utf-8'))
+            finally:
+                os.close(reader)
+
+
+def _emit_sink_probe(logger, kind):
+    if kind == 'exception':
+        def inner():
+            raise RuntimeError('original diagnostic cause')
+        try:
+            inner()
+        except RuntimeError as error:
+            logger.exception('diagnostic context', error)
+        return ['diagnostic context', 'Traceback (most recent call last):', 'RuntimeError: original diagnostic cause']
+    if kind == 'report':
+        logger.report(None, 'train', {'epoch': 1, 'note': 'first report\nlast report'})
+        return ['first report', 'last report']
+    text = 'first record\nlast record' if kind == 'multiline' else 'single diagnostic'
+    method = logger.info if kind in ('info', 'multiline') else getattr(logger, kind)
+    method(text)
+    return ['first record', 'last record'] if kind == 'multiline' else ['single diagnostic']
+
+
+@pytest.mark.parametrize('kind', ['info', 'multiline', 'warning', 'error', 'exception', 'report'])
+@pytest.mark.parametrize('sink_kind', ['open', 'pipe', 'closed'])
+def test_logger_native_stdout_refusal_still_persists_complete_records(tmp_path, kind, sink_kind):
+    logger = Logger(tmp_path / 'runs/owner/assets')
+    prefix = b'preserved old log\n'
+    logger.path.write_bytes(prefix)
+    peer = tmp_path / 'peer.bin'
+    peer.write_bytes(b'peer evidence')
+    expected = {'exception': ['diagnostic context', 'Traceback (most recent call last):', 'RuntimeError: original diagnostic cause'],
+                'multiline': ['first record', 'last record'], 'report': ['first report', 'last report']}.get(kind, ['single diagnostic'])
+    with _native_logger_stdout(sink_kind) as (sink, errors, captured):
+        with contextlib.redirect_stdout(sink):
+            if sink_kind == 'open':
+                _emit_sink_probe(logger, kind)
+            else:
+                with pytest.raises((OSError, ValueError)) as caught:
+                    _emit_sink_probe(logger, kind)
+                assert caught.value is errors[0]
+    text = logger.path.read_text(encoding='utf-8')
+    assert all(value in text for value in expected)
+    assert logger.path.read_bytes().startswith(prefix)
+    assert peer.read_bytes() == b'peer evidence'
+    if sink_kind == 'open':
+        assert not errors
+        assert logger.path.read_bytes() == prefix + captured[0].replace('\n', os.linesep).encode('utf-8')
+
+
+@pytest.mark.parametrize('kind', ['multiline', 'exception'])
+@pytest.mark.parametrize('phase', ['open', 'write', 'flush', 'close'])
+def test_logger_disk_refusal_still_emits_complete_stdout(tmp_path, monkeypatch, stream_close_fault, kind, phase):
+    logger = Logger(tmp_path / 'runs/owner/assets')
+    logger.path.write_bytes(b'preserved old log\n')
+    peer = tmp_path / 'peer.bin'
+    peer.write_bytes(b'peer evidence')
+    primary = PermissionError('disk sink refused')
+    handles = []
+    if phase == 'open':
+        native = Path.open
+        def denied(path, mode='r', *args, **kwargs):
+            if path == logger.path and mode == 'a':
+                raise primary
+            return native(path, mode, *args, **kwargs)
+        monkeypatch.setattr(Path, 'open', denied)
+    else:
+        handles, _ = stream_close_fault(lambda path, mode: path == logger.path and mode == 'a',
+                                        None if phase == 'close' else primary,
+                                        primary if phase == 'close' else None,
+                                        phase='write' if phase == 'close' else phase)
+    sink = io.StringIO()
+    with contextlib.redirect_stdout(sink):
+        with pytest.raises(PermissionError) as caught:
+            _emit_sink_probe(logger, kind)
+    assert caught.value is primary
+    expected = ['first record', 'last record'] if kind == 'multiline' else ['diagnostic context', 'Traceback (most recent call last):', 'RuntimeError: original diagnostic cause']
+    assert all(value in sink.getvalue() for value in expected)
+    assert all(handle.closed for handle in handles)
+    assert logger.path.read_bytes().startswith(b'preserved old log\n')
+    assert peer.read_bytes() == b'peer evidence'
+
+
+def test_logger_dual_refusal_preserves_first_io_and_closes_owned_files(tmp_path, stream_close_fault):
+    logger = Logger(tmp_path)
+    logger.path.write_bytes(b'old log\n')
+    disk_error = PermissionError('disk second')
+    handles, calls = stream_close_fault(lambda path, mode: path == logger.path and mode == 'a', disk_error, None)
+    with _native_logger_stdout('pipe') as (sink, errors, _):
+        with contextlib.redirect_stdout(sink):
+            with pytest.raises(OSError) as caught:
+                _emit_sink_probe(logger, 'multiline')
+        assert caught.value is errors[0]
+    assert len(handles) == 2 and all(handle.closed for handle in handles)
+    assert calls.count('close') == 2
+    assert logger.path.read_bytes().startswith(b'old log\n')
+
+
+def test_logger_non_io_stdout_bug_remains_strict(tmp_path):
+    logger = Logger(tmp_path)
+    before = logger.path.read_bytes()
+    error = RuntimeError('unexpected stdout implementation bug')
+    class Broken:
+        def write(self, value):
+            raise error
+        def flush(self):
+            pass
+    with contextlib.redirect_stdout(Broken()):
+        with pytest.raises(RuntimeError) as caught:
+            _emit_sink_probe(logger, 'multiline')
+    assert caught.value is error
+    assert logger.path.read_bytes() == before
