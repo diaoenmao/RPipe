@@ -12,6 +12,12 @@
 - 当前仅将原末条info纳入既有try，保持输出时机及process旧成功例外、原首错/诊断/failed写规则；Runner49、core1974 passed/1既有skip、CPU Flow291 passed，12新节点全部执行。详[record§204–205](record.md)，原始.tmp/audit122不随clone。
 - 167仍OPEN，本机检查不代替最终head/实际devCI；同一codex/correctness-next-milestone本地积累，不为单bug开PR，不改布局或科学门。
 
+### B-123：旧半行日志吞掉新ERROR的原生事件身份（本机已修，待同批CI）
+
+- Issue：[168](https://github.com/DreamSoul-AI/RPipe/issues/168)。原生Logger追加后logs把新error归到旧flow，status错误提示为'-'；原始REPRO和14/16/20节点各场红留证。
+- 97a1443只在既有_emit探查可读末字节并于原a写入中补必要分隔，保留旧字节、有效行尾、stdout/格式、append-only权限及原首错规则；不可读尾仍沿原追加，不声称此时修复半行。与B122联动32新全部执行；相邻298/core1988+1既有skip/Flow297通过，详[record§206–207](record.md)。
+- 167/168同一完整里程碑，等待最终head/实际devCI，尚未合dev或关闭Issue；不改readout解析或布局，不拆单bug PR。
+
 B119/#163、B120/#164、B121/#166已PR165双侧全实际CI验收并关闭，已合主题本地+remote清理，详[record§203](record.md)。
 
 B117/#160、B118/#162已PR161双侧全部实际CI验收关闭且主题本地/remote清理，第5批周期盘点见[record§193](record.md)。

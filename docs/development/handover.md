@@ -1,5 +1,12 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 B122/B123日志失败/半行恢复完整本机里程碑
+
+#167（末条日志未进Runner失败边界）与#168（半行把新error并入旧flow）同分支合批。B122先12红8失败/4控制；B123先14/16红，再补真实部分写入→Runner留证→native读取联动，20红10失败/10控制；761700f/97a1443仅原Runner末条缩进与Logger可选尾读/原append补分隔。不可读尾保持原追加能力，不承诺该限制下修复；有效日志/原字节/权限/异常优先级/布局不变，详record§204–207。
+
+当前298相邻/core1988 passed+1既有skip/CPU Flow297 passed，32新全执行，进程57962/10745终结exit0，证据.tmp/audit122/123不随clone。准备同主题一个完整里程碑PR，167/168仍OPEN；最终head/实际devCI未验收。接受dev70a8750/PR165，清理基线161计数1、remote43；下一编号B124。不合main/tag，不跑GPU/测速/Study，不删数据/结果，不改文件架构与产物布局。
+
+
 ## 2026-10-16 B122/#167本机完成；下一失败留证里程碑积累
 
 fetch及开放Issue空快照后发现末条Runner日志未纳入既有失败处理；#167→4ac6883红12项8失败/4控制→01b394f设计→761700f只缩进原语句。_preserve_success/原except/日志时机及全部其他源码原字节保持，见record§204–205。Runner49/core1974 passed+1既有skip/CPU Flow291 passed，12新全执行；52264/58084终结exit0，原始证据.tmp/audit122不随clone。

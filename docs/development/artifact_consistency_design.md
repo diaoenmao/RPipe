@@ -477,3 +477,6 @@ load_recipe在上述上下文内执行spec前，将自己的既有模块名临�
 尾读仅用于可读尾行修复：OSError时继续原append行为，不能因为新增read要求阻断原来可写但不可读的日志。此时无法保证中断尾行修复，明确限制与回归保护，不把可选探查失败当作写入成功证据；原write/flush/close失败依然严格。保留constructor不重开既有证据、peer、合法记录stdout/文件对应、其他调用方及Tracker恢复协议。不是新日志框架，不承诺任意多写者同Run事务。
 
 与B122/#167同一codex/correctness-next-milestone本地主题积累，先红/设计/最小生产修复，再合批当前core/CPU Flow及最终head/实际devCI；不单独开一个bug PR，不等审批、不改文件架构/产物布局或运行GPU/测速。
+
+
+B123补强与本机实施（2026-10-16）：3ad90d3在原Logger/已有B122 Runner上先补四项真实部分写入→Runner→原生readout联动，完整20红10失败/10控制，再97a1443实施原_emit可读尾行分隔。当前298相邻/core1988 passed+1既有skip/CPU Flow297 passed，32新全执行；仅两个现有生产文件最小改动，其他源码/格式/append权限及首错规则原字节保持。准备与B122统一完整里程碑PR；167/168仍OPEN，最终head/实际devCI待验，不是待设计审批。详record§207。

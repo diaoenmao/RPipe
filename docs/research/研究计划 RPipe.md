@@ -652,3 +652,8 @@ B119/#163、B120/#164、B121/#166统一PR165已验收：最终head3a74728及实�
 ## 2026-10-16 B122失败留证工程补记（本地，未合dev）
 
 接受工程基线仍PR165/dev70a8750。B122/#167确认Runner最后成功日志的IO拒绝绕过既有失败留证；先红12项8失败/4正常控制，761700f只将原语句缩进现有try，不改变末条时机、process旧成功保全或结果/日志格式。Runner49/core1974 passed+1既有skip/CPU Flow291 passed，12新全执行，详[record§204–205](../development/record.md)。本机结果不代替最终head/实际devCI，167保持开放，同主题在原分支本地合批，不立即拆PR。无科学实验/数字/结论新增；五Study协议、历史反例/数字、数值/恢复前置门及产物布局不变，科学复验仍须新version与实际provenance。
+
+
+## 2026-10-16 B122/B123日志失败与原生读回里程碑（本机，CI待验）
+
+#167末条日志拒绝越过Runner留证，与#168中断半行吞新error身份在同主题合批；原生部分写入→Runner失败定稿→logs/status独立事件回读联动已先红再修。相邻298/core1988 passed+1既有skip/CPU Flow297 passed，32新全部执行，详[record§206–207](../development/record.md)。只改原Runner日志缩进及原Logger可读尾行分隔，保留旧字节/有效日志/原append权限与异常优先级；不可读尾保持原能力而不保证半行修复。不改文件或产物布局/格式、Tracker/checkpoint或科学门。两Issue仍开放，准备一个完整里程碑PR，接受工程基线仍dev70a8750/PR165。无科学运行或新结论，五Study协议及历史数字/反例不变，科学复验仍须新version和原前置门。

@@ -1,3 +1,9 @@
+> 当前：B122/#167、B123/#168同主题日志失败/中断读回里程碑，本机完整检查完成，准备统一一个PR。
+> 最新：末条IO拒绝绕过留证与旧半行吞新ERROR身份均复现；先独立红回归再761700f/97a1443最小修，详§204–207。
+> 验证：相邻298 passed；core1988 passed/1既有skip、CPU Flow297 passed，32新全执行（14 unit+18 integration）/0新skip。
+> 下一步：同分支统一PR，验最终head与实际dev所有CI后关167/168并清已合主题；无决策阻塞。
+> 保护：接受dev仍70a8750/PR165，清理基线161计数1、remote43；不合main/tag/GPU/测速，不删数据/结果、不改布局。
+
 > 当前：B122/#167已本机修复并完整验证，尚未推送/开PR；接受dev仍PR165/70a8750。
 > 最新：末条Runner日志绕过失败留证；先红12项8失败/4控制，再761700f只缩进原语句，见§204–205。
 > 验证：Runner49 passed；core1974 passed/1既有skip、CPU Flow291 passed，新12全执行/0skip；源码仅两行diff。
@@ -3533,3 +3539,16 @@ RED12项8失败/4正常对照，GREEN同文件49 passed，全部12新节点执�
 尾读仅用于可读尾行修复：OSError时继续原append行为，不能因为新增read要求阻断原来可写但不可读的日志。此时无法保证中断尾行修复，明确限制与回归保护，不把可选探查失败当作写入成功证据；原write/flush/close失败依然严格。保留constructor不重开既有证据、peer、合法记录stdout/文件对应、其他调用方及Tracker恢复协议。不是新日志框架，不承诺任意多写者同Run事务。
 
 与B122/#167同一codex/correctness-next-milestone本地主题积累，先红/设计/最小生产修复，再合批当前core/CPU Flow及最终head/实际devCI；不单独开一个bug PR，不等审批、不改文件架构/产物布局或运行GPU/测速。
+
+
+## 207. B122/B123同主题日志失败与原生读回里程碑，本机完整验证（2026-10-16）
+
+B123/#168的原生Logger/index/logs/status探针确认：中断半行和新ERROR连成一行，错误内容被归到旧flow且errors_only为'-'。先66d3526提交14红6失败/8控制，再6588d28补有效单CR控制得16红6失败/10控制；3ad90d3在原Logger源码、已有B122 Runner修复上补四项真实联动（末条写部分字节/flush后抛错→Runner定稿→native readout），完整RED_COUPLED20红10失败/10控制。该红不是把B122的12红也放回同一生产基线；所有独立红场次与原候选/旧数据均保留。
+
+97a1443仅在既有Logger._emit加可选二进制尾读，已知非空非LF/CR才在原a文本write前加分隔；其余write/flush/close首错规则、stdout时机、append模式/权限/编码/newline及全部其他方法原字节不变。不能读尾时保持原append-only能力，不承诺此限制下修复半行；正常empty/LF/CRLF/CR、构造不重开、peer及旧半行原字节均保留。有效日志记录格式未变，不改readout解析、Tracker、checkpoint、schema或科学门；没有通用I/O框架/新文件。
+
+与B122合批定向298 passed，其中32新节点全部实际执行（14 unit+18 integration）；当前完整core1988 passed/1既有Windows POSIX模式skip、CPU Flow297 passed，0failure/error，新增32无skip。完整进程57962/10745均exit0终结。新32不是298的全部；B122原12红8失败/4控制与B123最终20红10失败/10控制是各自真实生产状态，未伪称统一一场32红。
+
+SOURCE_CHECKED精确原字节比较：src只Runner末条info缩进1增1删、Logger可选尾读/原追加11增1替换，其余源码/原异常处理和持久化格式不变。原始REPRO、源码ZIP/hash、各场红/绿、XML、源码证明在.tmp/audit122/123，不随clone；portable回归/设计/记录和双语研究计划随Git提供，无科学运行或结论新增。
+
+目前167/168仍OPEN，接受dev70a8750/PR165，当前两B是同一个完整“末条失败→半行保全→独立error事件读回”里程碑，不单bug或几行文档拆PR。本机验收后统一PR，仍须新最终head/实际dev全部实际矩阵/聚合验收再关闭及清分支。清理基线161计数1、remote累计43；下一编号B124。无GPU/测速/下载/正式Study/main/tag/数据/结果/架构或产物布局变化，不等待设计审批。
