@@ -3429,3 +3429,12 @@ load_recipe在上述上下文内执行spec前，将自己的既有模块名临�
 进一步给合成Study加未被配方导入的torch.py，并在原checkpoint同时保存Tensor，暴露兼容reader按文件名重解释全局torch._utils：6项都红，RED_PICKLE_OWNERSHIP保留。已限定bare引用的已加载模块所有权与完整module spec，未被namespace接管的既有全局模块走标准Unpickler；不是把所有同名文件当pickle类来源。外部缺失类按原严格错误，不吞恢复失败。system_api桥只查询已加载recipe模块，不因普通System IO额外安装recipe import机制。
 
 当前49项定向节点全通过（43源镜像unit、6实际Flow prepare/System/compare集成）：含legacy bundle、pieces/model.pt/meta.pt、payload.pt，自定义类和Tensor、搬到不同Study根后的类型归属、只读compare reader、helper内部晚导入/包相对导入、相同Study basename不同项目、重复加载模块键不逐Run增长、失败替换保全旧module、注解反射/pickle、双线程及原错退出。源码尚未提交生产新修复；不是完整core/Flow或CI验收，旧31项全绿不能替代本批。当前仅本地合批，不开新PR。
+
+
+## 200. B119/B120模块生命周期与原生reader统一候选（2026-10-16，本地未推送）
+
+现有4个源码文件内完成：recipe按物理Study根私有包隔离，定义模块和helper保持标准模块生命周期；source loader仅给私有模块绑定本地导入，外部import仍调用当前Python hook（a892cea先补钩子被绕过的候选红）。内部recipe身份使用<recipe>，不遮蔽合法_recipe.py；每Study固定键，重复4次加载键数不增长。源码热重载不在本合同内，不把代码cache当Run可变对象cache。
+
+system_api私有桥只检查已加载recipe及标准Run assets，System原4处torch.load与compare1处读取使用可选reader；无recipe时参数保持原样。兼容裸helper和跨根私有类，保留已加载外部cache及完整global module spec，避免未使用的torch.py误接管Tensor解码。torch.save、bundle/pieces/诊断布局、payload键/协议、恢复指纹和科学门原字节保持；没有迁移/覆写旧数据。输入checkpoint字节保全加入实际Flow回归。
+
+当前50项定向节点通过（44 unit+6 integration），0fail/error/skip；legacy bundle/pieces/meta.pt/payload.pt、Tensor与自定义_extra_state、跨根恢复/compare，以及late import/相对包/同basename/模块数量/失败替换/反射/pickle/并发均执行。此为新候选本机定向结果，完整core/Flow与更大兼容范围仍待检，不宣称已合dev或关闭163/164。只本地积累，20:56频率规则下不另开PR。

@@ -375,7 +375,7 @@ def register(ctx) -> None: ...
 | `shared_data_dir` / `shared_model_dir` | `shared/data`、`shared/model` |
 | `assets_dir` | 本 Run `assets/` |
 
-prepare 在 `apply_runtime` 之后、建构 Data / Model 之前调用 `register`（§5）。每个进程、每条 Run 都会调用一次，所以 `run-one`、`launch` 的子进程和顺序 `run` 行为一致。`register` 用来向 `DataRegistry` / `ModelRegistry` / `AlgorithmRegistry` 注册 Study 自己的 `source`，也可校验构造条件；隔离数据、归档与 CPU 对照准备优先由 Study `prepare.before` 承担。最终运行时对象仍由库 prepare 经 Factory 构造。recipe 不执行正式训练，不写 result，不改 config。加载时 Study 根临时加入 `sys.path`，配方可以 import 同目录的模块。
+prepare 在 `apply_runtime` 之后、建构 Data / Model 之前调用 `register`（§5）。每个进程、每条 Run 都会调用一次，所以 `run-one`、`launch` 的子进程和顺序 `run` 行为一致。`register` 用来向 `DataRegistry` / `ModelRegistry` / `AlgorithmRegistry` 注册 Study 自己的 `source`，也可校验构造条件；隔离数据、归档与 CPU 对照准备优先由 Study `prepare.before` 承担。最终运行时对象仍由库 prepare 经 Factory 构造。recipe 不执行正式训练，不写 result，不改 config。配方及同目录 helper 在按物理 Study 根隔离的私有包内加载；普通 `import` / `from`、包相对导入和注册对象稍后的本地导入仍引用自己的 Study，不占用外部模块裸名 cache。每 Study 复用固定私有模块键，配方每次重新执行，不按 Run 累积新包。加载和注册期间定义模块身份有效，标准 dataclass 延迟注解可解析；失败替换保留此前模块。helper 仍遵循 Python 模块缓存语义，本合同不提供任意运行中源码热重载。
 
 `recipe` 只写在 `study.yaml`，不进 Run config，所以不改变 Run id。配方文件进入来源清单（§14.2），内容改了能被发现。make 检查文件存在且定义了 `register`，不存在则失败。
 

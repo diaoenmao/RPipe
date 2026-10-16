@@ -1116,3 +1116,6 @@ Study comparison PNG退出合同（Issue146）：main_exp/flow/process/curves.pl
 
 
 冻结校验拒绝合同（Issue148）：check_frozen将无法完成解析的RecursionError和已有OSError/ValueError同样包装为ProvenanceChangedError并保留原cause，使初始/prepare冻结拒绝沿用已有成功字节保全规则。strict load_provenance仍抛真实解析异常，freeze关闭不触及坏文件；不改JSON限额/schema、路径、source/plan哈希、真实phase失败或任意程序RuntimeError传播。
+
+
+配方定义的自定义 checkpoint 对象：原生 System 和 compare checkpoint 读取经 system_api 的私有桥，在标准Run assets且该Study配方包已加载时选用局部兼容Unpickler；既有裸helper引用与其它物理根的私有引用解析到当前Study代码，非本地全局引用仍用标准pickle。没有已加载配方时保持原torch.load参数。此处只处理类定义的导入身份，不改变权重/optimizer/RNG恢复范围、指纹拒绝、数值门、weights_only=False或checkpoint文件协议/布局，不写回原checkpoint。绕过RPipe直接加载自定义Python类仍须使其定义代码可导入；使用原生System读取可保留旧helper与换根兼容。

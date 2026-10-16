@@ -188,6 +188,9 @@ def test_recipe_checkpoint_state_keeps_legacy_and_relocated_imports(tmp_path, mo
             shutil.copy2(bundle, folder / 'payload.pt')
         bundle = folder
     monkeypatch.delitem(sys.modules, 'helper')
+    input_root = legacy.checkpoint_dir()
+    before = {path.relative_to(input_root).as_posix(): path.read_bytes()
+              for path in input_root.rglob('*') if path.is_file()}
 
     def prepared(study):
         out = expand_study(study)
@@ -218,5 +221,10 @@ def test_recipe_checkpoint_state_keeps_legacy_and_relocated_imports(tmp_path, mo
         import shutil
         from rpipe.structure.artifact.readout.compare import _checkpoint
         shutil.copy2(bundle, target_ctx.state['system'].checkpoint_dir() / 'copied.pt')
+        copied = target_ctx.state['system'].checkpoint_dir() / 'copied.pt'
+        copied_before = copied.read_bytes()
         displayed = _checkpoint(target_ctx.layout.root, 'copied')
         assert type(displayed['model']['_extra_state']) is target_ctx.state['model']._recipe_state_type
+        assert copied.read_bytes() == copied_before
+    assert {path.relative_to(input_root).as_posix(): path.read_bytes()
+            for path in input_root.rglob('*') if path.is_file()} == before
