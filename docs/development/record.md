@@ -1,3 +1,9 @@
+> 当前：#163/#164同分支本机修复与完整回归完成，尚未推送PR；已验收dev仍PR161/8480d79。
+> 最新：Study私有导入生命周期、dataclass模块身份及旧/迁移checkpoint兼容统一修；原候选晚导入/运行时误接管反例均保留，见§198–201。
+> 验证：当前core1964 passed/1既有skip，CPU Flow279 passed，新增51（45 unit+6 integration）全执行、0新skip；4源码范围已核对。
+> 下一步：按20:56在原分支完整里程碑合批、少量PR；最终head/实际devCI未执行，163/164仍OPEN，无外部决策阻塞。
+> 保护：清理基线161/计数0，活动未合分支保留；无GPU/测速/下载/Study/main/tag/数据删除或文件架构/产物布局变更。
+
 > 当前：PR161已双侧验收/关160与162/清已合主题/第5批盘点；本地继续B119/#163、B120/#164加载隔离。
 > 最新：31节点候选通过后，4a53165补晚导入2红均失败，确认候选回归；当前33节点未验收，详§197。
 > 验证：此前core1950 passed/1既有skip、Flow273 passed不含新增2红，不能替代当前验收；所有反例保留。
@@ -3438,3 +3444,12 @@ load_recipe在上述上下文内执行spec前，将自己的既有模块名临�
 system_api私有桥只检查已加载recipe及标准Run assets，System原4处torch.load与compare1处读取使用可选reader；无recipe时参数保持原样。兼容裸helper和跨根私有类，保留已加载外部cache及完整global module spec，避免未使用的torch.py误接管Tensor解码。torch.save、bundle/pieces/诊断布局、payload键/协议、恢复指纹和科学门原字节保持；没有迁移/覆写旧数据。输入checkpoint字节保全加入实际Flow回归。
 
 当前50项定向节点通过（44 unit+6 integration），0fail/error/skip；legacy bundle/pieces/meta.pt/payload.pt、Tensor与自定义_extra_state、跨根恢复/compare，以及late import/相对包/同basename/模块数量/失败替换/反射/pickle/并发均执行。此为新候选本机定向结果，完整core/Flow与更大兼容范围仍待检，不宣称已合dev或关闭163/164。只本地积累，20:56频率规则下不另开PR。
+
+
+## 201. B119/B120当前完整本机验收（2026-10-16，仍未推送）
+
+当前源码ac65eb1/041e8c1及aa75064边界测试后重新执行完整检查：core1964 passed、1既有Windows POSIX模式skip，CPU Flow279 passed，均0failure/error。新增51节点全部实际执行（45 unit+6 integration）、0新skip；这次CORE_CURRENT/FLOW_CURRENT包含全部当前边界，不用旧31节点/旧候选结果替代。LOCAL_CURRENT_CHECKED保留XML/hash及节点归属；FINAL_SCOPE51全通过。Runtime优先级候选6红、外部import hook红、旧/迁移checkpoint红、晚导入红和所有无效夹具/报告中断仍保留，不冒称它们是原始同一场红测试。
+
+原字节核对SOURCE_CURRENT_CHECKED：只4个既有源码文件变更。recipe的phase校验、RecipeContext字段、路径拒绝等原字节保持；System.save_checkpoint全部原字节保持，load只在4处既有torch.load加可选reader参数；compare只加同类reader，整个数学树、容差/非有限/整数精度、格式和错误门其他字节保持；system_api既有导出/build签名保持，仅附私有桥。无新源模块/配置/Run字段/产物路径，未改producer协议、checkpoint布局/恢复指纹或科学门。正常代码helper按Study模块缓存，不承诺热改源码自动reload；原生reader已验证旧helper和迁移后私有类，外部直接反序列化自定义类仍需要定义代码可导入。
+
+全部仅本地codex/study-loader-isolation主题提交，当前open163/164保留；本批未开PR、未跑最终head/实际devCI、未合dev/main、未打tag。接受的dev仍8480d79/PR161，清理基线161计数0。按20:56相关B项完整里程碑和每日少量PR规则继续本地收敛，不以多次验证拆更多PR；后续流转仍须最终head/实际dev全实际CI验收后再关闭Issue和清已合分支。原始.tmp/audit119/120不随clone，正式回归/设计/记录可携带；无GPU/测速/下载/正式Study或数据/结果删除。

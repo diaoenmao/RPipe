@@ -439,3 +439,5 @@ load_recipe在上述上下文内执行spec前，将自己的既有模块名临�
 进一步给合成Study加未被配方导入的torch.py，并在原checkpoint同时保存Tensor，暴露兼容reader按文件名重解释全局torch._utils：6项都红，RED_PICKLE_OWNERSHIP保留。已限定bare引用的已加载模块所有权与完整module spec，未被namespace接管的既有全局模块走标准Unpickler；不是把所有同名文件当pickle类来源。外部缺失类按原严格错误，不吞恢复失败。system_api桥只查询已加载recipe模块，不因普通System IO额外安装recipe import机制。
 
 当前49项定向节点全通过（43源镜像unit、6实际Flow prepare/System/compare集成）：含legacy bundle、pieces/model.pt/meta.pt、payload.pt，自定义类和Tensor、搬到不同Study根后的类型归属、只读compare reader、helper内部晚导入/包相对导入、相同Study basename不同项目、重复加载模块键不逐Run增长、失败替换保全旧module、注解反射/pickle、双线程及原错退出。源码尚未提交生产新修复；不是完整core/Flow或CI验收，旧31项全绿不能替代本批。当前仅本地合批，不开新PR。
+
+当前实施/验收补记（record§201）：§195的短暂清cache候选已由§198/200的模块生命周期与兼容reader方案替代；当前core1964 passed/1既有平台skip、CPU Flow279 passed，新51节点全部执行/通过。只4个既有源码文件，生产写入/数学门/布局原字节核对保持。这里只是本机验收，尚无本批PR/最终head/实际devCI，不表示163/164已关闭或已发布，也不等待人工设计批准。

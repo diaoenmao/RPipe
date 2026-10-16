@@ -1,5 +1,13 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 B119/B120本机完整验收；尚未推送
+
+当前codex/study-loader-isolation：ac65eb1/041e8c1修模块生命周期及兼容reader，aa75064补严格类归属。current core1964 passed/1既有skip、CPU Flow279 passed，新增51（45 unit+6 integration）全执行/0新skip，SOURCE_CURRENT_CHECKED验证只4既有源码、System保存/compare数学门/布局原字节保持。旧候选31绿后晚导入2红、namespace checkpoint/运行时/钩子/保留名反例全部保留，不以旧结果替代当前验收，详record§198–201。
+
+只本地主题提交，未推PR/未跑本批CI，163/164保持OPEN；按20:56相关B项完整里程碑/每日少量PR，不立即拆新PR。已接受基线dev8480d79/PR161，160/162关闭、correctness-followup本地/remote清理和第5批盘点已完成，新清理基线161计数0，remote累计42。唯一活动未合分支保留，数据/结果/worktree不删；无GPU/测速/下载/正式Study/main/tag/架构或产物布局变更。
+
+
+
 ## 2026-10-16 PR161验收完成；B119/B120候选晚导入回归待修
 
 PR161最终d42072f/实际dev8480d79全部实际矩阵/聚合成功，160/162关闭、correctness-followup本地/remote清理，第5批盘点完成，新基线161，累计remote42；活动未合study-loader-isolation保留，不删数据/结果/worktree，详record§193。

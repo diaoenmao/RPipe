@@ -6,16 +6,16 @@
 
 ## 开放
 
-### B-119：顺序Study配方串用同名helper；候选晚导入仍待修
+### B-119：Study配方同名helper缓存与导入生命周期隔离（本机已修，待里程碑CI）
 
-- Issue：[163](https://github.com/DreamSoul-AI/RPipe/issues/163)。真实load_recipe第二Study读到第一个helper；新进程第二Study正确，sys.path均恢复。
-- 5c8f5fd先12红8失败/4控制，ace8485扩18红14失败/4控制；方案与本地候选见[record§192、195–197](record.md)。31节点候选通过后，4a53165新增已注册函数晚导入2红均失败；候选未验收，不能以先前core1950/Flow273通过代替新节点。
-- 唯一未合codex/study-loader-isolation本地积累，不推新PR；必须保留外部模块cache、注册对象和晚导入行为，不能缩窄合同。原证据.tmp/audit119不随clone。
+- Issue：[163](https://github.com/DreamSoul-AI/RPipe/issues/163)。原顺序加载第二Study复用第一个helper，原始红与候选晚导入等反例见[record§192–201](record.md)。
+- 当前ac65eb1/041e8c1以Study私有包和绑定导入覆盖加载/注册/晚导入，不占外部裸名cache，保留标准库/自身/已加载安装运行时优先级。原生System/compare reader兼容旧helper和跨根私有类；缺失自有类严格拒绝，不从外国cache借类。
+- 当前core1964 passed/1既有skip、CPU Flow279 passed，新51全部执行，范围/原始字节已核对。尚未推PR/跑最终与实际devCI，Issue保留OPEN；临时.tmp/audit119不随clone，不用旧绿色结果替代当前边界。
 
-### B-120：合法延迟注解dataclass配方缺少定义模块身份
+### B-120：合法延迟注解dataclass配方缺少定义模块身份（本机已修，待里程碑CI）
 
-- Issue：[164](https://github.com/DreamSoul-AI/RPipe/issues/164)。spec.exec前未注册模块使dataclasses抛AttributeError；加载8红4失败/4控制，注册内部4红2失败/2控制保留。
-- 与B119同一本地加载隔离里程碑；中间候选身份/临时cache方案仍受B119晚导入回归制约，整批未验收、不关闭Issue。见[record§194–197](record.md)，原始.tmp/audit120不随clone。
+- Issue：[164](https://github.com/DreamSoul-AI/RPipe/issues/164)。原spec.exec无模块注册，future/dataclass加载及register内部定义失败；正式加载8红4失败/4控制与注册4红2失败/2控制保留。
+- 与B119统一模块生命周期实现；加载、注册、后续注解反射/pickle、失败替换保全与合法_helper文件名均验过，同一批完整结果见上。仍仅本地主题分支、未合dev/不关闭Issue；[record§194–201](record.md)，原始.tmp/audit120不随clone。
 
 B117/#160、B118/#162已PR161双侧全部实际CI验收关闭且主题本地/remote清理，第5批周期盘点见[record§193](record.md)。
 
