@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from rpipe.structure.artifact.asset import kinds
+from rpipe.structure.artifact.errors import CorruptArtifactError
 from rpipe.structure.artifact.paths import PROCESS_NAME, RESULT_NAME, RUNS_DIRNAME
 from rpipe.structure.artifact.result import STATUS_SUCCEEDED, load_result
 
@@ -232,11 +233,11 @@ def _numeric_metrics(metrics: dict[str, Any]) -> dict[str, float]:
 
 def _load_result(study_dir: Path, run_dir: str) -> dict[str, Any] | None:
     path = study_dir / RUNS_DIRNAME / run_dir / RESULT_NAME
-    if not path.is_file():
-        return None
     try:
+        if not path.is_file():
+            return None
         return load_result(path)
-    except (OSError, TypeError, ValueError):
+    except (OSError, TypeError, ValueError, CorruptArtifactError, RecursionError):
         return None
 
 

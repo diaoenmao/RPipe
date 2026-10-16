@@ -1,7 +1,7 @@
 > **RPipe 研究计划：研究执行与证据一致性的可验证合同**
 > 版本：1.4；更新：2026-10-16；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
 > 当前阶段：完成计划重做和定向文献初筛；继续代码正确性，尚未执行本计划的新科学实验。
-> 当前实现基线：dev `9a7af374ee6b1354c1c9aea37858059c03c8f329`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
+> 当前实现基线：dev `afa3a639d85450c24a37244ed92b1182a14228f3`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
 > 本轮零 GPU、零测速、零训练、零数据下载；保持既有文件架构与产物布局。
 
 ## 本次人工审阅摘要（2026-10-16，按12:53更新）
@@ -586,3 +586,13 @@ PR147最终head全部实际CI通过并合dev9a7af37，实际dev待验。真实12
 
 
 PR147最终head/实际dev全部实际CI已验收，Issue146关闭并清主题本地/remote分支。B110最终本机12新节点实际执行（core4/Flow8）、相邻204、core1818 passed/1既有平台skip、CPU Flow215 passed；最终head/实际devCI待验。冻结分类保全不执行正式Study、不放宽科学门或改JSON限额，见record §172。
+
+
+## 2026-10-16 工程进展补充：读取边界集中里程碑
+
+PR149最终head和实际dev全部实际CI已验收，Issue148关闭；五批周期清理完成，基线149。B111/#150与B112/#151以同一分支集中修复可选peer结果读取与strict CLI解析诊断，20项读取边界清单区分源审、既有合同和实测；不扩大checkpoint/科学证据降级。48新节点全执行/通过，core1834 passed/1既有平台skip，CPU Flow247 passed，最终head/实际dev CI待统一PR验收。证据与限制见[record§173–175](../development/record.md)，原始.tmp证据不随clone。
+
+这是工程合同结果，不是新科学实验或当前dev的完整Study数值复验。第九章的文献缺口、实验顺序、实际精度/provenance、新version和既有数值门均保持；本批不执行GPU、测速、训练或下载。下一步先完成本里程碑双侧CI，再继续三类可复现正确性边界核验；科学实验仍按原计划和资源授权执行。
+
+
+读取边界里程碑补项：继续源审发现Run process自身result回读遗漏，B113/#153实际Runner三类反例会改写原结果；先红14项4失败/10控制，22a4d57补原guard。与#150/#151共用PR152、21项清单，补齐后62新节点全执行/通过，core1834 passed/1既有平台skip、CPU Flow261 passed；最终/实际dev CI待验。Runner/科学门/数值转换、Study实验顺序与资源授权保持，无新科学实验；详[record§176–177](../development/record.md)。

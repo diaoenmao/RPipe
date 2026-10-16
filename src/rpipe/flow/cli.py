@@ -343,7 +343,7 @@ def _execute_compare(args: argparse.Namespace) -> int:
             checkpoints=list(args.checkpoints or ['latest']),
         )
         written = write_compare(args.out, report) if args.out is not None else None
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, RecursionError) as exc:
         print(exc, file=sys.stderr)
         return 2
     print(format_compare(report), end='')
@@ -355,7 +355,7 @@ def _execute_compare(args: argparse.Namespace) -> int:
 def _print_launch_counts(study_dir: Path) -> None:
     try:
         body = list_runs(study_dir)
-    except (OSError, TypeError, ValueError, FileNotFoundError):
+    except (OSError, TypeError, ValueError, FileNotFoundError, RecursionError):
         return
     line = format_status(body).splitlines()[0]
     print(line, flush=True)
@@ -368,7 +368,7 @@ def _execute_report(args: argparse.Namespace) -> int:
     except FileNotFoundError:
         print(f'missing process: {process_path(study_dir)}', file=sys.stderr)
         return 2
-    except (OSError, TypeError, ValueError) as exc:
+    except (OSError, TypeError, ValueError, RecursionError) as exc:
         print(exc, file=sys.stderr)
         return 2
     print(path, flush=True)
@@ -382,7 +382,7 @@ def _execute_logs(args: argparse.Namespace) -> int:
     except FileNotFoundError:
         print(f'missing index: {study_dir / "index.json"}', file=sys.stderr)
         return 2
-    except (OSError, TypeError, ValueError) as exc:
+    except (OSError, TypeError, ValueError, RecursionError) as exc:
         print(exc, file=sys.stderr)
         return 2
     print(text, end='')
@@ -422,7 +422,7 @@ def _execute_status(args: argparse.Namespace) -> int:
             return 0
         print(f'missing index: {study_dir / "index.json"}', file=sys.stderr)
         return 2
-    except (OSError, TypeError, ValueError) as exc:
+    except (OSError, TypeError, ValueError, RecursionError) as exc:
         print(exc, file=sys.stderr)
         return 2
     print(format_status(body), end='')

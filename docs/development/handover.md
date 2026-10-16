@@ -1,5 +1,19 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 PR152补齐Run读取：本机62新节点全部验收
+
+§174原20项遗漏individual.run，新增第21项B113/#153已实证：nonobject/deep/stat拒绝经Runner回退覆盖原result。70bb75e先红14项4失败/10控制→ac7edb2设计→22a4d57最小guard；Runner、metrics/history与严格公共loader保持。与#150/#151仍为同一PR152，不另拆PR。
+
+补齐后core1834 passed/1既有平台skip、CPU Flow261 passed，62新节点全部执行（16 core/46 Flow），0failure/error。旧5400249/48节点CI只表历史，须验新最终head及实际dev全部实际CI，再关闭150/151/153并清自身本地/remote；见record§176–177及本机.tmp/audit113/LOCAL_CHECKED（不随clone）。清理基线149累计0；不动main/tag/GPU/数据/布局。以下各阶段快照保留。
+
+
+## 2026-10-16 读取边界完整里程碑：本机完成，统一PR待验
+
+B111/#150与B112/#151在唯一codex/optional-read-boundaries累积：8062f71主红44项12失败/32控制、c79b17b补红4项1失败/3控制→bfc851b设计/20项清单→00f3ddf两文件最小修复。48新节点全执行/通过；core1834 passed/1既有平台skip、CPU Flow247 passed，0failure/error。原始.tmp/audit111不随clone；正式证据见record§174–175。后续一个完整里程碑PR→dev，分别验最终head/实际dev全部实际CI；150/151验收后关闭，未合分支保留。
+
+PR149已双侧CI验收、Issue148关闭、freeze-parser-refusal本地/remote已清；PR141/143/145/147/149五批完整盘点完成，新周期基线149/devafa3a639累计0，清单record§173。main/dev长期分支、唯一primary worktree和_staging_from_DEM保留。18:53规则：本地按主题保留commit，同主题积累到完整里程碑才统一推送/PR，几行文档随里程碑，不另拆PR。旧pending均为历史；不运行GPU/测速/正式Study，不动main/tag或布局。
+
+
 ## 2026-10-16 B102训练finalizer本机完成；B101已实际dev验收
 
 Issue132→1e8c5d1先红22项20 failed/2控制passed→75e9885设计→384bf2c仅原finally错误优先级。22新节点全执行/通过；core1693+1既有Windows POSIX skip/CPU Flow207通过。a758de4只加3条实际tracker staging清理断言，冻结旧函数回放20 failed/2控制passed不是HEAD红，当前22绿；生产未再变。原先无效stub探针/过早控制注入拒绝均保留.tmp/audit102，不随clone；见record§155–156。当前唯一未合codex/train-failure-finalizer待最终/实际dev全部实际CI，之后关闭132并清自身本地/remote。

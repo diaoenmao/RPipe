@@ -323,3 +323,27 @@ Issue146后6ab3b74先提交25正式节点23 failed/2正常控制passed，0error/
 Issue148后dadb558先提交12项正式回归5 failed/7有效控制passed、0error/skip；覆盖strict check_frozen、outer/native prepare新旧结果与普通坏JSON对照、freeze关闭不读坏文件、strict load_provenance仍抛真实RecursionError、非递归RuntimeError程序错不归一化。方案只在既有check_frozen异常元组补RecursionError，仍通过原raise ProvenanceChangedError from exc保留cause；不改strict loader/json解析/递归限额、schema、freeze真假判据、Runner现有保全决策表或真实业务phase失败规则。调用方Runner/prepare/launch/Study process继续使用同一公共边界，不复制guard或增加模块/依赖/新路径。新测试没有执行data/model/algorithm，仅native prepare到既有冻结门即拒绝。
 
 随后provenance/freeze相邻、core/CPU Flow和最终head/实际dev全部实际CI分别验收；保留坏输入原字节及新旧结果边界，不以吞程序错误或放宽冻结检查通过。无GPU/测速/正式Study、main/tag、数据/Run/provenance删除或布局变化。
+
+
+## B111 / #150 与 B112 / #151：读取边界集中里程碑（2026-10-16）
+
+遵循18:53新频率规则，两个同类缺陷及§174系统读取点清单在唯一codex/optional-read-boundaries分支本地累积，完成全里程碑后才统一PR；不按单行文档或单个反例拆PR。已先Issue150/151，再8062f71提交44正式节点12 failed/32有效控制passed、0error/skip；c79b17b补4计数显示节点1 failed/3有效控制passed、0error/skip，两份原红分开保留。
+
+可选结果读取：_load_result已将缺失、语法损坏或打开/读取IO作为不可用Run，但stat在try外、非object的CorruptArtifactError和JSON RecursionError逃逸，阻断有效peer。方案只把原is_file查询纳入原try，并沿scheduler._run_result现有模式补CorruptArtifactError/RecursionError；不可用行仍status None/metrics空，n仍仅有效succeeded，n_planned仍包含所有计划Run，complete仍false，peer均值/标准差公式不改。strict load_result原样拒绝，正常结果/计数、指标转换/科学门及所有Run/index原字节不改；不把坏metrics mapping或非有限数归一化，本批不改聚合公式。
+
+严格CLI：status/logs/report/compare四个既有错误出口只补已知RecursionError，仍拒绝坏权威index/process/result、返回2并输出原诊断，不把strict loader降级为默认数据，不写旧NUMBERS/compare结果。可选_print_launch_counts则在其既有best-effort元组补同一解析错误，保留语法失败不输出、有效计数照常输出。非递归RuntimeError程序错误仍传播。仅改既有aggregate.py与cli.py，不加通用helper/框架/模块/依赖、schema或路径，不修改checkpoint/RNG恢复、Study科学审计或JSON限额。
+
+44主回归覆盖6解码/缺失/有效结果、stat/read的permission/IO/disappeared/编程错误、strict公共loader、实际process partial/complete、四CLI的深层/语法/非object、正常输出和编程错误；补4计数显示深层/语法/正常/程序错。全部用合成临时输入，不跑data/model/algorithm或正式Study；compare正常控制仅CPU序列化空checkpoint字典。随后可选读取及strict readout相邻、core/CPU Flow、最终head与实际dev全部实际CI分别验收。原探针/源码ZIP/hash、44红与4补红在.tmp/audit111不随clone；不删除原失败/校验拒绝。
+
+
+本机实施与验收：00f3ddf仅修改上述两个现有文件，9行增加/8行删除；48新节点全部执行/通过，core1834 passed/1既有平台skip，CPU Flow247 passed。其他aggregate函数原源码及CLI五个异常元组之外AST均保持。§174清单中的两个待修项已本地实施，最终head/实际dev CI仍待统一里程碑PR验收；不是待设计批准。详record§175，原红/绿/hash在.tmp/audit111不随clone。
+
+
+## B113 / #153：同一读取里程碑补齐 Run 级回读（2026-10-16，已批准合同内实施）
+
+继续源审发现individual.run的独立读取入口未列入§174原20项清单。实际FlowRunner(process-only)六探针中，非object、深JSON和stat PermissionError三类使派生失败且经既有Runner失败回退改写原结果；语法/读Permission/有效输入三个控制按预期保全。正式14项先红4 failed/10有效控制passed，0error/skip，含新增stat IO；原始坏文件及被覆盖后证据在.tmp/audit113保留，不随clone。
+
+沿Run process已有缺失/坏语法/read IO的可选降级合同，只把is_file移入原try并补CorruptArtifactError/RecursionError，保留ctx.state有效mapping优先、无index要求、原metrics转换与history读取。严格公共loader和Runner通用失败/旧成功规则原样，不吞任意RuntimeError，不改路径/schema/恢复/科学门。此为#150相邻遗漏消费者，加入同一PR152，不另开小PR；旧head CI不取消，不能代替补齐后的最终head验收。
+
+
+B113已实施22a4d57：14新回归全执行/通过，重新core1834 passed/1既有平台skip、CPU Flow261 passed。连同B111/B112共62新节点实际执行，21项清单已补齐遗漏入口；仍在同一PR152，最后head与实际dev CI分别验收。旧head证据保留，非待设计批准；详record§176–177。

@@ -6,12 +6,22 @@
 
 ## 开放
 
-### B-102：原生训练结束flush替换原执行异常
+### B-111：可选结果读取失败阻断有效 peer
 
-- Issue：[132](https://github.com/DreamSoul-AI/RPipe/issues/132)，正式红1e8c5d1：22项20 failed/2 passed、0error/skip。
-- 复现：非stub CPU数据首个iter_batches抛RuntimeError，finally的tracker状态编码/发布再失败，对外异常与result.error变成二次错误；原错只留chain。更正探针零批次/零优化步，最初stub无效探针保留。
-- 期望：已有原错时尽力flush且保留原异常身份/failed error；成功体最终flush失败仍传播。旧tracker/peer和日志二次错误留证保持，日志不可用不覆盖原错。
-- 方案：原finally拆成except BaseException中的best-effort flush/Logger与原raise，else直接flush；已按75e9885设计实施384bf2c，22新合同全绿，core1693+1既有平台skip/CPU Flow207通过；待最终head与实际dev全部实际CI。不改训练数值、周期flush、checkpoint/RNG、schema或layout。
+- Issue：[150](https://github.com/DreamSoul-AI/RPipe/issues/150)。非object、深层JSON或stat IO异常逃出process._load_result，阻断合法兄弟Run汇总。
+- 已本地修复00f3ddf：沿既有不可用结果规则补读取guard；计划分母、完整性和数值公式保持。严格公共loader不降级。
+
+### B-112：strict CLI 深层JSON错误逃出诊断出口
+
+- Issue：[151](https://github.com/DreamSoul-AI/RPipe/issues/151)。status/logs/report/compare的深层JSON触发RecursionError而未返回既有错误码2；可选launch计数也逃逸。
+- 已本地修复00f3ddf：五个既有异常元组补RecursionError，保留strict拒绝、可选best-effort及程序错传播。
+
+### B-113：Run 可选回读拒绝经 Runner 改写原结果
+
+- Issue：[153](https://github.com/DreamSoul-AI/RPipe/issues/153)。process-only、内存无结果时nonobject/deep/stat IO逃逸，派生失败经Runner回退改写原result；六真实探针三类反例。
+- 已本地修复22a4d57：stat纳入原可选try并补domain/Recursion，Runner/metrics/history源码保持，内存结果优先、无需index。
+
+三项同一PR152：44主红12失败/32控制通过、4补红1失败/3控制通过、14 Run回读红4失败/10控制通过；62新节点全执行/通过，core1834 passed/1既有平台skip，CPU Flow261 passed。待最终head和实际dev全部实际CI；详[record§174–177](record.md)。B102/#132已PR133合dev并验收，旧开放文字已归历史记录。
 
 B101/#130已PR131合dev并验收关闭，正式记录与分支清理见[record§154](record.md)。
 

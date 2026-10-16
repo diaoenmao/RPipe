@@ -337,3 +337,112 @@ def test_process_optional_state_decode_failure_keeps_peer_evidence(tmp_path, raw
         assert not run_process_path(b.root).exists()
     assert json.loads(target.read_text(encoding='utf-8')) == body
     assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('failure', ['nonobject', 'deep', 'stat_permission', 'stat_io', 'read_permission', 'syntax', 'missing', 'valid'])
+def test_study_optional_result_failures_keep_peer_partial_output_and_inputs(tmp_path, monkeypatch, failure):
+    """Actual Study process -> one unreadable optional result -> fresh partial output with valid peer and all source bytes retained."""
+    bad = _write_succeeded(tmp_path, 'bad', 0, 500, {'accuracy': 42.0}, [])
+    peer = _write_succeeded(tmp_path, 'peer', 1, 500, {'accuracy': 42.0}, [])
+    write_index(tmp_path, build_index(study='synthetic', description='', experiments=[
+        {'factors': {}, 'runs': [{'id': 'bad', 'seed': 0}, {'id': 'peer', 'seed': 1}]}]))
+    if failure == 'missing':
+        bad.result_path.unlink()
+    elif failure in ('nonobject', 'deep', 'syntax'):
+        raw = b'[]' if failure == 'nonobject' else b'{' if failure == 'syntax' else b'{"unused":' + b'[' * 12000 + b'0' + b']' * 12000 + b'}'
+        bad.result_path.write_bytes(raw)
+    before = {f: f.read_bytes() for f in tmp_path.rglob('*') if f.is_file()}
+    process_path(tmp_path).write_bytes(b'previous derived process')
+    method = 'read_text' if failure == 'read_permission' else 'stat'
+    original = getattr(Path, method)
+    def refuse(path, *args, **kwargs):
+        if path == bad.result_path and failure in ('stat_permission', 'stat_io', 'read_permission'):
+            raise OSError(5, 'result IO') if failure == 'stat_io' else PermissionError(13, 'result denied')
+        return original(path, *args, **kwargs)
+    with monkeypatch.context() as fault:
+        fault.setattr(Path, method, refuse)
+        body = run_study(tmp_path)
+    cell = body['experiments'][0]
+    count = 2 if failure == 'valid' else 1
+    assert body['complete'] is (failure == 'valid')
+    assert cell['n'] == count and cell['n_planned'] == 2 and cell['metrics']['accuracy']['mean'] == 42.0
+    assert json.loads(process_path(tmp_path).read_text(encoding='utf-8')) == body
+    assert {f: f.read_bytes() for f in before} == before
+
+
+@pytest.mark.parametrize('failure', ['nonobject', 'deep', 'syntax', 'utf8', 'missing', 'valid',
+                                   'stat_permission', 'stat_io', 'read_permission', 'read_io'])
+def test_run_process_optional_result_failure_keeps_history_and_source(tmp_path, monkeypatch, failure):
+    """Actual process-only Runner -> optional result refusal -> history survives without rewriting source evidence."""
+    layout = artifact_layout(tmp_path, 'only')
+    write_result(layout.result_path, {'status': 'succeeded', 'control': {'id': 'only'},
+                                    'metrics': {'accuracy': 42.0}, 'paths': {}})
+    if failure == 'missing':
+        layout.result_path.unlink()
+    elif failure in ('nonobject', 'deep', 'syntax', 'utf8'):
+        raw = {'nonobject': b'[]', 'syntax': b'{', 'utf8': b'\xff',
+               'deep': b'{"unused":' + b'[' * 12000 + b'0' + b']' * 12000 + b'}'}[failure]
+        layout.result_path.write_bytes(raw)
+    scalar = layout.assets_dir / kinds.TRACKER_JSONL
+    scalar.parent.mkdir(parents=True, exist_ok=True)
+    scalar.write_text(json.dumps({'split': 'test', 'name': 'Accuracy', 'mean': 75.0,
+                                 'optimizer_step': 1}) + '\n', encoding='utf-8')
+    before = {f: f.read_bytes() for f in tmp_path.rglob('*') if f.is_file()}
+    method = 'stat' if failure.startswith('stat_') else 'read_text'
+    original = getattr(Path, method)
+    def refuse(path, *args, **kwargs):
+        if path == layout.result_path and failure.startswith(('stat_', 'read_')):
+            raise PermissionError('optional result denied') if failure.endswith('permission') else OSError('optional result IO')
+        return original(path, *args, **kwargs)
+    ctx = FlowContext(study_dir=tmp_path, layout=layout, config={})
+    with monkeypatch.context() as fault:
+        fault.setattr(Path, method, refuse)
+        FlowRunner(phases=['process']).run(ctx)
+    body = ctx.state['process']
+    assert body['scope'] == 'run' and body['run_id'] == 'only'
+    assert body['metrics'] == ({'accuracy': 42.0} if failure == 'valid' else {})
+    assert body['history']['test']['Accuracy'] == [75.0]
+    assert json.loads(run_process_path(layout.root).read_text(encoding='utf-8')) == body
+    assert not process_path(tmp_path).exists()
+    assert {f: f.read_bytes() for f in before} == before
+    assert layout.result_path.exists() is (failure != 'missing')
+
+
+@pytest.mark.parametrize('operation', ['stat', 'read_text'])
+def test_run_process_optional_result_keeps_programming_error_identity(tmp_path, monkeypatch, operation):
+    """Run process read boundary propagates unexpected RuntimeError; it never writes before the read succeeds."""
+    from rpipe.flow.process.individual import run
+
+    layout = artifact_layout(tmp_path, 'only')
+    write_result(layout.result_path, {'status': 'succeeded', 'control': {}, 'metrics': {}, 'paths': {}})
+    before = layout.result_path.read_bytes()
+    error = RuntimeError('unexpected result reader bug')
+    original = getattr(Path, operation)
+    def refuse(path, *args, **kwargs):
+        if path == layout.result_path:
+            raise error
+        return original(path, *args, **kwargs)
+    with monkeypatch.context() as fault:
+        fault.setattr(Path, operation, refuse)
+        with pytest.raises(RuntimeError) as caught:
+            run(FlowContext(study_dir=tmp_path, layout=layout, config={}))
+        assert caught.value is error
+    assert layout.result_path.read_bytes() == before
+    assert not run_process_path(layout.root).exists()
+
+
+@pytest.mark.parametrize('memory', [False, True], ids=['disk-fallback', 'memory-precedence'])
+def test_run_process_result_memory_precedence_and_no_index_requirement(tmp_path, memory):
+    """Valid in-memory result wins over unusable disk; disk fallback retains valid metrics and Run-only scope."""
+    layout = artifact_layout(tmp_path, 'only')
+    write_result(layout.result_path, {'status': 'succeeded', 'control': {'id': 'only'},
+                                    'metrics': {'accuracy': 42.0}, 'paths': {}})
+    ctx = FlowContext(study_dir=tmp_path, layout=layout, config={})
+    if memory:
+        ctx.state['result'] = {'control': {'id': 'only'}, 'metrics': {'accuracy': 75.0}}
+        layout.result_path.write_bytes(b'[]')
+    before = layout.result_path.read_bytes()
+    FlowRunner(phases=['process']).run(ctx)
+    assert ctx.state['process']['metrics'] == {'accuracy': 75.0 if memory else 42.0}
+    assert layout.result_path.read_bytes() == before
+    assert not (tmp_path / 'index.json').exists() and not process_path(tmp_path).exists()
