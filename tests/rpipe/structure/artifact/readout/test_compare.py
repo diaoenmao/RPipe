@@ -504,3 +504,60 @@ def test_finite_complex_norm_overflow_keeps_zero_relative_bound(tmp_path, case):
     assert cli.main(['compare', str(a), str(b), f'--atol={atol}', '--out', str(output)]) == (0 if passed else 1)
     assert json.loads(output.read_text())['passed'] is passed
     assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('kind,sign', [
+    (kind, sign) for kind in ('metrics', 'history', 'checkpoint-scalar',
+                             'checkpoint-real', 'checkpoint-complex') for sign in (1, -1)
+] + [('checkpoint-real-u', 1), ('checkpoint-complex-u', 1)])
+@pytest.mark.parametrize('reverse', [False, True], ids=['integer-left', 'integer-right'])
+@pytest.mark.parametrize('atol,rtol,passed', [
+    (0.0, 0.0, False), (0.5, 0.0, False), (1.0, 0.0, True),
+    (0.0, 2.0**-61, False), (0.0, 2.0**-60, True),
+], ids=['exact', 'absolute-outside', 'absolute-boundary', 'relative-outside', 'relative-boundary'])
+def test_mixed_numeric_compare_preserves_integer_information(tmp_path, capsys, kind, sign, reverse, atol, rtol, passed):
+    import torch
+    from rpipe.flow import cli
+
+    a, b, peer = (_run(tmp_path, name) for name in ('a', 'b', 'peer'))
+    values = [sign * (2**60 + 1), sign * float(2**60)]
+    if reverse:
+        values.reverse()
+    item_name = {'metrics': 'metrics', 'history': 'history'}.get(kind, 'checkpoint.latest.model')
+    for run, value in zip((a, b), values):
+        if kind == 'metrics':
+            path = run / 'result.json'
+            body = json.loads(path.read_text())
+            body['metrics']['loss'] = value
+            path.write_text(json.dumps(body), encoding='utf-8')
+        elif kind == 'history':
+            path = run / 'assets/tracker/tracker_state.json'
+            body = json.loads(path.read_text())
+            body['splits']['train']['Loss']['history'] = [value]
+            path.write_text(json.dumps(body), encoding='utf-8')
+        else:
+            path = run / 'assets/checkpoints/latest.pt'
+            body = torch.load(path, weights_only=False)
+            if kind != 'checkpoint-scalar':
+                dtype = (torch.uint64 if kind.endswith('-u') else torch.int64) if isinstance(value, int) else (
+                    torch.complex128 if 'complex' in kind else torch.float64)
+                value = torch.tensor([[value, value], [value, value]], dtype=dtype).t()
+            body['model']['mixed'] = value
+            torch.save(body, path)
+    before = {p: p.read_bytes() for run in (a, b, peer) for p in run.rglob('*') if p.is_file()}
+    report = compare_runs(a, b, atol=atol, rtol=rtol)
+    output = tmp_path / 'comparison.json'
+    code = cli.main(['compare', str(a), str(b), '--atol', str(atol), '--rtol', str(rtol), '--out', str(output)])
+    saved = json.loads(output.read_text(encoding='utf-8'))
+    captured = capsys.readouterr()
+    assert not captured.err
+    assert {p: p.read_bytes() for p in before} == before
+    assert report['passed'] is passed
+    assert report['items'][item_name]['passed'] is passed
+    assert code == (0 if passed else 1)
+    assert saved['passed'] is passed
+    assert saved['items'][item_name]['passed'] is passed
+    if not passed:
+        assert report['items'][item_name]['max_abs_diff'] == 1
+        assert saved['items'][item_name]['max_abs_diff'] == 1
+        assert report['items'][item_name]['n_problems'] > 0
