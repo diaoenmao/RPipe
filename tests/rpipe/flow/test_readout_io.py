@@ -149,3 +149,39 @@ def test_strict_readout_valid_control_keeps_success_contract(tmp_path, strict_re
     elif command == 'compare':
         assert output.read_bytes() != b'previous comparison evidence' and 'passed' in captured.out
     assert {f: f.read_bytes() for f in before} == before
+
+
+@pytest.mark.parametrize('payload', ['syntax', 'deep', 'valid'])
+def test_optional_launch_counts_keep_parse_failure_best_effort(tmp_path, capsys, payload):
+    """CLI count display -> optional index parse refusal -> no print or mutation; valid counts still print."""
+    from rpipe.flow.cli import _print_launch_counts
+
+    raw = (b'{broken' if payload == 'syntax' else b'{"unused":' + b'[' * 12000 + b'0' + b']' * 12000 + b'}'
+           if payload == 'deep' else b'{"experiments":[]}')
+    index = tmp_path / 'index.json'
+    index.write_bytes(raw)
+    assert _print_launch_counts(tmp_path) is None
+    captured = capsys.readouterr()
+    assert not captured.err
+    assert ('planned=0' in captured.out) if payload == 'valid' else not captured.out
+    assert index.read_bytes() == raw
+
+
+def test_optional_launch_counts_does_not_hide_programming_error(tmp_path, monkeypatch):
+    """Optional CLI count display keeps non-parse RuntimeError identity without changing index bytes."""
+    from rpipe.flow.cli import _print_launch_counts
+
+    index = tmp_path / 'index.json'
+    index.write_bytes(b'{"experiments":[]}')
+    error = RuntimeError('unexpected count programming error')
+    original = Path.open
+    def refuse(path, *args, **kwargs):
+        if path == index:
+            raise error
+        return original(path, *args, **kwargs)
+    with monkeypatch.context() as fault:
+        fault.setattr(Path, 'open', refuse)
+        with pytest.raises(RuntimeError) as caught:
+            _print_launch_counts(tmp_path)
+        assert caught.value is error
+    assert index.read_bytes() == b'{"experiments":[]}'
