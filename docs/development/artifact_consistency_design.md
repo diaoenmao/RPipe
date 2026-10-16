@@ -376,3 +376,6 @@ event_lines文档与既有测试要求timestamp order，Logger原生输出RFC333
 只改logs.py排序键：已识别且带时区、在datetime精度内的时间用标准库转UTC，并以固定微秒精度字符串比较，不用浮点epoch、不改原行文本/Logger或输入格式。缺失、坏/无时区时间、UTC转换溢出继续原文本/9999 fallback；高于微秒的旧文本保持原排序键，避免datetime截断造成新的顺序损失，不宣称为其新增UTC语义。相同键仍沿Python原稳定排序。event选择/traceback筛选、path归属与可选IO guard、strict index/CLI拒绝、状态/聚合/科学门均原样。无新helper/依赖/配置/路径，不设全局时区。
 
 整批回归/源码保全/本机与最终head/实际dev CI验收后统一PR，不因几行设计另开PR。无GPU/测速/正式Study、数据/Run/provenance改写或布局变化。
+
+
+B116已本地实施ba665de：28新节点全执行/通过，core1902 passed/1既有平台skip、CPU Flow273 passed，0failure/error；原字节证明仅导入/排序键变动。超微秒旧文本不新增UTC排序合同，fallback保留，严格恢复/科学门不变。最终head/实际dev CI待完整里程碑验收，详record§186；原证据.tmp/audit116不随clone。

@@ -1,5 +1,14 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 B116本机完成；PR157双侧验收
+
+PR157最终head10f01de/实际dev50d5a6bd全部实际CI成功，Issue156关闭，archive-exclusive-creation本地/remote普通清理；唯一未合codex/readout-time-order保留。周期基线149累计3、结束remote40，main/dev、数据/Run/provenance和_staging_from_DEM不动，详record§185。
+
+B116/#158：801fa3c先红28项8失败/20控制→a183394设计→ba665de一处共享排序键。28新节点全执行，core1902 passed/1既有skip、CPU Flow273 passed，0failure/error。原生aware时间按实际UTC顺序、原输出行/输入字节不变；坏/无时区/缺失/亚微秒/转换溢出保原fallback，亚微秒不新增UTC语义；不改Logger、字段/路径/数值或科学门。证据.tmp/audit116不随clone，正式测试/记录§184–186可携带。按完整里程碑和少量PR规则流转，最终head与实际dev CI分别验收，未合分支/Issue保留。
+
+GPU准入继续按19:53白名单+进程类型、实际CUDA占用、实际free与RAM实测峰值+2GB；无当前身份拒绝脚本，历史校准材料只作证据。当前不执行GPU/性能/Study，不打断外部任务；规则与静态核对详record§183，以下旧状态保留。
+
+
 ## 2026-10-16 B115本机完成；PR155已双侧验收；19:53准入规则
 
 PR155最终head34653e2和实际dev720a13df全部实际CI成功，Issue154关闭，execute-final-evidence本地/remote各1条普通删；保留唯一未合codex/archive-exclusive-creation，清理周期149累计2，见record§182。

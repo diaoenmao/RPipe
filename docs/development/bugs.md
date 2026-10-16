@@ -6,13 +6,13 @@
 
 ## 开放
 
-### B-115：不可变源码导出覆盖竞争者及 close IO 替换首错
+### B-116：原生带偏移日志按墙钟文本颠倒实际事件顺序
 
-- Issue：[156](https://github.com/DreamSoul-AI/RPipe/issues/156)。main_exp与main_probe两导出exists→write_bytes在确定性真实线程交错下覆盖peer后success；八合成探针两个反例、六控制。
-- 0383bd1先红28项12 failed/16控制passed，862db93设计，832c1c9两处原写入改xb排他创建和首错优先close；部分诊断字节/peer/旧manifest保全。原Git ref、归档路径/格式/hash和科学门不改。
-- 28新节点全执行/通过，core1874 passed/1既有平台skip、CPU Flow273 passed，0failure/error；待最终head与实际dev全部实际CI。初轮无效夹具另存不计库失败，临时.tmp/audit115不随clone，详[record§181–183](record.md)。
+- Issue：[158](https://github.com/DreamSoul-AI/RPipe/issues/158)。六实际CLI案例中DST回拨/UTC跨日/跨偏移三个反例return0却较晚在前，三个同偏移控制正确，输入字节不变。
+- 801fa3c先红28项8 failed/20控制passed，a183394设计，ba665de只导入datetime并规范aware排序键；原行/格式/筛选/IO保持。坏/无时区/缺失/亚微秒/转换溢出沿旧fallback，不宣称新增超出datetime精度的UTC语义。
+- 28新节点全执行/通过，core1902 passed/1既有平台skip、CPU Flow273 passed，0failure/error。待完整里程碑最终head与实际dev全部实际CI，详[record§184–186](record.md)；临时.tmp/audit116不随clone。
 
-B114/#154已PR155最终head与实际dev全部实际CI验收并关闭，旧主题本地/remote已清，详[record§182](record.md)。B111/#150、B112/#151、B113/#153由PR152验收关闭，详[record§178](record.md)。
+B115/#156已PR157双侧全部实际CI验收关闭并清本地/remote，见[record§185](record.md)。B114/#154由PR155验收关闭，见[record§182](record.md)。
 
 B101/#130已PR131合dev并验收关闭，正式记录与分支清理见[record§154](record.md)。
 
