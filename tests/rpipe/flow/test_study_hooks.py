@@ -216,17 +216,25 @@ def test_recipe_checkpoint_state_keeps_legacy_and_relocated_imports(tmp_path, mo
         bundle = ctx.state['system'].save_checkpoint(loaded, 'with-recipe-state')
         target = create(tmp_path / 'relocated', 'relocated')
         target_ctx = prepared(target)
-        restored = target_ctx.state['system'].load_checkpoint(str(bundle))
-        assert restored['model']['_extra_state'].value == 7
-        assert type(restored['model']['_extra_state']) is target_ctx.state['model']._recipe_state_type
-        assert restored['model']['_extra_state'].label == 'relocated'
-        import shutil
-        from rpipe.structure.artifact.readout.compare import _checkpoint
-        shutil.copy2(bundle, target_ctx.state['system'].checkpoint_dir() / 'copied.pt')
-        copied = target_ctx.state['system'].checkpoint_dir() / 'copied.pt'
-        copied_before = copied.read_bytes()
-        displayed = _checkpoint(target_ctx.layout.root, 'copied')
-        assert type(displayed['model']['_extra_state']) is target_ctx.state['model']._recipe_state_type
-        assert copied.read_bytes() == copied_before
+        original_namespace = ctx.state['model']._recipe_state_type.__module__.partition('.')[0]
+        original_modules = {name: module for name, module in list(sys.modules.items())
+                            if name == original_namespace or name.startswith(original_namespace + '.')}
+        for name in original_modules:
+            sys.modules.pop(name)
+        try:
+            restored = target_ctx.state['system'].load_checkpoint(str(bundle))
+            assert restored['model']['_extra_state'].value == 7
+            assert type(restored['model']['_extra_state']) is target_ctx.state['model']._recipe_state_type
+            assert restored['model']['_extra_state'].label == 'relocated'
+            import shutil
+            from rpipe.structure.artifact.readout.compare import _checkpoint
+            shutil.copy2(bundle, target_ctx.state['system'].checkpoint_dir() / 'copied.pt')
+            copied = target_ctx.state['system'].checkpoint_dir() / 'copied.pt'
+            copied_before = copied.read_bytes()
+            displayed = _checkpoint(target_ctx.layout.root, 'copied')
+            assert type(displayed['model']['_extra_state']) is target_ctx.state['model']._recipe_state_type
+            assert copied.read_bytes() == copied_before
+        finally:
+            sys.modules.update(original_modules)
     assert {path.relative_to(input_root).as_posix(): path.read_bytes()
             for path in input_root.rglob('*') if path.is_file()} == before
