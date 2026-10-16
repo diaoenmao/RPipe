@@ -354,3 +354,42 @@ def test_report_count_cells_preserve_rows_and_peers(report_study, capsys, route,
     assert capsys.readouterr().out.strip() == str(numbers_path(study))
     assert {p: p.read_bytes() for p in before if p != numbers_path(study)} == {
         p: value for p, value in before.items() if p != numbers_path(study)}
+
+
+@pytest.mark.parametrize('run_id,expected_cell', [
+    ('a`b', '`` a`b ``'), ('`edge', '`` `edge ``'), ('edge`', '`` edge` ``'),
+    ('`wrapped`', '`` `wrapped` ``'), ('a``b', '``` a``b ```'),
+    ('`', '`` ` ``'), ('``', '``` `` ```'), ('```', '```` ``` ````'),
+    ('a``x`', '``` a``x` ```'), ('plain', '`plain`'),
+    ('with space', '`with space`'), ('中文', '`中文`'),
+])
+@pytest.mark.parametrize('publish', [False, True])
+def test_numbers_code_cell_preserves_literal_run_identity(report_study, run_id, expected_cell, publish):
+    from urllib.parse import quote
+    from rpipe.structure.artifact.layout import validate_run_directory
+    from rpipe.structure.artifact.readout.report import render_numbers, write_numbers
+
+    validate_run_directory(run_id)
+    for name in ('index.json', 'process.json'):
+        path = report_study / name
+        body = json.loads(path.read_text(encoding='utf-8'))
+        body['experiments'][0]['runs'][0]['id'] = run_id
+        path.write_text(json.dumps(body, ensure_ascii=False), encoding='utf-8')
+    human = report_study / 'docs/STUDY_REPORT.md'
+    human.write_text('human conclusion stays here\n', encoding='utf-8')
+    before = {p: p.read_bytes() for p in report_study.rglob('*') if p.is_file()}
+    if publish:
+        assert write_numbers(report_study) == numbers_path(report_study)
+        text = numbers_path(report_study).read_text(encoding='utf-8')
+    else:
+        text = render_numbers(report_study)
+    run_rows = [line for line in text.splitlines() if '[run.log]' in line]
+    assert len(run_rows) == 2
+    assert run_rows[0].split(' | ')[2] == expected_cell
+    assert '| `b` |' in run_rows[1]
+    href = '../runs/' + quote(run_id, safe='') + '/assets/logs/run.log'
+    assert f'[run.log]({href})' in run_rows[0]
+    assert 'accuracy=90.0000' in run_rows[0]
+    assert '90.0000' in text and all(_markdown_columns(line) == 5 for line in run_rows)
+    protected = {p: value for p, value in before.items() if not publish or p != numbers_path(report_study)}
+    assert {p: p.read_bytes() for p in protected} == protected
