@@ -3139,3 +3139,41 @@ check_frozen只归一化OSError/ValueError。真实深层provenance JSON触发Re
 PR147实际dev9a7af374ee6b1354c1c9aea37858059c03c8f329的Package38888713101 / Unit38888713125全部实际矩阵/聚合成功；DEV_CHECKED SHA256 adaa67489558cc5dcb0901043f6e6879fa5ffa1156772eaeea08173791f722d8。最终head87a8e91此前Branch38887954486/Package38887954478/Unit38887954518全绿，两侧验收已追加PR147正文。Issue146验收关闭，核对tip/祖先/唯一worktree后codex/study-plot-publication本地/remote各1条普通删除；未合codex/freeze-parser-refusal与Issue148保留。清理基线仍PR139，已验收累计4；下一次验收达到约5批时做完整本地/远端分支、worktree与已处理PR/Issue盘点。无数据/结果/provenance/worktree删除。
 
 B110最终本机验收：12新节点全部执行，core实际选择其中4项unit、CPU Flow实际选择8项integration；新12及相邻204通过，core1818 passed/1既有Windows POSIX模式skip，CPU Flow215 passed，全部0failure/error。LOCAL_CHECKED保存XML/hash、新节点执行与源码原字节仅一处异常元组替换证明。strict loader/JSON解析限额/schema、freeze真假、真实phase失败和所有调用方原样；原始无效探针/更正证据均保留，不挑选失败记录。最终head与实际dev全部实际CI仍待分别验收，不以本机通过当发布或科学验收。原始.tmp/audit110不随clone，正式测试/设计/记录随Git提供。
+
+
+## 173. PR149 双侧验收与五批周期清理（2026-10-16）
+
+PR149最终head0c37aada60aab6dc9cb253488766ff012b310650的Branch38889723895 / Package38889723786 / Unit38889723670全部实际矩阵/聚合成功，正常合devafa3a639d85450c24a37244ed92b1182a14228f3；实际devPackage38890448126 / Unit38890448304亦全部实际成功。DEV_CHECKED SHA256 d25336051605d27b04360c924406a7d4e465e5e5731ee3b167dc15823119e111。Issue148验收关闭，PR149正文已追加两侧事实；freeze-parser-refusal本地/remote各1条普通删除。
+
+以PR139/dev90078c8为旧基线，已验收PR141/143/145/147/149共5批，对应Issue140/142/144/146/148均closed。五个已保全主题分支本地和remote均已普通清理：codex/curve-publication-ownership、codex/shared-lock-cleanup、codex/writer-close-errors、codex/study-plot-publication、codex/freeze-parser-refusal。前四的逐次删除证据保留，最后一条本次核对tip/祖先/worktree后删除；没有为了周期盘点重复删除。
+
+完整盘点：本地仅main/dev与活动未合codex/optional-read-boundaries，remote仅main/dev，Git登记唯一primary worktree，无额外/废弃已登记worktree可清，未删除worktree。新分支未合且只在本地累积，保留；PR open清单为0，Issue150/151待修保留。长期分支本地main7a15c46/dev9324014及远端main00e70b1原样，未force push、未动main/tag或数据/Run/provenance/_staging_from_DEM。新的周期基线为PR149/devafa3a639，累计归零；PERIODIC_CHECKED及原清单在.tmp/audit110，不随clone。本轮清单/结论随下个完整里程碑提交，不单开纯文档PR。
+
+## 174. 可选读取与strict readout集中盘点及测试先行（2026-10-16）
+
+承接§81/83既有全仓写入/展示清单，本次以devafa3a639为基线集中核对所有artifact/Flow process读取与Study对比读取入口。表中“源审/既有回归”表示既有合同与已有测试定位，未把未重新执行的故障矩阵宣称为本轮实测；本轮确认反例只有#150/#151两类，留在同一里程碑。原始rg/源码和合成探针保留.tmp/audit111，不依赖正式Study数据。
+
+| **读取点/消费者** | **既有合同与本轮结论** | **证据/后续** |
+| --- | --- | --- |
+| activity.read_activity / CLI status提示 | 可选；stat/read/Unicode/JSON/Recursion与最低字段 guard已存在，坏提示不改变权威状态 | 源审；test_activity与test_activity_status既有回归 |
+| readout.status._read_optional / result/config | 3态；已有OSError/Artifact/JSON/Unicode/Recursion guard，mode冲突及metric-cell边界保持 | 源审；test_status/test_status_planned_modes/test_readout_io |
+| readout.logs.event_lines / optional log | 与status共享可选读guard与log_path归属，不写Run或跨目录读 | 源审；test_readout_io与logs既有测试 |
+| readout.status.log_path / report._log_links | regular-file/Run归属/Windows命名空间检查；链接URI保持 | 源审；status/report既有归属回归 |
+| process._state_history / legacy tracker | 可选；存在性与读取在try，IO/JSON/Unicode/Recursion降级为空，RuntimeError不吞 | 源审；test_aggregate既有状态读取矩阵 |
+| process.load_curve_series / JSONL主轨迹 | 可选；逐行坏JSON/Recursion跳过、IO停止读取已得轨迹，start/offset规则不变 | 源审；test_aggregate既有轨迹回归 |
+| process._load_result / indexed sibling result | 待修#150；stat在try外，domain/Recursion解析错误阻断peer；应沿已有不可用Run规则，不改变n/n_planned/complete算法 | 6实际process探针，44主红中的unit/process节点 |
+| scheduler._run_result / run_succeeded | 可选完成提示已有OSError/ValueError/CorruptArtifactError/Recursion guard；依赖新鲜度stat失败仍false | 源审；scheduler既有回归，不执行launch |
+| scheduler.load_launch_plan / jobs缓存 | 可选缓存已有stat/read/JSON/Type/Overflow/Recursion guard及batch核验；None重make合同保持 | 源审；scheduler缓存回归，不触发make/下载 |
+| result.load_result / config.load_config | strict边界；非mapping、坏语法/编码应拒绝；不因#150改公共loader | 本轮strict result新控制；既有config/result回归 |
+| index.load_index / plan schema及Run目录 | strict计划、形状/目录校验保持；helper允许真实解析错误向消费者传播 | 源审；不改index/schema，CLI分类归#151 |
+| report.render_numbers / 当前index-process绑定 | strict；身份/计划不符拒绝，合法partial可写，原子NUMBERS保持 | 源审；test_report既有回归；#151 CLI深层拒绝 |
+| compare._load_json / _history / _checkpoint | strict；object、history、checkpoint归属/容差与原数字比较保持 | 源审；test_compare既有回归；#151仅CLI分类 |
+| CLI status/logs/report/compare | 待修#151；四语法错误返回2，四深层错误逃逸Recursion；保持strict拒绝、不改输入或旧派生 | 8真实CLI探针、44主红中的20CLI节点 |
+| CLI _print_launch_counts | 待修#151同批；语法失败不输出，深层错误却逃逸；应维持可选计数best-effort | 3真实helper探针与4补红节点 |
+| provenance.load_provenance / check_frozen | strict读取与冻结拒绝分层；PR149已双侧CI接受，Recursion保留cause，旧成功保全决策不变 | B110正式12节点，未扩宽任意RuntimeError |
+| shared.shared_paths / prepared_resource manifest | strict声明与不可变缓存身份/摘要；不把坏manifest当默认可复用输入 | 源审；shared既有回归；不执行builder/下载 |
+| System.load_checkpoint / split diagnostics | strict恢复及committed bundle优先；.writing/.incomplete为保全诊断，不套普通tmp清理 | 源审；既有checkpoint恢复合同保持 |
+| main_exp curves.read_json/read_tracker/checkpoint_summary/log audits | strict科学证据读取与阈值审计，不能套可选展示降级 | 仅源审，不执行Study门或读取旧Run；PNG保全已PR147验收 |
+| historical archive/source exports / source manifest | 原字节、固定Git对象与恢复合同，非optional展示数据 | 仅源审；不加载历史代码或改归档/正式产物 |
+
+同主题B111/#150与B112/#151已先开Issue，8062f71先提交44正式回归12 failed/32有效控制passed；c79b17b补4计数回归1 failed/3有效控制passed，均0error/skip，两套原红分别保留，不冒充单次48红。新18:53频率规则已同步cicd：本地主题节点照常留存，两个根因、清单、验证与文档在一个分支积累到完整里程碑后再统一PR，不立即推单行文档/拆PR。生产尚未修改，按已实施读取合同先记设计再最小修复；正常聚合公式、指标转换、计数与科学门不动。
