@@ -3930,3 +3930,12 @@ PR184最终head67c77c2c6e008474d060de2871926fa806f32737，Branch38948310761/Pack
 真实CPU仅sleep的两探针：注入首次KeyboardInterrupt/OSError，下一wait可成功；均原异常对象保留、wait1次、返回时原child仍活，随后由探针等自然退出0。1215806先提交红28项8失败/20控制，0error/skip；4个原生CLI覆盖首错两类×child真实exit0/7，另原等待类4项增强失败，其余20控制通过。原始WAIT_FAILURE_REPRO、BEFORE_TRANSIENT_WAIT.zip、TRANSIENT_RED XML/log在.tmp/audit135保留，不随clone；上一轮LOCAL_CHECKED与候选证据保留为历史，未推送/未验收。
 
 方案已先补design：首次wait抛错追加一次同句柄恢复wait，保留首错；恢复成功继续原非零退出纠正、恢复仍失败继续其余peer。正常wait和完成后诊断不重复wait，无进程重跑/kill/suspend/新配置/helper/全局锁/布局/科学门变化。持续wait拒绝或真实hang仍不能保证完成，需明确限制。当前185仍OPEN、本轮先修该已有范围再重新完整检查，继续本地积累，未另立Issue/PR；无用户/设计阻塞，新B136。
+
+
+## 232. B135恢复wait重新本机验收及B136/#186原生依赖别名先红（2026-10-17）
+
+B135由1215806先红28项8失败/20控制→df62f80方案→0df9943仅追加9行恢复wait：首wait抛错仍保存首错，追加同句柄一次wait，成功后沿原非零纠正，二次持续拒绝尝试其他peer。262相邻passed；重新core2164 passed/1既有skip、CPU Flow429 passed，均0fail/error，新32（27unit+5原生CLI）全执行。91376/44060/9658终结exit0，TRANSIENT_* XML/log与TRANSIENT_LOCAL_CHECKED独立留存，不覆盖此前不完整候选/红/绿。未推送/开PR，185仍OPEN。
+
+同一调用链新B136/#186：Windows Eval/eval samefile时alias丢sibling parents/依赖/checkpoint，父failed时readiness误True并可派发Popen替身；canonical拒绝。只读字节保持，无实际child/权重加载/训练。初探针漏failed.error由严格writer正确拒绝后，保留DRIVER_SETUP_REJECTED并补正确synthetic配置；不是库失败。72条全状态Issue清单去重，已开186；与已修183计划内重复、179日志身份分属不同合同。
+
+7ae8a6d先红30项10失败/20控制，0error/skip：IDs/依赖/checkpoint、父failed/newer/valid与include_done、启动拒绝、train rerun失效、重试耗尽屏障；均原生文件系统fixture，POSIX不同大小写实体独立控制待CI，不新增skip。原始ZIP/REPRO/RED在.tmp/audit136不随clone。方案先写design：同平台Path组件用于sibling匹配与现有调度依赖key/lookup/失效比较，metadata保留原字符串；原factor/seed/显式checkpoint/mtime/模式/波次/布局/科学门不动。当前唯一未合分支同批185+186，不拆PR；新B137，无审批阻塞。

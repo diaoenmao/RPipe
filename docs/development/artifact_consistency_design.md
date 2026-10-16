@@ -636,3 +636,14 @@ B135本机实施状态（2026-10-17）：最终ba04ae3按修正方案复用原�
 B135二次复查修正（2026-10-17，仍未推送）：ba04ae3对启动错误已收尾peer，却在wait自身首次短暂失败时直接跳到下一peer，没有给该句柄恢复等待机会。真实仅sleep CPU子进程两探针（首wait KeyboardInterrupt/OSError、下一wait可成功）均保留首错但只wait1次、返回时child仍存活；随后探针等自然退出0。1215806先提交加强红28项8失败/20控制，含4原生CLI（首错两类×真实child exit0/7）及原等待类增强；原先28新已绿证据只属该不完整候选，不替代本边界。
 
 保留同一B135/#185范围及分支，不新立B/PR。原每child的wait与int code转换单独try；首次wait抛错时仍保存最初异常对象，并对同一已知owned句柄追加一次恢复wait。恢复成功继续原非零退出纠正/诊断；恢复仍失败则保留首错并尝试其余peer。正常wait只1次、完成后诊断异常不重复wait，不增加公开重试配置或全局进程策略；该一次恢复是异常收尾而非重跑训练。不能保证持续OS wait拒绝或真实hang已完成，源码标出边界。原启动body、结果纠正、codes/资源/波次/既有训练失败重试、布局/文件架构均保持。先本修正再最小实现，后重新完整检查；不拿旧绿冒称完成。
+
+
+### B136 / #186：sibling身份与调度依赖共用当前平台Run组件（2026-10-17，实施方案）
+
+原生Windows Eval/eval同实体，canonical能找到Train、旧成功在parent failed时False、能选best路径；alias却parents空/dependency None/readiness True/checkpoint None。直接alias eval在parent failed时Popen替身被调用。只读各文件字节不变，无真实子进程/权重加载/训练/GPU。72条全状态Issue去重，区别于已修183重复计划及179日志归属；初探针漏failed.error被严格writer拒绝，保留driver拒绝而不当库失败。原始ZIP/REPRO在.tmp/audit136不随clone。
+
+先Issue186再7ae8a6d红30项10失败/20正常控制，0error/skip，均已执行。覆盖sibling IDs/依赖/checkpoint选择、failed/newer/valid parent×include_done、eval拒绝、train别名rerun失效及重试耗尽屏障；原生POSIX实际创建不同大小写独立Run作为有效控制，不新增平台skip。本机Windows证明别名反例，POSIX结论仍待实际CI。
+
+最小方案不改产物/metadata字符串：resume.sibling_train_ids原同Run判断用Path(rid)==Path(run_id)；现有schedule.dependencies临时mapping以Path(run_id)为key，三处查询使用Path，遍历时转回原字符串传既有安全validator/结果写与诊断，train rerun比较也按Path。父ID仍用index原字符串，不改seed/factor匹配、current-index范围、外部/本地显式checkpoint独立控制、mtime新鲜度或训练评估波次。无新helper/import/schema/全局lower-case/任意symlink或短名探测，不扩大跨调用互斥。
+
+全部调用者已核：sibling_train_checkpoint和sibling_train_dependency共用ID选择；run_succeeded/plan/cache/CLI经原依赖入口，launcher依赖lookup/旧eval失效/失败重试过滤用同平台key。与B135异常子进程所有权同一启动正确性里程碑、本地同分支累积，再完整验证；不另开一个bug一个PR。先本方案再最小修，不待设计批准。
