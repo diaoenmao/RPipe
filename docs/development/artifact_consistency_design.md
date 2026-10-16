@@ -661,3 +661,16 @@ B135–B136本机实施状态（2026-10-17）：0df9943/3594c1e按最后修正�
 最小方案仅capture_git的两个现有subprocess.run加errors='replace'，继续text=True与原默认locale，不改encoding、命令、cwd、10/30秒timeout、退出码检查/捕获异常/返回schema。只保存ASCII HEAD和dirty布尔，不需要返回文件名；不可解码文件名字节替换仍是非空status，不能误报clean；失败命令/timeout仍原{}。这从源头避免reader-thread失败/None，不捕AttributeError或吞RuntimeError，不加wrapper/配置/依赖/架构/路径，不改冻结digest或source/plan范围，不写回旧provenance。原stdin/输出不对外传文件名，合法文本/locale正常路径结果不变。
 
 先本方案再两处最小参数修、完整本地检查。PR187已正常合devcd0a8a0、实际devCI尚待；本项位于其后唯一未合codex/optional-metadata-correctness，旧PR/head不追加，下一可选元数据主题本地积累再里程碑PR，不马上单B开PR。无设计批准阻塞，不合main/tag/删数据。
+
+
+### B138 / #189：国内下载入口（2026-10-17，已授权实施方案）
+
+03:16用户新增明确要求，区别于旧版仅hf-mirror的合同。Git跟踪Python没有现成HF模型或datasets下载实现，只有注册builder；不凭空新增模型/数据类型。现有origin.py集中实现download_model与load_hf_dataset，并从原model_api/data_api暴露供注册builder复用。ModelFactory和DataFactory在builder之前应用显式origin，原builder签名、config对象、缓存锁和目录不变。
+
+模型入口默认domestic：原样repo ID及revision先交ModelScope snapshot_download，失败（包括未安装可选SDK）保留其异常上下文后仅向显式endpoint=https://hf-mirror.com的HF snapshot_download兜底；两边失败报告RuntimeError并保留异常链，不转海外、不重试循环。cache_dir必须由调用方传原shared/model；本地已存在路径直接返回，不下载/搬迁。ModelScope和HF仓库名不相同时由builder明确选正确ID，不推断映射或静默替换模型。SDK可选，现有纯torch安装不强加依赖；使用优先能力需安装modelscope，HF入口沿可选hf依赖。
+
+数据入口在导入datasets之前设HF_ENDPOINT，并检查已导入datasets.config/huggingface_hub.constants：若缓存端点仍指海外则明确报错，要求新worker在导入前选domestic，不reload/猴补第三方全局常量。模型HF兜底另显式endpoint，防已有import忽略环境。torchvision沿原CIFAR10/100/MNIST国内镜像和校验，SVHN/FashionMNIST无登记镜像继续拒绝，绝不悄悄转官方。foreign旧显式接口兼容保留；本会话实际下载禁用，模板后续使用domestic，历史Run/结果/快照原样保全。外部baseline自定义HTTP/第三方脚本仍需其作者逐项审地址，不声称环境变量是网络防火墙。
+
+先Issue189→03bb7ce红回归：7新节点均失败（builder时序2、ModelScope优先/镜像兜底/双失败3、datasets路由/旧import拒绝2），5旧控制通过，原始XML/log在.tmp/audit138不随clone。无真实下载/训练/GPU。与本分支#188合批，完整本机和双侧实际CI之后一个里程碑验收；不改layout、持久化格式或正式实验数字。
+
+依据：ModelScope官方snapshot_download源码 https://github.com/modelscope/modelscope/blob/master/modelscope/hub/snapshot_download.py （实际阅读签名/cache_dir/revision）；HF datasets官方config.py https://github.com/huggingface/datasets/blob/main/src/datasets/config.py （实际阅读HF_ENDPOINT/HUB_DATASETS_URL导入期定义）。SDK当前主分支阅读不等于安装版本实测，回归使用下载替身，真实服务可用性不由本轮保证。

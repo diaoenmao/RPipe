@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR187双侧实际CI已验收，185/186关闭，旧主题本地+远端已清；当前唯一未合optional-metadata分支。
+> 最新：#188本地修0a266a1；新增国内源要求登记B138/#189，先红03bb7ce，7新失败/5旧控制通过。
+> 验证：188相邻155/core2204 passed+1既有skip/CPU Flow429 passed，新10全执行；189尚待实现/完整验收。
+> 下一：ModelScope优先、hf-mirror兜底和datasets镜像路由并入当前完整里程碑，不拆单项PR；无用户决策阻塞。
+> 保护：devcd0a8a0，清理基线181计数2/remote49；main/tag/GPU/数据/历史结果/布局不动，真实下载未执行。
+
 > 当前（2026-10-17）：B135/#185+B136/#186同一启动所有权里程碑本机验收，生产0df9943/3594c1e；仍未推送/开PR。
 > 最新：补齐首次wait短暂失败恢复，并修Windows Run别名丢sibling依赖/误成功/绕过eval屏障；先红与原生证据见§231–233。
 > 验证：295相邻/core2194 passed+1既有skip/CPU Flow429 passed，新62（57unit+5integration）全执行/0新skip。
@@ -3980,3 +3986,16 @@ GitHub当天PR盘点原始PR_CADENCE_INVENTORY：本地2026-10-17零点后已创
 新B137/#188：真实隔离Git输出Unicode文件名（repo-local quotePath=false），本机默认UTF8 decoder正常；显式ASCII父decoder模拟非UTF8locale，Windows reader thread UnicodeDecodeError使stdout=None，公开capture_git AttributeError中断可选元数据。未声称本机默认locale也失败；保留真实bytes/正常headdirty控制/公开异常。初driver只捕UnicodeDecodeError漏WindowsAttributeError，单独留证后修driver，保留原repo无删数据；73条Issue去重后登记188，原ZIP/REPRO在.tmp/audit137不随clone。
 
 dbab1ff先红10项2失败/8控制、0error/skip，八个真实Git capture/publish×decoder/文件名节点及两种stage RuntimeError严格控制；发布仅stub设备环境，其他原链实际执行，输入/peer原字节保全，零GPU/实验/测速。方案先写design：两个原subprocess.run增加errors='replace'，headASCII/dirty bool不需文件名文本，status非空仍dirty；不捕AttributeError/程序RuntimeError，不改encoding/命令/timeout/退出码/格式/布局/冻结规则。当前唯一未合codex/optional-metadata-correctness自actualdev创建，187旧已合branch暂留pendingCI，未新开PR；下一本地修/验证并同主题积累，新编号B138，无用户或设计阻塞。
+
+
+## 235. PR187双侧实际CI验收与主题清理（2026-10-17）
+
+finalhead1314e4159260da158a522f0d13d4c0defb35bf5f的Branch38953094391/Package38953094340/Unit38953094373及全部实际矩阵/聚合成功；actualdevcd0a8a0185820f74a75c932d7d5ff373fb580255的Package38954018787/Unit38954018839及全部实际矩阵/聚合成功。PR_CHECKED SHA2569009db6214e3228d86c6f049d48903f90021c3c205c141638c0ca5a3e8de18d8；DEV_CHECKED SHA256e35af757e18e7f2395b54c96b4fe2510dd1ae4ec3fe21ec813315a64a7ea4af9。185/186保留原正文、各一次真实验收评论后关闭；PR正文一次补验收，无重复反馈。
+
+核tip已入actualdev、工作区仅用户暂存未跟踪、protected refs不变、仅primary worktree后，codex/launch-failure-ownership本地及远端正常删除。当前codex/optional-metadata-correctness未合保留；累计remote49，周期基线181后2PR，不删数据/结果/Run/provenance。原始证据.tmp/audit136不随clone。§234待CI系当时状态，以本节实际验收为准。
+
+## 236. B137/#188本地验收及B138/#189国内路由先红（2026-10-17）
+
+188按dbab1ff先红→a398e07设计→0a266a1仅两处errors='replace'，SOURCE_CHECKED精确原始CRLF字节比对通过。155相邻、core2204 passed+1既有skip、Flow429 passed，0fail/error，10新节点全执行；LOCAL_CHECKED SHA256d8711abce4abcf072baaf1be44b94da652d8f56e8ceab5812b77dc3523c5bd45。原ZIP/REPRO/红绿XML及driver拒绝保留于.tmp/audit137，不随clone；未开PR/未冒称远端验收。
+
+用户03:16国内源要求并入本批，登记189；先核已跟踪Python下载入口（无HF原生实现）与origin全部caller、两factory/API/CLI/prepare、torchvision镜像、optional依赖。03bb7ce先红7新失败/5旧控制通过。方案在artifact_consistency_design末B138，先方案再改代码；下载替身，无实际模型数据请求。ModelScope/HF官方源码读取范围见设计，不凭浏览结果宣称服务可用。188/189均OPEN，本地同一分支完整里程碑后统一PR，不拆小PR，新B139。
