@@ -1,8 +1,8 @@
-> 当前（2026-10-17）：B140/#193 Logger双输出整类修复本机完成，唯一未合codex/logger-sink-evidence；尚未开PR。
-> 最新：真实闭pipe/闭stdout/只读日志三反例转绿；原因/完整traceback留在健康peer，原异常对象和failed Result不变。
-> 验证：先红32项24失败/8控制；相邻257、core2304 passed+1既有skip、CPU Flow433 passed，新32全执行，详§246。
-> 下一：完整Logger类别一个里程碑PR→dev，确切head与实际dev全部实际CI后验收/清主题并做五PR盘点；无阻塞。
-> 保护：remote51/基线181后4；无GPU/下载/实验/main/tag/布局动作，原始失败保留。
+> 当前（2026-10-17）：PR194已正常合dev f2c286d，最终head与实际dev全部实际CI成功；193验收关闭。
+> 最新：Logger双输出/完整traceback整类修复完成；新32全执行，本机core2304passed+1既有skip、CPU Flow433passed。
+> 清理：已删logger-sink-evidence本地+remote；五PR184/187/190/192/194盘点完，新基线194计数0，remote累计52，详§247。
+> 下一：唯一未合correctness-milestone-next仅本地累积验收记录，继续三类复查；无开放Issue、不制造缺陷、不单开tiny-doc PR。
+> 阻塞：无；无GPU/下载/训练/main/tag/布局动作，用户暂存与全部原始失败/数据保留。
 
 > 当前（2026-10-17）：B139/#191三处已证消费反例同类里程碑本机验收完成，唯一未合evidence-boundaries-next，准备统一PR→dev。
 > 最新：Numbers/status/compare文本、派生compare JSON、可选activity提示均修；strict producer/atomic与科学数值/输入身份保持。
@@ -4151,3 +4151,16 @@ PR192验收/清理后在唯一新主题分支提交eba0d3a红32项24失败/8有�
 相邻ADJ257 passed；完整CORE2304 passed+1既有skip、FLOW433 passed，均0fail/error；独立basetemp，1993/22992终结，未运行GPU/训练/性能/下载或正式Study。LOCAL_CHECKED SHA256 9657c34c1d8a4e048be37f9d4c239d1e8af2fb958d565162eae32ec247fece91；原始ZIP/RED/原生红绿/完整XML在.tmp/audit140不随clone，便携测试和设计入库。本批覆盖info/multiline/warning/error/exception/report、文件open/write/flush/close、双IO首错、未知stdout程序错与Runner实际execute，作为一个完整失败留证类别里程碑PR，不逐方法/反例拆PR。
 
 PR192/191已双侧CI验收并清理（§244），不重复反馈；国内下载B138/PR190亦已验收，ModelScope优先/hf-mirror兜底和HF datasets入口镜像回归保持，没有真实下载或服务可用性声明。当前193仍OPEN，准备统一PR→dev，远端检查未完成不提前关；下次合入触发基线181后五PR全面盘点。新B141，无审批阻塞。
+
+
+## 247. PR194双侧实际CI验收与五PR周期清理（2026-10-17）
+
+finalhead26dd6d28f2f865c22a8cf137c2054c6189593bae的Branch38966619127/Package38966619135/Unit38966619134全部实际矩阵及聚合success；正常merge actualdevf2c286d338a33f00c9f57a904639baf4d9eb61b2，Package38967353795/Unit38967353812全部实际矩阵及聚合success。PR_CHECKED SHA256 10b83bfc8cded47614f6531e9fdd95d76da4ab3631cc4eac2b3bf4d7184a9c3c；DEV_CHECKED SHA256 8383c197466f81a1fbf7fd18b1d03ad947a014a1894fea30d9d15bf2a5710cd5。193原body逐字保留，只发一次验收评论后关闭；PR194原body仅一次追加真实验收及清理清单，归一prose全文回读核对。无取消/rerun/长时间watch-ci或收费操作。
+
+删除清单：codex/logger-sink-evidence本地+远端。核对tip26dd6d2与远端一致且已入actualdev、工作区仅用户_staging_from_DEM、protected main/dev/origin-main与PRE_MERGE相同、git登记只primary后，先detach到actualdev，普通push --delete与branch -d，再for-each-ref及ls-remote回读缺席；未force、未删除worktree/数据/结果/Run/provenance，不动main/tag。累计已结束remote主题52。
+
+基线181之后五PR184/187/190/192/194已全部accepted，merge commits均为actualdev祖先，五条旧工作分支本地/remote都缺席；相关182/183/185/186/188/189/191/193全部验收关闭。本次盘点时无open PR/Issue或未合待定分支，长期main/dev保留、唯一primary worktree、app附着managed worktree为0。新清理基线194、计数0；PERIODIC_CLEANUP_CHECKED及全部原始证明在.tmp/audit140不随clone，不删除用户暂存。
+
+本轮后续三类只读复查关联10组源码/既有测试：Logger/Runner/execute失败留证、_atomic/shared/curves所有权及close、status/logs/report/compare读取展示。源码审阅未确认其他新反例，不把已声明的legacy回退或checkpoint单writer约定当新缺陷，也不以文件/测试数量证明所有并发。FOLLOWUP_SCAN/COVERAGE在同临时目录；无新增科学/文献/下载/GPU实验或布局变更。
+
+验收记录在新codex/correctness-milestone-next本地按主题提交，保留到下一完整相关里程碑再统一PR，遵少量PR规则，不单开纯文档小PR。当前无开放Issue，按三类继续实际复查、确认后先Issue/红回归/方案/最小修；下一B141，goal active，无用户/设计阻塞。PR190国内源合同已验收不重做；零真实下载，不能据本轮声明服务可用。

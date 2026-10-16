@@ -159,3 +159,6 @@ B139同类补全（2026-10-17）：可选activity提示亦真实strict stdout编
 ### B140 / Issue #193：Logger单路拒绝阻断健康日志证据（2026-10-17）
 
 实际Runner→execute→Logger，真实OS pipe reader关闭/closed stdout使可写run.log缺原原因和traceback；只读临时log使健康stdout缺完整trace。先eba0d3a红32/24失败/8控制，再3dbd9a6方案、2fa9f0a仅Logger独立双输出和完整诊断尝试；首IO对象/程序错/取消/close策略保持。相邻257、core2304passed+1既有skip、CPU Flow433passed，32新全执行，原生三反例转绿。详record§245–246；原始.tmp/audit140不随clone。待同类里程碑最终head/实际dev全部CI，193仍OPEN，不等设计审批。
+
+
+2026-10-17 B140验收：PR194 finalhead26dd6d2/actualdevf2c286d全部实际CI成功；193原body保持、一次评论后关闭，旧主题本地/remote正常删，详record§247。上文待CI为历史阶段，非当前阻塞。无新开放Issue，不代表所有可能故障已排除。

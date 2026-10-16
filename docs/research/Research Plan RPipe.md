@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
 > Version 1.4; updated 2026-10-17. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `8d3e1b31557951dc113c5869fc3ed6f05cdb6769`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `f2c286d338a33f00c9f57a904639baf4d9eb61b2`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -770,3 +770,6 @@ PR187 launch ownership completed with all actual final-head/dev CI; issues185/18
 
 
 2026-10-17 engineering evidence update: PR192 merged B139/issue191 into dev8d3e1b3, with every actual final-head and integrated-dev CI job successful; the issue was accepted and closed. B140/issue193 then reproduced missing healthy-peer failure context with a closed OS pipe, closed stdout and a read-only log. Red32 comprised24 failures and8 controls; only two existing Logger methods now attempt independent sinks and the complete original traceback. Adjacent257, core2304 passed plus one existing skip, and CPU Flow433 passed; all32 new nodes executed. The three native counterexamples are green, preserving the original exception object, failed Result and peer evidence. The grouped category milestone still needs final-head/integrated-dev CI and is not a release or scientific result. Experiment protocols, gates and layout remain unchanged; future experiments retain the section-nine prerequisites. No new literature reading, download, GPU or training occurred (record sections244–246).
+
+
+2026-10-17 engineering acceptance: PR194 merged into actual dev f2c286d; all actual final-head and integrated-dev CI jobs succeeded, and B140/issue193 was accepted and closed. Independent Logger sinks and complete original traceback attempts were checked with2304 core passes plus one existing skip,433 CPU Flow passes and32 executed new regressions. These are engineering-contract results, not a scientific rerun or release. The five-PR cleanup is complete with new baseline194; bounded follow-up review mapped10 source/test pairs across the three classes without a new confirmed defect. Experiment protocols, numerical gates and layout remain unchanged. No new literature reading, model/data download, GPU or training occurred; section-nine gaps and prerequisite authorizations still govern next experiments (record section247).
