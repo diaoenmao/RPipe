@@ -374,6 +374,7 @@ def test_train_final_flush_cannot_replace_primary_failure(tmp_path, monkeypatch,
     assert tracker.state_path.read_bytes() == old
     assert peer.read_bytes() == b'peer evidence'
     assert set(tmp_path.glob('*.tmp')) == {peer}
+    assert not list(tracker.state_path.parent.glob('*.tmp'))
     assert caught.value is primary
     if log_mode == 'available':
         text = log_path.read_text(encoding='utf-8')
@@ -422,3 +423,4 @@ def test_successful_train_final_flush_failure_still_propagates(tmp_path, monkeyp
     assert len(armed) == 1
     assert tracker.state_path.read_bytes() == armed[0]
     assert not list(tmp_path.glob('*.tmp'))
+    assert not list(tracker.state_path.parent.glob('*.tmp'))

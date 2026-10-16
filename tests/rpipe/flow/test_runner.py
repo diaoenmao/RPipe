@@ -261,6 +261,7 @@ def test_train_finalizer_keeps_original_failed_result(tmp_path, monkeypatch, old
     assert tracker.state_path.read_bytes() == old_tracker
     assert peer.read_bytes() == b'preserve peer'
     assert not list(layout.assets_dir.glob('*.tmp'))
+    assert not list(tracker.state_path.parent.glob('*.tmp'))
     assert caught.value is primary
     assert result['status'] == 'failed'
     assert result['error'] == f'{primary_type.__name__}: original train failure'
