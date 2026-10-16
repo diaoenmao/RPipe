@@ -605,3 +605,24 @@ def test_mixed_scalar_numeric_extremes_are_comparisons_not_file_errors(tmp_path,
     item = {'metrics': 'metrics', 'history': 'history'}.get(kind, 'checkpoint.latest.model')
     assert report['items'][item]['max_abs_diff'] == math.inf
     assert saved['items'][item]['max_abs_diff'] is None
+
+
+@pytest.mark.parametrize('label,expected', [
+    pytest.param('left' + chr(0xD800) + 'right', r'left\ud800right', id='high'),
+    pytest.param('left' + chr(0xDC00) + 'right', r'left\udc00right', id='low'),
+    pytest.param('left' + chr(0xD800) + 'mid' + chr(0xDC00) + 'right', r'left\ud800mid\udc00right', id='mixed'),
+    pytest.param('left-ASCII-right', 'left-ASCII-right', id='ascii'),
+    pytest.param('left研究😀right', 'left研究😀right', id='unicode'),
+    pytest.param(r'left\ud800right', r'left\ud800right', id='literal-backslash'),
+])
+def test_compare_display_labels_are_utf8_and_keep_peer(label, expected):
+    from rpipe.structure.artifact.readout.compare import format_compare
+    body = {'passed': False, 'items': {
+        label: {'passed': False, 'missing': 'a', 'max_abs_diff': None},
+        'peer': {'passed': True, 'max_abs_diff': 0.0},
+    }}
+    view = format_compare(body)
+    assert view.encode('utf-8').decode('utf-8') == view
+    assert expected in view
+    assert 'pass  peer  max abs diff 0' in view
+    assert view.endswith('failed\n')
