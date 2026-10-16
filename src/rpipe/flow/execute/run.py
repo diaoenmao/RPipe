@@ -13,6 +13,7 @@ def run(ctx: FlowContext) -> None:
     logger = ctx.state.get('logger')
     if algorithm is None or tracker is None:
         raise RuntimeError('prepare must land algorithm and tracker')
+    completed = False
     try:
         result = algorithm.run(
             ctx.state.get('data'),
@@ -26,6 +27,7 @@ def run(ctx: FlowContext) -> None:
         )
         if logger is not None:
             logger.info('execute finished')
+        completed = True
     except Exception as exc:
         if logger is not None:
             try:
@@ -39,7 +41,10 @@ def run(ctx: FlowContext) -> None:
         raise
     finally:
         if tracker is not None:
-            try:
+            if completed:
                 tracker.flush_state()
-            except Exception:
-                pass
+            else:
+                try:
+                    tracker.flush_state()
+                except Exception:
+                    pass
