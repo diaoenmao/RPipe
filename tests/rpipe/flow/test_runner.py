@@ -696,3 +696,68 @@ def test_failed_result_survives_unavailable_shared_path_metadata(tmp_path, monke
         assert declaration_path.read_bytes() == contents[declaration]
     else:
         assert not declaration_path.exists()
+
+
+@pytest.mark.parametrize('owner', ['Owner', 'Name [error] marker'])
+@pytest.mark.parametrize('alias', [False, True])
+@pytest.mark.parametrize('custom', [False, True])
+@pytest.mark.parametrize('event', ['split', 'warn', 'flow', 'error'])
+def test_native_readout_keeps_samefile_alias_and_distinct_case_run_ownership(tmp_path, monkeypatch, owner, alias, custom, event):
+    from importlib import import_module
+    from rpipe.structure.system.logger import Logger
+    from rpipe.structure.artifact import write_result
+    from rpipe.structure.artifact.index import write_index
+    from rpipe.structure.artifact.readout.status import list_runs, log_path, _note_from_log
+    from rpipe.structure.artifact.readout.logs import event_lines
+
+    layout = artifact_layout(tmp_path, owner)
+    index_id = owner.lower() if alias else owner
+    if alias and Path(owner) != Path(index_id):
+        foreign = Logger(layout.assets_dir)
+        foreign.error('distinct-case foreign error')
+        layout = artifact_layout(tmp_path, index_id)
+        assert not layout.root.samefile(tmp_path / 'runs' / owner)
+    logger = Logger(layout.assets_dir)
+    if custom:
+        logger.path = layout.root / 'custom.log'
+    peer = artifact_layout(tmp_path, 'peer')
+    Logger(peer.assets_dir).info('peer flow')
+    log_ref = f'runs/{index_id}/custom.log' if custom else f'runs/{index_id}/assets/logs/run.log'
+    write_index(tmp_path, {'experiments': [{'factors': {'algorithm.mode': 'train'}, 'runs': [
+        {'id': index_id, 'run_dir': index_id, 'seed': 0, 'log': log_ref},
+        {'id': 'peer', 'seed': 0}]}]})
+    write_result(layout.result_path, {'status': 'failed', 'control': {}, 'metrics': {}, 'paths': {}, 'error': 'real primary'})
+    write_result(peer.result_path, {'status': 'succeeded', 'control': {}, 'metrics': {'accuracy': 2}, 'paths': {}})
+    payload = 'quoted [error] payload'
+    def phase(ctx):
+        logger.error('real primary')
+        if event == 'split':
+            logger.report(None, 'validation', {'note': payload})
+        elif event == 'warn':
+            logger.warning(payload)
+        else:
+            logger.info(payload, event=event)
+    monkeypatch.setattr(import_module('rpipe.flow.collect'), 'run', phase)
+    ctx = FlowContext(study_dir=tmp_path, layout=layout, config={})
+    ctx.state['logger'] = logger
+    FlowRunner(phases=('collect',)).run(ctx)
+    entries = set(tmp_path.rglob('*'))
+    before = {p: p.read_bytes() for p in entries if p.is_file()}
+    owned = log_path(tmp_path, {'log': log_ref}, index_id)
+    assert owned is not None and owned.samefile(logger.path)
+    expected = '[error] ' + payload if event == 'error' else '[error] real primary'
+    listing = list_runs(tmp_path)
+    assert listing['runs'][0]['note'] == expected
+    assert listing['runs'][1]['status'] == 'succeeded' and listing['counts']['planned'] == 2
+    lines = event_lines(tmp_path)
+    assert any('peer flow' in line for line in lines)
+    assert any('real primary' in line for line in lines)
+    assert not any('distinct-case foreign error' in line for line in lines)
+    quoted = [line for line in lines if payload in line]
+    assert len(quoted) == (0 if event == 'split' else 1)
+    if quoted:
+        assert f' [{event}] ' in quoted[0]
+    if not custom:
+        assert _note_from_log(logger.path, errors_only=True) == expected
+    assert {p: p.read_bytes() for p in before} == before
+    assert set(tmp_path.rglob('*')) == entries

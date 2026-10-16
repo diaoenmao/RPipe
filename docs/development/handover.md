@@ -1,5 +1,26 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-17 B131–B132只读Run身份里程碑完整本机验收
+
+当前唯一未合codex/readout-identity-next自接受dev53ae142，两Issue179/180分别先Issue/独立红/方案/最小修，合批624相邻/core2080 passed+1既有skip/CPU Flow422 passed、新68（36 unit+32 integration）全执行，89991/46963终结exit0。仅status所有者条件与report Run代码单元格两现有文件；无新helper/依赖/schema/布局，原数值/guard/producer/legacy/排序/链接/原子写不动。额外CommonMark实际解析12类及peer通过、普通3类输出byte-identical，工具未入依赖。详record§221–224，原始.tmp/audit131/132不随clone。
+
+本批尚未推送/开PR，179/180仍OPEN；完整主题一个PR，最终head/实际dev全部实际CI和POSIX实体分支验收后关Issue/清分支，因基线161计数4后下次约5需周期盘点；当前remote46。旧待单B/待设计字样属历史，勿重派或重复反馈。无main/tag/GPU/性能/数据删除或科学结论，目标active。
+
+
+## 2026-10-17 B131平台所有者身份本机完整检查；读取主题继续积累
+
+当前codex/readout-identity-next仅本地：#179已先1cfad38红44项17失败/27控制、8dde822方案，再86f6a86单处条件修。450相邻/core2056 passed+1既有skip/CPU Flow422 passed，新44（12 unit+32 integration）全执行，81117/66970终结exit0。Windows真实samefile别名与PureWindows/PurePosix组件语义本机覆盖；POSIX实体隔离分支仍待未来CI。生产者/guard/schema/layout/legacy/排序原字节保持，Source精确替换证明在.tmp/audit131，不随clone。
+
+本主题继续相关只读身份与相邻合同复查，不立即拆单bug PR；#179仍OPEN、尚无PR，完整里程碑后双侧实际CI。短名API未产生不同名，无真实反例不扩展；未知legacy身份保留原回退。PR178全验收清理完毕详record§220，当前§221–222，接受dev53ae142，基线161计数4/remote46，下次约5要周期盘点；目标active，不合main/tag/GPU/性能/数据删除。
+
+
+## 2026-10-17 PR178双侧验收/清理；下一B131/#179
+
+最终head26131eb的Branch38939964823/Package38939964948/Unit38939964815、实际dev53ae142的Package38940832132/Unit38940832165全部实际矩阵/聚合成功。176/177各一次验收反馈后关闭、原正文不变；已普通删codex/failure-evidence-next本地+remote，未删worktree/数据/结果，基线161计数4/remote46。Hash及回读证据见record§220与本机.tmp/audit130，不随clone。
+
+下一codex/readout-identity-next仅本地，从实际dev建立。#179确认未修：原生Windows同文件别名的event匹配仍精确拼写，status/logs会回退误读，2失败/2控制。先正式红回归，保留POSIX大小写不同Run隔离和既有legacy回退，不猜身份/改mode/生产者/schema/布局或每行加FS I/O。原始.tmp/audit131不随clone。下方旧待验收状态只属历史，勿重合/重关/重复反馈；目标active，无main/tag/GPU/性能或数据删除。
+
+
 ## 2026-10-17 B129–B130失败证据独立于共享元数据，本机完整验收
 
 当前唯一未合codex/failure-evidence-next自dev9d78fb4，本地主题积累；B129/#176 Runner与B130/#177 launcher两处同类失败发布已最小修。独立红36项24失败/12控制、最终29项19失败/10控制，原失败不混作一场65红；272相邻、core2044 passed+1既有skip、CPU Flow390 passed，新65（29 unit+36 integration）全执行，40954/75073终结exit0。仅两个原生产文件，原错误/严格write/成功保全/依赖重试/布局不动。详record§217–219，原始.tmp/audit129/130不随clone。

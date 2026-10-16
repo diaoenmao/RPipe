@@ -566,3 +566,32 @@ PR174验收状态（2026-10-17）：B124–B128均已实施并合dev9d78fb4，�
 
 
 B129–B130本机实施状态（2026-10-17）：3743b59与1b6885c已按上文最小实施，合批272相邻/core2044 passed+1既有skip/CPU Flow390 passed，新65全执行，原独立红和源码字节证明保留；两Issue176/177仍OPEN，等待完整主题PR及最终head/实际dev所有实际CI。上文方案已实施，不再等待设计批准；真实存储不可写仍遵循原best-effort/严格writer边界，不承诺不可写介质必有结果。见record§219。
+
+
+PR178验收状态（2026-10-17）：B129–B130已实施并正常合dev53ae142，最终head26131eb及实际dev全部实际CPU/安装包矩阵及聚合成功；176/177验收关闭，主题本地/remote清理。上文待CI保留为当时历史，勿当未实施/待审批。完整来源/hash/限制见record§220。下一B131/#179是新确认的Windows同文件别名原生event身份边界，尚未实施；不改变此前规范或重做已验收任务。
+
+
+### B131 / Issue179：原生event所有者采用平台组件身份语义（2026-10-17，实施方案）
+
+接受dev53ae142上Windows原生samefile/log_path均确认有效Run别名，仅Owner→owner等大小写拼写差异导致_event_match精确字符串前缀不命中而回退；正文/Run名tag抢占，split误进logs，list_runs与standalone note不一致。两别名失败/两原拼写控制留.tmp/audit131；1cfad38先提交44项红17失败/27控制（12单测+32原生集成）。集成含正常/含tag名称、原拼写/别名、默认/custom日志、split/warn/flow/error、peer及全部输入字节/目录清单。
+
+最小方案只改status.py共用_event_match一处条件：已知identity非None时，用既有Path对record相同长度的所有者组件作平台比较，并仍要求紧邻的原' ['边界；事件起点/正则/选择集合/返回偏移与原legacy搜索回退保持。Path组件比较只做文本路径语义，不resolve/stat/samefile，不给每行增加文件系统I/O；Windows匹配同文件大小写别名，POSIX大小写不同组件保持不同。run_dir/producer/log字节和磁盘路径不规范化，不扩大mode、未知外来legacy身份或更改日志schema。
+
+两个既有消费者_note_from_log与logs.event_lines共用此helper，无其他调用者需改；原log_path的所有权/路径守卫、readonly模式、排序与traceback政策全部原字节保持。12单测显式模拟PureWindowsPath/PurePosixPath语义，不能当POSIX实机；32集成在Windows验证实际别名，在POSIX分支创建大小写不同实体并验证foreign日志不被借用，没有新增平台skip。实际POSIX证据须后续CI；先本条方案再最小实现，同主题本地积累后完整里程碑PR。
+
+
+B131本机实施状态（2026-10-17）：86f6a86已按上文单处条件替换实施，450相邻/core2056 passed+1既有skip/CPU Flow422 passed，44新全执行。Windows原生别名与两平台组件语义已本机覆盖，POSIX原生实体隔离尚待后续CI，不能提前验收。#179仍OPEN，本地读取身份主题继续积累、未开PR；上文方案已实施，无待设计批准。原始与原字节证明见record§222及本机.tmp/audit131，不随clone；未知legacy回退、真实不可用存储/任意外来身份不增加保证。
+
+
+### B132 / Issue180：报告Run ID代码跨度保留合法反引号（2026-10-17，实施方案）
+
+现有Run目录校验允许反引号，NUMBERS.md却固定单反引号包ID，真实CommonMark解析使合法含反引号ID丢字符或没有ID code span。原生render_numbers五场3失败/2正常控制，原输入字节/90.0000/编码log href不变；先Issue180再a1e2f97红24项18失败/6控制，覆盖9类特殊ID/3正常ID×只读渲染/原子发布，无新增测试依赖。
+
+依据[CommonMark0.31.2 §6.1](https://spec.commonmark.org/0.31.2/#code-spans)：代码跨度分隔符长度须匹配，边缘反引号可用空格分隔且规范会移去一对padding；代码内反斜线不作为转义。实际阅读限该节及相关示例，未引入整套富文本策略。已安装markdown-it-py仅本机解析探针，不加到project/dev依赖，portable测试固定协议输出与原数值/链接/peer/输入字节。
+
+最小方案仅在原report.render_numbers现有Run行循环内：先用原_markdown_cell得到原显示文本，从单反引号开始延长分隔符直到不出现在正文；含反引号时添加一对必要padding，普通单反引号定界保持原字节。仍写入原id列，不新增helper/import/配置/字段或渲染框架；原空白投影、Markdown其他单元格、_log_links/URL编码、计划绑定、统计/精度、header/列/路径及write_numbers原子写不变。两现有调用者render/write与CLI继续原路径；不能拒绝合法ID掩盖问题。
+
+与B131平台event身份同一只读展示身份主题合批，先本方案再最小实现；修后实际Markdown解析复核和相邻/core/CPU Flow，最终head/实际dev全部实际CI后再关闭。科学输入/门限、文件架构与产物布局不变。
+
+
+B131–B132本机实施状态（2026-10-17）：86f6a86与acdd3e7按两节最小方案实施；624相邻/core2080 passed+1既有skip/CPU Flow422 passed，68新全部执行。实际CommonMark解析12类ID/peer及旧renderer字节比对通过；parser仅本机额外工具，未入依赖。当前两个Issue179/180仍OPEN，完整主题准备一个PR，最终head/实际dev实际矩阵及POSIX实体分支尚待，未提前验收。方案均已实施不待设计批准，原始/源码字节证明见record§224及本机.tmp/audit131/132，不随clone。

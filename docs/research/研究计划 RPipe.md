@@ -690,3 +690,24 @@ B124–B128完整里程碑已PR174正常合dev9d78fb4，最终head5dab50a和实�
 基于接受dev9d78fb4，#176 Runner与#177 launcher两处failed证据被非必要共享声明/布局解析阻断，已分别先Issue/原生红/方案，再3743b59与1b6885c最小修。仅两个既有生产文件，原Result格式、严格输入/正常写入、原异常、冻结/process旧成功保全、调度依赖/重试与共享不可变输入/Run独立可变状态均保持。相邻272 passed、core2044 passed/1既有skip、CPU Flow390 passed，65新（29 unit+36 integration）全执行。独立两场红不是一场65红；详record§217–219。
 
 当前尚未推送/开本批PR，两Issue176/177保持开放，待完整主题PR及最终head/实际dev全部实际CI；原始.tmp/audit129/130不随clone。修复只使可写failed证据免受不可用可选shared元数据阻断，不保证真实不可写介质落盘，不增加CLI原前置拒绝写回或改变文件架构/产物布局。无GPU、性能或正式Study实验，科学结论/缺口/下一步实验仍按既有研究章节，不能由工程检查代替。
+
+
+### 2026-10-17 PR178实际dev验收与后续只读身份缺口
+
+B129–B130两处同类修复已PR178正常合dev53ae142；最终head26131eb及实际dev全部实际CPU/安装包矩阵与聚合成功，176/177已验收关闭，主题本地/remote普通删除。相邻272、core2044 passed/1既有skip、Flow390 passed，65新全执行；原独立红和存储不可写限制保留。周期基线161计数4/remote46，来源与hash见record§220，临时原件不随clone。
+
+下一确认未修工程缺口B131/#179：Windows同文件Run大小写别名被现有路径守卫接受，但原生event定位仍按精确拼写，2别名失败/2控制。下一主题先红回归，保留POSIX不同目录隔离与既有legacy兼容，不扩展mode或改生产者/架构/产物布局。无GPU/性能/正式Study实验或科学结论新增；研究缺口及下一步实验继续按原章节，不由CI替代。
+
+
+### 2026-10-17 B131平台原生日志身份边界（本机完整检查）
+
+#179在接受dev53ae142上确认Windows同文件大小写别名绕过event精确拼写匹配；先44红17失败/27控制、方案后86f6a86仅改共用matcher已知所有者组件条件，不改输入日志/生产者/guard/选择集/排序或布局，不逐行加文件系统I/O。450相邻、core2056 passed/1既有skip、CPU Flow422 passed，新44（12 unit+32 integration）全执行。Windows原生与两平台组件语义本机验证，POSIX真实大小写不同实体隔离仍须后续CI，不能用PurePosixPath模拟代替。来源record§221–222，原.tmp/audit131不随clone。
+
+读取身份主题仅本地继续合批，当前无PR、179保持开放，最终head/实际dev全部实际CI尚待。短名API未产生不同名，无真实反例不扩展；未知legacy身份仍原回退。无GPU/性能/正式Study实验或科学结论新增，既有研究缺口与下一步实验继续原章节；工程通过不替代科学门。
+
+
+### 2026-10-17 B131–B132只读Run身份完整本机里程碑
+
+基于接受dev53ae142，同主题收敛#179平台原生event所有者与#180报告代码跨度Run ID两处缺陷，分别先Issue/独立红/方案，再86f6a86与acdd3e7最小实施。只有两个既有展示文件改变，无新helper/import/依赖/schema/磁盘位置；原producer/guard/legacy/排序、计划绑定/数值统计/链接/其他列/原子写保持。相邻624 passed、core2080 passed/1既有skip、CPU Flow422 passed，68新（36 unit+32 integration）全执行。额外本机CommonMark实际解析12类ID/peer通过，普通3类整份输出与旧renderer逐字节一致；parser不入依赖。来源与协议依据见record§221–224，原始.tmp/audit131/132不随clone。
+
+完整主题准备统一PR，179/180保持开放；最终head/实际dev实际CI和POSIX原生实体分支尚待。下次合入后清理基线161约达5须周期盘点，当前已验收4/remote46。无GPU/性能/正式Study实验或科学结论新增，不改文件架构/产物布局；未知legacy/未产生短名不扩展，既有研究缺口和下一步实验仍按原章节。

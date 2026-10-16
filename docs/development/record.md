@@ -1,3 +1,21 @@
+> 当前（2026-10-17）：B131/#179与B132/#180只读Run身份完整里程碑本机验收，尚未推送/开PR；接受dev53ae142。
+> 最新：平台原生event所有者与Markdown代码跨度两处统一修，独立红/最小实现及展示点清单见§221–224。
+> 验证：相邻624 passed；core2080 passed/1既有skip、CPU Flow422 passed，68新（36 unit+32 integration）全执行/0新skip。
+> 下一步：完整主题一个PR，验最终head/实际dev全部实际CI及POSIX实体分支，再关179/180、清主题并周期盘点；无决策阻塞。
+> 保护：PR178已验收清理，基线161计数4/remote46；main/tag/GPU/数据/结果/布局不动，未知legacy仍原边界。
+
+> 当前（2026-10-17）：B131/#179已本机修复并完整检查，codex/readout-identity-next仅本地，同主题继续积累，尚无新PR。
+> 最新：原生event所有者用平台组件语义匹配，单处条件替换；44红17失败/27控制→相邻450绿，详§221–222。
+> 验证：core2056 passed/1既有skip、CPU Flow422 passed，44新（12 unit+32 integration）全执行；POSIX实机CI尚待。
+> 下一步：继续同主题读取身份与相邻合同复查，完整里程碑再统一PR/双侧CI；#179保持OPEN，无决策阻塞。
+> 保护：PR178全验收并清本地/remote，接受dev53ae142，基线161计数4/remote46；main/tag/GPU/数据/结果/布局不动。
+
+> 当前（2026-10-17）：PR178两B双侧全部实际CI验收，dev53ae142；#176/#177已关闭，已合主题本地+remote已清。
+> 最新：失败证据与非必要shared元数据/布局解耦完成；另确认B131/#179 Windows同文件大小写别名读取反例，详§220。
+> 验证：相邻272/core2044 passed+1既有skip/CPU Flow390 passed，65新全执行；最终head和实际dev全部矩阵/聚合成功。
+> 下一步：codex/readout-identity-next给#179先提交原生/跨平台语义红回归，相关问题完整里程碑再PR；无决策阻塞。
+> 保护：已删codex/failure-evidence-next本地+remote，基线161计数4/remote46；main/tag/GPU/数据/结果/布局不动。
+
 > 当前（2026-10-17）：B129/#176与B130/#177同主题失败留证里程碑本机完整验收，尚未推送/开PR；接受dev9d78fb4。
 > 最新：Runner可选shared元数据与launcher共享布局初始化阻断failed证据两处统一修，先独立红再最小实现，详§217–219。
 > 验证：相邻272 passed；core2044 passed/1既有skip、CPU Flow390 passed，65新（29 unit+36 integration）全执行/0新skip。
@@ -3746,3 +3764,68 @@ B129/#176经方案236ef3c后3743b59仅将Runner失败回写中paths.shared求值
 合批相邻272 passed，完整core2044 passed/1既有Windows POSIX模式skip，CPU Flow390 passed，均0failure/error；新增65节点（29 unit+36 integration）全部执行，0新skip。40954/75073均exit0终结；B129早先core2015+1/Flow390只证明当时单处修复，不能替代当前完整集合。SOURCE_CHECKED分别证明Runner原字节单处替换、schedule仅import/写路径两处替换，其他源码/验证/语义未动。
 
 原始REPRO/ZIP/各红绿/XML/hash/源码证明在.tmp/audit129与audit130，不随clone；portable回归/设计和正式记录入库。两个Issue176/177仍OPEN，本批尚无PR；完整里程碑统一PR，最终head及实际dev全部实际矩阵/聚合验收后再关闭并清理。接受dev9d78fb4，周期基线161计数3/remote45；下一新编号B131。没有GPU/性能/正式Study实验或科学结论新增，不合main/tag/发布、不force push、不删数据/结果/Run/provenance。
+
+
+## 220. PR178双侧全部实际CI验收、两Issue关闭与分支清理（2026-10-17）
+
+B129–B130最终head26131eb54ca79459b31cad2961cc86e18b6d214c的Branch38939964823、Package38939964948、Unit38939964815及所有实际矩阵/聚合均成功。PR178正常merge进入dev53ae142b72128868fac69092c7ce23059ca29fcc；实际dev独立Package38940832132、Unit38940832165及所有实际矩阵/聚合亦成功。PR_CHECKED SHA256 274958a564d34caf407ad566295047df0cfb058bf21c7153abc0b885ff6386c8；DEV_CHECKED SHA256 86b59d3615a67e77e5704a8ba2abd877e6c2f49c3e5edcfb162afd78a9d63925。
+
+Issue176/177逐项验收说明各一次后关闭，PR原正文保留并追加实际验收；回读确认两Issue原正文未改、验收marker各一次、PR合入SHA正确。本机272相邻/core2044 passed+1既有skip/CPU Flow390 passed、新65全执行（29 unit+36 integration），原独立红和限制保留，不把无法写存储视为必能留证。
+
+清理前再次核对工作区仅用户_staging_from_DEM未跟踪、topic local/remote tip均26131eb且为实际dev祖先、唯一主工作区、无项目引用Python进程。普通detach→push --delete→branch -d删除codex/failure-evidence-next本地及远程，随后确认双侧不存在。没有移除worktree/数据/结果/Run/provenance，main7a15c46、local dev9324014、origin/main00e70b1保持。周期基线161后已验收4个PR（165/169/174/178），remote累计46；下一合入约达5时做完整周期清单。
+
+下一唯一未合codex/readout-identity-next仅本地，从接受dev53ae142建立；本条收尾文档随下一完整主题，不拆小PR。B131/Issue179确认未修：Windows有效Run大小写别名经原log_path守卫与samefile确认指向同一日志，原生_event_match仍文本精确比较而回退，正文/名字tag可抢占event，status与standalone note不一致，split误入logs。两场别名失败/两原拼写控制成功，全部输入字节不变；这是原172/PR174未覆盖的同文件别名边界，不声称早先修复引入原问题，也不扩展大小写mode或未知legacy所有权。
+
+原始Windows REPRO/ZIP在.tmp/audit131，不随clone；下一先提交跨平台组件语义与原生只读消费者红回归，再最小方案，不改生产者/schema/路径布局或每行增加文件系统I/O。PR178验收/反馈/清理原件.tmp/audit130同样不随clone。持续目标active，下一新缺陷编号B132；不合main/tag/发布，不跑GPU/测速/正式Study，不改数据结果或科学结论。
+
+
+## 221. B131/#179平台所有者身份红回归与最小方案（2026-10-17）
+
+基于PR178已验收dev53ae142的新主题codex/readout-identity-next，1cfad38先提交44项红17 failed/27 passed、0error/skip：12路径组件语义单测与32原生Logger→Runner→status/logs集成，正常/含tag Run名、原拼写/大小写别名、默认/custom日志和四event，验证真实samefile、计划计数/peer/原字节/目录列表。17失败为Windows同文件别名回退误读，既有原拼写与POSIX兼容控制通过，不把模拟PurePosixPath单测当POSIX实机。原生POSIX分支会创建大小写不同目录验证foreign日志隔离，后续实际CI验收。
+
+方案只替换共用_event_match的已知所有者匹配条件：相同长度前缀用原Path组件比较，仍要求原' ['边界，事件偏移/正则/选择集合与legacy回退不变；不resolve/stat/samefile，不逐行增FS I/O。仅status.py现有helper，两reader调用方保持；不改生产者、schema、log字节、路径守卫、traceback/时间排序或mode合同。先本方案再最小实现，原始Windows REPRO/ZIP/hash/RED在.tmp/audit131，不随clone，portable回归随Git。
+
+当前#179仍OPEN，本批无PR；前PR178验收/两Issue关闭/分支清理完毕见§220，勿重复。基线161计数4/remote46，下一新编号B132；不合main/tag/发布、不跑GPU/性能/正式Study或删数据结果。
+
+
+## 222. B131/#179本机实施与完整检查；读取身份主题继续积累（2026-10-17）
+
+1cfad38先红44项17失败/27控制，方案8dde822后86f6a86仅把原status._event_match已知所有者条件改为Path组件比较且保留原' ['边界。只改变此一处条件，事件起点/偏移/正则/选择集合、logs模块、所有权路径守卫、legacy搜索回退、traceback/时间排序及生产者原字节保持；Path比较无resolve/stat/samefile，不逐行增FS I/O。SOURCE_CHECKED以原ZIP精确原字节单处替换证明，未改架构/schema/路径/输入日志或数值门。
+
+最终相邻450 passed，完整core2056 passed/1既有Windows POSIX模式skip，CPU Flow422 passed，0failure/error；新增44全执行（12 unit+32 integration），0新skip，81117/66970均exit0终结。12单测中的PurePosixPath只证明组件语义，不冒称POSIX实机；本机32原生集成在Windows实际确认别名，POSIX不同大小写实体隔离分支尚待未来CI执行。默认/custom日志、正常/含tag Run名、四事件、peer/status counts/原字节/目录清单均覆盖。
+
+继续同主题只读核对可用别名：本机GetShortPathNameW在现有隔离Run返回原完整名称，未产生不同8.3组件，故无短名反例，不开新Issue、不扩展规则或宣称短名实测通过；候选探针结果保留.tmp/audit131/SHORT_PATH_CANDIDATE.json。未知/复制后身份不匹配的legacy原回退保持，不新增任意历史所有者重建或鉴权保证；此限制与本次Windows平台同组件别名不同。
+
+当前#179仍OPEN，本主题仅本地，不拆单bug PR；继续读取身份/可选展示与相邻原子/失败边界复查，完成相关里程碑再统一PR，最终head及实际dev全实际CI后再关闭/清理。已接受dev53ae142；PR178两Issue与主题均已验收关闭/清理，周期基线161计数4/remote46，下次合入约5时做完整周期盘点。原REPRO/ZIP/hash/红绿/完整XML/SOURCE/LOCAL_CHECKED在.tmp/audit131，不随clone，portable回归与正式记录入库。无GPU/性能/正式Study实验、科学结论、main/tag/发布、数据/结果删除或布局改变；下一新缺陷编号B132，目标active。
+
+
+## 223. B132/#180合法Run身份在报告代码跨度中丢失，先红与最小方案（2026-10-17）
+
+继续同一读取身份主题确认B132：匹配的合法index/process里Run ID含反引号时，render_numbers固定单反引号定界使真实Markdown渲染丢字。已安装markdown-it-py的CommonMark+table原生解析五场3失败/2普通控制，原输入字节、数值与编码log href不变；原ZIP/REPRO/解析tokens在.tmp/audit132，不随clone。该工具是本机探针，不是新project/dev依赖。
+
+先Issue180再a1e2f97提交24项红18 failed/6 passed：9类内部/边缘/连续/全反引号ID、3普通ID（含空格/中文）×只读render/真实write_numbers，校验固定id列、原链接/accuracy/peer与human报告/input字节。CommonMark0.31.2 §6.1及相关示例作为原始来源，详artifact_consistency_design文末与本机STANDARD_NOTES；不复制标准全文，不依赖外部规范目录。
+
+方案仅在现有Run行内按正文选择不冲突反引号分隔符并必要padding，继续原_markdown_cell投影，普通ID原字节不变；不新增helper/import/依赖/字段/模块，不改变计划/数值/列/链接/原子写/布局。与B131/#179同主题完整合批，不单bug PR；先本方案再实施、实际parser复核和新的完整检查，两Issue仍OPEN，无PR。接受dev53ae142，基线161计数4/remote46，下一新B133；无GPU/性能/正式Study/main/tag/数据结果变更。
+
+
+## 224. B131–B132只读Run身份里程碑完整本机验收（2026-10-17）
+
+同一codex/readout-identity-next收敛两处显示身份缺陷：B131/#179已知原生Run所有者应采用平台组件语义，B132/#180合法含反引号Run ID须保持Markdown代码跨度里的字面文本。分别先Issue/独立红/方案，再86f6a86与acdd3e7最小修。B131红44项17失败/27控制，B132红24项18失败/6控制；不同源码状态，不冒称一场68红。原失败、原源码ZIP/hash与portable测试均保留。
+
+最终只改两个现有生产文件：status.py共用matcher单处所有者条件；report.py现有Run行内5行局部label/fence生成及原id插值替换。没有新增helper/import/依赖/公开接口/配置/schema/module或磁盘位置。原log生产者/guard/legacy/事件集合/偏移/traceback/排序、report计划绑定/其他单元格/数值统计精度/编码链接/列/原子发布保持，既有显示空白投影也保持。SOURCE_CHECKED逐原字节证明仅这些位置，先前status修复字节未再改。
+
+### 本轮只读身份展示点复核
+
+| **既有展示点** | **当前结论** | **依据/限制** |
+| --- | --- | --- |
+| status._event_match → status note / logs event_lines | 本机已修，平台同组件别名定位实际event | Windows原生samefile与12语义单测、32集成；POSIX实际实体分支待CI，未知legacy仍回退 |
+| report.render_numbers Run ID code cell | 本机已修，合法反引号不关闭/合并原code span | 24 portable渲染/真实发布回归；12类额外实际CommonMark解析，原规则来源见§223 |
+| report普通ID、peer行、log href与统计列 | 原字节/数值/路径保持 | 冻结旧renderer比对：3普通整份输出byte-identical；9特殊只目标id单元格改变，peer/输入不变 |
+| index与process计划/身份校验、正常write/readout guard | 本轮未改，不放宽合法输入 | 所有原相邻与完整回归通过，不拒绝合法反引号ID掩盖展示问题 |
+| 原子写、共享输入、失败证据发布 | 本轮未改，完整回归通过 | 不新增事务/任意同Run并发/不可写介质保证，B129–B130已验收事实保持 |
+
+合批相邻624 passed；完整core2080 passed/1既有Windows POSIX模式skip，CPU Flow422 passed，均0failure/error。68新全执行（36 unit+32 integration），0新skip；89991/46963均exit0终结。B131先前core2056+1/Flow422是当时单处修复状态，不能代替当前含report修改及24新unit的完整集合。
+
+额外原生Markdown解析使用本机已安装markdown-it-py（CommonMark+table），12类ID和peer均保持；普通3类整份输出与冻结旧renderer逐字节一致，特殊9类仅目标id单元格改变。该parser不加入project/dev依赖、不作为CI额外依赖；portable固定协议回归随Git。原始REPRO/ZIP/红绿/完整XML/hash/SOURCE/LOCAL/PARSER与标准阅读范围在.tmp/audit131/132，不随clone。CommonMark0.31.2 §6.1只为代码跨度规则依据，不引入通用富文本框架。
+
+两Issue179/180仍OPEN，本批尚未推送/开PR；完整主题一个PR，再验最终head/实际dev所有实际矩阵/聚合，POSIX原生实体隔离届时方可验收；通过后关闭与清主题，并因基线161累计达到约5执行周期盘点。接受dev仍53ae142，已验收计数4/remote46，下一新编号B133；没有GPU/性能/正式Study实验、科学结论、main/tag/发布、数据/结果删除或文件/产物布局变化。
