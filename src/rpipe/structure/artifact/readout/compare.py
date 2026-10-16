@@ -55,11 +55,14 @@ def _tree(a: Any, b: Any, atol: float, rtol: float, path: str, problems: list[st
             return math.inf
         if a.numel() == 0:
             return 0.0
-        if atol == rtol == 0 and not (a.is_floating_point() or a.is_complex() or b.is_floating_point() or b.is_complex()):
-            if torch.equal(a, b):
-                return 0.0
-            problems.append(f'{path}: integer/bool tensor values differ')
-            return math.inf
+        if not (a.is_floating_point() or a.is_complex() or b.is_floating_point() or b.is_complex()):
+            if atol == rtol == 0:
+                if torch.equal(a, b):
+                    return 0.0
+                problems.append(f'{path}: integer/bool tensor values differ')
+                return math.inf
+            if a.dtype != torch.bool and b.dtype != torch.bool:
+                return _tree(a.tolist(), b.tolist(), atol, rtol, path, problems)
         dtype = torch.complex128 if a.is_complex() or b.is_complex() else torch.float64
         left, right = a.detach().cpu().to(dtype), b.detach().cpu().to(dtype)
         both_nan = torch.isnan(left) & torch.isnan(right)

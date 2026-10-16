@@ -6,7 +6,9 @@
 
 ## 开放
 
-B-097/#120已764a613先32矩阵红8失败/24控制（扩原2项净增30）→0a18f85设计→06dfe86仅原is_file移入try。process104/core1482+1平台skip/Flow189通过，32矩阵均执行；异常列表/普通RuntimeError/有效primary/原字节保持，见record§137。最终head/实际devCI待验，Issue留至下版；故障注入未改系统ACL。
+B-098 / [#122](https://github.com/DreamSoul-AI/RPipe/issues/122)：非零容差int64/uint64转float64丢位，真实25新合同修前20失败/5控制；ff6b92e/56bbfe7红→f351121设计→7f3c391复用原标量树/Fraction，生产净增3行，bool/零容差/其他路径保持。readout525/core1507+1平台skip/CPU Flow189通过，最终head/实际dev CI待验，Issue留至下版。首次fixture收集错误单独保留，不当库反例；详record§140–142。
+
+B-097/#120已PR121普通合dev039db15，最终head与实际dev全部实际CI成功；结束remote已核验删除，本地保留。DEV_CHECKED SHA256 09f769a2e8168852f9e1a9151108d543268a915a46dabec9d28e3c3ed768d3e6，Issue留至下版，详record§141。
 
 B-096/#118与设计状态订正已PR119普通合dev4d12719，最终head与实际dev全部实际CI通过，结束remote已清，本地/当前分支保持，见record§139；Issue留至下版。
 
