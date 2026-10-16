@@ -286,7 +286,8 @@ def stream_close_fault(monkeypatch):
             def close(self):
                 calls.append('close')
                 self.raw.close()
-                raise secondary
+                if secondary is not None:
+                    raise secondary
         def opening(path, mode='r', *args, **kwargs):
             raw = original(path, mode, *args, **kwargs)
             if select(path, mode):
