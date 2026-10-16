@@ -8,9 +8,15 @@ Missing origin means ``foreign`` and does not change ``HF_ENDPOINT``.
 from __future__ import annotations
 
 import hashlib
+import importlib
+import re
 import os
 import sys
-from contextlib import contextmanager
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import ExitStack, contextmanager
+from contextvars import ContextVar, copy_context
+from functools import wraps
+from inspect import iscoroutinefunction
 from dataclasses import dataclass
 from pathlib import Path
 from threading import RLock
@@ -178,21 +184,121 @@ def _md5(path: Path) -> str:
     return digest.hexdigest()
 
 
+_download_lock = RLock()
+_download_origin: ContextVar[str | None] = ContextVar('rpipe_download_origin', default=None)
+
+
+def _check_transfer_url(value: Any) -> None:
+    policy = _download_origin.get()
+    if policy is None:
+        return
+    url = urlsplit(str(value))
+    host = url.hostname or ''
+    allowed = host == 'hf-mirror.com' if policy == 'mirror' else (
+        host == 'modelscope.cn' or host.endswith('.modelscope.cn')
+        or re.fullmatch(r'[a-z0-9.-]+\.oss-cn-[a-z0-9-]+\.aliyuncs\.com', host) is not None
+    )
+    if (url.scheme != 'https' or url.username is not None or url.password is not None
+            or url.port not in (None, 443) or not allowed):
+        raise RuntimeError(f'domestic {policy} transfer refused unapproved host {host!r}')
+
+
+class _DownloadConstants:
+    def __init__(self, original: Any):
+        self.original = original
+
+    def __getattr__(self, name: str) -> Any:
+        if _download_origin.get() is not None:
+            if name == 'HF_HUB_ENABLE_HF_TRANSFER':
+                return False
+            if name == 'HF_HUB_DISABLE_XET':
+                return True
+        return getattr(self.original, name)
+
+
+@contextmanager
+def _domestic_transfers(policy: str) -> Iterator[None]:
+    """Guard SDK transports without reconfiguring their shared clients."""
+    with _download_lock, ExitStack() as stack:
+        token = _download_origin.set(policy)
+        stack.callback(_download_origin.reset, token)
+
+        def replace(owner: Any, name: str, replacement: Any) -> None:
+            original = getattr(owner, name)
+            setattr(owner, name, replacement)
+
+            def restore() -> None:
+                if getattr(owner, name) is replacement:
+                    setattr(owner, name, original)
+
+            stack.callback(restore)
+
+        def guarded_send(original: Any) -> Any:
+            if iscoroutinefunction(original):
+                @wraps(original)
+                async def async_send(client: Any, request: Any, *args: Any, **kwargs: Any) -> Any:
+                    _check_transfer_url(request.url)
+                    return await original(client, request, *args, **kwargs)
+                return async_send
+
+            @wraps(original)
+            def send(client: Any, request: Any, *args: Any, **kwargs: Any) -> Any:
+                _check_transfer_url(request.url)
+                return original(client, request, *args, **kwargs)
+            return send
+
+        for name in ('requests', 'httpx'):
+            try:
+                module = importlib.import_module(name)
+            except ModuleNotFoundError as error:
+                if error.name != name:
+                    raise
+                continue
+            if name == 'requests':
+                replace(module.Session, 'send', guarded_send(module.Session.send))
+            else:
+                for cls in (module.Client, module.AsyncClient):
+                    replace(cls, '_send_single_request', guarded_send(cls._send_single_request))
+
+        original_submit = ThreadPoolExecutor.submit
+
+        @wraps(original_submit)
+        def submit(executor: Any, function: Any, /, *args: Any, **kwargs: Any) -> Any:
+            if _download_origin.get() is None:
+                return original_submit(executor, function, *args, **kwargs)
+            return original_submit(executor, copy_context().run, function, *args, **kwargs)
+
+        replace(ThreadPoolExecutor, 'submit', submit)
+        file_download = sys.modules.get('huggingface_hub.file_download')
+        if file_download is not None:
+            original_available = file_download.is_xet_available
+
+            @wraps(original_available)
+            def xet_available() -> bool:
+                return _download_origin.get() is None and original_available()
+
+            replace(file_download, 'is_xet_available', xet_available)
+            replace(file_download, 'constants', _DownloadConstants(file_download.constants))
+        yield
+
+
 def download_model(repo_id: str, cache_dir: Path | str, *, revision: str | None = None) -> str:
     """Resolve a local input or download via ModelScope, then hf-mirror only."""
     if Path(repo_id).exists():
         return str(repo_id)
     try:
-        from modelscope import snapshot_download
+        with _domestic_transfers('modelscope'):
+            from modelscope import snapshot_download
 
-        return snapshot_download(model_id=repo_id, revision=revision, cache_dir=str(cache_dir))
+            return snapshot_download(model_id=repo_id, revision=revision, cache_dir=str(cache_dir))
     except Exception as modelscope_error:
         # SDK failures permit a domestic fallback; cancellation still propagates.
         try:
             from huggingface_hub import snapshot_download
 
-            return snapshot_download(repo_id=repo_id, revision=revision,
-                                     cache_dir=str(cache_dir), endpoint=DOMESTIC_MODEL_HUB)
+            with _domestic_transfers('mirror'):
+                return snapshot_download(repo_id=repo_id, revision=revision,
+                                         cache_dir=str(cache_dir), endpoint=DOMESTIC_MODEL_HUB)
         except Exception as mirror_error:
             raise RuntimeError(
                 f'ModelScope failed ({modelscope_error}); hf-mirror failed ({mirror_error}); '
