@@ -2,7 +2,7 @@
 
 ## 一、摘要
 
-本次按 [PLAN.md](../../PLAN.md) 复跑 Flow 重构后的八组合 60-step 数值探针。Flow 基线为 PR #25 合入 dev 的 `d73b217`，真实复验含修复的实际提交为 `e682f25`。version02 的八组合及 Study 终验完整通过，16段参数最大差0、train/test Loss 最大差6.66e-16、独立 eval Loss 差0。失败与修复保留在本记录，正式结论见 [STUDY_REPORT.md](STUDY_REPORT.md)。
+本次按 [PLAN.md](<../../../../../docs/research/研究计划 RPipe.md#study-main-probe>) 复跑 Flow 重构后的八组合 60-step 数值探针。Flow 基线为 PR #25 合入 dev 的 `d73b217`，真实复验含修复的实际提交为 `e682f25`。version02 的八组合及 Study 终验完整通过，16段参数最大差0、train/test Loss 最大差6.66e-16、独立 eval Loss 差0。失败与修复保留在本记录，正式结论见 [STUDY_REPORT.md](STUDY_REPORT.md)。
 
 ## 二、执行条件
 

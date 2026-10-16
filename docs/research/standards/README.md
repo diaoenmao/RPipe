@@ -16,7 +16,7 @@
 
 ## 二、在 RPipe 使用
 
-从[研究工作要求](../../development/research.md)进入；本项目具体方案见[中文研究计划](../research_plan.md)、[完整英译](../research_plan_en.md)，检索与阅读记录见[文献证据](../literature.md)。宏观问题/方案按项目已有 `docs/research/` 分工；独立实验仍为 `studies/<name>/docs/PLAN.md`，正式数字、图和结论仍留在相应 Study。模板中建议的通用 `docs/research-plan.md` 不是 RPipe 新增的强制路径，也不要求复制重复计划。
+从[研究工作要求](../../development/research.md)进入；本项目具体方案见[中文研究计划](<../研究计划 RPipe.md>)、[完整英译](<../Research Plan RPipe.md>)，检索与阅读记录见[文献证据](../literature.md)。宏观问题、方案与全部 Study 协议统一在上述项目计划的独立章节，第十一章保留历史全文和模板；不再创建独立 PLAN.md。正式数字、图和结论仍留在相应 Study。模板中建议的通用 `docs/research-plan.md` 不是 RPipe 新增的强制路径，也不要求复制重复计划。
 
 按问题需要合并/简写章节；未知项保留待确认。基线复现优先官方实现、关注代表性主要结果，如实区分权重评测与训练/方法复现。不因模板未填满机械停下，不因复制规范自动授权训练、发布、预算或系统改动。本次没有重写任何已完成 Study 的计划/结果。
 

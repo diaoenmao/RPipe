@@ -4,12 +4,12 @@
 
 ## 从宏观研究提取具体 Study
 
-本仓库宏观入口是 [RPipe 中文研究计划](../docs/research/research_plan.md)（[English](../docs/research/research_plan_en.md)）与[文献证据](../docs/research/literature.md)。本轮计划重做不重写下列历史 Study 的方案、来源或结果；其验收仅适用于各自记录的版本。
+本仓库宏观入口是 [RPipe 中文研究计划](<../docs/research/研究计划 RPipe.md>)（[English](<../docs/research/Research Plan RPipe.md>)）与[文献证据](../docs/research/literature.md)。本轮计划重做不重写下列历史 Study 的方案、来源或结果；其验收仅适用于各自记录的版本。
 
 研究项目先按[研究工作要求](../docs/development/research.md)在 `docs/research/` 维护宏观问题、文献依据、假设与六方面方案，再从其中提取可独立执行和验收的 Study，不从现有脚本倒推研究问题，也不把整份宏观方案直接当作一个实验矩阵。一个宏观方向可以拆成多个 Study，每个只回答边界明确的问题。
 
 1. 选择宏观方案中已经确认的一个问题，写明它与研究方向的对应关系；探索想法先确认，不直接成为执行合同。
-2. 在目标 Study 的 `docs/PLAN.md` 提取对照、变量、固定条件、数据与模型来源、实际精度、seed、预算、指标、成功门和停止规则，并引用实际存在的宏观文档。
+2. 在项目唯一研究计划的目标 Study 章节提取对照、变量、固定条件、数据与模型来源、实际精度、seed、预算、指标、成功门和停止规则，与同一计划的宏观方案相连，不另建独立 PLAN.md。
 3. 将所需研究能力实现于 `src/<项目名>/` 的对应 structure/flow 层；Study 在同名目录导入和组装，不另写一套研究算法。structure 层名和 flow 六个阶段与模板一致，目录图见根 README。
 4. 用声明表达该问题的具体因素和复测次数，先做小规模正确性与失败边界验证；并发与资源系数按该项目、设备和负载校准，不固定统一比例。
 5. 用项目自己的实际入口执行，再将证据和结论写入 Study 报告，说明回答了哪个宏观问题、哪些假设成立或不成立及未验证范围。
@@ -30,9 +30,9 @@
 
 | **Study** | **研究或验收范围** | **计划 / 报告** | **本机原始产物** |
 |---|---|---|---|
-| `_template` | 新 Study 的配置与报告起点 | [计划](_template/docs/PLAN.md) / [报告模板](_template/docs/STUDY_REPORT.md) | 尚未执行 |
-| `main_exp` | 历史 main `4ccb28d` 配方的四 seed、80000-step 曲线复现，对原图估读门终验 | [入口](main_exp/README.md) / [计划](main_exp/docs/PLAN.md) / [报告](main_exp/docs/STUDY_REPORT.md) | FP32 version03 的 32 train / 32 eval、完整性及固定曲线终验全部通过；串行历史速度校准已完成、容量调查继续，version02 失败保留 |
-| `main_probe` | 固定 main `98648f3` 原代码与当前 RPipe 的 60-step 同设备数值探针 | [入口](main_probe/README.md) / [计划](main_probe/docs/PLAN.md) / [报告](main_probe/docs/STUDY_REPORT.md) | 历史 version03 八组合通过；2026-10-12 version05 仅 MNIST / linear、cnn 两组通过，其余六组未执行，子集未通过完整终验 |
+| `_template` | 新 Study 的配置与报告起点 | [计划](<../docs/research/研究计划 RPipe.md#study-template>) / [报告模板](_template/docs/STUDY_REPORT.md) | 尚未执行 |
+| `main_exp` | 历史 main `4ccb28d` 配方的四 seed、80000-step 曲线复现，对原图估读门终验 | [入口](main_exp/README.md) / [计划](<../docs/research/研究计划 RPipe.md#study-main-exp>) / [报告](main_exp/docs/STUDY_REPORT.md) | FP32 version03 的 32 train / 32 eval、完整性及固定曲线终验全部通过；串行历史速度校准已完成、容量调查继续，version02 失败保留 |
+| `main_probe` | 固定 main `98648f3` 原代码与当前 RPipe 的 60-step 同设备数值探针 | [入口](main_probe/README.md) / [计划](<../docs/research/研究计划 RPipe.md#study-main-probe>) / [报告](main_probe/docs/STUDY_REPORT.md) | 历史 version03 八组合通过；2026-10-12 version05 仅 MNIST / linear、cnn 两组通过，其余六组未执行，子集未通过完整终验 |
 
 2026-10-10 两个 Study 由 `main_historical`、`main_reproduction` 改名，按 [flow.md](../docs/code/flow.md) §14 整理为声明、recipe 与同名阶段扩展，旧结果与证据从当前树删除，见提交 [`18cd76c`](https://github.com/diaoenmao/RPipe/tree/18cd76c/studies)。
 

@@ -10,7 +10,7 @@
 
 以下摘要、条件表与旧日期记录保留原实验事实，不作为当前目录重构后的完整验收。
 
-本次按 [PLAN.md](PLAN.md) 复跑 Flow 重构后的 32 条连续 80000-step 训练与 32 条自身 best 独立评测。main-exp-flow-20261010-02 全部执行成功且单体 checkpoint / tracker 审计通过，但 Study 终验 invalid：CIFAR10 CNN seed0 独立评测少一个正确样本。设备诊断证明相同输入 / 模型在默认 cuDNN TF32 条件下存在预测差异，串行五次也有一次失败，因此停止串行恢复，未替换正式结果。完整旧报告和来源证据保留在 [version02](versions/main-exp-flow-20261010-02/STUDY_REPORT.md)。
+本次按 [PLAN.md](<../../../docs/research/研究计划 RPipe.md#study-main-exp>) 复跑 Flow 重构后的 32 条连续 80000-step 训练与 32 条自身 best 独立评测。main-exp-flow-20261010-02 全部执行成功且单体 checkpoint / tracker 审计通过，但 Study 终验 invalid：CIFAR10 CNN seed0 独立评测少一个正确样本。设备诊断证明相同输入 / 模型在默认 cuDNN TF32 条件下存在预测差异，串行五次也有一次失败，因此停止串行恢复，未替换正式结果。完整旧报告和来源证据保留在 [version02](versions/main-exp-flow-20261010-02/STUDY_REPORT.md)。
 
 当前声明 main-exp-flow-20261011-03，显式关闭 cuDNN / matmul TF32，两侧前置对照与正式链使用一致精度。runtime 针对性 13 passed，核心回归 295 passed / 40 deselected；归档导入副作用修复提交 09e495b 的 600-step 八格前置门已通过，完整矩阵于 2026-10-11 05:03 启动，round=3；全部 64 个 Run 的真实设备开关核验通过。19:48 全部 32 train / 32 eval 成功，原生 Flow exit 0，完整性核查与固定四 seed 终验通过。数据、预算、seed 与固定曲线门不变；旧训练不能充当新精度基线。方案与停止条件见 [eval_recovery.md](eval_recovery.md)。
 

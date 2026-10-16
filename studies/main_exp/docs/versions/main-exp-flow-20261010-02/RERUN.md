@@ -2,7 +2,7 @@
 
 ## 一、摘要
 
-本次按 [PLAN.md](../../PLAN.md) 在 Flow 重构后的代码基线上复跑 32 条连续 80000-step 训练与 32 条自身 best 独立评测，固定图像估读门见 [TARGET.md](../../TARGET.md)。中断版本 main-exp-flow-20261010-01 的原始结果保留，未完成终验。当前版本 main-exp-flow-20261010-02 已通过同设备 600-step 八格前置门；64 个新 Run ID 与中断版本无重叠。截至 2026-10-11 04:16，32 train 与 32 eval 均正式 succeeded，训练各有 400 个完整 test 点，64 个 Run 的单体 checkpoint / tracker 审计通过。剩余 CIFAR10 ResNet18 seed 1–3 已并发跑完，配方和预算未变。
+本次按 [PLAN.md](<../../../../../docs/research/研究计划 RPipe.md#study-main-exp>) 在 Flow 重构后的代码基线上复跑 32 条连续 80000-step 训练与 32 条自身 best 独立评测，固定图像估读门见 [TARGET.md](../../TARGET.md)。中断版本 main-exp-flow-20261010-01 的原始结果保留，未完成终验。当前版本 main-exp-flow-20261010-02 已通过同设备 600-step 八格前置门；64 个新 Run ID 与中断版本无重叠。截至 2026-10-11 04:16，32 train 与 32 eval 均正式 succeeded，训练各有 400 个完整 test 点，64 个 Run 的单体 checkpoint / tracker 审计通过。剩余 CIFAR10 ResNet18 seed 1–3 已并发跑完，配方和预算未变。
 
 Study 终验仍未通过：CIFAR10 CNN seed 0 的独立评测为 89.1400%，训练 best 为 89.1500%，相差 1 个正确样本；实际加载路径和 step76800 均匹配自身 best。其余 31 条 eval 的 best 对照通过。当前 [COMPARISON.json](COMPARISON.json) 为 invalid，固定四 seed 曲线门未正式应用；执行成功不等于质量通过。已记录 B-023 并开展只读复查，保留原评测和失败证据，不放宽门限或用临时重评覆盖正式结果。
 

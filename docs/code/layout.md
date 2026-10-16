@@ -20,7 +20,7 @@
 | `<project>/.github/` | workflows 与仓库协作配置 | 维护者；Actions 执行配置而不将 Run 写入此处 |
 | `<project>/.tmp/` | 隔离环境、缓存、临时脚本、测试报告与诊断；不随 clone 提供 | Agent、测试入口、开发工具 |
 | `<project>/asset/` | README 使用的已登记静态实例图；不作为新 Study 图目录 | 维护者按已有来源维护 |
-| `<project>/docs/` | code 设计、development 记录、releases 发布材料、research 通用方案/原样规范与译本、issue 独立探索；具体 Study 数字和结论不放这里 | 维护者 / Agent |
+| `<project>/docs/` | code 设计、development 记录、releases 发布材料、research 唯一项目研究计划（含所有 Study 章节）/原样规范与译本、issue 独立探索；具体 Study 数字和结论不放这里 | 维护者 / Agent |
 | `<project>/shared/` | **供 studies 下各 Study 共用的不可变输入**；不得存训练中的模型对象或 Run 可变状态 | 受锁保护的 data / model 准备入口、显式迁移命令 |
 | `<project>/shared/data/` | 原始数据、按格式和版本区分的可复用派生输入；不共享可变 Dataset / sampler | DataFactory / 注册 data builder、prepare_shared_data、显式迁移 |
 | `<project>/shared/model/` | 固定 revision 的预训练权重 / tokenizer 输入；不放训练 checkpoint | ModelFactory / 注册 model builder、显式迁移 |
@@ -65,7 +65,7 @@ shared:
   model: project         # 默认 project；不能共享的模型输入可选 study
 ```
 
-`study` 选项只影响该类资产，落在 `<study>/shared/<kind>`；选择原因写入 PLAN。公共目录不能保存某个 Run 的可变状态。自定义 builder 接收同一个共享根，应按数据版本 / 格式或模型 revision 分目录，复用下载工具原有缓存，不将不同资源覆盖成同名文件。profile 的统计留在 Study 私有目录，显式传给当前 Data，防止一个 Study 的统计改变另一个 Study 的归一化。
+`study` 选项只影响该类资产，落在 `<study>/shared/<kind>`；选择原因写入项目研究计划的对应 Study 章节。公共目录不能保存某个 Run 的可变状态。自定义 builder 接收同一个共享根，应按数据版本 / 格式或模型 revision 分目录，复用下载工具原有缓存，不将不同资源覆盖成同名文件。profile 的统计留在 Study 私有目录，显式传给当前 Data，防止一个 Study 的统计改变另一个 Study 的归一化。
 
 Flow 通过 data_api / DataFactory 的可选 `profile_path` 传递自动解析的统计路径，不向实验 data.config 注入绝对目录，因而仅搬迁 profile 不改变 sampler 恢复身份。用户显式声明的 `config.stats_path` 优先于自动路径；改变实际输入 / 统计内容仍须按研究合同重新验证。
 
@@ -99,7 +99,7 @@ flowchart TB
 | Study | `studies/<study>/` | 编排壳 + artifact 根 |
 | 基底配置 | Study 目录下的 experiment 基底文件 | Study 默认值 |
 | Run | `…/runs/<id>/` | config / result / assets |
-| 共享与文档 | `<project>/shared/`、`<study>/docs/` | 输入跨 Study 共用；文档仍为 Study 级。私有派生输入按显式配置存储 |
+| 共享与文档 | `<project>/shared/`、`<study>/docs/` | 输入跨 Study 共用；计划统一在项目 docs/research，报告与证据仍为 Study 级。私有派生输入按显式配置存储 |
 | structure | `src/rpipe/structure/` | api、control、data、model、algorithm、system、artifact（含 `readout/`）、**make** |
 | flow | `src/rpipe/flow/` | cli；prepare / execute / collect / summarize / write / process。`status` / `logs` / `report` 由 cli 转给 artifact readout |
 
@@ -189,7 +189,6 @@ studies/<study>/
   provenance.json            # make 写入的来源清单；不入库
   process.json               # launch / process 写入；不入库
   docs/
-    PLAN.md
     STUDY_REPORT.md          # 人写的结论
     NUMBERS.md               # rpipe report 从 process.json 生成的数字表
     figures/
@@ -219,8 +218,8 @@ studies/<study>/
 | `<project>/studies/<study>/recipe.py` | 可选建构前注册入口 | Study 作者 |
 | `<project>/studies/<study>/structure/` | Study 专用 data / model / algorithm / system 建构源码 | Study 作者 |
 | `<project>/studies/<study>/flow/` | 显式启用的阶段组合扩展 | Study 作者；库按声明加载 |
-| `<project>/studies/<study>/docs/` | 计划、报告、正式数字、图与研究证据 | Study 作者与对应 report / process 入口 |
-| `<project>/studies/<study>/docs/PLAN.md` | 研究计划与不可变输入的私有例外理由 | Study 作者 |
+| `<project>/studies/<study>/docs/` | 报告、正式数字、图与研究证据 | Study 作者与对应 report / process 入口 |
+| `<project>/docs/research/研究计划 RPipe.md` / `Research Plan RPipe.md` | 单一项目计划及完整英译；全部 Study 协议、模板和历史全文作为独立章节；含不可变输入私有例外理由 | 维护者与 Study 作者 |
 | `<project>/studies/<study>/docs/STUDY_REPORT.md` | 正式研究结论、执行/失败边界 | Study 作者 / 获授权的 Agent |
 | `<project>/studies/<study>/docs/NUMBERS.md` | 从当前 Study process 导出的数字表，不等于结论 | rpipe report / write_numbers |
 | `<project>/studies/<study>/docs/figures/` | 本 Study 正式图 | Study 作者、process / 绘图入口 |

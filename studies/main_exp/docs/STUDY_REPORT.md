@@ -53,7 +53,7 @@
 
 main-exp-flow-20261011-03 的新源码八格 600-step 原代码 / 当前链前置对照全部通过，参数最大差均为 0。完整矩阵于 2026-10-11 05:03 启动，按 round=3 调度 32 条连续 80000-step train 与 32 条自身 best 独立 eval。已有 32 条训练正式成功，均完成 80000-step 连续训练及 400 个完整评测点，单体 checkpoint / tracker 核查通过；32 条自身 best 独立评估也全部成功，64 个 Run 的 checkpoint / tracker 合同核查通过。2026-10-11 19:48 原生 Flow 正常退出（exit 0），Study process 应用固定四 seed 曲线门后通过终验。
 
-实际源码提交 09e495b2d006caa197bb41e2773d47b817a4bd46；Torch 2.11.0+cu130、RTX 5090 D v2、CPU 2 线程。新基线显式关闭 cuDNN / matmul TF32，并在 prepare 完成后检查实际 deterministic、cuDNN 和精度开关；数据、seed、预算和固定估读门沿用 [PLAN.md](PLAN.md)。旧版训练及评估全部执行成功但终验 invalid，完整证据见 [version02 报告](versions/main-exp-flow-20261010-02/STUDY_REPORT.md)，不能混入当前精度基线。
+实际源码提交 09e495b2d006caa197bb41e2773d47b817a4bd46；Torch 2.11.0+cu130、RTX 5090 D v2、CPU 2 线程。新基线显式关闭 cuDNN / matmul TF32，并在 prepare 完成后检查实际 deterministic、cuDNN 和精度开关；数据、seed、预算和固定估读门沿用 [PLAN.md](<../../../docs/research/研究计划 RPipe.md#study-main-exp>)。旧版训练及评估全部执行成功但终验 invalid，完整证据见 [version02 报告](versions/main-exp-flow-20261010-02/STUDY_REPORT.md)，不能混入当前精度基线。
 
 ## 二、改前与改后
 

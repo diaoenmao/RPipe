@@ -1,5 +1,12 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 优先交付统一研究计划；PR125已实际验收
+
+PR125已正常合dev82205cbe，最终与实际dev全部实际CI成功；结束remote finite-tolerance-overflow已清，本地保留，累计24条，Issue124等下版。当前唯一工作分支codex/unified-research-plan，按Enmao12:53要求：两份项目计划git mv改为指定中文/英文名称，5份独立Study/历史/模板方案全文并入第十一章，中英文完整对应；第九章补#117–#125修复、文献缺口和后续实验条件。原Markdown移除且入口统一，Run/JSON/结果/源代码不改，36布局测试通过。接下来本批文档PRdev及实际dev CI，完成后清结束remote；无main/tag/GPU/测速。详record§146–147及[唯一中文计划](<../research/研究计划 RPipe.md>)。
+
+旧交接以下按当时状态保留，不作为重派已验收任务的依据。
+
+
 ## 2026-10-16 PR123已实际验收、B099有限算术溢出合同
 
 PR123普通合dev17460b1，最终head/实际dev全部实际CI成功并清结束remote integer-tensor-tolerance，本地/数据保留，累计23，见record§144。当前唯一未合codex/finite-tolerance-overflow，Issue124：有限输入diff/bound同时溢出或复数0×inf=NaN可假通过；不同于非有限输入身份。decd552先30红15失败/15控制，f200686设计后ba5892a仅现有_close/tensor回退，净增20行，无新helper/依赖/布局。fbe1285另4合同冻结原比较器回放2失败/2控制，明确不冒充当前HEAD红；现有代码无需再改全绿。最终readout559/core1541+1既有POSIX skip/Flow189通过，34新节点全执行，原30红断言逐字保持。初轮555/core1537+1/Flow189及补充结果全保留；Flow生产/用例不变不重复。LOCAL_CHECKED 67db96bec8732148fccd11991fcd17f5418515ebb9392b6c54a4fea930d1c9b4，证据.tmp/audit099不随clone。下一推最终head、PRdev与实际dev全部实际CI后清remote，Issue等下版；无main/tag/GPU/测速/改布局或数据删除。
@@ -318,7 +325,7 @@ Run process 使用 `ctx.scope == 'run'`，读取本 Run 的结果。整轮 proce
 
 [main_exp](../../studies/main_exp/README.md) 声明 32 条训练与 32 条自身 best 独立评测。recipe 注册 `structure/` 的固定历史来源 `4ccb28d` 适配器，检查 preflight，并拒绝中断训练的 checkpoint 续跑。`flow/prepare_data.py` 负责 raw 下载及清单核对。声明中关闭通用共享 Data 预构造，专用 source 在 Run prepare 内注册。
 
-Study `flow/prepare/` 检查构造对象的历史来源。`flow/process/curves.py` 保留曲线门限计算，Study process 在聚合后调用，也支持显式手动完整 / partial 读取；速度工具由 `recipe.py calibrate` 调用 `flow/execute/speed.py`，不自动进入阶段链。完整性与数值门见 [PLAN.md](../../studies/main_exp/docs/PLAN.md) 和 [TARGET.md](../../studies/main_exp/docs/TARGET.md)。
+Study `flow/prepare/` 检查构造对象的历史来源。`flow/process/curves.py` 保留曲线门限计算，Study process 在聚合后调用，也支持显式手动完整 / partial 读取；速度工具由 `recipe.py calibrate` 调用 `flow/execute/speed.py`，不自动进入阶段链。完整性与数值门见 [PLAN.md](<../research/研究计划 RPipe.md#study-main-exp>) 和 [TARGET.md](../../studies/main_exp/docs/TARGET.md)。
 
 ### （二）main_probe
 

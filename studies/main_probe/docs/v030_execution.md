@@ -3,7 +3,7 @@
 ## 一、摘要
 
 - 发布基线：`v0.3.0` / `804b3823ab6d2af46cbda1a65688ca8b76c60b22`；历史原版保持 `98648f3a5c7db7dccf3ca806410d5b6fdee9484c`。
-- 目标：在本机独立验收八个 60-step 成对组合，并测量不同 Run 的并发吞吐与资源边界。原版先 / 当前版后、RNG 恢复、完整 test 与全部门限保持 [PLAN.md](PLAN.md) 不变。
+- 目标：在本机独立验收八个 60-step 成对组合，并测量不同 Run 的并发吞吐与资源边界。原版先 / 当前版后、RNG 恢复、完整 test 与全部门限保持 [PLAN.md](<../../../docs/research/研究计划 RPipe.md#study-main-probe>) 不变。
 - 当前状态：新的正式 `main-probe-v030-20261013-final` 八个 Run 与 Study 终验均通过。环境、数据与共同顺序见 [main_exp 本轮执行记录](../../main_exp/docs/v030_execution.md)。历史报告与本机可取得清单已逐字节保全在 [快照清单](versions/v030-before-local-20261013/manifest.json)，不把历史完整通过当作本次验收。
 
 ## 二、执行与并发校准

@@ -2,7 +2,7 @@
 
 ## 一、摘要
 
-本次按 [PLAN.md](PLAN.md) 复跑 Flow 重构后的八组合 60-step 数值探针。2026-10-11 的 main-probe-flow-20261011-03 在实际提交 c9c782b5d5bb62da4e5e2292e96e842740c24f53 上全部通过，两侧显式 FP32。8 succeeded / 0 failed / 0 pending，Study complete / passed；16 段参数最大差 0、train / test Loss 最大差 4.44e-16、独立 eval Loss 差 0。运行实际 System 结果确认两个 TF32 开关均为 false，同源清单 hash 为 65bbec5ee797a557ae419df90c351723764ad9e0a54f3d15821a2b8121693658。正式结论见 [STUDY_REPORT.md](STUDY_REPORT.md) 与 [PAIR_RESULTS.json](PAIR_RESULTS.json)。旧 version02 报告已归档，不能替代新长实验；main_exp FP32 的 600-step 前置门在执行。
+本次按 [PLAN.md](<../../../../../docs/research/研究计划 RPipe.md#study-main-probe>) 复跑 Flow 重构后的八组合 60-step 数值探针。2026-10-11 的 main-probe-flow-20261011-03 在实际提交 c9c782b5d5bb62da4e5e2292e96e842740c24f53 上全部通过，两侧显式 FP32。8 succeeded / 0 failed / 0 pending，Study complete / passed；16 段参数最大差 0、train / test Loss 最大差 4.44e-16、独立 eval Loss 差 0。运行实际 System 结果确认两个 TF32 开关均为 false，同源清单 hash 为 65bbec5ee797a557ae419df90c351723764ad9e0a54f3d15821a2b8121693658。正式结论见 [STUDY_REPORT.md](STUDY_REPORT.md) 与 [PAIR_RESULTS.json](PAIR_RESULTS.json)。旧 version02 报告已归档，不能替代新长实验；main_exp FP32 的 600-step 前置门在执行。
 
 ## 二、执行条件
 
