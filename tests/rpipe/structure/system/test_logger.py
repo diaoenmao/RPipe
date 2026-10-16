@@ -146,13 +146,13 @@ def test_logger_stream_close_preserves_write_or_flush_failure(tmp_path, stream_c
 
 
 @pytest.mark.parametrize('reopen', [False, True], ids=['same-logger', 'reopened-logger'])
-@pytest.mark.parametrize('tail', ['ascii-cut', 'utf8-cut', 'lf', 'crlf', 'empty'])
+@pytest.mark.parametrize('tail', ['ascii-cut', 'utf8-cut', 'lf', 'crlf', 'cr', 'empty'])
 def test_logger_keeps_interrupted_tail_separate_from_next_record(tmp_path, capsys, reopen, tail):
     import os
     logger = Logger(tmp_path)
     header = b'2001-01-01T00:00:00.000+00:00 INFO  - [flow] interrupted '
     prefixes = {'ascii-cut': header, 'utf8-cut': header + b'\xe4',
-                'lf': header + b'\n', 'crlf': header + b'\r\n', 'empty': b''}
+                'lf': header + b'\n', 'crlf': header + b'\r\n', 'cr': header + b'\r', 'empty': b''}
     before = prefixes[tail]
     logger.path.write_bytes(before)
     if reopen:
