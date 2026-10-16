@@ -204,3 +204,14 @@ def test_registered_functions_can_later_import_their_studies_helper(tmp_path, pa
         for name in list(sys.modules):
             if name == helper or name.startswith(helper + '.'):
                 sys.modules.pop(name)
+
+
+def test_internal_recipe_identity_does_not_shadow_valid_local_helper_filename(tmp_path):
+    from rpipe.structure.make.recipe import load_recipe
+
+    study = tmp_path / 'reserved-helper'
+    study.mkdir()
+    (study / '_recipe.py').write_text('VALUE = "helper"\n', encoding='utf-8')
+    (study / 'recipe.py').write_text('from _recipe import VALUE\ndef register(ctx):\n    pass\n',
+                                   encoding='utf-8')
+    assert load_recipe(study, {'recipe': 'recipe.py'}).VALUE == 'helper'
