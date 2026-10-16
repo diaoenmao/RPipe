@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import ModuleType
+from threading import RLock
 from typing import Any
 
 STUDY_PHASES = ('prepare', 'execute', 'collect', 'summarize', 'write', 'process')
@@ -73,6 +75,44 @@ def recipe_path(study_dir: Path | str, study: dict[str, Any]) -> Path | None:
     return path
 
 
+_recipe_import_lock = RLock()
+
+
+@contextmanager
+def _local_imports(root: str, module: ModuleType):
+    with _recipe_import_lock:
+        module_name = module.__name__
+        previous_module = sys.modules.get(module_name)
+        module_existed = module_name in sys.modules
+        local = {
+            path.stem if path.is_file() else path.name
+            for path in Path(root).iterdir()
+            if ((path.is_file() and path.suffix == '.py') or path.is_dir())
+            and (path.stem if path.is_file() else path.name).isidentifier()
+        } - sys.stdlib_module_names
+        previous = {name: module for name, module in list(sys.modules.items())
+                    if name.partition('.')[0] in local}
+        for name in previous:
+            sys.modules.pop(name, None)
+        sys.path.insert(0, root)
+        sys.modules[module_name] = module
+        try:
+            yield
+        finally:
+            for name in list(sys.modules):
+                if name.partition('.')[0] in local:
+                    sys.modules.pop(name, None)
+            sys.modules.update(previous)
+            if module_existed:
+                sys.modules[module_name] = previous_module
+            else:
+                sys.modules.pop(module_name, None)
+            try:
+                sys.path.remove(root)
+            except ValueError:
+                pass
+
+
 def load_recipe(study_dir: Path | str, study: dict[str, Any]) -> ModuleType | None:
     path = recipe_path(study_dir, study)
     if path is None:
@@ -83,14 +123,8 @@ def load_recipe(study_dir: Path | str, study: dict[str, Any]) -> ModuleType | No
     if spec is None or spec.loader is None:
         raise ImportError(f'cannot load recipe: {path}')
     module = importlib.util.module_from_spec(spec)
-    sys.path.insert(0, root)
-    try:
+    with _local_imports(root, module):
         spec.loader.exec_module(module)
-    finally:
-        try:
-            sys.path.remove(root)
-        except ValueError:
-            pass
     if not callable(getattr(module, 'register', None)):
         raise AttributeError(f'recipe must define register(ctx): {path}')
     return module
@@ -102,12 +136,6 @@ def apply_recipe(study_dir: Path | str, study: dict[str, Any], ctx: RecipeContex
     if module is None:
         return False
     root = str(Path(study_dir).resolve())
-    sys.path.insert(0, root)
-    try:
+    with _local_imports(root, module):
         module.register(ctx)
-    finally:
-        try:
-            sys.path.remove(root)
-        except ValueError:
-            pass
     return True
