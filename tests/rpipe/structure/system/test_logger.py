@@ -143,3 +143,46 @@ def test_logger_stream_close_preserves_write_or_flush_failure(tmp_path, stream_c
     assert logger.path.read_bytes().startswith(b'old log evidence\n')
     assert peer.read_bytes() == b'peer evidence'
     assert calls[0] == 'write' and (phase != 'flush' or 'flush' in calls)
+
+
+@pytest.mark.parametrize('reopen', [False, True], ids=['same-logger', 'reopened-logger'])
+@pytest.mark.parametrize('tail', ['ascii-cut', 'utf8-cut', 'lf', 'crlf', 'empty'])
+def test_logger_keeps_interrupted_tail_separate_from_next_record(tmp_path, capsys, reopen, tail):
+    import os
+    logger = Logger(tmp_path)
+    header = b'2001-01-01T00:00:00.000+00:00 INFO  - [flow] interrupted '
+    prefixes = {'ascii-cut': header, 'utf8-cut': header + b'\xe4',
+                'lf': header + b'\n', 'crlf': header + b'\r\n', 'empty': b''}
+    before = prefixes[tail]
+    logger.path.write_bytes(before)
+    if reopen:
+        logger = Logger(tmp_path)
+    assert logger.path.read_bytes() == before
+    peer = tmp_path / 'peer.bin'
+    peer.write_bytes(b'peer')
+    logger.error('current failure')
+    emitted = capsys.readouterr().out
+    assert _HEADER.match(emitted)
+    separator = os.linesep.encode() if tail.endswith('cut') else b''
+    assert logger.path.read_bytes() == before + separator + emitted.replace('\n', os.linesep).encode()
+    assert peer.read_bytes() == b'peer'
+
+
+@pytest.mark.parametrize('error_type', [PermissionError, FileNotFoundError])
+def test_optional_log_tail_inspection_keeps_append_only_access(tmp_path, monkeypatch, capsys, error_type):
+    import os
+    logger = Logger(tmp_path)
+    before = b'existing record\n'
+    logger.path.write_bytes(before)
+    native = Path.open
+
+    def append_only(path, *args, **kwargs):
+        if path == logger.path and args and args[0] == 'rb':
+            raise error_type('tail unavailable')
+        return native(path, *args, **kwargs)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(Path, 'open', append_only)
+        logger.error('still appendable')
+    emitted = capsys.readouterr().out
+    assert logger.path.read_bytes() == before + emitted.replace('\n', os.linesep).encode()

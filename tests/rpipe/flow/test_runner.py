@@ -400,3 +400,27 @@ def test_terminal_log_failure_uses_existing_result_and_diagnostic_policy(tmp_pat
             assert validate_result(result) == []
     assert calls == [ctx]
     assert peer.read_bytes() == b'peer must survive'
+
+
+@pytest.mark.parametrize('utf8_cut', [False, True])
+def test_logger_after_interruption_keeps_error_identity_in_native_readout(tmp_path, utf8_cut):
+    from rpipe.structure.system.logger import Logger
+    from rpipe.structure.artifact.index import write_index
+    from rpipe.structure.artifact.readout.logs import event_lines
+    from rpipe.structure.artifact.readout.status import _note_from_log
+
+    layout = artifact_layout(tmp_path, 'interrupted')
+    logger = Logger(layout.assets_dir)
+    write_index(tmp_path, {'study': 'synthetic', 'experiments': [
+        {'factors': {}, 'runs': [{'id': 'interrupted', 'run_dir': 'interrupted'}]}]})
+    partial = b'2001-01-01T00:00:00.000+00:00 INFO  interrupted [flow] cut '
+    if utf8_cut:
+        partial += b'\xe4'
+    logger.path.write_bytes(partial)
+    logger.error('current failure')
+    assert logger.path.read_bytes().startswith(partial)
+    lines = [line for line in event_lines(tmp_path) if 'current failure' in line]
+    assert len(lines) == 1
+    assert '[flow]' not in lines[0]
+    assert '[error] current failure' in lines[0]
+    assert _note_from_log(logger.path, errors_only=True) == '[error] current failure'
