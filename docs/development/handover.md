@@ -1,3 +1,7 @@
+## 2026-10-17 B140 Logger整类本机验收（当前）
+
+唯一未合codex/logger-sink-evidence，eba0d3a先红32/24失败/8控制→3dbd9a6方案→2fa9f0a仅Logger两个方法修双输出/完整traceback尝试。相邻257/core2304passed+1既有skip/CPU Flow433passed，32新全执行；实际OS pipe/closed stdout/readonly-file反例转绿，原异常同对象/failed Result/peer保持，原Runner/execute字节不变。原始红/ZIP/完整绿和LOCAL_CHECKED在.tmp/audit140不随clone，详record§246。准备一个整类里程碑PR→dev，193待双侧全部实际CI；无活测试/设计审批或用户阻塞。accepted dev8d3e1b3/PR192、191已关/旧主题已清；remote51/周期基线181后4，下一合入全面盘点。国内下载PR190已完成且无真实下载/GPU/训练/科学实验/main/tag/布局变更；下一B141。
+
 ## 2026-10-17 B135补强与B136同主题本机验收（当前）
 
 唯一未合codex/launch-failure-ownership，仍未推送/开PR：B135先补强1215806红28项8失败/20控制，再0df9943首wait失败一次恢复、继续原非零纠正；B136/#186先7ae8a6d红30项10失败/20控制，再3594c1e平台Path组件统一sibling/调度依赖身份。295相邻/core2194 passed+1既有skip/Flow429 passed，新62（57unit+5integration）全执行。旧wait-only候选/首wait漏child反例与各红均保留，最新LOCAL_CHECKED在.tmp/audit136，临时证据不随clone，正式record§231–233。所有本地句柄终结，无阻塞；185/186仍OPEN、待后续完整里程碑双侧实际CI，不提前关。

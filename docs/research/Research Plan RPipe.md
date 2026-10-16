@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
 > Version 1.4; updated 2026-10-17. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `e31fbf5927dfea94472c712d249a48e05212a66d`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `8d3e1b31557951dc113c5869fc3ed6f05cdb6769`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -767,3 +767,6 @@ PR187 launch ownership completed with all actual final-head/dev CI; issues185/18
 
 
 2026-10-17 final local B139 checkpoint: all three confirmed readout Unicode consumers form one category milestone, with878 adjacent cases, core2276 passed plus one existing skip, and CPU Flow429 passed. All56 new nodes executed without new skips, failures or errors. Source identities/numbers, strict producers and atomic writes remain unchanged. One PR is now prepared for the grouped scope; issue191 awaits exact-head and actual-dev CI. No scientific experiment/download/GPU/main/tag/layout action is implied (record§243).
+
+
+2026-10-17 engineering evidence update: PR192 merged B139/issue191 into dev8d3e1b3, with every actual final-head and integrated-dev CI job successful; the issue was accepted and closed. B140/issue193 then reproduced missing healthy-peer failure context with a closed OS pipe, closed stdout and a read-only log. Red32 comprised24 failures and8 controls; only two existing Logger methods now attempt independent sinks and the complete original traceback. Adjacent257, core2304 passed plus one existing skip, and CPU Flow433 passed; all32 new nodes executed. The three native counterexamples are green, preserving the original exception object, failed Result and peer evidence. The grouped category milestone still needs final-head/integrated-dev CI and is not a release or scientific result. Experiment protocols, gates and layout remain unchanged; future experiments retain the section-nine prerequisites. No new literature reading, download, GPU or training occurred (record sections244–246).

@@ -708,6 +708,8 @@ Logger 是 **system** 的运行时对象：打到 **terminal**，并且 **同一
 
 并行时 Windows 上 `rpipe launch` 默认每条 Run 一个新控制台（`--console new`）；`--console shared` 才混打。这只影响 printout，不改变组间 `wait`。train 第一次没有 `latest` checkpoint 时 **不**打 `resume skip`（默认路径）；真正 load 到权重仍打 `resume …`。
 
+Logger 的两路输出在已知 I/O/编码/关闭流错误下分别尝试；多行消息及 exception 的原 traceback 继续逐行尝试，完成后仍抛首个原 I/O 错误。未知程序错误和取消直接传播，原文件句柄关闭规则保持；不可写出口不保证持久化，健康出口不会因另一出口的已知拒绝而跳过。
+
 Logger **不**改 AlgorithmTracker 的 mean/history；**不**写 TensorBoard。
 
 ### 7.9 运行时 seed 与确定性

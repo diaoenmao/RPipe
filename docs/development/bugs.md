@@ -154,3 +154,8 @@ B139同类补全（2026-10-17）：可选activity提示亦真实strict stdout编
 
 
 2026-10-17 B139本机最终验收：三消费面合批相邻878passed、core2276passed+1既有skip、CPU Flow429passed，56新逐XML全执行/0新skip，0fail/error；64004/25458及所有旧本机句柄已终结。完整类别里程碑准备统一PR，191仍OPEN，远端CI尚未执行；详record§243，原始.tmp/audit139保留且不随clone。
+
+
+### B140 / Issue #193：Logger单路拒绝阻断健康日志证据（2026-10-17）
+
+实际Runner→execute→Logger，真实OS pipe reader关闭/closed stdout使可写run.log缺原原因和traceback；只读临时log使健康stdout缺完整trace。先eba0d3a红32/24失败/8控制，再3dbd9a6方案、2fa9f0a仅Logger独立双输出和完整诊断尝试；首IO对象/程序错/取消/close策略保持。相邻257、core2304passed+1既有skip、CPU Flow433passed，32新全执行，原生三反例转绿。详record§245–246；原始.tmp/audit140不随clone。待同类里程碑最终head/实际dev全部CI，193仍OPEN，不等设计审批。

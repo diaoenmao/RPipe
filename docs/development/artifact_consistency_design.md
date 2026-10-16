@@ -721,3 +721,6 @@ eba0d3a先红32项24失败/8控制、0error/skip：Logger18个真实OS管道/关
 4. 不改execute.failure_logged或Runner旧成功/失败回写策略，不迁移logger选型，不碰tracker/checkpoint/sampler/RNG/恢复、发布或布局。无法写入的sink不保证落盘；只保证健康peer的尝试与已知首错保留，未知程序故障/取消不做延迟协议扩展。
 
 先本方案再最小实现，复核原生三种反例、正常stdout/文件字节对应及既有close/tail/多行身份，再完整core/CPU Flow。当前唯一未合codex/logger-sink-evidence，本地按主题提交，完整类别里程碑后统一PR→dev；下一合入是基线181后约第5个，届时全面盘点。无设计/用户批准等待，新B141。
+
+
+B140本机实施完成（2026-10-17）：2fa9f0a只改既有Logger两方法，ADJ257/core2304passed+1既有skip/CPU Flow433passed，32新全执行，原生pipe/closed/readonly三反例转绿；首错/取消/原close/execute去重合同保持。当前待整类里程碑双侧实际CI，193保持OPEN，非待设计批准。详record§246。
