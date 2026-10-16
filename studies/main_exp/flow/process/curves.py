@@ -324,34 +324,73 @@ def plot_report(report, reference, destination):
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
+    import uuid
 
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5), dpi=160)
-    for ax, data in zip(axes, DATA_NAMES):
-        for model in MODEL_NAMES:
-            source = reference['datasets'][data]['models'][model]['sparse_points']
-            ax.scatter([point['step'] for point in source], [point['accuracy_pct_estimate'] for point in source],
-                       s=24, marker='x', color=COLORS[model], alpha=0.65)
-            body = next(row for row in report['experiments'] if row['data'] == data and row['model'] == model)
-            if body['optimizer_steps']:
-                x, mean, std = map(np.array, (body['optimizer_steps'], body['mean_accuracy_pct'], body['population_std_accuracy_pp']))
-                counts = body['seed_count_by_step']
-                ax.plot(x, mean, color=COLORS[model], label=f'{model}: n={min(counts)}..{max(counts)}')
-                ax.fill_between(x, mean - std, mean + std, color=COLORS[model], alpha=0.12)
-            else:
-                ax.plot([], [], color=COLORS[model], label=f'{model}: no current points')
-        ax.set_title(data)
-        ax.set_xlabel('Optimizer step (reference slot j maps to (j+1)*200)')
-        ax.set_ylabel('Full test Accuracy (%)')
-        ax.set_xlim(0, 80000)
-        ax.grid(alpha=0.3)
-        ax.legend(fontsize=8)
-    label = 'FINAL' if report['final_gates_applied'] else 'INCOMPLETE / PROVISIONAL'
-    fig.suptitle(f'{label}: current seed mean +/- population std; crosses = PNG estimates\n'
-                 'Reference image values are not recovered original training metrics', fontsize=11)
-    fig.tight_layout()
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(destination)
-    plt.close(fig)
+    from rpipe.structure.artifact._atomic import atomic_replace
+
+    tmp = destination.with_name(f'{uuid.uuid4().hex}.tmp')
+    owned = False
+    fig = plt.figure(figsize=(14, 5), dpi=160)
+    try:
+        axes = fig.subplots(1, 2)
+        for ax, data in zip(axes, DATA_NAMES):
+            for model in MODEL_NAMES:
+                source = reference['datasets'][data]['models'][model]['sparse_points']
+                ax.scatter([point['step'] for point in source], [point['accuracy_pct_estimate'] for point in source],
+                           s=24, marker='x', color=COLORS[model], alpha=0.65)
+                body = next(row for row in report['experiments'] if row['data'] == data and row['model'] == model)
+                if body['optimizer_steps']:
+                    x, mean, std = map(np.array, (body['optimizer_steps'], body['mean_accuracy_pct'], body['population_std_accuracy_pp']))
+                    counts = body['seed_count_by_step']
+                    ax.plot(x, mean, color=COLORS[model], label=f'{model}: n={min(counts)}..{max(counts)}')
+                    ax.fill_between(x, mean - std, mean + std, color=COLORS[model], alpha=0.12)
+                else:
+                    ax.plot([], [], color=COLORS[model], label=f'{model}: no current points')
+            ax.set_title(data)
+            ax.set_xlabel('Optimizer step (reference slot j maps to (j+1)*200)')
+            ax.set_ylabel('Full test Accuracy (%)')
+            ax.set_xlim(0, 80000)
+            ax.grid(alpha=0.3)
+            ax.legend(fontsize=8)
+        label = 'FINAL' if report['final_gates_applied'] else 'INCOMPLETE / PROVISIONAL'
+        fig.suptitle(f'{label}: current seed mean +/- population std; crosses = PNG estimates\n'
+                     'Reference image values are not recovered original training metrics', fontsize=11)
+        fig.tight_layout()
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            mode = destination.stat().st_mode
+        except FileNotFoundError:
+            mode = None
+        stream = tmp.open('xb')
+        owned = True
+        try:
+            fig.savefig(stream, format='png')
+        except BaseException:
+            try:
+                stream.close()
+            except OSError:
+                pass
+            raise
+        else:
+            stream.close()
+        if mode is not None:
+            tmp.chmod(mode)
+        atomic_replace(tmp, destination)
+    finally:
+        try:
+            if owned:
+                try:
+                    tmp.unlink(missing_ok=True)
+                except PermissionError:
+                    try:
+                        tmp.chmod(0o600)
+                        tmp.unlink(missing_ok=True)
+                    except OSError:
+                        pass
+                except OSError:
+                    pass
+        finally:
+            plt.close(fig)
 
 
 def main(argv=None):

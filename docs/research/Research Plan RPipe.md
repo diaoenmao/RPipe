@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
 > Version 1.4; updated 2026-10-16. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `e589862dbd7348f5425f5c64d56bafa4b883cb3c`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `fc2b9b6095910aba9c93629c43c6a58b73f19ca9`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -569,3 +569,11 @@ PR143 passed all actual final-head CI jobs and merged normally into dev e589862d
 
 
 PR143 final head and actual dev passed all real CI; Issue142 closed and its local/remote work branch was deleted normally. B108 final local checks executed all30 new nodes; core1789 passed/1 existing skip and CPU Flow207 passed. Final-head/actual-dev CI remain pending. Engineering checks do not replace scientific experiments or relax numerical gates; see record §168.
+
+
+### Engineering progress: B109 / Issue146 (2026-10-16)
+
+PR145 passed all actual final-head CI jobs and merged normally into dev fc2b9b6; actual-dev acceptance remains pending. AST-only synthetic inputs confirmed the remaining Study comparison PNG writer:2 of4 probes overwrite the prior PNG and3 leak an owned Figure. Twenty-five committed nodes first produced23 failures/2 valid normal-save controls, then the minimal fix made the new and adjacent PNG suite67 green; core/Flow/both CI gates remain pending. Frozen old/new PNGs match at76906 bytes and identical SHA; scientific gates/thresholds/comparison/read functions and original drawing body remain unchanged. No Study/training/download or historical Run was executed/read. Future formal reruns still require new version/provenance, original numerical gates and budget; engineering image checks are not scientific results. See[record §169](../development/record.md).
+
+
+PR145 final head and actual dev passed all actual CI; Issue144 closed and its local/remote branch was deleted normally. B109 final local25 new nodes, PNG adjacent67, core1814 passed/1 existing platform skip and CPU Flow207 passed; final-head/actual-dev CI remain pending. Engineering checks did not run a Study or replace scientific protocols/gates; see record §170.

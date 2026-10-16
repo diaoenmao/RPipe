@@ -1110,3 +1110,6 @@ migrate_shared在取得多个共享根锁前确保原有根目录存在，并按
 
 
 文本与ledger写入退出合同（Issue144）：_atomic、Logger._emit、AlgorithmTracker的begin_run/append_jsonl在已有写入/flush/编码异常或取消时，尽力close且仅不让close OSError替换首错；正常体close仍严格，非IO程序错继续暴露。打开模式、编码/newline、原JSON/日志字节、flush与追加顺序、原子发布和staging所有权保持；不引入通用I/O层。
+
+
+Study comparison PNG退出合同（Issue146）：main_exp/flow/process/curves.plot_report沿用库PNG已实施的同目录排他staging→保存/关闭→atomic_replace与自有figure/tmp清理规则，失败保留旧historical_comparison.png与peer；正常close严格、保存首错/取消不被close OSError替换。figsize/dpi、数据/轴/标注、返回None及科学比较/读取/gate函数保持，无文件架构或产物路径变化。

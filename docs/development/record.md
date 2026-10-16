@@ -1,7 +1,7 @@
-> 当前：PR143最终head/实际dev全CI验收，Issue142关闭、主题本地/remote已清；基线139后累计2。
-> 最新：B108/Issue144四写入入口12探针8反例；30正式回归16红/14有效控制。
-> 修复：2c33a65后30新节点全执行通过，相邻98+1既有skip、core1789+1既有skip、Flow207绿；有效字节相同。
-> 下一步：B108同主题PR→dev，分别验最终head与实际devCI后关144/清分支；目标active，见§167–168。
+> 当前：PR145最终head/实际dev全CI验收，Issue144关闭、主题本地/remote已清；基线139后累计3。
+> 最新：B109/Issue146四合成探针2次毁旧PNG/3次泄漏figure，25正式节点23红/2有效正常控制。
+> 修复：1db97b1后新25/PNG相邻67/core1814+1既有skip/Flow207绿；PNG76906字节同SHA、科学函数保持。
+> 下一步：B109同主题PR→dev，最终head与实际dev分别验CI后关146/清分支；目标active，见§169–170。
 > 保护：无GPU/测速/正式Study、main/tag或产物布局变更；以下旧状态保留。
 
 > 当前：PR135实际dev已全CI验收、Issue134关闭，工作分支本地/remote普通删。
@@ -3103,3 +3103,21 @@ B108探针在atomic_write_text、Logger._emit、AlgorithmTracker.begin_run/appen
 PR143实际dev e589862dbd7348f5425f5c64d56bafa4b883cb3c的Package38885286451 / Unit38885286323全部实际矩阵/聚合成功；DEV_CHECKED SHA256 a6240a64cd8d4786653845e9ab28a0421e047fb0047d39078cd9f1d07092db88。最终head d9574cf此前Branch38884484744/Package38884484539/Unit38884484516全绿，PR143正文已追加两侧验收。Issue142验收关闭；核对tip/祖先/唯一worktree后codex/shared-lock-cleanup本地与remote各1条普通删除，当前未合codex/writer-close-errors保留。清理基线仍PR139，实际验收累计2，未达到下一次约5批清理门；无数据、结果、provenance或worktree删除。
 
 B108最终本机验收：30新节点全部执行/通过；相邻98 passed/1既有Windows POSIX模式skip，core1789 passed/1同一既有skip，CPU Flow207 passed，全部0failure/error。LOCAL_CHECKED记录XML/hash、全部新节点执行和原主体AST/有效字节对照。Issue144仍开放，后续新PR最终head与实际dev全部实际CI须分别验收；不把本机通过当远端或发布验收。原始证据在.tmp/audit108不随clone；源码/正式回归/设计和本记录可携带。
+
+
+## 169. B109 / Issue146：Study comparison PNG原子发布与figure所有权（2026-10-16）
+
+前序PR145最终head f81bd8f的Branch38886373086 / Package38886373046 / Unit38886373084全部实际矩阵及聚合成功，正常合dev fc2b9b6095910aba9c93629c43c6a58b73f19ca9；实际dev Package38887059572 / Unit38887059522待验。Issue144与codex/writer-close-errors分支暂保留，未以head绿代替实际dev验收。
+
+跟踪源码清单显示savefig仅库PNG与main_exp Study comparison两点；库已PR141验收，后者仍直接写最终historical_comparison.png。AST抽取plot_report并用合成report/reference的4探针：render/save/cancel三者各泄漏1个自有figure；部分save/取消将2398字节旧有效PNG变成11字节；正常保存76906字节无泄漏，peer figure全部保留。未调用Study main、科学gate、历史归档/Run或checkpoint，不运行实验。
+
+先Issue146，再6ab3b74正式25项23 failed/2有效正常保存控制passed，0error/skip；70cad05设计，再1db97b1仅改Study helper。与库PNG已批准合同相同：figsize14×5/dpi160不变，先取得figure即进入finally，再同形状axes；同目录UUID.tmp以xb排他取得，向句柄明确PNG保存并关闭后复用atomic_replace；失败保留旧target，只清自有普通tmp/figure，碰撞peer不动。已有保存/取消时close OSError不遮首错，正常close仍严格；旧mode/新umask保持，只读自有临时可恢复mode重试清理。没有新helper、模块、依赖、路径/schema或返回值变化，科学阈值/比较/读取/gate各函数原源码保持。
+
+25新节点及库相邻PNG共67 passed、0fail/error/skip，原生Windows只读控制实际执行；core/CPU Flow与最终head/实际dev全部实际CI待验。冻结旧/新helper对同组合成输入PNG76906字节完全一致，SHA256均68002aeea7067ac878a00fde5d2fdb7c66c23867e93875733f4ff61ef0989141；绘图主体原行仅缩进，其他函数原源码相同。此为同环境工程保全，不是跨环境金标/新科学结果；未来受影响Study正式复跑按新version/实际provenance和原定门限，旧结果不覆写。临时ZIP/hash/REPRO/RED/GREEN/PNG_PARITY和源码清单在.tmp/audit109不随clone；正式测试/设计可携带。
+
+
+## 170. B108 / PR145 实际dev验收及B109本机收尾（2026-10-16）
+
+PR145实际dev fc2b9b6095910aba9c93629c43c6a58b73f19ca9的Package38887059572 / Unit38887059522全部实际矩阵与聚合成功；DEV_CHECKED SHA256 7dc81633fdb9a8e0a9548afd44e75b3a5f7ab72f1a4b0e75cb5e33b0ee207c93。最终head f81bd8f此前Branch38886373086/Package38886373046/Unit38886373084全绿，两侧验收已追加PR145正文。Issue144验收关闭，核对tip/祖先/唯一worktree后codex/writer-close-errors本地/remote各1条普通删除；当前未合codex/study-plot-publication与Issue146保留。清理基线仍PR139，已验收累计3，未达到下一次约5批门；无数据/结果/provenance/worktree删除。
+
+B109最终本机：25新节点全部执行/通过（含原生Windows只读目标），PNG相邻67 passed，core1814 passed/1既有Windows POSIX模式skip，CPU Flow207 passed；全部0failure/error。LOCAL_CHECKED保留原XML/hash、新节点执行、原绘图/其他科学函数源码保持、同环境PNG76906字节同SHA证据。最终head/实际dev全部实际CI仍须分别验收，不以本机/图像对照代替科学或发布验收。原始.tmp/audit109不随clone；正式回归/设计/本记录随Git提供。
