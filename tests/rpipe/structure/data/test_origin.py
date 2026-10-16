@@ -226,3 +226,18 @@ def test_domestic_model_cancellation_does_not_try_another_source(monkeypatch, tm
     monkeypatch.setitem(sys.modules, 'huggingface_hub', None)
     with pytest.raises(KeyboardInterrupt, match='cancel'):
         download_model('org/model', tmp_path)
+
+
+@pytest.mark.parametrize('args,kwargs', [
+    (('https://huggingface.co/org/data/resolve/main/data.json',), {}),
+    (('json',), {'data_files': {'train': ['https://example.org/data.json']}}),
+])
+def test_hf_dataset_rejects_explicit_overseas_urls(monkeypatch, args, kwargs):
+    import sys
+    import types
+    from rpipe.structure.origin import load_hf_dataset
+    def forbidden(*args, **kwargs):
+        raise AssertionError('foreign URL reached datasets')
+    monkeypatch.setitem(sys.modules, 'datasets', types.SimpleNamespace(load_dataset=forbidden))
+    with pytest.raises(ValueError, match='domestic'):
+        load_hf_dataset(*args, **kwargs)
