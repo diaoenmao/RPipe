@@ -202,7 +202,7 @@ def download_model(repo_id: str, cache_dir: Path | str, *, revision: str | None 
 
 def load_hf_dataset(*args: Any, **kwargs: Any) -> Any:
     """Load HF datasets after selecting the domestic endpoint before import."""
-    _check_dataset_urls((args[0] if args else kwargs.get('path'), kwargs.get('data_files')))
+    _check_dataset_urls((args, kwargs.get('path'), kwargs.get('data_files'), kwargs.get('data_dir')))
     apply_model_origin(DOMESTIC)
     _check_hf_endpoint()
     from datasets import load_dataset
