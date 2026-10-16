@@ -412,3 +412,10 @@ load_recipe在上述上下文内执行spec前，将自己的既有模块名临�
 按先红与方案后改生产，完整测试须包含正常/原错、模块/包、load/register、外部cache保全、注册引用和dataclass根/嵌套/eager/future，以及已有Study hooks/来源冻结/core/CPU Flow。现有Study phase私有namespace只作设计参考，不为了复用反向依赖flow层或搬文件。当前仍本地积累，不立即新PR；进一步反例保留并修合同，不能以测试全绿替代边界核对。
 
 实施前边界补充：模块身份须在load exec与register调用两个上下文均可见，不只加载时；中间候选26项通过后，register内dataclass新4项仍2失败/2控制，此反例RED_REGISTER保留。统一由同一私有上下文保存/注册/恢复当前ModuleType，保留每次上下文前的同名cache项。生产提交在此修正和验证之后。
+
+
+## 197. B119候选晚导入回归：不接受31项基线替代新边界（2026-10-16）
+
+候选da6d0b0在31项定向测试、core1950 passed/1既有skip、CPU Flow273 passed上通过，但随后的注册对象生命周期复查确认：配方顶层已导入helper，注册的builder稍后执行时再次from helper import，会因上下文已清cache而ModuleNotFoundError。4a53165新增模块/包2红均failed、0error/skip；这是新候选引入的支持行为回归，不计原始14/4红，也不以先前全绿接受候选。两个新节点不在此前CORE/FLOW收集清单中，当前33项边界未通过，不能冒称整体全绿。候选及红测试只在本地，未推送、未开新PR、未影响dev8480d79。
+
+§195暂存/恢复设计须继续覆盖注册函数晚导入的生命周期，不能简单清掉本地cache就作为最终实现，也不能改成禁止已支持的late import或粗暴清空外部模块。下一步先扩展私有导入绑定/模块所有权方案，保留这两个反例及原始预期，再修代码并重新执行当前全部节点/相关Flow。不是外部审批/网络阻塞，不因实现复杂而暂停；继续按20:56在当前唯一未合分支合批本地积累，不立即推PR。原始与候选失败、XML/hash均在.tmp/audit119/120不随clone。

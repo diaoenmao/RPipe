@@ -6,17 +6,18 @@
 
 ## 开放
 
-### B-117：并发临时端点绑定串用 origin 并残留类状态
+### B-119：顺序Study配方串用同名helper；候选晚导入仍待修
 
-- Issue：[160](https://github.com/DreamSoul-AI/RPipe/issues/160)。两个线程绑定同一数据集类的国内/国外url或mirrors，两次上下文读取均可串值，退出后保留错误端点；不同缓存根的Factory锁不能保护进程全局类字段。
-- 9c95667先提交8项正式红（4 failed/4有效嵌套控制passed）；1fe29ba设计；fffd872仅用RLock覆盖保存/绑定/构造/恢复。55ad528只修正测试文件名；收集同名拒绝另存，不计库失败。
-- 13项新旧端点回归全执行/通过，core1910 passed/1既有skip；CPU Flow273 passed，最终head/实际devCI待验收。真实Factory双根+合成builder原版失败/当前正确；不下载数据、不访问正式缓存。证据[record§188–189](record.md)，临时.tmp/audit117不随clone。
+- Issue：[163](https://github.com/DreamSoul-AI/RPipe/issues/163)。真实load_recipe第二Study读到第一个helper；新进程第二Study正确，sys.path均恢复。
+- 5c8f5fd先12红8失败/4控制，ace8485扩18红14失败/4控制；方案与本地候选见[record§192、195–197](record.md)。31节点候选通过后，4a53165新增已注册函数晚导入2红均失败；候选未验收，不能以先前core1950/Flow273通过代替新节点。
+- 唯一未合codex/study-loader-isolation本地积累，不推新PR；必须保留外部模块cache、注册对象和晚导入行为，不能缩窄合同。原证据.tmp/audit119不随clone。
 
-### B-118：并发共享准备泄漏临时环境变量
+### B-120：合法延迟注解dataclass配方缺少定义模块身份
 
-- Issue：[162](https://github.com/DreamSoul-AI/RPipe/issues/162)。独立项目根并发时后一个准备body失去TQDM_DISABLE=1，结束后变量残留；初值缺失/自定义均复现。首个探针错误共享同一缓存根造成交错等待超时，另存无效夹具，不计库失败。
-- b04a5cd正式红9项4失败/5控制→b6edba0设计→0aaae0b在原prepare.py以RLock保护临时环境全上下文，原_prepare/body/返回/异常保持。与B117合批PR161，见[record§190–191](record.md)。
-- 两处相邻27项全执行/通过，合批core1919 passed/1既有skip、CPU Flow273 passed；最终/实际devCI待验，原始.tmp/audit118不随clone。
+- Issue：[164](https://github.com/DreamSoul-AI/RPipe/issues/164)。spec.exec前未注册模块使dataclasses抛AttributeError；加载8红4失败/4控制，注册内部4红2失败/2控制保留。
+- 与B119同一本地加载隔离里程碑；中间候选身份/临时cache方案仍受B119晚导入回归制约，整批未验收、不关闭Issue。见[record§194–197](record.md)，原始.tmp/audit120不随clone。
+
+B117/#160、B118/#162已PR161双侧全部实际CI验收关闭且主题本地/remote清理，第5批周期盘点见[record§193](record.md)。
 
 B116/#158已由PR159双侧全部实际CI验收关闭并清本地/remote，见[record§187](record.md)。
 

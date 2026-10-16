@@ -1,5 +1,13 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 PR161验收完成；B119/B120候选晚导入回归待修
+
+PR161最终d42072f/实际dev8480d79全部实际矩阵/聚合成功，160/162关闭、correctness-followup本地/remote清理，第5批盘点完成，新基线161，累计remote42；活动未合study-loader-isolation保留，不删数据/结果/worktree，详record§193。
+
+本地加载隔离#163/#164先红/设计后候选da6d0b0，31定向/core1950 passed+1既有skip/Flow273 passed；后4a53165新增注册builder晚导入模块/包2红均失败，确认候选回归。旧完整检查不包含新增2红，当前33节点未验收，必须继续收敛模块生命周期，不能禁late import或清外部cache换绿。所有原失败、候选错误/报告中断与XML保留.tmp/audit119/120，不随clone；不等待人工审，不新开PR，只本地合批，详record§194–197。无GPU/测速/下载/正式Study/main/tag/布局变化。
+
+
+
 ## 2026-10-16 B117 本机验证中；PR159双侧验收
 
 PR159最终head33cf72f与实际dev ab5c825全部实际CI成功，#158关闭，readout-time-order本地/remote均普通删除；周期基线149累计4，remote累计结束41。record§187验收本地提交ac48da2随本里程碑合批，不单开文档PR。唯一未合主题codex/correctness-followup继续本地积累。

@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
 > Version 1.4; updated 2026-10-16. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `ab5c825ea6016681ba48623cbfcc282d2e781d4e`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `8480d795d0cb09714deb9bdd4bd79f41bdc5b2a9`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -626,3 +626,8 @@ PR159 passed every actual final-head and merged-dev CI job;#158 is closed and it
 ## Temporary environment concurrency follow-up, 2026-10-16
 
 B118/#162 extends the same temporary-global-state audit: independent project preparations can observe another call's restored TQDM_DISABLE and leave its temporary value behind. Red9 tests yielded4 failures/5 controls;0aaae0b adds only RLock ownership around the existing environment save/set/prepare/restore scope. It is batched with B117 in PR161 rather than a separate PR. All27 new/adjacent tests passed; combined core1919 passed/1 existing skip, all17 new nodes executed. CPU Flow273 passed with no failure/error/skip; final-head/actual-dev CI remain pending. Synthetic preparation bodies exercise the real public prepare path/cache locks and isolated projects without network, data, GPU or science. The five Study protocols and numerical/recovery gates remain unchanged. See[record§190–191](../development/record.md). The20:56 cadence requires related B items to accumulate locally into complete milestones and only a few PRs per day; existing PR161 finishes normally.
+
+
+## Loader isolation progress and an unpassed boundary, 2026-10-16
+
+PR161 passed every actual final-head and merged-dev CI job;#160/#162 are closed and its topic was cleaned. The accepted baseline is dev8480d795d0cb09714deb9bdd4bd79f41bdc5b2a9. B119/#163 and B120/#164 remain a local loader-isolation milestone. After the31-test candidate and core1950 passed+1 existing skip/Flow273 passed, two new late-import tests in registered functions exposed a candidate regression. The current33-node suite is not accepted; the earlier full checks exclude these two tests and cannot accept this boundary. Private module lifetime must be fixed without narrowing supported behavior. See[record§192–197](../development/record.md). Related B items accumulate locally under20:56 cadence, with no immediate new PR. No scientific run or new numerical conclusion; the five Study protocols, prior Runs and scientific gates stay unchanged.
