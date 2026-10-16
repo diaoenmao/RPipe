@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
+import builtins
+import hashlib
+import importlib.abc
+import importlib.machinery
 import importlib.util
+import os
+import pickle
 import sys
-from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import ModuleType
@@ -78,56 +83,131 @@ def recipe_path(study_dir: Path | str, study: dict[str, Any]) -> Path | None:
 _recipe_import_lock = RLock()
 
 
-@contextmanager
-def _local_imports(root: str, module: ModuleType):
-    with _recipe_import_lock:
-        module_name = module.__name__
-        previous_module = sys.modules.get(module_name)
-        module_existed = module_name in sys.modules
-        local = {
-            path.stem if path.is_file() else path.name
-            for path in Path(root).iterdir()
-            if ((path.is_file() and path.suffix == '.py') or path.is_dir())
-            and (path.stem if path.is_file() else path.name).isidentifier()
-        } - sys.stdlib_module_names
-        previous = {name: module for name, module in list(sys.modules.items())
-                    if name.partition('.')[0] in local}
-        for name in previous:
-            sys.modules.pop(name, None)
-        sys.path.insert(0, root)
-        sys.modules[module_name] = module
-        try:
-            yield
-        finally:
-            for name in list(sys.modules):
-                if name.partition('.')[0] in local:
-                    sys.modules.pop(name, None)
-            sys.modules.update(previous)
-            if module_existed:
-                sys.modules[module_name] = previous_module
-            else:
-                sys.modules.pop(module_name, None)
+class _RecipeLoader(importlib.machinery.SourceFileLoader):
+    def exec_module(self, module):
+        package = sys.modules[module.__name__.partition('.')[0]]
+        module.__dict__['__builtins__'] = dict(vars(builtins), __import__=package._recipe_import)
+        super().exec_module(module)
+
+
+class _RecipeFinder(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path, target=None):
+        if not fullname.startswith('_rpipe_recipe_'):
+            return None
+        package = sys.modules.get(fullname.partition('.')[0])
+        if package is None or not getattr(package, '_recipe_namespace', False):
+            return None
+        spec = importlib.machinery.PathFinder.find_spec(fullname, path)
+        if spec is not None and isinstance(spec.loader, importlib.machinery.SourceFileLoader):
+            spec.loader = _RecipeLoader(fullname, spec.origin)
+        return spec
+
+
+if not any(type(finder).__module__ == __name__ and type(finder).__name__ == '_RecipeFinder'
+           for finder in sys.meta_path):
+    sys.meta_path.insert(0, _RecipeFinder())
+
+
+def _recipe_namespace(root: Path) -> str:
+    return '_rpipe_recipe_' + hashlib.sha256(os.path.normcase(str(root.resolve())).encode()).hexdigest()
+
+
+def _local_module(package: ModuleType, name: str) -> bool:
+    top = name.partition('.')[0]
+    qualified = package.__name__ + '.' + top
+    return (top not in sys.stdlib_module_names
+            and (qualified in sys.modules
+                 or importlib.machinery.PathFinder.find_spec(qualified, package.__path__) is not None))
+
+
+def _recipe_package(root: Path, recipe_root: Path) -> ModuleType:
+    name = _recipe_namespace(root)
+    package = sys.modules.get(name)
+    if package is None:
+        package = ModuleType(name)
+        package.__package__ = name
+        package.__path__ = []
+        package.__spec__ = importlib.machinery.ModuleSpec(name, loader=None, is_package=True)
+        package.__spec__.submodule_search_locations = package.__path__
+        package._recipe_namespace = True
+
+        def local_import(module_name, globals=None, locals=None, fromlist=(), level=0):
+            if level == 0 and _local_module(package, module_name):
+                imported = builtins.__import__(name + '.' + module_name, globals, locals, fromlist, 0)
+                return imported if fromlist else sys.modules[name + '.' + module_name.partition('.')[0]]
+            return builtins.__import__(module_name, globals, locals, fromlist, level)
+
+        package._recipe_import = local_import
+        sys.modules[name] = package
+    package.__path__[:] = list(dict.fromkeys([str(recipe_root), str(root)]))
+    return package
+
+
+def _recipe_pickle_module(study_dir: Path | str) -> ModuleType | None:
+    package = sys.modules.get(_recipe_namespace(Path(study_dir)))
+    if package is None or not getattr(package, '_recipe_namespace', False):
+        return None
+
+    class RecipeUnpickler(pickle.Unpickler):
+        def find_class(self, module_name, name):
+            prefix, separator, local = module_name.partition('.')
+            private = (separator and prefix.startswith('_rpipe_recipe_')
+                       and len(prefix) == len('_rpipe_recipe_') + 64
+                       and all(char in '0123456789abcdef' for char in prefix[len('_rpipe_recipe_'):]))
+            qualified = package.__name__ + '.' + (local if private else module_name)
+            if not private:
+                owned_top = package.__name__ + '.' + prefix
+                if ((prefix in sys.modules and owned_top not in sys.modules)
+                        or not _local_module(package, module_name)):
+                    return super().find_class(module_name, name)
+                try:
+                    spec = importlib.util.find_spec(qualified)
+                except (ModuleNotFoundError, AttributeError, ValueError):
+                    spec = None
+                if spec is None:
+                    return super().find_class(module_name, name)
+            value = importlib.import_module(qualified)
             try:
-                sys.path.remove(root)
-            except ValueError:
-                pass
+                for part in name.split('.'):
+                    value = getattr(value, part)
+            except AttributeError:
+                if private:
+                    raise
+                return super().find_class(module_name, name)
+            return value
+
+    reader = ModuleType('_rpipe_recipe_pickle')
+    reader.__dict__.update({name: value for name, value in vars(pickle).items() if name != '__name__'})
+    reader.Unpickler = RecipeUnpickler
+    return reader
 
 
 def load_recipe(study_dir: Path | str, study: dict[str, Any]) -> ModuleType | None:
     path = recipe_path(study_dir, study)
     if path is None:
         return None
-    root = str(path.parent)
-    name = f'rpipe_recipe_{Path(study_dir).resolve().name}'
-    spec = importlib.util.spec_from_file_location(name, path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f'cannot load recipe: {path}')
-    module = importlib.util.module_from_spec(spec)
-    with _local_imports(root, module):
-        spec.loader.exec_module(module)
-    if not callable(getattr(module, 'register', None)):
-        raise AttributeError(f'recipe must define register(ctx): {path}')
-    return module
+    root = Path(study_dir).resolve()
+    with _recipe_import_lock:
+        package = _recipe_package(root, path.parent)
+        name = package.__name__ + '.<recipe>'
+        spec = importlib.util.spec_from_file_location(name, path)
+        if spec is None or spec.loader is None:
+            raise ImportError(f'cannot load recipe: {path}')
+        module = importlib.util.module_from_spec(spec)
+        previous, existed = sys.modules.get(name), name in sys.modules
+        sys.modules[name] = module
+        module.__dict__['__builtins__'] = dict(vars(builtins), __import__=package._recipe_import)
+        try:
+            spec.loader.exec_module(module)
+            if not callable(getattr(module, 'register', None)):
+                raise AttributeError(f'recipe must define register(ctx): {path}')
+        except BaseException:
+            if existed:
+                sys.modules[name] = previous
+            else:
+                sys.modules.pop(name, None)
+            raise
+        return module
 
 
 def apply_recipe(study_dir: Path | str, study: dict[str, Any], ctx: RecipeContext) -> bool:
@@ -135,7 +215,8 @@ def apply_recipe(study_dir: Path | str, study: dict[str, Any], ctx: RecipeContex
     module = load_recipe(study_dir, study)
     if module is None:
         return False
-    root = str(Path(study_dir).resolve())
-    with _local_imports(root, module):
+    with _recipe_import_lock:
+        package = sys.modules[module.__package__]
+        package.__path__[:] = list(dict.fromkeys([str(Path(study_dir).resolve()), *package.__path__]))
         module.register(ctx)
     return True

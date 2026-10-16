@@ -103,6 +103,10 @@ class System:
         import json
         import torch
 
+        from rpipe.structure.api.system_api import _checkpoint_pickle_module
+        reader = _checkpoint_pickle_module(self.assets_dir)
+        pickle_options = {} if reader is None else {'pickle_module': reader}
+
         raw = str(name)
         candidate = Path(raw)
         path = candidate
@@ -126,7 +130,7 @@ class System:
         if path.is_dir():
             payload_path = path / 'payload.pt'
             if payload_path.is_file():
-                loaded = torch.load(payload_path, map_location=self.device, weights_only=False)
+                loaded = torch.load(payload_path, map_location=self.device, weights_only=False, **pickle_options)
                 return loaded if isinstance(loaded, dict) else {'model': loaded}
             assembled: dict[str, Any] = {}
             meta_json = path / 'meta.json'
@@ -134,13 +138,13 @@ class System:
                 assembled.update(json.loads(meta_json.read_text(encoding='utf-8')))
             meta_pt = path / 'meta.pt'
             if meta_pt.is_file():
-                extra = torch.load(meta_pt, map_location=self.device, weights_only=False)
+                extra = torch.load(meta_pt, map_location=self.device, weights_only=False, **pickle_options)
                 if isinstance(extra, dict):
                     assembled.update(extra)
             for key in ('model', 'optimizer', 'scheduler'):
                 piece = path / f'{key}.pt'
                 if piece.is_file():
-                    assembled[key] = torch.load(piece, map_location=self.device, weights_only=False)
+                    assembled[key] = torch.load(piece, map_location=self.device, weights_only=False, **pickle_options)
             tracker_json = path / 'tracker.json'
             if tracker_json.is_file():
                 assembled['tracker'] = json.loads(tracker_json.read_text(encoding='utf-8'))
@@ -150,7 +154,7 @@ class System:
             return assembled or None
         if not path.is_file():
             return None
-        loaded = torch.load(path, map_location=self.device, weights_only=False)
+        loaded = torch.load(path, map_location=self.device, weights_only=False, **pickle_options)
         if isinstance(loaded, dict):
             return loaded
         return {'model': loaded}
