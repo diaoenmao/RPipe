@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
 > Version 1.4; updated 2026-10-16. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `a458eae998e25a908250ed3da887bdd8cd5bf451`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `bc3743e6ef33cc1b87833122a4d070dca2ee6ad3`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -518,3 +518,11 @@ Dedicated Data/Model and archive support live in `structure/`; `flow/prepare/run
 
 Only existing `recipe.preflight` runs a same-device original/current MNIST/linear seed0 prefix,200 steps with complete test, retaining sampler/scheduler total budget80000, batch250, original precision and gates. Validation identity main-exp-flow-smoke-20261012-01 writes a new directory under this Study's `shared/validation/`, with segment values in `docs/`. This is not the formal64-Run experiment; it changes no version03 declaration/index/provenance/Run/PREFLIGHT.json and does not trigger formal Flow launch. Existing loader/scope contracts are checked separately. A200-step single cell is not the eight-cell600-step entry gate and cannot unlock long training. A formal rerun still requires new version, make and the full entry gate.
 <!-- END archive-main-exp-v030 -->
+
+
+## Latest engineering acceptance, 2026-10-16
+
+B102 merged via PR133 into dev bc3743e; final-head and actual-dev CI passed all real jobs. Issue132 is closed and its local/remote branch removed; earlier pending text is historical. B103/Issue134 has four native Windows red regressions for shared-lock path-alias self-contention. Only the in-memory reentry identity changed; shared tests passed 72, core passed 1697 with one existing platform skip. Flow and CI remain pending. This is not a new scientific experiment and changes no layout or Study protocol; see [record§157–158](../development/record.md).
+
+
+B103 local completion: CPU Flow 207 passed, no failures/errors/skips; final-head and actual-dev CI remain pending.

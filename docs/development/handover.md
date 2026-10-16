@@ -413,3 +413,11 @@ PR #24 的文档审校已合入 dev `37b9cef`。维护者在 2026-10-10 追加�
 19:57 已在正式长训结束后执行串行校准首轮，CNN 数值门通过；[测量报告](../../studies/main_exp/docs/speed_calibration.md) 保留原始 JSON 和对照条件。六组独立进程复测全部通过，原生会话 66360 已 exit 0，日志 `.tmp/speed-repeat-1.log` 至 `speed-repeat-5.log`（仅本机）。该批次已结束，不再轮询或重启。校准修改了 recipe 的命令入口，已完成正式 version03 的来源仍按 09e495b 与原 provenance 解释；后续正式复跑须新 version / make / preflight，不能在这套旧冻结来源上重新 launch。
 
 后续提交 `8c17d5d` 保留上述完整报告并将归档 blob 读取合并为 Git batch。全部36个文件字节与原清单相同，拒绝不同内容及四种损坏响应，真实导入运行条件回归通过；核心295项、独立 basetemp 的集成37项通过，首次共享临时目录导致的验证错误已记入 record.md。到 dev 的 [PR #26](https://github.com/diaoenmao/RPipe/pull/26) 已在最终提交31acb5b的 Branch flow / Unit tests / Build package 全部通过后，于20:29合入 dev 51a4ce0。批量导出后的新源码八格600-step回归已于20:23全部通过（参数最大差0、Loss最大差4.44e-16），原生会话10327 exit0，输出独立目录 `.tmp/main-exp-batch-prefix-20261011-3e158abd/`，完成后写 `docs/BATCH_EXPORT_PREFLIGHT.json`；没有覆盖原 version03 的 PREFLIGHT 或64个 Run。会话10327已结束，不再轮询或重启；后续接续应读取 dev 的实际 HEAD 与对应 CI 状态。不能把旧矩阵当作优化后的完整矩阵。
+
+
+## 2026-10-16 最新恢复执行状态
+
+PR133 实际dev bc3743e全CI已验收，Issue132关闭，train-failure-finalizer本地/remote已普通删。当前B103/Issue134分支codex/cache-lock-path-identity：四红→设计→最小物理目录身份修复，共享72/core1697+1既有skip通过，待Flow和CI。网络仅短超时读取；目标面板仍paused，实际按15:44指令恢复工作。详record§157–158；无main/tag/GPU/布局变更。
+
+
+B103 本机补记：CPU Flow 207 passed、0 failure/error/skip；最终 head 与实际 dev CI 仍待验收。

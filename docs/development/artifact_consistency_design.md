@@ -250,3 +250,10 @@ Issue132后，1e8c5d1先提交22项合同：unit12覆盖RuntimeError/KeyboardInt
 实施方案：仅把原finally拆成except BaseException与else。已有异常时在嵌套try尽力flush；二次普通Exception时使用现有Logger.exception尽力记traceback，Logger本身再失败不遮原错，最后原bare raise。成功体的else仍直接flush并传播错误。捕获BaseException仅为保留原finally在终止时的flush动作和原异常身份，原终止不转为成功或新failed；不吞新的终止信号。不用sys.exc_info或共享状态推断失败，不加helper/模块/格式/路径，不改数值、checkpoint/RNG或周期内flush。
 
 相邻调用方已核对TrainAlgorithm.run/legacy run、execute的finally，以及eval_hook/Trainer回调；当前只在原生训练已有finally确认同类反例，其他路径无反例不修改。正式红、原始探针/拒绝、源码ZIP/hash在.tmp/audit102，不随clone。后续训练/恢复/checkpoint/Runner相邻、CPU core/Flow及最终head/实际dev全部实际CI分别验收后合dev、关闭Issue、普通清理本地/remote；无main/tag/GPU/测速或正式Study。
+
+
+## B103 / #134：共享锁路径别名的重入身份（2026-10-16）
+
+已复现：Windows 普通 drive 路径与扩展命名空间路径经 resolve 后仍有不同字符串，samefile 确认同一目录；两个嵌套方向在 timeout=0 下均因同线程再次取得同一 OS 锁而失败。42c8b5b 先提交四项原生 Windows 回归，四项全部失败；覆盖两个方向及内层正常/异常退出，并要求其他线程仍被排除、外层退出后可重获。
+
+最小方案：保留 resolve、mkdir 与全部 OS 锁和预算流程，只将线程局部重入表的字符串身份改为目录 stat 的 st_dev/st_ino 物理身份（与标准库 samefile 一致），同时保留 pid 隔离。原 root 仍用于全部文件操作和错误信息；不改变共享输入目录、锁文件、磁盘布局或持久化格式，不引入跨层 helper。调用方 prepared_resource、migrate_shared、data/model factory、data prepare 均复用这个共享根实现。验证既有进程/线程排斥、死亡持有者释放、取消与零预算合同；不运行 GPU、正式 Study 或测速。

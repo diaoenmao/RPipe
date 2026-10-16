@@ -48,7 +48,8 @@ def cache_lock(root: Path | str, *, timeout: float = 120):
         raise ValueError('cache lock timeout must be finite and >= 0')
     root = Path(root).resolve()
     root.mkdir(parents=True, exist_ok=True)
-    key = (os.getpid(), str(root))
+    identity = root.stat()
+    key = (os.getpid(), identity.st_dev, identity.st_ino)
     held = getattr(_held, 'roots', {})
     if key in held:
         yield
