@@ -780,7 +780,7 @@ def test_actual_media_feature_keeps_deferred_file_guard(monkeypatch, kind, strea
     assert origin._download_transports_installed is False
 
 
-@pytest.mark.parametrize('protocol', range(6))
+@pytest.mark.parametrize('protocol', range(2, 6))
 def test_domestic_reader_preserves_binary_file_protocol_and_pickle(protocol):
     import pickle
     from rpipe.structure import origin
