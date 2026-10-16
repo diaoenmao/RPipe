@@ -779,3 +779,8 @@ B141–B142已实施并双侧验收（2026-10-17）：PR197 finald824e14/actuald
 B143 模型阶段实施选择（2026-10-17）：在既有 origin.py 内用 ContextVar 标记本次来源策略；只在同步 SDK 调用期间安装、退出时还原 requests.Session.send 与 httpx 单次传输检查。每次重定向或元数据选出的 URL 都在该次 transport 进入前核验 HTTPS、无用户信息、默认 443 和来源 host；HF 只允许 hf-mirror，ModelScope 允许 modelscope.cn 子域及 OSS 的 cn 区域 host，不允许泛 aliyuncs 或 modelscope.ai。SDK 使用的 ThreadPoolExecutor.submit 复制本次上下文到文件 worker，包括已存在的线程；无标记的其他线程按原逻辑运行。临时安装由独立 RLock 管理，同类入口串行，worker 不取锁；不重置 client factory、不关闭客户端、不触碰认证/代理/hook 列表。
 
 HF 文件下载模块的 native availability 与配置读取按上下文隔离：国内调用使用标准 HTTP，Xet/旧 hf_transfer 不接管；其他调用读原函数/原常量，不改全局 flags/env。这样 cache-tree 的 Xet 快捷路径也不能绕过请求检查。以真实 SDK Xet 元数据选择的红回归 6621e12 先证（扩展后 8 项，5 failed/3 passed），修后需控制并发/取消/异常还原。ModelScope、旧 HF 及数据 eager/lazy 消费仍须分别补证；该选择不是任意自定义 builder 的网络防火墙，也不以模型阶段 green 声称 #198 全面完成。
+
+
+B143 数据阶段相邻反例与实施选择：f174b8c 先提交 eager / streaming 两个请求逃逸回归（2 failed/0 error/skip），均使用 SDK 调用/迭代边界替身加真实 requests 栈，不冒称真实 datasets 远端集成。真实 datasets 5.0.0 本地两行 JSON 另核对：streaming 根为 ArrowExamplesIterable，保有 generate_tables_fn、kwargs、分片/恢复状态。load_dataset 调用期使用同一 mirror 上下文；返回的原生 streaming 对象不换类型、不重建 schema/info/state，只给根 generate_examples_fn / generate_tables_fn（及适用的 generate_more_kwargs_fn）绑定可 pickle 的模块级 callable，每次创建/next/close 期间启用同一传输策略、yield 交还用户前退出上下文。这样保留原生 shuffle/shard/format/batch/state 的构造关系，且不把国内标记泄漏到消费线程的其他调用。正常关闭失败仍报告；已有异常/取消不被 close OSError 覆盖，未知程序错误保持原语义。
+
+aiohttp 的每个 ClientRequest 构造前和实际 redirect response 的 Location 选择处补同类核验，前者早于 connector/DNS/连接；不只检查最终响应。多进程 download_config.num_proc、格式/media 延迟访问、线程预取生命周期仍须据实际 SDK 执行分别验证，不以根生成器绑定冒称任意第三方处理代码全被沙箱化。整个 #198 仍同分支累积，无新 PR/关闭/全量验收声明。
