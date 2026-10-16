@@ -30,13 +30,14 @@ def sdk_download(monkeypatch, tmp_path):
     calls = []
     target = ['https://hf-mirror.com/synthetic/config.json']
     failure = [None]
+    extra_headers = {}
 
     def transport(request):
         calls.append(str(request.url))
         if failure[0] is not None:
             raise failure[0]
         headers = {'x-repo-commit': commit, 'etag': oid,
-                   'content-length': str(len(payload))}
+                   'content-length': str(len(payload)), **extra_headers}
         if '/resolve/' in request.url.path:
             return httpx.Response(302, headers={**headers, 'location': target[0],
                                   'x-linked-size': str(len(payload))}, request=request)
@@ -61,7 +62,7 @@ def sdk_download(monkeypatch, tmp_path):
             return download_model('rpipe-audit/synthetic-model', tmp_path, revision=commit)
 
         yield SimpleNamespace(run=run, target=target, calls=calls, client=client,
-                              payload=payload, httpx=httpx, failure=failure)
+                              payload=payload, httpx=httpx, failure=failure, extra_headers=extra_headers)
 
 
 @pytest.mark.parametrize('target', [
@@ -109,3 +110,24 @@ def test_model_sdk_cancellation_preserves_client_and_original_exception(sdk_down
     assert not sdk_download.client.is_closed
     sdk_download.failure[0] = None
     assert sdk_download.client.get('https://example.org/unrelated.json').status_code == 200
+
+
+def test_model_sdk_xet_metadata_uses_guarded_http_without_native_transfer(sdk_download, monkeypatch):
+    from pathlib import Path
+    from huggingface_hub import file_download
+    native = []
+    monkeypatch.setattr(file_download, 'is_xet_available', lambda: True)
+
+    def unguarded_native(**kwargs):
+        native.append(kwargs)
+        raise AssertionError('native transfer has no domestic request guard')
+
+    monkeypatch.setattr(file_download, 'xet_get', unguarded_native)
+    sdk_download.extra_headers.update({
+        'x-xet-hash': 'b' * 64,
+        'x-xet-refresh-route': 'https://hf-mirror.com/api/xet/read-token',
+    })
+    result = Path(sdk_download.run())
+    assert (result / 'config.json').read_bytes() == sdk_download.payload
+    assert native == []
+    assert file_download.is_xet_available() is True
