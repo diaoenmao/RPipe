@@ -78,7 +78,17 @@ def export_source() -> dict[str, Any]:
                 raise ValueError(f'archived source differs from Git: {target}')
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(payload)
+            handle = target.open('xb')
+            try:
+                handle.write(payload)
+            except BaseException:
+                try:
+                    handle.close()
+                except OSError:
+                    pass
+                raise
+            else:
+                handle.close()
         rows.append({'path': name, 'git_blob': oid,
                      'sha256': hashlib.sha256(payload).hexdigest(), 'bytes': len(payload)})
     if offset != len(stream):

@@ -574,3 +574,136 @@ def test_atomic_encoding_error_survives_close_io(tmp_path, stream_close_fault, e
     assert list(tmp_path.iterdir()) == ([target] if existing else [])
     if existing:
         assert target.read_bytes() == b'old target'
+
+
+@pytest.fixture(params=['main_exp', 'main_probe'])
+def source_archive_exporter(tmp_path, request):
+    """Execute actual exporter AST with one synthetic Git blob and no historical imports, data or bootstrap."""
+    import ast
+    import contextlib
+    import copy
+    import hashlib
+    import importlib
+    import json
+    import os
+    import sys
+    from types import SimpleNamespace
+
+    root = Path(__file__).resolve().parents[4]
+    payload = b'# synthetic source blob\n'
+    oid = hashlib.sha1(b'blob ' + str(len(payload)).encode() + b'\0' + payload).hexdigest()
+    tree = f'100644 blob {oid}\tsrc/evidence.py\0'.encode()
+    def git(args, **kwargs):
+        if args[1] == 'ls-tree':
+            return tree
+        if args[1:3] == ['cat-file', '--batch']:
+            assert kwargs['input'] == (oid + '\n').encode()
+            return f'{oid} blob {len(payload)}\n'.encode() + payload + b'\n'
+        assert args[1:3] == ['cat-file', 'blob'] and args[3] == oid
+        return payload
+    namespace = dict(Path=Path, contextlib=contextlib, copy=copy, hashlib=hashlib,
+                     importlib=importlib, json=json, os=os, sys=sys,
+                     subprocess=SimpleNamespace(check_output=git),
+                     bootstrap=lambda: None, cwd=lambda _: contextlib.nullcontext(),
+                     MAIN='fixture-ref', ROOT=tmp_path, COMMIT='fixture-ref', REPO=tmp_path,
+                     ARCHIVE_ROOT=tmp_path / 'archive')
+    main_exp = request.param == 'main_exp'
+    path = root / ('studies/main_exp/structure/api/__init__.py' if main_exp
+                   else 'studies/main_probe/structure/algorithm/paired.py')
+    names = ('export_source',) if main_exp else ('save_json', 'MainArchive')
+    source_tree = ast.parse(path.read_text(encoding='utf-8'))
+    definitions = [n for n in source_tree.body if isinstance(n, (ast.FunctionDef, ast.ClassDef)) and n.name in names]
+    future = ast.ImportFrom(module='__future__', names=[ast.alias(name='annotations')], level=0)
+    exec(compile(ast.fix_missing_locations(ast.Module(body=[future, *definitions], type_ignores=[])),
+                 str(path), 'exec'), namespace)
+    if main_exp:
+        invoke = namespace['export_source']
+        archive = namespace['ARCHIVE_ROOT']
+        manifest = archive / 'SOURCE_MANIFEST.json'
+    else:
+        namespace['MainArchive'].ROOTS = ()
+        invoke = lambda: namespace['MainArchive'](tmp_path)
+        archive = tmp_path / 'source-main-98648f3'
+        manifest = tmp_path / 'ARCHIVE_MANIFEST.json'
+    target = archive / 'src/evidence.py'
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    manifest.write_bytes(b'previous manifest evidence')
+    return invoke, target, manifest, payload
+
+
+@pytest.mark.parametrize('case', ['fresh', 'identical', 'different', 'race-different', 'race-identical'])
+def test_source_archive_creation_does_not_overwrite_racing_owner(source_archive_exporter, monkeypatch, case):
+    """Both source exporters preserve a real competing thread's bytes and previous manifest after losing creation ownership."""
+    import hashlib
+    import json
+    import threading
+
+    invoke, target, manifest, payload = source_archive_exporter
+    peer = payload if case in ('identical', 'race-identical') else b'peer partial source evidence'
+    if case in ('identical', 'different'):
+        target.parent.mkdir(parents=True)
+        target.write_bytes(peer)
+    old_manifest = manifest.read_bytes()
+    original = Path.exists
+    errors = []
+    def exists(path):
+        observed = original(path)
+        if path == target and case.startswith('race-') and not observed:
+            def competing_writer():
+                try:
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes(peer)
+                except BaseException as exc:
+                    errors.append(exc)
+            worker = threading.Thread(target=competing_writer)
+            worker.start()
+            worker.join(5)
+            assert not worker.is_alive() and not errors
+        return observed
+    with monkeypatch.context() as fault:
+        fault.setattr(Path, 'exists', exists)
+        if case == 'different' or case.startswith('race-'):
+            with pytest.raises(ValueError if case == 'different' else FileExistsError):
+                invoke()
+        else:
+            invoke()
+    if case == 'different' or case.startswith('race-'):
+        assert target.read_bytes() == peer and manifest.read_bytes() == old_manifest
+        if case == 'race-identical':
+            invoke()  # Retry after the winner is complete reuses identical source bytes.
+            assert target.read_bytes() == payload
+    else:
+        assert target.read_bytes() == payload
+        row = json.loads(manifest.read_text(encoding='utf-8'))['files'][0]
+        assert row['path'] == 'src/evidence.py'
+        assert row['sha256'] == hashlib.sha256(payload).hexdigest()
+
+
+@pytest.mark.parametrize('primary_type', [OSError, RuntimeError, KeyboardInterrupt, SystemExit])
+@pytest.mark.parametrize('close_fails', [False, True])
+def test_source_archive_partial_write_keeps_primary_and_diagnostic_bytes(source_archive_exporter, stream_close_fault, primary_type, close_fails):
+    """Exclusive raw source creation retains failed owned bytes and the primary error even if closing raises IO."""
+    invoke, target, manifest, payload = source_archive_exporter
+    original = primary_type('source write failed first')
+    secondary = OSError('source close failed second') if close_fails else None
+    handles, _ = stream_close_fault(lambda path, mode: path == target and mode in ('wb', 'xb'), original, secondary)
+    old_manifest = manifest.read_bytes()
+    with pytest.raises(primary_type) as caught:
+        invoke()
+    assert caught.value is original
+    assert target.read_bytes() == payload[:3]
+    assert manifest.read_bytes() == old_manifest
+    assert len(handles) == 1 and handles[0].closed
+
+
+def test_source_archive_successful_write_close_error_is_strict(source_archive_exporter, stream_close_fault):
+    """A complete blob followed by close IO is still a failed export; never publish a new manifest early."""
+    invoke, target, manifest, payload = source_archive_exporter
+    error = OSError('source close refused')
+    handles, _ = stream_close_fault(lambda path, mode: path == target and mode in ('wb', 'xb'), None, error)
+    old_manifest = manifest.read_bytes()
+    with pytest.raises(OSError) as caught:
+        invoke()
+    assert caught.value is error and target.read_bytes() == payload
+    assert manifest.read_bytes() == old_manifest
+    assert len(handles) == 1 and handles[0].closed

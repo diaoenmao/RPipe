@@ -88,7 +88,17 @@ class MainArchive:
                     raise ValueError(f'archived source changed: {target}')
             else:
                 target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_bytes(payload)
+                handle = target.open('xb')
+                try:
+                    handle.write(payload)
+                except BaseException:
+                    try:
+                        handle.close()
+                    except OSError:
+                        pass
+                    raise
+                else:
+                    handle.close()
             manifest.append({'path': name, 'git_blob': blob,
                              'sha256': hashlib.sha256(payload).hexdigest()})
         save_json(workspace / 'ARCHIVE_MANIFEST.json', {'main_commit': MAIN, 'files': manifest})

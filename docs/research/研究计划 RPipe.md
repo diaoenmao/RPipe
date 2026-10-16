@@ -1,7 +1,7 @@
 > **RPipe 研究计划：研究执行与证据一致性的可验证合同**
 > 版本：1.4；更新：2026-10-16；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
 > 当前阶段：完成计划重做和定向文献初筛；继续代码正确性，尚未执行本计划的新科学实验。
-> 当前实现基线：dev `f956c635b626bdb2838d3589f0b6a091904925e6`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
+> 当前实现基线：dev `720a13df514efaf8d765c24613c019e664af0b4e`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
 > 本轮零 GPU、零测速、零训练、零数据下载；保持既有文件架构与产物布局。
 
 ## 本次人工审阅摘要（2026-10-16，按12:53更新）
@@ -603,3 +603,10 @@ PR149最终head和实际dev全部实际CI已验收，Issue148关闭；五批周�
 PR152最终head及实际dev全部实际CI通过，#150/#151/#153已关闭且主题分支清理，基线现为dev f956c635（不是main发布）。B114/#154复查发现共享execute收尾在正常体后吞tracker写入拒绝，六合成Runner探针确认两个假成功；先24红6失败/18控制，再82890ce仅局部完成标志区分成功严格/失败尽力。24新节点全执行/通过、core1846 passed/1既有平台skip、CPU Flow273 passed；最终head和实际dev CI待验收。完整失败写入点与证据边界见[record§178–180](../development/record.md)，临时原证据不随clone。
 
 本项不执行新科学实验，不改变数值算法、训练步骤、周期flush、checkpoint/RNG、文件架构或布局。外部Algorithm及Study将不再在最后证据写入失败时得到成功定稿；无需格式/目录迁移，正式复验仍使用新version/实际provenance及原定数值门。文献缺口、第九章实验顺序与资源授权保持，未以CPU工程回归替代Study科学复验。
+
+
+## 2026-10-16 工程进展：不可变归档创建与资源准入新规则
+
+PR155最终head/实际dev全部实际CI通过，#154关闭且主题本地/remote清理，已接受基线dev720a13df。B115/#156把main_exp/main_probe两处相同竞态统一处理：存在性观察后新竞争者字节会被覆盖；两处改用排他创建，失败保全原写错/部分诊断字节和旧manifest。先红28项12失败/16控制，再832c1c9；28新节点全执行/通过、core1874 passed/1既有平台skip、CPU Flow273 passed，最终/实际dev CI待验收。源文件其余原字节、固定ref、有效Git blob、manifest/hash/路径与科学门保持。详[record§181–183](../development/record.md)。测试只用合成Git tree/blob和隔离AST、无历史源码加载/正式归档/数据/训练/测速；未来科学复验仍新version/实际provenance，旧Run/负结果保留，无格式/目录迁移。
+
+19:53批准的未来GPU准入：按白名单加进程类型将Figma、浏览器、dwm、explorer、Office及RayLink（含RayLinkCapturer）、ToDesk、Sunlogin/向日葵、Parsec、TeamViewer等Graphics/G或C+G且无/极少CUDA计算占用归为显示，不以未知身份挡准入，不杀/挂起。仅真实CUDA计算进程、实际空闲显存与RAM实测峰值+2GB决定准入；未知进程只有真占CUDA计算才阻塞、留证并告知监督。入库容量入口无身份过滤，仅free检查；历史.tmp校准/恢复材料不改写、不直接作为新准入，未来执行前须补齐并验证分类/RAM条件。本轮不启用GPU或性能工作，资源授权与原科学实验顺序/数值门仍保持。

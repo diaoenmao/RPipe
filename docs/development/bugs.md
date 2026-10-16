@@ -6,13 +6,13 @@
 
 ## 开放
 
-### B-114：Flow execute 最终 tracker 写入失败仍定稿成功
+### B-115：不可变源码导出覆盖竞争者及 close IO 替换首错
 
-- Issue：[154](https://github.com/DreamSoul-AI/RPipe/issues/154)。真实Runner/AlgorithmTracker六合成探针中，正常Algorithm体遇发布或编码拒绝两个反例仍succeeded且旧tracker不变；四控制正确。
-- aae4b0e先红24项6 failed/18控制passed，d850ba7设计，82890ce仅现有execute finally区分成功严格/失败尽力；算法体、原日志、Runner与数值/格式/布局保持。
-- 24新节点全执行/通过，core1846 passed/1既有平台skip、CPU Flow273 passed，0failure/error；待完整里程碑最终head及实际dev全部实际CI。详[record§179–180](record.md)，原始.tmp/audit114不随clone。
+- Issue：[156](https://github.com/DreamSoul-AI/RPipe/issues/156)。main_exp与main_probe两导出exists→write_bytes在确定性真实线程交错下覆盖peer后success；八合成探针两个反例、六控制。
+- 0383bd1先红28项12 failed/16控制passed，862db93设计，832c1c9两处原写入改xb排他创建和首错优先close；部分诊断字节/peer/旧manifest保全。原Git ref、归档路径/格式/hash和科学门不改。
+- 28新节点全执行/通过，core1874 passed/1既有平台skip、CPU Flow273 passed，0failure/error；待最终head与实际dev全部实际CI。初轮无效夹具另存不计库失败，临时.tmp/audit115不随clone，详[record§181–183](record.md)。
 
-B111/#150、B112/#151、B113/#153已由PR152双侧全部实际CI验收并关闭，主题本地/remote已清，清单与限制见[record§178](record.md)。此前开放条目归为历史。
+B114/#154已PR155最终head与实际dev全部实际CI验收并关闭，旧主题本地/remote已清，详[record§182](record.md)。B111/#150、B112/#151、B113/#153由PR152验收关闭，详[record§178](record.md)。
 
 B101/#130已PR131合dev并验收关闭，正式记录与分支清理见[record§154](record.md)。
 
