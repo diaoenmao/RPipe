@@ -553,3 +553,28 @@ def test_config_parse_failure_keeps_planned_status_and_peers(tmp_path, capsys, r
     assert len(lines) == 5
     assert all(len(line.split('\t')) == 9 for line in lines[1:])
     assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('flavor,owner,context,event,expected', [
+    ('windows', 'Owner', 'owner', 'split', None),
+    ('windows', 'Owner', 'owner', 'warn', None),
+    ('windows', 'Owner', 'owner', 'error', ('error', 'quoted [error] payload')),
+    ('windows', 'Name [error] marker', 'name [error] marker', 'flow', ('flow', 'quoted [error] payload')),
+    ('windows', 'Name [error] marker', 'name [error] marker', 'split', None),
+    ('windows', 'Name [error] marker', 'name [error] marker', 'error', ('error', 'quoted [error] payload')),
+    ('posix', 'Owner', 'Owner', 'split', None),
+    ('posix', 'Name [error] marker', 'Name [error] marker', 'error', ('error', 'quoted [error] payload')),
+    ('posix', 'Owner', 'owner', 'split', ('error', 'payload')),
+    ('posix', 'Name [error] marker', 'name [error] marker', 'flow', ('error', 'marker [flow] quoted [error] payload')),
+    ('windows', 'Owner', 'Owner', 'flow', ('flow', 'quoted [error] payload')),
+    ('windows', 'Name [error] marker', 'Name [error] marker', 'error', ('error', 'quoted [error] payload')),
+])
+def test_native_event_owner_uses_platform_component_identity(monkeypatch, flavor, owner, context, event, expected):
+    from importlib import import_module
+    from pathlib import PureWindowsPath, PurePosixPath
+
+    status = import_module('rpipe.structure.artifact.readout.status')
+    monkeypatch.setattr(status, 'Path', PureWindowsPath if flavor == 'windows' else PurePosixPath)
+    line = f'2026-10-17T01:00:00.000+08:00 INFO  {owner} [{event}] quoted [error] payload'
+    match = status._event_match(line, status._EVENT, context)
+    assert (match.groups() if match is not None else None) == expected
