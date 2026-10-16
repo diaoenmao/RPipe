@@ -399,3 +399,14 @@ B116已本地实施ba665de：28新节点全执行/通过，core1902 passed/1既�
 方案仅在prepare.py增加标准库RLock，以独立的进程内环境所有权范围包住原保存、设置、cache_lock内_prepare和finally恢复；必须在原资产根锁之前取得环境锁，维持一致顺序。同线程嵌套仍可重入，异常和返回值原样。与bind_endpoint锁分别保护不同全局对象，不引入通用全局状态框架、配置或路径，不改_prepare/body、下载/hash、数据/结果/科学门。与B117统一归入当前PR161临时进程状态并发里程碑，原已触发CI保留，新增代码后以新最终head重新验收；不因观察超时取消或重跑CI。
 
 B118实施补记：0aaae0b已按方案实施；与B117统一里程碑的新旧相邻27项全执行/通过，合批core1919 passed/1既有skip、CPU Flow273 passed，新17全执行。两个原始生产文件各自精确字节核对，仅锁和原上下文范围改变；不改body/端点/下载/hash/格式/布局或科学门。最终head与实际devCI仍待分别验收。
+
+
+## 195. B119/B120 配方临时导入状态所有权方案（2026-10-16，实施方案）
+
+目标同时修同目录helper串用和执行时缺失recipe模块身份，保留现有load_recipe/apply_recipe调用、路径/来源清单/注册时机与正常异常行为。只在原recipe.py复用标准库contextmanager/RLock建立私有临时导入上下文，不新增架构模块、公开配置或产物目录。
+
+进入load/register现有sys.path范围时，在同一个可重入进程锁内登记当前目录可导入的本地顶层模块/包名；仅暂存并移开这些名字及子模块的现有cache项，执行结束清理该范围新项、原对象原样恢复，路径亦恢复。内建/标准库名字保持原Python优先级，不批量清空sys.modules或第三方cache。其它非冲突第三方模块不进入所有权范围。锁在当前模块保存/移开/导入/恢复全程持有，支持同线程嵌套。
+
+load_recipe在上述上下文内执行spec前，将自己的既有模块名临时注册sys.modules；无论exec/校验成败都恢复此前同名项（包括不存在），使dataclass可解析定义模块。load后返回ModuleType、注册后已捕获的函数/模块全局引用继续有效；测试明确核对两个Study注册函数各自返回原值和既有外部模块身份。register时的同目录import同样走该上下文。保留当前load使用recipe父目录、register使用Study根的路径行为；不把此修复扩展为新公共namespace API、清空外部模块、任意后端的序列化保证或跨进程解释器改造。
+
+按先红与方案后改生产，完整测试须包含正常/原错、模块/包、load/register、外部cache保全、注册引用和dataclass根/嵌套/eager/future，以及已有Study hooks/来源冻结/core/CPU Flow。现有Study phase私有namespace只作设计参考，不为了复用反向依赖flow层或搬文件。当前仍本地积累，不立即新PR；进一步反例保留并修合同，不能以测试全绿替代边界核对。

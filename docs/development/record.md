@@ -1,3 +1,9 @@
+> 当前：PR161已双侧全实际CI验收，160/162关闭、已合主题本地/remote清理，第5批盘点完成，新基线161。
+> 最新：B119/#163顺序helper串用，18红14失败/4控制；B120/#164合法dataclass加载失败，8红4失败/4控制，见§192–195。
+> 验证：PR161合批core1919 passed/1既有skip、Flow273 passed；新加载回归仅红执行，生产修改尚未开始。
+> 下一步：按§195实现并核对加载隔离，相关B项在同一本地分支积累，遵循20:56少量PR规则，不立即开PR。
+> 保护：活动未合study-loader-isolation保留；无GPU/测速/下载/Study/main/tag/数据或布局变化，无外部决策阻塞。
+
 > 当前：PR161统一收尾B117/#160与B118/#162临时进程状态并发修复，唯一未合codex/correctness-followup。
 > 最新：两次独立正式红8项4失败/4控制、9项4失败/5控制；fffd872/0aaae0b后两处相邻27项全绿。
 > 验证：合批core1919 passed/1既有skip、CPU Flow273 passed，新17全执行；详§188–191，原证据含拒绝均保留。
@@ -3359,3 +3365,29 @@ B118按b6edba0设计，以0aaae0b在prepare.py增加RLock及完整保存/设置/
 按flow§14.1已支持同目录import及顺序run/子进程一致性，两个独立合成Study在真实load_recipe中导入同名helper，第二个读到第一个值与__file__；新进程第二Study读到自己的值，sys.path两种方式均正确恢复，问题在sys.modules。先Issue163，再5c8f5fd提交12项正式红：8 failed/4单Study控制passed、0error/skip；模块/包、加载时/注册时import、第一次注册成功/原错退出的8个串用反例均执行。原源码ZIP/hash/probe/新进程对照/红XML在.tmp/audit119不随clone；未运行数据/GPU/下载/正式Study。
 
 当前生产代码未改，正在比对既有独立Study阶段命名空间与recipe绝对import合同；修复必须避免清空第三方全局模块或破坏注册后的运行对象，先明确临时模块缓存的所有权/恢复范围，再实现。不是等待人工批准，也不以文档替代修复。唯一未合codex/study-loader-isolation本地积累，按20:56规则与相关加载隔离问题形成完整里程碑后再PR，不立即另开小PR。PR161最终head d42072f的Branch38904767623/Package38904767492/Unit38904767906已全实际CI成功，正常合dev8480d795d0cb09714deb9bdd4bd79f41bdc5b2a9，实际devCI仍在执行；#160/#162与已合主题待双侧验收清理。
+
+
+## 193. PR161 双侧验收与第5批周期盘点（2026-10-16）
+
+最终head d42072fd2f1b5ec5392c1f239e6c0cb150215d67的Branch38904767623/Package38904767492/Unit38904767906全部实际矩阵/聚合成功，正常合dev8480d795d0cb09714deb9bdd4bd79f41bdc5b2a9；实际dev Package38905658240/Unit38905658071亦全部实际成功，DEV_CHECKED SHA256 5005764c673784eecc110d4f459b10762616b0eaa70c1429bcf7d2d4cf604a0e。#160/#162均验收关闭，PR正文仅追加验收；不表示main发布或科学运行授权。
+
+双侧CI后核对tip/祖先、当前活动分支/唯一worktree及无未保全改动，普通删除codex/correctness-followup本地/remote各1条，tip d42072f已保全在dev。当前未合codex/study-loader-isolation及本地红回归保留，main/dev/远端main不动；worktree/数据/结果/provenance/_staging_from_DEM删除0。累计结束remote42。
+
+从149基线完整盘点已验收PR152/155/157/159/161共5批，五个merge均为实际dev祖先；对应已处理Issue150/151/153/154/156/158/160/162均已CLOSED，未完成163/164保持OPEN。实际远端仅main/dev，实际本地仅main/dev和活动未合study-loader-isolation，唯一主worktree，无废弃worktree可清；开放PR0。未合保留清单及理由随下个里程碑PR说明提供，不删除。新周期基线161/dev8480d79，计数归0；原始PERIODIC_CHECKED及验收/清理证据.tmp/audit118不随clone，记录本地积累随下个完整里程碑合入，不另开文档PR。
+
+## 194. B120 / Issue164：配方缺失模块身份使标准dataclass失败（2026-10-16）
+
+load_recipe从spec构造ModuleType后未将其注册sys.modules即exec；合法的future annotations+标准库dataclass在读取定义模块字典时抛AttributeError。合成配方真实load_recipe复现；已核对历史路径别名导入的源码与当前工作区samefile为真，不把另一克隆当证据。先Issue164，再5bb02f5正式8红4 failed/4 eager注解控制passed、0error/skip，覆盖根/嵌套recipe与直接/模块别名dataclass；ClassVar字段解析也保留期望。无数据/GPU/外网/正式Study。原ZIP/hash/traceback/红XML在.tmp/audit120不随clone。
+
+B119已补ace8485边界：18正式红14 failed/4控制，补既有外部模块原样保留和注册返回函数仍引用各Study实现。此前12红8失败/4控制保留，不互相替代。两个加载问题在同一未合本地分支积累，当前生产recipe.py尚未改，不立即另开PR。
+
+
+## 195. B119/B120 配方临时导入状态所有权方案（2026-10-16，实施方案）
+
+目标同时修同目录helper串用和执行时缺失recipe模块身份，保留现有load_recipe/apply_recipe调用、路径/来源清单/注册时机与正常异常行为。只在原recipe.py复用标准库contextmanager/RLock建立私有临时导入上下文，不新增架构模块、公开配置或产物目录。
+
+进入load/register现有sys.path范围时，在同一个可重入进程锁内登记当前目录可导入的本地顶层模块/包名；仅暂存并移开这些名字及子模块的现有cache项，执行结束清理该范围新项、原对象原样恢复，路径亦恢复。内建/标准库名字保持原Python优先级，不批量清空sys.modules或第三方cache。其它非冲突第三方模块不进入所有权范围。锁在当前模块保存/移开/导入/恢复全程持有，支持同线程嵌套。
+
+load_recipe在上述上下文内执行spec前，将自己的既有模块名临时注册sys.modules；无论exec/校验成败都恢复此前同名项（包括不存在），使dataclass可解析定义模块。load后返回ModuleType、注册后已捕获的函数/模块全局引用继续有效；测试明确核对两个Study注册函数各自返回原值和既有外部模块身份。register时的同目录import同样走该上下文。保留当前load使用recipe父目录、register使用Study根的路径行为；不把此修复扩展为新公共namespace API、清空外部模块、任意后端的序列化保证或跨进程解释器改造。
+
+按先红与方案后改生产，完整测试须包含正常/原错、模块/包、load/register、外部cache保全、注册引用和dataclass根/嵌套/eager/future，以及已有Study hooks/来源冻结/core/CPU Flow。现有Study phase私有namespace只作设计参考，不为了复用反向依赖flow层或搬文件。当前仍本地积累，不立即新PR；进一步反例保留并修合同，不能以测试全绿替代边界核对。
