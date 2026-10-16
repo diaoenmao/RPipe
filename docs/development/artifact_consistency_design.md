@@ -344,3 +344,6 @@ Issue148后dadb558先提交12项正式回归5 failed/7有效控制passed、0erro
 继续源审发现individual.run的独立读取入口未列入§174原20项清单。实际FlowRunner(process-only)六探针中，非object、深JSON和stat PermissionError三类使派生失败且经既有Runner失败回退改写原结果；语法/读Permission/有效输入三个控制按预期保全。正式14项先红4 failed/10有效控制passed，0error/skip，含新增stat IO；原始坏文件及被覆盖后证据在.tmp/audit113保留，不随clone。
 
 沿Run process已有缺失/坏语法/read IO的可选降级合同，只把is_file移入原try并补CorruptArtifactError/RecursionError，保留ctx.state有效mapping优先、无index要求、原metrics转换与history读取。严格公共loader和Runner通用失败/旧成功规则原样，不吞任意RuntimeError，不改路径/schema/恢复/科学门。此为#150相邻遗漏消费者，加入同一PR152，不另开小PR；旧head CI不取消，不能代替补齐后的最终head验收。
+
+
+B113已实施22a4d57：14新回归全执行/通过，重新core1834 passed/1既有平台skip、CPU Flow261 passed。连同B111/B112共62新节点实际执行，21项清单已补齐遗漏入口；仍在同一PR152，最后head与实际dev CI分别验收。旧head证据保留，非待设计批准；详record§176–177。

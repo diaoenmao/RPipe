@@ -447,3 +447,6 @@ PNG临时流在保存已有错误/取消时尽力关闭，仅关闭OSError不得
 ### 14.5 可选结果与严格命令的读取失败边界
 
 Study process读取indexed sibling result时，缺失、IO、坏语法、非object或JSON递归解析失败均沿已有不可用结果行处理；有效peer仍可汇总，计划分母保留，不改变n/n_planned/complete或数值公式。公共load_result仍严格拒绝坏输入。CLI status/logs/report/compare将已知JSON递归解析失败归入既有诊断并返回2；可选launch计数按既有best-effort不输出。任意RuntimeError不归入文件损坏；不改解析限额、schema、checkpoint恢复或科学审计。见B111/#150与B112/#151、[开发验收](../development/record.md)。
+
+
+Run process无有效内存result时，磁盘自身result同样沿原可选回读规则处理stat/IO、domain与JSON递归解析失败；继续生成自身history且不改result字节。有效内存mapping仍优先，不要求Study index。Runner的普通失败及旧成功保全规则、metrics转换与history读取不变，见B113/#153。

@@ -16,7 +16,12 @@
 - Issue：[151](https://github.com/DreamSoul-AI/RPipe/issues/151)。status/logs/report/compare的深层JSON触发RecursionError而未返回既有错误码2；可选launch计数也逃逸。
 - 已本地修复00f3ddf：五个既有异常元组补RecursionError，保留strict拒绝、可选best-effort及程序错传播。
 
-两项同批：44主红12失败/32控制通过，4补红1失败/3控制通过；48新节点全绿，core1834 passed/1既有平台skip，CPU Flow247 passed。等待同一里程碑PR最终head及实际dev全部实际CI验收；详[record§174–175](record.md)。B102/#132已PR133合dev并验收，旧开放文字已归历史记录。
+### B-113：Run 可选回读拒绝经 Runner 改写原结果
+
+- Issue：[153](https://github.com/DreamSoul-AI/RPipe/issues/153)。process-only、内存无结果时nonobject/deep/stat IO逃逸，派生失败经Runner回退改写原result；六真实探针三类反例。
+- 已本地修复22a4d57：stat纳入原可选try并补domain/Recursion，Runner/metrics/history源码保持，内存结果优先、无需index。
+
+三项同一PR152：44主红12失败/32控制通过、4补红1失败/3控制通过、14 Run回读红4失败/10控制通过；62新节点全执行/通过，core1834 passed/1既有平台skip，CPU Flow261 passed。待最终head和实际dev全部实际CI；详[record§174–177](record.md)。B102/#132已PR133合dev并验收，旧开放文字已归历史记录。
 
 B101/#130已PR131合dev并验收关闭，正式记录与分支清理见[record§154](record.md)。
 

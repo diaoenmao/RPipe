@@ -593,3 +593,6 @@ PR147最终head/实际dev全部实际CI已验收，Issue146关闭并清主题本
 PR149最终head和实际dev全部实际CI已验收，Issue148关闭；五批周期清理完成，基线149。B111/#150与B112/#151以同一分支集中修复可选peer结果读取与strict CLI解析诊断，20项读取边界清单区分源审、既有合同和实测；不扩大checkpoint/科学证据降级。48新节点全执行/通过，core1834 passed/1既有平台skip，CPU Flow247 passed，最终head/实际dev CI待统一PR验收。证据与限制见[record§173–175](../development/record.md)，原始.tmp证据不随clone。
 
 这是工程合同结果，不是新科学实验或当前dev的完整Study数值复验。第九章的文献缺口、实验顺序、实际精度/provenance、新version和既有数值门均保持；本批不执行GPU、测速、训练或下载。下一步先完成本里程碑双侧CI，再继续三类可复现正确性边界核验；科学实验仍按原计划和资源授权执行。
+
+
+读取边界里程碑补项：继续源审发现Run process自身result回读遗漏，B113/#153实际Runner三类反例会改写原结果；先红14项4失败/10控制，22a4d57补原guard。与#150/#151共用PR152、21项清单，补齐后62新节点全执行/通过，core1834 passed/1既有平台skip、CPU Flow261 passed；最终/实际dev CI待验。Runner/科学门/数值转换、Study实验顺序与资源授权保持，无新科学实验；详[record§176–177](../development/record.md)。

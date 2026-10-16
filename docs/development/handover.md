@@ -1,5 +1,12 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 PR152补齐Run读取：本机62新节点全部验收
+
+§174原20项遗漏individual.run，新增第21项B113/#153已实证：nonobject/deep/stat拒绝经Runner回退覆盖原result。70bb75e先红14项4失败/10控制→ac7edb2设计→22a4d57最小guard；Runner、metrics/history与严格公共loader保持。与#150/#151仍为同一PR152，不另拆PR。
+
+补齐后core1834 passed/1既有平台skip、CPU Flow261 passed，62新节点全部执行（16 core/46 Flow），0failure/error。旧5400249/48节点CI只表历史，须验新最终head及实际dev全部实际CI，再关闭150/151/153并清自身本地/remote；见record§176–177及本机.tmp/audit113/LOCAL_CHECKED（不随clone）。清理基线149累计0；不动main/tag/GPU/数据/布局。以下各阶段快照保留。
+
+
 ## 2026-10-16 读取边界完整里程碑：本机完成，统一PR待验
 
 B111/#150与B112/#151在唯一codex/optional-read-boundaries累积：8062f71主红44项12失败/32控制、c79b17b补红4项1失败/3控制→bfc851b设计/20项清单→00f3ddf两文件最小修复。48新节点全执行/通过；core1834 passed/1既有平台skip、CPU Flow247 passed，0failure/error。原始.tmp/audit111不随clone；正式证据见record§174–175。后续一个完整里程碑PR→dev，分别验最终head/实际dev全部实际CI；150/151验收后关闭，未合分支保留。

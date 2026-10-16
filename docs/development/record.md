@@ -1,8 +1,8 @@
-> 当前：PR149最终head/实际dev全CI验收，Issue148关闭；五批清理完成，基线149累计0。
-> 最新：B111/#150与B112/#151集中修复；48新回归全绿，读取边界20项清单见§174。
-> 验证：core1834 passed/1既有平台skip，CPU Flow247 passed；全部48新节点实际执行，见§175。
-> 下一步：同一完整里程碑统一PR→dev，分别验最终head和实际dev CI；目标active，无代码阻塞。
-> 保护：无GPU/测速/正式Study、main/tag或产物布局变更；以下旧状态保留。
+> 当前：PR152同一读取边界里程碑补齐#153；PR149已双侧验收，周期基线149累计0。
+> 最新：#150/#151/#153共62新回归全执行/通过；完整读取清单补为21项，见§174–177。
+> 验证：补齐后core1834 passed/1既有平台skip，CPU Flow261 passed，原始三套红分别保留。
+> 下一步：一次更新现有PR152，验最终head及实际dev全部实际CI后关Issue/清已合分支；无代码阻塞。
+> 保护：无GPU/测速/正式Study、main/tag或布局/数据修改；旧head结果仅历史，不当最终验收。
 
 > 当前：PR135实际dev已全CI验收、Issue134关闭，工作分支本地/remote普通删。
 > 最新：B104/Issue136同Study路径别名翻转多根锁顺序，真实并发循环已复现。
@@ -3151,7 +3151,7 @@ PR149最终head0c37aada60aab6dc9cb253488766ff012b310650的Branch38889723895 / Pa
 
 ## 174. 可选读取与strict readout集中盘点及测试先行（2026-10-16）
 
-承接§81/83既有全仓写入/展示清单，本次以devafa3a639为基线集中核对所有artifact/Flow process读取与Study对比读取入口。表中“源审/既有回归”表示既有合同与已有测试定位，未把未重新执行的故障矩阵宣称为本轮实测；本轮确认反例只有#150/#151两类，留在同一里程碑。原始rg/源码和合成探针保留.tmp/audit111，不依赖正式Study数据。
+承接§81/83既有全仓写入/展示清单，本次以devafa3a639为基线集中核对artifact/Flow process读取与Study对比读取入口；原20项清单后由§176补齐遗漏的第21项Run级回读。表中“源审/既有回归”表示既有合同与已有测试定位，未把未重新执行的故障矩阵宣称为本轮实测；本轮确认反例只有#150/#151两类，留在同一里程碑。原始rg/源码和合成探针保留.tmp/audit111，不依赖正式Study数据。
 
 | **读取点/消费者** | **既有合同与本轮结论** | **证据/后续** |
 | --- | --- | --- |
@@ -3162,6 +3162,7 @@ PR149最终head0c37aada60aab6dc9cb253488766ff012b310650的Branch38889723895 / Pa
 | process._state_history / legacy tracker | 可选；存在性与读取在try，IO/JSON/Unicode/Recursion降级为空，RuntimeError不吞 | 源审；test_aggregate既有状态读取矩阵 |
 | process.load_curve_series / JSONL主轨迹 | 可选；逐行坏JSON/Recursion跳过、IO停止读取已得轨迹，start/offset规则不变 | 源审；test_aggregate既有轨迹回归 |
 | process._load_result / indexed sibling result | 待修#150；stat在try外，domain/Recursion解析错误阻断peer；应沿已有不可用Run规则，不改变n/n_planned/complete算法 | 6实际process探针，44主红中的unit/process节点 |
+| individual.run / Run自身result回读 | §176补项#153；原stat/domain/Recursion逃逸经Runner回退改写原证据；已本地补齐原可选guard，内存优先/数值/Runner策略保持 | 6实际Runner探针、14正式红4失败/10控制；补齐后全绿，见§177 |
 | scheduler._run_result / run_succeeded | 可选完成提示已有OSError/ValueError/CorruptArtifactError/Recursion guard；依赖新鲜度stat失败仍false | 源审；scheduler既有回归，不执行launch |
 | scheduler.load_launch_plan / jobs缓存 | 可选缓存已有stat/read/JSON/Type/Overflow/Recursion guard及batch核验；None重make合同保持 | 源审；scheduler缓存回归，不触发make/下载 |
 | result.load_result / config.load_config | strict边界；非mapping、坏语法/编码应拒绝；不因#150改公共loader | 本轮strict result新控制；既有config/result回归 |
@@ -3195,3 +3196,12 @@ PR149最终head0c37aada60aab6dc9cb253488766ff012b310650的Branch38889723895 / Pa
 §174的20项源审遗漏individual.run，先前“未确认其他反例”只表当时范围；本次补为第21项。实际FlowRunner(process-only)、ctx.state无结果时六探针：nonobject/deep/stat Permission三类使原result字节被Runner失败回退改写且没有派生；syntax/read Permission/valid三控制正常，valid accuracy42。Issue153先创建，再14正式回归4 failed/10控制passed、0error/skip（额外覆盖stat IO、missing/Unicode、程序RuntimeError身份、有效内存优先/无需index）。不是训练或正式Study，原始REPRO/ZIP/hash保留.tmp/audit113，不随clone。
 
 设计按既有可选读取合同补individual原try范围和两种已知错误，Runner、metrics公式与公共严格loader保持，纳入已开PR152同一里程碑。原48绿及core1834/Flow247只代表5400249旧head；补齐后将重新验必要本机范围和最终head/实际dev全部实际CI。旧CI保留，不以取消/重跑抹去历史；不增加新PR。
+
+
+## 177. 三个读取消费者统一验收，仍为一个 PR152（2026-10-16）
+
+B113/#153按70bb75e先红14项4 failed/10有效控制passed→ac7edb2设计→22a4d57最小修复，14项全绿。只在individual.py增加已有domain错误导入，把原is_file纳入原try并补两种已知错误；精确原字节替换证明后续metrics/history/发布源码相同，Runner源码哈希保持。正常内存mapping优先、不需index、正常磁盘accuracy42与history75、source原字节、缺失不造result、程序RuntimeError身份均有实际回归。
+
+补齐后重新执行core1834 passed/1既有Windows POSIX模式skip，CPU Flow261 passed，均0failure/error。三套正式红分别44项12失败、4项1失败、14项4失败，未合并冒充单次红；62新节点全部在新基线实际执行（core16、Flow46），无新skip。此前5400249的48绿/core1834/Flow247与远端CI是旧head证据，不能替代当前最终验收。临时原始探针/被覆盖后结果、原ZIP/hash、红/绿XML和LOCAL_CHECKED在.tmp/audit111与audit113不随clone。
+
+PR152继续同一分支收敛#150/#151/#153，生产总计3个现有文件14行增加/11行删除；完整读取点清单补为21项。未改schema/数值/文件架构或产物布局，不改strict公共loader、checkpoint恢复与科学门。没有另开小PR；一次推送完整补齐里程碑后分别验最终head和实际dev全部实际CI，再关闭三Issue、清自身已合本地/remote分支。周期清理仍基线149累计0；尚未把未合PR152算入。
