@@ -67,9 +67,6 @@ def cache_lock(root: Path | str, *, timeout: float = 120):
                 if exc_type is None:
                     raise
         stack.push(close_handle)
-        if handle.seek(0, os.SEEK_END) == 0:
-            handle.write(b'0')
-            handle.flush()
         deadline = time.monotonic() + timeout
         while True:
             try:
@@ -103,6 +100,9 @@ def cache_lock(root: Path | str, *, timeout: float = 120):
                 if exc_type is None:
                     raise
         stack.push(release_lock)
+        if handle.seek(0, os.SEEK_END) == 0:
+            handle.write(b'0')
+            handle.flush()
         yield
 
 

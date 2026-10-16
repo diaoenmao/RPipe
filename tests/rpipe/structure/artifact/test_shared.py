@@ -782,3 +782,38 @@ handle.close()
     assert lock.stat().st_ino == identity
     with cache_lock(tmp_path, timeout=0):
         assert lock.stat().st_size == 1
+
+
+@pytest.mark.parametrize('operation', ['write', 'flush'])
+@pytest.mark.parametrize('cancelled', [False, True])
+def test_empty_shared_lock_initialization_failure_releases_os_and_reentry_state(tmp_path, monkeypatch, operation, cancelled):
+    primary = KeyboardInterrupt('initialization cancelled') if cancelled else OSError('initialization refused')
+    with monkeypatch.context() as patch:
+        calls, handles = _lock_cleanup_faults(patch)
+        original_open = Path.open
+        class Stream:
+            def __init__(self, raw):
+                self.raw = raw
+            def __getattr__(self, name):
+                return getattr(self.raw, name)
+            def write(self, value):
+                if operation == 'write':
+                    raise primary
+                return self.raw.write(value)
+            def flush(self):
+                if operation == 'flush':
+                    raise primary
+                return self.raw.flush()
+        def open_lock(path, mode='r', *args, **kwargs):
+            handle = original_open(path, mode, *args, **kwargs)
+            return Stream(handle) if path.name == '.rpipe.lock' and mode == 'a+b' else handle
+        patch.setattr(Path, 'open', open_lock)
+        with pytest.raises(type(primary)) as caught:
+            with cache_lock(tmp_path, timeout=0):
+                pytest.fail('initialization failure yielded a body')
+        assert caught.value is primary
+        assert calls == ['acquire', 'unlock']
+        assert len(handles) == 1 and handles[0].closed
+    _reacquire_shared_lock_on_other_thread(tmp_path)
+    with cache_lock(tmp_path, timeout=0):
+        pass
