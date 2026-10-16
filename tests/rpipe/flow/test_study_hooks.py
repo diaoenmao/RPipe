@@ -133,8 +133,9 @@ def test_without_freeze_change_only_warns(tmp_path: Path, capsys):
     assert 'provenance: 1 changed' in capsys.readouterr().out
 
 
+@pytest.mark.parametrize('form', ['bundle', 'pieces', 'payload'])
 @pytest.mark.parametrize('relocated', [False, True], ids=['legacy-helper-state', 'relocated-new-helper-state'])
-def test_recipe_checkpoint_state_keeps_legacy_and_relocated_imports(tmp_path, monkeypatch, relocated):
+def test_recipe_checkpoint_state_keeps_legacy_and_relocated_imports(tmp_path, monkeypatch, relocated, form):
     import importlib.util
     import sys
     from rpipe.flow.context import FlowContext
@@ -160,6 +161,7 @@ def test_recipe_checkpoint_state_keeps_legacy_and_relocated_imports(tmp_path, mo
         (study / 'helper.py').write_text(
             'from dataclasses import dataclass\n@dataclass\nclass State:\n'
             f'    value: int\n    label = {label!r}\n', encoding='utf-8')
+        (study / 'torch.py').write_text('MARK = "unused local source"\n', encoding='utf-8')
         declaration = study / 'study.yaml'
         declaration.write_text(declaration.read_text(encoding='utf-8').replace(
             'notes/*.txt', 'notes/*.txt, helper.py'), encoding='utf-8')
@@ -172,7 +174,19 @@ def test_recipe_checkpoint_state_keeps_legacy_and_relocated_imports(tmp_path, mo
     spec.loader.exec_module(legacy_module)
     legacy = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}),
                                  study / 'runs' / 'legacy' / 'assets')
-    bundle = legacy.save_checkpoint({'model': {'_extra_state': legacy_module.State(7)}}, 'legacy')
+    import torch
+    bundle = legacy.save_checkpoint({'model': {'_extra_state': legacy_module.State(7),
+                                                'tensor': torch.tensor([1, 2])},
+                                     'metadata': legacy_module.State(9)}, 'legacy')
+    if form != 'bundle':
+        import shutil
+        folder = legacy.checkpoint_dir() / ('legacy-' + form)
+        if form == 'pieces':
+            shutil.copytree(bundle.with_suffix(''), folder)
+        else:
+            folder.mkdir()
+            shutil.copy2(bundle, folder / 'payload.pt')
+        bundle = folder
     monkeypatch.delitem(sys.modules, 'helper')
 
     def prepared(study):
@@ -186,6 +200,12 @@ def test_recipe_checkpoint_state_keeps_legacy_and_relocated_imports(tmp_path, mo
     ctx = prepared(study)
     loaded = ctx.state['system'].load_checkpoint(str(bundle))
     assert loaded['model']['_extra_state'].value == 7
+    assert loaded['metadata'].value == 9
+    assert torch.equal(loaded['model']['tensor'], torch.tensor([1, 2]))
+    if form == 'bundle':
+        from rpipe.structure.artifact.readout.compare import _checkpoint
+        displayed = _checkpoint(study / 'runs' / 'legacy', 'legacy')
+        assert type(displayed['model']['_extra_state']) is ctx.state['model']._recipe_state_type
     assert type(loaded['model']['_extra_state']) is ctx.state['model']._recipe_state_type
     if relocated:
         bundle = ctx.state['system'].save_checkpoint(loaded, 'with-recipe-state')
@@ -195,3 +215,8 @@ def test_recipe_checkpoint_state_keeps_legacy_and_relocated_imports(tmp_path, mo
         assert restored['model']['_extra_state'].value == 7
         assert type(restored['model']['_extra_state']) is target_ctx.state['model']._recipe_state_type
         assert restored['model']['_extra_state'].label == 'relocated'
+        import shutil
+        from rpipe.structure.artifact.readout.compare import _checkpoint
+        shutil.copy2(bundle, target_ctx.state['system'].checkpoint_dir() / 'copied.pt')
+        displayed = _checkpoint(target_ctx.layout.root, 'copied')
+        assert type(displayed['model']['_extra_state']) is target_ctx.state['model']._recipe_state_type

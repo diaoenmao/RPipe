@@ -215,3 +215,135 @@ def test_internal_recipe_identity_does_not_shadow_valid_local_helper_filename(tm
     (study / 'recipe.py').write_text('from _recipe import VALUE\ndef register(ctx):\n    pass\n',
                                    encoding='utf-8')
     assert load_recipe(study, {'recipe': 'recipe.py'}).VALUE == 'helper'
+
+
+@pytest.mark.parametrize('package', [False, True], ids=['absolute-sibling', 'relative-package-child'])
+def test_helper_functions_keep_their_own_late_imports(tmp_path, package):
+    helper = '_recipe_isolation_' + uuid4().hex
+    registered = []
+    for value in ('first', 'second'):
+        study = tmp_path / value
+        _recipe(study, helper, value, package, False)
+        if package:
+            (study / helper / '__init__.py').write_text(
+                'def build():\n    from .value import VALUE\n    return VALUE\n', encoding='utf-8')
+        else:
+            sibling = helper + '_sibling'
+            (study / f'{sibling}.py').write_text(f'VALUE = {value!r}\n', encoding='utf-8')
+            (study / f'{helper}.py').write_text(
+                f'def build():\n    from {sibling} import VALUE\n    return VALUE\n', encoding='utf-8')
+        (study / 'recipe.py').write_text(
+            f'from {helper} import build\n'
+            'def register(ctx):\n    ctx.registered.append(build)\n', encoding='utf-8')
+        assert apply_recipe(study, {'recipe': 'recipe.py'}, SimpleNamespace(registered=registered))
+    assert [build() for build in registered] == ['first', 'second']
+
+
+def test_repeated_recipe_load_does_not_add_per_run_module_names(tmp_path):
+    from rpipe.structure.make.recipe import load_recipe
+
+    helper = '_recipe_isolation_' + uuid4().hex
+    study = tmp_path / 'repeated'
+    _recipe(study, helper, 'stable', False, False)
+    first = load_recipe(study, {'recipe': 'recipe.py'})
+    prefix = first.__package__ + '.'
+    original_names = {name for name in sys.modules if name.startswith(prefix)}
+    assert original_names
+    for _ in range(4):
+        assert load_recipe(study, {'recipe': 'recipe.py'}).VALUE == 'stable'
+        assert {name for name in sys.modules if name.startswith(prefix)} == original_names
+
+
+def test_equal_study_basenames_in_different_projects_keep_local_code(tmp_path):
+    from rpipe.structure.make.recipe import load_recipe
+
+    helper = '_recipe_isolation_' + uuid4().hex
+    modules = []
+    for value in ('first', 'second'):
+        parent = tmp_path / value
+        parent.mkdir()
+        study = parent / 'same-name'
+        _recipe(study, helper, value, False, False)
+        modules.append(load_recipe(study, {'recipe': 'recipe.py'}))
+    assert [module.VALUE for module in modules] == ['first', 'second']
+    assert modules[0].__package__ != modules[1].__package__
+
+
+def test_recipe_exec_failure_preserves_previous_defining_module(tmp_path):
+    from rpipe.structure.make.recipe import load_recipe
+
+    helper = '_recipe_isolation_' + uuid4().hex
+    study = tmp_path / 'reload'
+    _recipe(study, helper, 'kept', False, False)
+    previous = load_recipe(study, {'recipe': 'recipe.py'})
+    (study / 'recipe.py').write_text('raise RuntimeError("replacement refused")\n', encoding='utf-8')
+    with pytest.raises(RuntimeError, match='replacement refused'):
+        load_recipe(study, {'recipe': 'recipe.py'})
+    assert sys.modules[previous.__name__] is previous
+    assert previous.VALUE == 'kept'
+
+
+@pytest.mark.parametrize('operation', ['annotations', 'pickle'])
+def test_recipe_class_metadata_remains_usable_after_loading(tmp_path, operation):
+    import pickle
+    from typing import get_type_hints
+    from rpipe.structure.make.recipe import load_recipe
+
+    study = tmp_path / 'metadata'
+    study.mkdir()
+    (study / 'recipe.py').write_text(
+        'from __future__ import annotations\nfrom dataclasses import dataclass\n'
+        '@dataclass\nclass State:\n    value: int\n'
+        'def register(ctx):\n    pass\n', encoding='utf-8')
+    module = load_recipe(study, {'recipe': 'recipe.py'})
+    if operation == 'annotations':
+        assert get_type_hints(module.State) == {'value': int}
+    else:
+        restored = pickle.loads(pickle.dumps(module.State(7)))
+        assert type(restored) is module.State
+        assert restored.value == 7
+
+
+@pytest.mark.parametrize('first_error', [False, True], ids=['success', 'registration-error'])
+def test_concurrent_recipe_helpers_keep_study_identity(tmp_path, first_error):
+    import threading
+
+    helper = '_recipe_isolation_' + uuid4().hex
+    entered, attempted, second_entered = [threading.Event() for _ in range(3)]
+    observed, errors = {}, []
+    for index, value in enumerate(('first', 'second')):
+        study = tmp_path / value
+        _recipe(study, helper, value, False, True)
+        (study / 'recipe.py').write_text(
+            'def register(ctx):\n'
+            f'    from {helper} import VALUE\n'
+            '    if ctx.index == 0:\n'
+            '        ctx.entered.set()\n        assert ctx.attempted.wait(3)\n'
+            '        ctx.second_entered.wait(0.2)\n'
+            '    else:\n        ctx.second_entered.set()\n'
+            '    ctx.observed[ctx.index] = VALUE\n'
+            '    if ctx.index == 0 and ctx.first_error:\n'
+            '        raise RuntimeError("registration refused")\n', encoding='utf-8')
+
+    def worker(index):
+        try:
+            if index:
+                assert entered.wait(3)
+                attempted.set()
+            ctx = SimpleNamespace(index=index, entered=entered, attempted=attempted,
+                                  second_entered=second_entered, observed=observed, first_error=first_error)
+            try:
+                apply_recipe(tmp_path / ('first' if index == 0 else 'second'), {'recipe': 'recipe.py'}, ctx)
+            except RuntimeError as exc:
+                assert index == 0 and first_error and str(exc) == 'registration refused'
+        except BaseException as exc:
+            errors.append(exc)
+
+    threads = [threading.Thread(target=worker, args=(index,), daemon=True) for index in range(2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(5)
+    assert not any(thread.is_alive() for thread in threads)
+    assert not errors
+    assert observed == {0: 'first', 1: 'second'}
