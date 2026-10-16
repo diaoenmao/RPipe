@@ -136,3 +136,87 @@ def test_prepare_retries_partial_archive(tmp_path: Path, monkeypatch, capsys):
     assert 'download domestic' in out
     assert 'dataset.bj.bcebos.com' in out
     assert 'cached' not in out
+
+
+@pytest.mark.parametrize('initial', [None, 'caller-value', '1'], ids=['absent', 'custom', 'already-disabled'])
+@pytest.mark.parametrize('body_failure', [False, True], ids=['success', 'body-error'])
+def test_concurrent_preparation_preserves_temporary_environment(tmp_path, monkeypatch, initial, body_failure):
+    import os
+    import threading
+    from rpipe.structure.data import prepare
+
+    if initial is None:
+        monkeypatch.delenv('TQDM_DISABLE', raising=False)
+    else:
+        monkeypatch.setenv('TQDM_DISABLE', initial)
+    first, attempt, entered, exited = [threading.Event() for _ in range(4)]
+    observed, errors = {}, []
+    primary = RuntimeError('preparation refused')
+
+    def fake(study, shared, config_paths, seen, names):
+        index = int(study.name)
+        if index == 0:
+            first.set()
+            assert attempt.wait(3)
+            entered.wait(0.2)
+        else:
+            entered.set()
+            assert exited.wait(3)
+        observed[index] = os.environ.get('TQDM_DISABLE')
+        if body_failure:
+            raise primary
+        return []
+
+    monkeypatch.setattr(prepare, '_prepare', fake)
+
+    def worker(index):
+        try:
+            if index:
+                assert first.wait(3)
+                attempt.set()
+            study = tmp_path / f'project{index}' / 'studies' / str(index)
+            try:
+                assert prepare.prepare_shared_data(study, []) == []
+            except RuntimeError as exc:
+                assert body_failure and exc is primary
+        except BaseException as exc:
+            errors.append(exc)
+        finally:
+            if index == 0:
+                exited.set()
+
+    threads = [threading.Thread(target=worker, args=(i,), daemon=True) for i in range(2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(5)
+    assert not any(thread.is_alive() for thread in threads)
+    assert not errors
+    assert observed == {0: '1', 1: '1'}
+    assert os.environ.get('TQDM_DISABLE') == initial
+
+
+@pytest.mark.parametrize('initial', [None, 'caller-value', '1'], ids=['absent', 'custom', 'already-disabled'])
+def test_nested_preparation_restores_environment_after_inner_error(tmp_path, monkeypatch, initial):
+    import os
+    from rpipe.structure.data import prepare
+
+    if initial is None:
+        monkeypatch.delenv('TQDM_DISABLE', raising=False)
+    else:
+        monkeypatch.setenv('TQDM_DISABLE', initial)
+    primary = RuntimeError('inner preparation refused')
+
+    def fake(study, shared, config_paths, seen, names):
+        assert os.environ['TQDM_DISABLE'] == '1'
+        if study.name == 'inner':
+            raise primary
+        with pytest.raises(RuntimeError) as caught:
+            prepare.prepare_shared_data(tmp_path / 'other-project' / 'studies' / 'inner', [])
+        assert caught.value is primary
+        assert os.environ['TQDM_DISABLE'] == '1'
+        return []
+
+    monkeypatch.setattr(prepare, '_prepare', fake)
+    assert prepare.prepare_shared_data(tmp_path / 'project' / 'studies' / 'outer', []) == []
+    assert os.environ.get('TQDM_DISABLE') == initial
