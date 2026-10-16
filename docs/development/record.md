@@ -4324,3 +4324,12 @@ B143跨版本修正后完整本机检查：5978164（生产69ec7e4）CORE_PICKLE
 425cd72先提交31项portable红回归（14failed/17passed、0error/skip）；与此前31草稿预检同集，真实文件和实际公共入口，不把草稿当正式提交。五处为archive MD5、shared digest、strict index JSON、optional curve JSONL、optional Logger binary tail；各六组read IO/取消/body程序错/正常body close IO/close程序错/成功，index再一项实际JSONDecodeError。检查原异常对象、owned close一次、输入/peer字节与Logger旧前缀/正常追加、strict拒绝与optional回退；完整RED.xml/log在.tmp/audit144不随clone。公共输入由临时字节构造，不依赖正式Study。
 
 生产尚未修改；本批不只机械修五处。继续盘点src/rpipe的Path.read_text/read_bytes隐式owned读取，查同一close遮首错/取消是否穿过strict与optional调用；确认后归入同一200类别并先补红，不另逐点Issue/PR。原始20probe/ZIP/hash、全80Issue去重、五显式reader与两空append acquisition的分类保留。设计/实现应复用既有模块与标准库，保持公开接口/编码/正常解析顺序、I/O回退、缓存hash/manifest、日志追加与路径，不变成通用parser/新框架/布局迁移。下一B145未用，当前只有200OPEN。
+
+
+## 262. 2026-10-17：B144隐式owned whole-file读归并与完整红基线
+
+五显式reader首红后，src/rpipe全AST盘点另19个Path.read_text/read_bytes点（18text/1binary）。实际Result/Config/activity/tracker-history/log公共入口20额外探针，所有5取消均丢失原KeyboardInterrupt；前两strict抛close OSError，后三optional正常fallback，全部owned close一次与输入/peer SHA保持、成功baseline真实执行。把同类范围追加200原正文一次并全文prose/顺序核对；GitHub body newline表达差异使初轮raw比较拒绝，原比较留证，不重复评论/不另Issue。
+
+e4ab3e4提交整类69正式回归，28failed/41passed、0error/skip；原425cd72的31红及14失败不覆盖。新增严格Result/Config/provenance byte-hash、optional activity/history/logs的错误/取消/close/成功控制，真实UTF8 decoder原错，以及库whole-file读路径清单约束。首扩展候选52失败因fixture给Path.open关键字mode重复传入，错误候选EXPANDED_RED保留并拒绝；修fixture关键字/位置参数兼容后EXPANDED_RED2为真实69/28红，不当52个库失败。未修改生产。
+
+方案见设计B144：现有_atomic一个_owned_stream加最薄UTF8 _read_text/_read_bytes复用，五显式with与19whole-file统一首错/取消；现有strict/optional外层、read-close再decode/hash顺序、errors=replace、本地输入导入边界保持。不新增模块/公开API/配置/磁盘格式或性能优化。下一先提交方案再生产实现与必要helper协议/相邻/core/Flow验证，整个200一个里程碑PR，当前无新PR/审批等待。
