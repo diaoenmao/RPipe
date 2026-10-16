@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：B137/#188+B138/#189合批本机验收完成，唯一未合optional-metadata分支，准备统一PR→dev。
+> 最新：国内源ModelScope优先/显式hf-mirror兜底，含4类URL绕过拒绝；26新增回归全执行，原始红/失败候选保留。
+> 验证：最终core2220 passed+1既有skip、CPU Flow429 passed、路由21 passed，0fail/error；证据见§238。
+> 下一：最终head和实际dev全部实际CI后关闭188/189并清主题；本机句柄全终结，无用户决策阻塞。
+> 保护：接受PR187/devcd0a8a0，remote49/基线181后2；真实下载/GPU/数据/历史结果/布局/main/tag未动。
+
 > 当前（2026-10-17）：#188+#189当前批次本地修复，唯一未合optional-metadata分支；未开PR，不合main/tag。
 > 最新：国内源16新回归含4种显式海外URL绕过，21路由节点全通过；生产de4c34f，原始红/失败候选保留。
 > 验证：前候选core2218 passed+1既有skip；最终位置参数补强后core/Flow在独立COMPLETE目录重验，不能混用旧绿。
@@ -4016,3 +4022,12 @@ finalhead1314e4159260da158a522f0d13d4c0defb35bf5f的Branch38953094391/Package389
 B138最终URL补强：a597b54先红2项均到达禁止替身，c494969递归拒绝path/data_files显式海外URL；19路由节点通过（5既有+14新），修正前完整core2216passed+1既有skip/Flow429仅为过程证据。最终生产c494969重新SEALED_CORE/SEALED_FLOW独立basetemp执行，当前未完成；所有初轮失败/修正日志保留。外部源码静态地址清单仅限Git跟踪Python（未发现既有HF下载调用），不改历史Run/版本快照地址。
 
 B138传参完整性补强：bbcaed3先红位置data_files/远程data_dir两项（原另两项绿），de4c34f让同一验证涵盖全部位置参数、path/data_files/data_dir关键字。21路由节点全通过（5既有+16新）；最终源码COMPLETE_CORE/FLOW会话86471/36374仍活，先前sealed Flow81009仍观察、不取消，不把旧源码结果混为当前验收。当前无PR，后续复用这些句柄检查，不因观察超时重启。
+
+
+## 238. B137–B138元数据与国内输入合批本机验收（2026-10-17）
+
+188保dbab1ff红→a398e07方案→0a266a1两处errors='replace'；189保03bb7ce初红7/12、a597b54显式URL红2/2、bbcaed3位置URL红2/4及全部失败候选，再修至de4c34f。最终21路由节点全执行/0skip（16新+5旧）；完整COMPLETE_CORE2220passed+1既有skip、COMPLETE_FLOW429passed，0fail/error。26新（18810+18916）全执行，0新skip；86471/36374及旧81009均terminal0，无活本机验证句柄。LOCAL_CHECKED SHA2564f1a9ca2bb3178fd0884f6e855bfd826724d5d95189af29e7f5ce1d391800ffe，原始XML/log/ZIP及源码hash在.tmp/audit137/138，仅本机不随clone，便携回归已入库。
+
+实际调用覆盖：origin由CLI/prepare及Data/Model factory在builder前设，注册builder可经原model_api.download_model/data_api.load_hf_dataset使用共用入口；没有增加内置HF模型/数据类型或修改builder签名。ModelScope优先、HF显式国内endpoint兜底；双失败保异常链、取消不换源、本地路径不下载；dataset检查实际入口的旧import缓存及path/data_files/data_dir/全部位置参数URL，不把通用origin当下载。torchvision已有国内源保持、无镜像类型拒绝。没有改历史Run/缓存根、科学门、文件架构/产物布局。任意外部脚本自定义下载仍需作者按国内源规则审查；真实服务可用性未测，SDK替身不等于真实下载成功。
+
+完整里程碑统一一个PR，188/189仍OPEN，待最终head及实际dev全部实际矩阵/聚合后才验收关闭和清理本分支；不直接推dev/main、不tag/发布。前§237与顶部旧候选状态仅保留历史，以本节最终本机结果为准。PR187先前已验收清理不重做，remote49/周期基线181后2。新B139，目标active，无用户/设计阻塞。
