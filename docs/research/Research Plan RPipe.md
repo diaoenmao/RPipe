@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
 > Version 1.4; updated 2026-10-16. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `e80724caa06082c5fe313d59c4cf4e54dbf1559e`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `576292503d1a128fae61410466e87b2f9233f4fd`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -534,3 +534,11 @@ PR135 merged into dev e80724c; final-head and actual-dev CI passed all real jobs
 
 
 B104 local completion: shared76/core1701/CPU Flow207 passed; core has one existing platform skip. All four new nodes executed. Final-head/actual-dev CI remains pending.
+
+
+## B104 acceptance and B105 failure evidence, 2026-10-16
+
+PR137 final-head and actual-dev CI passed all actual jobs; Issue136 is closed and its local/remote branch removed. B105/Issue138 reproduces stdout failure bypassing the existing success invalidation after a nonzero child exit. Three error families across retry modes plus valid controls yielded 6 failures / 2 passes before a one-line output reorder. All 88 scheduler tests pass; core/Flow/CI remain pending. No new scientific experiment, Study protocol or layout change; see [record§161–162](../development/record.md).
+
+
+B105 local completion: scheduler88/core1709/CPU Flow207 passed, with one existing core platform skip. All eight new nodes executed. Final-head and actual-dev CI acceptance remains pending.

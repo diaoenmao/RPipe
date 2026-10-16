@@ -1,7 +1,7 @@
 > **RPipe 研究计划：研究执行与证据一致性的可验证合同**
 > 版本：1.4；更新：2026-10-16；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
 > 当前阶段：完成计划重做和定向文献初筛；继续代码正确性，尚未执行本计划的新科学实验。
-> 当前实现基线：dev `e80724caa06082c5fe313d59c4cf4e54dbf1559e`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
+> 当前实现基线：dev `576292503d1a128fae61410466e87b2f9233f4fd`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
 > 本轮零 GPU、零测速、零训练、零数据下载；保持既有文件架构与产物布局。
 
 ## 本次人工审阅摘要（2026-10-16，按12:53更新）
@@ -535,3 +535,11 @@ PR135已合dev e80724c，最终head/实际dev全部实际CI通过；Issue134关�
 
 
 B104本机验收补记：shared76/core1701/CPU Flow207 passed，core另1既有平台skip；新四节点全执行。最终head/实际dev CI待验收。
+
+
+## 2026-10-16 B104验收与B105留证复查
+
+PR137最终/实际dev全CI成功，Issue136关闭、工作分支本地/remote已清。B105/Issue138确认非零退出后的stdout拒绝可阻断success失效留证；三类错误×retry及正常控制先红6/2，修复只移动一行输出。调度88通过，待core/Flow/CI；无新科学实验或Study方案/布局修改。详[record§161–162](../development/record.md)。
+
+
+B105本机验收：调度88/core1709/CPU Flow207 passed，core另1既有平台skip；八新节点全执行。最终head与实际dev CI仍待验收。

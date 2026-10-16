@@ -60,3 +60,11 @@ B103/#134 已PR135实际dev验收关闭并普通清分支；当前B104/[Issue136
 
 
 B104本机验收补记：shared76/core1701/CPU Flow207 passed，core另1既有平台skip；新四节点全执行。最终head/实际dev CI待验收。
+
+
+## 2026-10-16 B105 当前开放项
+
+B104/#136已PR137实际dev全CI验收关闭。B105/[Issue138](https://github.com/DreamSoul-AI/RPipe/issues/138)：stdout诊断拒绝会跳过非零子进程退出后的既有success失效写回。6红/2控制后最小顺序修复，调度88通过，待完整本机及CI。详[record§161–162](record.md)。
+
+
+B105本机验收：调度88/core1709/CPU Flow207 passed，core另1既有平台skip；八新节点全执行。最终head与实际dev CI仍待验收。

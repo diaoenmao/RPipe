@@ -433,3 +433,6 @@ compare 不重跑计算，不改任何 Run 文件。和外部实现（例如旧 
 ### 14.4 Study 专用数据准备
 
 `flow.prepare_shared: false` 关闭 make/launch 的通用共享数据预构建（默认 true）。用于每个 Run 需先生成隔离数据、统计或注册专用 source 的 Study；此时 Study prepare / Data builder 负责准备并报告缺失原始数据。该字段必须是布尔值，不能因为未知 source 自动吞掉构造错误。main_probe 使用此选项，make 不加载探针，launch 的每个 Run 才准备一个组合。
+
+
+launch对非零run-one退出的既有成功结果纠正须先于辅助错误行输出；stdout拒绝仍按原方式向上传播，但不能因此保留本次非零退出的成功结果。既有failed/无结果策略、codes、retry、spawn与依赖屏障不扩大。见B105/Issue138。
