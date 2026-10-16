@@ -561,3 +561,47 @@ def test_mixed_numeric_compare_preserves_integer_information(tmp_path, capsys, k
         assert report['items'][item_name]['max_abs_diff'] == 1
         assert saved['items'][item_name]['max_abs_diff'] == 1
         assert report['items'][item_name]['n_problems'] > 0
+
+
+@pytest.mark.parametrize('kind', ['metrics', 'history', 'checkpoint-scalar'])
+@pytest.mark.parametrize('reverse', [False, True])
+@pytest.mark.parametrize('case', ['huge-finite', 'finite-inf', 'finite-nan'])
+def test_mixed_scalar_numeric_extremes_are_comparisons_not_file_errors(tmp_path, capsys, kind, reverse, case):
+    import math
+    import torch
+
+    a, b = (_run(tmp_path, name) for name in ('a', 'b'))
+    values = [10**400 if case == 'huge-finite' else 2**60 + 1,
+              {'huge-finite': 1.0, 'finite-inf': math.inf, 'finite-nan': math.nan}[case]]
+    if reverse:
+        values.reverse()
+    for run, value in zip((a, b), values):
+        if kind == 'checkpoint-scalar':
+            path = run / 'assets/checkpoints/latest.pt'
+            body = torch.load(path, weights_only=False)
+            body['model']['mixed'] = value
+            torch.save(body, path)
+        else:
+            path = run / ('result.json' if kind == 'metrics' else 'assets/tracker/tracker_state.json')
+            body = json.loads(path.read_text())
+            if kind == 'metrics':
+                body['metrics']['loss'] = value
+            else:
+                body['splits']['train']['Loss']['history'] = [value]
+            path.write_text(json.dumps(body), encoding='utf-8')
+    before = {p: p.read_bytes() for run in (a, b) for p in run.rglob('*') if p.is_file()}
+    try:
+        report = compare_runs(a, b)
+    except ValueError:
+        report = None
+    output = tmp_path / 'comparison.json'
+    code = cli.main(['compare', str(a), str(b), '--out', str(output)])
+    captured = capsys.readouterr()
+    assert {p: p.read_bytes() for p in before} == before
+    assert report is not None, 'finite mixed numbers must not become a file error'
+    assert report['passed'] is False
+    assert code == 1 and not captured.err
+    saved = json.loads(output.read_text(encoding='utf-8'))
+    item = {'metrics': 'metrics', 'history': 'history'}.get(kind, 'checkpoint.latest.model')
+    assert report['items'][item]['max_abs_diff'] == math.inf
+    assert saved['items'][item]['max_abs_diff'] is None
