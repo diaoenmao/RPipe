@@ -663,3 +663,10 @@ PR187双侧实际CI全绿，185/186各一次验收评论关闭，codex/launch-fa
 
 
 2026-10-17最终本机验收补充：#188/#189合批core2220passed+1既有skip、Flow429passed、路由21passed，26新节点全执行/0新skip，0fail/error；无活本机句柄，仍待同一里程碑PR双侧全部实际CI，Issue保持OPEN。详record§238；原候选拒绝/红回归保留，不作删除或服务可用性证明。
+
+
+## 2026-10-17 PR190验收完成后的接续
+
+actualdev e31fbf5927dfea94472c712d249a48e05212a66d，PR190 finalhead6f66f37与actualdev全部实际CPU/包矩阵/聚合success；188/189关闭、原body保持/各一次comment、PRbody一次验收追加。codex/optional-metadata-correctness本地/remote已普通删除，累计remote50/周期基线181后3；仅primary worktree，无数据/结果删除。新唯一未合codex/evidence-boundaries-next自actualdev创建，当前收尾docs只本地提交，随下个完整里程碑PR，不拆tiny-doc PR。原始.tmp/audit138 STATE/COMPLETION和PR/DEV_CHECKED/BRANCH_DELETED_CHECKED/ISSUE_ACCEPTED均保留，无活本机句柄。
+
+当前开放Issue为空，继续三类只读复查，确认真实反例才用B139登记先红再修。六相邻点未确认新反例；B131未知legacy回退是既定兼容，不再当新缺陷。真实datasets5.0.0/hub1.33.0离线2行JSON验证socket禁用/端点mirror/输入字节不变；不代表真实下载或ModelScope服务已测。main/tag/GPU/数据/正式结果/架构布局不动，无等待设计批准。

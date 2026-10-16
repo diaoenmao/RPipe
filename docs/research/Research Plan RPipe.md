@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
 > Version 1.4; updated 2026-10-17. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `cd0a8a0185820f74a75c932d7d5ff373fb580255`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `e31fbf5927dfea94472c712d249a48e05212a66d`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -755,3 +755,6 @@ PR187 launch ownership completed with all actual final-head/dev CI; issues185/18
 
 
 2026-10-17 final local checkpoint: combined #188/#189 core2220 passed plus one existing skip; CPU Flow429 passed; domestic routing21 passed. All26 new regression nodes executed without new skips. Pending one milestone PR and exact-head/actual-dev CI; no actual downloads or scientific experiments. Historical failed candidates remain evidence.
+
+
+2026-10-17 accepted engineering checkpoint: PR190 B137/#188+B138/#189 final head6f66f37 and actual dev e31fbf5 passed every real CPU/package matrix and aggregate. Both issues are closed with original bodies preserved; the merged topic branch was removed locally/remotely. Local core2220 passed plus one existing skip, CPU Flow429 passed; all26 new nodes executed. A separate real datasets5.0.0/hub1.33.0 local two-row JSON check forbade socket connections and verified mirror endpoints/input bytes. No real download, ModelScope availability test, GPU/training or scientific revalidation occurred. Existing scientific gaps/gates remain. With no open issues, continue the three correctness-contract reviews and register only reproducible counterexamples; record§239 holds acceptance/cleanup facts.

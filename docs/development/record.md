@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR190双侧全部实际CI验收，dev e31fbf5；#188/#189关闭，已合主题本地+远端正常删除。
+> 最新：B137可选Git解码+B138国内源完整里程碑完成；真实datasets5.0.0离线2行JSON检查通过，禁止socket、输入字节不变。
+> 验证：core2220 passed+1既有skip/Flow429 passed，26新回归全执行；PR及实际dev矩阵/聚合全绿，详§239。
+> 下一：当前无开放Issue，唯一未合evidence-boundaries-next分支继续三类只读复查，确认反例再登记/先红/合批；无阻塞。
+> 保护：remote50，周期基线181后3；main/tag/GPU/数据/历史结果/布局未动，真实下载/ModelScope服务可用性未验证。
+
 > 当前（2026-10-17）：B137/#188+B138/#189合批本机验收完成，唯一未合optional-metadata分支，准备统一PR→dev。
 > 最新：国内源ModelScope优先/显式hf-mirror兜底，含4类URL绕过拒绝；26新增回归全执行，原始红/失败候选保留。
 > 验证：最终core2220 passed+1既有skip、CPU Flow429 passed、路由21 passed，0fail/error；证据见§238。
@@ -4031,3 +4037,16 @@ B138传参完整性补强：bbcaed3先红位置data_files/远程data_dir两项�
 实际调用覆盖：origin由CLI/prepare及Data/Model factory在builder前设，注册builder可经原model_api.download_model/data_api.load_hf_dataset使用共用入口；没有增加内置HF模型/数据类型或修改builder签名。ModelScope优先、HF显式国内endpoint兜底；双失败保异常链、取消不换源、本地路径不下载；dataset检查实际入口的旧import缓存及path/data_files/data_dir/全部位置参数URL，不把通用origin当下载。torchvision已有国内源保持、无镜像类型拒绝。没有改历史Run/缓存根、科学门、文件架构/产物布局。任意外部脚本自定义下载仍需作者按国内源规则审查；真实服务可用性未测，SDK替身不等于真实下载成功。
 
 完整里程碑统一一个PR，188/189仍OPEN，待最终head及实际dev全部实际矩阵/聚合后才验收关闭和清理本分支；不直接推dev/main、不tag/发布。前§237与顶部旧候选状态仅保留历史，以本节最终本机结果为准。PR187先前已验收清理不重做，remote49/周期基线181后2。新B139，目标active，无用户/设计阻塞。
+
+
+## 239. PR190双侧实际CI验收、关闭与分支清理（2026-10-17）
+
+B137/#188与B138/#189完整合批PR190最终head6f66f37f55643691d11bcc5180ff35edaa817fd1：Branch38957425291/Package38957425248/Unit38957425258及全部Windows/Ubuntu×Python3.10/3.13实际矩阵/聚合success。正常merge actualdev e31fbf5927dfea94472c712d249a48e05212a66d，其Package38958311614/Unit38958311608全部实际矩阵/聚合success，最后Windows3.10结束后才验收。PR_CHECKED SHA2565c857d19d5c20ef7e9096f3e5e73235d2463d19bdd348541888baa928875a248；DEV_CHECKED SHA256507adebe0969175d4d33e40300ff82a79de58e9b1fb46ea8cfe4f2d15de24746。没有取消/重派/用聚合替代未执行矩阵。
+
+188/189各一次“PR190双侧实际CI验收（2026-10-17）”评论后关闭，原Issue正文逐字回读保全；PR原正文一次追加验收及删除清单，全文回读仅对GitHub正文CRLF/LF规范化比较，source原字节证明未放宽。23766已terminal0，无存活本机测试/观察句柄。新GitHub开放Issue清单为空，不把旧已处理项重复开任务。
+
+删除清单：codex/optional-metadata-correctness远端与本地。先核tip6f66f37已是actualdev祖先、远端tip一致、仅用户_staging_from_DEM未跟踪、sole primary worktree及main/dev/origin-main引用与PRE_MERGE不变；切到自actualdev建立的codex/evidence-boundaries-next后，普通push --delete和branch -d，再核远端/本地缺席与protected refs原样。当前未合审计分支保留，无worktree/数据/结果/Run/provenance删除，无force push/main/tag。累计已结束remote50，周期清理基线181后已接受3PR（184/187/190），约5再全面盘点；本轮实际git登记仅primary worktree，无废弃worktree。
+
+额外真实SDK离线验证：datasets5.0.0/huggingface_hub1.33.0在新进程先选hf-mirror，socket.socket.connect整个实际load过程禁止，读取.tmp内2行JSON，x/label值与源字节保持，datasets和hub两个真实endpoint都为hf-mirror。此为本地数据链验证，不是下载、GPU/训练/正式Study或ModelScope可用性证明；后者仍未测。原始REAL_DATASET_LOCAL_CHECK、失败候选/红/完整core2220passed+1既有skip/Flow429passed/26新全执行与所有CI/关闭/清理JSON在.tmp/audit137/138不随clone，便携回归/方案和record随仓库。六个相邻只读点复查尚无新确认反例，不声称全仓已无缺陷；未知legacy日志身份回退按已批准B131兼容合同保留。
+
+当前无开放Issue，后续按失败写入留证、status/log/report安全读取、原子写/并发三类继续系统复查，有真实反例才登记新B139/Issue→先红→方案→最小修/本地主题累积→完整里程碑PR→dev双侧全实际CI。当前验收收尾文档只本地提交，随下个里程碑合，不单开纯文档PR。目标active，无用户决策/设计审批阻塞。

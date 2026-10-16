@@ -679,3 +679,6 @@ B135–B136本机实施状态（2026-10-17）：0df9943/3594c1e按最后修正�
 B138完整core首候选修正：7failed/2209passed/1既有skip，通用apply_model_origin检查已导入海外端点过宽，阻挡纯torch/CPU。现仅在实际load_hf_dataset下载边界导入前/后检查；模型fallback使用显式endpoint，不受旧HF默认常量影响。所有factory仍在builder前设置环境，不假装能约束任意自定义HTTP。新增测试以独立模块状态控制缓存端点；第一次替身不完整导致真实datasets初始化失败亦保留，修正后67定向通过，重新完整core执行中。上述限制替代原方案“通用origin拒绝”表述，不吞实际HF入口违规。
 
 B138补强：HF_ENDPOINT不会重写load_dataset显式path/data_files URL。a597b54先红两项均实际到达禁止下载替身，现进入datasets前递归核对这两项（split字典/列表），仅允许https://hf-mirror.com和hf://标识，其他远程源明确拒绝要求本地准备；本地路径/Hub ID不改写。不替任意第三方代码审网络。无真实请求。
+
+
+B137–B138已实施并实际验收（2026-10-17）：PR190 finalhead6f66f37及actualdev e31fbf5全部实际CPU/包矩阵和聚合成功，188/189关闭，旧主题本地/remote正常清理。26新节点全执行，本机core2220passed+1既有skip/Flow429passed；真实datasets离线链亦核对，真实下载/ModelScope服务未测。原候选过宽guard/URL绕过失败保留，最终检查只限实际HF数据入口，不误阻纯torch。上文实施/待CI为各时点记录，无待批准事项；详record§239，布局/科学门不变。
