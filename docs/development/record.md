@@ -1,3 +1,9 @@
+> 当前：B104/PR137最终及实际dev全CI验收完成，Issue136关闭、工作分支本地/remote已删。
+> 最新：B105/Issue138确认stdout拒绝会跳过非零退出留证；正式6 failed/2控制passed。
+> 修复：02f84e4只移动一行诊断输出，调度88 passed；peer/config原字节保持。
+> 下一步：core/CPU Flow、两侧全CI与约5PR清理；目标active，无代码阻塞。
+> 保护：无GPU/测速/正式Study、main/tag或产物布局变更；以下旧状态保留。
+
 > 当前：PR135实际dev已全CI验收、Issue134关闭，工作分支本地/remote普通删。
 > 最新：B104/Issue136同Study路径别名翻转多根锁顺序，真实并发循环已复现。
 > 修复：四回归2红/2控制→设计→共享物理身份排序；shared76及双并发空目录迁移通过。
@@ -3022,3 +3028,19 @@ PR135相邻复查确认：同Study普通/扩展namespace表示，shared.root绝�
 
 
 B104本机验收补记：shared76/core1701/CPU Flow207 passed，core另1既有平台skip；新四节点全执行。最终head/实际dev CI待验收。
+
+
+## 161. B104 / PR137 实际 dev 验收与清理（2026-10-16）
+
+PR137 正常合dev 576292503d1a128fae61410466e87b2f9233f4fd。最终head aa59894的Branch38872977734 / Package38872977777 / Unit38872977687，以及实际dev Package38873780706 / Unit38873780707全部实际矩阵和聚合成功；Issue136验收关闭，codex/shared-migration-lock-order本地/remote各1条普通删除。DEV_CHECKED SHA256：9ff9fd44134fd3740bd367203febf434084d481769bbe5280b0ef87bfe9c6a14。原始CI/清理证据在.tmp/audit104，不随clone；PR137正文保留验收依据。此前pending仅历史。PR129清理基线后已合PR131/133/135/137四批，累计结束remote31条。
+
+## 162. B105 / Issue138：非零退出留证先于诊断输出（2026-10-16）
+
+5762925上的合成Run/Popen替身复现：wait写合法success后返回1，error行stdout抛BrokenPipeError，原先print在失效写回之前，留下run_succeeded=true。先Issue138，e599e4b提交三类stdout错误×retry开关及两个正常控制，正式6 failed/2 passed；3aa02e7设计后02f84e4只移动一行print到既有纠正写回之后。stdout原异常仍传播，不扩大无结果/既有failed、spawn、retry/codes或train/eval屏障语义。peer与config原字节保留。完整调度器88通过，CPU core/Flow及最终/实际dev CI待分别验收。
+
+相邻announce/report/compare已先写再输出，blocked依赖已先failed再输出，Runner诊断二错已有B101/B102合同；本批只改确认的一个错误边界。初次fetch TLS握手失败、Issue查询EOF均留原日志，后短查成功，无重复Issue或CI。目标工具已由paused恢复active，以实际工具状态为准。临时原始源码ZIP、红绿和复现在.tmp/audit105，不随clone；正式测试随Git提供。无GPU/测速/正式Study/main/tag/产物布局修改。
+
+本批合入并实际CI成功后达到PR129后约5批，须完成周期盘点并重置清理基线：当前本地main/dev与唯一未合codex/launch-failure-evidence，远端main/dev；仅一个登记工作目录，无废弃worktree。main/dev与未合分支保留，不触碰独立GPU副本、数据/结果/provenance。工作分支将在两侧CI通过、祖先/tip/干净工作区核对后普通删除，届时实际清单和新基线补入PR验收正文与本机报告。
+
+
+B105本机验收：调度88/core1709/CPU Flow207 passed，core另1既有平台skip；八新节点全执行。最终head与实际dev CI仍待验收。

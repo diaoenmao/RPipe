@@ -429,3 +429,11 @@ PR135实际dev e80724c全部实际CI成功，Issue134关闭，cache-lock-path-id
 
 
 B104本机验收补记：shared76/core1701/CPU Flow207 passed，core另1既有平台skip；新四节点全执行。最终head/实际dev CI待验收。
+
+
+## 2026-10-16 B105诊断输出留证；B104已验收
+
+PR137实际dev5762925全实际CI成功，Issue136关闭，shared-migration-lock-order本地/remote已删。当前B105/Issue138唯一分支codex/launch-failure-evidence：e599e4b先红6失败/2控制→3aa02e7设计→02f84e4只移动诊断print，调度88通过；待core/Flow/CI。目标工具已active，网络短查恢复；本批验收后做约5PR周期盘点。见record§161–162，无GPU/main/tag/布局变化。
+
+
+B105本机验收：调度88/core1709/CPU Flow207 passed，core另1既有平台skip；八新节点全执行。最终head与实际dev CI仍待验收。

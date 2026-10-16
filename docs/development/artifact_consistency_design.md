@@ -264,3 +264,10 @@ Issue132后，1e8c5d1先提交22项合同：unit12覆盖RuntimeError/KeyboardInt
 继 PR135 的同线程重入验收后，原生空目录探针发现 migrate_shared 的 key=str 排序受 Windows namespace 拼写影响。同一 Study 两种表示在 shared.root 为普通/扩展绝对路径时，可交换私有根与共享根的取得顺序。真实 OS 锁、两线程各持前两根后请求第三根，零等待预算注入使两侧立即暴露循环，四根退出后均可重获；不作测速或运行真实迁移。Issue136 后四项排序回归先提交，2 failed/2 controls passed。
 
 方案：在 shared.py 内将 PR135 已有 stat 二元身份提取为最小私有函数，cache_lock 的 pid/物理键保持；migrate_shared 仍只锁既有四个根，先确保这些原本就会 mkdir 的目录存在，再按同一 st_dev/st_ino 身份排序取得 OS 锁。排序不依赖 namespace/大小写或声明名称；同物理身份的重复根只重入，不改变数据迁移、冲突验证、硬链接、staging 或文件布局。跨目录并发更名不属于共享不可变输入根合同。保留既有失败、权限拒绝与取消行为，不增加全局互斥、模块、依赖或磁盘格式。
+
+
+## B105 / #138：非零退出先留证，再输出诊断（2026-10-16）
+
+在5762925上复现：子进程替身写出合法succeeded结果后返回1，schedule错误行stdout再抛BrokenPipeError，原实现先print导致既有失效写回完全未执行，run_succeeded仍真。没有真实子进程、训练或数据。Issue138后e599e4b先提交八项：BrokenPipe/Permission/UnicodeEncode三类×retry开关6 failed，正常输出两控制passed；peer与config原字节保持。
+
+最小方案：仅把非零退出分支的print移到已有success→failed纠正之后。stdout原异常仍按原方式传播，不吞掉异常、不增加新logging策略；retry和codes、已有failed结果/无结果的处理、spawn语义、train/eval屏障和磁盘格式保持。不把诊断失败当成功；若纠正写入本身拒绝，原有严格写错误仍传播。相邻blocked依赖已先写failed再输出，announce/report/compare已先发布再输出，Runner日志二错已有B101/B102合同，不重复改动。当前设计已实施后按本机与最终/实际dev全部实际CI验收。

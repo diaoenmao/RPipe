@@ -459,3 +459,51 @@ def test_readiness_does_not_suppress_unexpected_decoder_bug(tmp_path, monkeypatc
         schedule.run_succeeded(tmp_path, 't0')
     assert caught.value is error
     assert path.read_bytes() == before
+
+
+@pytest.mark.parametrize('retry', [False, True])
+@pytest.mark.parametrize('output_error', ['broken_pipe', 'permission', 'encoding', None])
+def test_nonzero_exit_is_recorded_before_error_output(tmp_path, monkeypatch, retry, output_error):
+    import builtins
+
+    jobs = _study(tmp_path)
+    _succeed(tmp_path, 't1')
+    peer = artifact_layout(tmp_path, 't1').result_path
+    peer_before = peer.read_bytes()
+    config = Path(jobs[0]['config'])
+    config_before = config.read_bytes()
+    failures = {
+        'broken_pipe': BrokenPipeError('closed stdout'),
+        'permission': PermissionError('stdout denied'),
+        'encoding': UnicodeEncodeError('ascii', 'é', 0, 1, 'stdout encoding'),
+    }
+    error = failures.get(output_error)
+    waited = []
+
+    class Proc:
+        def wait(self):
+            _succeed(tmp_path, 't0')
+            waited.append('t0')
+            return 1
+
+    def emit(*args, **kwargs):
+        if error is not None and args and str(args[0]).startswith('error t0 exit='):
+            raise error
+        return builtins.print(*args, **kwargs)
+
+    monkeypatch.setattr(schedule.subprocess, 'Popen', lambda *_args, **_kwargs: Proc())
+    monkeypatch.setattr(schedule, 'print', emit, raising=False)
+    if error is None:
+        assert schedule.launch_jobs(tmp_path, jobs[:1], retry_failed=retry, console='shared') == ([1, 1] if retry else [1])
+        assert waited == ['t0'] * (2 if retry else 1)
+    else:
+        with pytest.raises(type(error)) as caught:
+            schedule.launch_jobs(tmp_path, jobs[:1], retry_failed=retry, console='shared')
+        assert caught.value is error
+        assert waited == ['t0']
+    result = load_result(artifact_layout(tmp_path, 't0').result_path)
+    assert result['status'] == 'failed'
+    assert result['error'] == 'run-one exited with code 1'
+    assert not schedule.run_succeeded(tmp_path, 't0')
+    assert peer.read_bytes() == peer_before
+    assert config.read_bytes() == config_before

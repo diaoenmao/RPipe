@@ -523,9 +523,9 @@ def launch_jobs(
                 code = int(proc.wait())
                 pairs.append((job, code))
                 if code != 0:
-                    print(f'error {job["run_id"]} exit={code}', flush=True)
                     if _run_result(study_dir, str(job['run_id'])).get('status') == STATUS_SUCCEEDED:
                         _fail_result(study_dir, str(job['run_id']), f'run-one exited with code {code}')
+                    print(f'error {job["run_id"]} exit={code}', flush=True)
         return pairs
 
     for wave in waves:
