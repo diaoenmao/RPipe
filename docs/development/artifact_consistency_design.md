@@ -397,3 +397,5 @@ B116已本地实施ba665de：28新节点全执行/通过，core1902 passed/1既�
 同类全局状态复查确认prepare_shared_data在独立项目缓存根下并发保存/设置/恢复TQDM_DISABLE，后一个_prepare会看到None/调用方原值，全部退出还残留1。第一次探针误用共享同一根的两个Study，现有cache_lock使人为交错等待超时；INVALID_PROBE_NOTE保留，不计库失败。改用两个独立项目根后实际公共prepare入口/真实cache_lock+合成_prepare稳定复现，无数据下载。先Issue162，再b04a5cd红9项4 failed/5有效控制passed、0error/skip，覆盖初值缺失/自定义/已为1、正常/原错退出和同线程嵌套。
 
 方案仅在prepare.py增加标准库RLock，以独立的进程内环境所有权范围包住原保存、设置、cache_lock内_prepare和finally恢复；必须在原资产根锁之前取得环境锁，维持一致顺序。同线程嵌套仍可重入，异常和返回值原样。与bind_endpoint锁分别保护不同全局对象，不引入通用全局状态框架、配置或路径，不改_prepare/body、下载/hash、数据/结果/科学门。与B117统一归入当前PR161临时进程状态并发里程碑，原已触发CI保留，新增代码后以新最终head重新验收；不因观察超时取消或重跑CI。
+
+B118实施补记：0aaae0b已按方案实施；与B117统一里程碑的新旧相邻27项全执行/通过，合批core1919 passed/1既有skip、CPU Flow273 passed，新17全执行。两个原始生产文件各自精确字节核对，仅锁和原上下文范围改变；不改body/端点/下载/hash/格式/布局或科学门。最终head与实际devCI仍待分别验收。

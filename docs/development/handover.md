@@ -529,3 +529,8 @@ codex/freeze-parser-refusal基于PR147正常合dev9a7af37（实际devCI待验，
 
 
 PR147两侧实际CI全部验收，Issue146关闭、study-plot-publication本地/remote普通删除；基线139累计4，下一次accepted PR须完整周期盘点。B110本机新12全执行（core4/Flow8）、相邻204/core1818+1既有平台skip/CPU Flow215绿，源码仅一处except元组替换。下一步同一freeze-parser-refusal推PR→dev，最终head和实际dev全部实际CI分别验收后关148/清分支。原始无效探针及更正证据.tmp/audit110不随clone，record §172可携带。
+
+
+## 2026-10-16 PR161统一B117/B118补记
+
+相邻B118/#162已按先Issue→b04a5cd红9项4失败/5控制→b6edba0设计→0aaae0b最小修复。与B117合批同一PR161，不新开PR；两处相邻27项通过，合批core1919 passed/1既有skip、新17全执行，CPU Flow273 passed，最终/实际devCI待验。端点类字段/临时环境分别有可重入所有权范围，不改文件架构/产物布局。20:56后按相关B项完整里程碑、每日少量PR，不再一bug一PR；已开161正常收尾，详record§190–191及cicd。

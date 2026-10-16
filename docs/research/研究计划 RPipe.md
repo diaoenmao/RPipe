@@ -622,3 +622,8 @@ PR157最终head与实际dev全部实际CI已验收，#156关闭、主题本地/r
 ## 2026-10-16 并发端点隔离工程补记
 
 PR159已最终head/实际dev全部实际CI验收，#158关闭且主题清理；当前接受基线dev ab5c825。B117/#160复现不同缓存根并发绑定同一数据集类导致两次读错端点、退出后残留状态；9c95667先红8项4失败/4控制，fffd872在现有上下文以RLock保护保存/绑定/构造/恢复，嵌套和原错退出合同保留。13端点回归全通过、core1910 passed/1既有skip，新8全执行；CPU Flow273 passed，最终/实际devCI待验。真实Factory双根使用合成builder验证，无网络/数据下载或科学运行；不改端点定义、缓存布局、下载/hash/精度/数值门。见[record§187–189](../development/record.md)。未来科学复验仍须新version、实际provenance和原前置门，本补记不新增科学结论或改变五个Study协议。
+
+
+## 2026-10-16 同类临时环境并发补记
+
+B118/#162沿同类临时全局状态复查发现独立项目准备会串用/残留TQDM_DISABLE；先红9项4失败/5控制，再0aaae0b只在原prepare.py以RLock覆盖原环境保存/设置/prepare/恢复。与B117统一PR161，不拆PR；两处及相邻27项通过，合批core1919 passed/1既有skip，新17全执行，CPU Flow273 passed，最终及实际devCI待验。测试是合成准备body、真实prepare/缓存锁与独立项目目录，无网络/数据/GPU/科学实验；不改变五Study协议或数值/恢复门。见[record§190–191](../development/record.md)。20:56后同主题相关B项本地积累完整里程碑，每日少量PR，已开161正常收尾。
