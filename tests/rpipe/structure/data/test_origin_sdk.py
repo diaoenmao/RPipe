@@ -844,3 +844,25 @@ def test_model_sdk_custom_client_cannot_bypass_domestic_transport_guard(sdk_down
         sdk_download.run()
     assert all(sdk_download.httpx.URL(url).host == 'hf-mirror.com' for url in sdk_download.calls)
     assert not client.is_closed
+
+
+@pytest.mark.parametrize('override', [False, True])
+def test_model_sdk_custom_client_restores_class_and_keeps_domestic_success(sdk_download, monkeypatch, override):
+    from pathlib import Path
+    client = sdk_download.client
+    method = '_send_single_request' if isinstance(client, sdk_download.httpx.Client) else 'send'
+    original = getattr(type(client), method)
+
+    class CustomClient(type(client)):
+        pass
+
+    if override:
+        def send(instance, request, *args, **kwargs):
+            return original(instance, request, *args, **kwargs)
+        setattr(CustomClient, method, send)
+    before = dict(vars(CustomClient))
+    monkeypatch.setattr(client, '__class__', CustomClient)
+    assert (Path(sdk_download.run()) / 'config.json').read_bytes() == sdk_download.payload
+    assert dict(vars(CustomClient)) == before
+    assert not client.is_closed
+    assert client.get('https://example.org/unrelated.json').content == sdk_download.payload
