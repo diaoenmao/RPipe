@@ -235,3 +235,25 @@ def test_optional_result_fix_does_not_relax_strict_public_loader(tmp_path, paylo
     with pytest.raises(CorruptArtifactError if kind == 'artifact' else RecursionError):
         load_result(bad)
     assert {f: f.read_bytes() for f in before} == before
+
+
+def test_optional_curve_read_exit_never_swallows_cancellation(tmp_path, reader_exit_case, reader_close_fault):
+    case = reader_exit_case
+    path = tmp_path / 'runs' / 'r1' / 'assets' / kinds.TRACKER_JSONL
+    path.parent.mkdir(parents=True)
+    payload = b'{"split":"test","name":"Accuracy","mean":75.0,"optimizer_step":1}\n'
+    path.write_bytes(payload)
+    peer = tmp_path / 'peer'
+    peer.write_bytes(b'peer untouched')
+    expected = case.expected if case.kind in ('cancel', 'body-programming', 'close-programming') else None
+    with reader_close_fault(path, case, 'rb') as (handles, closes):
+        if expected is not None:
+            with pytest.raises(type(expected)) as caught:
+                load_curve_series(tmp_path, 'r1')
+            assert caught.value is expected
+        else:
+            result = load_curve_series(tmp_path, 'r1')
+            assert result == ({} if case.kind == 'read-io' else {
+                'test': {'Accuracy': {'unit': 'step', 'x': [1], 'values': [75.0]}}})
+    assert len(handles) == len(closes) == 1 and handles[0].closed
+    assert path.read_bytes() == payload and peer.read_bytes() == b'peer untouched'

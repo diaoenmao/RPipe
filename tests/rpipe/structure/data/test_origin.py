@@ -243,3 +243,23 @@ def test_hf_dataset_rejects_explicit_overseas_urls(monkeypatch, args, kwargs):
     monkeypatch.setitem(sys.modules, 'datasets', types.SimpleNamespace(load_dataset=forbidden))
     with pytest.raises(ValueError, match='domestic'):
         load_hf_dataset(*args, **kwargs)
+
+
+def test_archive_checksum_read_exit_preserves_first_failure(tmp_path, reader_exit_case, reader_close_fault):
+    from rpipe.structure.origin import DownloadEndpoint
+    case = reader_exit_case
+    source, peer = tmp_path / 'archive.bin', tmp_path / 'peer'
+    payload = b'synthetic immutable archive'
+    source.write_bytes(payload)
+    peer.write_bytes(b'peer untouched')
+    endpoint = DownloadEndpoint('synthetic', 'domestic', archive=source.name,
+                                archive_md5=hashlib.md5(payload).hexdigest())
+    with reader_close_fault(source, case, 'rb') as (handles, closes):
+        if case.expected is None:
+            discard_bad_archive(tmp_path, endpoint)
+        else:
+            with pytest.raises(type(case.expected)) as caught:
+                discard_bad_archive(tmp_path, endpoint)
+            assert caught.value is case.expected
+    assert len(handles) == len(closes) == 1 and handles[0].closed
+    assert source.read_bytes() == payload and peer.read_bytes() == b'peer untouched'
