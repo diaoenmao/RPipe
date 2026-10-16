@@ -1,3 +1,15 @@
+> 当前（2026-10-17）：B129/#176与B130/#177同主题失败留证里程碑本机完整验收，尚未推送/开PR；接受dev9d78fb4。
+> 最新：Runner可选shared元数据与launcher共享布局初始化阻断failed证据两处统一修，先独立红再最小实现，详§217–219。
+> 验证：相邻272 passed；core2044 passed/1既有skip、CPU Flow390 passed，65新（29 unit+36 integration）全执行/0新skip。
+> 下一步：完整主题一个PR，双侧全部实际CI验收后关176/177并清主题；无决策阻塞。
+> 保护：PR174已验收关闭五Issue并清本地/remote，基线161计数3/remote45；main/tag/GPU/数据/结果/布局不动。
+
+> 当前（2026-10-17）：PR174五B双侧全部实际CI验收，dev9d78fb4；#170–#173/#175已关闭，已合主题本地+remote已清。
+> 最新：字段/事件身份与空锁初始化竞争统一完成，原Windows失败留证；另确认B129/#176十场失败回写反例，详§216。
+> 验证：共享相邻123、core2015 passed/1既有skip、CPU Flow354 passed，84新全执行；最终head与实际dev全部矩阵/聚合成功。
+> 下一步：codex/failure-evidence-next给#176先提交红回归，相关问题本地合批后再PR；无决策阻塞。
+> 保护：已删codex/correctness-review-next本地+remote，基线161计数3/remote45；main/tag/GPU/数据/结果/布局不动。
+
 > 当前（2026-10-17）：PR174合批B124–B128/#170–#173/#175，本机完整复验完成，准备更新最终head；接受dev仍bef7de9。
 > 最新：原CI Windows3.10暴露空锁初始化竞争，已先Issue/两项红再三行顺序移动，失败完整保留，详§214–215。
 > 验证：共享相邻123、core2015 passed/1既有skip、CPU Flow354 passed；本PR84新全执行（27 unit+57 integration）。
@@ -3683,3 +3695,54 @@ B128/#175先红5822a41/c7eef67共两项零/有限预算竞争均PermissionError�
 初次相邻命令误填不存在test_shared_alias.py而未收集测试，原GREEN.log保留；更正到真实test_shared_references.py后119 passed，再加入四清理控制后123 passed。第一探针锁期间读取及锁内另开句柄控制的错误分别保留说明，均不算库失败。原PR Unit38934229616已completed failure：三CPU矩阵成功、Windows3.10失败/其Flow跳过、聚合失败；不重跑、不取消、不用本机绿冒称原CI绿。更新相同PR174并触发新head全部CI；五Issue170–173/175保持开放直至双侧实际验收。
 
 原始CI失败、REPRO、原源码ZIP/hash、RED/RED2、GREEN/GREEN2/GREEN3与最终CORE/FLOW/SOURCE/LOCAL_CHECKED在.tmp/audit128，不随clone。没有GPU/性能/正式Study实测或科学结论，不改架构/产物布局/main/tag/数据/结果。下一B129，接受dev仍bef7de9，清理基线161计数2、remote44。
+
+
+## 216. PR174双侧全部实际CI验收、五Issue关闭及分支清理（2026-10-17）
+
+完整B124–B128里程碑最终head5dab50aea774a94d7ac57dc045382ca5287c2ac7的Branch38935993121、Package38935993041、Unit38935993044及所有实际矩阵/聚合均成功。PR174正常merge进入dev9d78fb414eb7e79dcdd5b2d0d21a7ed3ccd66882；实际dev独立Package38937020429、Unit38937020502及所有实际矩阵/聚合亦成功，不复用PR绿验dev。PR_CHECKED SHA256 f37171a3a1918318a7993dc3548b6836b53bfe5a914d9f848fc181fc08d8f159；DEV_CHECKED SHA256 effa6c979d1a34fa8c53b0bf61a07445be6881510fc3917ca9fd271cb296125f。
+
+Issue170/171/172/173/175逐项验收说明各发一次后关闭，原正文保留，PR原正文追加实际验收。原85826fe的Windows3.10失败38934229616及其Flow跳过完整保留，不重跑抹去。当前本机证据是共享相邻123、core2015 passed/1既有skip、CPU Flow354 passed，84新全执行；四B早先420相邻属于其原源码状态，不替代锁修后的集合。
+
+清理前核对工作区仅用户_staging_from_DEM未跟踪、finalhead为dev祖先、local/remote tip均5dab50a、唯一主工作区、无项目引用Python进程；普通detach→push --delete→branch -d删除codex/correctness-review-next本地与远程，随后验证双侧不存在。没有删除worktree/数据/结果/Run/provenance，main7a15c46、local dev9324014、origin/main00e70b1均未变。清理基线PR161后已验收3个PR（165/169/174），累计结束remote45，尚未到下次约5个全面盘点。
+
+下一唯一未合分支codex/failure-evidence-next从实际dev建立，仅本地；本条验收文档随下一完整里程碑，不独立小PR。B129/Issue176仍OPEN、未修：四场坏YAML/坏shared映射×fresh/旧success加六场nonmapping/坏root/decode×无/有已知shared元数据共10场本机反例，Runner失败回写再次解析坏共享声明，导致无failed结果或旧success不变。原始证据.tmp/audit129不随clone；下一步先提交原生红回归，再明确最小方案，不猜共享根、不放宽输入校验或冻结/process旧成功保全。
+
+验收/清理/Issue反馈与原失败原件在.tmp/audit128，不随clone；portable代码、回归、record与双语计划已随PR174入库。本轮无GPU/性能/正式Study实验或科学数字更新，不合main/tag/发布、不force push、不改文件架构与磁盘产物布局。持续目标active，下一新缺陷编号B130。
+
+
+## 217. B129/#176原生红回归与可选共享元数据隔离方案（2026-10-17）
+
+当前唯一未合主题codex/failure-evidence-next基于实际dev9d78fb4。#176先有十场隔离REPRO，再c76e8fd提交36项原生Runner回归，24 failed/12有效控制passed：坏YAML、非mapping、shared/root错误、解码与read IO拒绝六类×fresh/旧success/已知draft shared/旧success且已知shared四状态；有效默认/custom shared及缺声明三类控制×四状态全部通过。失败结果路径可写，原异常仍被抛出并记log；坏声明/peer字节保留，不能把secondary shared元数据错误当result本身不可写。
+
+设计只隔离失败写回缺省shared元数据，已有键免求值；解析Exception时跳过可选shared键，继续原failed/error与已知路径落盘，不猜根、不放宽原输入或正常write严格路径，不改冻结/process旧成功保全或BaseException取消。具体见artifact_consistency_design文末；先本条方案再最小实现。RED.xml/log、原ZIP/REPRO在.tmp/audit129，不随clone。PR174已全验收/清理见§216，不重派；当前#176仍OPEN，尚无本主题PR。
+
+
+## 218. B129完整本机验收与B130/#177同类红回归/方案（2026-10-17）
+
+B129/#176经方案236ef3c后3743b59仅将Runner失败回写中paths.shared求值改成有键保留/无键尽力解析、Exception略过不可用可选元数据。相邻155 passed，完整core2015 passed/1既有skip、CPU Flow390 passed，36新integration全执行，28174/21912均exit0；raw SOURCE_CHECKED证明只替换原一处，_preserve_success、其余异常/日志/metrics/control/路径及正常write严格shared代码原字节不改。这些只证明B129源码状态，后续B130修改仍须新完整验收。
+
+继续同类扫描确认B130/#177：schedule._fail_result写已知Run result前调用artifact_layout，二次解析损坏shared声明导致旧success不失效，公开launch也在启动前被阻断。原生helper/公开launch六场REPRO四失败/二控制，先Issue再27d263d红27项18失败/9控制；906b72b补真实result发布错误严格传播控制后29项19失败/10控制，原红保留。覆盖fresh/旧success/公开rerun、坏YAML/非mapping/shared/root/decode/readIO、有效默认/custom/缺声明；进程仅stub，无实验或GPU。
+
+方案只将既有安全Run路径直接交原write_result，删除此处多余artifact_layout依赖；_run_result前置组件校验、全部失效化调用点、原body/原子写错误/重试/依赖/console/env和正常make/prepare布局不变，不猜shared根。方案先于生产修，详artifact_consistency_design文末。原.zip/REPRO/两场红在.tmp/audit130，不随clone。B129/#176、B130/#177同一主题合批，当前无新PR；接受dev9d78fb4，周期基线161计数3/remote45，下一新编号B131。无main/tag/GPU/测速/数据/结果/布局变更。
+
+
+## 219. B129–B130失败证据与非必要共享元数据解耦完整里程碑（2026-10-17，本机验收）
+
+同一codex/failure-evidence-next主题归纳两处现有失败发布点，不逐bug PR：B129/#176 Runner失败路径为补shared元数据而重读坏声明，B130/#177 launcher失效化为写已知Run结果而建立整个共享布局。分别先Issue/独立红/方案再3743b59与1b6885c最小修。B129红36项24失败/12有效控制，B130先红27项18失败/9控制、补真实发布错误后29项19失败/10控制；不同源码状态不冒称一场65红，原失败/控制及原ZIP/hash均保留。
+
+最终仅两个既有生产文件：Runner把可选shared求值隔离（已有键免求值，无键解析Exception时略过，不猜根）；schedule._fail_result复用已由_run_result校验的既有Run结果路径交原writer，去掉该处完整layout建立及其唯一import。原Result格式、正常write严格shared路径、原子writer、Run组件验证、metrics/paths旧body、原错误与取消、冻结/process旧成功保全、launch依赖/重试/console/env全部保持。不增加新helper/配置/字段/模块，不改架构和产物布局。
+
+### 失败发布点与相邻边界核对
+
+| **既有入口** | **合同/当前结论** | **依据与限制** |
+| --- | --- | --- |
+| FlowRunner.run → _write_failed_result | 本机已修，可选shared元数据不可阻断可写failed证据 | 36原生节点含坏YAML/nonmapping/shared/root/decode/readIO×四状态、原异常身份与peer/声明字节 |
+| schedule._fail_result的五个失效化调用点 | 本机已修，共用已校验Run路径与原writer | helper fresh/旧success、公开rerun、真实写错误控制；旧body/输入/peer原字节与启动前failed状态 |
+| flow.write.run正常成功发布 | 源码未改，仍严格解析实际共享路径 | 不把失败元数据缺省政策扩展到成功结果；正常Flow全回归 |
+| CLI launch_one上下文前layout/config与来源/计划拒绝 | 既有前置边界未改，不新增此前没有的CLI总门写回 | 不把尚未进入原失败定稿路径的拒绝伪装成已执行阶段；此处不收录无新合同反例 |
+| status/logs/report只读消费者 | 本轮未改；不要求failed结果必须有shared键 | 原Result schema、planned/peer/模式/数值门与原展示回归保持 |
+| atomic/shared/Tracker/checkpoint发布 | 本轮未改、现有完整检查通过 | 不承诺真实存储不可写时必能落盘、多文件事务或任意同Run多写者 |
+
+合批相邻272 passed，完整core2044 passed/1既有Windows POSIX模式skip，CPU Flow390 passed，均0failure/error；新增65节点（29 unit+36 integration）全部执行，0新skip。40954/75073均exit0终结；B129早先core2015+1/Flow390只证明当时单处修复，不能替代当前完整集合。SOURCE_CHECKED分别证明Runner原字节单处替换、schedule仅import/写路径两处替换，其他源码/验证/语义未动。
+
+原始REPRO/ZIP/各红绿/XML/hash/源码证明在.tmp/audit129与audit130，不随clone；portable回归/设计和正式记录入库。两个Issue176/177仍OPEN，本批尚无PR；完整里程碑统一PR，最终head及实际dev全部实际矩阵/聚合验收后再关闭并清理。接受dev9d78fb4，周期基线161计数3/remote45；下一新编号B131。没有GPU/性能/正式Study实验或科学结论新增，不合main/tag/发布、不force push、不删数据/结果/Run/provenance。

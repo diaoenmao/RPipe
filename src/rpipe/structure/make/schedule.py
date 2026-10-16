@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from rpipe.structure.api.algorithm_api import sibling_train_dependency
-from rpipe.structure.artifact import CorruptArtifactError, artifact_layout, load_config
+from rpipe.structure.artifact import CorruptArtifactError, load_config
 from rpipe.structure.artifact.index import load_index
 from rpipe.structure.artifact.layout import validate_run_directory
 from rpipe.structure.artifact._atomic import atomic_write_text
@@ -72,7 +72,7 @@ def run_succeeded(study_dir: Path, run_id: str) -> bool:
 def _fail_result(study_dir: Path, run_id: str, error: str) -> None:
     body = _run_result(study_dir, run_id)
     body.update(status='failed', error=error)
-    write_result(artifact_layout(study_dir, run_id).result_path, body)
+    write_result(Path(study_dir) / 'runs' / run_id / 'result.json', body)
 
 
 def _job_fields(config_path: Path) -> tuple[str, str]:

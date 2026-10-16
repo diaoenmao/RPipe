@@ -507,3 +507,77 @@ def test_nonzero_exit_is_recorded_before_error_output(tmp_path, monkeypatch, ret
     assert not schedule.run_succeeded(tmp_path, 't0')
     assert peer.read_bytes() == peer_before
     assert config.read_bytes() == config_before
+
+
+@pytest.mark.parametrize('declaration', [
+    'malformed', 'nonmapping', 'bad-shared', 'bad-root', 'decode', 'read-io',
+    'valid-default', 'valid-custom', 'missing',
+])
+@pytest.mark.parametrize('route', ['fresh', 'success', 'launch'])
+def test_failure_invalidation_does_not_require_shared_layout(tmp_path, monkeypatch, declaration, route):
+    layout = artifact_layout(tmp_path, 'target')
+    layout.config_path.write_text('algorithm: {mode: train}\nsystem: {device: cpu}\n', encoding='utf-8')
+    peer = artifact_layout(tmp_path, 'peer')
+    write_result(peer.result_path, {'status': 'succeeded', 'control': {}, 'metrics': {'accuracy': 7}, 'paths': {}})
+    if route != 'fresh':
+        write_result(layout.result_path, {'status': 'succeeded', 'control': {}, 'metrics': {'accuracy': 9}, 'paths': {'assets': str(layout.assets_dir)}})
+    write_index(tmp_path, {'experiments': [{'factors': {}, 'runs': [{'id': 'target', 'seed': 0}]}]})
+    contents = {
+        'malformed': b'shared: [\n', 'nonmapping': b'[]\n',
+        'bad-shared': b'shared: []\n', 'bad-root': b'shared: {root: []}\n',
+        'decode': b'\xff\xfe', 'read-io': b'{}\n',
+        'valid-default': b'{}\n', 'valid-custom': b'shared: {root: custom-inputs}\n',
+    }
+    source = tmp_path / 'study.yaml'
+    if declaration != 'missing':
+        source.write_bytes(contents[declaration])
+    protected = [layout.config_path, tmp_path / 'index.json', peer.result_path]
+    if source.exists():
+        protected.append(source)
+    before = {p: p.read_bytes() for p in protected}
+    original_read = Path.read_text
+    def read(path, *args, **kwargs):
+        if declaration == 'read-io' and path == source:
+            raise PermissionError('unavailable shared metadata')
+        return original_read(path, *args, **kwargs)
+    monkeypatch.setattr(Path, 'read_text', read)
+    starts = []
+    class Proc:
+        def wait(self):
+            return 1
+    def start(*args, **kwargs):
+        starts.append(load_result(layout.result_path)['status'])
+        return Proc()
+    monkeypatch.setattr(schedule.subprocess, 'Popen', start)
+    if route == 'launch':
+        jobs = [{'run_id': 'target', 'mode': 'train', 'device': 'cpu', 'gpu': None}]
+        assert schedule.launch_jobs(tmp_path, jobs, retry_failed=False, console='shared') == [1]
+        assert starts == ['failed']
+        expected_error = 'rerun started; no successful result from this execution yet'
+    else:
+        schedule._fail_result(tmp_path, 'target', 'primary failure evidence')
+        assert starts == []
+        expected_error = 'primary failure evidence'
+    result = load_result(layout.result_path)
+    assert result['status'] == 'failed' and result['error'] == expected_error
+    assert result.get('metrics') == ({'accuracy': 9} if route != 'fresh' else None)
+    assert result.get('paths') == ({'assets': str(layout.assets_dir)} if route != 'fresh' else None)
+    assert {p: p.read_bytes() for p in before} == before
+    if declaration == 'missing':
+        assert not source.exists()
+
+
+@pytest.mark.parametrize('damaged_shared', [False, True])
+def test_failure_invalidation_keeps_result_publish_error_strict(tmp_path, monkeypatch, damaged_shared):
+    layout = artifact_layout(tmp_path, 'target')
+    write_result(layout.result_path, {'status': 'succeeded', 'control': {}, 'metrics': {}, 'paths': {}})
+    before = layout.result_path.read_bytes()
+    (tmp_path / 'study.yaml').write_text('shared: []\n' if damaged_shared else '{}\n', encoding='utf-8')
+    primary = PermissionError('result publication refused')
+    def refuse(*args, **kwargs):
+        raise primary
+    monkeypatch.setattr(schedule, 'write_result', refuse)
+    with pytest.raises(PermissionError) as caught:
+        schedule._fail_result(tmp_path, 'target', 'primary run failure')
+    assert caught.value is primary
+    assert layout.result_path.read_bytes() == before

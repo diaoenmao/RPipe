@@ -542,3 +542,27 @@ PR174原最终head85826fe的Windows3.10 core在既有双进程测试失败：sha
 
 
 B128实施状态：f5b3591已按上文移动原三行初始化，无其他shared代码变化；两项真实竞争与四项初始化失败/取消清理控制均通过。相邻123/core2015+1既有skip/CPU Flow354全绿，PR174更新后等待新最终head和实际dev全部实际CI。原85826fe实际Windows3.10失败不撤回，见record§214–215。
+
+
+PR174验收状态（2026-10-17）：B124–B128均已实施并合dev9d78fb4，最终head5dab50a及实际dev所有实际矩阵/聚合成功；五Issue170–173/175已验收关闭，主题本地/remote清理。上文“待CI”保留为当时历史，勿作为未实施/待批准事项。原Windows失败不撤回，完整依据record§216。下一B129/#176是新确认的失败元数据隔离缺陷，尚未实施，不把其方案与本批验收混为一事。
+
+
+### B129 / Issue176：失败回写的可选shared元数据隔离（2026-10-17，实施方案）
+
+实际dev9d78fb4上原生Runner复现十场：坏YAML、非mapping、坏shared/根、解码失败使原始异常已被捕获/记log后，_write_failed_result为补paths.shared重新解析同一坏声明，整体best-effort块提前退出。fresh无failed result，旧success也可能保留；paths.setdefault即使已有shared仍eager求值。c76e8fd先提交36项红24失败/12有效控制，补充read IO拒绝及fresh/旧success/已知draft路径四状态，验证原异常、peer与声明字节。
+
+方案只在Runner失败写回局部：已有shared键直接保留；缺键时尝试取得现有layout.shared_dir，若Exception则略过此可选元数据，继续原Run/config/assets/result路径与failed/error写入。使用现有失败边界的Exception范围，不吞BaseException取消，不猜造shared根，不改Result schema或正常write.run严格shared求值。成功/有效配置输出保持，原异常同对象向上传播；实际result写入失败仍按既有best-effort静默，冻结初始拒绝与process旧成功保全完全不改。
+
+影响仅FlowRunner._write_failed_result一个既有调用点；已查正常write.run和shared_paths调用方及readout消费者，失败Result合同只要求status/error、已知路径可尽量补齐。单Run/peer状态与文件/产物布局保持，不引入新helper/配置/字段/依赖。先方案再最小实现，本地相关/完整CPU检查后在当前下一主题积累同类合同，完整里程碑再PR，不为几行文档另开PR。
+
+
+### B130 / Issue177：launcher失败失效化不依赖共享布局建立（2026-10-17，实施方案）
+
+与B129同类，schedule._fail_result先读原Result后，通过artifact_layout间接ensure_study_layout/shared_paths，坏声明阻断已知Run result路径的可写failed证据，旧success留存。原生helper和公开launch_jobs的六场隔离REPRO四失败/二有效控制；子进程仅stub CPU，没有任务/GPU运行。27d263d红27项18失败/9控制，再906b72b加严格发布错误控制后红29项19失败/10控制，原首场不覆盖。
+
+最小方案：_fail_result已先调用_run_result，其validate_run_directory仍原字节执行；复用该函数既有Path(study_dir)/runs/run_id/result.json表达式，直接交给原write_result，不调用不相关的完整layout建立；删仅用于此处的artifact_layout import。Result旧body/metrics/paths仅status/error更新保持，原子发布/父目录建立仍由既有writer负责。所有rerun、依赖失效化、blocked与非零退出调用点统一经过原helper，不改启动/重试/console/env/训练屏障，不猜shared根或复制输入，不吞实际write_result错误。
+
+这是失败留证与配置元数据独立的同批合同，和B129保持同一未合主题，完成完整本机与远端验收后统一PR；不改make/prepare正常共享布局创建、文件路径/schema或科学门。输入声明/peer/config/index字节保留，非法Run组件仍在_run_result前置拒绝。已有路径消费者不依赖失败失效化额外建立shared目录。
+
+
+B129–B130本机实施状态（2026-10-17）：3743b59与1b6885c已按上文最小实施，合批272相邻/core2044 passed+1既有skip/CPU Flow390 passed，新65全执行，原独立红和源码字节证明保留；两Issue176/177仍OPEN，等待完整主题PR及最终head/实际dev所有实际CI。上文方案已实施，不再等待设计批准；真实存储不可写仍遵循原best-effort/严格writer边界，不承诺不可写介质必有结果。见record§219。

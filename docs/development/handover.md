@@ -1,5 +1,19 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-17 B129–B130失败证据独立于共享元数据，本机完整验收
+
+当前唯一未合codex/failure-evidence-next自dev9d78fb4，本地主题积累；B129/#176 Runner与B130/#177 launcher两处同类失败发布已最小修。独立红36项24失败/12控制、最终29项19失败/10控制，原失败不混作一场65红；272相邻、core2044 passed+1既有skip、CPU Flow390 passed，新65（29 unit+36 integration）全执行，40954/75073终结exit0。仅两个原生产文件，原错误/严格write/成功保全/依赖重试/布局不动。详record§217–219，原始.tmp/audit129/130不随clone。
+
+本批尚无PR，两Issue176/177保持OPEN；统一完整里程碑一个PR，再验最终head/实际dev全部实际CI及清理。PR174已双侧验收关闭170–173/175并清主题本地+remote，勿重复，基线161计数3/remote45；下一新B131。真实存储不可写仍原合同，未增加CLI原前置总门写回，不合main/tag/运行GPU或性能/删除数据结果，目标active。
+
+
+## 2026-10-17 PR174双侧验收/清理完成；B129/#176下一批
+
+最终head5dab50a的Branch38935993121/Package38935993041/Unit38935993044全部实际成功；实际dev9d78fb4的Package38937020429/Unit38937020502全部实际成功。五Issue170–173/175已各一次验收反馈后关闭，PR原正文保留并追加验收；原Windows3.10失败仍保留。普通删除codex/correctness-review-next本地+remote，未删worktree/数据/结果；基线161计数3、remote45。细节和hash见record§216，.tmp/audit128原件不随clone。
+
+下一codex/failure-evidence-next仅本地，从实际dev建立。#176确认未修，十场反例见.tmp/audit129，先提交原生红回归再方案/最小修；避免坏shared元数据阻断failed result，不改严格校验/合法路径/冻结与process保全。下方旧“未PR/待CI”只属当时历史，勿重派、重合或重复反馈。main/tag/GPU/数据/布局不动，目标active。
+
+
 ## 2026-10-17 B124–B127字段/事件身份完整本机里程碑
 
 当前codex/correctness-review-next：四Issue170–173分别先Issue/独立红/设计/最小修，原生消息行身份、可选activity行投影、native event字段与严格traceback形态已统一收敛。合批相邻420/core2009 passed+1既有skip/CPU Flow354 passed，新78全执行（21 unit+57 integration），40258/60788终结exit0，范围/字段展示点清单见record§213；原始.tmp/audit124–127不随clone。

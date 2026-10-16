@@ -107,7 +107,11 @@ class FlowRunner:
             paths.setdefault('artifact', str(ctx.layout.root))
             paths.setdefault('config', str(ctx.layout.config_path))
             paths.setdefault('assets', str(ctx.layout.assets_dir))
-            paths.setdefault('shared', str(ctx.layout.shared_dir))
+            if 'shared' not in paths:
+                try:
+                    paths['shared'] = str(ctx.layout.shared_dir)
+                except Exception:
+                    pass
             paths['result'] = str(ctx.layout.result_path)
             draft['paths'] = paths
             if ctx.control is not None and 'control' not in draft:
