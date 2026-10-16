@@ -35,10 +35,10 @@ class FlowRunner:
             raise ValueError('phases must be a unique subset in canonical order')
 
     def run(self, ctx: FlowContext) -> Path:
-        logger = self._ensure_logger(ctx)
-        logger.info(f'start phases={",".join(self.phases)} pid={os.getpid()}')
         current = None
         try:
+            logger = self._ensure_logger(ctx)
+            logger.info(f'start phases={",".join(self.phases)} pid={os.getpid()}')
             study = load_study_yaml(ctx.study_dir) if (ctx.study_dir / 'study.yaml').is_file() else {}
             if study_phases_enabled(study):
                 check_frozen(ctx.study_dir, study)
@@ -70,7 +70,10 @@ class FlowRunner:
     def _log_failure(self, ctx: FlowContext, phase: str | None, exc: BaseException) -> None:
         if ctx.state.get('failure_logged'):
             return
-        logger = self._ensure_logger(ctx)
+        try:
+            logger = self._ensure_logger(ctx)
+        except Exception:
+            return
         where = phase or 'flow'
         try:
             logger.exception(f'phase={where} status=failed', exc)
