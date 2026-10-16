@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
 > Version 1.4; updated 2026-10-16. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `fc2b9b6095910aba9c93629c43c6a58b73f19ca9`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `9a7af374ee6b1354c1c9aea37858059c03c8f329`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -577,3 +577,11 @@ PR145 passed all actual final-head CI jobs and merged normally into dev fc2b9b6;
 
 
 PR145 final head and actual dev passed all actual CI; Issue144 closed and its local/remote branch was deleted normally. B109 final local25 new nodes, PNG adjacent67, core1814 passed/1 existing platform skip and CPU Flow207 passed; final-head/actual-dev CI remain pending. Engineering checks did not run a Study or replace scientific protocols/gates; see record §170.
+
+
+### Engineering progress: B110 / Issue148 (2026-10-16)
+
+PR147 passed all actual final-head CI and merged into dev9a7af37; actual-dev acceptance remains pending. Real12000-level JSON raises an unnormalized RecursionError at both outer/native-prepare freeze gates and overwrites prior success without data/model/execute calls. The initial accepted2000-level probe is retained and excluded as an invalid counterexample. Twelve committed nodes first5 failed/7 valid controls, then a minimal one-line classification fix made all12 and adjacent204 green; core/Flow/both CI gates remain pending. Strict parser/schema/recursion limits, scientific gates and real phase-failure policies remain unchanged. Engineering preservation is not a Study rerun or new science; no GPU/timing/formal Study. See[record §171](../development/record.md).
+
+
+PR147 final head and actual dev passed all actual CI; Issue146 closed and its local/remote branch was deleted normally. B110 final checks executed all12 new nodes (core4/Flow8), adjacent204, core1818 passed/1 existing platform skip, CPU Flow215 passed. Final-head/actual-dev CI remain pending. Freeze classification preservation does not execute a formal Study, relax scientific gates or change JSON limits; see record §172.

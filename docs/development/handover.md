@@ -474,3 +474,11 @@ codex/study-plot-publication基于PR145正常合并dev fc2b9b6；该实际devCI�
 
 
 PR145两侧全部实际CI验收完成，Issue144关闭，writer-close-errors本地/remote普通删除；基线139累计3。B109本机25新节点全执行、PNG相邻67、core1814+1既有平台skip、CPU Flow207通过；有效PNG76906字节同SHA，科学函数保持。下一步同一study-plot-publication推PR→dev，最终head和实际dev分别验所有实际CI后再关146/清分支。原始证据.tmp/audit108–109不随clone，record §170可携带。
+
+
+## B110 / Issue148（2026-10-16）
+
+codex/freeze-parser-refusal基于PR147正常合dev9a7af37（实际devCI待验，旧study-plot-publication保留）。Issue148已先12项5红/7控制提交dadb558、设计32f7a54，单行e99691d让不可解析深JSON以既有冻结拒绝类型/cause传播，不改strict loader、限额或Runner保全决策；新12/相邻204全绿，core/Flow/两侧CI待验。初2000层无效探针与更正12000层原证据均.tmp/audit110保留不随clone；新tests零data/model/execute调用。record §171，清理基线PR139已验收仍3，不提前计PR147。
+
+
+PR147两侧实际CI全部验收，Issue146关闭、study-plot-publication本地/remote普通删除；基线139累计4，下一次accepted PR须完整周期盘点。B110本机新12全执行（core4/Flow8）、相邻204/core1818+1既有平台skip/CPU Flow215绿，源码仅一处except元组替换。下一步同一freeze-parser-refusal推PR→dev，最终head和实际dev全部实际CI分别验收后关148/清分支。原始无效探针及更正证据.tmp/audit110不随clone，record §172可携带。

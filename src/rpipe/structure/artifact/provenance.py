@@ -198,7 +198,7 @@ def check_frozen(study_dir: Path | str, study: dict[str, Any]) -> None:
         return
     try:
         changed = provenance_changes(study_dir, study)
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, RecursionError) as exc:
         raise ProvenanceChangedError(f'Cannot verify frozen provenance: {exc}') from exc
     if changed:
         shown = ', '.join(changed[:5]) + (' …' if len(changed) > 5 else '')

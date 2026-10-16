@@ -306,3 +306,43 @@ def test_plan_manifest_requires_identity_and_checks_paired_directory(tmp_path, m
     study = _declaration_study(tmp_path, monkeypatch)
     (study / 'index.json').write_text(json.dumps({'experiments': [{'runs': [run]}]}), encoding='utf-8')
     _assert_plan_refusal(study, monkeypatch, operation)
+
+
+@pytest.mark.parametrize('freeze', [False, True])
+def test_deep_provenance_is_a_freeze_refusal_only_when_enabled(tmp_path, freeze):
+    from rpipe.structure.artifact.provenance import provenance_path
+
+    path = provenance_path(tmp_path)
+    raw = b'{"files":{},"plan":{},"metadata":' + b'[' * 12000 + b'0' + b']' * 12000 + b'}'
+    path.write_bytes(raw)
+    if freeze:
+        with pytest.raises(ProvenanceChangedError) as caught:
+            check_frozen(tmp_path, {'freeze': True})
+        assert isinstance(caught.value.__cause__, RecursionError)
+        assert 'Cannot verify frozen provenance' in str(caught.value)
+    else:
+        assert check_frozen(tmp_path, {'freeze': False}) is None
+    assert path.read_bytes() == raw
+
+
+def test_deep_provenance_strict_loader_retains_parser_error(tmp_path):
+    from rpipe.structure.artifact.provenance import load_provenance, provenance_path
+
+    path = provenance_path(tmp_path)
+    raw = b'{"metadata":' + b'[' * 12000 + b'0' + b']' * 12000 + b'}'
+    path.write_bytes(raw)
+    with pytest.raises(RecursionError):
+        load_provenance(tmp_path)
+    assert path.read_bytes() == raw
+
+
+def test_freeze_parser_boundary_does_not_normalize_programming_runtime_error(tmp_path, monkeypatch):
+    import rpipe.structure.artifact.provenance as provenance
+
+    error = RuntimeError('unexpected provenance programming error')
+    def refuse(*args):
+        raise error
+    monkeypatch.setattr(provenance, 'provenance_changes', refuse)
+    with pytest.raises(RuntimeError) as caught:
+        check_frozen(tmp_path, {'freeze': True})
+    assert caught.value is error

@@ -314,3 +314,12 @@ PR143最终head全部实际CI通过并正常合dev e589862d，实际dev CI尚在
 Issue146后6ab3b74先提交25正式节点23 failed/2正常控制passed，0error/skip。采用库PNG已批准合同的最小本地实现：保持原figsize=(14,5)、dpi160和1×2 axes，先取得figure即进入finally所有权范围，再fig.subplots；绘图主体仅缩进、原行保持。同目录UUID.tmp以xb排他取得，向句柄以显式PNG格式savefig、关闭后既有atomic_replace；正常close失败严格、不发布，已有保存错误/取消时close OSError不遮首错。保留原目标mode、新目标umask；只有自有普通tmp尽力清理，只读自有tmp可恢复0o600重试一次；未取得所有权的碰撞不删，peer figure保留。不抽新通用I/O层/模块/依赖，不改变helper返回None、文件架构、最终路径/格式、科学门或阈值、数据与坐标/标注。
 
 测试在既有flow/process镜像目录AST读取当前Study代码，不依赖正式Study输入/结果，不启动main。覆盖新旧目标、axes/render/save/cancel/replace/create、碰撞、清理拒绝、原生Windows只读、close二错和正常PNG/图像数据控制；25新节点均需执行，随后相邻PNG、core/CPU Flow与最终head/实际dev全部实际CI。冻结修前与修后对同一组合成输入比较PNG字节，确认科学比较/读取/gate函数原字节块保持。正式未来受影响Study复跑按新version/实际provenance和既定前置门，不将本次图像工程检查冒充科学实验或重写旧结果。原始探针/ZIP/hash/红绿在.tmp/audit109不随clone；无GPU/测速/main/tag/数据删除。
+
+
+## B110 / #148：不可解析provenance的冻结拒绝分类（2026-10-16）
+
+实际JSON解析12000层metadata数组触发RecursionError，check_frozen仅归一化OSError/ValueError使其逃逸；实际Runner outer gate与study phases关闭时的native prepare gate均在零data/model构建、零execute调用时，把旧succeeded结果覆盖为failed。新Run也写failed但缺少既有冻结拒绝类型。初2000层被本机Python3.13接受，只触发普通changed-provenance拒绝，作为无效反例原脚本/log保留；更正12000层不调递归限额，原始深层JSON/四新旧路径证据在.tmp/audit110，不随clone。
+
+Issue148后dadb558先提交12项正式回归5 failed/7有效控制passed、0error/skip；覆盖strict check_frozen、outer/native prepare新旧结果与普通坏JSON对照、freeze关闭不读坏文件、strict load_provenance仍抛真实RecursionError、非递归RuntimeError程序错不归一化。方案只在既有check_frozen异常元组补RecursionError，仍通过原raise ProvenanceChangedError from exc保留cause；不改strict loader/json解析/递归限额、schema、freeze真假判据、Runner现有保全决策表或真实业务phase失败规则。调用方Runner/prepare/launch/Study process继续使用同一公共边界，不复制guard或增加模块/依赖/新路径。新测试没有执行data/model/algorithm，仅native prepare到既有冻结门即拒绝。
+
+随后provenance/freeze相邻、core/CPU Flow和最终head/实际dev全部实际CI分别验收；保留坏输入原字节及新旧结果边界，不以吞程序错误或放宽冻结检查通过。无GPU/测速/正式Study、main/tag、数据/Run/provenance删除或布局变化。

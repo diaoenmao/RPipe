@@ -1113,3 +1113,6 @@ migrate_shared在取得多个共享根锁前确保原有根目录存在，并按
 
 
 Study comparison PNG退出合同（Issue146）：main_exp/flow/process/curves.plot_report沿用库PNG已实施的同目录排他staging→保存/关闭→atomic_replace与自有figure/tmp清理规则，失败保留旧historical_comparison.png与peer；正常close严格、保存首错/取消不被close OSError替换。figsize/dpi、数据/轴/标注、返回None及科学比较/读取/gate函数保持，无文件架构或产物路径变化。
+
+
+冻结校验拒绝合同（Issue148）：check_frozen将无法完成解析的RecursionError和已有OSError/ValueError同样包装为ProvenanceChangedError并保留原cause，使初始/prepare冻结拒绝沿用已有成功字节保全规则。strict load_provenance仍抛真实解析异常，freeze关闭不触及坏文件；不改JSON限额/schema、路径、source/plan哈希、真实phase失败或任意程序RuntimeError传播。

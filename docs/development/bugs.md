@@ -105,3 +105,11 @@ B107/#142已PR143最终head与实际dev全CI验收关闭；主题本地/remote�
 
 
 B108/#144已PR145最终head与实际dev全CI验收关闭，主题本地/remote普通删除。B109/#146本机25新节点全执行、PNG相邻67/core1814+1既有平台skip/CPU Flow207 passed；0failure/error，最终head/实际dev CI待验，保持open。见record §170。
+
+
+## 2026-10-16 B110 当前开放项
+
+[Issue148](https://github.com/DreamSoul-AI/RPipe/issues/148)：深层JSON的RecursionError逃逸冻结拒绝分类，使outer/native prepare零构建仍覆盖旧成功。初2000层无效反例保留，更正12000层真实解析四新旧路径确认；dadb558先12项5红/7控制、32f7a54设计、e99691d单行既有except补RecursionError，12新节点与相邻204全绿。strict loader/限额/schema和真实phase失败规则保持，core/Flow/两侧CI待验。见record §171。
+
+
+B109/#146已PR147最终head与实际dev全CI验收关闭，主题本地/remote普通删除。B110/#148最终本机12新节点全部执行（core4/Flow8），相邻204、core1818 passed/1既有平台skip、CPU Flow215 passed；0failure/error，最终head/实际devCI待验，保持open。见record §172。

@@ -1,7 +1,7 @@
 > **RPipe 研究计划：研究执行与证据一致性的可验证合同**
 > 版本：1.4；更新：2026-10-16；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
 > 当前阶段：完成计划重做和定向文献初筛；继续代码正确性，尚未执行本计划的新科学实验。
-> 当前实现基线：dev `fc2b9b6095910aba9c93629c43c6a58b73f19ca9`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
+> 当前实现基线：dev `9a7af374ee6b1354c1c9aea37858059c03c8f329`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
 > 本轮零 GPU、零测速、零训练、零数据下载；保持既有文件架构与产物布局。
 
 ## 本次人工审阅摘要（2026-10-16，按12:53更新）
@@ -578,3 +578,11 @@ PR145最终head全部实际CI成功并正常合dev fc2b9b6，实际dev验收待�
 
 
 PR145最终head/实际dev全部实际CI已验收，Issue144关闭并清主题本地/remote分支。B109本机最终25新节点、PNG相邻67、core1814 passed/1既有平台skip、CPU Flow207 passed；最终head/实际devCI待验。工程验证未运行Study，不替代科学计划与门限，见record §170。
+
+
+### 工程进展：B110 / Issue148（2026-10-16）
+
+PR147最终head全部实际CI通过并合dev9a7af37，实际dev待验。真实12000层JSON在outer/native prepare冻结门逃逸RecursionError，零data/model/execute调用却覆盖旧成功；初2000层被接受的无效探针留证排除。先12正式节点5红/7控制后最小一行归一化，当前新12/相邻204全绿，core/Flow/两侧CI待验。strict parser、schema、递归限额、科学门与Runner真实phase失败规则保持；工程保全不是Study复跑或新科学结果，未跑GPU/测速/正式Study，见[record §171](../development/record.md)。
+
+
+PR147最终head/实际dev全部实际CI已验收，Issue146关闭并清主题本地/remote分支。B110最终本机12新节点实际执行（core4/Flow8）、相邻204、core1818 passed/1既有平台skip、CPU Flow215 passed；最终head/实际devCI待验。冻结分类保全不执行正式Study、不放宽科学门或改JSON限额，见record §172。
