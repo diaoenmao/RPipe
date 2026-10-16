@@ -742,3 +742,78 @@ def test_lock_unexpected_release_programming_error_is_not_silenced(tmp_path, mon
         assert calls == ['acquire', 'unlock']
         assert len(handles) == 1 and handles[0].closed
     _reacquire_shared_lock_on_other_thread(tmp_path)
+
+
+@pytest.mark.parametrize('budget', [0, 0.05])
+def test_empty_shared_lock_contender_does_not_initialize_before_ownership(tmp_path, budget):
+    lock = tmp_path / '.rpipe.lock'
+    lock.touch()
+    script = """
+from pathlib import Path
+import os, sys
+handle = (Path(sys.argv[1]) / '.rpipe.lock').open('a+b')
+if os.name == 'nt':
+    import msvcrt
+    msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+else:
+    import fcntl
+    fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+print('locked', flush=True)
+sys.stdin.readline()
+handle.close()
+"""
+    process = subprocess.Popen([sys.executable, '-c', script, str(tmp_path)],
+                               stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                               text=True)
+    try:
+        assert process.stdout.readline().strip() == 'locked'
+        with pytest.raises(TimeoutError):
+            with cache_lock(tmp_path, timeout=budget):
+                pytest.fail('contender acquired another process lock')
+    finally:
+        stdout, stderr = process.communicate('release\n', timeout=10)
+    assert process.returncode == 0, (stdout, stderr)
+    assert lock.read_bytes() == b''
+    identity = lock.stat().st_ino
+    with cache_lock(tmp_path, timeout=0):
+        assert lock.stat().st_size == 1
+        with cache_lock(tmp_path, timeout=0):
+            assert lock.stat().st_size == 1
+    assert lock.stat().st_ino == identity
+    with cache_lock(tmp_path, timeout=0):
+        assert lock.stat().st_size == 1
+
+
+@pytest.mark.parametrize('operation', ['write', 'flush'])
+@pytest.mark.parametrize('cancelled', [False, True])
+def test_empty_shared_lock_initialization_failure_releases_os_and_reentry_state(tmp_path, monkeypatch, operation, cancelled):
+    primary = KeyboardInterrupt('initialization cancelled') if cancelled else OSError('initialization refused')
+    with monkeypatch.context() as patch:
+        calls, handles = _lock_cleanup_faults(patch)
+        original_open = Path.open
+        class Stream:
+            def __init__(self, raw):
+                self.raw = raw
+            def __getattr__(self, name):
+                return getattr(self.raw, name)
+            def write(self, value):
+                if operation == 'write':
+                    raise primary
+                return self.raw.write(value)
+            def flush(self):
+                if operation == 'flush':
+                    raise primary
+                return self.raw.flush()
+        def open_lock(path, mode='r', *args, **kwargs):
+            handle = original_open(path, mode, *args, **kwargs)
+            return Stream(handle) if path.name == '.rpipe.lock' and mode == 'a+b' else handle
+        patch.setattr(Path, 'open', open_lock)
+        with pytest.raises(type(primary)) as caught:
+            with cache_lock(tmp_path, timeout=0):
+                pytest.fail('initialization failure yielded a body')
+        assert caught.value is primary
+        assert calls == ['acquire', 'unlock']
+        assert len(handles) == 1 and handles[0].closed
+    _reacquire_shared_lock_on_other_thread(tmp_path)
+    with cache_lock(tmp_path, timeout=0):
+        pass

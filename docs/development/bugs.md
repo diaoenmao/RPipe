@@ -6,17 +6,25 @@
 
 ## 开放
 
-### B-122：Runner终末日志错误绕过失败留证（本机已修，待同主题里程碑CI）
+### B-124：多行消息丢失原生记录身份（本机已修，待完整里程碑CI）
 
-- Issue：[167](https://github.com/DreamSoul-AI/RPipe/issues/167)。终末stdout/file-write失败发生在run既有try之外，普通阶段无failed/残留旧成功，process缺诊断。4原始探针和12红（8失败/4正常控制）保留，4ac6883先测试、01b394f设计、761700f最小修。
-- 当前仅将原末条info纳入既有try，保持输出时机及process旧成功例外、原首错/诊断/failed写规则；Runner49、core1974 passed/1既有skip、CPU Flow291 passed，12新节点全部执行。详[record§204–205](record.md)，原始.tmp/audit122不随clone。
-- 167仍OPEN，本机检查不代替最终head/实际devCI；同一codex/correctness-next-milestone本地积累，不为单bug开PR，不改布局或科学门。
+- Issue：[170](https://github.com/DreamSoul-AI/RPipe/issues/170)。仅info正文也可被读成error；14红11失败/3控制，38d1e09复用原_emit逐行记录主体，保留单行/空消息/一次f-string转换及原IO规则。
 
-### B-123：旧半行日志吞掉新ERROR的原生事件身份（本机已修，待同批CI）
+### B-125：activity提示额外行列混入状态展示（本机已修，待同批CI）
 
-- Issue：[168](https://github.com/DreamSoul-AI/RPipe/issues/168)。原生Logger追加后logs把新error归到旧flow，status错误提示为'-'；原始REPRO和14/16/20节点各场红留证。
-- 97a1443只在既有_emit探查可读末字节并于原a写入中补必要分隔，保留旧字节、有效行尾、stdout/格式、append-only权限及原首错规则；不可读尾仍沿原追加，不声称此时修复半行。与B122联动32新全部执行；相邻298/core1988+1既有skip/Flow297通过，详[record§206–207](record.md)。
-- 167/168同一完整里程碑，等待最终head/实际devCI，尚未合dev或关闭Issue；不改readout解析或布局，不拆单bug PR。
+- Issue：[171](https://github.com/DreamSoul-AI/RPipe/issues/171)。合法字符串换行/tab经两输出点插入行列；18红16失败/2控制，1a4cce4只共享显示投影，原mapping/JSON/缺index/peer合同保持。
+
+### B-126：原生event被Run名字或正文tag抢占（本机已修，待同批CI）
+
+- Issue：[172](https://github.com/DreamSoul-AI/RPipe/issues/172)。warning/split误作error，合法含tag Run名可隐藏记录；28红20失败/8控制，62d0f47在两reader共用真实event起点与已知Run上下文，所选集合/legacy/时间排序及只读行为保持。
+
+### B-127：traceback噪声过滤丢普通业务错误（本机已修，待同批CI）
+
+- Issue：[173](https://github.com/DreamSoul-AI/RPipe/issues/173)。File/Traceback首词普通ERROR被滤；18红12失败/6标准形态控制，a94622d只共用标准细节判别，不重建或重写日志。
+
+以上四项统一字段边界里程碑，本机420相邻/core2009+1既有skip/Flow354通过，78新全部执行；170–173仍OPEN，未跑最终head/实际devCI，不拆单bug PR。完整证据与限制见[record§209–213](record.md)，临时.tmp/audit124–127不随clone。旧不完整头日志不猜归属，完全同形traceback文本仍沿原噪声政策；文件架构/产物布局、数值门保持。
+
+B122/#167、B123/#168已PR169双侧全实际CI验收关闭并清本地/remote，详[record§208](record.md)。
 
 B119/#163、B120/#164、B121/#166已PR165双侧全实际CI验收并关闭，已合主题本地+remote清理，详[record§203](record.md)。
 
@@ -126,3 +134,6 @@ B108/#144已PR145最终head与实际dev全CI验收关闭，主题本地/remote�
 
 
 B109/#146已PR147最终head与实际dev全CI验收关闭，主题本地/remote普通删除。B110/#148最终本机12新节点全部执行（core4/Flow8），相邻204、core1818 passed/1既有平台skip、CPU Flow215 passed；0failure/error，最终head/实际devCI待验，保持open。见record §172。
+
+
+B128/[Issue175](https://github.com/DreamSoul-AI/RPipe/issues/175)仍OPEN：PR174原head85826fe Windows3.10既有双进程测试在空锁初始化flush PermissionError；确认锁前写入绕过竞争合同。先两项原生红，再f5b3591移动原三行到持锁范围，六新含错误/取消清理全执行，相邻123/core2015+1既有skip/Flow354本机通过。待同PR174新最终head及实际dev全部实际CI，原失败不重跑抹去，见record§214–215。

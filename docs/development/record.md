@@ -1,3 +1,21 @@
+> 当前（2026-10-17）：PR174合批B124–B128/#170–#173/#175，本机完整复验完成，准备更新最终head；接受dev仍bef7de9。
+> 最新：原CI Windows3.10暴露空锁初始化竞争，已先Issue/两项红再三行顺序移动，失败完整保留，详§214–215。
+> 验证：共享相邻123、core2015 passed/1既有skip、CPU Flow354 passed；本PR84新全执行（27 unit+57 integration）。
+> 下一步：同PR更新后验新最终head/实际dev全部实际CI，再关五Issue及清主题分支；无决策阻塞。
+> 保护：基线161计数2/remote44，main/tag/GPU/数据/结果/布局不动；旧CI不能当新head验收。
+
+> 当前（2026-10-17）：B124–B127/#170–#173同分支字段/事件身份里程碑本机完成，尚未推送/开PR；接受dev仍bef7de9。
+> 最新：合法消息/提示的行边界、原生事件字段定位、标准traceback过滤四项统一收敛，详§209–213，独立红证据保留。
+> 验证：相邻420 passed；core2009 passed/1既有skip、CPU Flow354 passed，新增78（21 unit+57 integration）全执行/0新skip。
+> 下一步：完整主题一个PR，最终head/实际dev全部实际CI验收后关170–173、清已合主题；无决策阻塞。
+> 保护：清理基线161计数2、remote44；旧日志不重写、legacy不猜，main/tag/GPU/数据/结果/文件与产物布局不动。
+
+> 当前：PR169双侧全部实际CI验收，devbef7de9；#167/#168已关闭，已合主题本地/remote均清理。
+> 最新：末条Runner失败留证与半行日志独立error读回统一完成；正常日志/原字节/追加权限保持，见§206–208。
+> 验证：相邻298、core1988 passed/1既有skip、CPU Flow297 passed；32新全执行，最终head与实际dev所有矩阵/聚合成功。
+> 下一步：开放Issue快照为空，codex/correctness-review-next继续三类复查，本地主题积累、完整里程碑再PR，无决策阻塞。
+> 保护：已删codex/correctness-next-milestone本地+remote，累计remote44，基线161计数2；main/tag/GPU/数据/结果/布局不动。
+
 > 当前：B122/#167、B123/#168同主题日志失败/中断读回里程碑，本机完整检查完成，准备统一一个PR。
 > 最新：末条IO拒绝绕过留证与旧半行吞新ERROR身份均复现；先独立红回归再761700f/97a1443最小修，详§204–207。
 > 验证：相邻298 passed；core1988 passed/1既有skip、CPU Flow297 passed，32新全执行（14 unit+18 integration）/0新skip。
@@ -3552,3 +3570,116 @@ B123/#168的原生Logger/index/logs/status探针确认：中断半行和新ERROR
 SOURCE_CHECKED精确原字节比较：src只Runner末条info缩进1增1删、Logger可选尾读/原追加11增1替换，其余源码/原异常处理和持久化格式不变。原始REPRO、源码ZIP/hash、各场红/绿、XML、源码证明在.tmp/audit122/123，不随clone；portable回归/设计/记录和双语研究计划随Git提供，无科学运行或结论新增。
 
 目前167/168仍OPEN，接受dev70a8750/PR165，当前两B是同一个完整“末条失败→半行保全→独立error事件读回”里程碑，不单bug或几行文档拆PR。本机验收后统一PR，仍须新最终head/实际dev全部实际矩阵/聚合验收再关闭及清分支。清理基线161计数1、remote累计43；下一编号B124。无GPU/测速/下载/正式Study/main/tag/数据/结果/架构或产物布局变化，不等待设计审批。
+
+
+## 208. PR169日志失败/原生读回里程碑双侧验收与已合主题清理（2026-10-16）
+
+B122/#167与B123/#168统一[PR169](https://github.com/DreamSoul-AI/RPipe/pull/169)，最终head05341f85691d1ad41aa54fe4a7a70f55a96b14e6的[Branch38923564342](https://github.com/DreamSoul-AI/RPipe/actions/runs/38923564342)、[Package38923564221](https://github.com/DreamSoul-AI/RPipe/actions/runs/38923564221)、[Unit38923564299](https://github.com/DreamSoul-AI/RPipe/actions/runs/38923564299)及所有实际矩阵/聚合均success。PR_CHECKED SHA256 d5d2a52a47560e1f9303adba1a0bd714e5eee1d908c5a52e139918174ad66c4b。
+
+expected-head正常merge到实际devbef7de966a0cea0e86b1e2392222ddf8bfeff920，实际dev的[Package38924513921](https://github.com/DreamSoul-AI/RPipe/actions/runs/38924513921)、[Unit38924513792](https://github.com/DreamSoul-AI/RPipe/actions/runs/38924513792)及所有实际矩阵/聚合也success。DEV_CHECKED SHA256 905d10c06fef037b85a3a20de90b32f4818f11025246c5d4698fbd310ba3a6e7；不是仅靠PR绿色验集成。167/168各一次验收评论后关闭，不表示main/tag/发布。PR原正文保留，追加真实验收与清理事实，不重复评论。
+
+本机相邻298/core1988 passed+1既有Windows POSIX模式skip/CPU Flow297 passed，32新全部实际执行（14 unit+18 integration），0新skip。原始独立红/原Logger与已修Runner联动红、原ZIP/hash/REPRO、XML与严格checker证据均保留.tmp/audit122/123，不随clone；正式回归/设计/记录已入库。只改两个现有生产文件，原日志有效记录/权限/首错与process旧成功例外、Tracker/checkpoint/readout解析/数值门/架构/产物布局保持；不可读尾保留原追加行为，不宣称此时能够修复半行。没有GPU/测速/下载/正式Study/科学结论或数据迁移。
+
+双侧验收后核对本地/实际远端tip=05341f8且为dev祖先、工作区只保留_staging_from_DEM、一个primary worktree、无命令引用RPipe的活动Python进程；先detach实际dev，再普通删除以下已合主题：
+
+| **范围** | **删除分支** | **提交保全位置** |
+| --- | --- | --- |
+| 本地 | codex/correctness-next-milestone | devbef7de9包含tip05341f8 |
+| origin远端 | codex/correctness-next-milestone | devbef7de9包含tip05341f8 |
+
+删除后本地与远端均无此主题，main7a15c46、本地dev9324014、origin/main00e70b1原值保持；没有worktree、Run、数据、结果或provenance删除。remote累计结束44条。周期清理基线仍PR161/dev8480d79，已验收PR165/169共2/约5，本批即时主题清理完成，不重复触发全面盘点。
+
+最新实际开放Issue快照为空。唯一活动未合codex/correctness-review-next从实际dev建立，继续三类正确性复查，下一缺陷B124；先确认反例再开Issue/红回归，不为活跃制造任务。本节收尾与后续相关工作本地主题积累，随下个完整里程碑合批，不单独文档PR。20:56后PR165为加载/兼容里程碑、PR169为日志失败/读回里程碑，未按每bug拆PR；继续控制每日少量完整批次。目标active，无决策阻塞；不合main、不打tag、不force push，不动GPU任务/数据/结果与文件架构/产物布局。
+
+
+## 209. B124 / #170：合法多行消息逐行保留Logger原生记录身份（2026-10-16，本地设计）
+
+原生Logger.info的合法多行字符串仅第一行带完整header，后续[error]正文变成独立错误事件，errors_only读出一个从未由Logger.error发出的错误。REPRO使用真实Logger/index/logs/status，原始ZIP/hash/log保留.tmp/audit124（不随clone）；事件闭集与有效Run身份仍按既有合同，不把无效event或Run配置扩展成支持能力。
+
+先开#170，8ca7187提交14项正式红回归11失败/3正常对照：info/warning/error、exception多行上下文/异常值、report extra六条真实调用路径，加CRLF与Unicode行分隔；原生Runner collect→Logger→logs/status三条集成确认事件不能被正文改名。普通/空消息和原f-string对象只格式化一次是兼容对照。均合成CPU/IO，无训练/GPU/数据或性能运行。
+
+方案沿已有exception traceback逐行_emit规则：只在原_emit外加一层消息行循环，使用原f-string转换一次后splitlines，空消息保留一次原记录；每行复用原完整emit主体。正常单行记录字节/事件/级别/Run身份/编码/newline/权限、末条失败边界、可读尾行分隔及readable限制、write/flush/close首错规则均保持。多行内容不压平/转义、不通过修改只读parser猜事件，逐行保留文本及原拥有事件/级别；失败仍传播，不吞消息或放宽科学门。
+
+不新增helper/模块/文件/schema/配置或磁盘位置，不改变Tracker/checkpoint与各Study方案。代码只做一层循环及既有主体机械缩进，精确字节证明除缩进外主体不变。当前先本地原分支积累字段边界主题，不立即为单bug开PR；本机定向和完整core/CPU Flow后，后续完整里程碑仍须最终head/实际dev全部实际CI再验收，不等待设计批准。
+
+
+## 210. B125 / #171：可选activity在两个展示点共用单行投影（2026-10-16，本地设计）
+
+合法非空Unicode phase及字符串detail包含换行/制表符时，announce原样打印成额外行列，status同样在权威summary/header前输出多行提示。真实announce/read_activity/index/CLI探针已复现：输入mapping合法、统计仍planned=0、原activity字节未改，错误仅在可选提示的显示身份，不称为Run结果损坏。原始REPRO/log/ZIP/hash在.tmp/audit125（不随clone）。
+
+#171后c2dfbdb先提交18红16失败/2正常对照：phase/detail×LF/CRLF/Unicode行分隔/tab的producer8项，status的phase/detail×LF/tab×缺index/正常peer8项，以及正常Unicode/空detail2控制；原mapping、peer与全部输入字节/目录清单锁定。
+
+最小方案在现有activity.py内加私有_format_activity，仅将已拼接提示的splitlines用空格拼回、tab换空格；announce与CLI两输出点复用。不能反向import readout（现有设计第四节），不搬_fmt到新模块；此helper只服务当前两个重复显示点，不是新框架/公开schema。read_activity及announce持久化主体原字节保持，自定义phase/Unicode/None或缺省detail规则、正常行空格和stdout时机保持。CLI继续原detail-or-empty及rstrip约定，producer正常空detail继续原尾空格。
+
+提示只做显示投影，不改存储值、不拒绝合法字符串、不增加phase枚举/ownership/TTL协议；有效hint缺index仍exit0，无hint缺index仍exit2，mode/正式table及peer不变。与B124/#170作为同一字段边界里程碑在原分支本地积累，不单项PR。先定向再当前core/CPU Flow；后续完整里程碑仍须最终head/实际dev全实际CI，Issue未验收不关，无需等待设计批准。
+
+
+## 211. B126 / #172：原生日志按已知Run身份定位真正event字段（2026-10-17，本地设计）
+
+只读两函数在整行search所选tag，会把有效Run名字或正文中的[error]当事件：真实warning/split提示替换原错误note，合法单行Run目录name [error] Traceback marker使原生ERROR/FLOW整行被误当traceback过滤。真实Logger/Tracker/index/result/status/logs探针均复现，原始证据.tmp/audit126不随clone。此问题在单行消息也存在，独立于B124；没有扩展无效mode/event或多行log路径。
+
+#172后4fcca9c先提交28项红回归20失败/8所选事件控制：普通/空格/含tag的合法Run组件，默认与自定义受限log路径，native warn/split/flow/error加metric/time/ckpt/resume；原生Runner/peer、错误note、默认独立note、过滤政策与全部输入字节锁定。
+
+最小方案在现有status.py共享_event_match：识别原生时间/级别头后，以当前计划run_dir或原生'-'身份的完整字面前缀找到实际event起点，所选_EVENT只在该处match；已确认原生owner而event不在原集合时返回None，不能再从payload寻找。未知/legacy行继续原search，不猜旧文本、不重写文件。logs复用此house helper；status列表把已有run_dir传给_note_from_log，自定义log无需路径猜测；独立默认note可按固定runs/id/assets/logs路径字面取得上下文，缺上下文沿原兼容回退。
+
+原选择集合、traceback抑制、timestamp/sub-microsecond排序、path guard、严格index/config/result/数值门与行输出原字节保持；不新增模块/文件/schema或改变Run目录/日志格式，不扩大为任意坏文本认证器。仅两个既有readout文件，先红后改，再与B124/B125统一当前本机core/Flow及后续完整里程碑最终head/实际devCI；不单bug PR、不等待设计审批。
+
+
+## 212. B127 / #173：traceback抑制只匹配标准行形态（2026-10-17，本地设计）
+
+两reader的startswith('Traceback')/startswith('File ')会丢失独立业务ERROR，例如File cache missing、File "data.csv" is missing、Traceback writing failed。原生Logger/index/result/status/logs五探针前三普通错误均note为'-'/日志无行，标准Traceback头和File帧两控制同样过滤但本来应如此。原始ZIP/hash/REPRO在.tmp/audit127不随clone；发生在B126事件字段修复后，是独立的正文分类过宽，不改原生owner匹配。
+
+#173后正式18红12失败/6控制：六种普通或近似File/Traceback消息×native/legacy；标准Traceback头、带/不带函数名的quoted File/数字line三形态×2控制。原生Runner/peer与所有输入字节/目录清单锁定，非科学运行。
+
+最小方案：在既有status.py共用_traceback_detail，只将完全相同的标准Traceback头或File "...", line 数字（可带, in 函数）的整行识别为细节；logs复用此helper。其他含File/Traceback首词的正文仍是原error记录。保留原选择事件、native/legacy匹配、时间排序、文件/只读边界与其他逻辑，不做traceback状态重建、不增加结构化格式或重写旧日志。与标准细节形态完全相同的非结构化文本仍按原显示策略略过，不承诺无法辨别的来源归属。
+
+仅两个现有readout文件，把共同规则收敛一次而非在两个入口散改；先红后最小修，再与B124/B125/B126统一当前core/CPU Flow和完整里程碑最终head/实际devCI，未验收四Issue不关闭，不单bug PR、不等待设计批准。不改schema/布局、生产者或数值/科学门，不测速/跑GPU/Study。
+
+
+## 213. B124–B127字段/事件身份里程碑与展示点清单（2026-10-17，本机完整验收）
+
+2026-10-16夜间至17日按同主题收敛四个确认反例，而非逐bug开PR：B124/#170合法多行消息丢完整记录身份；B125/#171 activity提示增加额外行列；B126/#172 Run名字/正文tag覆盖实际原生事件字段；B127/#173普通File/Traceback错误被过宽过滤。分别先开Issue、提交独立红、记录设计再最小修：14红11失败/3控制（8ca7187）、18红16失败/2控制（c2dfbdb）、28红20失败/8控制（4fcca9c）、18红12失败/6控制（2d7295f）。这些是四个真实生产状态，不冒称统一一场78红；原失败与每阶段目标绿保留。
+
+38d1e09仅给原Logger._emit加消息行循环、其余主体机械缩进；1a4cce4只在原activity内共用小formatter并接入两个现有打印点；62d0f47/a94622d在原status/logs共用原生字段定位和标准traceback形态规则。没有新生产文件/依赖/公开接口/配置/schema/路径，不搬代码或新增I/O框架。旧不完整头的多行日志不重写、不猜归属；原legacy兼容回退保留，标准细节完全同形文本仍按原噪声策略；既有不可读尾保留原append-only能力而不保证半行修复。
+
+### 当前字段展示点核对
+
+| **既有入口** | **字段边界与当前状态** | **本批依据/限制** |
+| --- | --- | --- |
+| Logger._emit，info/warning/error/exception/report | 本机已修；多行内容每行保留完整级别/Run/event，不压平或改名 | B124六调用路径、LF/CRLF/Unicode分隔、空/普通/一次f-string控制；原每条IO主体保持 |
+| activity.announce与CLI status提示行 | 本机已修；两输出点共用单行投影，JSON/mapping未规范化 | B125缺index/正常peer、phase/detail/tab/行分隔、正常Unicode与空detail控制 |
+| status._note_from_log与logs.event_lines | 本机已修；原生header按已知Run身份定位event，正文/Run名tag不能抢占 | B126三类合法Run组件、默认/自定义受限log、所选/忽略事件、peer和原字节；legacy不猜 |
+| 两reader的traceback细节过滤 | 本机已修；仅标准头/quoted File数字line形态抑制，普通首词错误保留 | B127 native/legacy六普通与三标准形态，完全同形非结构化文本不可辨别 |
+| status.format_status/mode/metric与path guard | 既有代码未改，本次相邻/完整回归通过 | SOURCE_CHECKED锁定原字节，表头/列/统计/严格config/输入路径合同不变 |
+| report.render_numbers/text/Markdown/link和计划绑定 | 既有代码未改，现有回归通过 | 不更改格式、有限数/计数、计划/Run身份门，不借显示修复放宽科学校验 |
+| compare.format_compare与严格数值比较 | 既有代码未改，现有回归通过 | key已有_text_cell；其余detail来自内部类型化报告，不把任意坏report当支持输入 |
+| activity.read_activity | 既有代码原字节未改 | 最低字段/Unicode/自定义phase/None与缺省detail、坏JSON/IO回退保持，reader无反向readout依赖 |
+| 原子写/共享锁/Tracker/checkpoint写协议 | 源码未改，既有故障/取消/恢复回归通过 | 不承诺多文件或任意同Run多写者事务；不做性能/实验运行 |
+
+该清单是本轮字段边界复核，承接原record§83–87的403组全仓I/O清单，不将源码检索当作所有未来输入已穷尽。CLI其他路径/错误自由文本保持原功能，不凭无协议的新假设制造缺陷。
+
+当前合批相邻420 passed；完整core2009 passed/1既有Windows POSIX模式skip、CPU Flow354 passed，均0failure/error；新增78全执行（21 unit+57 integration）、0新skip。Core/Flow进程40258/60788均exit0终结。B124/B125早先core2009+1/Flow308已单独保存，只证明当时两个修复，不能代替当前包含两reader改动及新增46集成节点的完整集合。
+
+SOURCE_CHECKED核对仅五个现有生产文件：Logger原主体逐行字节相同仅加循环缩进；activity reader/JSON写前缀、CLI其他功能、status的mode/metric/path/表/统计及logs排序/格式原字节保持；不改其余源码、numeric/Tracker/checkpoint或任何科学门。原REPRO/ZIP/hash/各场红绿/XML/源码证明在.tmp/audit124/125/126/127，不随clone；portable回归/方案/双语计划随Git提供。
+
+四Issue170/171/172/173仍OPEN，尚未推送/开本批PR；按完整字段/事件身份里程碑一次流转，最终head/实际dev都需全部实际矩阵/聚合验收后再关闭及清理。接受dev仍PR169/bef7de9，清理基线161计数2、remote累计44；下一编号B128。无决策阻塞，不等待设计审批；无GPU/测速/下载/正式Study/科学数字或结论新增，不合main/tag/发布、不force push、不删Run/数据/结果/provenance、不改文件架构和产物布局。
+
+
+## 214. B128 / Issue175：PR174实际CI暴露空锁初始化竞争（2026-10-17，先红与方案）
+
+PR174已统一提交B124–B127，原head85826fe。Branch38934229573及Package38934229671全部实际成功，Ubuntu两矩阵成功；Windows3.10 Unit38934229616/job117085538912的既有test_interprocess_prepare_has_one_writer_and_recovers_after_exit失败于shared.py:72 handle.flush PermissionError，core1 failed/2006 passed/3 skipped，后续Flow skipped。这是实际失败，未重跑/取消，不用其他平台绿或本机绿替代。
+
+B128/#175在原未改shared代码确认：空锁文件在取得OS所有权前写入，持锁进程的Windows强制字节锁使竞争者绕过既有TimeoutError。原生子进程保持空文件byte0锁，本地timeout=0复现PermissionError；先Issue再5822a41红2/2，c7eef67调整锁内只stat的成功断言后仍2/2同位置红。第一探针错误在锁期间另开读取句柄，被拒是探针错误，单独保留而非库失败。ORIGINAL.zip/CI失败日志/REPRO/两场红均在.tmp/audit128，不随clone。
+
+方案仅移动原初始化至OS锁取得并登记release后，保留原锁inode/重入/deadline/退出恢复/布局；原子写与并发类同PR174收敛，不另开小PR。待最小实现及相邻/core/CPU Flow、全新最终head/实际dev全部实际CI。Issue170–173/175仍开放，main/tag/GPU/数据/结果不动，下一B129。
+
+
+## 215. PR174五B完整里程碑：修正原生CI空锁竞争并重新本机验收（2026-10-17）
+
+B128/#175先红5822a41/c7eef67共两项零/有限预算竞争均PermissionError，方案8ec4a8a后f5b3591仅把shared.cache_lock原三行初始化移动到OS锁取得并登记release之后。新增四项write/flush错误与取消控制验证主异常同对象、OS解锁/关闭、跨线程与原线程再获取；空锁竞争两项亦验证重入、原inode与释放后初始化。没有替换锁文件或改变超时/重入/数据布局，不新增并发支持范围。
+
+更新后共享/引用/原生Flow相邻123 passed，完整core2015 passed/1既有skip、CPU Flow354 passed，0failure/error，进程37512/88615均exit0。B128六新unit全执行；本PR累计84新节点（27 unit+57 integration），此前四B红证据不合并冒称一场84红。前四B五源文件原字节未再改，SOURCE_CHECKED证明新生产差异只有shared.py原三行顺序移动。
+
+初次相邻命令误填不存在test_shared_alias.py而未收集测试，原GREEN.log保留；更正到真实test_shared_references.py后119 passed，再加入四清理控制后123 passed。第一探针锁期间读取及锁内另开句柄控制的错误分别保留说明，均不算库失败。原PR Unit38934229616已completed failure：三CPU矩阵成功、Windows3.10失败/其Flow跳过、聚合失败；不重跑、不取消、不用本机绿冒称原CI绿。更新相同PR174并触发新head全部CI；五Issue170–173/175保持开放直至双侧实际验收。
+
+原始CI失败、REPRO、原源码ZIP/hash、RED/RED2、GREEN/GREEN2/GREEN3与最终CORE/FLOW/SOURCE/LOCAL_CHECKED在.tmp/audit128，不随clone。没有GPU/性能/正式Study实测或科学结论，不改架构/产物布局/main/tag/数据/结果。下一B129，接受dev仍bef7de9，清理基线161计数2、remote44。

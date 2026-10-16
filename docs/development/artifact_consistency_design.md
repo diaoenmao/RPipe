@@ -480,3 +480,65 @@ load_recipe在上述上下文内执行spec前，将自己的既有模块名临�
 
 
 B123补强与本机实施（2026-10-16）：3ad90d3在原Logger/已有B122 Runner上先补四项真实部分写入→Runner→原生readout联动，完整20红10失败/10控制，再97a1443实施原_emit可读尾行分隔。当前298相邻/core1988 passed+1既有skip/CPU Flow297 passed，32新全执行；仅两个现有生产文件最小改动，其他源码/格式/append权限及首错规则原字节保持。准备与B122统一完整里程碑PR；167/168仍OPEN，最终head/实际devCI待验，不是待设计审批。详record§207。
+
+
+2026-10-16已实施且双侧验收：B122/#167、B123/#168统一PR169，最终head05341f8及实际devbef7de9所有实际矩阵/聚合CI均success；两Issue已关闭且已合主题本地/remote清理，详record§208。现行可读尾修复/原append-only限制、原错误优先级与布局合同继续有效，不是待审或待修项；后续真实同类反例按新Issue/红回归、完整主题里程碑推进。
+
+
+## 209. B124 / #170：合法多行消息逐行保留Logger原生记录身份（2026-10-16，本地设计）
+
+原生Logger.info的合法多行字符串仅第一行带完整header，后续[error]正文变成独立错误事件，errors_only读出一个从未由Logger.error发出的错误。REPRO使用真实Logger/index/logs/status，原始ZIP/hash/log保留.tmp/audit124（不随clone）；事件闭集与有效Run身份仍按既有合同，不把无效event或Run配置扩展成支持能力。
+
+先开#170，8ca7187提交14项正式红回归11失败/3正常对照：info/warning/error、exception多行上下文/异常值、report extra六条真实调用路径，加CRLF与Unicode行分隔；原生Runner collect→Logger→logs/status三条集成确认事件不能被正文改名。普通/空消息和原f-string对象只格式化一次是兼容对照。均合成CPU/IO，无训练/GPU/数据或性能运行。
+
+方案沿已有exception traceback逐行_emit规则：只在原_emit外加一层消息行循环，使用原f-string转换一次后splitlines，空消息保留一次原记录；每行复用原完整emit主体。正常单行记录字节/事件/级别/Run身份/编码/newline/权限、末条失败边界、可读尾行分隔及readable限制、write/flush/close首错规则均保持。多行内容不压平/转义、不通过修改只读parser猜事件，逐行保留文本及原拥有事件/级别；失败仍传播，不吞消息或放宽科学门。
+
+不新增helper/模块/文件/schema/配置或磁盘位置，不改变Tracker/checkpoint与各Study方案。代码只做一层循环及既有主体机械缩进，精确字节证明除缩进外主体不变。当前先本地原分支积累字段边界主题，不立即为单bug开PR；本机定向和完整core/CPU Flow后，后续完整里程碑仍须最终head/实际dev全部实际CI再验收，不等待设计批准。
+
+
+## 210. B125 / #171：可选activity在两个展示点共用单行投影（2026-10-16，本地设计）
+
+合法非空Unicode phase及字符串detail包含换行/制表符时，announce原样打印成额外行列，status同样在权威summary/header前输出多行提示。真实announce/read_activity/index/CLI探针已复现：输入mapping合法、统计仍planned=0、原activity字节未改，错误仅在可选提示的显示身份，不称为Run结果损坏。原始REPRO/log/ZIP/hash在.tmp/audit125（不随clone）。
+
+#171后c2dfbdb先提交18红16失败/2正常对照：phase/detail×LF/CRLF/Unicode行分隔/tab的producer8项，status的phase/detail×LF/tab×缺index/正常peer8项，以及正常Unicode/空detail2控制；原mapping、peer与全部输入字节/目录清单锁定。
+
+最小方案在现有activity.py内加私有_format_activity，仅将已拼接提示的splitlines用空格拼回、tab换空格；announce与CLI两输出点复用。不能反向import readout（现有设计第四节），不搬_fmt到新模块；此helper只服务当前两个重复显示点，不是新框架/公开schema。read_activity及announce持久化主体原字节保持，自定义phase/Unicode/None或缺省detail规则、正常行空格和stdout时机保持。CLI继续原detail-or-empty及rstrip约定，producer正常空detail继续原尾空格。
+
+提示只做显示投影，不改存储值、不拒绝合法字符串、不增加phase枚举/ownership/TTL协议；有效hint缺index仍exit0，无hint缺index仍exit2，mode/正式table及peer不变。与B124/#170作为同一字段边界里程碑在原分支本地积累，不单项PR。先定向再当前core/CPU Flow；后续完整里程碑仍须最终head/实际dev全实际CI，Issue未验收不关，无需等待设计批准。
+
+
+## 211. B126 / #172：原生日志按已知Run身份定位真正event字段（2026-10-17，本地设计）
+
+只读两函数在整行search所选tag，会把有效Run名字或正文中的[error]当事件：真实warning/split提示替换原错误note，合法单行Run目录name [error] Traceback marker使原生ERROR/FLOW整行被误当traceback过滤。真实Logger/Tracker/index/result/status/logs探针均复现，原始证据.tmp/audit126不随clone。此问题在单行消息也存在，独立于B124；没有扩展无效mode/event或多行log路径。
+
+#172后4fcca9c先提交28项红回归20失败/8所选事件控制：普通/空格/含tag的合法Run组件，默认与自定义受限log路径，native warn/split/flow/error加metric/time/ckpt/resume；原生Runner/peer、错误note、默认独立note、过滤政策与全部输入字节锁定。
+
+最小方案在现有status.py共享_event_match：识别原生时间/级别头后，以当前计划run_dir或原生'-'身份的完整字面前缀找到实际event起点，所选_EVENT只在该处match；已确认原生owner而event不在原集合时返回None，不能再从payload寻找。未知/legacy行继续原search，不猜旧文本、不重写文件。logs复用此house helper；status列表把已有run_dir传给_note_from_log，自定义log无需路径猜测；独立默认note可按固定runs/id/assets/logs路径字面取得上下文，缺上下文沿原兼容回退。
+
+原选择集合、traceback抑制、timestamp/sub-microsecond排序、path guard、严格index/config/result/数值门与行输出原字节保持；不新增模块/文件/schema或改变Run目录/日志格式，不扩大为任意坏文本认证器。仅两个既有readout文件，先红后改，再与B124/B125统一当前本机core/Flow及后续完整里程碑最终head/实际devCI；不单bug PR、不等待设计审批。
+
+
+## 212. B127 / #173：traceback抑制只匹配标准行形态（2026-10-17，本地设计）
+
+两reader的startswith('Traceback')/startswith('File ')会丢失独立业务ERROR，例如File cache missing、File "data.csv" is missing、Traceback writing failed。原生Logger/index/result/status/logs五探针前三普通错误均note为'-'/日志无行，标准Traceback头和File帧两控制同样过滤但本来应如此。原始ZIP/hash/REPRO在.tmp/audit127不随clone；发生在B126事件字段修复后，是独立的正文分类过宽，不改原生owner匹配。
+
+#173后正式18红12失败/6控制：六种普通或近似File/Traceback消息×native/legacy；标准Traceback头、带/不带函数名的quoted File/数字line三形态×2控制。原生Runner/peer与所有输入字节/目录清单锁定，非科学运行。
+
+最小方案：在既有status.py共用_traceback_detail，只将完全相同的标准Traceback头或File "...", line 数字（可带, in 函数）的整行识别为细节；logs复用此helper。其他含File/Traceback首词的正文仍是原error记录。保留原选择事件、native/legacy匹配、时间排序、文件/只读边界与其他逻辑，不做traceback状态重建、不增加结构化格式或重写旧日志。与标准细节形态完全相同的非结构化文本仍按原显示策略略过，不承诺无法辨别的来源归属。
+
+仅两个现有readout文件，把共同规则收敛一次而非在两个入口散改；先红后最小修，再与B124/B125/B126统一当前core/CPU Flow和完整里程碑最终head/实际devCI，未验收四Issue不关闭，不单bug PR、不等待设计批准。不改schema/布局、生产者或数值/科学门，不测速/跑GPU/Study。
+
+
+2026-10-17本机已实施B124–B127：38d1e09/1a4cce4/62d0f47/a94622d在五个既有生产文件完成逐行身份/提示投影/native字段/标准细节规则；相邻420/core2009 passed+1既有skip/CPU Flow354 passed，78新全执行。原legacy/日志字节不重写，未知归属不猜，完全同形的细节文本仍按既有政策；未改变科学门或文件/产物布局。四Issue待完整里程碑最终head/实际devCI，不是待设计批准。字段展示点清单及原字节核对见record§213，不逐bug拆PR。
+
+
+### B128 / Issue175：空共享锁初始化须在 OS 所有权内（2026-10-17，实施方案）
+
+PR174原最终head85826fe的Windows3.10 core在既有双进程测试失败：shared.cache_lock第72行初始化flush抛PermissionError。两个进程可同时看到空.rpipe.lock，随后一方已取得byte0锁，另一方仍在锁前写/flush，绕过竞争重试和TimeoutError。真实空文件持锁子进程可确定性复现；不是Logger/readout改动，也不能用重跑抹去。
+
+最小修复：移动既有三行空文件初始化至OS锁成功且release_lock已登记后、yield前。仍用原a+b句柄与同一inode，Windows可锁EOF后的字节；不换锁文件、不补全新协议、不改变deadline/timeout、线程重入、异常优先级或进程退出释放合同。初始化自身失败时先按既有ExitStack释放锁再关闭句柄，原异常保留。零预算和有限预算等待者在未获锁时不写任何字节。
+
+回归使用原生msvcrt/fcntl子进程持有空锁，验证竞争超时且空字节不变、释放后正常初始化、重入、inode和再获取。Windows另开读取句柄同样受本进程字节锁限制，持锁断言只stat，释放后再读取；错误探针留.tmp，不当库失败。先红5822a41/c7eef67两项均在真实锁前flush失败，再最小生产修。当前PR174合批处理并重新完整验收；旧失败和被跳过Flow原样保留。
+
+
+B128实施状态：f5b3591已按上文移动原三行初始化，无其他shared代码变化；两项真实竞争与四项初始化失败/取消清理控制均通过。相邻123/core2015+1既有skip/CPU Flow354全绿，PR174更新后等待新最终head和实际dev全部实际CI。原85826fe实际Windows3.10失败不撤回，见record§214–215。

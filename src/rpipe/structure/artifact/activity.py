@@ -39,6 +39,10 @@ def clear_activity(study_dir: Path | str) -> None:
         return
 
 
+def _format_activity(phase: str, detail: str) -> str:
+    return ' '.join(f'{phase}: {detail}'.splitlines()).replace('\t', ' ')
+
+
 def announce(study_dir: Path | str, phase: str, detail: str) -> None:
     """Write ``activity.json`` and print the same line immediately."""
     body = {'phase': phase, 'detail': detail}
@@ -46,4 +50,4 @@ def announce(study_dir: Path | str, phase: str, detail: str) -> None:
         activity_path(study_dir),
         json.dumps(body, ensure_ascii=False) + '\n',
     )
-    print(f'{phase}: {detail}', flush=True)
+    print(_format_activity(phase, detail), flush=True)

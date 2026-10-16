@@ -489,3 +489,149 @@ def test_runner_partial_terminal_write_remains_a_separate_error_event(tmp_path, 
         result = load_result(layout.result_path)
         assert result['status'] == 'failed' and result['error'] == 'PermissionError: terminal partial write'
     assert peer.read_bytes() == b'peer'
+
+
+@pytest.mark.parametrize('kind', ['info', 'report', 'error'])
+def test_multiline_phase_log_body_cannot_change_native_readout_event(tmp_path, monkeypatch, kind):
+    from importlib import import_module
+    import re
+    from rpipe.structure.system.logger import Logger
+    from rpipe.structure.algorithm.tracker import AlgorithmTracker
+    from rpipe.structure.artifact.index import write_index
+    from rpipe.structure.artifact.readout.logs import event_lines
+    from rpipe.structure.artifact.readout.status import _note_from_log
+
+    layout = artifact_layout(tmp_path, 'multiline')
+    logger = Logger(layout.assets_dir)
+    write_index(tmp_path, {'experiments': [{'factors': {}, 'runs': [{'id': 'multiline', 'run_dir': 'multiline'}]}]})
+    embedded = '[flow]' if kind == 'error' else '[error]'
+    message = 'ordinary detail\n' + embedded + ' body continuation'
+
+    def phase(current):
+        if kind == 'report':
+            logger.report(AlgorithmTracker(layout.assets_dir / 'tracker'), 'train', {'epoch': 1, 'detail': message})
+        else:
+            getattr(logger, kind)(message)
+
+    monkeypatch.setattr(import_module('rpipe.flow.collect'), 'run', phase)
+    ctx = FlowContext(study_dir=tmp_path, layout=layout, config={})
+    ctx.state['logger'] = logger
+    FlowRunner(phases=('collect',)).run(ctx)
+    expected = {'info': 'flow', 'report': 'epoch', 'error': 'error'}[kind]
+    rows = [line for line in event_lines(tmp_path) if 'ordinary detail' in line or 'body continuation' in line]
+    assert len(rows) == 2
+    header = re.compile(r'^\S+\s+(?:INFO|WARN|ERROR)\s+multiline\s+\[(\w+)\]')
+    assert all(header.match(line) and header.match(line).group(1) == expected for line in rows)
+    note = _note_from_log(logger.path, errors_only=True)
+    assert note.startswith('[error]') if kind == 'error' else note == '-'
+
+
+@pytest.mark.parametrize('run_id,event,custom_log', [
+    (run_id, event, custom) for run_id in ('only', 'name with spaces', 'name [error] Traceback marker')
+    for event in ('warn', 'split', 'flow', 'error') for custom in (False, True)
+] + [('only', event, False) for event in ('metric', 'time', 'ckpt', 'resume')])
+def test_native_log_event_field_is_not_replaced_by_identity_or_body(tmp_path, monkeypatch, run_id, event, custom_log):
+    from importlib import import_module
+    from rpipe.structure.system.logger import Logger
+    from rpipe.structure.algorithm.tracker import AlgorithmTracker
+    from rpipe.structure.artifact import write_result
+    from rpipe.structure.artifact.index import write_index
+    from rpipe.structure.artifact.readout.logs import event_lines
+    from rpipe.structure.artifact.readout.status import list_runs, _note_from_log
+
+    layout = artifact_layout(tmp_path, run_id)
+    logger = Logger(layout.assets_dir)
+    if custom_log:
+        logger.path = layout.root / 'custom.log'
+    peer = artifact_layout(tmp_path, 'peer')
+    peer_logger = Logger(peer.assets_dir)
+    peer_logger.info('peer flow')
+    write_index(tmp_path, {'experiments': [{'factors': {'algorithm.mode': 'train'}, 'runs': [
+        {'id': run_id, 'seed': 0, 'log': logger.path.relative_to(tmp_path).as_posix()},
+        {'id': 'peer', 'seed': 0}]}]})
+    write_result(layout.result_path, {'status': 'failed', 'control': {}, 'metrics': {}, 'paths': {}, 'error': 'real primary'})
+    write_result(peer.result_path, {'status': 'succeeded', 'control': {}, 'metrics': {'accuracy': 2}, 'paths': {}})
+    payload = 'quoted [error] payload'
+
+    def phase(current):
+        logger.error('real primary')
+        if event == 'warn':
+            logger.warning(payload)
+        elif event == 'split':
+            logger.report(AlgorithmTracker(layout.assets_dir / 'tracker'), 'test', {'detail': payload})
+        else:
+            logger.info(payload, event=event)
+
+    monkeypatch.setattr(import_module('rpipe.flow.collect'), 'run', phase)
+    ctx = FlowContext(study_dir=tmp_path, layout=layout, config={})
+    ctx.state['logger'] = logger
+    FlowRunner(phases=('collect',)).run(ctx)
+    entries = set(tmp_path.rglob('*'))
+    before = {path: path.read_bytes() for path in entries if path.is_file()}
+    listing = list_runs(tmp_path)
+    expected = '[error] ' + payload if event == 'error' else '[error] real primary'
+    assert listing['runs'][0]['note'] == expected
+    assert listing['runs'][1]['status'] == 'succeeded' and listing['counts']['planned'] == 2
+    lines = event_lines(tmp_path)
+    assert any('peer flow' in line for line in lines)
+    assert any('real primary' in line for line in lines)
+    quoted = [line for line in lines if payload in line]
+    assert len(quoted) == (0 if event in ('split', 'metric', 'time') else 1)
+    if quoted:
+        assert f' {run_id} [{event}] ' in quoted[0]
+    if not custom_log:
+        assert _note_from_log(logger.path, errors_only=True) == expected
+    assert {path: path.read_bytes() for path in before} == before
+    assert set(tmp_path.rglob('*')) == entries
+
+
+@pytest.mark.parametrize('legacy', [False, True], ids=['native', 'legacy'])
+@pytest.mark.parametrize('message,hidden', [
+    ('File cache missing', False), ('Traceback writing failed', False),
+    ('File "data.csv" is missing', False),
+    ('Traceback (most recent call last): unable to persist', False),
+    ('File "data.csv", line nope, in worker', False),
+    ('File "data.csv", line 12 was unreadable', False),
+    ('Traceback (most recent call last):', True),
+    ('File "module.py", line 12, in worker', True),
+    ('File "module.py", line 12', True),
+])
+def test_readout_only_suppresses_standard_traceback_shapes(tmp_path, monkeypatch, legacy, message, hidden):
+    from importlib import import_module
+    from rpipe.structure.system.logger import Logger
+    from rpipe.structure.artifact import write_result
+    from rpipe.structure.artifact.index import write_index
+    from rpipe.structure.artifact.readout.logs import event_lines
+    from rpipe.structure.artifact.readout.status import list_runs
+
+    layout = artifact_layout(tmp_path, 'only')
+    logger = Logger(layout.assets_dir)
+    peer = artifact_layout(tmp_path, 'peer')
+    peer_logger = Logger(peer.assets_dir)
+    peer_logger.info('peer flow')
+    write_index(tmp_path, {'experiments': [{'factors': {'algorithm.mode': 'train'}, 'runs': [
+        {'id': 'only', 'seed': 0}, {'id': 'peer', 'seed': 0}]}]})
+    write_result(layout.result_path, {'status': 'failed', 'control': {}, 'metrics': {}, 'paths': {}, 'error': message})
+    write_result(peer.result_path, {'status': 'succeeded', 'control': {}, 'metrics': {}, 'paths': {}})
+
+    def phase(current):
+        if legacy:
+            with logger.path.open('a', encoding='utf-8') as handle:
+                handle.write('legacy [error] ' + message + '\n')
+        else:
+            logger.error(message)
+
+    monkeypatch.setattr(import_module('rpipe.flow.collect'), 'run', phase)
+    ctx = FlowContext(study_dir=tmp_path, layout=layout, config={})
+    ctx.state['logger'] = logger
+    FlowRunner(phases=('collect',)).run(ctx)
+    entries = set(tmp_path.rglob('*'))
+    before = {path: path.read_bytes() for path in entries if path.is_file()}
+    listing = list_runs(tmp_path)
+    assert listing['runs'][0]['note'] == ('-' if hidden else '[error] ' + message)
+    assert listing['runs'][1]['status'] == 'succeeded'
+    rows = event_lines(tmp_path)
+    assert any('peer flow' in row for row in rows)
+    assert sum(message in row for row in rows) == (0 if hidden else 1)
+    assert {path: path.read_bytes() for path in before} == before
+    assert set(tmp_path.rglob('*')) == entries

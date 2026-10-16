@@ -1,5 +1,21 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-17 B124–B127字段/事件身份完整本机里程碑
+
+当前codex/correctness-review-next：四Issue170–173分别先Issue/独立红/设计/最小修，原生消息行身份、可选activity行投影、native event字段与严格traceback形态已统一收敛。合批相邻420/core2009 passed+1既有skip/CPU Flow354 passed，新78全执行（21 unit+57 integration），40258/60788终结exit0，范围/字段展示点清单见record§213；原始.tmp/audit124–127不随clone。
+
+尚未推送/开PR，170–173保持OPEN；准备一个完整主题里程碑，不逐bug/几行文档拆PR，后续仍验最终head/实际dev所有实际矩阵/聚合再关Issue/清分支。接受devbef7de9/PR169，周期基线161计数2、remote44；下一编号B128，目标active，无决策阻塞。旧日志不重写、未知legacy不猜、标准细节完全同形文本仍依旧过滤；不改schema/布局/Tracker/checkpoint/数值门，不合main/tag、不跑GPU/测速/Study、不删数据/结果。
+
+
+## 2026-10-16 PR169双侧验收与清理；下一完整里程碑复查
+
+B122/#167、B123/#168统一PR169，最终head05341f8的Branch38923564342/Package38923564221/Unit38923564299和实际devbef7de9的Package38924513921/Unit38924513792全部实际矩阵/聚合success；两Issue各一次验收评论后关闭。本机298相邻/core1988+1既有skip/CPU Flow297通过，32新全执行，原始.tmp/audit122/123不随clone，详record§208。
+
+已合codex/correctness-next-milestone本地+remote普通删除，tip05341f8保全于dev；main/local dev/origin main、_staging_from_DEM和数据结果保持，remote累计44。周期基线161，已接受PR165/169计数2。实际开放Issue快照为空，唯一活动未合codex/correctness-review-next从实际dev建立，下一编号B124；目标active，无决策阻塞，继续三类复查，先复现再开Issue/红回归，同主题本地合批、每日少量完整PR，本收尾不单独开PR。
+
+日志限制：可读非空非LF/CR尾分隔修复；不可读尾保持原追加能力，不保证半行修复。无GPU/测速/下载/正式Study/main/tag/数据删除或文件架构/产物布局变动，不等待设计批准。
+
+
 ## 2026-10-16 B122/B123日志失败/半行恢复完整本机里程碑
 
 #167（末条日志未进Runner失败边界）与#168（半行把新error并入旧flow）同分支合批。B122先12红8失败/4控制；B123先14/16红，再补真实部分写入→Runner留证→native读取联动，20红10失败/10控制；761700f/97a1443仅原Runner末条缩进与Logger可选尾读/原append补分隔。不可读尾保持原追加能力，不承诺该限制下修复；有效日志/原字节/权限/异常优先级/布局不变，详record§204–207。
@@ -578,3 +594,6 @@ PR147两侧实际CI全部验收，Issue146关闭、study-plot-publication本地/
 ## 2026-10-16 PR161统一B117/B118补记
 
 相邻B118/#162已按先Issue→b04a5cd红9项4失败/5控制→b6edba0设计→0aaae0b最小修复。与B117合批同一PR161，不新开PR；两处相邻27项通过，合批core1919 passed/1既有skip、新17全执行，CPU Flow273 passed，最终/实际devCI待验。端点类字段/临时环境分别有可重入所有权范围，不改文件架构/产物布局。20:56后按相关B项完整里程碑、每日少量PR，不再一bug一PR；已开161正常收尾，详record§190–191及cicd。
+
+
+2026-10-17 PR174追加B128/#175：原head85826fe的Windows3.10 core真实失败，shared空锁初始化在OS所有权前flush被拒，三其他CPU矩阵/Package/Branch通过不能替代。先Issue/两项红/方案，再f5b3591移原三行至release登记后；相邻123、core2015+1既有skip、Flow354均终结成功，本PR84新全执行。五Issue170–173/175仍开放，更新同PR174再验最终head与实际dev全部CI，之后清理当前主题本地/远端。原失败与错误探针均保留.tmp/audit128，不随clone；无main/tag/GPU/数据/布局改动。

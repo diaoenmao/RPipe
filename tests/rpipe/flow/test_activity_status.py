@@ -45,3 +45,38 @@ def test_status_ignores_unusable_hint_and_keeps_index_contract(tmp_path, monkeyp
         assert 'missing index:' in captured.err and not captured.out
     assert {p: p.read_bytes() for p in files} == before
     assert set(study.rglob('*')) == entries
+
+
+@pytest.mark.parametrize('indexed', [False, True], ids=['missing-index', 'planned-peer'])
+@pytest.mark.parametrize('field', ['phase', 'detail'])
+@pytest.mark.parametrize('separator', ['\n', '\t'])
+def test_status_hint_cannot_add_rows_or_columns_and_keeps_original_artifacts(tmp_path, capsys, indexed, field, separator):
+    import json
+    study = tmp_path / 'study'
+    study.mkdir()
+    body = {'phase': 'make', 'detail': 'working'}
+    body[field] += separator + 'foreign'
+    if field == 'detail':
+        body[field] += '\ttrain\t999\tghost\t-\taccuracy=1\t-\t-\t-'
+    activity = study / 'activity.json'
+    activity.write_bytes(json.dumps(body, ensure_ascii=False).encode())
+    if indexed:
+        write_index(study, {'study': 'hint', 'experiments': [
+            {'factors': {'algorithm.mode': 'train'}, 'runs': [{'id': 'old', 'seed': 0}]}]})
+        write_result(study / 'runs/old/result.json',
+                     {'status': 'succeeded', 'control': {}, 'metrics': {'accuracy': 42}, 'paths': {}})
+    entries = set(study.rglob('*'))
+    before = {path: path.read_bytes() for path in entries if path.is_file()}
+    assert main(['status', str(study)]) == 0
+    captured = capsys.readouterr()
+    assert not captured.err
+    lines = captured.out.splitlines()
+    assert len(lines) == (4 if indexed else 1)
+    assert '\t' not in lines[0] and all(word in lines[0] for word in ('make', 'working', 'foreign'))
+    if indexed:
+        assert 'planned=1 succeeded=1' in lines[1]
+        assert lines[2].startswith('status\tmode\tseed\tid\t')
+        fields = lines[3].split('\t')
+        assert len(fields) == 9 and fields[0] == 'succeeded' and fields[3] == 'old'
+    assert {path: path.read_bytes() for path in before} == before
+    assert set(study.rglob('*')) == entries

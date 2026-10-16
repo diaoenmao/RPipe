@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from rpipe.structure.artifact.index import load_index
-from rpipe.structure.artifact.readout.status import _read_optional, log_path
+from rpipe.structure.artifact.readout.status import _event_match, _read_optional, _traceback_detail, log_path
 
 _STAMP = re.compile(r'^(\d{4}-\d{2}-\d{2}T\S+)')
 _EVENT = re.compile(r'\[(epoch|error|flow|warn|ckpt|resume)\]\s*(.*)$')
@@ -25,13 +25,11 @@ def event_lines(study_dir: Path | str) -> list[str]:
             if state != 'available':
                 continue
             for line in text.splitlines():
-                match = _EVENT.search(line)
+                match = _event_match(line, _EVENT, run_dir)
                 if match is None:
                     continue
                 payload = match.group(2).strip()
-                if match.group(1) == 'error' and (
-                    payload.startswith('Traceback') or payload.startswith('File ')
-                ):
+                if match.group(1) == 'error' and _traceback_detail(payload):
                     continue
                 stamp = _STAMP.match(line)
                 key = stamp.group(1) if stamp else '9999'

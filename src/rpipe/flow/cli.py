@@ -19,7 +19,7 @@ from rpipe.structure.artifact.readout.compare import compare_runs, format_compar
 from rpipe.flow.context import FlowContext
 from rpipe.flow.runner import FlowRunner
 from rpipe.structure.artifact import artifact_layout, load_config
-from rpipe.structure.artifact.activity import announce, clear_activity, read_activity
+from rpipe.structure.artifact.activity import announce, clear_activity, read_activity, _format_activity
 from rpipe.structure.make import (
     expand_study,
     filter_batches_by_mode,
@@ -414,7 +414,7 @@ def _execute_status(args: argparse.Namespace) -> int:
         return 2
     activity = read_activity(study_dir)
     if activity is not None:
-        print(f"{activity['phase']}: {activity.get('detail') or ''}".rstrip(), flush=True)
+        print(_format_activity(activity['phase'], activity.get('detail') or '').rstrip(), flush=True)
     try:
         body = list_runs(study_dir, modes=modes)
     except FileNotFoundError:
