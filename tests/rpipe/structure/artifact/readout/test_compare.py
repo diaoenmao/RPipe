@@ -403,3 +403,26 @@ def test_integer_tensor_tolerance_matches_exact_scalar_contract(tmp_path, capsys
     assert saved['passed'] is passed
     assert saved['items']['checkpoint.latest.model']['max_abs_diff'] == delta
     assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('dtype,left,right,atol,passed,difference', [
+    ('bool', True, False, 1.0, True, 1),
+    ('bool', True, False, 0.5, False, 1),
+    ('int32', 11, 10, 1.0, True, 1),
+    ('int32', 12, 10, 1.0, False, 2),
+    ('int64', 2**60, 2**60, 0.5, True, 0),
+    ('uint64', 2**64 - 1, 2**64 - 2, 0.5, False, 1),
+    ('uint64', 2**64 - 1, 2**64 - 2, 1.0, True, 1),
+], ids=['bool-within', 'bool-outside', 'small-boundary', 'small-outside', 'identical-large', 'unsigned-outside', 'unsigned-boundary'])
+def test_integer_tensor_tolerance_keeps_other_numeric_contracts(tmp_path, dtype, left, right, atol, passed, difference):
+    import torch
+
+    a, b = _run(tmp_path, 'a'), _run(tmp_path, 'b')
+    for run, number in [(a, left), (b, right)]:
+        torch.save({'model': {'counter': torch.tensor([number], dtype=getattr(torch, dtype))}},
+                   run / 'assets/checkpoints/latest.pt')
+    before = {p: p.read_bytes() for run in (a, b) for p in run.rglob('*') if p.is_file()}
+    report = compare_runs(a, b, atol=atol)
+    assert report['passed'] is passed
+    assert report['items']['checkpoint.latest.model']['max_abs_diff'] == difference
+    assert {p: p.read_bytes() for p in before} == before
