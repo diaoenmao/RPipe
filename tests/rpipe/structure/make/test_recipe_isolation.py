@@ -166,3 +166,21 @@ def test_dataclass_defined_during_register_has_defining_module(tmp_path, nested,
     assert apply_recipe(study, {'recipe': ('recipes/' if nested else '') + 'recipe.py'},
                         SimpleNamespace(observed=observed))
     assert observed == [(7, ['value'])]
+
+
+def test_recipe_import_scope_preserves_all_preexisting_unrelated_cache_entries(tmp_path):
+    helper = '_recipe_isolation_' + uuid4().hex
+    study = tmp_path / 'cache-owner'
+    _recipe(study, helper, 'local', False, False)
+    before = dict(sys.modules)
+    changed = []
+    try:
+        assert apply_recipe(study, {'recipe': 'recipe.py'}, SimpleNamespace(observed=[]))
+    finally:
+        changed = [name for name, module in before.items() if sys.modules.get(name) is not module]
+        # Keep failure reporting usable even if a candidate damages interpreter caches.
+        sys.modules.update(before)
+        for name in list(sys.modules):
+            if name == helper or name.startswith(helper + '.'):
+                sys.modules.pop(name)
+    assert changed == []

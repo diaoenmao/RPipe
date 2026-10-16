@@ -3391,3 +3391,8 @@ B119已补ace8485边界：18正式红14 failed/4控制，补既有外部模块�
 load_recipe在上述上下文内执行spec前，将自己的既有模块名临时注册sys.modules；无论exec/校验成败都恢复此前同名项（包括不存在），使dataclass可解析定义模块。load后返回ModuleType、注册后已捕获的函数/模块全局引用继续有效；测试明确核对两个Study注册函数各自返回原值和既有外部模块身份。register时的同目录import同样走该上下文。保留当前load使用recipe父目录、register使用Study根的路径行为；不把此修复扩展为新公共namespace API、清空外部模块、任意后端的序列化保证或跨进程解释器改造。
 
 按先红与方案后改生产，完整测试须包含正常/原错、模块/包、load/register、外部cache保全、注册引用和dataclass根/嵌套/eager/future，以及已有Study hooks/来源冻结/core/CPU Flow。现有Study phase私有namespace只作设计参考，不为了复用反向依赖flow层或搬文件。当前仍本地积累，不立即新PR；进一步反例保留并修合同，不能以测试全绿替代边界核对。
+
+
+## 196. 配方加载候选验证边界（2026-10-16，本地未推送）
+
+初版私有上下文26项通过后，register内部定义future dataclass仍失败；6e9fff7先补该边界4红2失败/2 eager控制，再将模块身份保存/注册/恢复统一放进load/register共用上下文。另一次未提交候选复用了name作为循环变量和配方模块身份，误改隔离pytest进程cache而使报告中断，GREEN_COMPLETE.log及INTERMEDIATE_CANDIDATE_FAILURE保留；这是本轮候选实现错误，不计原始库红测试或CI失败，未提交/推送。纠正为module_name后30项通过，再补所有既有非本地cache项身份保全检查，防止以绿用例掩盖外部cache污染。未改正式Run/数据或外部解释器。
