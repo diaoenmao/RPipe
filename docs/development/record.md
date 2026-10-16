@@ -1,3 +1,9 @@
+> 当前：PR159已双侧全部实际CI验收，Issue158已关闭，已合readout-time-order本地/remote均已删除。
+> 最新：28新回归全执行；core1902 passed/1既有skip，CPU Flow273 passed，详见§184–187。
+> 验收：实际dev ab5c825，Package38901125267/Unit38901125320全部实际成功；周期基线149累计4。
+> 下一步：继续三类正确性复查，验收文档本地积累随下一完整里程碑合入，不单开小文档PR；无代码阻塞。
+> 边界：GPU准入新规见§183，仅静态复核；无GPU探测/任务干预、测速、main/tag或布局变更。
+
 > 当前：PR157双侧全部实际CI验收，Issue156已关闭，已合主题本地/remote已清；周期149累计3。
 > 最新：B116/#158跨偏移/DST/UTC日志顺序反例；28正式红8失败/20控制→ba665de后全绿。
 > 验证：core1902 passed/1既有平台skip，CPU Flow273 passed；28新节点全执行，见§184–186。
@@ -3295,3 +3301,12 @@ PR152继续同一分支收敛#150/#151/#153，生产总计3个现有文件14行�
 28新节点全部执行/通过：完整core1902 passed、1既有Windows POSIX模式skip，CPU Flow273 passed，均0failure/error。新28均在core，0新skip；正式红28项8失败/20有效控制保留。LOCAL_CHECKED保存XML/hash与实际节点；SOURCE_CHECKED按原字节确认仅预期导入/排序键变化。六actual CLI原探针与正式library/CLI节点覆盖DST/跨日/跨偏移/Z小数、同偏移、无时区/缺失/坏时间/旧亚微秒/UTC溢出/等时稳定性，输入及目录项保全。证据.tmp/audit116不随clone，正式测试与设计随Git提供。
 
 继续源审其他readout消费者：status提示沿单个Run原追加顺序提取最后事件，不是跨Run排序；report日志链接只做归属映射；compare/轨迹按既有step或observation坐标，不应套墙钟归一化。只event_lines共享排序边界确认新反例，统一修在一处；不宣称整个外部历史日志格式或科学时间轨迹已经验收。新GPU准入规则继续按§183与计划约束，当前不执行GPU探针、准入或性能任务。最终head与实际dev全部实际CI仍须完整里程碑分别验收。
+
+
+## 187. PR159 双侧验收与时序主题清理（2026-10-16）
+
+最终head33cf72f9ac3bc85106999e6054a268c4829435c6的Branch38899904017 / Package38899904021 / Unit38899904100全部实际矩阵和聚合成功；正常合dev ab5c825ea6016681ba48623cbfcc282d2e781d4e。实际dev Package38901125267 / Unit38901125320亦全部实际成功，DEV_CHECKED SHA256 6c726eaffe276fb390448bd939eff620c65b7f7e2e5c71ec0ab79cf860438ee6。Issue158已验收关闭，PR159正文仅追加验收，不表示main发布或GPU/科学运行授权。
+
+双侧验收后核对tip/祖先/唯一worktree与无未保全改动，普通删除codex/readout-time-order本地、remote各1条。首次ls-remote25秒超时在任何切换/删除前停止，CLEANUP_REFUSAL_1保留；同分支重新核对成功后清理。main/dev及远端main保持，数据/结果/provenance/worktree删除0，_staging_from_DEM保留。周期基线149累计4个已验收PR152/155/157/159，累计结束remote41；尚未达约5批完整盘点阈值。原始证据.tmp/audit116不随clone。
+
+继续静态复查原子文本写入、report/index验证与DataFactory/ModelFactory按调用构造路径，本轮新增确认缺陷0；这是源码复核，不冒称新故障矩阵或科学验证。验收文档在codex/correctness-followup本地积累，按18:53频率规则随下一完整里程碑推送，不为几行文档另开PR。
