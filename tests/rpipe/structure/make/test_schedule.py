@@ -770,6 +770,8 @@ def test_exceptional_group_waits_owned_children_preserving_primary(tmp_path, mon
     assert caught.value is primary
     assert 'third' not in starts
     assert set(starts) <= set(waits)
+    if stage == 'wait':
+        assert waits.count('first') == 2
     assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
 
 
