@@ -201,3 +201,91 @@ def test_model_sdk_foreign_thread_keeps_client_and_native_configuration(sdk_down
     assert file_download.is_xet_available() is True
     assert sdk_download.client.event_hooks == hooks
     assert not sdk_download.client.is_closed
+
+
+@pytest.mark.parametrize('target,allowed', [
+    ('https://modelscope.cn/api/synthetic', True),
+    ('https://cdn.modelscope.cn/synthetic', True),
+    ('https://modelhub.oss-cn-hangzhou.aliyuncs.com/synthetic', True),
+    ('https://modelscope.ai/synthetic', False),
+    ('https://modelhub.oss-us-west-1.aliyuncs.com/synthetic', False),
+    ('https://modelscope.cn.evil.invalid/synthetic', False),
+    ('https://user:password@modelscope.cn/synthetic', False),
+    ('http://modelscope.cn/synthetic', False),
+])
+def test_modelscope_requests_policy_precedes_transfer(monkeypatch, tmp_path, target, allowed):
+    requests = pytest.importorskip('requests')
+    calls = []
+
+    def transport(self, request, **kwargs):
+        calls.append(request.url)
+        response = requests.Response()
+        response.status_code = 200
+        response._content = b'synthetic'
+        response.url = request.url
+        response.request = request
+        return response
+
+    def modelscope(**kwargs):
+        requests.get(target).raise_for_status()
+        return str(tmp_path / 'modelscope-snapshot')
+
+    def no_mirror(**kwargs):
+        raise OSError('synthetic mirror unavailable')
+
+    monkeypatch.setattr(requests.adapters.HTTPAdapter, 'send', transport)
+    monkeypatch.setattr(socket.socket, 'connect', lambda *a, **k: pytest.fail('real network'))
+    monkeypatch.setitem(sys.modules, 'modelscope', SimpleNamespace(snapshot_download=modelscope))
+    monkeypatch.setitem(sys.modules, 'huggingface_hub', SimpleNamespace(snapshot_download=no_mirror))
+    if allowed:
+        assert download_model('synthetic/model', tmp_path) == str(tmp_path / 'modelscope-snapshot')
+        assert calls == [target]
+    else:
+        with pytest.raises(RuntimeError, match='domestic'):
+            download_model('synthetic/model', tmp_path)
+        assert calls == []
+
+
+@pytest.mark.parametrize('streaming', [False, True])
+def test_dataset_helper_guards_eager_and_deferred_requests(monkeypatch, tmp_path, streaming):
+    from rpipe.structure.origin import load_hf_dataset
+    requests = pytest.importorskip('requests')
+    calls = []
+
+    def transport(self, request, **kwargs):
+        calls.append(request.url)
+        response = requests.Response()
+        response.status_code = 200
+        response._content = b'synthetic'
+        response.url = request.url
+        return response
+
+    def rows():
+        requests.get('https://huggingface.co/synthetic/data.json')
+        yield {'value': 1}
+
+    class Examples:
+        generate_examples_fn = staticmethod(rows)
+
+        def __iter__(self):
+            return self.generate_examples_fn()
+
+    class DeferredDataset:
+        _ex_iterable = Examples()
+
+        def __iter__(self):
+            return iter(self._ex_iterable)
+
+    def load_dataset(*args, **kwargs):
+        return DeferredDataset() if streaming else list(rows())
+
+    monkeypatch.setattr(requests.adapters.HTTPAdapter, 'send', transport)
+    monkeypatch.setattr(socket.socket, 'connect', lambda *a, **k: pytest.fail('real network'))
+    monkeypatch.setitem(sys.modules, 'datasets', SimpleNamespace(load_dataset=load_dataset))
+    for name in ('datasets.config', 'huggingface_hub.constants'):
+        monkeypatch.setitem(sys.modules, name, SimpleNamespace(HF_ENDPOINT='https://hf-mirror.com',
+                                                             ENDPOINT='https://hf-mirror.com'))
+    with pytest.raises(RuntimeError, match='domestic'):
+        result = load_hf_dataset('synthetic/data', streaming=streaming)
+        list(result)
+    assert calls == []
