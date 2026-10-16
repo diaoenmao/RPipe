@@ -1,7 +1,7 @@
 > **RPipe 研究计划：研究执行与证据一致性的可验证合同**
 > 版本：1.4；更新：2026-10-16；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
 > 当前阶段：完成计划重做和定向文献初筛；继续代码正确性，尚未执行本计划的新科学实验。
-> 当前实现基线：dev `e589862dbd7348f5425f5c64d56bafa4b883cb3c`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
+> 当前实现基线：dev `fc2b9b6095910aba9c93629c43c6a58b73f19ca9`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
 > 本轮零 GPU、零测速、零训练、零数据下载；保持既有文件架构与产物布局。
 
 ## 本次人工审阅摘要（2026-10-16，按12:53更新）
@@ -570,3 +570,11 @@ PR143最终head全实际CI成功并正常合dev e589862d，实际dev验收待完
 
 
 PR143最终head与实际dev全部实际CI已验收、Issue142关闭并清本地/remote主题分支。B108最终本机30新节点、core1789 passed/1既有skip与CPU Flow207 passed，最终head/实际devCI待验；工程验证不代替科学实验或放宽数值门，见record §168。
+
+
+### 工程进展：B109 / Issue146（2026-10-16）
+
+PR145最终head全部实际CI成功并正常合dev fc2b9b6，实际dev验收待完成。剩余Study comparison PNG直写点经AST+合成输入确认：4探针中2次覆盖旧PNG、3次泄漏自有figure；25正式节点先23红/2正常控制后最小修复，当前新节点与相邻PNG67全绿，core/Flow/两侧CI待验。冻结旧新PNG76906字节同SHA；科学gate/阈值/比较/读取函数和原绘图主体保持。本次未执行Study/训练/下载或读取旧Run。未来正式复跑仍按新version/provenance、原数值门与预算，不以工程图像检查替代科学结果，见[record §169](../development/record.md)。
+
+
+PR145最终head/实际dev全部实际CI已验收，Issue144关闭并清主题本地/remote分支。B109本机最终25新节点、PNG相邻67、core1814 passed/1既有平台skip、CPU Flow207 passed；最终head/实际devCI待验。工程验证未运行Study，不替代科学计划与门限，见record §170。

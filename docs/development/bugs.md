@@ -97,3 +97,11 @@ B107 / Issue142本机补充：共享101、core1759 passed/1既有平台skip、CP
 
 
 B107/#142已PR143最终head与实际dev全CI验收关闭；主题本地/remote已清。B108/#144最终本机30新回归全执行通过、相邻98+1既有平台skip、core1789+1同一skip、CPU Flow207 passed；0failure/error，最终head与实际dev CI待验，保持open，见record §168。
+
+
+## 2026-10-16 B109 当前开放项
+
+[Issue146](https://github.com/DreamSoul-AI/RPipe/issues/146)：剩余Study plot_report直接保存PNG，部分保存/取消覆盖旧图且render/save/cancel泄漏自有figure。6ab3b74先25项23红/2正常控制，70cad05设计，1db97b1仅现有helper按已实施PNG所有权合同修复；新25与相邻PNG67全绿，core/Flow/最终head/实际dev待验。有效PNG76906字节旧新同SHA、绘制主体/科学函数保持；只用AST+合成输入，不跑Study，见record §169。前序PR145已head全CI合dev，Issue144仍待实际dev验收。
+
+
+B108/#144已PR145最终head与实际dev全CI验收关闭，主题本地/remote普通删除。B109/#146本机25新节点全执行、PNG相邻67/core1814+1既有平台skip/CPU Flow207 passed；0failure/error，最终head/实际dev CI待验，保持open。见record §170。

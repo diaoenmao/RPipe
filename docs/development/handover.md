@@ -466,3 +466,11 @@ B107 / Issue142本机补充：共享101、core1759 passed/1既有平台skip、CP
 
 
 PR143两侧全部实际CI已验收，Issue142关闭，codex/shared-lock-cleanup本地/remote普通删除；基线PR139累计2。B108本机最终core1789+1既有平台skip、CPU Flow207、30新节点全绿；有效字节与写入主体对照通过，下一步同一codex/writer-close-errors推送PR→dev，最终head和实际dev实际CI分别验收后再关Issue144与清分支。原始证据.tmp/audit107–108不随clone，record §168可携带。
+
+
+## B109 / Issue146（2026-10-16）
+
+codex/study-plot-publication基于PR145正常合并dev fc2b9b6；该实际devCI尚待验，旧writer-close-errors保留至验收。新Issue146先正式25项23红/2有效正常控制，6ab3b74→设计70cad05→最小Study helper修复1db97b1；当前相邻PNG67全绿，core/CPU Flow和两侧CI待验。AST+合成输入未启动Study或读取正式数据；PNG76906字节同SHA，科学比较/gate/读取函数原源码及绘图主体保持。临时原证据.tmp/audit109不随clone；record §169。累计清理基线PR139已验收2，不能提前计PR145。
+
+
+PR145两侧全部实际CI验收完成，Issue144关闭，writer-close-errors本地/remote普通删除；基线139累计3。B109本机25新节点全执行、PNG相邻67、core1814+1既有平台skip、CPU Flow207通过；有效PNG76906字节同SHA，科学函数保持。下一步同一study-plot-publication推PR→dev，最终head和实际dev分别验所有实际CI后再关146/清分支。原始证据.tmp/audit108–109不随clone，record §170可携带。
