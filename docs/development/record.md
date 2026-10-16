@@ -2805,3 +2805,10 @@ readout525 passed、core1507 passed/1既有POSIX executable-mode skip、CPU Flow
 同步AGENTS、README、research、layout/concept/flow及Study/规范入口；历史报告只更新迁移链接，不改实测正文。修正历史快照4处原失效相对链接（中英文共8处），历史recipe入口固定在迁移前dev并说明不能代替旧Run冻结来源。5段中文移除新增锚点、还原标题层级并归一迁移链接后，与原文逐字相等；英译五节标题映射匹配。五份原规范/译本文件与迁移前Git内容保持；运行代码、配置、JSON、Run、图和失败证据零改动，_staging_from_DEM保留。
 
 本机tests/rpipe/test_layout.py实际36 passed，独立basetemp，无fail/error/skip；git diff --check及UTF-8检查通过。链接扫描1651个可取得目标，本次变更新增失效链接0；273条旧引用/锚点或缺本机临时材料的扫描候选未算本批通过，不冒称全库链接零问题。保全映射、原字节、检查与XML在 `.tmp/research-consolidation-20261016`，不会随clone提供；正式计划内固定Git来源可核验。本批文档PR及实际dev CI仍待后续执行，不提前声称合入；无main/tag/性能/GPU/数据删除或运行时布局变更。
+
+
+## 148. 2026-10-16 B-100：混合整数/浮点比较精度，先红合同
+
+统一计划PR126已正常合dev8c9cb99f3105645457c5207ddf931521e8778224，最终head及实际devPackage38854919745/Unit38854919785全部实际矩阵/聚合成功；DEV_CHECKED SHA256 2f7439a3f61353d952c7414260cfc69445e76313a28b47921614a277f5388a14。结束remote codex/unified-research-plan核对提交保全后已删，本地保留，累计25；main00e70b1不变。完成后三种非连续张量溢出探针均正确拒绝，没有为该假设开Issue。
+
+继续复查确认新的混合数值反例：2**60+1的整数与float(2**60)，数学差1，atol0.5应拒绝；五入口两向共10实际API均false-pass/差0。Issue127后031571a先红，120新合同实际72 failed/48 passed、0error/skip，覆盖signed正负/unsigned、标量/实数/复数tensor、正反向、零及绝对/相对界，并执行API+CLI/JSON与原输入/peer字节检查。设计见artifact_consistency_design.md文末；生产修复尚未实施，原REPRO/ZIP/hash/红结果在.tmp/audit100不随clone。既有开发/科学证据保留，不改布局/main/tag，不跑GPU或性能。
