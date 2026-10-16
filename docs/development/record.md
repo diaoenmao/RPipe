@@ -1,3 +1,27 @@
+> 当前（2026-10-17）：B139/#191三处已证消费反例同类里程碑本机验收完成，唯一未合evidence-boundaries-next，准备统一PR→dev。
+> 最新：Numbers/status/compare文本、派生compare JSON、可选activity提示均修；strict producer/atomic与科学数值/输入身份保持。
+> 验证：相邻878 passed、core2276 passed+1既有skip、Flow429 passed，56新节点全执行/0新skip；原始证据见§243。
+> 下一：远端最终head及实际dev全部实际CI后关闭191并清主题；本机所有句柄终结，无设计/用户决策阻塞。
+> 保护：接受dev e31fbf5/PR190，remote50/基线181后3；main/tag/GPU/数据/实验/布局不动，原始失败与阶段绿保留。
+
+> 当前（2026-10-17）：同一B139/#191本地补齐三处消费边界，唯一未合evidence-boundaries-next分支；尚未推送/PR。
+> 最新：display文本、派生compare JSON、可选activity提示分别最小修；三种公开链反例均转绿，source/peer/正常字节保全。
+> 验证：三批先红36/18失败、6/3失败、14/6失败；最终相邻878 passed，56新节点全执行/0skip；三处最终core/Flow执行中。
+> 下一：复用64004/25458验收最终源码d10e759，继续同类/相关主题本地累积，再完整里程碑PR；191仍OPEN，无决策阻塞。
+> 保护：已接受PR190/dev e31fbf5；remote50/基线181后3，main/tag/GPU/数据/实验/布局不动，旧失败与部分阶段绿保留。
+
+> 当前（2026-10-17）：B139/#191在唯一未合evidence-boundaries-next分支本地修复，尚未推送/PR；已接受dev e31fbf5。
+> 最新：同类surrogate标签使Numbers及派生compare JSON发布失败，两处消费边界修4926b81/9b2246c；源输入/数值/严格writer不变。
+> 验证：两批先红36项18失败、6项3失败；最终相邻814 passed，新42节点全执行/0skip；最终core/Flow进行中，详§240–241。
+> 下一：完整本机检查后继续相关主题本地累积，再完整里程碑PR；191仍OPEN，无设计/用户决策阻塞。
+> 保护：PR190/188189已验收关闭/旧主题已清，remote50/基线181后3；main/tag/GPU/数据/结果/布局不动，临时原始失败保留。
+
+> 当前（2026-10-17）：PR190双侧全部实际CI验收，dev e31fbf5；#188/#189关闭，已合主题本地+远端正常删除。
+> 最新：B137可选Git解码+B138国内源完整里程碑完成；真实datasets5.0.0离线2行JSON检查通过，禁止socket、输入字节不变。
+> 验证：core2220 passed+1既有skip/Flow429 passed，26新回归全执行；PR及实际dev矩阵/聚合全绿，详§239。
+> 下一：当前无开放Issue，唯一未合evidence-boundaries-next分支继续三类只读复查，确认反例再登记/先红/合批；无阻塞。
+> 保护：remote50，周期基线181后3；main/tag/GPU/数据/历史结果/布局未动，真实下载/ModelScope服务可用性未验证。
+
 > 当前（2026-10-17）：B137/#188+B138/#189合批本机验收完成，唯一未合optional-metadata分支，准备统一PR→dev。
 > 最新：国内源ModelScope优先/显式hf-mirror兜底，含4类URL绕过拒绝；26新增回归全执行，原始红/失败候选保留。
 > 验证：最终core2220 passed+1既有skip、CPU Flow429 passed、路由21 passed，0fail/error；证据见§238。
@@ -4031,3 +4055,69 @@ B138传参完整性补强：bbcaed3先红位置data_files/远程data_dir两项�
 实际调用覆盖：origin由CLI/prepare及Data/Model factory在builder前设，注册builder可经原model_api.download_model/data_api.load_hf_dataset使用共用入口；没有增加内置HF模型/数据类型或修改builder签名。ModelScope优先、HF显式国内endpoint兜底；双失败保异常链、取消不换源、本地路径不下载；dataset检查实际入口的旧import缓存及path/data_files/data_dir/全部位置参数URL，不把通用origin当下载。torchvision已有国内源保持、无镜像类型拒绝。没有改历史Run/缓存根、科学门、文件架构/产物布局。任意外部脚本自定义下载仍需作者按国内源规则审查；真实服务可用性未测，SDK替身不等于真实下载成功。
 
 完整里程碑统一一个PR，188/189仍OPEN，待最终head及实际dev全部实际矩阵/聚合后才验收关闭和清理本分支；不直接推dev/main、不tag/发布。前§237与顶部旧候选状态仅保留历史，以本节最终本机结果为准。PR187先前已验收清理不重做，remote49/周期基线181后2。新B139，目标active，无用户/设计阻塞。
+
+
+## 239. PR190双侧实际CI验收、关闭与分支清理（2026-10-17）
+
+B137/#188与B138/#189完整合批PR190最终head6f66f37f55643691d11bcc5180ff35edaa817fd1：Branch38957425291/Package38957425248/Unit38957425258及全部Windows/Ubuntu×Python3.10/3.13实际矩阵/聚合success。正常merge actualdev e31fbf5927dfea94472c712d249a48e05212a66d，其Package38958311614/Unit38958311608全部实际矩阵/聚合success，最后Windows3.10结束后才验收。PR_CHECKED SHA2565c857d19d5c20ef7e9096f3e5e73235d2463d19bdd348541888baa928875a248；DEV_CHECKED SHA256507adebe0969175d4d33e40300ff82a79de58e9b1fb46ea8cfe4f2d15de24746。没有取消/重派/用聚合替代未执行矩阵。
+
+188/189各一次“PR190双侧实际CI验收（2026-10-17）”评论后关闭，原Issue正文逐字回读保全；PR原正文一次追加验收及删除清单，全文回读仅对GitHub正文CRLF/LF规范化比较，source原字节证明未放宽。23766已terminal0，无存活本机测试/观察句柄。新GitHub开放Issue清单为空，不把旧已处理项重复开任务。
+
+删除清单：codex/optional-metadata-correctness远端与本地。先核tip6f66f37已是actualdev祖先、远端tip一致、仅用户_staging_from_DEM未跟踪、sole primary worktree及main/dev/origin-main引用与PRE_MERGE不变；切到自actualdev建立的codex/evidence-boundaries-next后，普通push --delete和branch -d，再核远端/本地缺席与protected refs原样。当前未合审计分支保留，无worktree/数据/结果/Run/provenance删除，无force push/main/tag。累计已结束remote50，周期清理基线181后已接受3PR（184/187/190），约5再全面盘点；本轮实际git登记仅primary worktree，无废弃worktree。
+
+额外真实SDK离线验证：datasets5.0.0/huggingface_hub1.33.0在新进程先选hf-mirror，socket.socket.connect整个实际load过程禁止，读取.tmp内2行JSON，x/label值与源字节保持，datasets和hub两个真实endpoint都为hf-mirror。此为本地数据链验证，不是下载、GPU/训练/正式Study或ModelScope可用性证明；后者仍未测。原始REAL_DATASET_LOCAL_CHECK、失败候选/红/完整core2220passed+1既有skip/Flow429passed/26新全执行与所有CI/关闭/清理JSON在.tmp/audit137/138不随clone，便携回归/方案和record随仓库。六个相邻只读点复查尚无新确认反例，不声称全仓已无缺陷；未知legacy日志身份回退按已批准B131兼容合同保留。
+
+当前无开放Issue，后续按失败写入留证、status/log/report安全读取、原子写/并发三类继续系统复查，有真实反例才登记新B139/Issue→先红→方案→最小修/本地主题累积→完整里程碑PR→dev双侧全实际CI。当前验收收尾文档只本地提交，随下个里程碑合，不单开纯文档PR。目标active，无用户决策/设计审批阻塞。
+
+
+## 240. B139/#191只读展示UTF-8问题复现与先红（2026-10-17）
+
+本轮先status/fetch并核GitHub无开放Issue，当前唯一未合codex/evidence-boundaries-next只有10691e1验收收尾文档，保留用户暂存。沿readout所有展示caller确认原JSON可正常解析的转义high surrogate metric label使write_numbers真实UnicodeEncodeError，peer新表亦无法发布；相同正常label两行/指标均在，旧表及输入字节保留。不是原子writer失败，不改strict编码/producer/schema。原始两例REPRO/ZIP在.tmp/audit139不随clone，零实验/训练/下载/GPU。
+
+75全状态Issue去重：111/B093是测试证据JSON的既定backslashreplace，191是readout显示边界。先Issue191→a55f38a红36项18失败/18有效Unicode/ASCII/字面反斜杠控制，0error/skip；report实际发布18、status12、compare6。所有caller共用_text_cell，方案先补design末B139，仅显示端原归一后增加UTF-8 backslashreplace roundtrip，不改源JSON/科学数字/身份/布局，严格Result错误照旧拒绝。下一最小fix/完整本机验证并同主题本地累积，不立即单B PR；新B140，无设计/用户决策阻塞。
+
+
+B139同类扩展：4926b81先使808相邻通过、首core2256passed+1既有skip；沿同一标签追到compare_runs→write_compare派生JSON仍实际UnicodeEncodeError，正常label/peer可发布，旧比较目标和输入保留。已一次追加191原body，仍同B139，不拆新B/Issue/PR。c0dc401先6项红3失败/3有效控制，完整decoded report==原report作为code unit保真门；补全方案先写design，再仅派生JSON序列化边界加backslashreplace，不改strict atomic或Result/config/provenance writer。原阶段红/绿/完整检查均保留，不冒充最终两处fix验收。
+
+
+## 241. B139展示与派生JSON消费边界本地修复（2026-10-17）
+
+a55f38a红36项18失败/18控制→f2bf035方案→4926b81一处_text_cell UTF-8 backslashreplace roundtrip；808相邻、初core2256passed+1既有skip/Flow429passed是此阶段证据，原始RED/GREEN/CORE/FLOW保留。继续实际compare_runs→write_compare同类复现补全191范围；c0dc401红6项3失败/3控制→0cfea56补方案→9b2246c仅派生JSON序列化后roundtrip再交原strict atomic writer。没有把整份JSON交_text_cell归一，不改原始source/producer。两个文件各一块原字节替换，FINAL_SOURCE_CHECKED验证CRLF，未放宽编码拒绝。
+
+最终readout+Result IO+atomic相邻814passed/0fail/error/skip，42新（report18/status12/compareformat6/compareJSON6）逐XML节点全执行通过；原生Numbers/compare旧失败反例均转绿，源JSON/peer数据不变，compare json.loads完整等于原report且正常对照文件原字节一致。strictResult真实UnicodeEncodeError仍按既有测试拒绝并保旧目标，非编码程序错原样传播。原始ZIP/两类输入归档/REPRO/GREEN_REPRO/COMPARE_REPRO/COMPARE_GREEN_REPRO和各红阶段都在.tmp/audit139，不随clone。
+
+两个最终全检以独立basetemp运行FINAL_CORE/FINAL_FLOW（48760/82148），尚在执行；不把初阶段完整绿冒充两处最终fix验收。当前只本地主题提交，191仍OPEN，继续相关主题累积后一个完整里程碑PR，符合每天少量PR规则；新B140尚未登记，不为活跃制造反例。无GPU/下载/测速/训练、main/tag或布局变化。
+
+
+B139第三消费面：两处源码9b2246c的完整core2262passed+1既有skip/Flow429passed已终结；继续同类扫描确认可选activity提示在原生main+不可reconfigure的真实UTF-8 strict stdout上遮住权威peer/计数。默认Windows替换控制台不声称崩溃，输入字节保留。0b061f9先14红6失败/8正常及严格announce控制；方案先写design，再只改_format_activity显示返回编码边界，announce仍strict先写后打印。仍191同一B139，不拆新Issue或PR，旧完整结果只证明前两处阶段，不冒充最终三处验收。
+
+
+## 242. B139第三消费面与最终合批验证启动（2026-10-17）
+
+同类扫描源UTF-8输出/归一出口发现activity._format_activity不走_text_cell。原生CLI main配真实strict UTF-8输出wrapper（无reconfigure）下，正常hint可打印peer与succeeded计数，surrogate detail真实编码失败并提前遮住权威表。只声明该明确支持的嵌入输出边界，不把Windows默认errors=replace控制台说成同样崩溃。191原body仅追加本边界一次，保原文，无另Issue/PR。
+
+0b061f9先红14项6失败/8控制（phase/detail×6，另2announce strict writer保全控制）→ce9e716补方案→d10e759只加_format_activity显示UTF-8 backslashreplace roundtrip。announce原JSON strict写入、atomic/type guards/phase/detail字段/布局保持；没有吞输出流错误。先前4926b81/9b2246c两处完整core2262passed+1既有skip/Flow429passed仅为此前阶段绿，各原始记录不覆盖。
+
+三处最终相邻readout/activity/Result IO/atomic共878passed/0fail/error/skip，56新（原42+activity14）逐XML全部执行；三个原生失败链均转绿，输入/peer字节保全，派生compare JSON原key/code unit完整roundtrip且正常对照原字节相同，strictResult/announce仍对原始坏Unicode拒绝并保旧目标。源report/compare各一块替换及activity一块替换均单独原字节/CRLF证明，无新helper/依赖或科学门变化。
+
+以最终生产d10e759重新COMPLETE_CORE/COMPLETE_FLOW，64004/25458存活，basetemp独立；不因观察间隔重派。当前源码冻结以验收本批，191保持OPEN、不立即单B PR，收尾文档与PR190已验收记录同在本地分支，后续相关主题完整里程碑统一合dev。原生strict输出scope、所有红/阶段绿/ZIP/hash/CLI输入字节证明在.tmp/audit139不随clone；下一B140无新登记，无用户/设计阻塞。
+
+
+## 243. B139三消费面同类里程碑本机验收与调用清单（2026-10-17）
+
+191同类三个原生消费反例（Numbers表发布、派生compare JSON、可选activity遮住status权威表）已在同一分支归并，三个先红批分别36项18失败、6项3失败、14项6失败，0error/skip；不把各阶段拼成同一红运行。生产4926b81/9b2246c/d10e759只改三个既有消费者各一块编码表达式，原字节及CRLF证明保留，无新helper/依赖/配置/schema/路径。此前阶段完整绿保留为历史，未删原始失败或补全前局限。
+
+最终COMPLETE_GREEN878passed/0fail/error/skip；完整COMPLETE_CORE2276passed+1既有skip、COMPLETE_FLOW429passed，均0fail/error，56新unit节点逐XML全执行通过/0新skip。64004/25458与旧所有本机句柄均terminal0，不重派。LOCAL_CHECKED SHA2569a170281b20f6e737abd9c5df536dd75af1e1a3cad653224fa2d21778fdc936b；原始ZIP、三个原生红绿输入/输出、正常比较文件原字节一致及JSON roundtrip、strictResult/announce真实编码拒绝和peer/source字节证明均.tmp/audit139，仅本机不随clone，便携测试与设计已入库。
+
+| **消费/写入点** | **本批合同与验收** |
+| --- | --- |
+| Numbers标题/因素/指标及Run文本 | 共用_text_cell只转义无效代理；既有Markdown/行列/数值/Run fence保持，真实UTF-8发布与peer、有效中文emoji/字面backslash控制 |
+| status行与首行、launch计数复用 | 共用_text_cell；计数/模式/行身份不改，readonly输入字节和UTF-8编码控制 |
+| compare文本标签 | 同一_text_cell，pass/fail/差值与peer保持，不吞程序错误 |
+| compare派生JSON输出 | json.dumps之后只对无效code unit做可回读JSON转义，再原strict atomic；原keys/数值/report完整roundtrip，正常对照原字节保持 |
+| activity可选提示 | 仅_format_activity显示编码；真实strict/no-reconfigure输出仍打印权威peer/计数，默认Windows替换输出不作原来同样崩溃声明 |
+| announce原始JSON写入 | 未改strict先写后print，两个实际坏Unicode拒绝/保旧控制通过 |
+| 原始Result/config/index/provenance/atomic | 本批未改producer或宽容写入，实际Result编码拒绝/旧目标/peer保全相邻通过 |
+| logs文件消费 | 现有UTF-8 errors=replace读取原样；本批未改日志来源、事件归属或legacy回退 |
+
+本批只承诺已确认显示标签/可选提示/派生比较输出的消费边界，不规范化任意Run ID或磁盘路径，不改变strict权威输入/身份校验。此为完整readout Unicode类别里程碑，一个191收纳三个已证反例，不按消费面拆PR；下一核对远端后统一PR→dev，最终head/实际dev全部实际CI后验收关闭并正常清分支。PR190收尾文档随本批合入，不另tiny-doc PR。新B140未登记，无用户或设计阻塞，目标active。

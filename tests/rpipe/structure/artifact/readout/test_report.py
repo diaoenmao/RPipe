@@ -393,3 +393,44 @@ def test_numbers_code_cell_preserves_literal_run_identity(report_study, run_id, 
     assert '90.0000' in text and all(_markdown_columns(line) == 5 for line in run_rows)
     protected = {p: value for p, value in before.items() if not publish or p != numbers_path(report_study)}
     assert {p: p.read_bytes() for p in protected} == protected
+
+
+_DISPLAY_UNICODE = [
+    pytest.param('left' + chr(0xD800) + 'right', r'left\ud800right', r'left\\ud800right', id='high'),
+    pytest.param('left' + chr(0xDC00) + 'right', r'left\udc00right', r'left\\udc00right', id='low'),
+    pytest.param('left' + chr(0xD800) + 'mid' + chr(0xDC00) + 'right', r'left\ud800mid\udc00right', r'left\\ud800mid\\udc00right', id='mixed'),
+    pytest.param('left-ASCII-right', 'left-ASCII-right', 'left-ASCII-right', id='ascii'),
+    pytest.param('left研究😀right', 'left研究😀right', 'left研究😀right', id='unicode'),
+    pytest.param(r'left\ud800right', r'left\ud800right', r'left\\ud800right', id='literal-backslash'),
+]
+
+
+@pytest.mark.parametrize('text,plain,markdown', _DISPLAY_UNICODE)
+@pytest.mark.parametrize('field', ['factor-key', 'factor-value', 'metric-key'])
+def test_numbers_display_labels_publish_utf8_without_losing_peer(report_study, field, text, plain, markdown):
+    from rpipe.structure.artifact.readout.report import write_numbers
+
+    before = _set_table_label(report_study, field, text)
+    target = numbers_path(report_study)
+    result = write_numbers(report_study)
+    assert result == target
+    view = target.read_text(encoding='utf-8')
+    assert markdown in view
+    assert '90.0000' in view and '`a`' in view and '`b`' in view
+    assert {p: p.read_bytes() for p in before if p != target} == {p: data for p, data in before.items() if p != target}
+    assert not list(target.parent.glob('*.tmp'))
+
+
+@pytest.mark.parametrize('text,plain,markdown', _DISPLAY_UNICODE)
+@pytest.mark.parametrize('field', ['factor-key', 'factor-value'])
+def test_status_display_labels_are_utf8_and_preserve_input_bytes(report_study, field, text, plain, markdown):
+    from rpipe.structure.artifact.readout.status import list_runs, format_status
+
+    before = _set_table_label(report_study, field, text)
+    body = list_runs(report_study)
+    view = format_status(body)
+    assert view.encode('utf-8').decode('utf-8') == view
+    assert plain in view
+    assert body['counts'] == {'planned': 2, 'succeeded': 1, 'failed': 0, 'pending': 1}
+    assert view.splitlines()[-1].split('\t')[3] == 'b'
+    assert {p: p.read_bytes() for p in before} == before

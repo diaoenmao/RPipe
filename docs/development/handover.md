@@ -663,3 +663,21 @@ PR187双侧实际CI全绿，185/186各一次验收评论关闭，codex/launch-fa
 
 
 2026-10-17最终本机验收补充：#188/#189合批core2220passed+1既有skip、Flow429passed、路由21passed，26新节点全执行/0新skip，0fail/error；无活本机句柄，仍待同一里程碑PR双侧全部实际CI，Issue保持OPEN。详record§238；原候选拒绝/红回归保留，不作删除或服务可用性证明。
+
+
+## 2026-10-17 PR190验收完成后的接续
+
+actualdev e31fbf5927dfea94472c712d249a48e05212a66d，PR190 finalhead6f66f37与actualdev全部实际CPU/包矩阵/聚合success；188/189关闭、原body保持/各一次comment、PRbody一次验收追加。codex/optional-metadata-correctness本地/remote已普通删除，累计remote50/周期基线181后3；仅primary worktree，无数据/结果删除。新唯一未合codex/evidence-boundaries-next自actualdev创建，当前收尾docs只本地提交，随下个完整里程碑PR，不拆tiny-doc PR。原始.tmp/audit138 STATE/COMPLETION和PR/DEV_CHECKED/BRANCH_DELETED_CHECKED/ISSUE_ACCEPTED均保留，无活本机句柄。
+
+当前开放Issue为空，继续三类只读复查，确认真实反例才用B139登记先红再修。六相邻点未确认新反例；B131未知legacy回退是既定兼容，不再当新缺陷。真实datasets5.0.0/hub1.33.0离线2行JSON验证socket禁用/端点mirror/输入字节不变；不代表真实下载或ModelScope服务已测。main/tag/GPU/数据/正式结果/架构布局不动，无等待设计批准。
+
+
+## 2026-10-17 B139/#191当前本地批次
+
+唯一未合codex/evidence-boundaries-next在接受dev e31fbf5上；10691e1保PR190收尾文档，未单独PR。B139同类readout surrogate边界：a55f38a36红18失败→f2bf035→4926b81展示textcell；继续实际compare派生JSON复现追加191body一次，c0dc4016红3失败→0cfea56→9b2246c派生JSON序列化边界。原producer/strictatomic/JSONschema/数值/路径保持；正常字节与json.loads的原code units保真。最终相邻814通过，42新全执行；FINAL_CORE48760/FINAL_FLOW82148尚活，复用原句柄观察、不重派、不用初阶段2256/429替代最终验收。191仍OPEN、未推送/PR，继续本地合批；新B140。原始.tmp/audit139全部失败/ZIP/原生重现保留，无GPU/训练/下载/测速/布局变更。
+
+
+B139第三消费面续接：两处阶段完整core2262+1skip/Flow429终结后，native main+真实strict/no-reconfigure stdout的activity surrogate反例补入191。0b061f9红14/6失败→ce9e716→d10e759一处_format_activity显示编码；原announce JSON writer仍严格，两个保旧控制通过。最终三处相邻878、新56全执行/0skip，COMPLETE_CORE64004/COMPLETE_FLOW25458正运行，复用句柄；旧48760/82148已终结，不再等待/重派。原ZIP/ACTIVITY_REPRO/ACTIVITY_GREEN_REPRO/节点证明在.tmp/audit139；未推送/PR，191仍OPEN，新B140，详record§242。
+
+
+2026-10-17 B139本机最终验收：三消费面合批相邻878passed、core2276passed+1既有skip、CPU Flow429passed，56新逐XML全执行/0新skip，0fail/error；64004/25458及所有旧本机句柄已终结。完整类别里程碑准备统一PR，191仍OPEN，远端CI尚未执行；详record§243，原始.tmp/audit139保留且不随clone。

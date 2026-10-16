@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
 > Version 1.4; updated 2026-10-17. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `cd0a8a0185820f74a75c932d7d5ff373fb580255`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `e31fbf5927dfea94472c712d249a48e05212a66d`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -755,3 +755,15 @@ PR187 launch ownership completed with all actual final-head/dev CI; issues185/18
 
 
 2026-10-17 final local checkpoint: combined #188/#189 core2220 passed plus one existing skip; CPU Flow429 passed; domestic routing21 passed. All26 new regression nodes executed without new skips. Pending one milestone PR and exact-head/actual-dev CI; no actual downloads or scientific experiments. Historical failed candidates remain evidence.
+
+
+2026-10-17 accepted engineering checkpoint: PR190 B137/#188+B138/#189 final head6f66f37 and actual dev e31fbf5 passed every real CPU/package matrix and aggregate. Both issues are closed with original bodies preserved; the merged topic branch was removed locally/remotely. Local core2220 passed plus one existing skip, CPU Flow429 passed; all26 new nodes executed. A separate real datasets5.0.0/hub1.33.0 local two-row JSON check forbade socket connections and verified mirror endpoints/input bytes. No real download, ModelScope availability test, GPU/training or scientific revalidation occurred. Existing scientific gaps/gates remain. With no open issues, continue the three correctness-contract reviews and register only reproducible counterexamples; record§239 holds acceptance/cleanup facts.
+
+
+2026-10-17 local engineering follow-up B139/#191: escaped unpaired surrogate labels were parsed from temporary JSON but blocked Numbers and derived comparison JSON publication, hiding peer readouts. Two shared consumer boundaries are locally corrected (4926b81/9b2246c) after separate red stages36/18fail and6/3fail. All42 new nodes and814 adjacent cases pass; strict generic writers remain unchanged, source bytes/normal output bytes and comparison JSON round-trip are preserved. Final full local checks are pending; no PR yet, issue remains open and related work stays batched. This adds engineering evidence only, with no new scientific experiment, model/data download or changed research gate/layout. See record§240–241.
+
+
+2026-10-17 B139 scope completion: optional activity notices also hid the status table on a real strict UTF-8 output stream without reconfigure; default Windows replacement output is not claimed to crash. Same issue191, red14/6 failures before d10e759 display-only fix; strict announce JSON writing still rejects invalid Unicode and preserves old evidence. All three consumer boundaries now have878 passing adjacent cases and56 new nodes executed; complete final-source core/Flow are running. Prior two-boundary2262+1skip/429 results are retained as intermediate evidence. No new experiment, download, GPU, layout or scientific gate change; issue stays open and work remains locally batched (record§242).
+
+
+2026-10-17 final local B139 checkpoint: all three confirmed readout Unicode consumers form one category milestone, with878 adjacent cases, core2276 passed plus one existing skip, and CPU Flow429 passed. All56 new nodes executed without new skips, failures or errors. Source identities/numbers, strict producers and atomic writes remain unchanged. One PR is now prepared for the grouped scope; issue191 awaits exact-head and actual-dev CI. No scientific experiment/download/GPU/main/tag/layout action is implied (record§243).

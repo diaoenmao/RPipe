@@ -40,7 +40,7 @@ def clear_activity(study_dir: Path | str) -> None:
 
 
 def _format_activity(phase: str, detail: str) -> str:
-    return ' '.join(f'{phase}: {detail}'.splitlines()).replace('\t', ' ')
+    return ' '.join(f'{phase}: {detail}'.splitlines()).replace('\t', ' ').encode('utf-8', errors='backslashreplace').decode('utf-8')
 
 
 def announce(study_dir: Path | str, phase: str, detail: str) -> None:
