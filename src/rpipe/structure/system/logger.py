@@ -35,32 +35,33 @@ class Logger:
                 pass
 
     def _emit(self, level: str, event: str, message: str) -> None:
-        stamp = datetime.now().astimezone().isoformat(timespec='milliseconds')
-        run_id = self.run_id or '-'
-        text = f'{stamp} {_LEVELS[level]} {run_id} [{event}] {message}'.rstrip()
-        print(text, flush=True)
-        separator = ''
-        try:
-            with self.path.open('rb') as previous:
-                previous.seek(0, 2)
-                if previous.tell():
-                    previous.seek(-1, 2)
-                    if previous.read(1) not in (b'\n', b'\r'):
-                        separator = '\n'
-        except OSError:
-            pass  # shortcut: unreadable tails stay append-only; repair requires readable log bytes.
-        handle = self.path.open('a', encoding='utf-8')
-        try:
-            handle.write(separator + text + '\n')
-            handle.flush()
-        except BaseException:
+        for message in f'{message}'.splitlines() or ['']:
+            stamp = datetime.now().astimezone().isoformat(timespec='milliseconds')
+            run_id = self.run_id or '-'
+            text = f'{stamp} {_LEVELS[level]} {run_id} [{event}] {message}'.rstrip()
+            print(text, flush=True)
+            separator = ''
             try:
-                handle.close()
+                with self.path.open('rb') as previous:
+                    previous.seek(0, 2)
+                    if previous.tell():
+                        previous.seek(-1, 2)
+                        if previous.read(1) not in (b'\n', b'\r'):
+                            separator = '\n'
             except OSError:
-                pass
-            raise
-        else:
-            handle.close()
+                pass  # shortcut: unreadable tails stay append-only; repair requires readable log bytes.
+            handle = self.path.open('a', encoding='utf-8')
+            try:
+                handle.write(separator + text + '\n')
+                handle.flush()
+            except BaseException:
+                try:
+                    handle.close()
+                except OSError:
+                    pass
+                raise
+            else:
+                handle.close()
 
     def info(self, message: str, *, event: str = 'flow') -> None:
         self._emit('INFO', event, message)
