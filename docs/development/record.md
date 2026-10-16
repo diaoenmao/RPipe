@@ -1,8 +1,8 @@
-> 当前（2026-10-17）：PR194已正常合dev f2c286d，最终head与实际dev全部实际CI成功；193验收关闭。
-> 最新：Logger双输出/完整traceback整类修复完成；新32全执行，本机core2304passed+1既有skip、CPU Flow433passed。
-> 清理：已删logger-sink-evidence本地+remote；五PR184/187/190/192/194盘点完，新基线194计数0，remote累计52，详§247。
-> 下一：唯一未合correctness-milestone-next仅本地累积验收记录，继续三类复查；无开放Issue、不制造缺陷、不单开tiny-doc PR。
-> 阻塞：无；无GPU/下载/训练/main/tag/布局动作，用户暂存与全部原始失败/数据保留。
+> 当前（2026-10-17）：B141/#195国内raw路由、B142/#196复制首错已本地验收，唯一未合correctness-milestone-next；尚未推送/PR。
+> 最新：海外默认/redirect和download/gzip/tar close遮首错反例转绿；只改单个手动prepare_data.py，原数据/manifest不动。
+> 验证：相邻166passed+1既有skip、完整core2359passed+1既有skip、CPU Flow433passed，55新全执行，详§251。
+> 下一：继续同模块严格验证读取/退出边界复查，相关修复本地合批后一个完整里程碑PR；195/196仍OPEN，无阻塞。
+> 保护：accepted PR194/devf2c286d、周期基线194计数0/remote52；无活句柄/真实联网/下载/GPU/训练/main/tag/布局动作。
 
 > 当前（2026-10-17）：B139/#191三处已证消费反例同类里程碑本机验收完成，唯一未合evidence-boundaries-next，准备统一PR→dev。
 > 最新：Numbers/status/compare文本、派生compare JSON、可选activity提示均修；strict producer/atomic与科学数值/输入身份保持。
@@ -4189,3 +4189,14 @@ B141方案13f46c5后9e2bcd2仅改手动prepare_data：复用既有MNIST/CIFAR国
 继续同模块raw复制类发现write首错被secondary close IO替换，实际download/gzip/tar三个低层IO注入复现，均partial/peer/descriptor保全但caller身份错。77旧Issueinventory/144原body核对，196单独登记失败留证范围，仍与195当前一分支同类里程碑合批。bce353a红35项14失败/21控制，七退出边界×五结果，原脚本9e生产ZIP字节仍原样。先本设计B142再私有owned ExitStack包装七流，不重构模块或磁盘布局；原取消/程序错/成功close失败/先发布后外层close等明确控制保持。
 
 当前无本机活测试，195/196都OPEN，完整里程碑尚无PR；下一B143，无用户/设计阻塞。原始.tmp/audit141/142保留且不随clone，正式数据/归档/Study/性能/GPU/下载/main/tag不动。
+
+
+## 251. B141–B142手动raw准备两项本机验收检查点（2026-10-17）
+
+B14180009d7红20项11失败/9控制→13f46c5设计→9e2bcd2路由修；B142bce353a红35项14失败/21控制→8340bac设计→4954933首错修。两批红分别执行，不拼成同一基线运行；原始红/源码ZIP/各本机探针保留。最终只改手动prepare_data.py，不改src/rpipe/origin显式foreign兼容、其他Study/归档/数据。复用既有国内mirror和stdlib redirect，私有ExitStack包装保原__enter__/__exit__/LIFO/未知程序错和正常close失败。checksum/partial/cachelock/成功发布顺序保持。
+
+最终GREEN166passed+1既有skip，完整CORE2359passed+1既有skip、FLOW433passed，均0fail/error；55新unit节点在完整XML全部执行/0新skip，37129/15079终结。不把B141阶段2324+1/433当最终55节点验收。LOCAL_CHECKED SHA256 37ec581348e9eb60248a9d6aac4bfdc38af40d149fe2370edcda9f09f423aa01，完整XML/原生路由及真实部分写入配注入close红绿均.tmp/audit141/142，不随clone。raw数据或国内源服务没有实测下载；所有transport为合成、socket禁止。
+
+源码AST证明digest/expected_files/verify_file/reuse_caches/split_counts/main及HISTORICAL_REF/MNIST_RESOURCES/CIFAR_MD5原样；normal下载manifest字段/cache/verify-only旧来源控制通过，架构/路径/schema/科学门不变。原脚本从253行到当前290行均LF，没有CR；一次校验器照搬前批Logger CRLF假设而拒绝，NEWLINE_CHECK保留，按本文件原字节复核后更正，非库失败/不改源码换行凑通过。早期误指model测试路径的未执行记录亦保留。
+
+当前两个Issue仍OPEN，未推送/PR；遵完整里程碑合批，接着检查同模块剩余digest/split_counts严格读取退出边界，不凭同一with外观登记新缺陷，不泛称七copy边界修复已覆盖所有读取。下一B143尚未使用；当前goal active，无设计/用户阻塞，无GPU/训练/性能/实际下载/main/tag或正式Study改动。

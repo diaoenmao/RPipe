@@ -751,3 +751,6 @@ bce353a先红35项14失败/21控制、0error/skip：download/mnist/cifar各desti
 最小方案在同手动模块内放一个私有owned-stream上下文包装，因七个既有owned流边界重复此语义，标准contextlib.closing会同样遮首错，不够。使用标准ExitStack，先保留原manager.__enter__返回/失败语义，再注册原__exit__调用：仅在已有body异常且__exit__另抛OSError时保留原错；正常body的close失败继续传播，非IO程序close错误和原有__exit__抑制语义保持。保留LIFO退出、外层源关闭与目标打开失败的行为，不重试close、不删partial、不新增全局I/O框架/模块/依赖。
 
 只包装download响应和partial、MNIST gzip和partial、CIFAR TarFile及extracted source/partial共七边界。digest/split_counts普通读取非本已复现copy范围，仍可继续相邻审计，不以本批声称所有读取已修。原60秒网络预算、国内初始/redirect guard、缓存/hash/发布顺序/manifest/布局/单writer合同保持。未知错误不得只藏__context__。本地先上述方案再修，再完整55新回归与相邻/核心/CPU Flow；此前B14120新节点的core2324+1既有skip/Flow433仅中间阶段证据。195/196同分支合批、不逐bug PR，无设计审批等待，下一B143。
+
+
+B141–B142本机实施检查点（2026-10-17）：9e2bcd2/4954933在同一手动raw模块完成上述路由/七owned copy退出；55新全执行，最终166相邻+1既有skip/core2359passed+1既有skip/CPU Flow433passed。无设计等待，195/196仍待完整批次PR双侧CI；接续相邻严格读取验证，不扩展未测合同。详record§251；真实下载/服务/GPU/实验未执行。

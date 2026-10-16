@@ -172,3 +172,6 @@ PR190库入口不覆盖手动prepare_data.py。实际prepare_mnist/cifar在传�
 ### B142 / Issue #196：raw下载/解压的close IO遮首错（2026-10-17）
 
 download/prepare_mnist/prepare_cifar真实.part部分写入+注入close OSError，三条caller均收到secondary而非原write error，原文件close/partial/peer保持。区别144普通writer/142锁退出，先登记196再bce353a红35项14失败/21控制，覆盖七owned退出×原错/取消/正常close/程序close/成功。设计见artifact_consistency_design末B142；同195路由修复在当前唯一分支累积，未推送/PR。证据.tmp/audit142不随clone，零实际网络/模型数据/GPU/训练，保持raw/layout/发布顺序。
+
+
+2026-10-17 B141–B142本机检查点：195/196同分支路由9e2bcd2及owned退出4954933已相邻166passed+1既有skip/core2359passed+1既有skip/Flow433passed，55新全执行；原生反例转绿，未推送/PR，仍OPEN。继续相关读取边界复查后统一完整里程碑，不单bug PR。详record§251，临时证据不随clone；无真实下载或服务可用性声明。

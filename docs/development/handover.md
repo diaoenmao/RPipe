@@ -1,3 +1,15 @@
+## 2026-10-17 B141–B142最终本机检查点（当前）
+
+当前唯一未合codex/correctness-milestone-next仍本地；195/196未推送/PR。B141红80009d7(20/11失败/9控制)→13f46c5设计→9e2bcd2国内路由；B142红bce353a(35/14失败/21控制)→8340bac设计→4954933私有owned ExitStack包装七copy退出。最终相邻166passed+1既有skip/core2359passed+1既有skip/CPU Flow433passed，新55全执行，37129/15079均terminal。原生路由/部分写入+close IO反例转绿；源archive/raw hash及manifest schema/路径不变，原数据/归档/Study不动。LOCAL_CHECKED/完整XML/NEWLINE_CHECK与全部原红在.tmp/audit141/142，不随clone，详record§251。
+
+下一继续同模块digest/split_counts严格读取与退出边界实际复查，再同类完整里程碑统一PR→dev，不单bug/tiny-doc PR。两Issue保持OPEN，下一B143未用，无活句柄/设计审批或用户阻塞，goal active。已接受PR194/devf2c286d，周期基线194计数0/remote52；原193/PR194反馈与分支清理不重做，无GPU/训练/性能/真实下载/main/tag/布局动作。原模块LF，CRLF checker误假设拒绝和早期测试路径未执行均保留、非库失败。
+
+## 2026-10-17 B141–B142手动raw准备整类本地修复（当前）
+
+唯一未合codex/correctness-milestone-next，尚未推送/PR；B141/#195先80009d7红20/11失败→13f46c5方案→9e2bcd2复用既有国内endpoint并守初始/redirect URL，三原生路由反例转绿，无实际联网。B142/#196先bce353a红35/14失败→8340bac方案→4954933私有ExitStack owned流包装七copy边界，保首错/取消及原enter/exit/正常close/程序错误/发布顺序，三部分写入反例转绿。55新全执行、相邻166passed+1既有skip；最终495源码core/Flow句柄37129/15079进行中，复用不重派。B141先期core2324+1/Flow433为部分阶段，不冒充最终55回归全检；一次路径误指未执行保留，不当库失败。原始.tmp/audit141/142不随clone，正式数据/归档/Run/provenance不动。
+
+195/196仍OPEN；完成完整本机检查后继续相关类别复查，统一完整里程碑PR，不逐bug/tiny-doc PR。不做GPU/性能/下载/main/tag或布局改变；src/rpipe/origin旧显式foreign兼容保持，原生镜像服务未实测。当前accepted仍PR194/devf2c286d/193关闭/旧主题已清，周期基线194计数0/remote52；下一B143，goal active、无用户或设计审批阻塞。
+
 ## 2026-10-17 PR194验收及五PR清理（当前）
 
 PR194 finalhead26dd6d2（Branch38966619127/Package38966619135/Unit38966619134）和actualdevf2c286d（Package38967353795/Unit38967353812）全部实际矩阵/聚合success，193已原body保持/一次评论验收关闭；codex/logger-sink-evidence本地+remote普通删除。基线181后184/187/190/192/194五PR及八Issue全核对，旧主题均不存在；只primary worktree、无app managed worktree/未合待定项，无数据/结果/Run/provenance删除，protected main/dev/origin-main不变。新基线194计数0、remote累计52，详record§247和.tmp/audit140（不随clone），不要重发评论或重删。

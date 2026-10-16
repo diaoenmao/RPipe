@@ -774,3 +774,9 @@ PR187启动所有权最终head/实际dev全部实际CI验收，185/186关闭，�
 
 
 2026-10-17工程验收：PR194已合actualdev f2c286d，最终head与实际dev全部实际CI成功，B140/#193已验收关闭。独立Logger双输出/原始完整traceback尝试的本机2304core+1既有skip、433CPU Flow与32新回归均已核对；这些是工程合同证据，不表示科学复验或发布。五PR周期清理已完成，新基线194；后续三类10组源码/测试定位复查未确认新缺陷。实验计划/数值门/布局不变，没有新增文献阅读、模型数据下载、GPU或训练，下一仍按第九章缺口和前置授权推进。详record§247。
+
+
+2026-10-17独立手动数据准备入口复查：B141/#195发现prepare_data.py绕过PR190库入口，默认海外地址和默认urllib海外重定向不符合新增国内下载规则；先红20/11失败后9e2bcd2复用既有国内endpoint并约束初始/redirect传输。B142/#196同批确认download/gzip/tar三copy链被close IO遮首错，先35/14失败后4954933保原始异常/取消和owned退出合同。当前55新相邻全执行、166passed+1既有skip，最终源码完整core/CPU Flow进行中；两Issue未验收关闭，尚无PR，本地整类合批。仅合成transport及隔离raw字节，不是数据下载/科学复跑或国内服务可用性证明。archive/raw hash、路径、manifest schema、实验门限不改；未来源码冻结后实际复跑须按既有新version和前置授权，当前不改旧Study证据。详record§249–250。
+
+
+2026-10-17工程检查点：B141–B142最终单脚本源码已core2359passed+1既有skip/CPU Flow433passed，55新全执行；两个独立红批次和原生红绿保留。195/196仍待后续统一完整里程碑的最终head/actualdev CI，当前不冒充已合或发布；继续相邻严格raw读取退出审计。checksum/raw路径/manifest schema与科学计划/门限不变，零真实联网/下载/GPU/训练，没有新增科学或文献结果。详record§251。
