@@ -492,42 +492,52 @@ def launch_jobs(
             position = f'{wait_index}/{total_waits}' if kind == 'wait' else f'{index}/{total}'
             print(f'launch: {kind} {position} mode={_group_mode(group)}', flush=True)
             procs: list[tuple[dict[str, Any], subprocess.Popen[str]]] = []
-            for job in group:
-                run_id = str(job['run_id'])
-                parent = dependencies.get(run_id)
-                if parent is not None and not run_succeeded(study_dir, parent):
-                    message = f'blocked: sibling train {parent} did not succeed'
-                    _fail_result(study_dir, run_id, message)
-                    print(f'error {run_id} {message}', flush=True)
-                    pairs.append((job, 1))
-                    continue
-                for eval_id, train_id in dependencies.items():
-                    if train_id == run_id and _run_result(study_dir, eval_id).get('status') == STATUS_SUCCEEDED:
-                        _fail_result(study_dir, eval_id, f'sibling train {run_id} is being rerun; re-evaluation required')
-                if _run_result(study_dir, run_id).get('status') == STATUS_SUCCEEDED:
-                    _fail_result(study_dir, run_id, 'rerun started; no successful result from this execution yet')
-                cmd = [py, '-m', 'rpipe', 'run-one', str(study_dir), run_id]
-                where = 'window' if console_mode == 'new' and os.name == 'nt' else 'here'
-                resource = f'gpu={job["gpu"]}' if job.get('gpu') is not None and str(job.get('device') or 'cuda').lower() != 'cpu' else 'cpu'
-                print(f'+ {resource} {job["run_id"]} ({where})', flush=True)
-                procs.append(
-                    (
-                        job,
-                        subprocess.Popen(
-                            cmd,
-                            cwd=str(root),
-                            env=launch_job_env(job),
-                            **popen_extra,
-                        ),
+            primary_error = None
+            try:
+                for job in group:
+                    run_id = str(job['run_id'])
+                    parent = dependencies.get(run_id)
+                    if parent is not None and not run_succeeded(study_dir, parent):
+                        message = f'blocked: sibling train {parent} did not succeed'
+                        _fail_result(study_dir, run_id, message)
+                        print(f'error {run_id} {message}', flush=True)
+                        pairs.append((job, 1))
+                        continue
+                    for eval_id, train_id in dependencies.items():
+                        if train_id == run_id and _run_result(study_dir, eval_id).get('status') == STATUS_SUCCEEDED:
+                            _fail_result(study_dir, eval_id, f'sibling train {run_id} is being rerun; re-evaluation required')
+                    if _run_result(study_dir, run_id).get('status') == STATUS_SUCCEEDED:
+                        _fail_result(study_dir, run_id, 'rerun started; no successful result from this execution yet')
+                    cmd = [py, '-m', 'rpipe', 'run-one', str(study_dir), run_id]
+                    where = 'window' if console_mode == 'new' and os.name == 'nt' else 'here'
+                    resource = f'gpu={job["gpu"]}' if job.get('gpu') is not None and str(job.get('device') or 'cuda').lower() != 'cpu' else 'cpu'
+                    print(f'+ {resource} {job["run_id"]} ({where})', flush=True)
+                    procs.append(
+                        (
+                            job,
+                            subprocess.Popen(
+                                cmd,
+                                cwd=str(root),
+                                env=launch_job_env(job),
+                                **popen_extra,
+                            ),
+                        )
                     )
-                )
+            except BaseException as error:
+                primary_error = error
             for job, proc in procs:
-                code = int(proc.wait())
-                pairs.append((job, code))
-                if code != 0:
-                    if _run_result(study_dir, str(job['run_id'])).get('status') == STATUS_SUCCEEDED:
-                        _fail_result(study_dir, str(job['run_id']), f'run-one exited with code {code}')
-                    print(f'error {job["run_id"]} exit={code}', flush=True)
+                try:
+                    code = int(proc.wait())
+                    pairs.append((job, code))
+                    if code != 0:
+                        if _run_result(study_dir, str(job['run_id'])).get('status') == STATUS_SUCCEEDED:
+                            _fail_result(study_dir, str(job['run_id']), f'run-one exited with code {code}')
+                        print(f'error {job["run_id"]} exit={code}', flush=True)
+                except BaseException as error:
+                    if primary_error is None:
+                        primary_error = error
+            if primary_error is not None:
+                raise primary_error
         return pairs
 
     for wave in waves:
