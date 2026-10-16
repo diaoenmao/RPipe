@@ -257,3 +257,10 @@ Issue132后，1e8c5d1先提交22项合同：unit12覆盖RuntimeError/KeyboardInt
 已复现：Windows 普通 drive 路径与扩展命名空间路径经 resolve 后仍有不同字符串，samefile 确认同一目录；两个嵌套方向在 timeout=0 下均因同线程再次取得同一 OS 锁而失败。42c8b5b 先提交四项原生 Windows 回归，四项全部失败；覆盖两个方向及内层正常/异常退出，并要求其他线程仍被排除、外层退出后可重获。
 
 最小方案：保留 resolve、mkdir 与全部 OS 锁和预算流程，只将线程局部重入表的字符串身份改为目录 stat 的 st_dev/st_ino 物理身份（与标准库 samefile 一致），同时保留 pid 隔离。原 root 仍用于全部文件操作和错误信息；不改变共享输入目录、锁文件、磁盘布局或持久化格式，不引入跨层 helper。调用方 prepared_resource、migrate_shared、data/model factory、data prepare 均复用这个共享根实现。验证既有进程/线程排斥、死亡持有者释放、取消与零预算合同；不运行 GPU、正式 Study 或测速。
+
+
+## B104 / #136：多根迁移锁按同一物理身份排序（2026-10-16）
+
+继 PR135 的同线程重入验收后，原生空目录探针发现 migrate_shared 的 key=str 排序受 Windows namespace 拼写影响。同一 Study 两种表示在 shared.root 为普通/扩展绝对路径时，可交换私有根与共享根的取得顺序。真实 OS 锁、两线程各持前两根后请求第三根，零等待预算注入使两侧立即暴露循环，四根退出后均可重获；不作测速或运行真实迁移。Issue136 后四项排序回归先提交，2 failed/2 controls passed。
+
+方案：在 shared.py 内将 PR135 已有 stat 二元身份提取为最小私有函数，cache_lock 的 pid/物理键保持；migrate_shared 仍只锁既有四个根，先确保这些原本就会 mkdir 的目录存在，再按同一 st_dev/st_ino 身份排序取得 OS 锁。排序不依赖 namespace/大小写或声明名称；同物理身份的重复根只重入，不改变数据迁移、冲突验证、硬链接、staging 或文件布局。跨目录并发更名不属于共享不可变输入根合同。保留既有失败、权限拒绝与取消行为，不增加全局互斥、模块、依赖或磁盘格式。
