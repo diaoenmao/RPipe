@@ -1,3 +1,25 @@
+## 2026-10-17 PR199跨Python CI修正中；B144/#200已确认排队（最新）
+
+PR199原3639ae0的Branch/Package全成功、Unit38980543735两个3.10实际pickle失败、两3.13成功，完整日志保留。先77da8d5设计，再69ec7e4显式proxy自身pickle state，5978164限定原生BytesIO支持协议2–5（0/1夹具拒绝保留），107针对性通过。新core2384passed+1既有skip/Flow519passed、86新SDK全执行，两个句柄已终结，尚未push新head/合dev/关198；继续同一个199，不另PR。§259记录原因/官方合同/边界。200另确认五库reader close遮首错及optional吞取消，20探针/全80Issue去重保全，仅排下一类别，199验收清理后再从actualdev先红后修。下一B145；无设计等待/GPU/性能/真实下载/Study/main/tag/数据删除，用户暂存保留。
+
+## 2026-10-17 B143/#198完整修复本机验证中（最新）
+
+唯一codex/domestic-sdk-transfers，生产28b107f已commit；此前模型/数据根/spawn阶段补全媒体decoder/延迟file、后台lease、实际客户端继承与ModelScope显式CN。红0582ab5/4837cc6/52b3f72/a43405b/fd90f37均保留；104针对性+24旧HF控制通过，core2384passed+1既有skip。Flow516passed/83新SDK全执行、16027终结0，CI/使用文档变更随本里程碑提交，下一§258完整本机checker→一个PR双侧实际CI，不提前关198/清分支。原始失败夹具与协议替身限制详§258；真实codec/镜像服务未验。63582终结0，protected refs/用户暂存保持，下一B144。无设计/用户等待、无GPU/下载/性能/Study/main/tag或数据删除。
+
+## 2026-10-17 B143/#198 SDK 阶段已修，媒体消费新红待同批补全（当前）
+
+当前唯一未合 codex/domestic-sdk-transfers；生产阶段 d52526c（模型/native/线程）→2384a4b（eager/streaming 根与 aiohttp）→5452322（spawn/线程任务）。模型首红 ef3c500，native 红 6621e12，数据根红 f174b8c，spawn 红 024b20d；各自方案先于实现，无审批等待。5452322 完整 core2384passed+1既有skip / CPU Flow466passed，33新SDK节点全部执行；HF0.34.4模型/requests控制另17passed。39195/83435 terminal。不是 #198 完整验收。
+
+最新0582ab5：真实 Dataset/IterableDataset 图片字段返回后解码两反例（合成1pxPNG、xopen/requests传输替身、零网络），4正式回归2failed/2passed。根生成器 guard 不覆盖该格式化/decoder，继续媒体延迟/native/派生消费同类修复，不能拒绝所有媒体、改返回类型或靠已绿矩阵收尾。198远端仍OPEN、无PR；下一B144。原始XML/log/拒夹具/SDK代码在.tmp/audit143，不随clone；详record§257。
+
+保护引用main/dev/origin-main未动，origin/dev e8cebcb；cleanup上次基线194后1/remote53，本轮未全面重盘。PR197/195196已验收旧事实不重发；未合当前分支和用户_staging_from_DEM保留。无真实模型/数据/GPU/性能/Study/main/tag/布局/删除动作，无活观察句柄。
+
+## 2026-10-17 PR197验收完成；转B143/#198真实SDK边界（当前）
+
+PR197 finald824e14：Branch38971530628/Package38971530518/Unit38971530496，actualdev e8cebcb：Package38972302844/Unit38972302789全部实际矩阵/聚合success。195/196各一次评论验收关闭、原body保全；旧correctness-milestone-next本地+remote普通删，tip已入dev，main/dev/origin-main保护引用原样，未删worktree/数据/结果/provenance。remote53/周期基线194计数1，无活观察句柄；全部raw在.tmp/audit142不随clone，详record§254。不要重发评论或重删。
+
+唯一未合codex/domestic-sdk-transfers从actualdev新建、仅本地记录；198唯一OPEN。B143在真实HF SDK1.33.0/httpx0.28.1确认mirror参数不管实际redirect：对照3请求皆mirror，反例3请求中2个海外且helper返回成功的合成config snapshot。实际RPipe→真实SDK链，仅repo tree/transport替身、socket禁止；零真实下载，源码/脚本/REPRO在.tmp/audit143不随clone。代码/测试尚未改；先公共SDK兼容transport设计，再红回归与最小修，完整同类里程碑PR，不小PR。get_session共享client不可手动close，set_client_factory会close旧session，勿粗暴重配全局破坏foreign并发；pyproject SDK未pin，不凭本机版本假定全兼容。详record§255/PRIMARY_SOURCE_NOTES。下一B144，goal active，无审批阻塞；无main/tag/GPU/性能/模型数据/布局动作。
+
 ## 2026-10-17 B141–B142手动准备类别完整本机验收（当前）
 
 correctness-milestone-next仅本地、未PR；195/196仍OPEN。先三批red20/11失败、35/14失败、25/10失败，再各自方案/最小修9e2bcd2/4954933/84389b0；最终一个手动脚本的国内初始/redirect及12显式binary流退出统一，原AST/hash/解码/计数/manifest/layout保持。FINAL_GREEN191passed+1既有skip/COMPLETE_CORE2384passed+1既有skip/COMPLETE_FLOW433passed，新80全执行/0新skip；39780/77605及旧句柄terminal。FINAL_LOCAL_CHECKED/原始红绿/ZIP/拒候选/NEWLINE_CHECK在.tmp/audit141/142不随clone，详record§252–253。5reader探针是精确strict块，不冒称完整科学数据验收；无真实网络/下载/服务可用性/GPU/训练/性能或正式Study动作。

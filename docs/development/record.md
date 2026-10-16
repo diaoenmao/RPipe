@@ -1,8 +1,15 @@
-> 当前（2026-10-17）：B141/#195与B142/#196手动数据准备类别已完整本机验收；唯一未合correctness-milestone-next准备统一PR→dev。
-> 最新：国内初始/redirect边界与12显式owned binary流统一，原hash/解压/strict解析/计数/manifest主体保持，原生反例转绿。
-> 验证：最终相邻191passed+1既有skip、core2384passed+1既有skip、CPU Flow433passed，80新全执行，详§253。
-> 下一：一个完整里程碑PR最终head及实际dev全部实际CI后验收195/196并清分支；当前无活本机句柄或审批阻塞。
-> 保护：accepted PR194/devf2c286d、周期基线194计数0/remote52；零真实联网/下载/GPU/训练/main/tag/布局动作。
+> 当前（2026-10-17）：PR199首head3639ae0被实际Python3.10矩阵拒绝，未合dev/未关198；仍同分支补全。
+> 最新：Linux/Windows3.10均pickle state错误（Unit38980543735），3.13通过；69ec7e4显式proxy自身状态，107针对性通过（§259）。
+> 检查：新源码core2384+1既有skip/CPU Flow519passed，86新SDK全执行，原2384+1/516为上版证据；原失败与协议0/1夹具拒绝均保留。
+> 下一：最终本机后更新同一PR，双侧全部实际CI再验收清理；B144/#200五读取边界已确认排下一批，不污染本PR。
+> 状态：goal active、无审批阻塞；未真实下载/原生codec/GPU/测速/Study/main/tag或数据删除，用户暂存保留。
+
+
+> 当前（2026-10-17）：B143/#198 在同一 domestic-sdk-transfers 分支完成模型 SDK、eager/streaming 根读取及 spawn 下载任务阶段修复；尚未 PR。
+> 验证：5452322 阶段 core 2384 passed+1 既有 skip / CPU Flow 466 passed，33 个新 SDK 节点全执行；HF 0.34.4 模型控制另 17 passed。
+> 最新：真实 Dataset 与 IterableDataset 的图片字段在返回后解码仍可越界；0582ab5 已提交 4 项红回归（2 failed/2 passed，0 error/skip）。
+> 下一：把媒体延迟读取并入 #198 同类修复，覆盖原生解码/派生消费与来源/缓存合同后再完整检查和一个里程碑 PR；198 保持 OPEN。
+> 状态：无审批阻塞、无活观察句柄；前述绿色仅阶段证据。无真实模型/数据下载、GPU、测速、main/tag、布局或数据删除动作，用户暂存保留。
 
 > 当前（2026-10-17）：B139/#191三处已证消费反例同类里程碑本机验收完成，唯一未合evidence-boundaries-next，准备统一PR→dev。
 > 最新：Numbers/status/compare文本、派生compare JSON、可选activity提示均修；strict producer/atomic与科学数值/输入身份保持。
@@ -4228,3 +4235,74 @@ B14180009d7红20项11失败/9控制→13f46c5设计→9e2bcd2路由修；B142bce
 最终FINAL_GREEN191passed+1既有skip、COMPLETE_CORE2384passed+1既有skip、COMPLETE_FLOW433passed，均0fail/error；80新unit节点在完整XML全执行/0新skip。39780/77605与所有旧本机句柄均terminal0，无重派。FINAL_LOCAL_CHECKED SHA256 855fe5da3f8671ea91c20e9302ff4eb44a8087a8d93c5e0560a45e30fa6bb91a；原生三路由/三copy/五reader反例红绿、ZIP/完整XML均.tmp/audit141/142不随clone，portable回归与设计已入库。正常来源仅替身transport，不能推断国内服务可用或真实数据一致性；未进行下载/科学复跑/文献/GPU/训练/性能动作。
 
 本批是两个Issue收纳的完整手动准备类别里程碑，非逐方法/逐bug PR，PR194验收/清理记录随本批携入，不另tiny-doc PR。下一核对远端后统一PR→dev，确切最终head/actualdev全CI再关闭195/196并普通清主题，基线194后计数当前0、remote52。下一B143未用，goal active，无设计/用户阻塞；不合main/tag/release。
+
+
+## 254. PR197双侧实际CI验收与主题清理（2026-10-17）
+
+finalhead d824e1491b342c8c5f19000a5613cd9941eac8d2的Branch38971530628/Package38971530518/Unit38971530496全部实际矩阵及聚合success；正常merge actualdeve8cebcb60c8bd7ef3bfb28b7692476edce458dde的Package38972302844/Unit38972302789全部实际矩阵/聚合success。PR_CHECKED SHA256 8723c09d9d147b49459b276d0d93b67e23cf732da85b87e6ec5a07417760419d；DEV_CHECKED SHA256 db3e602f789b4ab9ff51d4d27ffd5f806c815d2150c2e3a1d14aafbfe501e699。195/196原body（含196已核验reader scope和拒夹具说明）逐字保留，各仅一次验收评论后关闭；PR197原body一次追加真实验收、删除清单与后续198范围，全文prose归一回读核对。
+
+删除清单：codex/correctness-milestone-next本地+远端。先核tip d824e14与远端一致且为actualdev祖先、workspace只用户_staging_from_DEM、protected main/dev/origin-main与PRE_MERGE一致、唯一primary worktree；detach到actualdev后普通push --delete/branch -d，再for-each-ref及ls-remote核对缺席/保护引用不变。无force、worktree/数据/结果/Run/provenance删除，不动main/tag。remote累计53，周期基线194之后计数1，约五PR再全面盘点；3815验收工具句柄及本机/观察均terminal，不重派。原始proof在.tmp/audit142不随clone。
+
+PR197仅保证独立手动脚本的国内路由/12显式流及回归，不将其urllib守卫说成覆盖全部SDK。head冻结等待实际dev期间只在.tmp继续read-only复查，aggregate/provenance/report未确认新反例；实际HF SDK另确认B143，以下单独记录，不污染已冻结head。
+
+## 255. B143/#198真实SDK的mirror重定向越界（2026-10-17）
+
+现有download_model先ModelScope、后snapshot_download(endpoint=hf-mirror)选初始地址，但第三方SDK会跟随mirror响应到huggingface.co并成功返回snapshot。实际本机huggingface_hub1.33.0/httpx0.28.1，RPipe helper→真实HF snapshot/file下载/redirect链，只有repo tree和HTTP transport为合成，socket.connect明确禁止。固定合成config.json及正确Git blob oid、新建.tmp cache：国内redirect控制3个HEAD/GET都在mirror、原样config成功；反例3请求中后2个HEAD/GET访问海外，仍返回相同合成config snapshot。不是模型训练/真实下载，也不声称live mirror当前这样重定向。
+
+79全状态Issue去重，189是初始SDK/factory选择、195是独立urllib脚本，本次198登记库SDK实际transfer边界；原始REPRO/日志/源码ZIP在.tmp/audit143不随clone，旧raw/模型缓存不读改，首次使用MockModelscope错误强制进入fallback，无真实ModelScope请求。原生脚本/日志及SDK本地源码作为primary证据，队列期间没有生产/测试改动；不把ModelScope/HF endpoint参数等同网络防火墙。
+
+已读本地SDK关键合同：默认httpx client follow_redirects=True、metadata.location选blob URL、已知Hub host允许redirect；get_session注明共享client不可手动close，set_client_factory会关闭旧session。pyproject hf extras未约束版本，不能只凭本机1.33声明全兼容。下一先查真实可用公共transport hook/metadata/Xet/其他dataset路径和并发无关调用者，明确最小兼容设计，再先提交红回归后修；不为省事关闭/重配全局共享客户端或悄悄转海外。以上是审计事实/约束，非未经验证的实现决定。
+
+PR197完成验收/清理后从actualdev建立唯一新codex/domestic-sdk-transfers；198是唯一OPEN、当前B143，下一B144。验收/复查文档本地按主题提交，随下一完整相关里程碑PR，不单tiny-doc PR。goal active，无用户/设计等待；不改布局/科学门，不实际下载/运行GPU或性能/训练，不合main/tag/release。
+
+
+## 256. 2026-10-17：B143 / #198 实际 SDK 红回归与所有权控制
+
+ef3c500 先提交真实 HF 1.33.0 / httpx 0.28.1 下载链的 6 项回归，4 failed/2 passed；随后补传输 KeyboardInterrupt 原对象传播、共享客户端未关闭、原 hook 列表与后续独立调用保持的控制，扩展 7 项为 4 failed/3 passed、0 error/skip。四项失败为 huggingface.co、cdn-lfs.huggingface.co、HTTP 降级和伪装 mirror 域名；国内重定向与缓存、普通 foreign consumer、取消为控制。只替代 ModelScope 不可用、仓库元数据和网络 transport，真实 snapshot/file/redirect/cache 逻辑执行，socket.connect 禁止。可移植测试见 tests/rpipe/structure/data/test_origin_sdk.py；原始 RED_SDK/RED_SDK2 XML/log 留 .tmp/audit143，不随 clone 提供。此批不是生产修复或完整 SDK 兼容验收。
+
+fetch origin 成功，当前真实 dev 仍 e8cebcb，本地单主题分支保留文档与红测试；用户 _staging_from_DEM 保持。SDK 传输实现还须覆盖旧版 requests 每线程 Session、现代共享 httpx Client、原生 Xet 和 datasets 的延迟读取，不能用替换/关闭全局客户端或只检查最终返回值冒充请求前拦截。HF 0.34.4 代码从清华国内 PyPI 隔离放 .tmp/audit143/sdk034，pip 跨盘移动 CLI 后遇 WinError32、exit2；日志和已落包保留，仅源码可读核对，不把 pip 的前段 Successfully installed 当安装验收成功，不修改现有 venv、不删临时文件、不换海外源。无设计批准等待，继续同类里程碑而非逐方法 PR；198 保持开放，main/tag/布局/数据结果不动。
+
+
+## 257. 2026-10-17：B143 / #198 SDK 模型、数据与并发阶段修复；媒体返回后消费继续同批
+
+6621e12 在 ef3c500/82b9876 后补真实 SDK Xet 元数据选择回归：8 项 5 failed/3 passed；613a240 先明确上下文拥有传输检查方案，再 d52526c 实施。保留 ModelScope 优先、同 ID/revision/cache_dir、双源故障链、本地路径及取消合同；requests 每次 send / httpx 单次 transport 入口按 ContextVar 校验 HTTPS/host/authority；ThreadPoolExecutor.submit 把策略复制给 SDK 文件 worker。不 reset client factory、不关闭共享 client、不改认证/代理/hook 列表；无标记的并发 foreign 调用维持原函数、常量和 native 可用性。国内 HF 用可检查的 HTTP，不让 Xet 或旧 hf_transfer 接管；file_download 的配置代理/availability 只读本次上下文，退出还原，缓存树快捷分支也受同一 availability 约束。
+
+902f73d 补旧版真实 SDK 与并发控制：从国内 PyPI 隔离的 HF 0.34.4 包实际可 import，原 dev e8cebcb 源码用相同真实 SDK 测试为 9 项 5 failed/4 passed；当前实现旧 SDK 模型及 ModelScope requests 栈控制 17 passed。先前 pip CLI 跨盘移动 WinError32/exit2 仍留证，不当成 pip 完整安装成功；现有 venv 没替换。现代 HF 1.33.0/httpx 0.28.1、缓存/取消/客户端/foreign 同时调用和 ModelScope CN/OSS 区域控制均实际执行；未联系真实服务，不证明 ModelScope 或镜像当前可用性。
+
+f174b8c 补 eager / streaming 根请求逃逸，2 failed；24b4dba 方案后 2384a4b 修复调用期策略与可 pickle 的原生根生成器绑定，保留原 Dataset/IterableDataset 对象，不重建 schema/info/state。每次创建/next/close 才启用策略，yield 给用户前退出；close IO 不覆盖原错或取消，正常 close 故障和未知程序错误保留。aiohttp ClientRequest 构造早于 connector/DNS 校验目标，实际 redirect response 的 Location 也核验；真实 Session 重定向循环用合成连接/原生响应控制。第一 aiohttp 夹具在 Windows 事件循环自身 socket 建立前禁止 connect，第二夹具误把未消费响应标 released：两次无效夹具原 log/XML 保留，修正后 4 项通过，不记为库反例。
+
+真实 datasets 5.0.0 本地 JSON 验证原生 streaming shuffle/shard/batch/map/Torch format、pickle 与 state_dict 恢复保持；返回后请求用真实 IterableDataset + 合成源确认。024b20d 再证真实 download_manager.map_nested / Pool(spawn) 的子进程丢策略（1 failed、子 PID 已确认、合成 adapter 无网络）；9348af1 方案后 5452322 用模块级任务 callable 在子进程安装 guard，已装传输的线程只设/还原策略，保留 num_proc/原函数/返回顺序。真实 spawn 和原生线程池均通过，6 个生成器首错/取消/正常 close/程序 close 控制通过，无父锁等待死锁或上下文泄漏。
+
+5452322 阶段完整 core：2384 passed、1 既有 skip、0 failed/error；CPU Flow：466 passed、0 skip/failed/error。XML 逐项确认新 SDK 文件 33 节点均执行。原始 CORE_MODEL_DATA / FLOW_MODEL_DATA / GREEN_SDK034_STAGE / MODEL_DATA_STAGE_CHECKED 在 .tmp/audit143，不随 clone；39195/83435 均 exit0，无存活观察句柄。不是最终 #198 验收，媒体后续新红不在该 466 中。
+
+相邻原生消费复查确认未完成边界：真实 Dataset.__getitem__ 与 IterableDataset 格式化 Image 字段均在根生成器 yield 后解码；替代 xopen/requests transport、使用自造 1 像素 PNG，两者策略 None，进入海外合成请求并成功解码。MEDIA_REPRO.json/脚本/log 保留；首脚本仅结尾记录漏导入 Path，原脚本/log 保留后修正重验，不把日志故障当库缺陷。0582ab5 先提交 4 项正式回归：国内两项正控制通过，海外 eager/streaming 两项 failed，0 error/skip。该媒体消费属于 #198 既定数据 SDK 传输合同，继续同类批次，不能以根生成器检查或已有绿色声称闭合；须覆盖适用 native 媒体路径、原 schema/缓存/派生消费，不以拒绝所有媒体或改变返回类型代替修复。
+
+198 远端重新核对仍 OPEN，未开 PR、不推小文档 PR、不关闭 Issue；main/dev/origin-main 保护引用未动，origin/dev 仍 e8cebcb。PR197 及 195/196 的旧验收/评论/分支清理不重复。cleanup 基线194后1、remote53 仅沿上次确认值，本轮未重做全面盘点；未合主题不删，用户 _staging_from_DEM 原样保留。goal active，无设计审批/用户决策阻塞；下一 B144，实际模型/数据服务、GPU、性能、正式 Study、main/tag/release、布局/schema迁移均未执行。
+
+
+## 258. 2026-10-17：B143/#198媒体、后台消费者与配置客户端统一补全
+
+在已提交0582ab5媒体红与4837cc6父scope提前退出红之后，72770e0先记录消费者所有权方案；52b3f72/a43405b再先红ModelScope站点与实际SDK客户端子类，2c93222先设计，fd90f37再红继承方法还原（2项1failed/1passed）。最终28b107f只在原origin.py补全：实际消费者独立计数scope、安装/还原短锁、fork继承清理；原生features decoder按实例绑定，嵌套/派生view保持，xopen文件代理在read/seek/close期间续guard；实际HF session getter保留原factory和client并检查实际class，退出按原属性所有权还原。ModelScope公开签名支持endpoint时显式CN，旧签名原参数不改。
+
+针对104passed/0fail/error/skip（GREEN_COMPLETE_TARGET3.xml），旧HF0.34.4 requests路径24passed/0fail/error/skip（GREEN_SDK034_FINAL.xml）；core2384passed+1既有skip/0fail/error（CORE_FINAL.xml），CPU Flow516passed/83新SDK全执行，句柄16027终结0。此前5452322阶段466Flow不是最终验收。CI四CPU环境补实测SDK测试依赖，防止新integration节点全被可选缺依赖跳过；不锁生产extra。仍一个198里程碑、无PR/远端CI、Issue唯一OPEN。
+
+夹具与边界如实保留：初始media deepcopy失败经DEBUG_PREBIND_COPY确认在未经RPipe绑定的原SDK同样dictionary changed size（共享HfFileSystem._cache）；正式夹具只替换本次拥有的空cache并先验证原生deepcopy，不清真实用户cache，不将warm后绿冒称库修复。Audio/Video/PDF真实datasets feature配延迟file协议backend替身；三次不完整可选backend导出造成的夹具失败和原日志均保留，更正后13协议节点通过，不当库缺陷或本机C++/FFmpeg/PDF解码成功。TorchCodec源码仅核对read/seek协议，未实际安装/解码。原图像/输入Arrow/feature序列化/fingerprint、缓存/revision/来源、foreign并发/取消保持，无磁盘布局/schema迁移。
+
+全部原红/失败夹具/取消/脚本/XML在.tmp/audit143，不随clone；portable测试和设计入库。没有真实模型/数据下载、服务可用性、GPU/性能/科学Study/训练、main/tag或数据删除。新GPU资源门仅记入计划，不触发实验。下一完成最终CPU Flow与完整本机checker后统一PR，最终head和actualdev所有实际CI分别验收再关闭198/正常清本主题。用户_staging_from_DEM保留，下一B144，无设计审批等待。
+
+
+B143完整本机验收补记：最终源码28b107f的CORE_FINAL2384passed+1既有skip、FLOW_FINAL516passed/0skip，GREEN_COMPLETE_TARGET3为104passed（21既有origin unit+83新SDK integration）；83新节点在完整Flow XML逐项同集核对、无漏收/skip。HF0.34.4隔离compat24passed。FINAL_LOCAL_CHECKED.json保存源码/测试/XML SHA256、节点和未验证边界；.tmp证据不随clone。63582/16027均terminal0，无活句柄。下一仅统一PR/双侧实际CI验收，当前不能声称已合/198已关闭。
+
+
+## 259. 2026-10-17：PR199跨Python真实CI拒绝、最小修正与下一类读退出反例
+
+PR199首finalhead3639ae09cebd1406f6320169bcdab400bc2ab436：Branch38980543681和Package38980543683所有实际job成功；Unit38980543735的Linux/Windows3.13成功，Linux3.10 job117240125624、Windows3.10 job117240125651均在已提交的reader pickle回归抛UnpicklingError（state is not a dictionary），聚合failure。实际失败完整日志/CI_OLD_FINAL_STATUS保留.tmp/audit143，不rerun旧head掩盖。官方pickle3.10/3.11合同与状态委托原因见设计B143文末；先77da8d5记录方案，再69ec7e4显式返回代理自己的__dict__，保持底层stream的原序列化/资源生命周期。没有本机3.10解释器，用实际远端3.10矩阵验收，不拿本机3.13替代。
+
+扩协议0–5时，本地初候选2失败/107通过；原生BytesIO同样拒绝0/1，是夹具要求超出底层协议，不当库缺陷。5978164改为原生支持的2–5，GREEN_PY310_FIX2107passed/0fail/error/skip，新增控制未绕开原来默认协议失败点。完整core2384passed+1既有skip/Flow519passed、86新SDK全执行；旧28b107f的最终本机证据有效但只是上一源版本，当前不得提前声称最终全绿。此修正仍PR199同完整SDK类别，不另小PR。
+
+冻结head等待期间继续三类只读复查，全src显式with-open清单发现下一B144/#200：origin._md5、shared._digest、index.load_index三strict reader的read error/KeyboardInterrupt会被owned close OSError替换；aggregate JSONL和Logger尾部optional reader会因此吞掉KeyboardInterrupt、正常返回（Logger还追加新记录）。16+4=20真实临时文件/实际公共入口探针留.tmp/audit144/REPRO与LOGGER_REPRO/sourceZIP，均owned close一次、输入/peer字节保持（Logger旧前缀保持，正常追加合同单独检查）；I/O错误是注入，不声称实盘故障。optional普通read/close IO回退本来有效，不能把它修成strict；下一类只保首错/取消且正常strict close失败和未知程序错保持。
+
+检查80全状态Issue并逐读144/142/196/116/120范围，200独立登记库显式reader，旧writer/lock/手动script问题不重开。200正文保原文一次补第五Logger边界、非重复评论。仍等199最终双侧验收清理后才从actualdev开一个下一类别分支、先提交红回归和方案；不为后续候选修改已冻结PR的生产范围。当前open198/200，下一B145；原用户暂存/未合分支/数据保留，无GPU/性能/科学Study/真实下载/main/tag动作。
+
+
+B143跨版本修正后完整本机检查：5978164（生产69ec7e4）CORE_PICKLE_FINAL2384passed+1既有skip/0fail/error、FLOW_PICKLE_FINAL519passed/0skip；86新SDK节点与107针对性XML同集核验全执行。FINAL_LOCAL_PICKLE_CHECKED保源码/测试/XML hash与限制，旧FINAL_LOCAL_CHECKED/原失败CI不覆盖；65922/86008均terminal0。没有本机3.10，不将此证明跨版本，下一更新同一PR199后必须四实际CPU矩阵/包/聚合全成功，actualdev另验收。86中四pickle协议均原生BytesIO支持，0/1原生拒绝证据单独保留。

@@ -1141,3 +1141,6 @@ NUMBERS.md既有Run ID代码单元格沿用原文本投影；对合法反引号I
 ### 国内源扩展入口（2026-10-17）
 
 origin=domestic在Data/Model注册builder前设置HF_ENDPOINT。模型builder可复用model_api.download_model(repo_id,cache_dir,revision=None)：现有本地路径不下载，远端先ModelScope snapshot_download，同ID/revision/cache_dir失败仅显式hf-mirror兜底，双失败保留异常链报错，取消不换源。HF数据builder复用data_api.load_hf_dataset，导入前/后核对已缓存HF端点，海外旧常量明确拒绝，要求新worker导入前选domestic。不reload第三方全局模块，不声称能管住任意builder/第三方脚本的自定义HTTP，接入作者须逐项审查外部URL并改国内源。ID不自动猜映射。可选hf包含modelscope/datasets，纯torch不强加依赖；没有国内镜像的torchvision类型仍拒绝。共享目录/历史配置/结果不变，新Study模板domestic。
+
+
+2026-10-17 国内下载边界（B143/#198）：现有 origin.py 统一模型/数据 SDK 的逐请求来源核验，使用 ContextVar 区分国内消费者及未标记调用。安装/还原短锁与实际消费者计数覆盖 worker、streaming generator、media feature decoder 和延迟文件读；不持锁等待 SDK 工作、不替换/关闭共享客户端。HF 实际 get_session/get_async_session 返回的 client class 也受检查，退出还原继承关系。没有新增模块/目录/公共配置、Dataset 类型或磁盘格式；仅可选 hf 使用路径增加明确的传输拒绝。支持边界及实际 SDK/协议验证限制见 README 与 artifact_consistency_design 的 B143 节。

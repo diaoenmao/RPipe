@@ -61,3 +61,6 @@ CI 安装 `.[dev]`，未安装 `hf` 可选依赖；HF 真实 Trainer 用例可�
 手动验收时，用已安装分发包的 Python 运行 `tests/package_smoke.py --workspace <全新目录>`。程序拒绝从 `src/` 导入 rpipe，拒绝覆盖已有工作区，并保留每条命令的 stdout、stderr 与退出码。
 
 测试收集成功、筛选批次通过、安装验收和科学结果判定分别记录。`.tmp/test-results/` 为本机证据，不随 Git clone 提供；收集阶段的 exit 0 不表示测试已执行，筛选批次通过也不表示全支持范围通过。
+
+
+B143/#198 的 [test_origin_sdk.py](rpipe/structure/data/test_origin_sdk.py) 使用实际 HF snapshot/file/redirect/cache、datasets 原生对象和 requests/httpx/aiohttp 栈，HTTP 响应与媒体 backend 为合成，禁止真实模型/数据下载。CPU CI 安装本批已核对的可选 SDK 测试版本，确保回归实际执行；这些测试不以 mock 成功声称国内服务可用，Audio/Video/PDF 的文件协议检查不代表 C++/FFmpeg/pdfplumber 实际解码。spawn/default pool/线程与延迟消费所有权分别覆盖，临时失败和 XML 留 .tmp，不随 clone。

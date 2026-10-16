@@ -762,3 +762,43 @@ B142同类严格读取补全（2026-10-17）：原digest及split_counts四个显
 
 
 B141–B142完整类别本机验收（2026-10-17）：最终84389b0含12显式owned流与既有路由修，80新全执行，191相邻+1既有skip/core2384passed+1既有skip/CPU Flow433passed。所有原AST/hash/strict gate核对，三批red/拒候选保留；无设计等待，准备一个完整类别PR，195/196待双侧实际CI。细节与限制见record§253。
+
+
+B141–B142已实施并双侧验收（2026-10-17）：PR197 finald824e14/actualdev e8cebcb所有实际矩阵/聚合success，195/196已验收关闭、旧分支本地+remote普通清理，详record§254。后续B143/198确认SDK redirect边界独立于手动urllib，尚在primary源码/兼容审计，待设计写明后先红/实施；不把PR197的完成说成所有SDK transfer已受guard。无设计审批等待。
+
+
+### B143 / #198：SDK 实际传输约束（2026-10-17，红回归完成，实施中）
+
+不是新的设计审批门。国内源优先级、公开函数签名、本地输入、revision/cache 身份、布局以及取消传播保持既有合同；ef3c500 先提交 4 个真实 SDK 重定向反例与 2 个国内/共享客户端控制，扩展取消控制后 7 项 4 failed/3 passed。生产代码尚未修改，不能把入口 endpoint、最终 URL 或仅模拟 snapshot_download 函数当成传输约束已生效。
+
+实现边界：每次模型/数据下载及重定向的目标在传输前核验；响应元数据中选出的下载 URL 同样核验；来源未获国内许可时在发请求前失败并保留双源故障说明。复用 SDK 现有认证、代理、缓存与连接生命周期，不关闭或替换其他调用者的共享客户端。回调只清理本次拥有的对象，普通成功、失败、KeyboardInterrupt 与并发调用均须核验。HF 0.x 每线程 requests Session 与 1.x 共享 httpx Client 不能用同一个未经验证的全局 factory 替换方案；Xet/native、datasets/fsspec/aiohttp 和 streaming 延迟读取另按实际调用路径验证，不能把 Python HTTP hook 自动视为 native 约束。不可保证国内传输的 SDK 路径须明确报错，不静默转海外，不伪造可用性；能力边界写入使用文档并以控制用例验收，不任意改依赖版本掩盖兼容问题。
+
+本批仍在一个 domestic-sdk-transfers 分支累积，未完成原生/旧版/数据读取验证前不声称 #198 修完，也不另开细碎 PR。源码依据为 HF 版本化 utilities 文档及实际安装源码，ModelScope/ModelScope Hub 官方源码；.tmp/audit143/PRIMARY_SOURCE_NOTES.json 保留阅读范围和来源，临时材料不随 clone。没有真实模型/数据下载或科学实验，未新增布局/公共配置字段。
+
+
+B143 模型阶段实施选择（2026-10-17）：在既有 origin.py 内用 ContextVar 标记本次来源策略；只在同步 SDK 调用期间安装、退出时还原 requests.Session.send 与 httpx 单次传输检查。每次重定向或元数据选出的 URL 都在该次 transport 进入前核验 HTTPS、无用户信息、默认 443 和来源 host；HF 只允许 hf-mirror，ModelScope 允许 modelscope.cn 子域及 OSS 的 cn 区域 host，不允许泛 aliyuncs 或 modelscope.ai。SDK 使用的 ThreadPoolExecutor.submit 复制本次上下文到文件 worker，包括已存在的线程；无标记的其他线程按原逻辑运行。临时安装由独立 RLock 管理，同类入口串行，worker 不取锁；不重置 client factory、不关闭客户端、不触碰认证/代理/hook 列表。
+
+HF 文件下载模块的 native availability 与配置读取按上下文隔离：国内调用使用标准 HTTP，Xet/旧 hf_transfer 不接管；其他调用读原函数/原常量，不改全局 flags/env。这样 cache-tree 的 Xet 快捷路径也不能绕过请求检查。以真实 SDK Xet 元数据选择的红回归 6621e12 先证（扩展后 8 项，5 failed/3 passed），修后需控制并发/取消/异常还原。ModelScope、旧 HF 及数据 eager/lazy 消费仍须分别补证；该选择不是任意自定义 builder 的网络防火墙，也不以模型阶段 green 声称 #198 全面完成。
+
+
+B143 数据阶段相邻反例与实施选择：f174b8c 先提交 eager / streaming 两个请求逃逸回归（2 failed/0 error/skip），均使用 SDK 调用/迭代边界替身加真实 requests 栈，不冒称真实 datasets 远端集成。真实 datasets 5.0.0 本地两行 JSON 另核对：streaming 根为 ArrowExamplesIterable，保有 generate_tables_fn、kwargs、分片/恢复状态。load_dataset 调用期使用同一 mirror 上下文；返回的原生 streaming 对象不换类型、不重建 schema/info/state，只给根 generate_examples_fn / generate_tables_fn（及适用的 generate_more_kwargs_fn）绑定可 pickle 的模块级 callable，每次创建/next/close 期间启用同一传输策略、yield 交还用户前退出上下文。这样保留原生 shuffle/shard/format/batch/state 的构造关系，且不把国内标记泄漏到消费线程的其他调用。正常关闭失败仍报告；已有异常/取消不被 close OSError 覆盖，未知程序错误保持原语义。
+
+aiohttp 的每个 ClientRequest 构造前和实际 redirect response 的 Location 选择处补同类核验，前者早于 connector/DNS/连接；不只检查最终响应。多进程 download_config.num_proc、格式/media 延迟访问、线程预取生命周期仍须据实际 SDK 执行分别验证，不以根生成器绑定冒称任意第三方处理代码全被沙箱化。整个 #198 仍同分支累积，无新 PR/关闭/全量验收声明。
+
+
+B143 数据多进程补全：024b20d 在真实 datasets 5.0.0 的 download_manager.map_nested / multiprocessing.Pool(spawn) 运行 2 个进程的 4 项合成任务；子 PID 确认不同于父进程，子函数使用本地合成 requests adapter，国内策略为空且海外 transport 被进入，1 项红失败、0 error/skip。不是下载服务不可用或夹具失败。保持 download_config.num_proc、原函数/输入/顺序/返回值：只把国内调用传给 download_manager.map_nested 的任务包装为模块级可 pickle callable。子进程入口自行安装同一 guard；已受父调用生命周期管理的线程任务只设置/还原策略，不重取父线程持有的安装锁，以免 joblib/thread backend 等待死锁。无标记的非国内 map 不替换任务。传输补丁是否已安装的进程内标记只在受锁的安装周期有效，不把策略永久留在 SDK 全局或客户端。
+
+
+B143 媒体与后台生命周期补全方案（2026-10-17）：0582ab5 已先红，真实 Dataset / IterableDataset 的 Image 格式化解码在返回后越界（4 项2failed/2passed）；4837cc6 再确认 ThreadPoolExecutor 后台任务在父 SDK scope 返回后虽保有 ContextVar，却失去实际传输补丁（1 failed）。阶段5452322的 core/Flow green不覆盖这两处。
+
+以最后一个实际消费者结束为卸载条件：安装/还原仅在 RLock 下操作，实际 SDK 工作不持该锁；各下载/decoder/文件读/后台 worker 分别持计数作用域。共有补丁按 owner/attribute/当前对象去重，新导入 SDK 模块进入时补装，计数归零才按拥有关系还原。不改共享 client factory/session/auth/proxy；foreign 无标记调用仍委托原方法。spawn 自安装；fork 先清理继承的 RPipe 补丁/计数和来源标记，防止持久 worker 误继承父 scope。线程任务本身持作用域，不只复制上下文，允许父调用先结束。该方案替代前一模型阶段“整个调用持锁串行”的实现，以消除原生 decoder 读取回调线程等待父锁及后台提前卸载风险；不是性能优化或测速。
+
+媒体保留 SDK 原 schema、原生 Dataset/IterableDataset、已给 features、格式化/缓存与原数据字节：在返回对象实际拥有的 features decoder 绑定已有 domestic callable（原 unbound method+schema，不以 bound-method 循环破坏 pickle）；嵌套 dict/list/sequence 同步处理。仅在有国内上下文时，SDK features 的 xopen 及中央 xopen 返回文件加一个透明只读协议代理；打开仍走原 SDK，后续 read/seek/迭代/close 委托前持同一 guard。这样 Audio/Video/PDF 原生对象保留 seek/range 读取及所有权，无整文件预下载、无新缓存目录，也不把 decoder 构造完成当作 I/O 结束。Image/PDF/Audio/Video 等真实 SDK 使用 xopen 的入口逐项核对；本地路径/内嵌 bytes 不额外下载。派生 view、features deepcopy/序列化、外部无关 consumer、异常/取消/延迟读取/并发均补控制。SDK transport 内部入口已实测 HF0.34.4/1.33.0 与 datasets5.0.0，升级须重核；不声称任意第三方自定义代码获得通用网络沙箱。无设计审批等待，同一#198里程碑，不提前PR/关闭。
+
+
+B143 实际客户端与站点选择补全（2026-10-17）：52b3f72 先红 ModelScope 已支持 endpoint 却默认选择 .ai 的调用；a43405b 再红实际 HF SDK 配置的客户端子类覆盖 transport 后绕过基类检查。ModelScope 仅在公开签名包含 endpoint 时显式传 https://modelscope.cn，旧签名保留原参数，不改全局站点或吞 TypeError 重试。HF 已加载模块的 get_session/get_async_session 别名委托原 getter，返回相同 client，并仅在国内上下文为实际 client class 的单次请求方法补检查；保留 SDK factory、认证、连接和关闭所有权。未知客户端没有已支持的单次传输入口时明确失败，不静默绕过；异步方法保持 await 语义。所有补丁仍按实际 owner 还原，未标记调用按原 getter/方法工作。测试同时控制合法自定义客户端、并发 foreign、取消和旧版 requests 路径。
+
+媒体路径在 decoder 调用前检查远端协议/host，嵌入 bytes 与本地路径保留；不把 Json 文本当 URL。延迟文件代理只委托原 read/seek 等协议；依据 TorchCodec 官方 [_decoder_utils.py](https://github.com/pytorch/torchcodec/blob/main/src/torchcodec/_core/_decoder_utils.py)、[AudioDecoder](https://github.com/pytorch/torchcodec/blob/main/src/torchcodec/decoders/_audio_decoder.py) 与 [VideoDecoder](https://github.com/pytorch/torchcodec/blob/main/src/torchcodec/decoders/_video_decoder.py) 的 file-like 接口源码核对。当前实际 datasets 媒体 feature 配协议 backend 替身验证，未运行本机未安装的 TorchCodec C++/FFmpeg 或 pdfplumber 实际解码，不将其表述为原生 codec 集成验收。
+
+
+B143跨Python CI拒绝与补全（2026-10-17）：PR199首head3639ae0的实际Linux3.10矩阵在已提交媒体文件pickle控制中失败（_pickle.UnpicklingError: state is not a dictionary）；Linux3.13控制通过。Python [pickle官方合同](https://docs.python.org/3.10/library/pickle.html#object.__getstate__) 与 [3.11变更](https://docs.python.org/3.11/library/pickle.html#object.__getstate__)表明object默认__getstate__自3.11才存在，3.10会走代理__getattr__委托到底层BytesIO的非dict状态。最小修：文件代理显式返回自身__dict__作为pickle state，不委托底层stream状态；不新增磁盘格式/重建Dataset/要求Python升级。原回归在真实3.10 CI已先红；本地扩四个原生BytesIO支持的pickle协议（2–5）控制，再重核所有最终本机与远端矩阵，不把3.13绿代替3.10。原失败run/job/log保留，不通过rerun原head或删失败获得验收。仍同一PR199/Issue198，不另PR。
