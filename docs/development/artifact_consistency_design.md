@@ -765,3 +765,12 @@ B141–B142完整类别本机验收（2026-10-17）：最终84389b0含12显式ow
 
 
 B141–B142已实施并双侧验收（2026-10-17）：PR197 finald824e14/actualdev e8cebcb所有实际矩阵/聚合success，195/196已验收关闭、旧分支本地+remote普通清理，详record§254。后续B143/198确认SDK redirect边界独立于手动urllib，尚在primary源码/兼容审计，待设计写明后先红/实施；不把PR197的完成说成所有SDK transfer已受guard。无设计审批等待。
+
+
+### B143 / #198：SDK 实际传输约束（2026-10-17，红回归完成，实施中）
+
+不是新的设计审批门。国内源优先级、公开函数签名、本地输入、revision/cache 身份、布局以及取消传播保持既有合同；ef3c500 先提交 4 个真实 SDK 重定向反例与 2 个国内/共享客户端控制，扩展取消控制后 7 项 4 failed/3 passed。生产代码尚未修改，不能把入口 endpoint、最终 URL 或仅模拟 snapshot_download 函数当成传输约束已生效。
+
+实现边界：每次模型/数据下载及重定向的目标在传输前核验；响应元数据中选出的下载 URL 同样核验；来源未获国内许可时在发请求前失败并保留双源故障说明。复用 SDK 现有认证、代理、缓存与连接生命周期，不关闭或替换其他调用者的共享客户端。回调只清理本次拥有的对象，普通成功、失败、KeyboardInterrupt 与并发调用均须核验。HF 0.x 每线程 requests Session 与 1.x 共享 httpx Client 不能用同一个未经验证的全局 factory 替换方案；Xet/native、datasets/fsspec/aiohttp 和 streaming 延迟读取另按实际调用路径验证，不能把 Python HTTP hook 自动视为 native 约束。不可保证国内传输的 SDK 路径须明确报错，不静默转海外，不伪造可用性；能力边界写入使用文档并以控制用例验收，不任意改依赖版本掩盖兼容问题。
+
+本批仍在一个 domestic-sdk-transfers 分支累积，未完成原生/旧版/数据读取验证前不声称 #198 修完，也不另开细碎 PR。源码依据为 HF 版本化 utilities 文档及实际安装源码，ModelScope/ModelScope Hub 官方源码；.tmp/audit143/PRIMARY_SOURCE_NOTES.json 保留阅读范围和来源，临时材料不随 clone。没有真实模型/数据下载或科学实验，未新增布局/公共配置字段。

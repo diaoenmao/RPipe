@@ -29,9 +29,12 @@ def sdk_download(monkeypatch, tmp_path):
     oid = hashlib.sha1(b'blob ' + str(len(payload)).encode() + b'\0' + payload).hexdigest()
     calls = []
     target = ['https://hf-mirror.com/synthetic/config.json']
+    failure = [None]
 
     def transport(request):
         calls.append(str(request.url))
+        if failure[0] is not None:
+            raise failure[0]
         headers = {'x-repo-commit': commit, 'etag': oid,
                    'content-length': str(len(payload))}
         if '/resolve/' in request.url.path:
@@ -58,7 +61,7 @@ def sdk_download(monkeypatch, tmp_path):
             return download_model('rpipe-audit/synthetic-model', tmp_path, revision=commit)
 
         yield SimpleNamespace(run=run, target=target, calls=calls, client=client,
-                              payload=payload, httpx=httpx)
+                              payload=payload, httpx=httpx, failure=failure)
 
 
 @pytest.mark.parametrize('target', [
@@ -93,3 +96,16 @@ def test_model_sdk_preserves_shared_client_for_foreign_consumer(sdk_download):
     response = sdk_download.client.get('https://example.org/unrelated.json')
     assert response.content == sdk_download.payload
     assert not sdk_download.client.is_closed
+
+
+def test_model_sdk_cancellation_preserves_client_and_original_exception(sdk_download):
+    error = KeyboardInterrupt('synthetic transport cancellation')
+    hooks = {name: list(values) for name, values in sdk_download.client.event_hooks.items()}
+    sdk_download.failure[0] = error
+    with pytest.raises(KeyboardInterrupt) as caught:
+        sdk_download.run()
+    assert caught.value is error
+    assert sdk_download.client.event_hooks == hooks
+    assert not sdk_download.client.is_closed
+    sdk_download.failure[0] = None
+    assert sdk_download.client.get('https://example.org/unrelated.json').status_code == 200

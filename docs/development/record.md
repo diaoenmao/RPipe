@@ -1,8 +1,8 @@
-> 当前（2026-10-17）：PR197已正常合dev e8cebcb，最终head/实际dev全部实际CI成功；195/196验收关闭，旧主题本地+remote已清。
-> 最新：B143/#198确认实际HF SDK即使mirror endpoint仍可跟随响应访问海外；3个合成请求中2个海外，返回成功快照，零真实网络。
-> 验证：PR197本机core2384passed+1既有skip/CPU Flow433passed、新80全执行；B143仅原生SDK反例/控制与源码审计，未改生产/测试。
-> 下一：唯一未合domestic-sdk-transfers本地记录，先兼容传输设计/红回归，再同类合批修；198为唯一OPEN，无审批阻塞。
-> 保护：cleanup基线194后1/remote53；无活CI句柄、真实下载/GPU/训练/main/tag/布局动作，所有原始失败/用户暂存保留。
+> 当前（2026-10-17）：PR197 已合 dev e8cebcb 并完成双侧实际 CI；195/196 已验收关闭，旧主题本地与远端已清理。
+> 最新：B143/#198 的真实 HF SDK 传输回归已落库；第一批 ef3c500 为 6 项、4 failed/2 passed，扩展取消控制后 7 项、4 failed/3 passed，均 0 error/skip。
+> 证据：tests/rpipe/structure/data/test_origin_sdk.py；原始 XML/log 位于 .tmp/audit143，不随 clone 提供；全部合成传输，零真实模型/数据下载。
+> 下一：在 domestic-sdk-transfers 同一分支统一完成 SDK 重定向、原生传输与客户端所有权约束，未修复项保持 #198 开放，不提前开零碎 PR。
+> 状态：无审批阻塞、无存活 CI 观察句柄；生产代码未改。旧版 SDK 隔离工具安装报 WinError32 已留证，未改变现有运行环境，不当作 RPipe 失败。
 
 > 当前（2026-10-17）：B139/#191三处已证消费反例同类里程碑本机验收完成，唯一未合evidence-boundaries-next，准备统一PR→dev。
 > 最新：Numbers/status/compare文本、派生compare JSON、可选activity提示均修；strict producer/atomic与科学数值/输入身份保持。
@@ -4247,3 +4247,10 @@ PR197仅保证独立手动脚本的国内路由/12显式流及回归，不将其
 已读本地SDK关键合同：默认httpx client follow_redirects=True、metadata.location选blob URL、已知Hub host允许redirect；get_session注明共享client不可手动close，set_client_factory会关闭旧session。pyproject hf extras未约束版本，不能只凭本机1.33声明全兼容。下一先查真实可用公共transport hook/metadata/Xet/其他dataset路径和并发无关调用者，明确最小兼容设计，再先提交红回归后修；不为省事关闭/重配全局共享客户端或悄悄转海外。以上是审计事实/约束，非未经验证的实现决定。
 
 PR197完成验收/清理后从actualdev建立唯一新codex/domestic-sdk-transfers；198是唯一OPEN、当前B143，下一B144。验收/复查文档本地按主题提交，随下一完整相关里程碑PR，不单tiny-doc PR。goal active，无用户/设计等待；不改布局/科学门，不实际下载/运行GPU或性能/训练，不合main/tag/release。
+
+
+## 256. 2026-10-17：B143 / #198 实际 SDK 红回归与所有权控制
+
+ef3c500 先提交真实 HF 1.33.0 / httpx 0.28.1 下载链的 6 项回归，4 failed/2 passed；随后补传输 KeyboardInterrupt 原对象传播、共享客户端未关闭、原 hook 列表与后续独立调用保持的控制，扩展 7 项为 4 failed/3 passed、0 error/skip。四项失败为 huggingface.co、cdn-lfs.huggingface.co、HTTP 降级和伪装 mirror 域名；国内重定向与缓存、普通 foreign consumer、取消为控制。只替代 ModelScope 不可用、仓库元数据和网络 transport，真实 snapshot/file/redirect/cache 逻辑执行，socket.connect 禁止。可移植测试见 tests/rpipe/structure/data/test_origin_sdk.py；原始 RED_SDK/RED_SDK2 XML/log 留 .tmp/audit143，不随 clone 提供。此批不是生产修复或完整 SDK 兼容验收。
+
+fetch origin 成功，当前真实 dev 仍 e8cebcb，本地单主题分支保留文档与红测试；用户 _staging_from_DEM 保持。SDK 传输实现还须覆盖旧版 requests 每线程 Session、现代共享 httpx Client、原生 Xet 和 datasets 的延迟读取，不能用替换/关闭全局客户端或只检查最终返回值冒充请求前拦截。HF 0.34.4 代码从清华国内 PyPI 隔离放 .tmp/audit143/sdk034，pip 跨盘移动 CLI 后遇 WinError32、exit2；日志和已落包保留，仅源码可读核对，不把 pip 的前段 Successfully installed 当安装验收成功，不修改现有 venv、不删临时文件、不换海外源。无设计批准等待，继续同类里程碑而非逐方法 PR；198 保持开放，main/tag/布局/数据结果不动。
