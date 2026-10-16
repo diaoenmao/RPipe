@@ -424,3 +424,68 @@ def test_logger_after_interruption_keeps_error_identity_in_native_readout(tmp_pa
     assert '[flow]' not in lines[0]
     assert '[error] current failure' in lines[0]
     assert _note_from_log(logger.path, errors_only=True) == '[error] current failure'
+
+
+@pytest.mark.parametrize('old_success', [False, True])
+@pytest.mark.parametrize('phase', ['collect', 'process'])
+def test_runner_partial_terminal_write_remains_a_separate_error_event(tmp_path, monkeypatch, old_success, phase):
+    from importlib import import_module
+    from rpipe.structure.system.logger import Logger
+    from rpipe.structure.artifact import write_result
+    from rpipe.structure.artifact.index import write_index
+    from rpipe.structure.artifact.readout.logs import event_lines
+    from rpipe.structure.artifact.readout.status import _note_from_log
+
+    layout = artifact_layout(tmp_path, 'partial')
+    logger = Logger(layout.assets_dir)
+    logger.path.write_bytes(b'older evidence\n')
+    write_index(tmp_path, {'experiments': [{'factors': {}, 'runs': [{'id': 'partial', 'run_dir': 'partial'}]}]})
+    if old_success:
+        write_result(layout.result_path, {'status': 'succeeded', 'control': {}, 'metrics': {}, 'paths': {}})
+    before = layout.result_path.read_bytes() if old_success else None
+    peer = tmp_path / 'peer.bin'
+    peer.write_bytes(b'peer')
+    primary = PermissionError('terminal partial write')
+    native = Path.open
+    fragments = []
+
+    class Stream:
+        def __init__(self, handle):
+            self.handle = handle
+
+        def __getattr__(self, name):
+            return getattr(self.handle, name)
+
+        def write(self, text):
+            if text.rstrip().endswith(' [flow] succeeded'):
+                fragment = text[:-4]
+                fragments.append(fragment)
+                self.handle.write(fragment)
+                self.handle.flush()
+                raise primary
+            return self.handle.write(text)
+
+    def opened(path, *args, **kwargs):
+        handle = native(path, *args, **kwargs)
+        return Stream(handle) if path == logger.path and args and args[0] == 'a' else handle
+
+    monkeypatch.setattr(Path, 'open', opened)
+    monkeypatch.setattr(import_module('rpipe.flow.' + phase), 'run', lambda current: None)
+    ctx = FlowContext(study_dir=tmp_path, layout=layout, config={})
+    ctx.state['logger'] = logger
+    with pytest.raises(PermissionError) as caught:
+        FlowRunner(phases=(phase,)).run(ctx)
+    assert caught.value is primary
+    expected = f'[error] phase={phase} status=failed PermissionError: terminal partial write'
+    summaries = [line for line in event_lines(tmp_path) if expected in line]
+    assert len(summaries) == 1 and '[flow]' not in summaries[0]
+    assert 'terminal partial write' in _note_from_log(logger.path, errors_only=True)
+    raw = logger.path.read_bytes()
+    assert raw.startswith(b'older evidence\n')
+    assert len(fragments) == 1 and fragments[0].encode() in raw
+    if phase == 'process' and old_success:
+        assert layout.result_path.read_bytes() == before
+    else:
+        result = load_result(layout.result_path)
+        assert result['status'] == 'failed' and result['error'] == 'PermissionError: terminal partial write'
+    assert peer.read_bytes() == b'peer'
