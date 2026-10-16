@@ -1,5 +1,12 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-17 PR181双侧验收/五PR周期清理完成；下一计划校验主题
+
+最终head7e231ca的Branch38944352881/Package38944352835/Unit38944352979、实际dev593385f的Package38945414266/Unit38945413942全部实际矩阵/聚合成功，Windows/Ubuntu原生分支已验收；179/180已各一次反馈后关闭，原正文保全。普通删codex/readout-identity-next本地/remote，前四主题已不存在；五PR165/169/174/178/181提交与dev证明/14旧Issue关闭均核对，新基线181计数0、remote47。唯一主worktree、无管理worktree附件/未合待定分支，无数据/结果/Run/provenance删除。第一次detached HEAD显示提示导致清理后校验误拒绝，真实refs复核后更正、留原拒绝、不重删；详record§225与.tmp/audit132（不随clone）。
+
+下一唯一未合codex/launch-plan-validation仅本地，182/183已确认未修：B133坏cached job列表静默为空/部分且CLI假空成功；B134 Windows同Run大小写别名重复派发。原生loader/CLI/Popen stub证据.tmp/audit133/134无实际实验，先红回归、再文档方案、复用既有校验点统一最小修，完整里程碑再PR，勿拆单bug或改变合法空队列/模式/布局。下一B135，目标active，旧待验收/待设计文字只属历史，不合main/tag/GPU/性能/数据删除。
+
+
 ## 2026-10-17 B131–B132只读Run身份里程碑完整本机验收
 
 当前唯一未合codex/readout-identity-next自接受dev53ae142，两Issue179/180分别先Issue/独立红/方案/最小修，合批624相邻/core2080 passed+1既有skip/CPU Flow422 passed、新68（36 unit+32 integration）全执行，89991/46963终结exit0。仅status所有者条件与report Run代码单元格两现有文件；无新helper/依赖/schema/布局，原数值/guard/producer/legacy/排序/链接/原子写不动。额外CommonMark实际解析12类及peer通过、普通3类输出byte-identical，工具未入依赖。详record§221–224，原始.tmp/audit131/132不随clone。
