@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR192双侧实际CI全绿、191已关闭、旧主题本地+remote清理；接受dev8d3e1b3。
+> 最新：B140/#193真实pipe/closed stdout/readonly log三场景中健康日志peer缺故障上下文，原异常/failed result保持。
+> 验证：eba0d3a先红32项24失败/8控制，0error/skip；方案已记，生产尚未改，详§244–245。
+> 下一：唯一未合logger-sink-evidence分支最小修独立双sink与完整trace，再完整本机验证/类内合批PR；无设计/用户阻塞。
+> 保护：remote51，基线181后4；下个合入做周期盘点，main/tag/GPU/训练/数据/布局不动，原始失败保留。
+
 > 当前（2026-10-17）：B139/#191三处已证消费反例同类里程碑本机验收完成，唯一未合evidence-boundaries-next，准备统一PR→dev。
 > 最新：Numbers/status/compare文本、派生compare JSON、可选activity提示均修；strict producer/atomic与科学数值/输入身份保持。
 > 验证：相邻878 passed、core2276 passed+1既有skip、Flow429 passed，56新节点全执行/0新skip；原始证据见§243。
@@ -4121,3 +4127,16 @@ B139第三消费面：两处源码9b2246c的完整core2262passed+1既有skip/Flo
 | logs文件消费 | 现有UTF-8 errors=replace读取原样；本批未改日志来源、事件归属或legacy回退 |
 
 本批只承诺已确认显示标签/可选提示/派生比较输出的消费边界，不规范化任意Run ID或磁盘路径，不改变strict权威输入/身份校验。此为完整readout Unicode类别里程碑，一个191收纳三个已证反例，不按消费面拆PR；下一核对远端后统一PR→dev，最终head/实际dev全部实际CI后验收关闭并正常清分支。PR190收尾文档随本批合入，不另tiny-doc PR。新B140未登记，无用户或设计阻塞，目标active。
+
+
+## 244. PR192双侧实际CI验收与清理（2026-10-17）
+
+finalhead0ac238ba3d70894131d8f0a4e687195456d4fd28的Branch38962835050/Package38962835144/Unit38962835234全部实际矩阵和聚合success；正常merge actualdev8d3e1b31557951dc113c5869fc3ed6f05cdb6769，其Package38963775723/Unit38963775741全部实际矩阵/聚合success。PR_CHECKED SHA2564241ec0e27ff43a3b64595cb2a60410b76b5a5b2cc613f60476e98da41d47399；DEV_CHECKED SHA256d7d5afda7c6f455519f90413a1804b5c902403988da594e5bd0175dc7a76a723。191各一次验收评论后关闭，原body含两次同类scope追加完整保留；PR原正文一次补真实验收与删除清单，全文prose回读核对。
+
+删除清单：codex/evidence-boundaries-next本地+远端。先核tip0ac已入actualdev、远端一致、仅用户_staging_from_DEM未跟踪、protected main/dev/origin-main与PRE_MERGE原样、git登记只primary worktree；自actualdev建立codex/logger-sink-evidence后普通push --delete/branch -d，并回读缺席与保护引用不变。无force/worktree/数据/结果/Run/provenance删除，无main/tag操作。remote累计51，周期基线181后4PR（184/187/190/192）；下个合入约第5个须全面盘点。76866及所有旧验证句柄已terminal，临时raw在.tmp/audit139不随clone。
+
+## 245. B140/#193双输出故障原生复现与先红（2026-10-17）
+
+PR192 head冻结/actualdevCI进行时只在.tmp读取复现，不追加该PR源码。native Runner/execute/Logger +真实OS pipe闭reader使可写磁盘无primary/traceback（79B启动行，正常控制922B具原因与trace）；原异常同对象、failed result、peer保持。闭stdout流以及临时只读文件反方向也确认健康peer丢完整trace，mode已恢复。76条全状态Issue去重后193登记并原body一次追加双方向scope，保原文；旧138是scheduler结果纠正、170是多行身份，非同消费者。原始REPRO/SINK_VARIANTS/ZIP本机.tmp/audit140保留，无训练/下载/GPU或正式Study。
+
+PR192验收/清理后在唯一新主题分支提交eba0d3a红32项24失败/8有效控制，0error/skip；28 unit+4 Runner integration。真实管道/closed stdout +可定位file open/write/flush/close注入、完整多行/原trace、双IO首错/owned descriptors、非IO RuntimeError不吞及原phase对象/failed result/peer均覆盖。先design末B140再仅Logger两个函数收集已知IO、独立尝试两sink/剩余诊断行后严格抛首错；原close/程序错误/取消、execute去重与科学状态不动。当前尚无production fix，不立即一反例一个PR；新B141，无审批阻塞。

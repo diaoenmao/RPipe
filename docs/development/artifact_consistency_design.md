@@ -703,3 +703,21 @@ B139同类消费面补全（2026-10-17）：4926b81单处_text_cell已使808相�
 B139可选activity消费面补全（2026-10-17）：继续按同类UTF-8输出扫描，_format_activity是未复用_text_cell的独立归一出口，caller仅CLI status提示与announce。原生main配真实strict UTF-8 TextIOWrapper、外包不带reconfigure的输出流，正常hint可打印peer/计数，JSON转义surrogate detail会在权威表之前真实UnicodeEncodeError；不声称默认Windows replace控制台同样崩溃，POSIX原生行为尚待CI。activity/index/result字节保持，ACTIVITY_REPRO/ACTIVITY_ORIGINAL.zip本机留存；仍一处191 body追加，无新Issue/PR。
 
 0b061f9先红14项6失败/8控制：phase/detail各6（高/低/间隔混合失败，ASCII/中文emoji/字面backslash正常），另2个announce真实UnicodeEncodeError严格拒绝、旧activity保全控制。方案只给既有_format_activity归一返回加同样UTF-8 backslashreplace roundtrip，调用/导入/格式/字段/路径/类型校验不变；announce仍先strict JSON写入再print，不能借display fallback写入坏source。原子writer/Result/config/provenance严格合同不动，不捕输出流BrokenPipe等真实错误。两处readout阶段已完整2262core+1既有skip/429Flow保留为此补全前证据，最终三处源码要重新完整验收。先本方案再最小修，同B139继续合批，下一B140仍未用。
+
+
+B139已实施并双侧验收（2026-10-17）：PR192 finalhead0ac238b/actualdev8d3e1b3全部实际CPU/包矩阵与聚合成功，191关闭、原正文保持/一次验收评论、旧主题本地+remote普通删除。56新全执行，本机878相邻/core2276passed+1既有skip/Flow429passed；scope限制和部分阶段失败照原记录保留。无待设计审批，详record§244。
+
+### B140 / #193：Logger独立双输出与完整故障上下文（2026-10-17，实施方案）
+
+在Logger未变的PR192基线上真实Runner→execute→Logger复现：OS管道reader在算法原异常前关闭，旧run.log只有79字节启动行、无primary/traceback；open-reader控制922字节且两者都有。闭stdout TextIOWrapper同样阻断可写磁盘；只读临时log文件时健康stdout也只有错误头、无完整traceback。原始算法异常同对象和failed result、peer均保持，临时mode已恢复。符合README终端同款必写run.log及flow失败traceback合同，区别于138调度非零纠正或170行身份。76全状态Issue去重，先193登记；原始REPRO/SINK_VARIANTS/ZIP在.tmp/audit140不随clone，无训练/模型/数据/GPU。
+
+eba0d3a先红32项24失败/8控制、0error/skip：Logger18个真实OS管道/关闭流与正常控制，8个文件open/write/flush/close×多行/真实异常，1双IO首错/owned close，1非IO stdout程序错原样；另4真实Runner链覆盖normal/pipe/closed/file。复用stream_close_fault保已有descriptor关闭/异常优先级；file故障单测为可定位注入，原生只读文件有独立证据，不混称全部为真实存储故障。
+
+所有caller已核：info/warning/error/report走_emit，exception先error头再各traceback行；execute/Runner以既有best-effort保护原phase异常，failure_logged去重保持。方案只改logger.py两个既有方法，不改backend/interface/字段/格式/时间/行序/路径或科学状态：
+
+1. _emit保留原print→tail探查→append/write/flush/close顺序；在现有message逐行循环外记录首个已知IO/编码/closed-stream错误，在每行分别尝试stdout和文件两出口，任一已知失败不跳过另一个及剩余行；全部尝试后仍raise首个IO对象，不能把后续成功当质量通过。不增加每行重试/sleep，原单次append与flush次数正常路径不变。
+2. 只在已知(OSError, ValueError)边界收集（UnicodeError属于ValueError）；非IO RuntimeError等程序故障以及BaseException取消按原方式直接传播。原handle.write/flush失败时close、close IO不遮首错/程序close优先的代码原样保留，不以捕获IO吞掉内部程序错。
+3. exception在原error头及原traceback逐行_emit边界同样记录首个已知IO，继续尝试完整原始格式化traceback，最后严格raise首错；不伪造无__traceback__异常的stack，不改原格式化/事件/Run身份，普通完成无新增记录。
+4. 不改execute.failure_logged或Runner旧成功/失败回写策略，不迁移logger选型，不碰tracker/checkpoint/sampler/RNG/恢复、发布或布局。无法写入的sink不保证落盘；只保证健康peer的尝试与已知首错保留，未知程序故障/取消不做延迟协议扩展。
+
+先本方案再最小实现，复核原生三种反例、正常stdout/文件字节对应及既有close/tail/多行身份，再完整core/CPU Flow。当前唯一未合codex/logger-sink-evidence，本地按主题提交，完整类别里程碑后统一PR→dev；下一合入是基线181后约第5个，届时全面盘点。无设计/用户批准等待，新B141。
