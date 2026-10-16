@@ -347,3 +347,28 @@ def test_concurrent_recipe_helpers_keep_study_identity(tmp_path, first_error):
     assert not any(thread.is_alive() for thread in threads)
     assert not errors
     assert observed == {0: 'first', 1: 'second'}
+
+
+def test_recipe_nonlocal_imports_keep_current_python_import_hook(tmp_path, monkeypatch):
+    import builtins
+    from rpipe.structure.make.recipe import load_recipe
+
+    study = tmp_path / 'external-hook'
+    study.mkdir()
+    external = '_external_import_' + uuid4().hex
+    (study / 'recipe.py').write_text(
+        f'def build():\n    import {external}\n'
+        'def register(ctx):\n    pass\n', encoding='utf-8')
+    module = load_recipe(study, {'recipe': 'recipe.py'})
+    original = builtins.__import__
+    refusal = ImportError('external import hook refused')
+
+    def guarded(name, *args, **kwargs):
+        if name == external:
+            raise refusal
+        return original(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, '__import__', guarded)
+    with pytest.raises(ImportError) as caught:
+        module.build()
+    assert caught.value is refusal
