@@ -1,8 +1,9 @@
-> 当前（2026-10-17）：PR199首head3639ae0被实际Python3.10矩阵拒绝，未合dev/未关198；仍同分支补全。
-> 最新：Linux/Windows3.10均pickle state错误（Unit38980543735），3.13通过；69ec7e4显式proxy自身状态，107针对性通过（§259）。
-> 检查：新源码core2384+1既有skip/CPU Flow519passed，86新SDK全执行，原2384+1/516为上版证据；原失败与协议0/1夹具拒绝均保留。
-> 下一：最终本机后更新同一PR，双侧全部实际CI再验收清理；B144/#200五读取边界已确认排下一批，不污染本PR。
-> 状态：goal active、无审批阻塞；未真实下载/原生codec/GPU/测速/Study/main/tag或数据删除，用户暂存保留。
+> 当前（2026-10-17）：PR199双侧实际CI全成功、#198已关闭；已正常删domestic-sdk-transfers本地+远端，远端仅main/dev。
+> 最新：B144/#200五个库reader的31正式红回归已提交425cd72（14 failed/17 passed、0error/skip），唯一新分支library-reader-exits。
+> 出处：§260–261、audit143的PR/DEV_CHECKED、audit144/RED.xml；临时证据不随clone，portable测试入库。
+> 下一：继续归并显式/隐式whole-file读取同类边界，先补证/红测试与设计，再统一最小修和一个类别PR；未改生产。
+> 状态：goal active、无审批阻塞/活句柄；不合main/tag、不真实下载/原生codec/GPU/测速/Study或删数据，用户暂存保留。
+
 
 
 > 当前（2026-10-17）：B143/#198 在同一 domestic-sdk-transfers 分支完成模型 SDK、eager/streaming 根读取及 spawn 下载任务阶段修复；尚未 PR。
@@ -4306,3 +4307,20 @@ PR199首finalhead3639ae09cebd1406f6320169bcdab400bc2ab436：Branch38980543681和
 
 
 B143跨版本修正后完整本机检查：5978164（生产69ec7e4）CORE_PICKLE_FINAL2384passed+1既有skip/0fail/error、FLOW_PICKLE_FINAL519passed/0skip；86新SDK节点与107针对性XML同集核验全执行。FINAL_LOCAL_PICKLE_CHECKED保源码/测试/XML hash与限制，旧FINAL_LOCAL_CHECKED/原失败CI不覆盖；65922/86008均terminal0。没有本机3.10，不将此证明跨版本，下一更新同一PR199后必须四实际CPU矩阵/包/聚合全成功，actualdev另验收。86中四pickle协议均原生BytesIO支持，0/1原生拒绝证据单独保留。
+
+
+## 260. 2026-10-17：PR199双侧实际CI验收与主题清理
+
+最终headfe84bff3aa8593de5437bba5ead5d74c066b7d53：Unit38981480861、Package38981480876、Branch38981480866所有实际矩阵和聚合success；正常merge actualdev1bf3c8511dc6858d9ce09ac4595901ff70e67358：Unit38982108401、Package38982108345也全部实际success。PR_CHECKED SHA256942698087cacbfd2e54654121080205ef55956b69996eb43a30ebb1f44da5e8b，DEV_CHECKED SHA256e8b89519080089a3408ba047b779d7b464435275b306d148bd8cce651cd4de0d。原首head3639的两个3.10实际失败保留，新head两个3.10均实际通过；不以rerun旧head获得验收。最终本机core2384passed+1既有skip/Flow519passed，86新SDK全执行，107针对性/24旧HF兼容绿；服务下载/原生codec/科学结果未测。
+
+源校验两次checker拒绝保留：初轮把所有工作区SHA直接对Git blob，次轮又假定所有blob为LF；实际origin.py的Git/working均CRLF，新SDK测试Git LF/working CRLF。修正为逐文件分类后，final-head/actualdev两文件Git blob精确字节相同，working原始SHA与最终本机checker一致；没有源码内容变更，不当库失败。PR验收正文初次Path.write_text把已有CRLF二次转换导致段落比较拒绝，随后用保留原始正文的显式LF字节文件更正；原始正文段落+一个验收追加区全文回读一致，不重复评论。
+
+198原body逐字保持、仅一次验收评论6226765867后关闭；PR199正文仅一个Integrated acceptance/cleanup区，完整回读核对。删除清单：codex/domestic-sdk-transfers，本地与远端均普通删除。先核head/tip/远端一致、已为actualdev祖先、工作区只用户_staging_from_DEM、唯一primary worktree、保护main/dev/origin-main不变；detach到actualdev后push --delete/branch -d，再refs及ls-remote核对缺席。真实remote仅main/dev两条；历史remote累计已清54条（此前53是累计清理数，不是剩余分支数）。周期基线194后计数2；无其他本地/远端工作分支或废弃worktree，无force/数据/结果/Run/provenance/main/tag删除，用户暂存保留。59138及本机/观察句柄全部terminal，无重派。
+
+从actualdev建下一唯一codex/library-reader-exits；200保持OPEN。199验收/清理文档随下一类别里程碑提交，不单tiny-doc PR；不再重发198/199反馈。全部临时原证据在.tmp/audit143不随clone，portable SDK回归/设计已由199入库。goal继续，无设计/用户等待。
+
+## 261. 2026-10-17：B144/#200库reader类别正式红回归与范围归并
+
+425cd72先提交31项portable红回归（14failed/17passed、0error/skip）；与此前31草稿预检同集，真实文件和实际公共入口，不把草稿当正式提交。五处为archive MD5、shared digest、strict index JSON、optional curve JSONL、optional Logger binary tail；各六组read IO/取消/body程序错/正常body close IO/close程序错/成功，index再一项实际JSONDecodeError。检查原异常对象、owned close一次、输入/peer字节与Logger旧前缀/正常追加、strict拒绝与optional回退；完整RED.xml/log在.tmp/audit144不随clone。公共输入由临时字节构造，不依赖正式Study。
+
+生产尚未修改；本批不只机械修五处。继续盘点src/rpipe的Path.read_text/read_bytes隐式owned读取，查同一close遮首错/取消是否穿过strict与optional调用；确认后归入同一200类别并先补红，不另逐点Issue/PR。原始20probe/ZIP/hash、全80Issue去重、五显式reader与两空append acquisition的分类保留。设计/实现应复用既有模块与标准库，保持公开接口/编码/正常解析顺序、I/O回退、缓存hash/manifest、日志追加与路径，不变成通用parser/新框架/布局迁移。下一B145未用，当前只有200OPEN。

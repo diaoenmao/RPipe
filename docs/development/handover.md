@@ -1,3 +1,9 @@
+## 2026-10-17 PR199验收清理完成；B144/#200正式先红、继续归并（最新）
+
+199 finalfe84bff与actualdev1bf3c8511dc6858d9ce09ac4595901ff70e67358全部实际矩阵/聚合success；PR_CHECKED94269808…/DEV_CHECKEDe8b89519…，198原body保全、一次评论后关闭，199正文一次验收区已回读。旧domestic-sdk-transfers本地+remote普通删，真实remote仅main/dev；累计已清remote54、周期基线194后2。源blob/CRLF与PR段落checker拒绝及更正保留，不当库失败。详§260；旧“待CI”仅历史勿重派/重复评论。用户暂存与main/dev/origin-main保护refs原样，无数据/worktree/Run/provenance删除。
+
+唯一新codex/library-reader-exits从actualdev建立；425cd72提交200五库reader的31正式红（14failed/17passed、0error/skip）。生产未改，继续盘点Path.read_text/read_bytes隐式owned读取，确认则同类补红/设计后统一修；不拆小PR，不把草稿当正式红。200唯一OPEN，下一B145。audit144含原20probe、draft/formal RED，临时证据不随clone。goal active，无设计/用户等待/活句柄；无真实下载/原生codec/GPU/性能/Study/main/tag动作。
+
 ## 2026-10-17 PR199跨Python CI修正中；B144/#200已确认排队（最新）
 
 PR199原3639ae0的Branch/Package全成功、Unit38980543735两个3.10实际pickle失败、两3.13成功，完整日志保留。先77da8d5设计，再69ec7e4显式proxy自身pickle state，5978164限定原生BytesIO支持协议2–5（0/1夹具拒绝保留），107针对性通过。新core2384passed+1既有skip/Flow519passed、86新SDK全执行，两个句柄已终结，尚未push新head/合dev/关198；继续同一个199，不另PR。§259记录原因/官方合同/边界。200另确认五库reader close遮首错及optional吞取消，20探针/全80Issue去重保全，仅排下一类别，199验收清理后再从actualdev先红后修。下一B145；无设计等待/GPU/性能/真实下载/Study/main/tag/数据删除，用户暂存保留。
