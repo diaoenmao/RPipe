@@ -3522,3 +3522,14 @@ PR165验收/清理后，工作区65ed4e6仅多收尾文档；fetch正常、开�
 RED12项8失败/4正常对照，GREEN同文件49 passed，全部12新节点执行；当前完整core1974 passed/1既有Windows POSIX模式skip、CPU Flow291 passed，均0failure/error，新增12全执行/0skip。不是用只跑目标49替代完整当前集合。独立basetemp和XML/hash/ZIP/原始REPRO均在.tmp/audit122，不随clone；正式回归已入库。完整检查进程52264/58084均exit0终结，不保留伪活动观察句柄。
 
 复查相邻launch打印/失败定稿、prepare结束日志及Runner调用方，尚未确认需另记的新反例；没有为活跃拆新Issue/PR。#167保持OPEN，本机通过尚不能代替最终head/实际devCI。当前codex/correctness-next-milestone仅本地积累（含PR165收尾记录），按20:56将相关失败留证工作汇成完整里程碑再统一PR；未推送或开PR，接受dev仍70a8750，清理基线161计数1，remote累计43。继续三类复查，下一编号B123；目标active，无决策阻塞，无GPU/测速/下载/正式Study/main/tag/数据删除或文件架构/产物布局变化。
+
+
+## 206. B123 / #168：中断日志尾行与下一条事件分隔（2026-10-16，同一失败留证批次）
+
+真实Logger在无行尾的旧run.log后追加ERROR，将两条native header连成一行；event_lines将新错误读成旧flow内容，_note_from_log(errors_only=True)得到'-'。原始字节未丢但事件身份丢失，原生合成Run/Logger/index/readout确认，无训练或科学运行。#168后66d3526先提交14节点红6失败/8有效控制，后补单独CR有效行尾对照，完整16红仍6失败/10控制；ASCII/UTF8半字节、同一Logger/重新打开和真实只读回读均覆盖。
+
+最小方案在现有Logger._emit：stdout输出仍原位置；以单独rb句柄检查可读文件最后一个字节，仅非空且既非LF也非CR时，在同一次原a文本write的record前加入一个newline。保留全部旧字节，不重写/截断/迁移文件。原append模式、编码/newline映射、权限/umask、write/flush/close及首错规则保持；有效空/LF/CRLF/CR日志原字节不变。二进制尾读不解码破损UTF8，不改变status/logs的解析或科学门。
+
+尾读仅用于可读尾行修复：OSError时继续原append行为，不能因为新增read要求阻断原来可写但不可读的日志。此时无法保证中断尾行修复，明确限制与回归保护，不把可选探查失败当作写入成功证据；原write/flush/close失败依然严格。保留constructor不重开既有证据、peer、合法记录stdout/文件对应、其他调用方及Tracker恢复协议。不是新日志框架，不承诺任意多写者同Run事务。
+
+与B122/#167同一codex/correctness-next-milestone本地主题积累，先红/设计/最小生产修复，再合批当前core/CPU Flow及最终head/实际devCI；不单独开一个bug PR，不等审批、不改文件架构/产物布局或运行GPU/测速。
