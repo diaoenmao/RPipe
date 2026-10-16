@@ -131,3 +131,67 @@ def test_without_freeze_change_only_warns(tmp_path: Path, capsys):
     (study / 'notes' / 'a.txt').write_text('changed\n', encoding='utf-8')
     assert cli._provenance_gate(study.resolve()) is True
     assert 'provenance: 1 changed' in capsys.readouterr().out
+
+
+@pytest.mark.parametrize('relocated', [False, True], ids=['legacy-helper-state', 'relocated-new-helper-state'])
+def test_recipe_checkpoint_state_keeps_legacy_and_relocated_imports(tmp_path, monkeypatch, relocated):
+    import importlib.util
+    import sys
+    from rpipe.flow.context import FlowContext
+    from rpipe.flow.prepare.run import run as prepare_run
+    from rpipe.structure.artifact import artifact_layout, load_config
+    from rpipe.structure.system.config import SystemConfig
+    from rpipe.structure.system.factory import SystemFactory
+
+    recipe = (
+        'from helper import State\n'
+        'from rpipe.structure.model.factory import ModelRegistry, _build_linear\n'
+        'def register(ctx):\n'
+        '    def build(model_config, assets_dir, data_meta=None):\n'
+        '        model = _build_linear(model_config, assets_dir, data_meta)\n'
+        '        model._recipe_state_type = State\n'
+        '        return model\n'
+        '    ModelRegistry.register("linear", "recipe_src", build)\n'
+    )
+
+    def create(parent, label):
+        parent.mkdir()
+        study = _study(parent, recipe=recipe)
+        (study / 'helper.py').write_text(
+            'from dataclasses import dataclass\n@dataclass\nclass State:\n'
+            f'    value: int\n    label = {label!r}\n', encoding='utf-8')
+        declaration = study / 'study.yaml'
+        declaration.write_text(declaration.read_text(encoding='utf-8').replace(
+            'notes/*.txt', 'notes/*.txt, helper.py'), encoding='utf-8')
+        return study
+
+    study = create(tmp_path / 'original', 'original')
+    spec = importlib.util.spec_from_file_location('helper', study / 'helper.py')
+    legacy_module = importlib.util.module_from_spec(spec)
+    monkeypatch.setitem(sys.modules, 'helper', legacy_module)
+    spec.loader.exec_module(legacy_module)
+    legacy = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}),
+                                 study / 'runs' / 'legacy' / 'assets')
+    bundle = legacy.save_checkpoint({'model': {'_extra_state': legacy_module.State(7)}}, 'legacy')
+    monkeypatch.delitem(sys.modules, 'helper')
+
+    def prepared(study):
+        out = expand_study(study)
+        config = out['configs'][0]
+        ctx = FlowContext(study_dir=study, layout=artifact_layout(study, config.parent.name),
+                          config=load_config(config))
+        prepare_run(ctx)
+        return ctx
+
+    ctx = prepared(study)
+    loaded = ctx.state['system'].load_checkpoint(str(bundle))
+    assert loaded['model']['_extra_state'].value == 7
+    assert type(loaded['model']['_extra_state']) is ctx.state['model']._recipe_state_type
+    if relocated:
+        bundle = ctx.state['system'].save_checkpoint(loaded, 'with-recipe-state')
+        target = create(tmp_path / 'relocated', 'relocated')
+        target_ctx = prepared(target)
+        restored = target_ctx.state['system'].load_checkpoint(str(bundle))
+        assert restored['model']['_extra_state'].value == 7
+        assert type(restored['model']['_extra_state']) is target_ctx.state['model']._recipe_state_type
+        assert restored['model']['_extra_state'].label == 'relocated'
