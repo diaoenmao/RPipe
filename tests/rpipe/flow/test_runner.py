@@ -489,3 +489,38 @@ def test_runner_partial_terminal_write_remains_a_separate_error_event(tmp_path, 
         result = load_result(layout.result_path)
         assert result['status'] == 'failed' and result['error'] == 'PermissionError: terminal partial write'
     assert peer.read_bytes() == b'peer'
+
+
+@pytest.mark.parametrize('kind', ['info', 'report', 'error'])
+def test_multiline_phase_log_body_cannot_change_native_readout_event(tmp_path, monkeypatch, kind):
+    from importlib import import_module
+    import re
+    from rpipe.structure.system.logger import Logger
+    from rpipe.structure.algorithm.tracker import AlgorithmTracker
+    from rpipe.structure.artifact.index import write_index
+    from rpipe.structure.artifact.readout.logs import event_lines
+    from rpipe.structure.artifact.readout.status import _note_from_log
+
+    layout = artifact_layout(tmp_path, 'multiline')
+    logger = Logger(layout.assets_dir)
+    write_index(tmp_path, {'experiments': [{'factors': {}, 'runs': [{'id': 'multiline', 'run_dir': 'multiline'}]}]})
+    embedded = '[flow]' if kind == 'error' else '[error]'
+    message = 'ordinary detail\n' + embedded + ' body continuation'
+
+    def phase(current):
+        if kind == 'report':
+            logger.report(AlgorithmTracker(layout.assets_dir / 'tracker'), 'train', {'epoch': 1, 'detail': message})
+        else:
+            getattr(logger, kind)(message)
+
+    monkeypatch.setattr(import_module('rpipe.flow.collect'), 'run', phase)
+    ctx = FlowContext(study_dir=tmp_path, layout=layout, config={})
+    ctx.state['logger'] = logger
+    FlowRunner(phases=('collect',)).run(ctx)
+    expected = {'info': 'flow', 'report': 'epoch', 'error': 'error'}[kind]
+    rows = [line for line in event_lines(tmp_path) if 'ordinary detail' in line or 'body continuation' in line]
+    assert len(rows) == 2
+    header = re.compile(r'^\S+\s+(?:INFO|WARN|ERROR)\s+multiline\s+\[(\w+)\]')
+    assert all(header.match(line) and header.match(line).group(1) == expected for line in rows)
+    note = _note_from_log(logger.path, errors_only=True)
+    assert note.startswith('[error]') if kind == 'error' else note == '-'

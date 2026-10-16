@@ -186,3 +186,55 @@ def test_optional_log_tail_inspection_keeps_append_only_access(tmp_path, monkeyp
         logger.error('still appendable')
     emitted = capsys.readouterr().out
     assert logger.path.read_bytes() == before + emitted.replace('\n', os.linesep).encode()
+
+
+@pytest.mark.parametrize('kind,separator', [
+    ('info', '\n'), ('warning', '\n'), ('error', '\n'),
+    ('exception-context', '\n'), ('exception-value', '\n'), ('report', '\n'),
+    ('info', '\r\n'), ('info', '\u2028'),
+])
+def test_multiline_logger_body_keeps_complete_record_identity(tmp_path, capsys, kind, separator):
+    logger = Logger(tmp_path)
+    message = 'first body line' + separator + '[error] continuation body text'
+    if kind == 'exception-context':
+        logger.exception(message, ValueError('original failure'))
+    elif kind == 'exception-value':
+        logger.exception('context', ValueError(message))
+    elif kind == 'report':
+        logger.report(AlgorithmTracker(tmp_path / 'tracker'), 'train', {'epoch': 1, 'detail': message})
+    else:
+        getattr(logger, kind)(message)
+    text = logger.path.read_text(encoding='utf-8')
+    assert text == capsys.readouterr().out
+    lines = text.splitlines()
+    assert lines and all(_HEADER.match(line) for line in lines)
+    event = {'info': 'flow', 'warning': 'warn', 'error': 'error',
+             'exception-context': 'error', 'exception-value': 'error', 'report': 'epoch'}[kind]
+    assert all(f' - [{event}]' in line for line in lines)
+    assert 'first body line' in text and 'continuation body text' in text
+
+
+@pytest.mark.parametrize('message', ['', 'ordinary single line'])
+def test_single_line_logger_format_stays_unchanged(tmp_path, capsys, message):
+    logger = Logger(tmp_path)
+    logger.info(message)
+    text = logger.path.read_text(encoding='utf-8')
+    assert text == capsys.readouterr().out
+    assert len(text.splitlines()) == 1
+    assert text.endswith((' - [flow] ' + message).rstrip() + '\n')
+
+
+def test_logger_formats_message_object_only_once(tmp_path, capsys):
+    class Message:
+        calls = 0
+
+        def __format__(self, spec):
+            assert spec == ''
+            self.calls += 1
+            return 'existing f-string conversion'
+
+    message = Message()
+    logger = Logger(tmp_path)
+    logger.info(message)
+    assert message.calls == 1
+    assert logger.path.read_text(encoding='utf-8') == capsys.readouterr().out
