@@ -249,3 +249,22 @@ def test_activity_writer_keeps_strict_encoding_despite_display_fallback(tmp_path
         announce(tmp_path, 'make', value)
     assert target.read_bytes() == old
     assert not list(tmp_path.glob('*.tmp'))
+
+
+def test_activity_whole_read_preserves_cancel_and_io_fallback(tmp_path, reader_exit_case, reader_close_fault):
+    case = reader_exit_case
+    path, peer = tmp_path / 'activity.json', tmp_path / 'peer'
+    payload = b'{"phase":"prepare","detail":"synthetic"}'
+    path.write_bytes(payload)
+    peer.write_bytes(b'peer unchanged')
+    expected = case.expected if case.kind in ('cancel', 'close-programming') else None
+    with reader_close_fault(path, case, 'r') as (handles, closes):
+        if expected is not None:
+            with pytest.raises(type(expected)) as caught:
+                read_activity(tmp_path)
+            assert caught.value is expected
+        else:
+            assert read_activity(tmp_path) == ({'phase':'prepare','detail':'synthetic'}
+                                              if case.kind == 'success' else None)
+    assert len(handles) == len(closes) == 1 and handles[0].closed
+    assert path.read_bytes() == payload and peer.read_bytes() == b'peer unchanged'

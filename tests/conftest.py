@@ -318,7 +318,7 @@ def reader_exit_case(request):
 def reader_close_fault(monkeypatch):
     from contextlib import contextmanager
     @contextmanager
-    def inject(selected, case, mode):
+    def inject(selected, case, selected_mode):
         native = Path.open
         handles, closes = [], []
         class Stream:
@@ -343,9 +343,9 @@ def reader_close_fault(monkeypatch):
                 self.raw.close()
                 if case.secondary is not None:
                     raise case.secondary
-        def opening(path, actual_mode='r', *args, **kwargs):
-            raw = native(path, actual_mode, *args, **kwargs)
-            if path == selected and actual_mode == mode:
+        def opening(path, mode='r', *args, **kwargs):
+            raw = native(path, mode, *args, **kwargs)
+            if path == selected and mode == selected_mode:
                 handles.append(raw)
                 return Stream(raw)
             return raw

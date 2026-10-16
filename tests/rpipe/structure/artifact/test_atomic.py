@@ -707,3 +707,15 @@ def test_source_archive_successful_write_close_error_is_strict(source_archive_ex
     assert caught.value is error and target.read_bytes() == payload
     assert manifest.read_bytes() == old_manifest
     assert len(handles) == 1 and handles[0].closed
+
+
+def test_library_whole_file_reads_use_owned_failure_boundary():
+    import ast
+    import rpipe
+    root = Path(rpipe.__file__).parent
+    direct = [(path.relative_to(root).as_posix(), node.lineno)
+              for path in root.rglob('*.py')
+              for node in ast.walk(ast.parse(path.read_bytes()))
+              if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+              and node.func.attr in ('read_text', 'read_bytes')]
+    assert not direct, direct

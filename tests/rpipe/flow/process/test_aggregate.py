@@ -257,3 +257,24 @@ def test_optional_curve_read_exit_never_swallows_cancellation(tmp_path, reader_e
                 'test': {'Accuracy': {'unit': 'step', 'x': [1], 'values': [75.0]}}})
     assert len(handles) == len(closes) == 1 and handles[0].closed
     assert path.read_bytes() == payload and peer.read_bytes() == b'peer untouched'
+
+
+def test_tracker_state_whole_read_preserves_cancel_and_io_fallback(tmp_path, reader_exit_case, reader_close_fault):
+    case = reader_exit_case
+    path = tmp_path / 'runs' / 'r1' / 'assets' / kinds.TRACKER_STATE
+    path.parent.mkdir(parents=True)
+    payload = b'{"splits":{"test":{"Accuracy":{"history":[75.0]}}}}'
+    path.write_bytes(payload)
+    peer = tmp_path / 'peer'
+    peer.write_bytes(b'peer unchanged')
+    expected = case.expected if case.kind in ('cancel', 'close-programming') else None
+    with reader_close_fault(path, case, 'r') as (handles, closes):
+        if expected is not None:
+            with pytest.raises(type(expected)) as caught:
+                load_tracker_history(tmp_path, 'r1')
+            assert caught.value is expected
+        else:
+            assert load_tracker_history(tmp_path, 'r1') == ({'test':{'Accuracy':[75.0]}}
+                                                           if case.kind == 'success' else {})
+    assert len(handles) == len(closes) == 1 and handles[0].closed
+    assert path.read_bytes() == payload and peer.read_bytes() == b'peer unchanged'
