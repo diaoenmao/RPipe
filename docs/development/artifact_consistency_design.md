@@ -545,3 +545,12 @@ B128实施状态：f5b3591已按上文移动原三行初始化，无其他shared
 
 
 PR174验收状态（2026-10-17）：B124–B128均已实施并合dev9d78fb4，最终head5dab50a及实际dev所有实际矩阵/聚合成功；五Issue170–173/175已验收关闭，主题本地/remote清理。上文“待CI”保留为当时历史，勿作为未实施/待批准事项。原Windows失败不撤回，完整依据record§216。下一B129/#176是新确认的失败元数据隔离缺陷，尚未实施，不把其方案与本批验收混为一事。
+
+
+### B129 / Issue176：失败回写的可选shared元数据隔离（2026-10-17，实施方案）
+
+实际dev9d78fb4上原生Runner复现十场：坏YAML、非mapping、坏shared/根、解码失败使原始异常已被捕获/记log后，_write_failed_result为补paths.shared重新解析同一坏声明，整体best-effort块提前退出。fresh无failed result，旧success也可能保留；paths.setdefault即使已有shared仍eager求值。c76e8fd先提交36项红24失败/12有效控制，补充read IO拒绝及fresh/旧success/已知draft路径四状态，验证原异常、peer与声明字节。
+
+方案只在Runner失败写回局部：已有shared键直接保留；缺键时尝试取得现有layout.shared_dir，若Exception则略过此可选元数据，继续原Run/config/assets/result路径与failed/error写入。使用现有失败边界的Exception范围，不吞BaseException取消，不猜造shared根，不改Result schema或正常write.run严格shared求值。成功/有效配置输出保持，原异常同对象向上传播；实际result写入失败仍按既有best-effort静默，冻结初始拒绝与process旧成功保全完全不改。
+
+影响仅FlowRunner._write_failed_result一个既有调用点；已查正常write.run和shared_paths调用方及readout消费者，失败Result合同只要求status/error、已知路径可尽量补齐。单Run/peer状态与文件/产物布局保持，不引入新helper/配置/字段/依赖。先方案再最小实现，本地相关/完整CPU检查后在当前下一主题积累同类合同，完整里程碑再PR，不为几行文档另开PR。

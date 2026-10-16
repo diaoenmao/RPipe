@@ -3702,3 +3702,10 @@ Issue170/171/172/173/175逐项验收说明各发一次后关闭，原正文保�
 下一唯一未合分支codex/failure-evidence-next从实际dev建立，仅本地；本条验收文档随下一完整里程碑，不独立小PR。B129/Issue176仍OPEN、未修：四场坏YAML/坏shared映射×fresh/旧success加六场nonmapping/坏root/decode×无/有已知shared元数据共10场本机反例，Runner失败回写再次解析坏共享声明，导致无failed结果或旧success不变。原始证据.tmp/audit129不随clone；下一步先提交原生红回归，再明确最小方案，不猜共享根、不放宽输入校验或冻结/process旧成功保全。
 
 验收/清理/Issue反馈与原失败原件在.tmp/audit128，不随clone；portable代码、回归、record与双语计划已随PR174入库。本轮无GPU/性能/正式Study实验或科学数字更新，不合main/tag/发布、不force push、不改文件架构与磁盘产物布局。持续目标active，下一新缺陷编号B130。
+
+
+## 217. B129/#176原生红回归与可选共享元数据隔离方案（2026-10-17）
+
+当前唯一未合主题codex/failure-evidence-next基于实际dev9d78fb4。#176先有十场隔离REPRO，再c76e8fd提交36项原生Runner回归，24 failed/12有效控制passed：坏YAML、非mapping、shared/root错误、解码与read IO拒绝六类×fresh/旧success/已知draft shared/旧success且已知shared四状态；有效默认/custom shared及缺声明三类控制×四状态全部通过。失败结果路径可写，原异常仍被抛出并记log；坏声明/peer字节保留，不能把secondary shared元数据错误当result本身不可写。
+
+设计只隔离失败写回缺省shared元数据，已有键免求值；解析Exception时跳过可选shared键，继续原failed/error与已知路径落盘，不猜根、不放宽原输入或正常write严格路径，不改冻结/process旧成功保全或BaseException取消。具体见artifact_consistency_design文末；先本条方案再最小实现。RED.xml/log、原ZIP/REPRO在.tmp/audit129，不随clone。PR174已全验收/清理见§216，不重派；当前#176仍OPEN，尚无本主题PR。
