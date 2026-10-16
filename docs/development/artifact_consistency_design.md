@@ -787,3 +787,10 @@ aiohttp 的每个 ClientRequest 构造前和实际 redirect response 的 Locatio
 
 
 B143 数据多进程补全：024b20d 在真实 datasets 5.0.0 的 download_manager.map_nested / multiprocessing.Pool(spawn) 运行 2 个进程的 4 项合成任务；子 PID 确认不同于父进程，子函数使用本地合成 requests adapter，国内策略为空且海外 transport 被进入，1 项红失败、0 error/skip。不是下载服务不可用或夹具失败。保持 download_config.num_proc、原函数/输入/顺序/返回值：只把国内调用传给 download_manager.map_nested 的任务包装为模块级可 pickle callable。子进程入口自行安装同一 guard；已受父调用生命周期管理的线程任务只设置/还原策略，不重取父线程持有的安装锁，以免 joblib/thread backend 等待死锁。无标记的非国内 map 不替换任务。传输补丁是否已安装的进程内标记只在受锁的安装周期有效，不把策略永久留在 SDK 全局或客户端。
+
+
+B143 媒体与后台生命周期补全方案（2026-10-17）：0582ab5 已先红，真实 Dataset / IterableDataset 的 Image 格式化解码在返回后越界（4 项2failed/2passed）；4837cc6 再确认 ThreadPoolExecutor 后台任务在父 SDK scope 返回后虽保有 ContextVar，却失去实际传输补丁（1 failed）。阶段5452322的 core/Flow green不覆盖这两处。
+
+以最后一个实际消费者结束为卸载条件：安装/还原仅在 RLock 下操作，实际 SDK 工作不持该锁；各下载/decoder/文件读/后台 worker 分别持计数作用域。共有补丁按 owner/attribute/当前对象去重，新导入 SDK 模块进入时补装，计数归零才按拥有关系还原。不改共享 client factory/session/auth/proxy；foreign 无标记调用仍委托原方法。spawn 自安装；fork 先清理继承的 RPipe 补丁/计数和来源标记，防止持久 worker 误继承父 scope。线程任务本身持作用域，不只复制上下文，允许父调用先结束。该方案替代前一模型阶段“整个调用持锁串行”的实现，以消除原生 decoder 读取回调线程等待父锁及后台提前卸载风险；不是性能优化或测速。
+
+媒体保留 SDK 原 schema、原生 Dataset/IterableDataset、已给 features、格式化/缓存与原数据字节：在返回对象实际拥有的 features decoder 绑定已有 domestic callable（原 unbound method+schema，不以 bound-method 循环破坏 pickle）；嵌套 dict/list/sequence 同步处理。仅在有国内上下文时，SDK features 的 xopen 及中央 xopen 返回文件加一个透明只读协议代理；打开仍走原 SDK，后续 read/seek/迭代/close 委托前持同一 guard。这样 Audio/Video/PDF 原生对象保留 seek/range 读取及所有权，无整文件预下载、无新缓存目录，也不把 decoder 构造完成当作 I/O 结束。Image/PDF/Audio/Video 等真实 SDK 使用 xopen 的入口逐项核对；本地路径/内嵌 bytes 不额外下载。派生 view、features deepcopy/序列化、外部无关 consumer、异常/取消/延迟读取/并发均补控制。SDK transport 内部入口已实测 HF0.34.4/1.33.0 与 datasets5.0.0，升级须重核；不声称任意第三方自定义代码获得通用网络沙箱。无设计审批等待，同一#198里程碑，不提前PR/关闭。
