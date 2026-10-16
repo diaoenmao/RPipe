@@ -172,3 +172,40 @@ def test_readonly_target_denial_cleans_owned_readonly_staging(curve_case):
         _preserved(case)
     finally:
         case['dest'].chmod(0o666)
+
+
+@pytest.mark.parametrize('old', [False, True])
+@pytest.mark.parametrize('primary_kind', ['save', 'cancel', None])
+def test_curve_stream_close_io_keeps_primary_and_success_close_stays_strict(curve_case, monkeypatch, primary_kind):
+    from matplotlib.figure import Figure
+
+    case = curve_case
+    primary = (KeyboardInterrupt('save cancelled') if primary_kind == 'cancel'
+               else RuntimeError('save failed') if primary_kind == 'save' else None)
+    close_error = OSError('stream close IO failed')
+    original_open = Path.open
+    class Stream:
+        def __init__(self, raw):
+            self.raw = raw
+        def __getattr__(self, name):
+            return getattr(self.raw, name)
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            self.close()
+        def close(self):
+            self.raw.close()
+            raise close_error
+    def open_stream(path, mode='r', *args, **kwargs):
+        raw = original_open(path, mode, *args, **kwargs)
+        return Stream(raw) if path.parent == case['dest'].parent and path.suffix == '.tmp' and mode == 'xb' else raw
+    def fail_save(*args, **kwargs):
+        raise primary
+    monkeypatch.setattr(Path, 'open', open_stream)
+    if primary is not None:
+        monkeypatch.setattr(Figure, 'savefig', fail_save)
+    expected = primary if primary is not None else close_error
+    with pytest.raises(type(expected)) as caught:
+        write_learning_curves(case['root'], case['index'])
+    assert caught.value is expected
+    _preserved(case)
