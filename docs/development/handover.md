@@ -1,5 +1,12 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-17 PR174双侧验收/清理完成；B129/#176下一批
+
+最终head5dab50a的Branch38935993121/Package38935993041/Unit38935993044全部实际成功；实际dev9d78fb4的Package38937020429/Unit38937020502全部实际成功。五Issue170–173/175已各一次验收反馈后关闭，PR原正文保留并追加验收；原Windows3.10失败仍保留。普通删除codex/correctness-review-next本地+remote，未删worktree/数据/结果；基线161计数3、remote45。细节和hash见record§216，.tmp/audit128原件不随clone。
+
+下一codex/failure-evidence-next仅本地，从实际dev建立。#176确认未修，十场反例见.tmp/audit129，先提交原生红回归再方案/最小修；避免坏shared元数据阻断failed result，不改严格校验/合法路径/冻结与process保全。下方旧“未PR/待CI”只属当时历史，勿重派、重合或重复反馈。main/tag/GPU/数据/布局不动，目标active。
+
+
 ## 2026-10-17 B124–B127字段/事件身份完整本机里程碑
 
 当前codex/correctness-review-next：四Issue170–173分别先Issue/独立红/设计/最小修，原生消息行身份、可选activity行投影、native event字段与严格traceback形态已统一收敛。合批相邻420/core2009 passed+1既有skip/CPU Flow354 passed，新78全执行（21 unit+57 integration），40258/60788终结exit0，范围/字段展示点清单见record§213；原始.tmp/audit124–127不随clone。

@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR174五B双侧全部实际CI验收，dev9d78fb4；#170–#173/#175已关闭，已合主题本地+remote已清。
+> 最新：字段/事件身份与空锁初始化竞争统一完成，原Windows失败留证；另确认B129/#176十场失败回写反例，详§216。
+> 验证：共享相邻123、core2015 passed/1既有skip、CPU Flow354 passed，84新全执行；最终head与实际dev全部矩阵/聚合成功。
+> 下一步：codex/failure-evidence-next给#176先提交红回归，相关问题本地合批后再PR；无决策阻塞。
+> 保护：已删codex/correctness-review-next本地+remote，基线161计数3/remote45；main/tag/GPU/数据/结果/布局不动。
+
 > 当前（2026-10-17）：PR174合批B124–B128/#170–#173/#175，本机完整复验完成，准备更新最终head；接受dev仍bef7de9。
 > 最新：原CI Windows3.10暴露空锁初始化竞争，已先Issue/两项红再三行顺序移动，失败完整保留，详§214–215。
 > 验证：共享相邻123、core2015 passed/1既有skip、CPU Flow354 passed；本PR84新全执行（27 unit+57 integration）。
@@ -3683,3 +3689,16 @@ B128/#175先红5822a41/c7eef67共两项零/有限预算竞争均PermissionError�
 初次相邻命令误填不存在test_shared_alias.py而未收集测试，原GREEN.log保留；更正到真实test_shared_references.py后119 passed，再加入四清理控制后123 passed。第一探针锁期间读取及锁内另开句柄控制的错误分别保留说明，均不算库失败。原PR Unit38934229616已completed failure：三CPU矩阵成功、Windows3.10失败/其Flow跳过、聚合失败；不重跑、不取消、不用本机绿冒称原CI绿。更新相同PR174并触发新head全部CI；五Issue170–173/175保持开放直至双侧实际验收。
 
 原始CI失败、REPRO、原源码ZIP/hash、RED/RED2、GREEN/GREEN2/GREEN3与最终CORE/FLOW/SOURCE/LOCAL_CHECKED在.tmp/audit128，不随clone。没有GPU/性能/正式Study实测或科学结论，不改架构/产物布局/main/tag/数据/结果。下一B129，接受dev仍bef7de9，清理基线161计数2、remote44。
+
+
+## 216. PR174双侧全部实际CI验收、五Issue关闭及分支清理（2026-10-17）
+
+完整B124–B128里程碑最终head5dab50aea774a94d7ac57dc045382ca5287c2ac7的Branch38935993121、Package38935993041、Unit38935993044及所有实际矩阵/聚合均成功。PR174正常merge进入dev9d78fb414eb7e79dcdd5b2d0d21a7ed3ccd66882；实际dev独立Package38937020429、Unit38937020502及所有实际矩阵/聚合亦成功，不复用PR绿验dev。PR_CHECKED SHA256 f37171a3a1918318a7993dc3548b6836b53bfe5a914d9f848fc181fc08d8f159；DEV_CHECKED SHA256 effa6c979d1a34fa8c53b0bf61a07445be6881510fc3917ca9fd271cb296125f。
+
+Issue170/171/172/173/175逐项验收说明各发一次后关闭，原正文保留，PR原正文追加实际验收。原85826fe的Windows3.10失败38934229616及其Flow跳过完整保留，不重跑抹去。当前本机证据是共享相邻123、core2015 passed/1既有skip、CPU Flow354 passed，84新全执行；四B早先420相邻属于其原源码状态，不替代锁修后的集合。
+
+清理前核对工作区仅用户_staging_from_DEM未跟踪、finalhead为dev祖先、local/remote tip均5dab50a、唯一主工作区、无项目引用Python进程；普通detach→push --delete→branch -d删除codex/correctness-review-next本地与远程，随后验证双侧不存在。没有删除worktree/数据/结果/Run/provenance，main7a15c46、local dev9324014、origin/main00e70b1均未变。清理基线PR161后已验收3个PR（165/169/174），累计结束remote45，尚未到下次约5个全面盘点。
+
+下一唯一未合分支codex/failure-evidence-next从实际dev建立，仅本地；本条验收文档随下一完整里程碑，不独立小PR。B129/Issue176仍OPEN、未修：四场坏YAML/坏shared映射×fresh/旧success加六场nonmapping/坏root/decode×无/有已知shared元数据共10场本机反例，Runner失败回写再次解析坏共享声明，导致无failed结果或旧success不变。原始证据.tmp/audit129不随clone；下一步先提交原生红回归，再明确最小方案，不猜共享根、不放宽输入校验或冻结/process旧成功保全。
+
+验收/清理/Issue反馈与原失败原件在.tmp/audit128，不随clone；portable代码、回归、record与双语计划已随PR174入库。本轮无GPU/性能/正式Study实验或科学数字更新，不合main/tag/发布、不force push、不改文件架构与磁盘产物布局。持续目标active，下一新缺陷编号B130。
