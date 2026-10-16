@@ -563,3 +563,40 @@ def test_actual_dataset_media_reads_keep_domestic_policy(monkeypatch, streaming,
         with pytest.raises(RuntimeError, match='domestic'):
             consume()
         assert calls == []
+
+
+def test_domestic_sdk_worker_keeps_guard_after_parent_scope_returns(monkeypatch):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Event
+    requests = pytest.importorskip('requests')
+    from rpipe.structure import origin
+    started, release = Event(), Event()
+    calls = []
+
+    def transport(self, request, **kwargs):
+        calls.append(request.url)
+        response = requests.Response()
+        response.status_code = 200
+        response._content = b'synthetic'
+        return response
+
+    def worker():
+        started.set()
+        assert release.wait(5), 'test did not release worker'
+        try:
+            requests.get('https://huggingface.co/synthetic-prefetch')
+        except RuntimeError:
+            return True
+        return False
+
+    monkeypatch.setattr(requests.adapters.HTTPAdapter, 'send', transport)
+    monkeypatch.setattr(socket.socket, 'connect', lambda *a, **k: pytest.fail('real network'))
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        with origin._domestic_transfers('mirror'):
+            future = executor.submit(worker)
+            assert started.wait(5), 'worker did not start'
+        release.set()
+        assert future.result(timeout=5), 'worker lost guard when its parent returned'
+    assert calls == []
+    assert origin._download_origin.get() is None
+    assert origin._download_transports_installed is False
