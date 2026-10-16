@@ -446,7 +446,17 @@ def _run_supervised(
                 wrote_last_ckpt = True
         if not already_done and not wrote_last_ckpt:
             fire_ckpt(extra=extra, improved=False, is_last=True)
-    finally:
+    except BaseException:
+        try:
+            tracker.flush_state()
+        except Exception as exc:
+            if logger is not None:
+                try:
+                    logger.exception('tracker final flush failed', exc)
+                except Exception:
+                    pass
+        raise
+    else:
         tracker.flush_state()
 
     train_loss = tracker.segment_mean('train').get('Loss', 0.0)
