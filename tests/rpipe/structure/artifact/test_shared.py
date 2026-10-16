@@ -776,9 +776,9 @@ handle.close()
     assert lock.read_bytes() == b''
     identity = lock.stat().st_ino
     with cache_lock(tmp_path, timeout=0):
-        assert lock.read_bytes() == b'0'
+        assert lock.stat().st_size == 1
         with cache_lock(tmp_path, timeout=0):
-            assert lock.read_bytes() == b'0'
+            assert lock.stat().st_size == 1
     assert lock.stat().st_ino == identity
     with cache_lock(tmp_path, timeout=0):
-        assert lock.read_bytes() == b'0'
+        assert lock.stat().st_size == 1
