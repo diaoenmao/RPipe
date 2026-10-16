@@ -9,6 +9,7 @@ import importlib.machinery
 import importlib.util
 import os
 import pickle
+import site
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -81,6 +82,7 @@ def recipe_path(study_dir: Path | str, study: dict[str, Any]) -> Path | None:
 
 
 _recipe_import_lock = RLock()
+_site_roots = tuple(Path(path) for path in [*site.getsitepackages(), site.getusersitepackages()])
 
 
 class _RecipeLoader(importlib.machinery.SourceFileLoader):
@@ -114,10 +116,14 @@ def _recipe_namespace(root: Path) -> str:
 
 def _local_module(package: ModuleType, name: str) -> bool:
     top = name.partition('.')[0]
+    existing = sys.modules.get(top)
+    filename = vars(existing).get('__file__') if isinstance(existing, ModuleType) else None
+    installed = filename and any(Path(filename).is_relative_to(root) for root in _site_roots)
+    if top in sys.stdlib_module_names or top == __name__.partition('.')[0] or installed:
+        return False
     qualified = package.__name__ + '.' + top
-    return (top not in sys.stdlib_module_names
-            and (qualified in sys.modules
-                 or importlib.machinery.PathFinder.find_spec(qualified, package.__path__) is not None))
+    return (qualified in sys.modules
+            or importlib.machinery.PathFinder.find_spec(qualified, package.__path__) is not None)
 
 
 def _recipe_package(root: Path, recipe_root: Path) -> ModuleType:
@@ -156,9 +162,7 @@ def _recipe_pickle_module(study_dir: Path | str) -> ModuleType | None:
                        and all(char in '0123456789abcdef' for char in prefix[len('_rpipe_recipe_'):]))
             qualified = package.__name__ + '.' + (local if private else module_name)
             if not private:
-                owned_top = package.__name__ + '.' + prefix
-                if ((prefix in sys.modules and owned_top not in sys.modules)
-                        or not _local_module(package, module_name)):
+                if not _local_module(package, module_name):
                     return super().find_class(module_name, name)
                 try:
                     spec = importlib.util.find_spec(qualified)
@@ -167,13 +171,8 @@ def _recipe_pickle_module(study_dir: Path | str) -> ModuleType | None:
                 if spec is None:
                     return super().find_class(module_name, name)
             value = importlib.import_module(qualified)
-            try:
-                for part in name.split('.'):
-                    value = getattr(value, part)
-            except AttributeError:
-                if private:
-                    raise
-                return super().find_class(module_name, name)
+            for part in name.split('.'):
+                value = getattr(value, part)
             return value
 
     reader = ModuleType('_rpipe_recipe_pickle')
