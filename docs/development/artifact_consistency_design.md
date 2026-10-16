@@ -357,3 +357,10 @@ Flow通用execute在finally无条件吞掉tracker.flush_state的Exception，覆�
 
 
 B114已本地实施82890ce，8行增加/3行删除；24新节点全执行/通过，core1846 passed/1既有平台skip，CPU Flow273 passed。SOURCE_CHECKED精确原字节替换证明算法/日志/Runner/数值等边界未变；最终head/实际dev全部实际CI待完整里程碑验收。详record§180；当前不是待设计批准。
+
+
+## B115 / #156：不可变历史源码的排他创建与首错保全（2026-10-16）
+
+main_exp.export_source和main_probe.MainArchive.__init__均以exists→mkdir→write_bytes写固定归档。八个隔离合成Git blob探针用真实线程落盘复现两处竞态覆盖；六个全新/既有相同/既有不同控制正常。此为确定性交错，不声称正式归档曾损坏；未加载任何历史源码、bootstrap或科学运行。正式0383bd1先红28项12 failed/16有效控制passed、0error/skip：四竞态（含相同peer的竞争失败后可重试复用）和八个原写错被close IO替换反例。最初夹具Git tree闭包被AST变量覆盖的28失败为无效，单独保留，不当库失败。
+
+沿原“不同已有源码不得覆盖”合同，两处现有else分支改为xb排他创建，不新增文件/模块/依赖/通用IO层。失去创建所有权时原生FileExistsError拒绝，不删除或截断peer、不写新manifest；胜者完成后相同内容按原exists/read校验复用。自己已获所有权的部分写入/终止保留诊断字节，close仅OSError不得替换原错；成功体close失败严格传播，manifest只有全部blob正常后才按既有原子writer写。既有相同/不同判定、原Git批协议/固定commit、manifest键/hash/文件名和所有归档路径保持，不改科学算法/阈值、checkpoint/RNG或恢复合同。两处统一一个主题里程碑，后续先本机/CI验收再合dev；不执行或覆盖正式Study归档/数据。

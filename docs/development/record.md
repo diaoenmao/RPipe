@@ -3243,3 +3243,12 @@ PR152继续同一分支收敛#150/#151/#153，生产总计3个现有文件14行�
 | checkpoint committed/diagnostic bundle | 严格恢复，writing/incomplete保全不套普通tmp清理 | 源审与已有CPU合同，未运行新恢复实验 |
 
 这些结论不声称全部外部插件或科学矩阵已经实测；当前仅B114有新的已确认反例，统一修在共享Flow边界。连同PR152验收/清理记录在同一主题完整里程碑推送，不另拆文档PR；最终head与实际dev全部实际CI仍待验收。
+
+
+## 181. B115 / Issue156：两处历史源码归档竞态与写入首错（2026-10-16）
+
+从原始binary写入点交叉盘点确认main_exp.export_source和main_probe.MainArchive.__init__同类exists→write_bytes；shared raw准备由cache_lock保护，未把其固定part按普通临时清理改写。两导出使用真实源码AST、单个合成Git tree/blob、真实竞争线程，八探针两竞态覆盖peer后success；六正常/相同复用/不同拒绝控制正确。MainArchive.ROOTS为空且bootstrap/cwd隔离，无历史源码/Study/下载/data/model/optimizer执行，正式归档未访问。
+
+先Issue156，再0383bd1正式红28项12 failed/16有效控制passed、0error/skip。覆盖创建竞态、相同竞争者完成后重试、四种原写错/终止与close IO、无二次close错控制、成功close失败严格及旧manifest/自有部分诊断bytes。首轮夹具tree变量覆盖为AST Module的28失败无效；INVALID_FIXTURE_RED及原因保留，修正source_tree后才提交正式红，生产未先改。临时探针/全部合成文件/ZIP/hash与红在.tmp/audit115不随clone。
+
+设计仅两处else用xb取得创建所有权，显式沿既有write/close首错合同；失去创建权拒绝、不碰peer或旧manifest，自己失败字节保留。原固定Git ref、序列化/hash/路径、导出内容与数值/科学门均不改。PR155最终head34653e2已全实际CI成功并正常合dev720a13df514efaf8d765c24613c019e664af0b4e，实际dev CI仍运行；#154和已合旧主题待双侧验收清理。当前唯一未合codex/archive-exclusive-creation本地积累，不拆两导出PR，不推单行文档。
