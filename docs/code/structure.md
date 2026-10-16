@@ -1119,3 +1119,6 @@ Study comparison PNG退出合同（Issue146）：main_exp/flow/process/curves.pl
 
 
 配方定义的自定义 checkpoint 对象：原生 System 和 compare checkpoint 读取经 system_api 的私有桥，在标准Run assets且该Study配方包已加载时选用局部兼容Unpickler；既有裸helper引用与其它物理根的私有引用解析到当前Study代码，非本地全局引用仍用标准pickle。没有已加载配方时保持原torch.load参数。此处只处理类定义的导入身份，不改变权重/optimizer/RNG恢复范围、指纹拒绝、数值门、weights_only=False或checkpoint文件协议/布局，不写回原checkpoint。绕过RPipe直接加载自定义Python类仍须使其定义代码可导入；使用原生System读取可保留旧helper与换根兼容。
+
+
+Logger中断尾行边界（B123/#168）：既有_emit在可读的非空尾字节既非LF也非CR时，以原append文本写在新record前补一个分隔；不截断/重写旧字节，合法记录的stdout/文件内容、编码/newline、追加权限及首错规则保持。可选尾读OSError沿原append-only行为继续，不能读旧日志时不保证修复中断半行；不因此新增读取权限要求。Tracker恢复协议与只读解析不改，非任意多写者事务。当前本机与合批状态见[record§207](../development/record.md)。

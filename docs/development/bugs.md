@@ -6,21 +6,19 @@
 
 ## 开放
 
-### B-119：Study配方同名helper缓存与导入生命周期隔离（本机已修，待里程碑CI）
+### B-122：Runner终末日志错误绕过失败留证（本机已修，待同主题里程碑CI）
 
-- Issue：[163](https://github.com/DreamSoul-AI/RPipe/issues/163)。原顺序加载第二Study复用第一个helper，原始红与候选晚导入等反例见[record§192–201](record.md)。
-- 当前ac65eb1/041e8c1以Study私有包和绑定导入覆盖加载/注册/晚导入，不占外部裸名cache，保留标准库/自身/已加载安装运行时优先级。原生System/compare reader兼容旧helper和跨根私有类；缺失自有类严格拒绝，不从外国cache借类。
-- 当前core1974 passed/1既有skip、CPU Flow279 passed，新61全部执行，范围/原始字节已核对。PR165同批补B121动态导入，等待新最终head与实际devCI，Issue保留OPEN；临时.tmp/audit119不随clone，不用旧绿色结果替代当前边界。
+- Issue：[167](https://github.com/DreamSoul-AI/RPipe/issues/167)。终末stdout/file-write失败发生在run既有try之外，普通阶段无failed/残留旧成功，process缺诊断。4原始探针和12红（8失败/4正常控制）保留，4ac6883先测试、01b394f设计、761700f最小修。
+- 当前仅将原末条info纳入既有try，保持输出时机及process旧成功例外、原首错/诊断/failed写规则；Runner49、core1974 passed/1既有skip、CPU Flow291 passed，12新节点全部执行。详[record§204–205](record.md)，原始.tmp/audit122不随clone。
+- 167仍OPEN，本机检查不代替最终head/实际devCI；同一codex/correctness-next-milestone本地积累，不为单bug开PR，不改布局或科学门。
 
-### B-120：合法延迟注解dataclass配方缺少定义模块身份（本机已修，待里程碑CI）
+### B-123：旧半行日志吞掉新ERROR的原生事件身份（本机已修，待同批CI）
 
-- Issue：[164](https://github.com/DreamSoul-AI/RPipe/issues/164)。原spec.exec无模块注册，future/dataclass加载及register内部定义失败；正式加载8红4失败/4控制与注册4红2失败/2控制保留。
-- 与B119统一模块生命周期实现；加载、注册、后续注解反射/pickle、失败替换保全与合法_helper文件名均验过，同一批完整结果见上。同一PR165主题分支、未合dev/不关闭Issue；[record§194–201](record.md)，原始.tmp/audit120不随clone。
+- Issue：[168](https://github.com/DreamSoul-AI/RPipe/issues/168)。原生Logger追加后logs把新error归到旧flow，status错误提示为'-'；原始REPRO和14/16/20节点各场红留证。
+- 97a1443只在既有_emit探查可读末字节并于原a写入中补必要分隔，保留旧字节、有效行尾、stdout/格式、append-only权限及原首错规则；不可读尾仍沿原追加，不声称此时修复半行。与B122联动32新全部执行；相邻298/core1988+1既有skip/Flow297通过，详[record§206–207](record.md)。
+- 167/168同一完整里程碑，等待最终head/实际devCI，尚未合dev或关闭Issue；不改readout解析或布局，不拆单bug PR。
 
-### B-121：私有recipe候选漏掉importlib动态入口（本机已修，待PR165验收）
-
-- Issue：[166](https://github.com/DreamSoul-AI/RPipe/issues/166)。最终验收复查发现原dev可用的动态helper导入在候选失败；先红10项8失败/2控制，9166cbd复用私有Study命名空间补动态绑定，当前完整本机结果见上。
-- 与B119/B120同PR165，不拆新PR；原始/候选/驱动错误分开保留，详[record§202](record.md)。三Issue仍OPEN，最终head/实际devCI尚待验收，不改变布局或科学门。
+B119/#163、B120/#164、B121/#166已PR165双侧全实际CI验收并关闭，已合主题本地+remote清理，详[record§203](record.md)。
 
 B117/#160、B118/#162已PR161双侧全部实际CI验收关闭且主题本地/remote清理，第5批周期盘点见[record§193](record.md)。
 

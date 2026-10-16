@@ -1,3 +1,21 @@
+> 当前：B122/#167、B123/#168同主题日志失败/中断读回里程碑，本机完整检查完成，准备统一一个PR。
+> 最新：末条IO拒绝绕过留证与旧半行吞新ERROR身份均复现；先独立红回归再761700f/97a1443最小修，详§204–207。
+> 验证：相邻298 passed；core1988 passed/1既有skip、CPU Flow297 passed，32新全执行（14 unit+18 integration）/0新skip。
+> 下一步：同分支统一PR，验最终head与实际dev所有CI后关167/168并清已合主题；无决策阻塞。
+> 保护：接受dev仍70a8750/PR165，清理基线161计数1、remote43；不合main/tag/GPU/测速，不删数据/结果、不改布局。
+
+> 当前：B122/#167已本机修复并完整验证，尚未推送/开PR；接受dev仍PR165/70a8750。
+> 最新：末条Runner日志绕过失败留证；先红12项8失败/4控制，再761700f只缩进原语句，见§204–205。
+> 验证：Runner49 passed；core1974 passed/1既有skip、CPU Flow291 passed，新12全执行/0skip；源码仅两行diff。
+> 下一步：同一codex/correctness-next-milestone继续三类及相邻失败边界复查，相关主题完整里程碑再PR；167仍OPEN，无决策阻塞。
+> 保护：清理基线161计数1、累计remote43；未合分支/数据/结果保留，无GPU/测速/Study/main/tag或布局变更。
+
+> 当前：PR165已双侧全实际CI验收，dev70a8750；#163/#164/#166已关闭，已合主题本地/remote均清理。
+> 最新：B119/B120/B121统一加载隔离、dataclass身份、动态导入与checkpoint兼容，详§202–203；原候选反例保留。
+> 验证：core1974 passed/1既有skip、CPU Flow279 passed，新61全执行；最终head与实际dev所有矩阵/聚合均成功。
+> 下一步：开放Issue快照为空，codex/correctness-next-milestone继续三类复查；本地主题积累、完整里程碑再PR，无决策阻塞。
+> 保护：已删codex/study-loader-isolation本地+remote，累计remote43，清理基线161计数1；main/tag/GPU/数据/布局未动。
+
 > 当前：B119/#163、B120/#164、B121/#166统一PR165，动态导入候选回归已补修，本机完整检查完成。
 > 最新：原dev动态helper返回37、原候选ModuleNotFoundError；先红10项8失败/2控制，再9166cbd修复，见§202。
 > 验证：当前core1974 passed/1既有skip，CPU Flow279 passed，新增61全执行、0新skip；目标67含6既有节点。
@@ -3472,3 +3490,65 @@ B119/#163、B120/#164完整本机检查后统一开PR165，最终候选d385c410�
 SOURCE_CHECKED核对相对于上个完整候选只有recipe动态绑定改变，其余3个生产文件hash完全不变；此前System保存、compare数值/格式、API已有字节及文件架构/磁盘产物布局合同仍保持。没有数据迁移、GPU、测速、下载、正式Study/科学结论、main/tag/发布或数据/结果删除。
 
 三项作为同一完整加载里程碑继续PR165普通推送，不amend/force push。待新最终head的全部实际矩阵/聚合CI，再正常合dev并另验实际dev；目前163/164/166都OPEN，已接受基线仍PR161/dev8480d79，清理基线161计数0。旧候选CI即使通过亦不可替代当前head。验收后的收尾记录随下一里程碑入库，不为几行文档再拆PR。
+
+
+## 203. PR165双侧实际CI验收、三Issue关闭与已合主题清理（2026-10-16）
+
+完整加载里程碑B119/#163、B120/#164、B121/#166统一[PR165](https://github.com/DreamSoul-AI/RPipe/pull/165)。最终head3a74728e34c8f5f27216e27dd3fe7b50e5b7ccd8的[Branch38917963279](https://github.com/DreamSoul-AI/RPipe/actions/runs/38917963279)、[Package38917963440](https://github.com/DreamSoul-AI/RPipe/actions/runs/38917963440)、[Unit38917963881](https://github.com/DreamSoul-AI/RPipe/actions/runs/38917963881)及所有实际矩阵/聚合均success。严格PR_CHECKED SHA256 c73dafef661ecb02c06e7cdbedc4913c68e0f90455b1db8d778a47be762261c7，未采用已被动态导入反例否决的d385c410检查替代当前head。
+
+使用expected-head正常merge到实际dev70a8750e98df9cb941e6c8f525d51f9d41cec77b，未squash/force push。实际dev的[Package38918867862](https://github.com/DreamSoul-AI/RPipe/actions/runs/38918867862)、[Unit38918867923](https://github.com/DreamSoul-AI/RPipe/actions/runs/38918867923)及所有实际矩阵/聚合亦success；DEV_CHECKED SHA256 1560ec68260bc7a864ef2ff4e99265c9a002dc638a015ed95d6aec42d74cbc56。PR正文保留原材料并追加真实验收；163/164/166各关闭并一次引用同批验收，不重复评论。关闭不是main发布或新实施授权。
+
+本机当前core1974 passed/1既有Windows POSIX模式skip、CPU Flow279 passed；新增61（55 unit+6 integration）全执行/0新skip，目标67还包含6既有Flow节点。原始红、候选回归、两个驱动import sys遗漏、ZIP/hash/XML及严格checker日志保留.tmp/audit119/120/121，不随clone；正式portable测试/方案和工程记录随Git提供。相邻复核recipe/phase、atomic文本、共享锁、checkpoint诊断、Tracker追加与status/log/report/index，除本批已修动态入口外未确认新反例；检索清单仅是源码搜索，不冒称穷尽所有IO路径，也不代替既有403组全仓清单。
+
+双侧验收后核对实际远端tip=3a74728、其为dev祖先、工作区只有保留的_staging_from_DEM、仅一个primary worktree、没有命令引用RPipe的活动Python进程。先detach到实际dev，再普通删除以下已合分支：
+
+| **范围** | **删除分支** | **提交保全位置** |
+| --- | --- | --- |
+| 本地 | codex/study-loader-isolation | dev70a8750包含tip3a74728 |
+| 远端origin | codex/study-loader-isolation | dev70a8750包含tip3a74728 |
+
+删除后远端与本地均不存在该主题；main7a15c46、本地dev9324014、origin/main00e70b1原值保持，没有worktree、数据、Run、结果或provenance删除。remote累计结束43条。清理基线仍PR161/dev8480d79，已验收累计1/约5；本批即时清理完成，不重复触发全面第5批清理。实际开放Issue快照为空，下一缺陷编号B122，不为活跃制造Issue。
+
+从实际dev建立唯一活动未合分支codex/correctness-next-milestone，继续三类正确性复查；本节收尾及后续同类内容先本地按主题积累，随下一个完整里程碑统一PR，不为几行文档另开PR。目标保持active，无决策阻塞；无GPU/测速/下载/正式Study/main/tag/发布/数据删除或文件架构与产物布局更改。
+
+
+## 204. B122 / #167末条Runner日志失败留证复现与红回归（2026-10-16）
+
+PR165验收/清理后，工作区65ed4e6仅多收尾文档；fetch正常、开放Issue快照为空，继续第一类边界复查。实际FlowRunner/Logger/result IO，合成collect/process无计算body，末条stdout拒绝×新旧结果四探针全部原异常传播但无error诊断；collect旧succeeded残留、新Run无failed，process旧成功仍保留但无诊断，新Run同样无failed。原始REPRO.json/log、runner.py ZIP/hash在.tmp/audit122（不随clone），无GPU/训练/下载/测速或正式Study执行。
+
+先开#167，再4ac6883提交portable12节点红回归：真实末条stdout/file-write两拒绝×collect/process×新旧结果8失败，正常末条4对照通过，0error/skip；phase body均实际调用一次、真实peer/原异常身份与process旧成功原字节均锁定。并非再开已修B101启动Issue，根因是同一Runner的最后一条日志未纳入既有失败处理。
+
+按已批准第一类合同只缩进原语句进入try，保持所有阶段完成后输出时机，_preserve_success/原except/failed IO完全原样，不引入更多保全范围或吞日志错误。实施方案见artifact_consistency_design§204；当前先本地同主题合批，不单bug开PR。接受基线dev70a8750，清理基线161计数1，活动codex/correctness-next-milestone保留；不动main/tag/布局/数据结果，下一编号B123。
+
+
+## 205. B122本机修复与完整验证（2026-10-16，同主题本地积累）
+
+761700f只将FlowRunner末条logger.info('succeeded')原语句缩进到既有try中；除这一处移动外，_preserve_success、整个except/_log_failure/_write_failed_result、阶段/hook顺序与输出时机等原字节完全保持。SOURCE_CHECKED与原zip/hash锁定原生源文件仅runner.py两行diff；未改result/schema、磁盘路径、日志格式、算法/Tracker/checkpoint或科学门，不增加helper/模块/依赖。
+
+RED12项8失败/4正常对照，GREEN同文件49 passed，全部12新节点执行；当前完整core1974 passed/1既有Windows POSIX模式skip、CPU Flow291 passed，均0failure/error，新增12全执行/0skip。不是用只跑目标49替代完整当前集合。独立basetemp和XML/hash/ZIP/原始REPRO均在.tmp/audit122，不随clone；正式回归已入库。完整检查进程52264/58084均exit0终结，不保留伪活动观察句柄。
+
+复查相邻launch打印/失败定稿、prepare结束日志及Runner调用方，尚未确认需另记的新反例；没有为活跃拆新Issue/PR。#167保持OPEN，本机通过尚不能代替最终head/实际devCI。当前codex/correctness-next-milestone仅本地积累（含PR165收尾记录），按20:56将相关失败留证工作汇成完整里程碑再统一PR；未推送或开PR，接受dev仍70a8750，清理基线161计数1，remote累计43。继续三类复查，下一编号B123；目标active，无决策阻塞，无GPU/测速/下载/正式Study/main/tag/数据删除或文件架构/产物布局变化。
+
+
+## 206. B123 / #168：中断日志尾行与下一条事件分隔（2026-10-16，同一失败留证批次）
+
+真实Logger在无行尾的旧run.log后追加ERROR，将两条native header连成一行；event_lines将新错误读成旧flow内容，_note_from_log(errors_only=True)得到'-'。原始字节未丢但事件身份丢失，原生合成Run/Logger/index/readout确认，无训练或科学运行。#168后66d3526先提交14节点红6失败/8有效控制，后补单独CR有效行尾对照，完整16红仍6失败/10控制；ASCII/UTF8半字节、同一Logger/重新打开和真实只读回读均覆盖。
+
+最小方案在现有Logger._emit：stdout输出仍原位置；以单独rb句柄检查可读文件最后一个字节，仅非空且既非LF也非CR时，在同一次原a文本write的record前加入一个newline。保留全部旧字节，不重写/截断/迁移文件。原append模式、编码/newline映射、权限/umask、write/flush/close及首错规则保持；有效空/LF/CRLF/CR日志原字节不变。二进制尾读不解码破损UTF8，不改变status/logs的解析或科学门。
+
+尾读仅用于可读尾行修复：OSError时继续原append行为，不能因为新增read要求阻断原来可写但不可读的日志。此时无法保证中断尾行修复，明确限制与回归保护，不把可选探查失败当作写入成功证据；原write/flush/close失败依然严格。保留constructor不重开既有证据、peer、合法记录stdout/文件对应、其他调用方及Tracker恢复协议。不是新日志框架，不承诺任意多写者同Run事务。
+
+与B122/#167同一codex/correctness-next-milestone本地主题积累，先红/设计/最小生产修复，再合批当前core/CPU Flow及最终head/实际devCI；不单独开一个bug PR，不等审批、不改文件架构/产物布局或运行GPU/测速。
+
+
+## 207. B122/B123同主题日志失败与原生读回里程碑，本机完整验证（2026-10-16）
+
+B123/#168的原生Logger/index/logs/status探针确认：中断半行和新ERROR连成一行，错误内容被归到旧flow且errors_only为'-'。先66d3526提交14红6失败/8控制，再6588d28补有效单CR控制得16红6失败/10控制；3ad90d3在原Logger源码、已有B122 Runner修复上补四项真实联动（末条写部分字节/flush后抛错→Runner定稿→native readout），完整RED_COUPLED20红10失败/10控制。该红不是把B122的12红也放回同一生产基线；所有独立红场次与原候选/旧数据均保留。
+
+97a1443仅在既有Logger._emit加可选二进制尾读，已知非空非LF/CR才在原a文本write前加分隔；其余write/flush/close首错规则、stdout时机、append模式/权限/编码/newline及全部其他方法原字节不变。不能读尾时保持原append-only能力，不承诺此限制下修复半行；正常empty/LF/CRLF/CR、构造不重开、peer及旧半行原字节均保留。有效日志记录格式未变，不改readout解析、Tracker、checkpoint、schema或科学门；没有通用I/O框架/新文件。
+
+与B122合批定向298 passed，其中32新节点全部实际执行（14 unit+18 integration）；当前完整core1988 passed/1既有Windows POSIX模式skip、CPU Flow297 passed，0failure/error，新增32无skip。完整进程57962/10745均exit0终结。新32不是298的全部；B122原12红8失败/4控制与B123最终20红10失败/10控制是各自真实生产状态，未伪称统一一场32红。
+
+SOURCE_CHECKED精确原字节比较：src只Runner末条info缩进1增1删、Logger可选尾读/原追加11增1替换，其余源码/原异常处理和持久化格式不变。原始REPRO、源码ZIP/hash、各场红/绿、XML、源码证明在.tmp/audit122/123，不随clone；portable回归/设计/记录和双语研究计划随Git提供，无科学运行或结论新增。
+
+目前167/168仍OPEN，接受dev70a8750/PR165，当前两B是同一个完整“末条失败→半行保全→独立error事件读回”里程碑，不单bug或几行文档拆PR。本机验收后统一PR，仍须新最终head/实际dev全部实际矩阵/聚合验收再关闭及清分支。清理基线161计数1、remote累计43；下一编号B124。无GPU/测速/下载/正式Study/main/tag/数据/结果/架构或产物布局变化，不等待设计审批。

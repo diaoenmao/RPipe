@@ -453,3 +453,30 @@ load_recipe在上述上下文内执行spec前，将自己的既有模块名临�
 
 
 2026-10-16本机实施：9166cbd在同一recipe文件补动态入口绑定；当前core1974 passed/1既有skip、CPU Flow279 passed，新增61全执行。该importlib视图仅属于私有代码执行环境，不替换全局模块身份；原生子模块与当前外部动态函数继续委托。最终PR165新head/实际devCI仍待验，不是等待设计批准，详record§202。
+
+
+2026-10-16已实施并验收：B119/#163、B120/#164、B121/#166统一PR165，最终head3a74728与实际dev70a8750全部实际矩阵/聚合CI均成功；三Issue已关闭且已合主题本地/remote清理。动态入口、私有模块生命周期、旧/迁移checkpoint兼容的候选反例与方案修正均保留；这不是待审/待修状态，不改变第七节未实施能力。详record§203，后续三类复查仍先确认真实反例再同主题合批。
+
+
+## 204. B122 / #167：Runner末条日志纳入同一失败留证边界（2026-10-16）
+
+第一类新反例：最后logger.info('succeeded')位于run既有try/except之外。真实Logger的末条stdout或文件write被拒时，原异常虽传播，却绕过_log_failure/_write_failed_result；普通collect新Run无failed、旧Run残留succeeded，process旧成功按原规则应保留但也没有原错诊断。四个原生Runner/Logger合成探针确认stdout路径，正式12节点（stdout/file-write/正常×collect/process×新旧结果）先红8失败/4正常对照，4ac6883已提交。与B101启动日志处不同：原修复保留末条时机，本批保持该时机，只补末条异常范围。
+
+最小方案：将末条info原语句缩进到现有try内、仍在全部阶段/Study hook之后；已有except原样记录并按当前最后phase调用_preserve_success。process旧成功仍逐字节保全；其他普通阶段仍failed，首错对象/既有诊断fallback/failed写二错规则不变。没有新catch、helper、phase名、依赖、结果字段、路径、文件或目录。日志本身失败仍对调用方失败，不吞错或伪造成功。只在同主题下一里程碑分支积累，先本机定向+core/CPU Flow，后续完整批次一个PR验最终head/实际dev；不为单个相邻bug立刻开PR。
+
+
+2026-10-16本机已实施B122：761700f仅原末条日志缩进到既有try，原捕获/保全规则及全部其他源码原字节不变。Runner49/core1974 passed+1既有skip/CPU Flow291 passed，新增12全执行。#167仍OPEN，等待同主题完整里程碑最终head/实际devCI，不是等待设计批准；不单bug立即开PR。详record§205。
+
+
+## 206. B123 / #168：中断日志尾行与下一条事件分隔（2026-10-16，同一失败留证批次）
+
+真实Logger在无行尾的旧run.log后追加ERROR，将两条native header连成一行；event_lines将新错误读成旧flow内容，_note_from_log(errors_only=True)得到'-'。原始字节未丢但事件身份丢失，原生合成Run/Logger/index/readout确认，无训练或科学运行。#168后66d3526先提交14节点红6失败/8有效控制，后补单独CR有效行尾对照，完整16红仍6失败/10控制；ASCII/UTF8半字节、同一Logger/重新打开和真实只读回读均覆盖。
+
+最小方案在现有Logger._emit：stdout输出仍原位置；以单独rb句柄检查可读文件最后一个字节，仅非空且既非LF也非CR时，在同一次原a文本write的record前加入一个newline。保留全部旧字节，不重写/截断/迁移文件。原append模式、编码/newline映射、权限/umask、write/flush/close及首错规则保持；有效空/LF/CRLF/CR日志原字节不变。二进制尾读不解码破损UTF8，不改变status/logs的解析或科学门。
+
+尾读仅用于可读尾行修复：OSError时继续原append行为，不能因为新增read要求阻断原来可写但不可读的日志。此时无法保证中断尾行修复，明确限制与回归保护，不把可选探查失败当作写入成功证据；原write/flush/close失败依然严格。保留constructor不重开既有证据、peer、合法记录stdout/文件对应、其他调用方及Tracker恢复协议。不是新日志框架，不承诺任意多写者同Run事务。
+
+与B122/#167同一codex/correctness-next-milestone本地主题积累，先红/设计/最小生产修复，再合批当前core/CPU Flow及最终head/实际devCI；不单独开一个bug PR，不等审批、不改文件架构/产物布局或运行GPU/测速。
+
+
+B123补强与本机实施（2026-10-16）：3ad90d3在原Logger/已有B122 Runner上先补四项真实部分写入→Runner→原生readout联动，完整20红10失败/10控制，再97a1443实施原_emit可读尾行分隔。当前298相邻/core1988 passed+1既有skip/CPU Flow297 passed，32新全执行；仅两个现有生产文件最小改动，其他源码/格式/append权限及首错规则原字节保持。准备与B122统一完整里程碑PR；167/168仍OPEN，最终head/实际devCI待验，不是待设计审批。详record§207。

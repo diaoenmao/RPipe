@@ -642,3 +642,18 @@ B119/#163、B120/#164当前本机修复通过core1964 passed/1既有skip、CPU F
 ## 2026-10-16 加载里程碑PR165候选复查补记
 
 B119/#163、B120/#164统一PR165后，验收前发现B121/#166：原dev可用的recipe动态helper导入在候选ModuleNotFoundError。先提交10红（8失败/2控制），9166cbd复用所属Study私有空间补动态入口；当前core1974 passed/1既有skip、CPU Flow279 passed，新增61全执行，详[record§202](../development/record.md)。原始与候选失败均保留；三项同一PR，不逐bug拆分。新最终head/实际devCI待验，163/164/166仍OPEN，接受基线仍PR161/dev8480d79。无新增科学运行/数字/结论，不改变五个Study方案、历史反例、恢复/数值门或产物布局；后续科学复验仍须新version和原前置门。
+
+
+## 2026-10-16 PR165工程验收基线补记
+
+B119/#163、B120/#164、B121/#166统一PR165已验收：最终head3a74728及实际dev70a8750的所有实际矩阵/聚合成功，三Issue关闭，已合主题本地/remote清理。当前接受工程基线dev70a8750；本机core1974 passed/1既有skip、CPU Flow279 passed，新61全执行，详[record§203](../development/record.md)。候选失败与原始红证据仍保留，旧绿色不替代当前边界。此为工程合同进展，无新增科学实验或结论；五个Study协议、历史数字/反例、原数值与恢复前置门、文件架构/产物布局不变。科学复验仍使用新version与实际provenance，不将本次CI当作实测替代。开放Issue快照为空后继续三类正确性复查；收尾记录与后续相关工作本地累积，不单独拆文档PR。
+
+
+## 2026-10-16 B122失败留证工程补记（本地，未合dev）
+
+接受工程基线仍PR165/dev70a8750。B122/#167确认Runner最后成功日志的IO拒绝绕过既有失败留证；先红12项8失败/4正常控制，761700f只将原语句缩进现有try，不改变末条时机、process旧成功保全或结果/日志格式。Runner49/core1974 passed+1既有skip/CPU Flow291 passed，12新全执行，详[record§204–205](../development/record.md)。本机结果不代替最终head/实际devCI，167保持开放，同主题在原分支本地合批，不立即拆PR。无科学实验/数字/结论新增；五Study协议、历史反例/数字、数值/恢复前置门及产物布局不变，科学复验仍须新version与实际provenance。
+
+
+## 2026-10-16 B122/B123日志失败与原生读回里程碑（本机，CI待验）
+
+#167末条日志拒绝越过Runner留证，与#168中断半行吞新error身份在同主题合批；原生部分写入→Runner失败定稿→logs/status独立事件回读联动已先红再修。相邻298/core1988 passed+1既有skip/CPU Flow297 passed，32新全部执行，详[record§206–207](../development/record.md)。只改原Runner日志缩进及原Logger可读尾行分隔，保留旧字节/有效日志/原append权限与异常优先级；不可读尾保持原能力而不保证半行修复。不改文件或产物布局/格式、Tracker/checkpoint或科学门。两Issue仍开放，准备一个完整里程碑PR，接受工程基线仍dev70a8750/PR165。无科学运行或新结论，五Study协议及历史数字/反例不变，科学复验仍须新version和原前置门。
