@@ -412,3 +412,55 @@ def test_aiohttp_actual_redirect_loop_checks_before_next_connection(monkeypatch,
         assert client.closed
 
     asyncio.run(run())
+
+
+def _dataset_worker_policy_probe(batch):
+    import os
+    import requests
+    from rpipe.structure import origin
+    entered = []
+
+    class Adapter(requests.adapters.BaseAdapter):
+        def send(self, request, **kwargs):
+            entered.append(request.url)
+            response = requests.Response()
+            response.status_code = 200
+            response._content = b'synthetic'
+            return response
+
+        def close(self):
+            pass
+
+    with requests.Session() as client:
+        client.mount('https://', Adapter())
+        try:
+            client.get('https://huggingface.co/synthetic-worker')
+        except RuntimeError:
+            pass
+    return [dict(policy=origin._download_origin.get(), pid=os.getpid(), transport=bool(entered))
+            for _ in batch]
+
+
+def test_dataset_spawn_download_workers_keep_domestic_policy(monkeypatch):
+    import importlib
+    import multiprocessing
+    import os
+    datasets = pytest.importorskip('datasets')
+    from datasets.download import download_manager
+    from huggingface_hub import constants
+    from rpipe.structure.origin import load_hf_dataset
+    parallel = importlib.import_module('datasets.parallel.parallel')
+    monkeypatch.setattr(parallel, 'Pool', multiprocessing.get_context('spawn').Pool)
+    monkeypatch.setattr(constants, 'ENDPOINT', 'https://hf-mirror.com')
+    monkeypatch.setattr(datasets.config, 'HF_ENDPOINT', 'https://hf-mirror.com')
+
+    def load_dataset(*args, **kwargs):
+        return download_manager.map_nested(_dataset_worker_policy_probe, list(range(4)),
+                                          num_proc=2, batched=True, batch_size=2,
+                                          disable_tqdm=True)
+
+    monkeypatch.setattr(datasets, 'load_dataset', load_dataset)
+    result = load_hf_dataset('synthetic/data')
+    assert len(result) == 4
+    assert all(row['pid'] != os.getpid() for row in result), 'probe did not reach child processes'
+    assert all(row['policy'] == 'mirror' and not row['transport'] for row in result)
