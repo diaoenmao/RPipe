@@ -156,17 +156,27 @@ class AlgorithmTracker:
             and type(offset) is int and 0 <= offset <= self.jsonl_path.stat().st_size
         ):
             keep = offset
-        with self.jsonl_path.open('ab+') as handle:
+        handle = self.jsonl_path.open('ab+')
+        try:
             if handle.tell():
                 handle.seek(-1, 2)
                 if handle.read(1) != b'\n':
                     handle.write(b'\n')  # Isolate a crash's partial record from the new marker.
             handle.write((json.dumps({'event': 'start', 'keep_until': keep}) + '\n').encode('utf-8'))
+        except BaseException:
+            try:
+                handle.close()
+            except OSError:
+                pass
+            raise
+        else:
+            handle.close()
 
     def append_jsonl(self, split: str, *, progress: dict[str, Any] | None = None) -> None:
         self.jsonl_path.parent.mkdir(parents=True, exist_ok=True)
         means = self.mean(split)
-        with self.jsonl_path.open('a', encoding='utf-8') as handle:
+        handle = self.jsonl_path.open('a', encoding='utf-8')
+        try:
             for name, value in means.items():
                 row = {'step': self.step, 'split': split, 'name': name, 'mean': value}
                 if progress is not None:
@@ -177,6 +187,14 @@ class AlgorithmTracker:
                 line = json.dumps(row, ensure_ascii=False)
                 handle.write(line + '\n')
             handle.flush()
+        except BaseException:
+            try:
+                handle.close()
+            except OSError:
+                pass
+            raise
+        else:
+            handle.close()
 
     def flush_state(self) -> None:
         body = self.state_dict()

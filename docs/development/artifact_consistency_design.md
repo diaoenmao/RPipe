@@ -296,3 +296,12 @@ Issue132后，1e8c5d1先提交22项合同：unit12覆盖RuntimeError/KeyboardInt
 最小方案只改既有shared.py的cache_lock：复用已导入的stdlib ExitStack，在文件取得后登记close退出回调，取得OS锁后再登记release回调；逆序先release、后close。回调只在已有exc_type时不让自身OSError替换首错；没有首错则照常抛出，两个清理故障保留先发生的unlock错；非IO程序错误不吞。回调不返回True，不抑制原异常/取消。获取失败不登记unlock，仍保留Timeout的cause与原预算。held移除时机、物理root/PID键、OS原语/死持有者释放、模式与锁文件、多根排序和输入staging保全保持。不加资源框架、模块、路径/schema或共享状态推断。
 
 native Windows/Posix各用原生获取，仅注入cleanup/acquire故障；失败/取消和普通严格控制均要验证descriptor关闭及另一线程真实重获、不可变输入字节和builder staging保留。随后共享相邻、core/CPU Flow与最终head/实际dev全部实际CI分别验收。原始探针/ZIP/red在.tmp/audit107不随clone，正式回归/设计随Git提供；无GPU/main/tag或正式Study。
+
+
+## B108 / #144：普通文本及ledger流关闭的首错保全（2026-10-16）
+
+PR143最终head全部实际CI通过并正常合dev e589862d，实际dev CI尚在运行；对应锁主题分支保留至验收，不混入本批。Issue144后dcd4e2d先提交30项正式红回归：16 failed/14有效控制passed，0error/skip。现有atomic_write_text、Logger._emit、AlgorithmTracker.begin_run/append_jsonl四入口，真实部分写入/flush或编码错误和取消遭文件上下文close OSError替换；原错仅在context。12探针中8首错/取消重现、4正常close严格控制，原始证据在.tmp/audit108，不随clone。
+
+沿用已实施第一/第三类合同：只改既有_atomic.py、logger.py、tracker.py的上述四个写入块，显式取得句柄；正常体完成后close严格传播，已有BaseException时尽力close，仅关闭OSError不遮原错，随后bare raise；非IO程序错误继续暴露。不新增通用I/O层、helper/module或依赖，不用异常context恢复原错。打开模式、编码/newline、追加顺序、flush、JSON/日志字节、目标权限/umask、原子替换、自有tmp清理和checkpoint诊断staging均保持。原子文本改用同参数Path.open/write，两个旧测试从Path.write_text高层注入调整为同一真实文件write的部分写入注入，仍验证原错身份、旧目标和peer不变；先在未修生产上验证这些既有相邻合同，再修。
+
+30新回归覆盖新旧文本目标、实际UnicodeEncodeError、日志write/flush、tracker起始标记/指标追加write/flush、OSError与KeyboardInterrupt原身份、正常close失败、非IO关闭程序错、实际descriptor关闭、旧ledger前缀/peer字节、失败不提交tracker state。测试共用既有tests/conftest.py的局部故障fixture，未改元数据筛选/测试框架；三测试文件沿用模块原标签。随后相邻/core/CPU Flow、最终head和实际dev全部实际CI验收，正常关闭Issue与清本地/remote主题分支；无main/tag/GPU/测速/正式Study或布局改变。

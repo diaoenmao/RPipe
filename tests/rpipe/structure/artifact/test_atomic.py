@@ -54,18 +54,14 @@ def test_atomic_write_permanent_failure_preserves_target_and_cleans_stage(tmp_pa
 
 @pytest.mark.parametrize('existing', [False, True])
 @pytest.mark.parametrize('error_type', [OSError, KeyboardInterrupt])
-def test_partial_text_write_failure_cleans_only_its_stage(tmp_path, monkeypatch, existing, error_type):
+def test_partial_text_write_failure_cleans_only_its_stage(tmp_path, monkeypatch, stream_close_fault, existing, error_type):
     target = tmp_path / 'result.txt'
     if existing:
         target.write_text('old', encoding='utf-8')
     peer = tmp_path / 'result.txt.other.tmp'
     peer.write_text('another writer', encoding='utf-8')
-    original_write = Path.write_text
     error = error_type('injected partial text write failure')
-    def partial_then_fail(path, text, *args, **kwargs):
-        original_write(path, 'partial', *args, **kwargs)
-        raise error
-    monkeypatch.setattr(Path, 'write_text', partial_then_fail)
+    stream_close_fault(lambda path, mode: path.suffix == '.tmp' and mode == 'w', error, None)
     with pytest.raises(error_type) as caught:
         atomic_write_text(target, 'new')
     assert caught.value is error
@@ -283,7 +279,7 @@ def _probe_json_writer():
 
 
 @pytest.mark.parametrize('failure', ['partial', 'replace', 'encoding'])
-def test_study_json_publisher_failure_preserves_evidence_and_peer(tmp_path, monkeypatch, failure):
+def test_study_json_publisher_failure_preserves_evidence_and_peer(tmp_path, monkeypatch, stream_close_fault, failure):
     import rpipe.structure.artifact._atomic as atomic
 
     writer = _probe_json_writer()
@@ -292,11 +288,7 @@ def test_study_json_publisher_failure_preserves_evidence_and_peer(tmp_path, monk
     peer.write_bytes(b'another publisher')
     error = OSError('publication refused')
     if failure == 'partial':
-        original = Path.write_text
-        def partial(path, *args, **kwargs):
-            original(path, 'partial', encoding='utf-8')
-            raise error
-        monkeypatch.setattr(Path, 'write_text', partial)
+        stream_close_fault(lambda path, mode: path.suffix == '.tmp' and mode == 'w', error, None)
     elif failure == 'replace':
         import os
         def refused(*args):
@@ -546,3 +538,39 @@ def test_atomic_text_readonly_collision_never_changes_unowned_stage(tmp_path, mo
         _atomic.atomic_write_text(target, 'new candidate')
     assert set(tmp_path.iterdir()) == set(before)
     assert {p: (p.read_bytes(), p.stat().st_mode) for p in before} == before
+
+
+@pytest.mark.parametrize('existing', [False, True])
+@pytest.mark.parametrize('outcome', ['error', 'cancel', 'normal', 'programming'])
+def test_atomic_stream_close_preserves_write_error_and_cancel(tmp_path, stream_close_fault, existing, outcome):
+    import errno
+    target, peer = tmp_path / 'result.txt', tmp_path / 'peer.tmp'
+    if existing:
+        target.write_bytes(b'old target')
+    peer.write_bytes(b'peer evidence')
+    primary = KeyboardInterrupt('cancel text write') if outcome == 'cancel' else None if outcome == 'normal' else OSError(errno.ENOSPC, 'partial text write')
+    secondary = RuntimeError('unexpected close error') if outcome == 'programming' else OSError(errno.EIO, 'close IO')
+    expected = secondary if outcome in ('normal', 'programming') else primary
+    handles, calls = stream_close_fault(lambda path, mode: path.suffix == '.tmp' and mode == 'w', primary, secondary)
+    with pytest.raises(type(expected)) as caught:
+        atomic_write_text(target, 'new 中文\n')
+    assert caught.value is expected
+    assert len(handles) == 1 and handles[0].closed and calls.count('close') == 1
+    assert set(tmp_path.iterdir()) == ({target, peer} if existing else {peer})
+    assert peer.read_bytes() == b'peer evidence'
+    if existing:
+        assert target.read_bytes() == b'old target'
+
+
+@pytest.mark.parametrize('existing', [False, True])
+def test_atomic_encoding_error_survives_close_io(tmp_path, stream_close_fault, existing):
+    target = tmp_path / 'result.txt'
+    if existing:
+        target.write_bytes(b'old target')
+    handles, calls = stream_close_fault(lambda path, mode: path.suffix == '.tmp' and mode == 'w', None, OSError('close IO'))
+    with pytest.raises(UnicodeEncodeError):
+        atomic_write_text(target, '中文', encoding='ascii')
+    assert len(handles) == 1 and handles[0].closed and calls.count('close') == 1
+    assert list(tmp_path.iterdir()) == ([target] if existing else [])
+    if existing:
+        assert target.read_bytes() == b'old target'

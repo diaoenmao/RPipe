@@ -143,3 +143,28 @@ def test_tracker_append_initialization_keeps_checkpoint_raw_suffix_and_marker(tm
     data = path.read_bytes()
     assert data.startswith(raw + b'\n')
     assert json.loads(data.splitlines()[-1]) == {'event': 'start', 'keep_until': len(prefix)}
+
+
+@pytest.mark.parametrize('action,phase', [('begin', 'write'), ('append', 'write'), ('append', 'flush')])
+@pytest.mark.parametrize('outcome', ['error', 'cancel', 'normal', 'programming'])
+def test_tracker_stream_close_preserves_write_or_flush_failure(tmp_path, stream_close_fault, action, phase, outcome):
+    import errno
+    tracker = AlgorithmTracker(tmp_path)
+    prefix = b'{"old":true}\n'
+    tracker.jsonl_path.write_bytes(prefix)
+    tracker.state_path.write_bytes(b'old tracker state')
+    tracker.append('train', n=1, values={'Loss': 1.0})
+    primary = KeyboardInterrupt('cancel ledger') if outcome == 'cancel' else None if outcome == 'normal' else OSError(errno.ENOSPC, 'ledger IO')
+    secondary = RuntimeError('unexpected close error') if outcome == 'programming' else OSError(errno.EIO, 'close IO')
+    expected = secondary if outcome in ('normal', 'programming') else primary
+    handles, calls = stream_close_fault(lambda path, mode: path == tracker.jsonl_path and mode in ('a', 'ab+'), primary, secondary, phase=phase)
+    with pytest.raises(type(expected)) as caught:
+        if action == 'begin':
+            tracker.begin_run({'jsonl_path': str(tracker.jsonl_path.resolve()), 'jsonl_offset': len(prefix)})
+        else:
+            tracker.flush('train')
+    assert caught.value is expected
+    assert len(handles) == 1 and handles[0].closed and calls.count('close') == 1
+    assert tracker.jsonl_path.read_bytes().startswith(prefix)
+    assert tracker.state_path.read_bytes() == b'old tracker state'
+    assert calls[0] == 'write' and (phase != 'flush' or 'flush' in calls)
