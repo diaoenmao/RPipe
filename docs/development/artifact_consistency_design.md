@@ -305,3 +305,12 @@ PR143最终head全部实际CI通过并正常合dev e589862d，实际dev CI尚在
 沿用已实施第一/第三类合同：只改既有_atomic.py、logger.py、tracker.py的上述四个写入块，显式取得句柄；正常体完成后close严格传播，已有BaseException时尽力close，仅关闭OSError不遮原错，随后bare raise；非IO程序错误继续暴露。不新增通用I/O层、helper/module或依赖，不用异常context恢复原错。打开模式、编码/newline、追加顺序、flush、JSON/日志字节、目标权限/umask、原子替换、自有tmp清理和checkpoint诊断staging均保持。原子文本改用同参数Path.open/write，两个旧测试从Path.write_text高层注入调整为同一真实文件write的部分写入注入，仍验证原错身份、旧目标和peer不变；先在未修生产上验证这些既有相邻合同，再修。
 
 30新回归覆盖新旧文本目标、实际UnicodeEncodeError、日志write/flush、tracker起始标记/指标追加write/flush、OSError与KeyboardInterrupt原身份、正常close失败、非IO关闭程序错、实际descriptor关闭、旧ledger前缀/peer字节、失败不提交tracker state。测试共用既有tests/conftest.py的局部故障fixture，未改元数据筛选/测试框架；三测试文件沿用模块原标签。随后相邻/core/CPU Flow、最终head和实际dev全部实际CI验收，正常关闭Issue与清本地/remote主题分支；无main/tag/GPU/测速/正式Study或布局改变。
+
+
+## B109 / #146：Study comparison PNG剩余直写点（2026-10-16）
+
+跟踪源码savefig清单中，库curves写入已由PR141验收，但studies/main_exp/flow/process/curves.py的plot_report仍直接写historical_comparison.png且仅成功后close。实际Study process入口run.py→curves.main调用该helper。仅AST抽取helper、用合成report/reference的4探针：渲染/部分保存/取消各泄漏1个自有figure，后两者把2398字节旧有效PNG覆盖成11字节；正常保存76906字节且不泄漏；peer figure均保留。不运行Study main/门限、数据/模型/历史归档、checkpoint或训练。
+
+Issue146后6ab3b74先提交25正式节点23 failed/2正常控制passed，0error/skip。采用库PNG已批准合同的最小本地实现：保持原figsize=(14,5)、dpi160和1×2 axes，先取得figure即进入finally所有权范围，再fig.subplots；绘图主体仅缩进、原行保持。同目录UUID.tmp以xb排他取得，向句柄以显式PNG格式savefig、关闭后既有atomic_replace；正常close失败严格、不发布，已有保存错误/取消时close OSError不遮首错。保留原目标mode、新目标umask；只有自有普通tmp尽力清理，只读自有tmp可恢复0o600重试一次；未取得所有权的碰撞不删，peer figure保留。不抽新通用I/O层/模块/依赖，不改变helper返回None、文件架构、最终路径/格式、科学门或阈值、数据与坐标/标注。
+
+测试在既有flow/process镜像目录AST读取当前Study代码，不依赖正式Study输入/结果，不启动main。覆盖新旧目标、axes/render/save/cancel/replace/create、碰撞、清理拒绝、原生Windows只读、close二错和正常PNG/图像数据控制；25新节点均需执行，随后相邻PNG、core/CPU Flow与最终head/实际dev全部实际CI。冻结修前与修后对同一组合成输入比较PNG字节，确认科学比较/读取/gate函数原字节块保持。正式未来受影响Study复跑按新version/实际provenance和既定前置门，不将本次图像工程检查冒充科学实验或重写旧结果。原始探针/ZIP/hash/红绿在.tmp/audit109不随clone；无GPU/测速/main/tag/数据删除。
