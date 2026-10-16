@@ -1,8 +1,8 @@
-> 现状：设计状态更新及#118已PR119合dev4d12719并实际CI全绿；当前B097/#120最小修复完成。
-> 最新：原2项IO控制归并为32合同实例（净增30），8红失败/24控制→全部转绿，见§137–139。
-> 验证：process104、core1482+1既有平台skip、CPU Flow189通过；矩阵全部执行，源码仅移动原is_file。
-> 下一步：最终head/实际dev全实际CI验收后清结束remote；已修Issue等下版，不再等设计批准。
-> 阻塞：无；stat故障注入未改系统ACL，无main/强推/tag/测速/GPU/布局或科学聚合变更，目标active。
+> 现状：PR121最终head/实际dev已全绿并清remote；当前B098/#122已真实复现、先提交红合同。
+> 最新：18新合同全失败/164既有控制通过；非零容差int64在2**60丢低位，见§140。
+> 下一步：按先设计后最小修复，复用标量树；本机正确性与最终/实际dev CI验收。
+> 边界：文件架构/布局、零容差及浮点/复数/bool保持；不测速/GPU/合main/tag。
+> 阻塞：无；首次fixture收集错误独立保留，不冒充库失败。
 
 # 一、摘要
 
@@ -2744,3 +2744,16 @@ main 原代码 CPU 探针以新输出目录重跑8/8，step2/4参数、train/tes
 第二节、科学报告和 [仓库整理验收](https://github.com/diaoenmao/RPipe/blob/71143ab/docs/REPOSITORY_CLEANUP.md) 中的 refs 与“未合并”描述保留其记录时点；它们不是发布后 main 的动态引用。原 source SHA、数值与失败判定不随发布改写。
 
 本次是公共接口和产物格式的迁移：旧脚本调用需要更新，旧 checkpoint 不能直接作为新 Run resume；旧提交和原产物保留用于读取与回退。具体命令、配置、Stats 精度、std 及恢复边界见 [MAIN_MIGRATION.md](https://github.com/diaoenmao/RPipe/blob/71143ab/docs/MAIN_MIGRATION.md)。该文件已在 2026-10-10 从当前树删除，链接指向删除前的提交。
+
+
+## 140. 2026-10-16 B-098：整数张量非零容差精度合同（修复前）
+
+基线dev039db15。全仓三类复查在只读compare发现：零容差已有整数精确分支，非零容差仍统一float64。公开compare_runs和CLI，用两个微型CPU checkpoint验证2**60附近delta1/2：scalar遵循数学界，tensor两项错误passed=true/exit0；delta1/atol1正确通过但max_abs_diff误报0。六场景原result/tracker/checkpoint全部hash不变，无GPU/测速。原始REPRO、旧源码/测试ZIP/hash在.tmp/audit098（不随clone）。
+
+先开Issue122，再583c16f测试提交；首轮fixture缺一个映射闭括号，pytest收集错误，原日志/XML/测试独立保留；ff6b92e纠正fixture后，18新节点全部真实执行并失败、164既有节点通过，0error/skip。三形状×绝对界外/界上、负数、int64全范围、相对界外/界上；其中9假通过、9差值错误，不宣称18个错误判定。校验公开API/CLI与JSON、输入/peer原字节；旧失败不覆盖。
+
+设计先于修复：在现有_tree中保留exact零容差整数/bool分支，再仅对两边均为非bool整数张量将tolist交给原_tree→_close的Fraction判断。无需新helper/依赖/模块，不用整数张量减法避免signed溢出，不转换float64丢位；复用原标量算法和输出格式。bool或混合bool、浮点/复数/非有限、形状/空张量、checkpoint归属/恢复及布局不变。全仓调用均在本模块_compare_tree，API/CLI不变。只做正确性，不用下游Study或GPU。
+
+## 141. 2026-10-16 PR121最终和实际dev验收、结束remote清理
+
+PR121最终head09549cd的Branch38818522331/Package38818522318/Unit38818522341全部实际矩阵/聚合成功，PR_CHECKED e8b4ef1e33b4405363154258d408135006a7852bba231add6063e45dcc1e9144。普通merge为dev039db15f4df4f360a57329c3ed5ab2ad92abfda9，实际devPackage38819287687/Unit38819287560全部实际矩阵/聚合成功，DEV_CHECKED SHA256 09f769a2e8168852f9e1a9151108d543268a915a46dabec9d28e3c3ed768d3e6。核对祖先、无开放PR、提交保全及CI后删除结束remote codex/optional-state-stat，本地tip保留；本目标累计22条，远程当时只main/dev。Issue120保持open至下一版。证据.tmp/audit097不随clone，PR/Issue正文已附验收，不重复评论/派发CI。
