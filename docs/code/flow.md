@@ -161,7 +161,7 @@ flowchart TD
 3. **每个 batch**：`tracker.evaluate` + `append(split, n=batch_size)`。
 4. **按 report 间隔**：`system.logger.report(tracker, …, extra=…)`（stdout + `run.log` **立即 flush**；`[epoch]` `[split]` `[metric]` `[time]`）。`extra` 含本进程 **`elapsed` / `eta`**（algorithm 进度时钟）。AlgorithmTracker 往 jsonl 追加并 flush；写出 `tracker_state.json` 并 flush。
 5. **epoch 末**：`tracker.save()` + `reset()`，再 flush state。预算主口径是 `num_steps`（`step_period>1` 时按 optimizer step 计）；若配置 `num_epochs` 且可推导 steps/epoch，会先换算成步数。周期 test / checkpoint 按 `progress_unit`（默认 step）。checkpoint 经 `on_checkpoint` → system 写 `assets/checkpoints/`（默认覆盖 `latest`）。
-6. **execute 结束（含失败路径尽量）**：再 flush 一遍。
+6. **execute 结束**：再 flush 一遍。正常体完成后的最终 tracker 写失败必须传播，阻止后续成功定稿；已有执行/日志异常或终止时尽力 flush，保持原异常与原日志规则。每条路径只调用一次该收尾 flush，不改算法内部周期 flush。
 7. 短备注可进 `state['observations']`。不要把 Module / Tensor / AlgorithmTracker / Logger 整棵丢进 result。
 
 **不做：** 读改 config；跨 Run 聚合；写 `result.json`。

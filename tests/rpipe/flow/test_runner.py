@@ -267,3 +267,66 @@ def test_train_finalizer_keeps_original_failed_result(tmp_path, monkeypatch, old
     assert result['error'] == f'{primary_type.__name__}: original train failure'
     assert 'tracker final flush failed' in text and 'original train failure' in text
     assert validate_result(result) == []
+
+
+@pytest.mark.parametrize('old_success', [False, True])
+@pytest.mark.parametrize('primary', [False, True], ids=['body-success', 'body-failure'])
+@pytest.mark.parametrize('refusal', ['none', 'publication', 'encoding'])
+def test_execute_final_tracker_write_failure_blocks_success_result(tmp_path, monkeypatch, old_success, primary, refusal):
+    """Actual execute/collect/summarize/write with real tracker: no success may be finalized while final state write is refused."""
+    from rpipe.structure.algorithm.tracker import AlgorithmTracker
+    from rpipe.structure.artifact import _atomic, write_result
+    from rpipe.structure.control.control import control_from_config
+
+    layout = artifact_layout(tmp_path, 'synthetic')
+    if old_success:
+        write_result(layout.result_path, {'status': 'succeeded', 'control': {}, 'metrics': {}, 'paths': {}})
+    tracker = AlgorithmTracker(layout.assets_dir)
+    tracker.flush_state()
+    old_tracker = tracker.state_path.read_bytes()
+    peer = tracker.state_path.with_name('peer.tmp')
+    peer.write_bytes(b'peer evidence')
+    original = RuntimeError('original synthetic Algorithm failure')
+    denied = PermissionError('final tracker publication refused')
+    class SyntheticAlgorithm:
+        mode = 'eval'
+        def run(self, data, model, system, ledger):
+            assert data is None and model is None and system is None
+            ledger.append('test', values={'Accuracy': 75.0})
+            if primary:
+                raise original
+            return {'mode': 'eval', 'accuracy': 75.0}
+    ctx = FlowContext(study_dir=tmp_path, layout=layout, config={})
+    ctx.control = control_from_config({'algorithm': {'mode': 'eval'}})
+    ctx.state.update(algorithm=SyntheticAlgorithm(), tracker=tracker)
+    replace = _atomic.atomic_replace
+    def refuse(source, target):
+        if target == tracker.state_path:
+            raise denied
+        return replace(source, target)
+    if refusal == 'publication':
+        monkeypatch.setattr(_atomic, 'atomic_replace', refuse)
+    elif refusal == 'encoding':
+        monkeypatch.setattr(tracker, 'state_dict', lambda: {'bad': object()})
+    if primary or refusal != 'none':
+        expected = RuntimeError if primary else PermissionError if refusal == 'publication' else TypeError
+        with pytest.raises(expected) as caught:
+            FlowRunner(phases=['execute', 'collect', 'summarize', 'write']).run(ctx)
+        if primary or refusal == 'publication':
+            assert caught.value is (original if primary else denied)
+        result = load_result(layout.result_path)
+        assert result['status'] == 'failed'
+        assert result['error'] == f'{type(caught.value).__name__}: {caught.value}'
+        assert 'collected' not in ctx.state and 'result_draft' not in ctx.state
+        log = (layout.assets_dir / 'logs/run.log').read_text(encoding='utf-8')
+        assert type(caught.value).__name__ in log
+    else:
+        FlowRunner(phases=['execute', 'collect', 'summarize', 'write']).run(ctx)
+        result = load_result(layout.result_path)
+        assert result['status'] == 'succeeded' and result['metrics']['accuracy'] == 75.0
+        assert tracker.state_path.read_bytes() != old_tracker
+    if refusal != 'none':
+        assert tracker.state_path.read_bytes() == old_tracker
+    assert peer.read_bytes() == b'peer evidence'
+    assert set(tracker.state_path.parent.glob('*.tmp')) == {peer}
+    assert validate_result(result) == []

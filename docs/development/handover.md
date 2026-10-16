@@ -1,5 +1,12 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 B114本机完成；PR152双侧验收
+
+PR152最终head c91691b及实际dev f956c635全部实际CI成功，150/151/153已验收关闭，codex/optional-read-boundaries本地/remote普通删；周期基线149累计1，见record§178。正文精简被自动审批拒绝未执行，保留原文并只追加验收，不影响代码。
+
+唯一未合codex/execute-final-evidence仍本地积累：Issue154→aae4b0e红24项6失败/18控制→d850ba7设计→82890ce仅局部完成标志/原finally。24新节点全执行/通过，core1846 passed/1既有skip、CPU Flow273 passed，0failure/error；成功体最终写入拒绝严格阻止成功，已有原错/终止保持单次尽力flush。算法体/日志/Runner/数值/周期flush、checkpoint/RNG、格式/布局保持，详record§179–180。本机.tmp/audit114不随clone；完成里程碑统一PR→dev后分别验最终head/实际devCI，不另拆文档PR，不运行GPU/测速/正式Study或main/tag。
+
+
 ## 2026-10-16 PR152补齐Run读取：本机62新节点全部验收
 
 §174原20项遗漏individual.run，新增第21项B113/#153已实证：nonobject/deep/stat拒绝经Runner回退覆盖原result。70bb75e先红14项4失败/10控制→ac7edb2设计→22a4d57最小guard；Runner、metrics/history与严格公共loader保持。与#150/#151仍为同一PR152，不另拆PR。

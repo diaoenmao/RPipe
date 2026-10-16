@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
 > Version 1.4; updated 2026-10-16. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `afa3a639d85450c24a37244ed92b1182a14228f3`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `f956c635b626bdb2838d3589f0b6a091904925e6`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -595,3 +595,10 @@ These are engineering contract results, not new scientific experiments or comple
 
 
 Read-boundary supplement: continued source review found the omitted Run-process result fallback. B113/#153 reproduced three actual Runner cases that overwrite original result evidence. Four of14 formal tests failed first, with10 valid controls;22a4d57 extends the existing guard. It shares PR152 and the21-entry inventory with#150/#151. All62 new nodes executed and passed; core1834 passed/1 existing platform skip, CPU Flow261 passed. Final-head/actual-dev CI remain pending. Runner policies, scientific gates, metric conversion, Study experiment order and resource authorization remain unchanged; no new scientific experiment. See[record§176–177](../development/record.md).
+
+
+## 2026-10-16 engineering update: final evidence writes at shared execute
+
+PR152 passed all actual final-head and merged-dev CI;#150/#151/#153 are closed and the topic branch was cleaned. The accepted baseline is now dev f956c635, not a main release. B114/#154 found that shared execute swallowed final tracker-write refusal after a successful body. Six synthetic Runner probes confirmed two false-success cases;24 formal tests first yielded6 failures/18 controls.82890ce adds only a local completion flag to distinguish strict successful finalization from best-effort failure finalization. All24 new nodes executed/passed; core1846 passed/1 existing platform skip, CPU Flow273 passed. Final-head/actual-dev CI remain pending. See[record§178–180](../development/record.md) for the write-boundary inventory and evidence limits; raw.tmp evidence is not cloned.
+
+No new scientific experiment or numerical algorithm, training step, periodic flush, checkpoint/RNG, architecture or layout change is involved. External Algorithms and Studies will no longer finalize success after the final evidence write fails. No format/directory migration is needed; formal revalidation still uses a new version, actual provenance and unchanged numerical gates. Literature gaps, ChapterIX experiment order and resource authorization remain unchanged; CPU engineering checks do not replace Study scientific validation.

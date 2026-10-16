@@ -1,8 +1,8 @@
-> 当前：PR152同一读取边界里程碑补齐#153；PR149已双侧验收，周期基线149累计0。
-> 最新：#150/#151/#153共62新回归全执行/通过；完整读取清单补为21项，见§174–177。
-> 验证：补齐后core1834 passed/1既有平台skip，CPU Flow261 passed，原始三套红分别保留。
-> 下一步：一次更新现有PR152，验最终head及实际dev全部实际CI后关Issue/清已合分支；无代码阻塞。
-> 保护：无GPU/测速/正式Study、main/tag或布局/数据修改；旧head结果仅历史，不当最终验收。
+> 当前：PR152双侧全部实际CI验收，150/151/153已关闭，原主题本地/remote已清；周期基线149累计1。
+> 最新：B114/#154通用execute最终写入拒绝仍假成功；24正式红6失败/18控制→82890ce修复后全绿。
+> 验证：core1846 passed/1既有平台skip、CPU Flow273 passed，24新节点全执行；见§178–180。
+> 下一步：完整失败写入里程碑统一PR→dev，分别验最终head/实际dev CI；唯一未合分支本地累积，无代码阻塞。
+> 保护：无GPU/测速/正式Study、main/tag或布局/数据修改；临时原证据保留且不随clone。
 
 > 当前：PR135实际dev已全CI验收、Issue134关闭，工作分支本地/remote普通删。
 > 最新：B104/Issue136同Study路径别名翻转多根锁顺序，真实并发循环已复现。
@@ -3205,3 +3205,41 @@ B113/#153按70bb75e先红14项4 failed/10有效控制passed→ac7edb2设计→22
 补齐后重新执行core1834 passed/1既有Windows POSIX模式skip，CPU Flow261 passed，均0failure/error。三套正式红分别44项12失败、4项1失败、14项4失败，未合并冒充单次红；62新节点全部在新基线实际执行（core16、Flow46），无新skip。此前5400249的48绿/core1834/Flow247与远端CI是旧head证据，不能替代当前最终验收。临时原始探针/被覆盖后结果、原ZIP/hash、红/绿XML和LOCAL_CHECKED在.tmp/audit111与audit113不随clone。
 
 PR152继续同一分支收敛#150/#151/#153，生产总计3个现有文件14行增加/11行删除；完整读取点清单补为21项。未改schema/数值/文件架构或产物布局，不改strict公共loader、checkpoint恢复与科学门。没有另开小PR；一次推送完整补齐里程碑后分别验最终head和实际dev全部实际CI，再关闭三Issue、清自身已合本地/remote分支。周期清理仍基线149累计0；尚未把未合PR152算入。
+
+
+## 178. PR152 双侧 CI 验收与已合主题清理（2026-10-16）
+
+最终head c91691b266a21cba6c6e2fc59c0c97000a99cd0a的Branch38893739893 / Package38893739576 / Unit38893739634所有实际矩阵与聚合成功，正常合dev f956c635b626bdb2838d3589f0b6a091904925e6。实际dev Package38894477739 / Unit38894477644亦所有实际矩阵与聚合成功；DEV_CHECKED SHA256 a0f0c34bbf9f755b76bfd260adfd2900e3497981f3cb9ea749e5cdae5782765c。三Issue150/151/153已验收关闭并分别引用PR及双侧CI，PR正文追加同一验收，不代表main发布或科学运行授权。
+
+按立即清理指示，在最终head全绿、merge保全和tip/祖先/worktree核对后，codex/optional-read-boundaries本地/remote各1条已普通删除；删除当时实际dev CI尚在运行，现已完成全绿验收。唯一primary worktree先切detached实际dev，随后新建未合本地codex/execute-final-evidence处理新#154；没有删除worktree、main/dev、GPU任务或数据/结果/provenance/_staging_from_DEM。周期基线仍PR149，现累计1个已验收PR152，未到下一次约5批；累计结束remote38。完整清理与CI证据.tmp/audit113不随clone。
+
+原正文精简曾被自动审批拒绝（担心移除完整说明），未执行；保留原正文与追加最终范围，后来只追加验收，不删除远端元数据。该拒绝证据保留，不影响代码/CI事实。验收文档随下一完整里程碑，不单独开纯文档PR。
+
+
+## 179. B114 / Issue154：通用 execute 最终 tracker 写入假成功（2026-10-16）
+
+在已合dev f956c63复查失败写入合同，实际Runner与真实tracker六合成探针确认2类false-success：算法体正常，最终tracker发布Permission或真实编码TypeError被finally吞掉，结果仍succeeded但tracker旧字节保留；normal与三个primary RuntimeError控制正确。仅合成Algorithm入口调用，无data/model/optimizer/训练/测速。原始REPRO/log、全部合成结果、源码ZIP/hash在.tmp/audit114保留，不随clone。
+
+先Issue154，再aae4b0e正式红24节点6 failed/18有效控制passed、0error/skip。12 unit覆盖成功、原RuntimeError及KeyboardInterrupt/SystemExit与正常/IO/编码finalizer的身份和单次flush；12 integration覆盖实际Runner新旧结果、正常/主错及两类真实写入拒绝，保全旧tracker/peer并拒绝提前成功。按既有execute结束flush要求及原生train收尾合同，设计仅给现有finally区分成功严格与失败尽力；方案见artifact_consistency_design，不改变Runner、科学门/数值/格式或布局。本地主题commit积累，完整里程碑后统一PR，不另开文档小PR。
+
+
+## 180. B114 最小修复与失败写入边界本机验收（2026-10-16）
+
+按d850ba7设计，82890ce仅execute/run.py增加局部completed标志，并在原finally中区分正常完成后的严格flush与已有异常/终止后的原best-effort flush；8行增加/3行删除。原算法体、ctx返回值/observations、异常日志/failure_logged与Runner策略原源码保持；每条路径仍一次最终flush，不引入模块/依赖/参数/新格式。原生train的严格成功收尾、周期flush、checkpoint/RNG和所有数值算法不改。
+
+24新节点全通过/执行；完整core1846 passed、1既有Windows POSIX模式skip、0failure/error，CPU Flow273 passed、0failure/error/skip；新节点12 core/12 Flow，未跳过。原红24项6失败/18控制保留。LOCAL_CHECKED保存原红/绿/XML/hash及实际节点，SOURCE_CHECKED逐原字节验证仅预期局部替换；六实证、旧tracker/peer/staging和原ZIP均在.tmp/audit114，不随clone。新增测试只调用合成Algorithm入口、真实tracker/Runner，不执行data/model/optimizer；全套既有CPU Toy验证不是正式Study复跑或测速。
+
+复查本批相邻失败写入点，区分已有合同/源审和实际回归：
+
+| **写入/收尾点** | **当前合同/结论** | **验证边界** |
+| --- | --- | --- |
+| Flow execute最终flush | 本批修复成功体不得吞最终写入拒绝，已有Exception/终止仍保首错，单次flush | 24新回归与六实际探针 |
+| native train最终flush | PR133已实施成功严格/已有异常尽力；本批原样 | 源审及本轮core/Flow既有回归 |
+| eval_hook周期/末尾flush | 既有直接调用，不吞写入异常 | 源审，未新跑科学评测 |
+| Runner failed-result/log fallback | 原错误继续传播，失败落盘尽力；process/冻结旧成功保全保持 | 源码不变，本轮Flow含既有回归 |
+| 普通atomic text/Logger/tracker stream close | 首写错不被close IO替换；成功close严格；原子所有权保持 | 源审及本轮core既有回归，不扩大JSONL事务 |
+| 库/Study PNG发布 | 仅清自有临时流/图，失败保旧目标/peer，成功流close严格 | 源审及本轮既有合成PNG回归，未执行Study实验 |
+| shared cache锁释放及builder | 保首错和诊断building，不让清理产生假成功 | 源审及本轮shared既有回归，不运行builder/下载 |
+| checkpoint committed/diagnostic bundle | 严格恢复，writing/incomplete保全不套普通tmp清理 | 源审与已有CPU合同，未运行新恢复实验 |
+
+这些结论不声称全部外部插件或科学矩阵已经实测；当前仅B114有新的已确认反例，统一修在共享Flow边界。连同PR152验收/清理记录在同一主题完整里程碑推送，不另拆文档PR；最终head与实际dev全部实际CI仍待验收。
