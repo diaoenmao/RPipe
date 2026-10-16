@@ -289,3 +289,126 @@ def test_dataset_helper_guards_eager_and_deferred_requests(monkeypatch, tmp_path
         result = load_hf_dataset('synthetic/data', streaming=streaming)
         list(result)
     assert calls == []
+
+
+def test_actual_dataset_streaming_preserves_views_state_and_pickle(monkeypatch, tmp_path):
+    import pickle
+    datasets = pytest.importorskip('datasets')
+    from huggingface_hub import constants
+    from rpipe.structure import origin
+    monkeypatch.setattr(constants, 'ENDPOINT', 'https://hf-mirror.com')
+    monkeypatch.setattr(datasets.config, 'HF_ENDPOINT', 'https://hf-mirror.com')
+    monkeypatch.setattr(socket.socket, 'connect', lambda *a, **k: pytest.fail('real network'))
+    paths = []
+    for index in range(2):
+        path = tmp_path / f'part{index}.jsonl'
+        path.write_text(''.join('{"value":%d}\n' % value
+                                for value in range(index * 2, index * 2 + 2)), encoding='utf-8')
+        paths.append(str(path))
+    result = origin.load_hf_dataset('json', data_files=paths, split='train', streaming=True)
+    assert isinstance(result, datasets.IterableDataset)
+    assert list(result) == [{'value': n} for n in range(4)]
+    assert origin._download_origin.get() is None
+    assert list(result.iter(batch_size=3)) == [{'value': [0, 1, 2]}, {'value': [3]}]
+    assert sorted(row['value'] for row in result.shuffle(seed=7, buffer_size=2)) == list(range(4))
+    assert list(result.shard(num_shards=2, index=1)) == [{'value': 2}, {'value': 3}]
+    assert list(result.map(lambda row: {'next': row['value'] + 1}))[-1] == {'value': 3, 'next': 4}
+    assert int(next(iter(result.with_format('torch')))['value']) == 0
+    restored = pickle.loads(pickle.dumps(result))
+    iterator = iter(restored)
+    assert next(iterator) == {'value': 0}
+    state = restored.state_dict()
+    restored.load_state_dict(state)
+    assert list(restored) == [{'value': n} for n in range(1, 4)]
+    assert origin._download_origin.get() is None
+
+
+def test_actual_dataset_deferred_generator_refuses_transfer(monkeypatch, tmp_path):
+    datasets = pytest.importorskip('datasets')
+    requests = pytest.importorskip('requests')
+    from huggingface_hub import constants
+    from rpipe.structure.origin import load_hf_dataset
+    monkeypatch.setattr(constants, 'ENDPOINT', 'https://hf-mirror.com')
+    monkeypatch.setattr(datasets.config, 'HF_ENDPOINT', 'https://hf-mirror.com')
+    calls = []
+
+    def transport(self, request, **kwargs):
+        calls.append(request.url)
+        raise AssertionError('foreign transport entered')
+
+    def rows():
+        requests.get('https://huggingface.co/synthetic.json')
+        yield {'value': 1}
+
+    result = datasets.IterableDataset.from_generator(rows)
+    monkeypatch.setattr(datasets, 'load_dataset', lambda *a, **k: result)
+    monkeypatch.setattr(requests.adapters.HTTPAdapter, 'send', transport)
+    monkeypatch.setattr(socket.socket, 'connect', lambda *a, **k: pytest.fail('real network'))
+    loaded = load_hf_dataset('synthetic/data', streaming=True)
+    assert loaded is result
+    with pytest.raises(RuntimeError, match='domestic'):
+        list(loaded)
+    assert calls == []
+
+
+@pytest.mark.parametrize('target,allowed', [
+    ('https://hf-mirror.com/blob', True),
+    ('https://huggingface.co/blob', False),
+    ('http://hf-mirror.com/blob', False),
+    ('https://user:password@hf-mirror.com/blob', False),
+])
+def test_aiohttp_actual_redirect_loop_checks_before_next_connection(monkeypatch, target, allowed):
+    import asyncio
+    import inspect
+    aiohttp = pytest.importorskip('aiohttp')
+    from multidict import CIMultiDict, CIMultiDictProxy
+    from rpipe.structure import origin
+    calls = []
+
+    async def connect(self, request, **kwargs):
+        calls.append(str(request.url))
+        return SimpleNamespace(protocol=SimpleNamespace(set_response_params=lambda **k: None),
+                               close=lambda: None)
+
+    async def send(request, connection):
+        kwargs = dict(writer=None, continue100=None, timer=None, request_info=request.request_info,
+                      traces=[], loop=asyncio.get_running_loop(), session=request.session)
+        if 'stream_writer' in inspect.signature(aiohttp.ClientResponse).parameters:
+            kwargs['stream_writer'] = SimpleNamespace(output_size=0)
+        return aiohttp.ClientResponse(request.method, request.url, **kwargs)
+
+    async def start(response, connection):
+        redirected = response.url.path == '/entry'
+        response.status = 302 if redirected else 200
+        response.reason = 'synthetic'
+        response._headers = CIMultiDictProxy(CIMultiDict({'Location': target} if redirected else {}))
+        response._raw_headers = tuple((key.encode(), value.encode())
+                                      for key, value in response._headers.items())
+        response._body = b'synthetic'
+        response._released = False
+        response._closed = False
+        return response
+
+    monkeypatch.setattr(aiohttp.TCPConnector, 'connect', connect)
+    monkeypatch.setattr(aiohttp.ClientRequest, 'send', send)
+    monkeypatch.setattr(aiohttp.ClientResponse, 'start', start)
+
+    async def run():
+        # Windows creates its event-loop wakeup socket before this coroutine starts.
+        monkeypatch.setattr(socket.socket, 'connect', lambda *a, **k: pytest.fail('real network'))
+        async with aiohttp.ClientSession(trust_env=False) as client:
+            with origin._domestic_transfers('mirror'):
+                if allowed:
+                    async with client.get('https://hf-mirror.com/entry') as response:
+                        assert await response.read() == b'synthetic'
+                else:
+                    with pytest.raises(RuntimeError, match='domestic'):
+                        await client.get('https://hf-mirror.com/entry')
+            assert not client.closed
+            assert calls == (['https://hf-mirror.com/entry', target] if allowed
+                             else ['https://hf-mirror.com/entry'])
+            async with client.get('https://example.org/unrelated') as response:
+                assert response.status == 200
+        assert client.closed
+
+    asyncio.run(run())

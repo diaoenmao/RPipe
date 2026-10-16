@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from threading import RLock
 from typing import Any, Iterator
-from urllib.parse import urlsplit
+from urllib.parse import urljoin, urlsplit
 
 FOREIGN = 'foreign'
 DOMESTIC = 'domestic'
@@ -247,7 +247,7 @@ def _domestic_transfers(policy: str) -> Iterator[None]:
                 return original(client, request, *args, **kwargs)
             return send
 
-        for name in ('requests', 'httpx'):
+        for name in ('requests', 'httpx', 'aiohttp'):
             try:
                 module = importlib.import_module(name)
             except ModuleNotFoundError as error:
@@ -256,9 +256,27 @@ def _domestic_transfers(policy: str) -> Iterator[None]:
                 continue
             if name == 'requests':
                 replace(module.Session, 'send', guarded_send(module.Session.send))
-            else:
+            elif name == 'httpx':
                 for cls in (module.Client, module.AsyncClient):
                     replace(cls, '_send_single_request', guarded_send(cls._send_single_request))
+            else:
+                original_init = module.ClientRequest.__init__
+                original_start = module.ClientResponse.start
+
+                @wraps(original_init)
+                def request_init(request: Any, method: Any, url: Any, *args: Any, **kwargs: Any) -> None:
+                    _check_transfer_url(url)
+                    original_init(request, method, url, *args, **kwargs)
+
+                @wraps(original_start)
+                async def response_start(response: Any, *args: Any, **kwargs: Any) -> Any:
+                    result = await original_start(response, *args, **kwargs)
+                    if 300 <= response.status < 400 and response.headers.get('Location'):
+                        _check_transfer_url(urljoin(str(response.url), response.headers['Location']))
+                    return result
+
+                replace(module.ClientRequest, '__init__', request_init)
+                replace(module.ClientResponse, 'start', response_start)
 
         original_submit = ThreadPoolExecutor.submit
 
@@ -314,7 +332,59 @@ def load_hf_dataset(*args: Any, **kwargs: Any) -> Any:
     from datasets import load_dataset
 
     _check_hf_endpoint()
-    return load_dataset(*args, **kwargs)
+    with _domestic_transfers('mirror'):
+        result = load_dataset(*args, **kwargs)
+    return _bind_dataset_transfers(result) if kwargs.get('streaming') else result
+
+
+@dataclass
+class _DomesticDatasetGenerator:
+    function: Any
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Iterator[Any]:
+        with _domestic_transfers('mirror'):
+            iterator = iter(self.function(*args, **kwargs))
+        failed = False
+        end = object()
+        try:
+            while True:
+                with _domestic_transfers('mirror'):
+                    row = next(iterator, end)
+                if row is end:
+                    return
+                yield row
+        except BaseException:
+            failed = True
+            raise
+        finally:
+            close = getattr(iterator, 'close', None)
+            if close is not None:
+                try:
+                    with _domestic_transfers('mirror'):
+                        close()
+                except OSError:
+                    if not failed:
+                        raise
+
+
+def _bind_dataset_transfers(result: Any) -> Any:
+    if isinstance(result, dict):
+        for value in result.values():
+            _bind_dataset_transfers(value)
+        return result
+    examples = getattr(result, '_ex_iterable', None)
+    if examples is None:
+        raise RuntimeError('domestic streaming requires a supported datasets examples iterable')
+    bound = False
+    for name in ('generate_examples_fn', 'generate_tables_fn', 'generate_more_kwargs_fn'):
+        function = getattr(examples, name, None)
+        if function is not None:
+            if not isinstance(function, _DomesticDatasetGenerator):
+                setattr(examples, name, _DomesticDatasetGenerator(function))
+            bound = True
+    if not bound:
+        raise RuntimeError('domestic streaming requires a supported datasets generator')
+    return result
 
 
 def _check_hf_endpoint() -> None:
