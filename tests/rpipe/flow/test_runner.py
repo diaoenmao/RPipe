@@ -635,3 +635,64 @@ def test_readout_only_suppresses_standard_traceback_shapes(tmp_path, monkeypatch
     assert sum(message in row for row in rows) == (0 if hidden else 1)
     assert {path: path.read_bytes() for path in before} == before
     assert set(tmp_path.rglob('*')) == entries
+
+
+@pytest.mark.parametrize('declaration', [
+    'malformed', 'nonmapping', 'bad-shared', 'bad-root', 'decode', 'read-io',
+    'valid-default', 'valid-custom', 'missing',
+])
+@pytest.mark.parametrize('prior', ['fresh', 'success', 'known-shared', 'success-known-shared'])
+def test_failed_result_survives_unavailable_shared_path_metadata(tmp_path, monkeypatch, declaration, prior):
+    from rpipe.structure.artifact import write_result
+
+    layout = artifact_layout(tmp_path, 'target')
+    peer = artifact_layout(tmp_path, 'peer')
+    write_result(peer.result_path, {'status': 'succeeded', 'control': {}, 'metrics': {'accuracy': 7}, 'paths': {}})
+    peer_before = {p: p.read_bytes() for p in peer.root.rglob('*') if p.is_file()}
+    if prior in ('success', 'success-known-shared'):
+        write_result(layout.result_path, {'status': 'succeeded', 'control': {}, 'metrics': {'accuracy': 9}, 'paths': {}})
+    ctx = FlowContext(study_dir=tmp_path, layout=layout, config={})
+    known = prior in ('known-shared', 'success-known-shared')
+    if known:
+        ctx.state['result_draft'] = {'paths': {'shared': 'known-shared-input'}}
+    contents = {
+        'malformed': b'shared: [\n', 'nonmapping': b'[]\n',
+        'bad-shared': b'shared: []\n', 'bad-root': b'shared: {root: []}\n',
+        'decode': b'\xff\xfe', 'read-io': b'{}\n',
+        'valid-default': b'{}\n', 'valid-custom': b'shared: {root: custom-inputs}\n',
+    }
+    declaration_path = tmp_path / 'study.yaml'
+    if declaration != 'missing':
+        declaration_path.write_bytes(contents[declaration])
+    original_read = Path.read_text
+    io_error = PermissionError('declaration temporarily unreadable')
+    def read(path, *args, **kwargs):
+        if declaration == 'read-io' and path == declaration_path:
+            raise io_error
+        return original_read(path, *args, **kwargs)
+    monkeypatch.setattr(Path, 'read_text', read)
+    with pytest.raises(Exception) as caught:
+        FlowRunner(phases=('prepare',)).run(ctx)
+    if declaration == 'read-io':
+        assert caught.value is io_error
+    result = load_result(layout.result_path)
+    assert result['status'] == 'failed'
+    assert result['error'] == f'{type(caught.value).__name__}: {caught.value}'
+    assert validate_result(result) == []
+    for key, expected in [('artifact', layout.root), ('config', layout.config_path),
+                          ('assets', layout.assets_dir), ('result', layout.result_path)]:
+        assert result['paths'][key] == str(expected)
+    if known:
+        assert result['paths']['shared'] == 'known-shared-input'
+    elif declaration in ('valid-default', 'valid-custom', 'missing'):
+        assert result['paths']['shared'] == str(layout.shared_dir)
+    else:
+        assert 'shared' not in result['paths']
+    assert ctx.state['result'] == result
+    log = (layout.assets_dir / 'logs/run.log').read_text(encoding='utf-8')
+    assert '[error] phase=' in log and '[flow] succeeded' not in log
+    assert {p: p.read_bytes() for p in peer_before} == peer_before
+    if declaration != 'missing':
+        assert declaration_path.read_bytes() == contents[declaration]
+    else:
+        assert not declaration_path.exists()
