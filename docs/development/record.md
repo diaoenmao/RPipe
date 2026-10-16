@@ -3205,3 +3205,19 @@ B113/#153按70bb75e先红14项4 failed/10有效控制passed→ac7edb2设计→22
 补齐后重新执行core1834 passed/1既有Windows POSIX模式skip，CPU Flow261 passed，均0failure/error。三套正式红分别44项12失败、4项1失败、14项4失败，未合并冒充单次红；62新节点全部在新基线实际执行（core16、Flow46），无新skip。此前5400249的48绿/core1834/Flow247与远端CI是旧head证据，不能替代当前最终验收。临时原始探针/被覆盖后结果、原ZIP/hash、红/绿XML和LOCAL_CHECKED在.tmp/audit111与audit113不随clone。
 
 PR152继续同一分支收敛#150/#151/#153，生产总计3个现有文件14行增加/11行删除；完整读取点清单补为21项。未改schema/数值/文件架构或产物布局，不改strict公共loader、checkpoint恢复与科学门。没有另开小PR；一次推送完整补齐里程碑后分别验最终head和实际dev全部实际CI，再关闭三Issue、清自身已合本地/remote分支。周期清理仍基线149累计0；尚未把未合PR152算入。
+
+
+## 178. PR152 双侧 CI 验收与已合主题清理（2026-10-16）
+
+最终head c91691b266a21cba6c6e2fc59c0c97000a99cd0a的Branch38893739893 / Package38893739576 / Unit38893739634所有实际矩阵与聚合成功，正常合dev f956c635b626bdb2838d3589f0b6a091904925e6。实际dev Package38894477739 / Unit38894477644亦所有实际矩阵与聚合成功；DEV_CHECKED SHA256 a0f0c34bbf9f755b76bfd260adfd2900e3497981f3cb9ea749e5cdae5782765c。三Issue150/151/153已验收关闭并分别引用PR及双侧CI，PR正文追加同一验收，不代表main发布或科学运行授权。
+
+按立即清理指示，在最终head全绿、merge保全和tip/祖先/worktree核对后，codex/optional-read-boundaries本地/remote各1条已普通删除；删除当时实际dev CI尚在运行，现已完成全绿验收。唯一primary worktree先切detached实际dev，随后新建未合本地codex/execute-final-evidence处理新#154；没有删除worktree、main/dev、GPU任务或数据/结果/provenance/_staging_from_DEM。周期基线仍PR149，现累计1个已验收PR152，未到下一次约5批；累计结束remote38。完整清理与CI证据.tmp/audit113不随clone。
+
+原正文精简曾被自动审批拒绝（担心移除完整说明），未执行；保留原正文与追加最终范围，后来只追加验收，不删除远端元数据。该拒绝证据保留，不影响代码/CI事实。验收文档随下一完整里程碑，不单独开纯文档PR。
+
+
+## 179. B114 / Issue154：通用 execute 最终 tracker 写入假成功（2026-10-16）
+
+在已合dev f956c63复查失败写入合同，实际Runner与真实tracker六合成探针确认2类false-success：算法体正常，最终tracker发布Permission或真实编码TypeError被finally吞掉，结果仍succeeded但tracker旧字节保留；normal与三个primary RuntimeError控制正确。仅合成Algorithm入口调用，无data/model/optimizer/训练/测速。原始REPRO/log、全部合成结果、源码ZIP/hash在.tmp/audit114保留，不随clone。
+
+先Issue154，再aae4b0e正式红24节点6 failed/18有效控制passed、0error/skip。12 unit覆盖成功、原RuntimeError及KeyboardInterrupt/SystemExit与正常/IO/编码finalizer的身份和单次flush；12 integration覆盖实际Runner新旧结果、正常/主错及两类真实写入拒绝，保全旧tracker/peer并拒绝提前成功。按既有execute结束flush要求及原生train收尾合同，设计仅给现有finally区分成功严格与失败尽力；方案见artifact_consistency_design，不改变Runner、科学门/数值/格式或布局。本地主题commit积累，完整里程碑后统一PR，不另开文档小PR。

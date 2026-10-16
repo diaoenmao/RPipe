@@ -347,3 +347,10 @@ Issue148后dadb558先提交12项正式回归5 failed/7有效控制passed、0erro
 
 
 B113已实施22a4d57：14新回归全执行/通过，重新core1834 passed/1既有平台skip、CPU Flow261 passed。连同B111/B112共62新节点实际执行，21项清单已补齐遗漏入口；仍在同一PR152，最后head与实际dev CI分别验收。旧head证据保留，非待设计批准；详record§176–177。
+
+
+## B114 / #154：Flow execute 最终写入与成功判据（2026-10-16，按已批准失败写入合同实施）
+
+Flow通用execute在finally无条件吞掉tracker.flush_state的Exception，覆盖了原生train之外的成功收尾合同。实际Runner execute→collect→summarize→write、真实AlgorithmTracker与合成Algorithm入口六探针中，正常算法体加最终发布拒绝/真实JSON编码拒绝仍定稿succeeded且旧空tracker保留，两个反例；正常发布与三种已有body失败控制正确。无data/model/optimizer/训练或科学运行。Issue154后aae4b0e先提交24正式节点6 failed/18有效控制passed、0error/skip。
+
+最小方案：在现有execute局部记录正常体（含现有info日志）是否完成；finally中正常完成后的flush严格传播，已有算法/日志错误或终止时仍用原best-effort flush。这样沿原Runner错误留证阻止后续collect/summarize/write成功，不改变Runner通用失败策略；原execute异常日志、failure_logged、返回值/observations和单次flush次数保持。无新helper/模块/依赖、格式/路径/数值/周期flush或checkpoint/RNG改动；原生train已实施的成功严格/失败保首错规则不动。候选单行文档不推送，完整失败写入里程碑一次PR→dev。
