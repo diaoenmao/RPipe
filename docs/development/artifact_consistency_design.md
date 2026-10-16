@@ -388,3 +388,5 @@ B116已本地实施ba665de：28新节点全执行/通过，core1902 passed/1既�
 方案在既有 bind_endpoint 这一共同边界使用一个进程内可重入锁，持有范围覆盖保存原字段、绑定、整个构造上下文与 finally 恢复。普通互斥锁会破坏现有同线程嵌套，因此用标准库 RLock；不把锁放在每个资产根，也不新增每类锁注册表/依赖/模块。不同进程仍沿既有磁盘 cache_lock，不宣称进程锁替代磁盘锁。端点定义、调用签名、yield endpoint、正常和异常恢复、数据构造内容、下载/hash/布局与科学门保持。锁只解决原本不可并行安全的进程全局类字段，非测速/性能优化。
 
 调用方只有原生 _build_torch_vision 中 train/test 两次构造的同一个上下文；既有调用方无需改。apply_model_origin 是显式进程环境设置，非临时绑定合同，不把本方案扩展成配置新语义。临时原ZIP/hash/probe/红XML在.tmp/audit117不随clone，正式回归按source镜像放tests/rpipe/structure/test_origin.py。生产修改后复查实际Factory路径、首错/嵌套/恢复及相邻origin，再做core/CPU Flow；同分支积累完整里程碑后再PR dev。
+
+实施补记：fffd872已按方案实施；测试改名test_origin_concurrency.py避免pytest同名模块收集冲突，首次收集拒绝保留。新旧端点13全通过，core1910 passed/1既有skip、CPU Flow273 passed，新8全部执行；实际Factory双根原版反例/当前恢复已核对。最终head/实际devCI待完整里程碑验收。

@@ -6,11 +6,13 @@
 
 ## 开放
 
-### B-116：原生带偏移日志按墙钟文本颠倒实际事件顺序
+### B-117：并发临时端点绑定串用 origin 并残留类状态
 
-- Issue：[158](https://github.com/DreamSoul-AI/RPipe/issues/158)。六实际CLI案例中DST回拨/UTC跨日/跨偏移三个反例return0却较晚在前，三个同偏移控制正确，输入字节不变。
-- 801fa3c先红28项8 failed/20控制passed，a183394设计，ba665de只导入datetime并规范aware排序键；原行/格式/筛选/IO保持。坏/无时区/缺失/亚微秒/转换溢出沿旧fallback，不宣称新增超出datetime精度的UTC语义。
-- 28新节点全执行/通过，core1902 passed/1既有平台skip、CPU Flow273 passed，0failure/error。待完整里程碑最终head与实际dev全部实际CI，详[record§184–186](record.md)；临时.tmp/audit116不随clone。
+- Issue：[160](https://github.com/DreamSoul-AI/RPipe/issues/160)。两个线程绑定同一数据集类的国内/国外url或mirrors，两次上下文读取均可串值，退出后保留错误端点；不同缓存根的Factory锁不能保护进程全局类字段。
+- 9c95667先提交8项正式红（4 failed/4有效嵌套控制passed）；1fe29ba设计；fffd872仅用RLock覆盖保存/绑定/构造/恢复。55ad528只修正测试文件名；收集同名拒绝另存，不计库失败。
+- 13项新旧端点回归全执行/通过，core1910 passed/1既有skip；CPU Flow273 passed，最终head/实际devCI待验收。真实Factory双根+合成builder原版失败/当前正确；不下载数据、不访问正式缓存。证据[record§188–189](record.md)，临时.tmp/audit117不随clone。
+
+B116/#158已由PR159双侧全部实际CI验收关闭并清本地/remote，见[record§187](record.md)。
 
 B115/#156已PR157双侧全部实际CI验收关闭并清本地/remote，见[record§185](record.md)。B114/#154由PR155验收关闭，见[record§182](record.md)。
 

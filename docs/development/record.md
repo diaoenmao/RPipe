@@ -1,3 +1,9 @@
+> 当前：B117/#160本机修复完成，唯一未合codex/correctness-followup；PR159双侧验收/清理已完成。
+> 最新：并发端点串用/残留；8正式红4失败/4控制→fffd872后13新旧端点测试全绿，见§188–189。
+> 验证：core1910 passed/1既有skip，CPU Flow273 passed，新8全执行；真实Factory双根原版失败/当前正确。
+> 下一步：完整并发里程碑PR→dev，分别验最终head/实际devCI；无代码阻塞，验收后清已合主题。
+> 保护：无网络下载/GPU/测速/正式Study/main/tag/数据删除或布局变化；原失败与收集拒绝保留。
+
 > 当前：PR159已双侧全部实际CI验收，Issue158已关闭，已合readout-time-order本地/remote均已删除。
 > 最新：28新回归全执行；core1902 passed/1既有skip，CPU Flow273 passed，详见§184–187。
 > 验收：实际dev ab5c825，Package38901125267/Unit38901125320全部实际成功；周期基线149累计4。
@@ -3312,10 +3318,17 @@ PR152继续同一分支收敛#150/#151/#153，生产总计3个现有文件14行�
 继续静态复查原子文本写入、report/index验证与DataFactory/ModelFactory按调用构造路径，本轮新增确认缺陷0；这是源码复核，不冒称新故障矩阵或科学验证。验收文档在codex/correctness-followup本地积累，按18:53频率规则随下一完整里程碑推送，不为几行文档另开PR。
 
 
-## B117 / Issue160：同进程数据端点绑定的并发所有权（2026-10-16，已确认实施方案）
+## 188. B117 / Issue160：同进程数据端点绑定的并发所有权（2026-10-16，已确认实施方案）
 
 `bind_endpoint` 临时修改第三方数据集类的 url / mirrors。DataFactory 的 cache_lock 保护各自资产根，无法保护两个不同根共用的同一个 Python 类。合成类、两个线程与事件调度复现两次上下文读错 URL，退出后还残留国内 URL；不访问网络、真实缓存或 torchvision。先 Issue160，再 9c95667 正式红回归：8项中4 failed/4有效控制 passed，0error/skip，覆盖CIFAR URL/MNIST mirrors、正常/原错退出和同线程嵌套恢复。
 
 方案在既有 bind_endpoint 这一共同边界使用一个进程内可重入锁，持有范围覆盖保存原字段、绑定、整个构造上下文与 finally 恢复。普通互斥锁会破坏现有同线程嵌套，因此用标准库 RLock；不把锁放在每个资产根，也不新增每类锁注册表/依赖/模块。不同进程仍沿既有磁盘 cache_lock，不宣称进程锁替代磁盘锁。端点定义、调用签名、yield endpoint、正常和异常恢复、数据构造内容、下载/hash/布局与科学门保持。锁只解决原本不可并行安全的进程全局类字段，非测速/性能优化。
 
 调用方只有原生 _build_torch_vision 中 train/test 两次构造的同一个上下文；既有调用方无需改。apply_model_origin 是显式进程环境设置，非临时绑定合同，不把本方案扩展成配置新语义。临时原ZIP/hash/probe/红XML在.tmp/audit117不随clone，正式回归按source镜像放tests/rpipe/structure/test_origin.py。生产修改后复查实际Factory路径、首错/嵌套/恢复及相邻origin，再做core/CPU Flow；同分支积累完整里程碑后再PR dev。
+
+
+## 189. B117 本机并发验证与验证收集纠正（2026-10-16）
+
+实际生产修复是fffd872：origin.py仅加标准库RLock及bind_endpoint全上下文所有权范围，16行增加/11行删除（原主体仅缩进），SOURCE_CHECKED按原字节验证其他内容全保留。55ad528仅修正测试文件名，不是生产修复；该提交标题未精确表达范围，后以独立主题提交保留真实生产回滚点，未重写历史。首次测试收集因新test_origin.py与既有data/test_origin.py同名拒绝，INVALID_COLLECTION_GREEN XML/log保留；改为源镜像test_origin_concurrency.py后13项全部执行/通过，收集拒绝不计库失败。
+
+在真实DataFactory.build入口、两个独立缓存根、合成registry builder中分别调用原ZIP中binder和当前binder：原版两次读错且最终类URL残留；当前版两次读到各自URL、结束恢复原值。probe使用真实cache_lock，不导入torchvision/下载/访问正式数据；REPRO_FACTORY保留。本轮core1910 passed/1既有平台skip，新8全执行，0failure/error；CPU Flow273 passed，0failure/error/skip。未宣称不同后端或真实下载并发均已验收，不做测速。原始证据.tmp/audit117不随clone，正式回归/设计可携带。完整里程碑本地积累，最终head/实际devCI仍待后续验收。

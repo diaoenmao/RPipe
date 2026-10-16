@@ -1,5 +1,13 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 B117 本机验证中；PR159双侧验收
+
+PR159最终head33cf72f与实际dev ab5c825全部实际CI成功，#158关闭，readout-time-order本地/remote均普通删除；周期基线149累计4，remote累计结束41。record§187验收本地提交ac48da2随本里程碑合批，不单开文档PR。唯一未合主题codex/correctness-followup继续本地积累。
+
+B117/#160：并发临时端点绑定污染进程内数据集类字段。9c95667红8项4失败/4控制→1fe29ba设计→fffd872在既有bind_endpoint以RLock保护完整恢复范围；55ad528只改测试文件名，首次同名收集拒绝保留。13端点新旧回归通过、core1910 passed/1既有skip，新8均执行；CPU Flow273 passed，0failure/error/skip。真实DataFactory双根合成builder原版串用/残留，当前各自正确并恢复；不下载/训练/测速。证据.tmp/audit117不随clone，record§188–189。最终head/实际devCI待完整里程碑验收，未合分支/Issue保留。
+
+
+
 ## 2026-10-16 B116本机完成；PR157双侧验收
 
 PR157最终head10f01de/实际dev50d5a6bd全部实际CI成功，Issue156关闭，archive-exclusive-creation本地/remote普通清理；唯一未合codex/readout-time-order保留。周期基线149累计3、结束remote40，main/dev、数据/Run/provenance和_staging_from_DEM不动，详record§185。
