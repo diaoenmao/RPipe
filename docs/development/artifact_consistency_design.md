@@ -759,3 +759,6 @@ B141–B142本机实施检查点（2026-10-17）：9e2bcd2/4954933在同一手�
 B142同类严格读取补全（2026-10-17）：原digest及split_counts四个显式binary reader（MNIST images/labels、CIFAR batch/meta）同样close IO遮住原read/struct/pickle错误，归196原body一个追加区，保原文不另Issue/B编号。实际digest及精确读取AST块配真实文件/解码、close后注入OSError，五处均确认；不是完整科学数据验证。第一候选meta夹具误指input.bin，FileNotFoundError已拒绝；更正为batches.meta后五处重验，拒候选/log及Issue正文校验更正说明保留，不当库失败。
 
 正式补红25项10失败/15控制、0error/skip：五读取边界×原IO/解码错、取消、正常close拒绝、程序close错误、成功。输入/peer字节、owned descriptor/close一次及真实解码控制均核对。沿已批准同一私有_owned_stream，仅给这五个既有with表达式加包装，不增helper/读fallback/宽容解码，复用原__enter__/__exit__语义及IO首错策略。完整显式binary stream共12边界统一；cache_lock沿原OS协议、隐式Path.read_text等标准库内部I/O不冒称全覆盖，既有字段/字节/数值校验与布局保持。此前4954933完整2359core+1/433Flow为copy七边界阶段，补后80新节点需重新完整验收。仍195/196同分支一个手动数据准备类别里程碑PR，无设计等待。
+
+
+B141–B142完整类别本机验收（2026-10-17）：最终84389b0含12显式owned流与既有路由修，80新全执行，191相邻+1既有skip/core2384passed+1既有skip/CPU Flow433passed。所有原AST/hash/strict gate核对，三批red/拒候选保留；无设计等待，准备一个完整类别PR，195/196待双侧实际CI。细节与限制见record§253。

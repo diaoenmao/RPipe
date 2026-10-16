@@ -1,8 +1,8 @@
-> 当前（2026-10-17）：B141/#195国内raw路由、B142/#196复制首错已本地验收，唯一未合correctness-milestone-next；尚未推送/PR。
-> 最新：海外默认/redirect和download/gzip/tar close遮首错反例转绿；只改单个手动prepare_data.py，原数据/manifest不动。
-> 验证：相邻166passed+1既有skip、完整core2359passed+1既有skip、CPU Flow433passed，55新全执行，详§251。
-> 下一：继续同模块严格验证读取/退出边界复查，相关修复本地合批后一个完整里程碑PR；195/196仍OPEN，无阻塞。
-> 保护：accepted PR194/devf2c286d、周期基线194计数0/remote52；无活句柄/真实联网/下载/GPU/训练/main/tag/布局动作。
+> 当前（2026-10-17）：B141/#195与B142/#196手动数据准备类别已完整本机验收；唯一未合correctness-milestone-next准备统一PR→dev。
+> 最新：国内初始/redirect边界与12显式owned binary流统一，原hash/解压/strict解析/计数/manifest主体保持，原生反例转绿。
+> 验证：最终相邻191passed+1既有skip、core2384passed+1既有skip、CPU Flow433passed，80新全执行，详§253。
+> 下一：一个完整里程碑PR最终head及实际dev全部实际CI后验收195/196并清分支；当前无活本机句柄或审批阻塞。
+> 保护：accepted PR194/devf2c286d、周期基线194计数0/remote52；零真实联网/下载/GPU/训练/main/tag/布局动作。
 
 > 当前（2026-10-17）：B139/#191三处已证消费反例同类里程碑本机验收完成，唯一未合evidence-boundaries-next，准备统一PR→dev。
 > 最新：Numbers/status/compare文本、派生compare JSON、可选activity提示均修；strict producer/atomic与科学数值/输入身份保持。
@@ -4207,3 +4207,24 @@ B14180009d7红20项11失败/9控制→13f46c5设计→9e2bcd2路由修；B142bce
 本轮先核对工作区仅用户_staging、current488c579、fetch正常、195/196仍OPEN且无PR；上一goal turn为完成两红/方案/本地修及完整55节点验收的progress。按上一检查点继续digest/split_counts显式读取退出，实际digest及精确四AST reader配真实struct/pickle/文件，五处均close IO遮首错；不运行科学数据验证/下载。第一meta探针路径误设input.bin导致FileNotFoundError拒绝，Issue读取范围追加曾早于最后探针校验；随即修正batches.meta、五处全重验，并在同正文追加校验说明，原body与拒候选/log保留，无重复评论、不得计作库失败。
 
 补充先红25项10失败/15控制（五读取×错误/取消/正常close/程序错/成功），原脚本仍4954933的READER_ORIGINAL字节。只复用原私有_owned_stream包装五with，保持所有严格read/struct/pickle条件、正常close错误和未知程序错；不新增B或Issue，不另小PR。此前55新/core2359+1/Flow433为中间阶段，最终80节点完整检查待重验。READER_REPRO/READER_RED/ZIP在.tmp/audit142不随clone；实际数据/Study/科学门/布局与main/tag/GPU/性能/网络均不动，下一B143未用，无审批阻塞。
+
+
+## 253. B141–B142手动数据准备完整类别本机验收（2026-10-17）
+
+当前唯一未合correctness-milestone-next本地累积，正式新回归三批分别先红：80009d7的20项11失败/9控制（路由）；bce353a的35项14失败/21控制（copy退出）；2d018de的25项10失败/15控制（strict读取退出）。不将三批拼成一次red。各自方案13f46c5/8340bac/e3a334a先于生产9e2bcd2/4954933/84389b0；原始失败、路径误指未执行、meta夹具拒候选、CRLF checker误假设及其更正均保留，不当库失败，也不取代真正red。
+
+最终仅一个Study手动源码prepare_data.py变化：国内URL复用既有注册endpoint、标准redirect进入下一transport前守同一authority；一个私有ExitStack owned wrapper覆盖12显式binary流，保原enter/exit/退出顺序、body首错与取消，正常close失败仍失败，未知程序错可见。AST去掉owned包装后digest/expected_files/verify_file/reuse_caches/prepare_mnist/prepare_cifar/split_counts/main等原函数主体保持（download另加已授权路由）；HISTORICAL_REF/MNIST_RESOURCES/CIFAR_MD5与原ZIP值完全相同，原LF保持，src/rpipe/origin显式foreign旧兼容未改。无布局、manifest schema、解码/数值门放宽、Run/provenance或正式数据修改。
+
+| **入口与owned流** | **本批证据与限制** |
+| --- | --- |
+| download响应/partial（2） | 国内起点、合法authority、境内同host redirect正常；跨authority/HTTP/FTP拒绝在下一transport前；长度/MD5/partial/正常缓存与旧来源控制 |
+| MNIST gzip/partial（2） | 合成gzip实际解压；写错/取消、源/目标close错误、成功字节与旧archive保全 |
+| CIFAR TarFile/member/partial（3） | 合成tar实际读取提取；三个退出边界，原先发布后外层close失败保持原顺序，不伪造回滚 |
+| digest读取（1） | 实际hash入口原read异常/取消对象保持；正常hash及close拒绝/程序错控制 |
+| split_counts显式reader（4） | 精确image/label/批pickle/meta读取块实际struct/pickle解码；保持strict错误，非完整科学数据验证 |
+| main/verify-only/manifest | 原main AST保持，旧downloads/reused_caches来源不改写；只在临时目录调用，没有运行正式Study |
+| cache_lock/隐式标准库IO | 原OS锁协议不改；不以12显式流证明任意库内部读写或并发都正确 |
+
+最终FINAL_GREEN191passed+1既有skip、COMPLETE_CORE2384passed+1既有skip、COMPLETE_FLOW433passed，均0fail/error；80新unit节点在完整XML全执行/0新skip。39780/77605与所有旧本机句柄均terminal0，无重派。FINAL_LOCAL_CHECKED SHA256 855fe5da3f8671ea91c20e9302ff4eb44a8087a8d93c5e0560a45e30fa6bb91a；原生三路由/三copy/五reader反例红绿、ZIP/完整XML均.tmp/audit141/142不随clone，portable回归与设计已入库。正常来源仅替身transport，不能推断国内服务可用或真实数据一致性；未进行下载/科学复跑/文献/GPU/训练/性能动作。
+
+本批是两个Issue收纳的完整手动准备类别里程碑，非逐方法/逐bug PR，PR194验收/清理记录随本批携入，不另tiny-doc PR。下一核对远端后统一PR→dev，确切最终head/actualdev全CI再关闭195/196并普通清主题，基线194后计数当前0、remote52。下一B143未用，goal active，无设计/用户阻塞；不合main/tag/release。

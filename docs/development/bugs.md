@@ -175,3 +175,6 @@ download/prepare_mnist/prepare_cifar真实.part部分写入+注入close OSError�
 
 
 2026-10-17 B141–B142本机检查点：195/196同分支路由9e2bcd2及owned退出4954933已相邻166passed+1既有skip/core2359passed+1既有skip/Flow433passed，55新全执行；原生反例转绿，未推送/PR，仍OPEN。继续相关读取边界复查后统一完整里程碑，不单bug PR。详record§251，临时证据不随clone；无真实下载或服务可用性声明。
+
+
+B142同类读取补全/本机最终验收（2026-10-17）：196原body追加digest与四strict reader范围，首个meta夹具路径拒绝及过早范围表述已明确更正并留证；2d018de先25红10失败后84389b0只给五with复用guard。与195合批共80新全执行，191相邻+1既有skip/core2384passed+1既有skip/Flow433passed。当前尚无PR，195/196保持OPEN，详record§252–253，原反例及校验拒绝均不删。

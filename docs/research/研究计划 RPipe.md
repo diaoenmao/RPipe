@@ -780,3 +780,6 @@ PR187启动所有权最终head/实际dev全部实际CI验收，185/186关闭，�
 
 
 2026-10-17工程检查点：B141–B142最终单脚本源码已core2359passed+1既有skip/CPU Flow433passed，55新全执行；两个独立红批次和原生红绿保留。195/196仍待后续统一完整里程碑的最终head/actualdev CI，当前不冒充已合或发布；继续相邻严格raw读取退出审计。checksum/raw路径/manifest schema与科学计划/门限不变，零真实联网/下载/GPU/训练，没有新增科学或文献结果。详record§251。
+
+
+2026-10-17完整手动准备类别工程检查：195路由与196首错保全含五strict reader补全已80新全执行，最终191相邻+1既有skip/core2384passed+1既有skip/CPU Flow433passed。所有12显式binary流统一，原raw哈希/解析/计数/manifest主体与布局保持；reader块探针不是完整科学数据验证。准备统一类别PR，Issue仍待双侧实际CI，不冒称已合/发布；零真实联网/下载/服务可用性/GPU/训练、无新增科学或文献结论，未来实验仍按原计划前置条件。详record§252–253。

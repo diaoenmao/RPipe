@@ -1,3 +1,9 @@
+## 2026-10-17 B141–B142手动准备类别完整本机验收（当前）
+
+correctness-milestone-next仅本地、未PR；195/196仍OPEN。先三批red20/11失败、35/14失败、25/10失败，再各自方案/最小修9e2bcd2/4954933/84389b0；最终一个手动脚本的国内初始/redirect及12显式binary流退出统一，原AST/hash/解码/计数/manifest/layout保持。FINAL_GREEN191passed+1既有skip/COMPLETE_CORE2384passed+1既有skip/COMPLETE_FLOW433passed，新80全执行/0新skip；39780/77605及旧句柄terminal。FINAL_LOCAL_CHECKED/原始红绿/ZIP/拒候选/NEWLINE_CHECK在.tmp/audit141/142不随clone，详record§252–253。5reader探针是精确strict块，不冒称完整科学数据验收；无真实网络/下载/服务可用性/GPU/训练/性能或正式Study动作。
+
+下一一个完整类别PR→dev，不单bug/tiny-doc PR；最终head和actualdev全部实际CI后关闭195/196并清唯一工作分支。accepted仍PR194/devf2c286d，cleanup基线194计数0/remote52；下一B143，goal active，无审批/用户阻塞，无main/tag/布局变化。原PR194/193反馈与清理不可重做。
+
 ## 2026-10-17 B141–B142最终本机检查点（当前）
 
 当前唯一未合codex/correctness-milestone-next仍本地；195/196未推送/PR。B141红80009d7(20/11失败/9控制)→13f46c5设计→9e2bcd2国内路由；B142红bce353a(35/14失败/21控制)→8340bac设计→4954933私有owned ExitStack包装七copy退出。最终相邻166passed+1既有skip/core2359passed+1既有skip/CPU Flow433passed，新55全执行，37129/15079均terminal。原生路由/部分写入+close IO反例转绿；源archive/raw hash及manifest schema/路径不变，原数据/归档/Study不动。LOCAL_CHECKED/完整XML/NEWLINE_CHECK与全部原红在.tmp/audit141/142，不随clone，详record§251。
