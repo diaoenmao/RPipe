@@ -866,3 +866,59 @@ def test_model_sdk_custom_client_restores_class_and_keeps_domestic_success(sdk_d
     assert dict(vars(CustomClient)) == before
     assert not client.is_closed
     assert client.get('https://example.org/unrelated.json').content == sdk_download.payload
+
+
+@pytest.mark.parametrize('allowed', [False, True])
+def test_actual_async_sdk_client_getter_keeps_guard_and_client(monkeypatch, allowed):
+    import asyncio
+    httpx = pytest.importorskip('httpx')
+    pytest.importorskip('huggingface_hub')
+    from huggingface_hub.utils import _http
+    from rpipe.structure import origin
+    calls = []
+    method = httpx.AsyncClient._send_single_request
+
+    class CustomClient(httpx.AsyncClient):
+        async def _send_single_request(self, request):
+            return await method(self, request)
+
+    async def transport(request):
+        calls.append(str(request.url))
+        return httpx.Response(200, content=b'synthetic')
+
+    async def run():
+        async with CustomClient(transport=httpx.MockTransport(transport)) as client:
+            # An actual SDK getter alias is delegated, never replaced with a new client.
+            monkeypatch.setattr(_http, 'get_async_session', lambda: client, raising=False)
+            before = dict(vars(CustomClient))
+            with origin._domestic_transfers('mirror'):
+                actual = _http.get_async_session()
+                assert actual is client
+                url = ('https://hf-mirror.com/blob' if allowed else 'https://huggingface.co/blob')
+                if allowed:
+                    assert (await actual.get(url)).content == b'synthetic'
+                else:
+                    with pytest.raises(RuntimeError, match='domestic'):
+                        await actual.get(url)
+                    assert calls == []
+            assert dict(vars(CustomClient)) == before
+            assert not client.is_closed
+            assert (await client.get('https://example.org/unrelated')).content == b'synthetic'
+            assert origin._download_origin.get() is None
+            assert not origin._download_transports_installed
+    asyncio.run(run())
+
+
+def test_domestic_sdk_unsupported_client_fails_before_use(monkeypatch):
+    pytest.importorskip('huggingface_hub')
+    from huggingface_hub.utils import _http
+    from rpipe.structure import origin
+    client = object()
+    getter = lambda: client
+    monkeypatch.setattr(_http, 'get_session', getter)
+    with origin._domestic_transfers('mirror'):
+        with pytest.raises(RuntimeError, match='no supported single-request transport'):
+            _http.get_session()
+    assert _http.get_session is getter
+    assert _http.get_session() is client
+    assert not origin._download_transports_installed
