@@ -530,3 +530,12 @@ B123补强与本机实施（2026-10-16）：3ad90d3在原Logger/已有B122 Runne
 
 
 2026-10-17本机已实施B124–B127：38d1e09/1a4cce4/62d0f47/a94622d在五个既有生产文件完成逐行身份/提示投影/native字段/标准细节规则；相邻420/core2009 passed+1既有skip/CPU Flow354 passed，78新全执行。原legacy/日志字节不重写，未知归属不猜，完全同形的细节文本仍按既有政策；未改变科学门或文件/产物布局。四Issue待完整里程碑最终head/实际devCI，不是待设计批准。字段展示点清单及原字节核对见record§213，不逐bug拆PR。
+
+
+### B128 / Issue175：空共享锁初始化须在 OS 所有权内（2026-10-17，实施方案）
+
+PR174原最终head85826fe的Windows3.10 core在既有双进程测试失败：shared.cache_lock第72行初始化flush抛PermissionError。两个进程可同时看到空.rpipe.lock，随后一方已取得byte0锁，另一方仍在锁前写/flush，绕过竞争重试和TimeoutError。真实空文件持锁子进程可确定性复现；不是Logger/readout改动，也不能用重跑抹去。
+
+最小修复：移动既有三行空文件初始化至OS锁成功且release_lock已登记后、yield前。仍用原a+b句柄与同一inode，Windows可锁EOF后的字节；不换锁文件、不补全新协议、不改变deadline/timeout、线程重入、异常优先级或进程退出释放合同。初始化自身失败时先按既有ExitStack释放锁再关闭句柄，原异常保留。零预算和有限预算等待者在未获锁时不写任何字节。
+
+回归使用原生msvcrt/fcntl子进程持有空锁，验证竞争超时且空字节不变、释放后正常初始化、重入、inode和再获取。Windows另开读取句柄同样受本进程字节锁限制，持锁断言只stat，释放后再读取；错误探针留.tmp，不当库失败。先红5822a41/c7eef67两项均在真实锁前flush失败，再最小生产修。当前PR174合批处理并重新完整验收；旧失败和被跳过Flow原样保留。

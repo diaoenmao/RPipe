@@ -3657,3 +3657,12 @@ expected-head正常merge到实际devbef7de966a0cea0e86b1e2392222ddf8bfeff920，�
 SOURCE_CHECKED核对仅五个现有生产文件：Logger原主体逐行字节相同仅加循环缩进；activity reader/JSON写前缀、CLI其他功能、status的mode/metric/path/表/统计及logs排序/格式原字节保持；不改其余源码、numeric/Tracker/checkpoint或任何科学门。原REPRO/ZIP/hash/各场红绿/XML/源码证明在.tmp/audit124/125/126/127，不随clone；portable回归/方案/双语计划随Git提供。
 
 四Issue170/171/172/173仍OPEN，尚未推送/开本批PR；按完整字段/事件身份里程碑一次流转，最终head/实际dev都需全部实际矩阵/聚合验收后再关闭及清理。接受dev仍PR169/bef7de9，清理基线161计数2、remote累计44；下一编号B128。无决策阻塞，不等待设计审批；无GPU/测速/下载/正式Study/科学数字或结论新增，不合main/tag/发布、不force push、不删Run/数据/结果/provenance、不改文件架构和产物布局。
+
+
+## 214. B128 / Issue175：PR174实际CI暴露空锁初始化竞争（2026-10-17，先红与方案）
+
+PR174已统一提交B124–B127，原head85826fe。Branch38934229573及Package38934229671全部实际成功，Ubuntu两矩阵成功；Windows3.10 Unit38934229616/job117085538912的既有test_interprocess_prepare_has_one_writer_and_recovers_after_exit失败于shared.py:72 handle.flush PermissionError，core1 failed/2006 passed/3 skipped，后续Flow skipped。这是实际失败，未重跑/取消，不用其他平台绿或本机绿替代。
+
+B128/#175在原未改shared代码确认：空锁文件在取得OS所有权前写入，持锁进程的Windows强制字节锁使竞争者绕过既有TimeoutError。原生子进程保持空文件byte0锁，本地timeout=0复现PermissionError；先Issue再5822a41红2/2，c7eef67调整锁内只stat的成功断言后仍2/2同位置红。第一探针错误在锁期间另开读取句柄，被拒是探针错误，单独保留而非库失败。ORIGINAL.zip/CI失败日志/REPRO/两场红均在.tmp/audit128，不随clone。
+
+方案仅移动原初始化至OS锁取得并登记release后，保留原锁inode/重入/deadline/退出恢复/布局；原子写与并发类同PR174收敛，不另开小PR。待最小实现及相邻/core/CPU Flow、全新最终head/实际dev全部实际CI。Issue170–173/175仍开放，main/tag/GPU/数据/结果不动，下一B129。
