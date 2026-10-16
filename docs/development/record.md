@@ -3791,3 +3791,12 @@ Issue176/177逐项验收说明各一次后关闭，PR原正文保留并追加实
 继续同主题只读核对可用别名：本机GetShortPathNameW在现有隔离Run返回原完整名称，未产生不同8.3组件，故无短名反例，不开新Issue、不扩展规则或宣称短名实测通过；候选探针结果保留.tmp/audit131/SHORT_PATH_CANDIDATE.json。未知/复制后身份不匹配的legacy原回退保持，不新增任意历史所有者重建或鉴权保证；此限制与本次Windows平台同组件别名不同。
 
 当前#179仍OPEN，本主题仅本地，不拆单bug PR；继续读取身份/可选展示与相邻原子/失败边界复查，完成相关里程碑再统一PR，最终head及实际dev全实际CI后再关闭/清理。已接受dev53ae142；PR178两Issue与主题均已验收关闭/清理，周期基线161计数4/remote46，下次合入约5时做完整周期盘点。原REPRO/ZIP/hash/红绿/完整XML/SOURCE/LOCAL_CHECKED在.tmp/audit131，不随clone，portable回归与正式记录入库。无GPU/性能/正式Study实验、科学结论、main/tag/发布、数据/结果删除或布局改变；下一新缺陷编号B132，目标active。
+
+
+## 223. B132/#180合法Run身份在报告代码跨度中丢失，先红与最小方案（2026-10-17）
+
+继续同一读取身份主题确认B132：匹配的合法index/process里Run ID含反引号时，render_numbers固定单反引号定界使真实Markdown渲染丢字。已安装markdown-it-py的CommonMark+table原生解析五场3失败/2普通控制，原输入字节、数值与编码log href不变；原ZIP/REPRO/解析tokens在.tmp/audit132，不随clone。该工具是本机探针，不是新project/dev依赖。
+
+先Issue180再a1e2f97提交24项红18 failed/6 passed：9类内部/边缘/连续/全反引号ID、3普通ID（含空格/中文）×只读render/真实write_numbers，校验固定id列、原链接/accuracy/peer与human报告/input字节。CommonMark0.31.2 §6.1及相关示例作为原始来源，详artifact_consistency_design文末与本机STANDARD_NOTES；不复制标准全文，不依赖外部规范目录。
+
+方案仅在现有Run行内按正文选择不冲突反引号分隔符并必要padding，继续原_markdown_cell投影，普通ID原字节不变；不新增helper/import/依赖/字段/模块，不改变计划/数值/列/链接/原子写/布局。与B131/#179同主题完整合批，不单bug PR；先本方案再实施、实际parser复核和新的完整检查，两Issue仍OPEN，无PR。接受dev53ae142，基线161计数4/remote46，下一新B133；无GPU/性能/正式Study/main/tag/数据结果变更。
