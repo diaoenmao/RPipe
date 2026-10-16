@@ -39,9 +39,18 @@ class Logger:
         run_id = self.run_id or '-'
         text = f'{stamp} {_LEVELS[level]} {run_id} [{event}] {message}'.rstrip()
         print(text, flush=True)
-        with self.path.open('a', encoding='utf-8') as handle:
+        handle = self.path.open('a', encoding='utf-8')
+        try:
             handle.write(text + '\n')
             handle.flush()
+        except BaseException:
+            try:
+                handle.close()
+            except OSError:
+                pass
+            raise
+        else:
+            handle.close()
 
     def info(self, message: str, *, event: str = 'flow') -> None:
         self._emit('INFO', event, message)
