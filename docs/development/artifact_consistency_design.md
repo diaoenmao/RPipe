@@ -740,3 +740,14 @@ B140已实施并双侧验收（2026-10-17）：PR194 finalhead26dd6d2及actualde
 保留既有60秒timeout、headers、Content-Length/MD5校验、.part证据、同目录发布、cache_lock、raw路径与manifest字段；拒绝时要求本地预备已校验raw，不换海外源。记录新实际国内URL；verify-only仍保留原downloads/reused_caches来源，不就地重写历史证据。国内镜像可用性/下载数据一致性尚未实测，不拿mock代替；源码冻结后实际复跑须新version，当前不运行正式Study/GPU/训练/测速。此变更只落实已授权下载合同，不扩展科学目标/布局。
 
 完成该入口后继续同类/相关失败留证复查，本地按主题累积到完整里程碑再PR，不为这个脚本单开小PR。当前唯一未合codex/correctness-milestone-next，195待最终里程碑本机/双侧CI，下一B142；无设计审批等待。
+
+
+### B142 / #196：手动raw复制类的首错与owned退出（2026-10-17，实施方案）
+
+B141路由修9e2bcd2之后，继续同脚本复制失败边界：实际download流/gzip解压/tar提取配合真实.part部分写入，再在真实descriptor关闭后注入OSError，三条均把首个write OSError改成secondary close OSError。partial/peer/自有文件关闭虽保全，调用者首错身份丢失。是可定位I/O注入，不声称真实存储坏；源ZIP/REPRO在.tmp/audit142不随clone。原144仅四普通artifact/logger/tracker writer，142是锁退出；登记196收这组三binary raw helper，不重复旧Issue。
+
+bce353a先红35项14失败/21控制、0error/skip：download/mnist/cifar各destination/source退出，以及cifar外层archive退出七边界×write-error/cancel/normal-close/programming-close/ok。复用stream_close_fault真实落3字节再拒绝，源用实际GzipFile/ExFileObject/TarFile与合成HTTP响应；全部应检查原异常对象、owned close一次、源archive/peer字节、partial及成功发布。normal archive close失败时raw已按原顺序发布，控制保持，不伪造回滚。
+
+最小方案在同手动模块内放一个私有owned-stream上下文包装，因七个既有owned流边界重复此语义，标准contextlib.closing会同样遮首错，不够。使用标准ExitStack，先保留原manager.__enter__返回/失败语义，再注册原__exit__调用：仅在已有body异常且__exit__另抛OSError时保留原错；正常body的close失败继续传播，非IO程序close错误和原有__exit__抑制语义保持。保留LIFO退出、外层源关闭与目标打开失败的行为，不重试close、不删partial、不新增全局I/O框架/模块/依赖。
+
+只包装download响应和partial、MNIST gzip和partial、CIFAR TarFile及extracted source/partial共七边界。digest/split_counts普通读取非本已复现copy范围，仍可继续相邻审计，不以本批声称所有读取已修。原60秒网络预算、国内初始/redirect guard、缓存/hash/发布顺序/manifest/布局/单writer合同保持。未知错误不得只藏__context__。本地先上述方案再修，再完整55新回归与相邻/核心/CPU Flow；此前B14120新节点的core2324+1既有skip/Flow433仅中间阶段证据。195/196同分支合批、不逐bug PR，无设计审批等待，下一B143。

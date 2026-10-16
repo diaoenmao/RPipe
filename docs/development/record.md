@@ -4180,3 +4180,12 @@ PR194双侧验收及周期清理完成后，当前correctness-milestone-next仅�
 实际prepare_*在替身transport入口确认海外首请求；另实际urllib302流程用合成HTTPS响应确认国内起点仍会进入海外transport。没有socket连接/真实下载/数据或正式Study动作，REPRO/原始ZIP在.tmp/audit141，临时不随clone。77全状态Issue与189原body核对后新195登记；80009d7先红20项11失败/9控制、0error/skip，生产脚本及origin.py原ZIP字节均未变。设计先记B141，拟只复用既有国内endpoint和stdlib redirect边界守卫；正常缓存、hash、partial、manifest及verify-only来源保持。
 
 所有改动在当前批次本地累积，不立即单脚本PR；后续继续相关故障留证复查后整类里程碑本机/CI验收。195仍OPEN，下一B142，无设计/用户阻塞，main/tag/GPU/性能/数据/布局保护保持。
+
+
+## 250. B141阶段全检与同批B142/#196先红（2026-10-17）
+
+B141方案13f46c5后9e2bcd2仅改手动prepare_data：复用既有MNIST/CIFAR国内endpoint，校验HTTPS/authority/default443并在stdlib redirect_request进入下一transport前守同一边界。20新全部转绿，最终相邻GREEN2共131passed+1既有skip；最初GREEN误指不存在的model/test_origin.py为未执行路径错误，日志保留，未当库失败。原生三路由反例亦转绿，未实际联网。阶段完整CORE2324passed+1既有skip/FLOW433passed、0fail/error；67959/26075终结。仅为B14120节点源码阶段，不冒充接下来B14235新节点的最终全检。
+
+继续同模块raw复制类发现write首错被secondary close IO替换，实际download/gzip/tar三个低层IO注入复现，均partial/peer/descriptor保全但caller身份错。77旧Issueinventory/144原body核对，196单独登记失败留证范围，仍与195当前一分支同类里程碑合批。bce353a红35项14失败/21控制，七退出边界×五结果，原脚本9e生产ZIP字节仍原样。先本设计B142再私有owned ExitStack包装七流，不重构模块或磁盘布局；原取消/程序错/成功close失败/先发布后外层close等明确控制保持。
+
+当前无本机活测试，195/196都OPEN，完整里程碑尚无PR；下一B143，无用户/设计阻塞。原始.tmp/audit141/142保留且不随clone，正式数据/归档/Study/性能/GPU/下载/main/tag不动。

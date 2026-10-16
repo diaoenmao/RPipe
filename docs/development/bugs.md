@@ -167,3 +167,8 @@ B139同类补全（2026-10-17）：可选activity提示亦真实strict stdout编
 ### B141 / Issue #195：独立历史raw下载脚本绕过国内源（2026-10-17）
 
 PR190库入口不覆盖手动prepare_data.py。实际prepare_mnist/cifar在传输替身处暴露S3/toronto首请求，真实urllib重定向流程配合合成响应亦可从国内起点继续请求海外。零实际网络/下载，不声称实际镜像重定向。77全状态Issue去重后195登记，80009d7红20项11失败/9控制，设计见artifact_consistency_design末B141；先复用已有domestic_endpoint并在初始/redirect传输前统一校验，缓存/hash/raw/layout/manifest schema不改。原始.tmp/audit141不随clone，正式数据/归档/报告不动，继续本地合批而非单bug PR。
+
+
+### B142 / Issue #196：raw下载/解压的close IO遮首错（2026-10-17）
+
+download/prepare_mnist/prepare_cifar真实.part部分写入+注入close OSError，三条caller均收到secondary而非原write error，原文件close/partial/peer保持。区别144普通writer/142锁退出，先登记196再bce353a红35项14失败/21控制，覆盖七owned退出×原错/取消/正常close/程序close/成功。设计见artifact_consistency_design末B142；同195路由修复在当前唯一分支累积，未推送/PR。证据.tmp/audit142不随clone，零实际网络/模型数据/GPU/训练，保持raw/layout/发布顺序。
