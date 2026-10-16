@@ -784,3 +784,6 @@ HF 文件下载模块的 native availability 与配置读取按上下文隔离�
 B143 数据阶段相邻反例与实施选择：f174b8c 先提交 eager / streaming 两个请求逃逸回归（2 failed/0 error/skip），均使用 SDK 调用/迭代边界替身加真实 requests 栈，不冒称真实 datasets 远端集成。真实 datasets 5.0.0 本地两行 JSON 另核对：streaming 根为 ArrowExamplesIterable，保有 generate_tables_fn、kwargs、分片/恢复状态。load_dataset 调用期使用同一 mirror 上下文；返回的原生 streaming 对象不换类型、不重建 schema/info/state，只给根 generate_examples_fn / generate_tables_fn（及适用的 generate_more_kwargs_fn）绑定可 pickle 的模块级 callable，每次创建/next/close 期间启用同一传输策略、yield 交还用户前退出上下文。这样保留原生 shuffle/shard/format/batch/state 的构造关系，且不把国内标记泄漏到消费线程的其他调用。正常关闭失败仍报告；已有异常/取消不被 close OSError 覆盖，未知程序错误保持原语义。
 
 aiohttp 的每个 ClientRequest 构造前和实际 redirect response 的 Location 选择处补同类核验，前者早于 connector/DNS/连接；不只检查最终响应。多进程 download_config.num_proc、格式/media 延迟访问、线程预取生命周期仍须据实际 SDK 执行分别验证，不以根生成器绑定冒称任意第三方处理代码全被沙箱化。整个 #198 仍同分支累积，无新 PR/关闭/全量验收声明。
+
+
+B143 数据多进程补全：024b20d 在真实 datasets 5.0.0 的 download_manager.map_nested / multiprocessing.Pool(spawn) 运行 2 个进程的 4 项合成任务；子 PID 确认不同于父进程，子函数使用本地合成 requests adapter，国内策略为空且海外 transport 被进入，1 项红失败、0 error/skip。不是下载服务不可用或夹具失败。保持 download_config.num_proc、原函数/输入/顺序/返回值：只把国内调用传给 download_manager.map_nested 的任务包装为模块级可 pickle callable。子进程入口自行安装同一 guard；已受父调用生命周期管理的线程任务只设置/还原策略，不重取父线程持有的安装锁，以免 joblib/thread backend 等待死锁。无标记的非国内 map 不替换任务。传输补丁是否已安装的进程内标记只在受锁的安装周期有效，不把策略永久留在 SDK 全局或客户端。
