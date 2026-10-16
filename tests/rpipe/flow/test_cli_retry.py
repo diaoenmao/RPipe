@@ -76,3 +76,28 @@ def test_native_launch_retry_policy_preserves_attempts_and_failure(tmp_path, no_
         assert b'nothing to launch' in skipped.stdout
         assert (run / 'result.json').read_bytes() == prior
         assert (run / 'assets/attempts.txt').read_text().splitlines() == ['attempt']
+
+
+@pytest.mark.parametrize('include_done', [False, True])
+def test_invalid_cached_launch_rebuilds_before_dispatch_or_process(tmp_path, monkeypatch, include_done):
+    import rpipe.flow.cli as cli
+
+    cache = tmp_path / 'scripts/jobs.json'
+    cache.parent.mkdir()
+    cache.write_text(json.dumps({'jobs': [None], 'num_gpus': 0, 'round': 1}), encoding='utf-8')
+    before = cache.read_bytes()
+    boundary = RuntimeError('rebuild boundary reached')
+    def rebuild(*args, **kwargs):
+        raise boundary
+    def forbidden(*args, **kwargs):
+        pytest.fail('invalid cached plan reached downstream side effects')
+    monkeypatch.setattr(cli, '_make_from_args', rebuild)
+    monkeypatch.setattr(cli, '_provenance_gate', forbidden)
+    monkeypatch.setattr(cli, 'launch_jobs', forbidden)
+    monkeypatch.setattr(cli, 'process_study', forbidden)
+    flags = ['--include-done'] if include_done else []
+    with pytest.raises(RuntimeError) as caught:
+        cli.main(['launch', str(tmp_path), '--num-gpus', '0', '--round', '1', *flags])
+    assert caught.value is boundary
+    assert cache.read_bytes() == before
+    assert not (tmp_path / 'process.json').exists()
