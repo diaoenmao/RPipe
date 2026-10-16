@@ -762,3 +762,6 @@ B142同类严格读取补全（2026-10-17）：原digest及split_counts四个显
 
 
 B141–B142完整类别本机验收（2026-10-17）：最终84389b0含12显式owned流与既有路由修，80新全执行，191相邻+1既有skip/core2384passed+1既有skip/CPU Flow433passed。所有原AST/hash/strict gate核对，三批red/拒候选保留；无设计等待，准备一个完整类别PR，195/196待双侧实际CI。细节与限制见record§253。
+
+
+B141–B142已实施并双侧验收（2026-10-17）：PR197 finald824e14/actualdev e8cebcb所有实际矩阵/聚合success，195/196已验收关闭、旧分支本地+remote普通清理，详record§254。后续B143/198确认SDK redirect边界独立于手动urllib，尚在primary源码/兼容审计，待设计写明后先红/实施；不把PR197的完成说成所有SDK transfer已受guard。无设计审批等待。

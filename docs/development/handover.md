@@ -1,3 +1,9 @@
+## 2026-10-17 PR197验收完成；转B143/#198真实SDK边界（当前）
+
+PR197 finald824e14：Branch38971530628/Package38971530518/Unit38971530496，actualdev e8cebcb：Package38972302844/Unit38972302789全部实际矩阵/聚合success。195/196各一次评论验收关闭、原body保全；旧correctness-milestone-next本地+remote普通删，tip已入dev，main/dev/origin-main保护引用原样，未删worktree/数据/结果/provenance。remote53/周期基线194计数1，无活观察句柄；全部raw在.tmp/audit142不随clone，详record§254。不要重发评论或重删。
+
+唯一未合codex/domestic-sdk-transfers从actualdev新建、仅本地记录；198唯一OPEN。B143在真实HF SDK1.33.0/httpx0.28.1确认mirror参数不管实际redirect：对照3请求皆mirror，反例3请求中2个海外且helper返回成功的合成config snapshot。实际RPipe→真实SDK链，仅repo tree/transport替身、socket禁止；零真实下载，源码/脚本/REPRO在.tmp/audit143不随clone。代码/测试尚未改；先公共SDK兼容transport设计，再红回归与最小修，完整同类里程碑PR，不小PR。get_session共享client不可手动close，set_client_factory会close旧session，勿粗暴重配全局破坏foreign并发；pyproject SDK未pin，不凭本机版本假定全兼容。详record§255/PRIMARY_SOURCE_NOTES。下一B144，goal active，无审批阻塞；无main/tag/GPU/性能/模型数据/布局动作。
+
 ## 2026-10-17 B141–B142手动准备类别完整本机验收（当前）
 
 correctness-milestone-next仅本地、未PR；195/196仍OPEN。先三批red20/11失败、35/14失败、25/10失败，再各自方案/最小修9e2bcd2/4954933/84389b0；最终一个手动脚本的国内初始/redirect及12显式binary流退出统一，原AST/hash/解码/计数/manifest/layout保持。FINAL_GREEN191passed+1既有skip/COMPLETE_CORE2384passed+1既有skip/COMPLETE_FLOW433passed，新80全执行/0新skip；39780/77605及旧句柄terminal。FINAL_LOCAL_CHECKED/原始红绿/ZIP/拒候选/NEWLINE_CHECK在.tmp/audit141/142不随clone，详record§252–253。5reader探针是精确strict块，不冒称完整科学数据验收；无真实网络/下载/服务可用性/GPU/训练/性能或正式Study动作。

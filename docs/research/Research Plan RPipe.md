@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
 > Version 1.4; updated 2026-10-17. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `f2c286d338a33f00c9f57a904639baf4d9eb61b2`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `e8cebcb60c8bd7ef3bfb28b7692476edce458dde`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -782,3 +782,6 @@ PR187 launch ownership completed with all actual final-head/dev CI; issues185/18
 
 
 2026-10-17 complete manual-preparation engineering checkpoint: routing issue195 and first-error issue196, including five strict-reader exits, now have80 new nodes executed; final checks show191 adjacent passes plus one existing skip,2384 core passes plus one existing skip, and433 CPU Flow passes. All12 explicit binary streams use one owned-exit policy while raw hashes, parsing/counting/manifest bodies and layout remain unchanged. Reader-block probes are not complete scientific dataset validation. One grouped category PR is being prepared; both issues still await final-head/integrated-dev CI, with no merge/release claim. No actual network/download/service-availability/GPU/training or scientific/literature result was added; existing experiment prerequisites remain in force (record sections252–253).
+
+
+2026-10-17 engineering continuation: PR197 merged normally into actual dev e8cebcb, with every actual final-head and integrated-dev CI job successful; issues195/196 were accepted and closed, and the old topic was cleaned. B143/issue198 then reproduced a separate real-HF-SDK transfer gap: a mirror response can lead to an overseas request and a successful synthetic snapshot. Each control/counterexample has three synthetic requests; two requests in the counterexample use the foreign host. No real network/model/data download occurred. This library-SDK boundary differs from the fixed manual tool; production/tests are unchanged pending compatible transport design and red regressions. Scientific protocols/gates/layout remain unchanged, with no service-availability or complete dataset-validation claim and no new scientific/literature/training/GPU result (record sections254–255).

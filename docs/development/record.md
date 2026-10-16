@@ -1,8 +1,8 @@
-> 当前（2026-10-17）：B141/#195与B142/#196手动数据准备类别已完整本机验收；唯一未合correctness-milestone-next准备统一PR→dev。
-> 最新：国内初始/redirect边界与12显式owned binary流统一，原hash/解压/strict解析/计数/manifest主体保持，原生反例转绿。
-> 验证：最终相邻191passed+1既有skip、core2384passed+1既有skip、CPU Flow433passed，80新全执行，详§253。
-> 下一：一个完整里程碑PR最终head及实际dev全部实际CI后验收195/196并清分支；当前无活本机句柄或审批阻塞。
-> 保护：accepted PR194/devf2c286d、周期基线194计数0/remote52；零真实联网/下载/GPU/训练/main/tag/布局动作。
+> 当前（2026-10-17）：PR197已正常合dev e8cebcb，最终head/实际dev全部实际CI成功；195/196验收关闭，旧主题本地+remote已清。
+> 最新：B143/#198确认实际HF SDK即使mirror endpoint仍可跟随响应访问海外；3个合成请求中2个海外，返回成功快照，零真实网络。
+> 验证：PR197本机core2384passed+1既有skip/CPU Flow433passed、新80全执行；B143仅原生SDK反例/控制与源码审计，未改生产/测试。
+> 下一：唯一未合domestic-sdk-transfers本地记录，先兼容传输设计/红回归，再同类合批修；198为唯一OPEN，无审批阻塞。
+> 保护：cleanup基线194后1/remote53；无活CI句柄、真实下载/GPU/训练/main/tag/布局动作，所有原始失败/用户暂存保留。
 
 > 当前（2026-10-17）：B139/#191三处已证消费反例同类里程碑本机验收完成，唯一未合evidence-boundaries-next，准备统一PR→dev。
 > 最新：Numbers/status/compare文本、派生compare JSON、可选activity提示均修；strict producer/atomic与科学数值/输入身份保持。
@@ -4228,3 +4228,22 @@ B14180009d7红20项11失败/9控制→13f46c5设计→9e2bcd2路由修；B142bce
 最终FINAL_GREEN191passed+1既有skip、COMPLETE_CORE2384passed+1既有skip、COMPLETE_FLOW433passed，均0fail/error；80新unit节点在完整XML全执行/0新skip。39780/77605与所有旧本机句柄均terminal0，无重派。FINAL_LOCAL_CHECKED SHA256 855fe5da3f8671ea91c20e9302ff4eb44a8087a8d93c5e0560a45e30fa6bb91a；原生三路由/三copy/五reader反例红绿、ZIP/完整XML均.tmp/audit141/142不随clone，portable回归与设计已入库。正常来源仅替身transport，不能推断国内服务可用或真实数据一致性；未进行下载/科学复跑/文献/GPU/训练/性能动作。
 
 本批是两个Issue收纳的完整手动准备类别里程碑，非逐方法/逐bug PR，PR194验收/清理记录随本批携入，不另tiny-doc PR。下一核对远端后统一PR→dev，确切最终head/actualdev全CI再关闭195/196并普通清主题，基线194后计数当前0、remote52。下一B143未用，goal active，无设计/用户阻塞；不合main/tag/release。
+
+
+## 254. PR197双侧实际CI验收与主题清理（2026-10-17）
+
+finalhead d824e1491b342c8c5f19000a5613cd9941eac8d2的Branch38971530628/Package38971530518/Unit38971530496全部实际矩阵及聚合success；正常merge actualdeve8cebcb60c8bd7ef3bfb28b7692476edce458dde的Package38972302844/Unit38972302789全部实际矩阵/聚合success。PR_CHECKED SHA256 8723c09d9d147b49459b276d0d93b67e23cf732da85b87e6ec5a07417760419d；DEV_CHECKED SHA256 db3e602f789b4ab9ff51d4d27ffd5f806c815d2150c2e3a1d14aafbfe501e699。195/196原body（含196已核验reader scope和拒夹具说明）逐字保留，各仅一次验收评论后关闭；PR197原body一次追加真实验收、删除清单与后续198范围，全文prose归一回读核对。
+
+删除清单：codex/correctness-milestone-next本地+远端。先核tip d824e14与远端一致且为actualdev祖先、workspace只用户_staging_from_DEM、protected main/dev/origin-main与PRE_MERGE一致、唯一primary worktree；detach到actualdev后普通push --delete/branch -d，再for-each-ref及ls-remote核对缺席/保护引用不变。无force、worktree/数据/结果/Run/provenance删除，不动main/tag。remote累计53，周期基线194之后计数1，约五PR再全面盘点；3815验收工具句柄及本机/观察均terminal，不重派。原始proof在.tmp/audit142不随clone。
+
+PR197仅保证独立手动脚本的国内路由/12显式流及回归，不将其urllib守卫说成覆盖全部SDK。head冻结等待实际dev期间只在.tmp继续read-only复查，aggregate/provenance/report未确认新反例；实际HF SDK另确认B143，以下单独记录，不污染已冻结head。
+
+## 255. B143/#198真实SDK的mirror重定向越界（2026-10-17）
+
+现有download_model先ModelScope、后snapshot_download(endpoint=hf-mirror)选初始地址，但第三方SDK会跟随mirror响应到huggingface.co并成功返回snapshot。实际本机huggingface_hub1.33.0/httpx0.28.1，RPipe helper→真实HF snapshot/file下载/redirect链，只有repo tree和HTTP transport为合成，socket.connect明确禁止。固定合成config.json及正确Git blob oid、新建.tmp cache：国内redirect控制3个HEAD/GET都在mirror、原样config成功；反例3请求中后2个HEAD/GET访问海外，仍返回相同合成config snapshot。不是模型训练/真实下载，也不声称live mirror当前这样重定向。
+
+79全状态Issue去重，189是初始SDK/factory选择、195是独立urllib脚本，本次198登记库SDK实际transfer边界；原始REPRO/日志/源码ZIP在.tmp/audit143不随clone，旧raw/模型缓存不读改，首次使用MockModelscope错误强制进入fallback，无真实ModelScope请求。原生脚本/日志及SDK本地源码作为primary证据，队列期间没有生产/测试改动；不把ModelScope/HF endpoint参数等同网络防火墙。
+
+已读本地SDK关键合同：默认httpx client follow_redirects=True、metadata.location选blob URL、已知Hub host允许redirect；get_session注明共享client不可手动close，set_client_factory会关闭旧session。pyproject hf extras未约束版本，不能只凭本机1.33声明全兼容。下一先查真实可用公共transport hook/metadata/Xet/其他dataset路径和并发无关调用者，明确最小兼容设计，再先提交红回归后修；不为省事关闭/重配全局共享客户端或悄悄转海外。以上是审计事实/约束，非未经验证的实现决定。
+
+PR197完成验收/清理后从actualdev建立唯一新codex/domestic-sdk-transfers；198是唯一OPEN、当前B143，下一B144。验收/复查文档本地按主题提交，随下一完整相关里程碑PR，不单tiny-doc PR。goal active，无用户/设计等待；不改布局/科学门，不实际下载/运行GPU或性能/训练，不合main/tag/release。

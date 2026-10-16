@@ -178,3 +178,10 @@ download/prepare_mnist/prepare_cifar真实.part部分写入+注入close OSError�
 
 
 B142同类读取补全/本机最终验收（2026-10-17）：196原body追加digest与四strict reader范围，首个meta夹具路径拒绝及过早范围表述已明确更正并留证；2d018de先25红10失败后84389b0只给五with复用guard。与195合批共80新全执行，191相邻+1既有skip/core2384passed+1既有skip/Flow433passed。当前尚无PR，195/196保持OPEN，详record§252–253，原反例及校验拒绝均不删。
+
+
+2026-10-17 B141–B142验收：PR197 finald824e14/actualdev e8cebcb全部实际CI成功，195/196原body保持、各一次评论后关闭，旧主题本地/remote正常删；详record§254，之前待CI为历史。
+
+### B143 / Issue #198：真实HF SDK镜像参数不约束海外transfer（2026-10-17）
+
+实际download_model→HF snapshot/file client1.33.0/httpx0.28.1，ModelScope失败替身后mirror响应可使后续HEAD/GET访问huggingface.co，仍返回成功的合成config snapshot。国内控制3请求皆mirror，反例3中2海外；transport/repo tree合成、socket禁止，零真实网络/模型下载。79条去重后198登记，区别189初始选择/195手动urllib；原始.tmp/audit143不随clone。当前唯一OPEN，尚无测试/生产修改，先SDK兼容public transport设计和红回归，不全局关闭共享client、不扩布局/科学门。详record§255。
