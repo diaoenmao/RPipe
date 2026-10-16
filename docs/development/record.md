@@ -3188,3 +3188,10 @@ PR149最终head0c37aada60aab6dc9cb253488766ff012b310650的Branch38889723895 / Pa
 §174共20项读取边界已逐项标注源审/既有合同与本轮实测；本批两个已确认缺陷均已本地修复，其余未发现新可复现反例，未把源审当成全部故障矩阵实测。原始探针、无效/失败证据、源码ZIP/hash和验证输出在.tmp/audit111，不随clone；正式回归与本记录随Git提供。无正式Study/GPU/测速、布局/schema、数据/Run/provenance改写；本机通过不代替最终head与实际dev全部实际CI。
 
 按18:53规则，两个Issue、完整清单、周期清理和验证文档在唯一codex/optional-read-boundaries分支形成一个完整里程碑，统一推送/PR，不拆纯文档PR。Issue150/151保持open到双侧CI验收；PR149和五批清理已完成，当前清理基线149累计0，见§173。
+
+
+## 176. B113 / Issue153：补齐遗漏的 Run 级可选结果消费者（2026-10-16）
+
+§174的20项源审遗漏individual.run，先前“未确认其他反例”只表当时范围；本次补为第21项。实际FlowRunner(process-only)、ctx.state无结果时六探针：nonobject/deep/stat Permission三类使原result字节被Runner失败回退改写且没有派生；syntax/read Permission/valid三控制正常，valid accuracy42。Issue153先创建，再14正式回归4 failed/10控制passed、0error/skip（额外覆盖stat IO、missing/Unicode、程序RuntimeError身份、有效内存优先/无需index）。不是训练或正式Study，原始REPRO/ZIP/hash保留.tmp/audit113，不随clone。
+
+设计按既有可选读取合同补individual原try范围和两种已知错误，Runner、metrics公式与公共严格loader保持，纳入已开PR152同一里程碑。原48绿及core1834/Flow247只代表5400249旧head；补齐后将重新验必要本机范围和最终head/实际dev全部实际CI。旧CI保留，不以取消/重跑抹去历史；不增加新PR。

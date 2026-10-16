@@ -337,3 +337,10 @@ Issue148后dadb558先提交12项正式回归5 failed/7有效控制passed、0erro
 
 
 本机实施与验收：00f3ddf仅修改上述两个现有文件，9行增加/8行删除；48新节点全部执行/通过，core1834 passed/1既有平台skip，CPU Flow247 passed。其他aggregate函数原源码及CLI五个异常元组之外AST均保持。§174清单中的两个待修项已本地实施，最终head/实际dev CI仍待统一里程碑PR验收；不是待设计批准。详record§175，原红/绿/hash在.tmp/audit111不随clone。
+
+
+## B113 / #153：同一读取里程碑补齐 Run 级回读（2026-10-16，已批准合同内实施）
+
+继续源审发现individual.run的独立读取入口未列入§174原20项清单。实际FlowRunner(process-only)六探针中，非object、深JSON和stat PermissionError三类使派生失败且经既有Runner失败回退改写原结果；语法/读Permission/有效输入三个控制按预期保全。正式14项先红4 failed/10有效控制passed，0error/skip，含新增stat IO；原始坏文件及被覆盖后证据在.tmp/audit113保留，不随clone。
+
+沿Run process已有缺失/坏语法/read IO的可选降级合同，只把is_file移入原try并补CorruptArtifactError/RecursionError，保留ctx.state有效mapping优先、无index要求、原metrics转换与history读取。严格公共loader和Runner通用失败/旧成功规则原样，不吞任意RuntimeError，不改路径/schema/恢复/科学门。此为#150相邻遗漏消费者，加入同一PR152，不另开小PR；旧head CI不取消，不能代替补齐后的最终head验收。
