@@ -3409,3 +3409,14 @@ load_recipe在上述上下文内执行spec前，将自己的既有模块名临�
 候选da6d0b0在31项定向测试、core1950 passed/1既有skip、CPU Flow273 passed上通过，但随后的注册对象生命周期复查确认：配方顶层已导入helper，注册的builder稍后执行时再次from helper import，会因上下文已清cache而ModuleNotFoundError。4a53165新增模块/包2红均failed、0error/skip；这是新候选引入的支持行为回归，不计原始14/4红，也不以先前全绿接受候选。两个新节点不在此前CORE/FLOW收集清单中，当前33项边界未通过，不能冒称整体全绿。候选及红测试只在本地，未推送、未开新PR、未影响dev8480d79。
 
 §195暂存/恢复设计须继续覆盖注册函数晚导入的生命周期，不能简单清掉本地cache就作为最终实现，也不能改成禁止已支持的late import或粗暴清空外部模块。下一步先扩展私有导入绑定/模块所有权方案，保留这两个反例及原始预期，再修代码并重新执行当前全部节点/相关Flow。不是外部审批/网络阻塞，不因实现复杂而暂停；继续按20:56在当前唯一未合分支合批本地积累，不立即推PR。原始与候选失败、XML/hash均在.tmp/audit119/120不随clone。
+
+
+## 198. 加载隔离生命周期与checkpoint兼容方案修正（2026-10-16，本地里程碑）
+
+隔离namespace原型在.tmp中通过现有33项（非生产验收），但真实System save/load探针发现必要兼容边界：原裸helper类的model._extra_state可原生写读，namespace原型注册成功后读旧bundle却ModuleNotFoundError。首次探针误把device传SystemConfig构造器，另存无效夹具；改用既有from_mapping后复现。随后正式Flow prepare→System旧状态/新状态换Study根恢复两回归均红，不能靠只通过纯import测试接受namespace方案。
+
+修正方案仍只改既有文件内容、不增模块/产物布局：recipe.py按物理Study根复用独立私有包，标准库source loader给该包的Python helper绑定本地import；普通import/from/包相对导入与注册后的晚导入都解析该Study，不清外部裸名cache。每Study固定包/recipe键复用，不按每Run无限增新包；不同Study物理根分离。finder只处理该私有前缀，不触碰第三方模块的__getattr__；load失败恢复此前recipe模块项，正常Python模块生命周期承载注册对象和dataclass定义模块。既有Run对象仍由Factory逐次构造，不把module代码cache当data/model/RNG对象cache。
+
+私有类模块身份会影响含自定义Python对象的pickle全局引用，因此同步提供限定当前Study的兼容Unpickler：裸本地helper或历史私有包前缀映射当前Study同名helper/recipe类，非本地/标准库走原pickle查找。system_api新增私有桥，仅在标准Run assets位置且该Study recipe包已加载时提供reader；System.load_checkpoint全部已有torch.load点和compare checkpoint reader通过此桥取可选pickle_module，默认无recipe时kwargs/行为保持。System层不反向import make，仍经API跨层。Flow既有prepare注册顺序保持，不新增配置/公开选项/Run字段/序列化版本，不重写旧checkpoint；原torch.save、piece/bundle/diagnostic路径及恢复/科学门不改。
+
+该桥须验证旧裸helper对象、不同物理根的新私有类型对象，以及外部cache保全；比较reader同步兼容，不把修改限于刚好测试的System入口。外部绕过RPipe直接反序列化自定义类仍需加载其定义代码，不能宣称任意plugin/宿主均可无上下文反序列化；native RPipe读取合同必须兼容，未通过之前不接受整批、不推PR。当前按20:56同分支本地积累，进一步反例先保留再修，任何旧绿色检查不代替新边界。
