@@ -5,7 +5,8 @@ Run with the same Python executable as the study, for example::
     python -B studies/main_exp/flow/prepare_data.py
     python -B studies/main_exp/flow/prepare_data.py --verify-only
 
-Only upstream dataset URLs from torchvision and pinned main 4ccb28d are used.
+Registered domestic mirrors serve the unchanged archives from pinned main 4ccb28d.
+Foreign redirects are refused; unavailable mirrors require verified local raw files.
 The legacy datasets create their own pickle-format ``processed`` caches later.
 """
 
@@ -22,18 +23,21 @@ import shutil
 import struct
 import tarfile
 import urllib.request
+from urllib.parse import urlsplit
+
+from rpipe.structure.origin import domestic_endpoint
 
 
 STUDY = Path(__file__).resolve().parents[1]
 HISTORICAL_REF = '4ccb28d0496110253e9f8e3f3df658853f07996b'
-MNIST_URL = 'https://ossci-datasets.s3.amazonaws.com/mnist/'
+MNIST_URL = domestic_endpoint('MNIST').mirrors[0]
 MNIST_RESOURCES = (
     ('train-images-idx3-ubyte.gz', 'f68b3c2dcbeaaa9fbdd348bbdeb94873'),
     ('train-labels-idx1-ubyte.gz', 'd53e105ee54ea40749a09fcbcd1e9432'),
     ('t10k-images-idx3-ubyte.gz', '9fb629c4189551a2d022fa330f9573f3'),
     ('t10k-labels-idx1-ubyte.gz', 'ec29112dd5afa0611ce80d1b7f02629c'),
 )
-CIFAR_URL = 'https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
+CIFAR_URL = domestic_endpoint('CIFAR10').url
 CIFAR_MD5 = 'c58f30108f718f92721af3b95e74349a'
 
 
@@ -60,17 +64,34 @@ def verify_file(path: Path, expected: str, algorithm: str = 'sha256') -> bool:
     return path.is_file() and digest(path, algorithm) == expected
 
 
+
+def _require_domestic_url(url: str) -> None:
+    target = urlsplit(url)
+    hosts = {urlsplit(source).hostname for source in (MNIST_URL, CIFAR_URL)}
+    if (target.scheme != 'https' or target.hostname not in hosts
+            or target.port not in (None, 443) or target.username is not None or target.password is not None):
+        raise ValueError('domestic raw mirror required; no overseas fallback; prepare verified raw files locally if unavailable')
+
+
+class _DomesticRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, request, response, code, message, headers, newurl):
+        _require_domestic_url(newurl)
+        return super().redirect_request(request, response, code, message, headers, newurl)
+
+
 def download(url: str, destination: Path, md5: str) -> dict[str, str]:
     if verify_file(destination, md5, 'md5'):
         print(f'cached archive: {destination}', flush=True)
         return {'url': url, 'source': 'existing archive', 'md5': md5}
     if destination.exists():
         raise ValueError(f'existing archive checksum mismatch: {destination}')
+    _require_domestic_url(url)
     destination.parent.mkdir(parents=True, exist_ok=True)
     partial = destination.with_name(destination.name + '.part')
     print(f'download: {url}', flush=True)
     request = urllib.request.Request(url, headers={'User-Agent': 'RPipe historical data preparation'})
-    with urllib.request.urlopen(request, timeout=60) as response, partial.open('wb') as handle:
+    opener = urllib.request.build_opener(_DomesticRedirect())
+    with opener.open(request, timeout=60) as response, partial.open('wb') as handle:
         actual_url = response.geturl()
         expected_size = response.headers.get('Content-Length')
         total = 0
