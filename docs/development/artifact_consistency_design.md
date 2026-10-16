@@ -280,3 +280,10 @@ Issue132后，1e8c5d1先提交22项合同：unit12覆盖RuntimeError/KeyboardInt
 实施方案沿用已批准第三类合同：只改curves.py，在原figsize下取得figure后立即进入finally所有权范围，再以等价fig.subplots取得axes；绘制主体原样缩进，不改数据、坐标/标注、dpi140或路径。短UUID的同目录.tmp用xb排他取得所有权，savefig向该文件句柄以显式PNG格式写入，关闭后复用既有atomic_replace发布。目标原mode沿用；新目标沿用普通open的umask。临时创建失败不unlink peer，自有文件才best-effort清理；PermissionError只对自有独立临时文件恢复0o600并重试一次，其余OS拒绝留诊断，不遮原保存/替换异常。最外finally始终只关闭本次取得的figure，peer figure保留。现有checkpoint诊断staging、共享硬链接和日志追加均不改；不加通用I/O框架、文件夹或schema。
 
 验证：19新节点全部执行、旧图/缺目标/输入/peer bytes和mode，PNG有效控制及原绘图合同；本机另用冻结旧函数与新函数对相同合成输入比较PNG原字节。随后core、CPU Flow及最终head/实际dev全部实际CI分别验收。源ZIP/失败、原始PNG和哈希在.tmp/audit106，不随clone；无GPU、测速、正式Study或main/tag。
+
+
+### B106同批补充：临时流关闭IO二错（2026-10-16）
+
+9da02b4相邻故障注入确认：with临时流的__exit__/close再抛OSError，会替换savefig已经抛出的RuntimeError或KeyboardInterrupt。a095ef0先提交6项补充回归（两种首错×新旧目标4 failed，成功保存后close错误的2控制passed），与最初19项红分开保存；仍属Issue140/PR141，不另起主题。
+
+仅把临时流上下文改为显式取得/关闭：保存已有BaseException时尽力close，只有关闭OSError不替换首错，随后bare raise；保存正常时close仍严格传播，未关闭成功不发布。捕获BaseException只为取消也释放资源且原样重抛，不吞新的终止信号或关闭中的非IO程序错误。PNG绘制/权限/所有权规则不变。原head9da02b4的CI快照保留，新代码应更新同一PR并重新接受最终head的实际CI，不能沿用旧head绿作为验收。
