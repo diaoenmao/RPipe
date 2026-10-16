@@ -3352,3 +3352,10 @@ PR152继续同一分支收敛#150/#151/#153，生产总计3个现有文件14行�
 B118按b6edba0设计，以0aaae0b在prepare.py增加RLock及完整保存/设置/资产锁内body/恢复范围，13行增加/10行删除；SOURCE_CHECKED精确证明其他原字节保持。B117/B118分别保护类端点和临时环境变量，不改root锁合同、数据构造、端点内容、下载/hash、marker、返回值、异常或科学门。27项两处及相邻回归全执行/通过，新17项均执行；合批core1919 passed/1既有平台skip，CPU Flow273 passed，0failure/error/skip。两次正式红独立保留：B117为8项4失败/4控制；B118为9项4失败/5控制，不冒称一场17项红执行。
 
 新一轮20:56频率指令已收录cicd：本地正常按主题提交，同主题按一批相关B项完整里程碑后开少量PR；已开的PR161同时收尾#160/#162，不拆PR。先前e8dd7cf的CI只是B117阶段，不作为新增B118后最终head验收。原始失败、无效夹具/收集拒绝、ZIP/hash/XML保留.tmp/audit117与audit118，不随clone；正式回归与记录可携带。无下载/GPU/性能/Study/main/tag/数据删除或布局变化。
+
+
+## 192. B119 / Issue163：顺序Study配方串用已缓存helper（2026-10-16）
+
+按flow§14.1已支持同目录import及顺序run/子进程一致性，两个独立合成Study在真实load_recipe中导入同名helper，第二个读到第一个值与__file__；新进程第二Study读到自己的值，sys.path两种方式均正确恢复，问题在sys.modules。先Issue163，再5c8f5fd提交12项正式红：8 failed/4单Study控制passed、0error/skip；模块/包、加载时/注册时import、第一次注册成功/原错退出的8个串用反例均执行。原源码ZIP/hash/probe/新进程对照/红XML在.tmp/audit119不随clone；未运行数据/GPU/下载/正式Study。
+
+当前生产代码未改，正在比对既有独立Study阶段命名空间与recipe绝对import合同；修复必须避免清空第三方全局模块或破坏注册后的运行对象，先明确临时模块缓存的所有权/恢复范围，再实现。不是等待人工批准，也不以文档替代修复。唯一未合codex/study-loader-isolation本地积累，按20:56规则与相关加载隔离问题形成完整里程碑后再PR，不立即另开小PR。PR161最终head d42072f的Branch38904767623/Package38904767492/Unit38904767906已全实际CI成功，正常合dev8480d795d0cb09714deb9bdd4bd79f41bdc5b2a9，实际devCI仍在执行；#160/#162与已合主题待双侧验收清理。
