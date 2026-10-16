@@ -1,8 +1,8 @@
-> 当前：PR152同一读取边界里程碑补齐#153；PR149已双侧验收，周期基线149累计0。
-> 最新：#150/#151/#153共62新回归全执行/通过；完整读取清单补为21项，见§174–177。
-> 验证：补齐后core1834 passed/1既有平台skip，CPU Flow261 passed，原始三套红分别保留。
-> 下一步：一次更新现有PR152，验最终head及实际dev全部实际CI后关Issue/清已合分支；无代码阻塞。
-> 保护：无GPU/测速/正式Study、main/tag或布局/数据修改；旧head结果仅历史，不当最终验收。
+> 当前：PR152双侧全部实际CI验收，150/151/153已关闭，原主题本地/remote已清；周期基线149累计1。
+> 最新：B114/#154通用execute最终写入拒绝仍假成功；24正式红6失败/18控制→82890ce修复后全绿。
+> 验证：core1846 passed/1既有平台skip、CPU Flow273 passed，24新节点全执行；见§178–180。
+> 下一步：完整失败写入里程碑统一PR→dev，分别验最终head/实际dev CI；唯一未合分支本地累积，无代码阻塞。
+> 保护：无GPU/测速/正式Study、main/tag或布局/数据修改；临时原证据保留且不随clone。
 
 > 当前：PR135实际dev已全CI验收、Issue134关闭，工作分支本地/remote普通删。
 > 最新：B104/Issue136同Study路径别名翻转多根锁顺序，真实并发循环已复现。
@@ -3221,3 +3221,25 @@ PR152继续同一分支收敛#150/#151/#153，生产总计3个现有文件14行�
 在已合dev f956c63复查失败写入合同，实际Runner与真实tracker六合成探针确认2类false-success：算法体正常，最终tracker发布Permission或真实编码TypeError被finally吞掉，结果仍succeeded但tracker旧字节保留；normal与三个primary RuntimeError控制正确。仅合成Algorithm入口调用，无data/model/optimizer/训练/测速。原始REPRO/log、全部合成结果、源码ZIP/hash在.tmp/audit114保留，不随clone。
 
 先Issue154，再aae4b0e正式红24节点6 failed/18有效控制passed、0error/skip。12 unit覆盖成功、原RuntimeError及KeyboardInterrupt/SystemExit与正常/IO/编码finalizer的身份和单次flush；12 integration覆盖实际Runner新旧结果、正常/主错及两类真实写入拒绝，保全旧tracker/peer并拒绝提前成功。按既有execute结束flush要求及原生train收尾合同，设计仅给现有finally区分成功严格与失败尽力；方案见artifact_consistency_design，不改变Runner、科学门/数值/格式或布局。本地主题commit积累，完整里程碑后统一PR，不另开文档小PR。
+
+
+## 180. B114 最小修复与失败写入边界本机验收（2026-10-16）
+
+按d850ba7设计，82890ce仅execute/run.py增加局部completed标志，并在原finally中区分正常完成后的严格flush与已有异常/终止后的原best-effort flush；8行增加/3行删除。原算法体、ctx返回值/observations、异常日志/failure_logged与Runner策略原源码保持；每条路径仍一次最终flush，不引入模块/依赖/参数/新格式。原生train的严格成功收尾、周期flush、checkpoint/RNG和所有数值算法不改。
+
+24新节点全通过/执行；完整core1846 passed、1既有Windows POSIX模式skip、0failure/error，CPU Flow273 passed、0failure/error/skip；新节点12 core/12 Flow，未跳过。原红24项6失败/18控制保留。LOCAL_CHECKED保存原红/绿/XML/hash及实际节点，SOURCE_CHECKED逐原字节验证仅预期局部替换；六实证、旧tracker/peer/staging和原ZIP均在.tmp/audit114，不随clone。新增测试只调用合成Algorithm入口、真实tracker/Runner，不执行data/model/optimizer；全套既有CPU Toy验证不是正式Study复跑或测速。
+
+复查本批相邻失败写入点，区分已有合同/源审和实际回归：
+
+| **写入/收尾点** | **当前合同/结论** | **验证边界** |
+| --- | --- | --- |
+| Flow execute最终flush | 本批修复成功体不得吞最终写入拒绝，已有Exception/终止仍保首错，单次flush | 24新回归与六实际探针 |
+| native train最终flush | PR133已实施成功严格/已有异常尽力；本批原样 | 源审及本轮core/Flow既有回归 |
+| eval_hook周期/末尾flush | 既有直接调用，不吞写入异常 | 源审，未新跑科学评测 |
+| Runner failed-result/log fallback | 原错误继续传播，失败落盘尽力；process/冻结旧成功保全保持 | 源码不变，本轮Flow含既有回归 |
+| 普通atomic text/Logger/tracker stream close | 首写错不被close IO替换；成功close严格；原子所有权保持 | 源审及本轮core既有回归，不扩大JSONL事务 |
+| 库/Study PNG发布 | 仅清自有临时流/图，失败保旧目标/peer，成功流close严格 | 源审及本轮既有合成PNG回归，未执行Study实验 |
+| shared cache锁释放及builder | 保首错和诊断building，不让清理产生假成功 | 源审及本轮shared既有回归，不运行builder/下载 |
+| checkpoint committed/diagnostic bundle | 严格恢复，writing/incomplete保全不套普通tmp清理 | 源审与已有CPU合同，未运行新恢复实验 |
+
+这些结论不声称全部外部插件或科学矩阵已经实测；当前仅B114有新的已确认反例，统一修在共享Flow边界。连同PR152验收/清理记录在同一主题完整里程碑推送，不另拆文档PR；最终head与实际dev全部实际CI仍待验收。

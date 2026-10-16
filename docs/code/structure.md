@@ -435,7 +435,7 @@ flush **必须有**，与 print 同一套间隔，不能攒到 Run 结束：
 - **batch**：只内存 `append`
 - **report 间隔**（这一轮 step 结束时至少一次；中途用 `log_period`，整数 step，和 `checkpoint_period` 一样）：`system.Logger.report` 并立刻 flush `run.log`；tracker 往 jsonl 追加并 flush；写出 `tracker_state.json` 并 flush
 - **epoch 末**：`save`+`reset`，再 flush state
-- **execute 结束 / 尽量在失败时**：再 flush 一遍
+- **execute 结束**：成功体最终 state 写失败须传播并阻止成功；已有执行错误或终止时尽力再 flush 一遍且保首错（Flow 通用收尾与原生 train 一致，见 B114/#154）
 
 原生 supervised train 结束时区分成功与已有异常：已有训练异常（含终止）时尽力 flush state，二次编码/发布失败不能替换原异常，已有 Logger 可用时尽力记录二次 traceback；无 Logger 或日志也失败时原异常仍继续。训练体正常完成后，最终 state 写失败仍传播并阻止成功，不静默吞掉。只调整现有结束收尾的异常优先级，不改训练步骤、周期内 flush、checkpoint/RNG 或 tracker 格式。
 
