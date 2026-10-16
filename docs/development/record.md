@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：B139/#191三处已证消费反例同类里程碑本机验收完成，唯一未合evidence-boundaries-next，准备统一PR→dev。
+> 最新：Numbers/status/compare文本、派生compare JSON、可选activity提示均修；strict producer/atomic与科学数值/输入身份保持。
+> 验证：相邻878 passed、core2276 passed+1既有skip、Flow429 passed，56新节点全执行/0新skip；原始证据见§243。
+> 下一：远端最终head及实际dev全部实际CI后关闭191并清主题；本机所有句柄终结，无设计/用户决策阻塞。
+> 保护：接受dev e31fbf5/PR190，remote50/基线181后3；main/tag/GPU/数据/实验/布局不动，原始失败与阶段绿保留。
+
 > 当前（2026-10-17）：同一B139/#191本地补齐三处消费边界，唯一未合evidence-boundaries-next分支；尚未推送/PR。
 > 最新：display文本、派生compare JSON、可选activity提示分别最小修；三种公开链反例均转绿，source/peer/正常字节保全。
 > 验证：三批先红36/18失败、6/3失败、14/6失败；最终相邻878 passed，56新节点全执行/0skip；三处最终core/Flow执行中。
@@ -4095,3 +4101,23 @@ B139第三消费面：两处源码9b2246c的完整core2262passed+1既有skip/Flo
 三处最终相邻readout/activity/Result IO/atomic共878passed/0fail/error/skip，56新（原42+activity14）逐XML全部执行；三个原生失败链均转绿，输入/peer字节保全，派生compare JSON原key/code unit完整roundtrip且正常对照原字节相同，strictResult/announce仍对原始坏Unicode拒绝并保旧目标。源report/compare各一块替换及activity一块替换均单独原字节/CRLF证明，无新helper/依赖或科学门变化。
 
 以最终生产d10e759重新COMPLETE_CORE/COMPLETE_FLOW，64004/25458存活，basetemp独立；不因观察间隔重派。当前源码冻结以验收本批，191保持OPEN、不立即单B PR，收尾文档与PR190已验收记录同在本地分支，后续相关主题完整里程碑统一合dev。原生strict输出scope、所有红/阶段绿/ZIP/hash/CLI输入字节证明在.tmp/audit139不随clone；下一B140无新登记，无用户/设计阻塞。
+
+
+## 243. B139三消费面同类里程碑本机验收与调用清单（2026-10-17）
+
+191同类三个原生消费反例（Numbers表发布、派生compare JSON、可选activity遮住status权威表）已在同一分支归并，三个先红批分别36项18失败、6项3失败、14项6失败，0error/skip；不把各阶段拼成同一红运行。生产4926b81/9b2246c/d10e759只改三个既有消费者各一块编码表达式，原字节及CRLF证明保留，无新helper/依赖/配置/schema/路径。此前阶段完整绿保留为历史，未删原始失败或补全前局限。
+
+最终COMPLETE_GREEN878passed/0fail/error/skip；完整COMPLETE_CORE2276passed+1既有skip、COMPLETE_FLOW429passed，均0fail/error，56新unit节点逐XML全执行通过/0新skip。64004/25458与旧所有本机句柄均terminal0，不重派。LOCAL_CHECKED SHA2569a170281b20f6e737abd9c5df536dd75af1e1a3cad653224fa2d21778fdc936b；原始ZIP、三个原生红绿输入/输出、正常比较文件原字节一致及JSON roundtrip、strictResult/announce真实编码拒绝和peer/source字节证明均.tmp/audit139，仅本机不随clone，便携测试与设计已入库。
+
+| **消费/写入点** | **本批合同与验收** |
+| --- | --- |
+| Numbers标题/因素/指标及Run文本 | 共用_text_cell只转义无效代理；既有Markdown/行列/数值/Run fence保持，真实UTF-8发布与peer、有效中文emoji/字面backslash控制 |
+| status行与首行、launch计数复用 | 共用_text_cell；计数/模式/行身份不改，readonly输入字节和UTF-8编码控制 |
+| compare文本标签 | 同一_text_cell，pass/fail/差值与peer保持，不吞程序错误 |
+| compare派生JSON输出 | json.dumps之后只对无效code unit做可回读JSON转义，再原strict atomic；原keys/数值/report完整roundtrip，正常对照原字节保持 |
+| activity可选提示 | 仅_format_activity显示编码；真实strict/no-reconfigure输出仍打印权威peer/计数，默认Windows替换输出不作原来同样崩溃声明 |
+| announce原始JSON写入 | 未改strict先写后print，两个实际坏Unicode拒绝/保旧控制通过 |
+| 原始Result/config/index/provenance/atomic | 本批未改producer或宽容写入，实际Result编码拒绝/旧目标/peer保全相邻通过 |
+| logs文件消费 | 现有UTF-8 errors=replace读取原样；本批未改日志来源、事件归属或legacy回退 |
+
+本批只承诺已确认显示标签/可选提示/派生比较输出的消费边界，不规范化任意Run ID或磁盘路径，不改变strict权威输入/身份校验。此为完整readout Unicode类别里程碑，一个191收纳三个已证反例，不按消费面拆PR；下一核对远端后统一PR→dev，最终head/实际dev全部实际CI后验收关闭并正常清分支。PR190收尾文档随本批合入，不另tiny-doc PR。新B140未登记，无用户或设计阻塞，目标active。

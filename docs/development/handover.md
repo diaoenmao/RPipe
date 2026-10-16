@@ -678,3 +678,6 @@ actualdev e31fbf5927dfea94472c712d249a48e05212a66d，PR190 finalhead6f66f37与ac
 
 
 B139第三消费面续接：两处阶段完整core2262+1skip/Flow429终结后，native main+真实strict/no-reconfigure stdout的activity surrogate反例补入191。0b061f9红14/6失败→ce9e716→d10e759一处_format_activity显示编码；原announce JSON writer仍严格，两个保旧控制通过。最终三处相邻878、新56全执行/0skip，COMPLETE_CORE64004/COMPLETE_FLOW25458正运行，复用句柄；旧48760/82148已终结，不再等待/重派。原ZIP/ACTIVITY_REPRO/ACTIVITY_GREEN_REPRO/节点证明在.tmp/audit139；未推送/PR，191仍OPEN，新B140，详record§242。
+
+
+2026-10-17 B139本机最终验收：三消费面合批相邻878passed、core2276passed+1既有skip、CPU Flow429passed，56新逐XML全执行/0新skip，0fail/error；64004/25458及所有旧本机句柄已终结。完整类别里程碑准备统一PR，191仍OPEN，远端CI尚未执行；详record§243，原始.tmp/audit139保留且不随clone。

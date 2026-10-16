@@ -151,3 +151,6 @@ B109/#146已PR147最终head与实际dev全CI验收关闭，主题本地/remote�
 
 
 B139同类补全（2026-10-17）：可选activity提示亦真实strict stdout编码失败遮住status权威表；默认Win replace控制台不作同样崩溃声明。0b061f9先14红6失败/8控制→ce9e716方案→d10e759最小显示修；仍191一类，不另Issue/PR，announce严格写入控制保持。最终相邻878passed，新56全执行，三个最终源码全检进行中，详record§242。前两处完整绿属于历史阶段，不冒充最终三处CI或本机验收。
+
+
+2026-10-17 B139本机最终验收：三消费面合批相邻878passed、core2276passed+1既有skip、CPU Flow429passed，56新逐XML全执行/0新skip，0fail/error；64004/25458及所有旧本机句柄已终结。完整类别里程碑准备统一PR，191仍OPEN，远端CI尚未执行；详record§243，原始.tmp/audit139保留且不随clone。

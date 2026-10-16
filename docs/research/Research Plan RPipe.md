@@ -764,3 +764,6 @@ PR187 launch ownership completed with all actual final-head/dev CI; issues185/18
 
 
 2026-10-17 B139 scope completion: optional activity notices also hid the status table on a real strict UTF-8 output stream without reconfigure; default Windows replacement output is not claimed to crash. Same issue191, red14/6 failures before d10e759 display-only fix; strict announce JSON writing still rejects invalid Unicode and preserves old evidence. All three consumer boundaries now have878 passing adjacent cases and56 new nodes executed; complete final-source core/Flow are running. Prior two-boundary2262+1skip/429 results are retained as intermediate evidence. No new experiment, download, GPU, layout or scientific gate change; issue stays open and work remains locally batched (record§242).
+
+
+2026-10-17 final local B139 checkpoint: all three confirmed readout Unicode consumers form one category milestone, with878 adjacent cases, core2276 passed plus one existing skip, and CPU Flow429 passed. All56 new nodes executed without new skips, failures or errors. Source identities/numbers, strict producers and atomic writes remain unchanged. One PR is now prepared for the grouped scope; issue191 awaits exact-head and actual-dev CI. No scientific experiment/download/GPU/main/tag/layout action is implied (record§243).

@@ -765,3 +765,6 @@ PR187启动所有权最终head/实际dev全部实际CI验收，185/186关闭，�
 
 
 2026-10-17 B139消费面补全：可选activity提示在真实strict且无reconfigure的UTF-8输出流上也会遮住status表，未声称默认Win替换输出崩溃。仍191同类，先14红6失败后d10e759只修显示，announce严格JSON写入继续拒绝坏Unicode并保旧证据。最终三处相邻878通过、新56全执行，最终源码完整core/Flow执行中；此前两处2262+1skip/429保为中间证据。无新实验/下载/GPU/布局/科学门变化，Issue保持OPEN、本地合批，详record§242。
+
+
+2026-10-17 B139最终本机检查点：三个已确认readout Unicode消费面组成同类里程碑，相邻878、core2276passed+1既有skip、CPU Flow429passed，56新节点全执行/0新skip/0fail/error。原始身份/数值、strict producer及原子写保持；本批准备一个统一PR，191待确切head及实际devCI。未进行科学实验/下载/GPU/main/tag或布局操作，详record§243。
