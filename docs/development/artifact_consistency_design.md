@@ -650,3 +650,14 @@ B135二次复查修正（2026-10-17，仍未推送）：ba04ae3对启动错误�
 
 
 B135–B136本机实施状态（2026-10-17）：0df9943/3594c1e按最后修正方案实施，295相邻/core2194 passed+1既有skip/Flow429 passed，新62全执行；先前候选失败及原生首wait反例均保留。186不改变metadata/布局，只在原两文件统一平台组件身份；185/186仍OPEN、未推送/未开PR，当天4PR后继续本地积累，完整主题后统一PR。双侧实际CI及POSIX实体分支尚待，不提前验收。详record§231–233，无待设计批准。
+
+
+### B137 / #188：可选Git元数据不因文件名解码失败中断（2026-10-17，实施方案）
+
+隔离真实Git仓库仅tracked ASCII输入与untracked研究-λ.txt，repo-local core.quotepath=false；本机cp65001/UTF8mode0正常head/dirty=true。只将真实subprocess文本decoder选为ASCII模拟非UTF8父locale时，Windows reader thread抛UnicodeDecodeError、stdout变None、公开capture_git再AttributeError。没有声称本机默认locale失败；73条Issue去重，独立于既有status非零退出码保全。首driver只捕UnicodeDecodeError漏真实WindowsAttributeError，已保留DRIVER_CAPTURE_REJECTED，未重建/删除仓库。原始输出bytes/异常thread stderr/正常控制/ZIP在.tmp/audit137不随clone，零GPU/训练/测速/正式Study。
+
+先Issue188再dbab1ff红10项2失败/8控制，0error/skip；真实Git×ASCII/UTF8 decoder×ASCII/Unicode文件名×capture/publish八项，加两种stage程序RuntimeError严格控制。发布控制stub设备环境采集，实际source/plan/Git/atomic provenance链仍执行；不probe GPU。输入与peer字节不变，坏旧provenance仅fixture用于验证成功发布。
+
+最小方案仅capture_git的两个现有subprocess.run加errors='replace'，继续text=True与原默认locale，不改encoding、命令、cwd、10/30秒timeout、退出码检查/捕获异常/返回schema。只保存ASCII HEAD和dirty布尔，不需要返回文件名；不可解码文件名字节替换仍是非空status，不能误报clean；失败命令/timeout仍原{}。这从源头避免reader-thread失败/None，不捕AttributeError或吞RuntimeError，不加wrapper/配置/依赖/架构/路径，不改冻结digest或source/plan范围，不写回旧provenance。原stdin/输出不对外传文件名，合法文本/locale正常路径结果不变。
+
+先本方案再两处最小参数修、完整本地检查。PR187已正常合devcd0a8a0、实际devCI尚待；本项位于其后唯一未合codex/optional-metadata-correctness，旧PR/head不追加，下一可选元数据主题本地积累再里程碑PR，不马上单B开PR。无设计批准阻塞，不合main/tag/删数据。

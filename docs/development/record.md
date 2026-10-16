@@ -3971,3 +3971,12 @@ B136按Issue186→7ae8a6d红30项10失败/20控制→9e93586方案→3594c1e最�
 | atomic/shared锁相邻 | 本轮只读复查 | 原owned staging/主错保全/诊断合同保持，未确认新反例、未改代码 |
 
 GitHub当天PR盘点原始PR_CADENCE_INVENTORY：本地2026-10-17零点后已创建/合入174/178/181/184共4个；当前批不马上新开第五个，不按B拆PR，继续同主题本地积累到后续完整里程碑统一PR。185/186保持OPEN，尚无本批远端CI，不冒称合dev/发布。接受基线仍PR184/dev28f3dde双侧实际全绿，旧主题已清；周期基线181计数1/累计remote48，当前唯一未合分支保留。记录和唯一中文/完整英文研究计划同步，不改文献阅读范围/科学缺口，不以CPU合同宣称新实验。新编号B137，目标active，无用户/设计审批阻塞。
+
+
+## 234. PR187已合待actualdevCI，B137/#188可选Git解码故障先红（2026-10-17）
+
+当前轮先status/fetch保全既有_staging_from_DEM，复查无新启动合同反例，B135/B136两Issue及完整62回归形成共同里程碑后统一PR187，不拆单B/tiny-doc PR。finalhead1314e4159260da158a522f0d13d4c0defb35bf5f，Branch38953094391/Package38953094340/Unit38953094373所有实际矩阵/聚合success，PR_CHECKED SHA2569009db6214e3228d86c6f049d48903f90021c3c205c141638c0ca5a3e8de18d8；已正常merge actualdevcd0a8a0185820f74a75c932d7d5ff373fb580255，独立CI仍执行，185/186未提前关闭，旧主题保留待验收。
+
+新B137/#188：真实隔离Git输出Unicode文件名（repo-local quotePath=false），本机默认UTF8 decoder正常；显式ASCII父decoder模拟非UTF8locale，Windows reader thread UnicodeDecodeError使stdout=None，公开capture_git AttributeError中断可选元数据。未声称本机默认locale也失败；保留真实bytes/正常headdirty控制/公开异常。初driver只捕UnicodeDecodeError漏WindowsAttributeError，单独留证后修driver，保留原repo无删数据；73条Issue去重后登记188，原ZIP/REPRO在.tmp/audit137不随clone。
+
+dbab1ff先红10项2失败/8控制、0error/skip，八个真实Git capture/publish×decoder/文件名节点及两种stage RuntimeError严格控制；发布仅stub设备环境，其他原链实际执行，输入/peer原字节保全，零GPU/实验/测速。方案先写design：两个原subprocess.run增加errors='replace'，headASCII/dirty bool不需文件名文本，status非空仍dirty；不捕AttributeError/程序RuntimeError，不改encoding/命令/timeout/退出码/格式/布局/冻结规则。当前唯一未合codex/optional-metadata-correctness自actualdev创建，187旧已合branch暂留pendingCI，未新开PR；下一本地修/验证并同主题积累，新编号B138，无用户或设计阻塞。
