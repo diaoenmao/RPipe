@@ -131,9 +131,18 @@ def write_learning_curves(
             mode = dest.stat().st_mode
         except FileNotFoundError:
             mode = None
-        with tmp.open('xb') as stream:
-            owned = True
+        stream = tmp.open('xb')
+        owned = True
+        try:
             fig.savefig(stream, format='png', dpi=140)
+        except BaseException:
+            try:
+                stream.close()
+            except OSError:
+                pass
+            raise
+        else:
+            stream.close()
         if mode is not None:
             tmp.chmod(mode)
         return atomic_replace(tmp, dest)
