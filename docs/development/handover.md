@@ -1,5 +1,12 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-17 B131–B132只读Run身份里程碑完整本机验收
+
+当前唯一未合codex/readout-identity-next自接受dev53ae142，两Issue179/180分别先Issue/独立红/方案/最小修，合批624相邻/core2080 passed+1既有skip/CPU Flow422 passed、新68（36 unit+32 integration）全执行，89991/46963终结exit0。仅status所有者条件与report Run代码单元格两现有文件；无新helper/依赖/schema/布局，原数值/guard/producer/legacy/排序/链接/原子写不动。额外CommonMark实际解析12类及peer通过、普通3类输出byte-identical，工具未入依赖。详record§221–224，原始.tmp/audit131/132不随clone。
+
+本批尚未推送/开PR，179/180仍OPEN；完整主题一个PR，最终head/实际dev全部实际CI和POSIX实体分支验收后关Issue/清分支，因基线161计数4后下次约5需周期盘点；当前remote46。旧待单B/待设计字样属历史，勿重派或重复反馈。无main/tag/GPU/性能/数据删除或科学结论，目标active。
+
+
 ## 2026-10-17 B131平台所有者身份本机完整检查；读取主题继续积累
 
 当前codex/readout-identity-next仅本地：#179已先1cfad38红44项17失败/27控制、8dde822方案，再86f6a86单处条件修。450相邻/core2056 passed+1既有skip/CPU Flow422 passed，新44（12 unit+32 integration）全执行，81117/66970终结exit0。Windows真实samefile别名与PureWindows/PurePosix组件语义本机覆盖；POSIX实体隔离分支仍待未来CI。生产者/guard/schema/layout/legacy/排序原字节保持，Source精确替换证明在.tmp/audit131，不随clone。

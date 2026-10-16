@@ -592,3 +592,6 @@ B131本机实施状态（2026-10-17）：86f6a86已按上文单处条件替换�
 最小方案仅在原report.render_numbers现有Run行循环内：先用原_markdown_cell得到原显示文本，从单反引号开始延长分隔符直到不出现在正文；含反引号时添加一对必要padding，普通单反引号定界保持原字节。仍写入原id列，不新增helper/import/配置/字段或渲染框架；原空白投影、Markdown其他单元格、_log_links/URL编码、计划绑定、统计/精度、header/列/路径及write_numbers原子写不变。两现有调用者render/write与CLI继续原路径；不能拒绝合法ID掩盖问题。
 
 与B131平台event身份同一只读展示身份主题合批，先本方案再最小实现；修后实际Markdown解析复核和相邻/core/CPU Flow，最终head/实际dev全部实际CI后再关闭。科学输入/门限、文件架构与产物布局不变。
+
+
+B131–B132本机实施状态（2026-10-17）：86f6a86与acdd3e7按两节最小方案实施；624相邻/core2080 passed+1既有skip/CPU Flow422 passed，68新全部执行。实际CommonMark解析12类ID/peer及旧renderer字节比对通过；parser仅本机额外工具，未入依赖。当前两个Issue179/180仍OPEN，完整主题准备一个PR，最终head/实际dev实际矩阵及POSIX实体分支尚待，未提前验收。方案均已实施不待设计批准，原始/源码字节证明见record§224及本机.tmp/audit131/132，不随clone。

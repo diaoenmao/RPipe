@@ -1131,3 +1131,6 @@ Logger多行消息（B124/#170，2026-10-17本机修复）：内容行复用原�
 
 
 原生日志只读事件定位在已知Run上下文下使用平台Path组件身份比较，并保留紧邻事件边界：Windows大小写同组件别名不再回退误读正文tag，POSIX不同组件仍不同。比较不执行resolve/stat/samefile；原生产者、输入日志、事件集合/偏移、legacy回退、路径所有权守卫、traceback和排序保持。此规则不重建任意未知历史身份；本机实施与验证边界见B131/#179、record§222。
+
+
+NUMBERS.md既有Run ID代码单元格沿用原文本投影；对合法反引号ID选择正文不含的反引号分隔符并必要padding，以保留字面身份。普通ID的原Markdown字节、其他列/数值/链接/计划绑定和原子发布保持，无新依赖或通用富文本框架。协议依据[CommonMark §6.1](https://spec.commonmark.org/0.31.2/#code-spans)，B132/#180及同批读取身份边界证据见record§224。

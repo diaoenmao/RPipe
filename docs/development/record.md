@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：B131/#179与B132/#180只读Run身份完整里程碑本机验收，尚未推送/开PR；接受dev53ae142。
+> 最新：平台原生event所有者与Markdown代码跨度两处统一修，独立红/最小实现及展示点清单见§221–224。
+> 验证：相邻624 passed；core2080 passed/1既有skip、CPU Flow422 passed，68新（36 unit+32 integration）全执行/0新skip。
+> 下一步：完整主题一个PR，验最终head/实际dev全部实际CI及POSIX实体分支，再关179/180、清主题并周期盘点；无决策阻塞。
+> 保护：PR178已验收清理，基线161计数4/remote46；main/tag/GPU/数据/结果/布局不动，未知legacy仍原边界。
+
 > 当前（2026-10-17）：B131/#179已本机修复并完整检查，codex/readout-identity-next仅本地，同主题继续积累，尚无新PR。
 > 最新：原生event所有者用平台组件语义匹配，单处条件替换；44红17失败/27控制→相邻450绿，详§221–222。
 > 验证：core2056 passed/1既有skip、CPU Flow422 passed，44新（12 unit+32 integration）全执行；POSIX实机CI尚待。
@@ -3800,3 +3806,26 @@ Issue176/177逐项验收说明各一次后关闭，PR原正文保留并追加实
 先Issue180再a1e2f97提交24项红18 failed/6 passed：9类内部/边缘/连续/全反引号ID、3普通ID（含空格/中文）×只读render/真实write_numbers，校验固定id列、原链接/accuracy/peer与human报告/input字节。CommonMark0.31.2 §6.1及相关示例作为原始来源，详artifact_consistency_design文末与本机STANDARD_NOTES；不复制标准全文，不依赖外部规范目录。
 
 方案仅在现有Run行内按正文选择不冲突反引号分隔符并必要padding，继续原_markdown_cell投影，普通ID原字节不变；不新增helper/import/依赖/字段/模块，不改变计划/数值/列/链接/原子写/布局。与B131/#179同主题完整合批，不单bug PR；先本方案再实施、实际parser复核和新的完整检查，两Issue仍OPEN，无PR。接受dev53ae142，基线161计数4/remote46，下一新B133；无GPU/性能/正式Study/main/tag/数据结果变更。
+
+
+## 224. B131–B132只读Run身份里程碑完整本机验收（2026-10-17）
+
+同一codex/readout-identity-next收敛两处显示身份缺陷：B131/#179已知原生Run所有者应采用平台组件语义，B132/#180合法含反引号Run ID须保持Markdown代码跨度里的字面文本。分别先Issue/独立红/方案，再86f6a86与acdd3e7最小修。B131红44项17失败/27控制，B132红24项18失败/6控制；不同源码状态，不冒称一场68红。原失败、原源码ZIP/hash与portable测试均保留。
+
+最终只改两个现有生产文件：status.py共用matcher单处所有者条件；report.py现有Run行内5行局部label/fence生成及原id插值替换。没有新增helper/import/依赖/公开接口/配置/schema/module或磁盘位置。原log生产者/guard/legacy/事件集合/偏移/traceback/排序、report计划绑定/其他单元格/数值统计精度/编码链接/列/原子发布保持，既有显示空白投影也保持。SOURCE_CHECKED逐原字节证明仅这些位置，先前status修复字节未再改。
+
+### 本轮只读身份展示点复核
+
+| **既有展示点** | **当前结论** | **依据/限制** |
+| --- | --- | --- |
+| status._event_match → status note / logs event_lines | 本机已修，平台同组件别名定位实际event | Windows原生samefile与12语义单测、32集成；POSIX实际实体分支待CI，未知legacy仍回退 |
+| report.render_numbers Run ID code cell | 本机已修，合法反引号不关闭/合并原code span | 24 portable渲染/真实发布回归；12类额外实际CommonMark解析，原规则来源见§223 |
+| report普通ID、peer行、log href与统计列 | 原字节/数值/路径保持 | 冻结旧renderer比对：3普通整份输出byte-identical；9特殊只目标id单元格改变，peer/输入不变 |
+| index与process计划/身份校验、正常write/readout guard | 本轮未改，不放宽合法输入 | 所有原相邻与完整回归通过，不拒绝合法反引号ID掩盖展示问题 |
+| 原子写、共享输入、失败证据发布 | 本轮未改，完整回归通过 | 不新增事务/任意同Run并发/不可写介质保证，B129–B130已验收事实保持 |
+
+合批相邻624 passed；完整core2080 passed/1既有Windows POSIX模式skip，CPU Flow422 passed，均0failure/error。68新全执行（36 unit+32 integration），0新skip；89991/46963均exit0终结。B131先前core2056+1/Flow422是当时单处修复状态，不能代替当前含report修改及24新unit的完整集合。
+
+额外原生Markdown解析使用本机已安装markdown-it-py（CommonMark+table），12类ID和peer均保持；普通3类整份输出与冻结旧renderer逐字节一致，特殊9类仅目标id单元格改变。该parser不加入project/dev依赖、不作为CI额外依赖；portable固定协议回归随Git。原始REPRO/ZIP/红绿/完整XML/hash/SOURCE/LOCAL/PARSER与标准阅读范围在.tmp/audit131/132，不随clone。CommonMark0.31.2 §6.1只为代码跨度规则依据，不引入通用富文本框架。
+
+两Issue179/180仍OPEN，本批尚未推送/开PR；完整主题一个PR，再验最终head/实际dev所有实际矩阵/聚合，POSIX原生实体隔离届时方可验收；通过后关闭与清主题，并因基线161累计达到约5执行周期盘点。接受dev仍53ae142，已验收计数4/remote46，下一新编号B133；没有GPU/性能/正式Study实验、科学结论、main/tag/发布、数据/结果删除或文件/产物布局变化。

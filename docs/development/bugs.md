@@ -6,9 +6,15 @@
 
 ## 开放
 
-### B-131：Windows同文件Run大小写别名绕过原生event定位（本机已修，待完整主题CI）
+### B-131：Windows同文件Run大小写别名绕过原生event定位（本机已修，待同批CI）
 
-- Issue：[179](https://github.com/DreamSoul-AI/RPipe/issues/179)。先44红17失败/27控制，再86f6a86仅替换共用matcher的已知所有者条件，用原Path组件语义并保留事件边界/偏移/选择集/legacy回退，原guard/日志字节/生产者不变，不逐行加FS I/O。450相邻/core2056 passed+1既有skip/CPU Flow422 passed，44新全执行；Windows原生已验，POSIX实体隔离须后续CI，不用PurePosixPath单测替代。当前仅本地继续同主题积累、未PR，179保持OPEN。见[record§221–222](record.md)，.tmp/audit131不随clone；8.3本机未产生不同名、无反例不收录，未知历史身份不猜造。
+- Issue：[179](https://github.com/DreamSoul-AI/RPipe/issues/179)。先44红17失败/27控制，再86f6a86单处已知所有者条件采用平台Path组件语义，原边界/offset/选择集/legacy/guard/producer保持，不逐行增FS I/O。Windows原生与两平台语义本机覆盖，POSIX实体分支待实际CI；见[record§221–224](record.md)。
+
+### B-132：NUMBERS.md代码跨度损失含反引号Run ID（本机已修，待同批CI）
+
+- Issue：[180](https://github.com/DreamSoul-AI/RPipe/issues/180)。先24红18失败/6控制，再acdd3e7仅在原Run行选择不冲突fence与padding，普通输出保持。12类实际CommonMark解析及peer通过，3普通整份输出byte-identical、9特殊仅id单元格改变；无新parser依赖。见[record§223–224](record.md)。
+
+两项同一只读Run身份完整里程碑本机624相邻/core2080 passed+1既有skip/CPU Flow422 passed，68新全执行/0新skip；179/180保持OPEN，本批未PR，待最终head/实际dev全部实际CI。原始.tmp/audit131/132不随clone；生产者/schema/数值/路径布局不变，未知legacy身份/未产生短名不猜造。
 
 B129–B130/#176/#177已随[PR178](https://github.com/DreamSoul-AI/RPipe/pull/178)最终head及实际dev53ae142全部实际CI验收关闭，主题本地/remote已清；原红/验证/限制留[record§217–220](record.md)。
 
