@@ -441,3 +441,12 @@ load_recipe在上述上下文内执行spec前，将自己的既有模块名临�
 当前49项定向节点全通过（43源镜像unit、6实际Flow prepare/System/compare集成）：含legacy bundle、pieces/model.pt/meta.pt、payload.pt，自定义类和Tensor、搬到不同Study根后的类型归属、只读compare reader、helper内部晚导入/包相对导入、相同Study basename不同项目、重复加载模块键不逐Run增长、失败替换保全旧module、注解反射/pickle、双线程及原错退出。源码尚未提交生产新修复；不是完整core/Flow或CI验收，旧31项全绿不能替代本批。当前仅本地合批，不开新PR。
 
 当前实施/验收补记（record§201）：§195的短暂清cache候选已由§198/200的模块生命周期与兼容reader方案替代；当前core1964 passed/1既有平台skip、CPU Flow279 passed，新51节点全部执行/通过。只4个既有源码文件，生产写入/数学门/布局原字节核对保持。这里只是本机验收，尚无本批PR/最终head/实际devCI，不表示163/164已关闭或已发布，也不等待人工设计批准。
+
+
+## 202. B121 / #166：动态导入继续绑定所属Study（2026-10-16，PR165候选回归）
+
+最终验收前复查确认：recipe在register内用importlib.import_module加载同目录helper，实际dev8480d79的独立子进程返回37，d385c410候选报ModuleNotFoundError。原导入隔离方案仅绑定Python import语句，漏掉标准动态入口；PR165不合并，保持同一分支补齐，不单独拆PR。最初探针驱动漏import sys、未调用库，单独保留且不算库失败。
+
+方案：复用每Study私有包的导入归属判定，在recipe/helper导入importlib时提供仅当前私有代码持有的模块视图，import_module将绝对本地名映射到自己的私有空间；相对名和非本地名委托当前原生importlib.import_module。视图复制原模块属性，不修改sys.modules['importlib']或其函数，不改变其他调用方；importlib子模块继续使用原模块。Python import语句、标准库/已加载运行时优先级、外部导入hook、旧/迁移checkpoint读取合同不变。动态导入类与普通导入类使用同一稳定身份。
+
+先提交10节点红回归：2种importlib取用方式×加载/注册/注册后/辅助模块4时机为8失败，2个非本地json对照通过。修复后运行当前全部新增集合与core/CPU Flow，再推同一个PR165重验最终head；此前d385c410的CI即使通过也不能替代新head。原始红/前后子进程/无效驱动证据在.tmp/audit121和.tmp/audit119（不随clone），portable回归已入库。不改变文件架构/产物布局，不等待设计审批。
