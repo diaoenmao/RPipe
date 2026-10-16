@@ -583,3 +583,55 @@ def test_native_log_event_field_is_not_replaced_by_identity_or_body(tmp_path, mo
         assert _note_from_log(logger.path, errors_only=True) == expected
     assert {path: path.read_bytes() for path in before} == before
     assert set(tmp_path.rglob('*')) == entries
+
+
+@pytest.mark.parametrize('legacy', [False, True], ids=['native', 'legacy'])
+@pytest.mark.parametrize('message,hidden', [
+    ('File cache missing', False), ('Traceback writing failed', False),
+    ('File "data.csv" is missing', False),
+    ('Traceback (most recent call last): unable to persist', False),
+    ('File "data.csv", line nope, in worker', False),
+    ('File "data.csv", line 12 was unreadable', False),
+    ('Traceback (most recent call last):', True),
+    ('File "module.py", line 12, in worker', True),
+    ('File "module.py", line 12', True),
+])
+def test_readout_only_suppresses_standard_traceback_shapes(tmp_path, monkeypatch, legacy, message, hidden):
+    from importlib import import_module
+    from rpipe.structure.system.logger import Logger
+    from rpipe.structure.artifact import write_result
+    from rpipe.structure.artifact.index import write_index
+    from rpipe.structure.artifact.readout.logs import event_lines
+    from rpipe.structure.artifact.readout.status import list_runs
+
+    layout = artifact_layout(tmp_path, 'only')
+    logger = Logger(layout.assets_dir)
+    peer = artifact_layout(tmp_path, 'peer')
+    peer_logger = Logger(peer.assets_dir)
+    peer_logger.info('peer flow')
+    write_index(tmp_path, {'experiments': [{'factors': {'algorithm.mode': 'train'}, 'runs': [
+        {'id': 'only', 'seed': 0}, {'id': 'peer', 'seed': 0}]}]})
+    write_result(layout.result_path, {'status': 'failed', 'control': {}, 'metrics': {}, 'paths': {}, 'error': message})
+    write_result(peer.result_path, {'status': 'succeeded', 'control': {}, 'metrics': {}, 'paths': {}})
+
+    def phase(current):
+        if legacy:
+            with logger.path.open('a', encoding='utf-8') as handle:
+                handle.write('legacy [error] ' + message + '\n')
+        else:
+            logger.error(message)
+
+    monkeypatch.setattr(import_module('rpipe.flow.collect'), 'run', phase)
+    ctx = FlowContext(study_dir=tmp_path, layout=layout, config={})
+    ctx.state['logger'] = logger
+    FlowRunner(phases=('collect',)).run(ctx)
+    entries = set(tmp_path.rglob('*'))
+    before = {path: path.read_bytes() for path in entries if path.is_file()}
+    listing = list_runs(tmp_path)
+    assert listing['runs'][0]['note'] == ('-' if hidden else '[error] ' + message)
+    assert listing['runs'][1]['status'] == 'succeeded'
+    rows = event_lines(tmp_path)
+    assert any('peer flow' in row for row in rows)
+    assert sum(message in row for row in rows) == (0 if hidden else 1)
+    assert {path: path.read_bytes() for path in before} == before
+    assert set(tmp_path.rglob('*')) == entries
