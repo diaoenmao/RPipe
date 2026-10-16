@@ -513,3 +513,53 @@ def test_dataset_generator_close_keeps_primary_failure_and_context(primary, clos
     assert closed == ['mirror']
     assert origin._download_origin.get() is None
     assert origin._download_transports_installed is False
+
+
+@pytest.mark.parametrize('streaming', [False, True])
+@pytest.mark.parametrize('host,allowed', [('hf-mirror.com', True), ('huggingface.co', False)])
+def test_actual_dataset_media_reads_keep_domestic_policy(monkeypatch, streaming, host, allowed):
+    datasets = pytest.importorskip('datasets')
+    requests = pytest.importorskip('requests')
+    from PIL import Image
+    from huggingface_hub import constants
+    import datasets.features.image as image_module
+    from rpipe.structure.origin import load_hf_dataset
+    monkeypatch.setattr(constants, 'ENDPOINT', 'https://hf-mirror.com')
+    monkeypatch.setattr(datasets.config, 'HF_ENDPOINT', 'https://hf-mirror.com')
+    content = io.BytesIO()
+    Image.new('RGB', (1, 1), (1, 2, 3)).save(content, format='PNG')
+    calls = []
+    url = f'https://{host}/synthetic/image.png'
+
+    def transport(self, request, **kwargs):
+        calls.append(request.url)
+        response = requests.Response()
+        response.status_code = 200
+        response._content = content.getvalue()
+        return response
+
+    def xopen(path, *args, **kwargs):
+        return io.BytesIO(requests.get(path).content)
+
+    def rows():
+        yield {'image': url}
+
+    features = datasets.Features({'image': datasets.Image()})
+    result = (datasets.IterableDataset.from_generator(rows, features=features) if streaming
+              else datasets.Dataset.from_dict({'image': [url]}, features=features))
+    monkeypatch.setattr(datasets, 'load_dataset', lambda *a, **k: result)
+    monkeypatch.setattr(image_module, 'xopen', xopen)
+    monkeypatch.setattr(requests.adapters.HTTPAdapter, 'send', transport)
+    monkeypatch.setattr(socket.socket, 'connect', lambda *a, **k: pytest.fail('real network'))
+    loaded = load_hf_dataset('synthetic/images', streaming=streaming)
+
+    def consume():
+        return next(iter(loaded)) if streaming else loaded[0]
+
+    if allowed:
+        assert consume()['image'].getpixel((0, 0)) == (1, 2, 3)
+        assert calls == [url]
+    else:
+        with pytest.raises(RuntimeError, match='domestic'):
+            consume()
+        assert calls == []
