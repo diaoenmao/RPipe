@@ -6,15 +6,15 @@
 
 ## 开放
 
-### B-131：Windows同文件Run大小写别名绕过原生event定位（本机已修，待同批CI）
+### B-133：坏cached job条目静默变空/部分计划（本机已修，待完整验收）
 
-- Issue：[179](https://github.com/DreamSoul-AI/RPipe/issues/179)。先44红17失败/27控制，再86f6a86单处已知所有者条件采用平台Path组件语义，原边界/offset/选择集/legacy/guard/producer保持，不逐行增FS I/O。Windows原生与两平台语义本机覆盖，POSIX实体分支待实际CI；见[record§221–224](record.md)。
+- Issue：[182](https://github.com/DreamSoul-AI/RPipe/issues/182)。load_launch_plan不在include_done/就绪过滤前校验条目，非dict被丢弃、混合行变部分队列、缺ID两种include_done结果不同；原生CLI0但process.complete=false/pending1且不请求重建。十场loader+CLI反例、原字节保持，禁止实际子进程。已e86727a先红、06563fc方案、6349765复用既有None重建边界统一校验，不改合法空队列/CLI退出政策。见[record§225](record.md)，.tmp/audit133不随clone。
 
-### B-132：NUMBERS.md代码跨度损失含反引号Run ID（本机已修，待同批CI）
+### B-134：Windows同Run大小写别名绕过重复派发拒绝（本机已修，待完整验收）
 
-- Issue：[180](https://github.com/DreamSoul-AI/RPipe/issues/180)。先24红18失败/6控制，再acdd3e7仅在原Run行选择不冲突fence与padding，普通输出保持。12类实际CommonMark解析及peer通过，3普通整份输出byte-identical、9特殊仅id单元格改变；无新parser依赖。见[record§223–224](record.md)。
+- Issue：[183](https://github.com/DreamSoul-AI/RPipe/issues/183)。公共launcher字符串去重允许Owner/owner同物理Run先start两次再wait，字面重复会拒绝、真正不同Run正常。Popen仅stub、无真实子进程/破坏；已8b99bc1先红、06563fc方案、6349765与B133同批最小修，保留POSIX不同组件与原单写者计划边界，不新增全局锁。见[record§225](record.md)，.tmp/audit134不随clone。
 
-两项同一只读Run身份完整里程碑本机624相邻/core2080 passed+1既有skip/CPU Flow422 passed，68新全执行/0新skip；179/180保持OPEN，本批未PR，待最终head/实际dev全部实际CI。原始.tmp/audit131/132不随clone；生产者/schema/数值/路径布局不变，未知legacy身份/未产生短名不猜造。
+B131–B132/#179/#180已随[PR181](https://github.com/DreamSoul-AI/RPipe/pull/181)最终head及实际dev593385f全部实际CI验收关闭，主题已清，五PR周期盘点完成；原独立红/解析/字节/限制见[record§221–225](record.md)。
 
 B129–B130/#176/#177已随[PR178](https://github.com/DreamSoul-AI/RPipe/pull/178)最终head及实际dev53ae142全部实际CI验收关闭，主题本地/remote已清；原红/验证/限制留[record§217–220](record.md)。
 

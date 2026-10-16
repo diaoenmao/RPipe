@@ -1,4 +1,15 @@
+## 2026-10-17 B133–B134启动计划完整里程碑本机验收
+
+当前codex/launch-plan-validation：红e86727a/8b99bc1→方案06563fc→最小6349765，共用wait_groups信任边界；相邻230/core2137 passed+1既有skip/CPU Flow424 passed，新59全执行。182/183仍OPEN，下一单个完整主题PR→dev，最终head和实际dev所有实际CI再验收关闭、清本地/remote；不得拆bug或tiny-doc PR。原始及LOCAL_CHECKED在本机.tmp/audit133/134不随clone，详record§226–227。当前无活测试/阻塞；平台POSIX实体分支仍待实际CI，跨调用锁/junction等不增保证。已接受dev593385f，周期基线181计数0/remote47，下一B135；不合main/tag/GPU/测速，不动数据/结果/布局。
+
 # Flow 与 Study 重构交接
+
+## 2026-10-17 PR181双侧验收/五PR周期清理完成；下一计划校验主题
+
+最终head7e231ca的Branch38944352881/Package38944352835/Unit38944352979、实际dev593385f的Package38945414266/Unit38945413942全部实际矩阵/聚合成功，Windows/Ubuntu原生分支已验收；179/180已各一次反馈后关闭，原正文保全。普通删codex/readout-identity-next本地/remote，前四主题已不存在；五PR165/169/174/178/181提交与dev证明/14旧Issue关闭均核对，新基线181计数0、remote47。唯一主worktree、无管理worktree附件/未合待定分支，无数据/结果/Run/provenance删除。第一次detached HEAD显示提示导致清理后校验误拒绝，真实refs复核后更正、留原拒绝、不重删；详record§225与.tmp/audit132（不随clone）。
+
+下一唯一未合codex/launch-plan-validation仅本地，182/183已确认未修：B133坏cached job列表静默为空/部分且CLI假空成功；B134 Windows同Run大小写别名重复派发。原生loader/CLI/Popen stub证据.tmp/audit133/134无实际实验，先红回归、再文档方案、复用既有校验点统一最小修，完整里程碑再PR，勿拆单bug或改变合法空队列/模式/布局。下一B135，目标active，旧待验收/待设计文字只属历史，不合main/tag/GPU/性能/数据删除。
+
 
 ## 2026-10-17 B131–B132只读Run身份里程碑完整本机验收
 

@@ -1,3 +1,15 @@
+> 当前（2026-10-17）：B133/#182+B134/#183启动计划完整里程碑本机验收，生产6349765；接受dev593385f，尚未推送/开PR。
+> 最新：共用wait_groups校验缓存/启动/脚本发布；两红批39项28失败、20项12失败，详§226–227。
+> 验证：相邻230 passed；core2137 passed+1既有skip；CPU Flow424 passed；新59全执行/0新skip。
+> 下一：同主题一个PR→dev，最终head/实际dev全部实际CI后关闭182/183并清本地+remote；无决策阻塞。
+> 保护：周期基线181计数0/remote47；main/tag/GPU/数据/结果/布局不动，临时原始证据不随clone。
+
+> 当前（2026-10-17）：PR181双侧全部实际CI验收，dev593385f；179/180已关闭、主题本地/remote已清、五PR周期盘点完成。
+> 最新：原生/Markdown身份两B完成；下一B133/#182坏缓存队列与B134/#183同Run别名重复派发均已原生复现，详§225。
+> 验证：624相邻/core2080 passed+1既有skip/Flow422 passed，68新全执行；Windows/Ubuntu实际矩阵及聚合全成功。
+> 下一步：codex/launch-plan-validation先给182/183提交红回归，再同主题完整里程碑；两Issue仍OPEN，无决策阻塞。
+> 保护：新基线181计数0/remote47，main/tag/GPU/数据/结果/布局不动；校验器detached提示误拒绝单独保留，不重删。
+
 > 当前（2026-10-17）：B131/#179与B132/#180只读Run身份完整里程碑本机验收，尚未推送/开PR；接受dev53ae142。
 > 最新：平台原生event所有者与Markdown代码跨度两处统一修，独立红/最小实现及展示点清单见§221–224。
 > 验证：相邻624 passed；core2080 passed/1既有skip、CPU Flow422 passed，68新（36 unit+32 integration）全执行/0新skip。
@@ -3829,3 +3841,48 @@ Issue176/177逐项验收说明各一次后关闭，PR原正文保留并追加实
 额外原生Markdown解析使用本机已安装markdown-it-py（CommonMark+table），12类ID和peer均保持；普通3类整份输出与冻结旧renderer逐字节一致，特殊9类仅目标id单元格改变。该parser不加入project/dev依赖、不作为CI额外依赖；portable固定协议回归随Git。原始REPRO/ZIP/红绿/完整XML/hash/SOURCE/LOCAL/PARSER与标准阅读范围在.tmp/audit131/132，不随clone。CommonMark0.31.2 §6.1只为代码跨度规则依据，不引入通用富文本框架。
 
 两Issue179/180仍OPEN，本批尚未推送/开PR；完整主题一个PR，再验最终head/实际dev所有实际矩阵/聚合，POSIX原生实体隔离届时方可验收；通过后关闭与清主题，并因基线161累计达到约5执行周期盘点。接受dev仍53ae142，已验收计数4/remote46，下一新编号B133；没有GPU/性能/正式Study实验、科学结论、main/tag/发布、数据/结果删除或文件/产物布局变化。
+
+
+## 225. PR181双侧实际CI、两Issue验收及五PR周期清理完成（2026-10-17）
+
+B131–B132最终head7e231ca55c4efb56180c7f7f10c5f1b02f74dab6的Branch38944352881、Package38944352835、Unit38944352979及所有实际矩阵/聚合均成功。PR181正常merge进入dev593385f1f0eb002a7a7ef937bf6de4e4a9f09264；实际dev独立Package38945414266、Unit38945413942及所有实际矩阵/聚合亦成功，Windows别名与Ubuntu实际大小写不同目录分支已实际执行。PR_CHECKED SHA256 cd9ad780c947f00cbfdd5b359f12776709d0019407fbf416601f81d1d5bbdb55；DEV_CHECKED SHA256 895556360137b29c4bc512eb941960c15ce6c67da6da587c416ea39a29d4c28a。
+
+Issue179/180验收说明各一次后关闭，原正文未改；回读确认状态/merge SHA及marker各一次。PR原正文追加双侧验收和完整周期清单，旧pending字样仅属创建时历史。原独立红/原生parser/字节证明均留证，本机624相邻/core2080 passed+1既有skip/Flow422 passed、68新全执行事实保持。
+
+### 基线161后的五PR盘点
+
+| **PR** | **已保全实际dev merge** | **主题分支状态** |
+| --- | --- | --- |
+| 165 | 70a8750e98df9cb941e6c8f525d51f9d41cec77b | codex/study-loader-isolation已此前普通删除，本轮确认不存在 |
+| 169 | bef7de966a0cea0e86b1e2392222ddf8bfeff920 | codex/correctness-next-milestone已此前删除，本轮确认不存在 |
+| 174 | 9d78fb414eb7e79dcdd5b2d0d21a7ed3ccd66882 | codex/correctness-review-next已此前删除，本轮确认不存在 |
+| 178 | 53ae142b72128868fac69092c7ce23059ca29fcc | codex/failure-evidence-next已此前删除，本轮确认不存在 |
+| 181 | 593385f1f0eb002a7a7ef937bf6de4e4a9f09264 | 本次普通删除codex/readout-identity-next本地与remote |
+
+GitHub实际合并清单与五份实际dev全CI证明、所有merge均为当前dev祖先已核对；14项已处理Issue163/164/166/167/168/170/171/172/173/175/176/177/179/180均CLOSED，不重复反馈/关闭。未修182/183保持OPEN。清理前工作区仅用户_staging_from_DEM、local/remote topic tip均7e231ca、无项目引用Python进程；普通detach→push --delete→branch -d后真实refs读回，remote仅main/dev、local仅保护main/dev（随后才新建下一活动分支）。main7a15c46、local dev9324014、origin/main00e70b1未变。
+
+Git仅唯一主工作区，当前聊天list_artifacts共91个PR附件、无worktree附件；无废弃可归档worktree、无其他未合待定分支，没有移除worktree/数据/结果/Run/provenance。第一次清理后校验误用git branch显示列表，将detached HEAD提示当分支而拒绝；删除本身已经成功，拒绝记录单独保留，改用for-each-ref refs/heads与ls-remote核对，没有重删，不算库/CI失败。PERIODIC_CHECKED SHA256 dbec5a11c06eae02728e7e0ec02648b49eb57ecd5885e3fe106abb5485442012，原件及拒绝/回读在.tmp/audit132，不随clone。
+
+新清理基线PR181/dev593385f，基线后计数0、累计结束remote47。下一唯一未合codex/launch-plan-validation从实际dev建立、仅本地保留；本条收尾文档随下一完整里程碑，不拆几行文档PR。B133/#182坏cached job条目被静默删除/部分接受、include_done前缺失结构校验，原生CLI可0但process.complete=false/pending1；B134/#183 Windows同物理Run大小写别名绕过字符串去重，一组先发两start再wait，真实不同Run与字面重复控制正确。两者均已先Issue/本机隔离REPRO，尚未修，下一先红回归再同主题最小实现。进程仅stub/禁止启动，未运行实验或观测实际破坏。
+
+两新缺陷原ZIP/REPRO及范围在.tmp/audit133/134，不随clone；下一新编号B135。没有main/tag/发布/GPU/测速/正式Study/科学结论或文件架构/产物布局变化，持续目标active，无决策阻塞。
+
+
+## 226. B133/#182、B134/#183 启动计划完整里程碑：先红回归与统一方案（2026-10-17）
+
+接受基线为 PR181/dev593385f，收尾记录7048f5c。当前唯一工作分支 codex/launch-plan-validation；fetch origin --no-prune 有界完成，已有 _staging_from_DEM 保留。两已开 Issue 的原生反例与范围见§225及 design 文末，未新增 PR。
+
+e86727a：#182 红39项28失败/11控制通过（含2 CLI integration）；8b99bc1：#183 红20项12失败/8控制通过。两批0 error/skip，全节点执行，分别 .tmp/audit133/RED.xml、audit134/RED.xml 与原 log 留存，不随 clone。便携测试已入库，现仍是有意红状态。
+
+共同根因在计划信任边界缺失：方案已写入 artifact_consistency_design.md，复用 wait_groups 校验 dict/既有安全字符串 ID/平台 Path 唯一性；缓存和 jobs 发布无条件进入该边界，启动不重复字符串校验。保留合法空队列、可选 legacy 字段、成功过滤、批次全字段匹配及全部布局/科学合同。下一步最小实现、相邻/core/CPU Flow 验证，同主题累积到完整里程碑再开一个 PR；无设计/用户决策阻塞。不改 main/tag/GPU，不动实验数据/结果。
+
+
+## 227. B133–B134 共用计划校验实施及完整本机验收（2026-10-17）
+
+6349765仅改src/rpipe/structure/make/schedule.py，14行加/12行删：load_launch_plan在include_done/就绪查询前无条件wait_groups，原明确异常返回None；write_jobs_json发布前无条件同边界；wait_groups验证dict与既有安全原字符串run_id、以平台Path去重；移除launch_jobs重复的字符串去重。原batches全字段多重集、资源/波次/重试/console/env、合法空计划/可选legacy缺省、严格程序错误和调用参数错误、producer/schema/原子写/文件架构/磁盘产物布局均保持。没有新helper/import/依赖/全局锁或实际文件系统身份查询。
+
+本机相邻230 passed/0fail/error/skip（schedule/make/CLI）；core2137 passed/1既有skip，0fail/error；CPU Flow424 passed/0fail/error/skip。59新增全部执行并通过（57unit+2integration），XML逐节点核验，无新增skip。2734/96460及17834均终结exit0，独立basetemp不冲突。原两红失败保留，LOCAL_CHECKED SHA256 d06bee3fe299748a6207f3126fd70f64fff4e6b8d182af9a5d280ebb0189fa11；RED/GREEN/CORE/FLOW XML/log、SOURCE_CHECKED与原ZIP在.tmp/audit133/134，仅本机不随clone。CRLF原字节保持，生产范围单文件已复核。
+
+拒绝覆盖缓存/脚本/Run旧结果/peer前后逐字节一致，CLI在provenance/process/dispatch前进入rebuild sentinel，合法空和完成过滤控制保持；原生Windows Owner/owner同实体拒绝，真正不同Run允许。实际POSIX不同大小写实体分支待远端CI，不能用本机Windows替代。任意junction/短名别名、跨独立launch调用互斥、真实不可用存储/大规模并发故障未扩大保证；不运行实验/训练/测速/GPU，不改科学门。
+
+完整同主题准备一个PR，不为每个Issue或几行文档拆PR。同步structure、bugs、handover与项目唯一中文/完整英译计划；文献和科学缺口/下一步实验按既有计划保留，CPU工程合同不作科学结论。182/183仍OPEN，最终head和实际dev全部实际CI后才验收关闭/清主题；新B135，目标active，无设计批准阻塞。已合PR181五PR盘点见§225，不重复清理。

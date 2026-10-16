@@ -595,3 +595,20 @@ B131本机实施状态（2026-10-17）：86f6a86已按上文单处条件替换�
 
 
 B131–B132本机实施状态（2026-10-17）：86f6a86与acdd3e7按两节最小方案实施；624相邻/core2080 passed+1既有skip/CPU Flow422 passed，68新全部执行。实际CommonMark解析12类ID/peer及旧renderer字节比对通过；parser仅本机额外工具，未入依赖。当前两个Issue179/180仍OPEN，完整主题准备一个PR，最终head/实际dev实际矩阵及POSIX实体分支尚待，未提前验收。方案均已实施不待设计批准，原始/源码字节证明见record§224及本机.tmp/audit131/132，不随clone。
+
+
+PR181实际验收状态（2026-10-17）：B131–B132已正常合dev593385f，最终head7e231ca与实际dev全部实际CPU/安装包矩阵和聚合成功，原生Windows/Ubuntu分支已执行；179/180验收关闭，主题本地/remote清理并完成基线161后五PR周期盘点。新基线181计数0/remote47，详record§225。上文待CI是当时历史，方案已实施不待审。下一B133/#182与B134/#183是新确认的计划校验缺陷，尚未实施，不混为已验收任务。
+
+
+### B133 / #182、B134 / #183：启动计划条目与原生 Run 所有权统一校验（2026-10-17，实施方案）
+
+现有 load_launch_plan 仅在显式 batches 非空时进入 wait_groups，非 object 条目被后续过滤丢弃，缺失 ID 的行为随 include_done 改变。原生 CLI 复现返回 0 而 process.complete=false/pending1，未触发重建。Windows Owner/owner 同一实体可绕过字符串重复检查，两个 Popen 均先于等待发生；仅用替身，不声称已造成实际损坏。原始证据在本机 .tmp/audit133/134，不随 clone。
+
+复用既有 wait_groups 作为共同信任边界：每个声明 job 必须是 dict，run_id 使用已有 validate_run_directory 原类型校验；真实生产者始终写字符串，数字/空/缺失/不安全 ID 属坏计划，不补字符串转换。重复所有权使用 Path(run_id) 的当前平台组件比较，Windows 大小写别名拒绝，POSIX 不同大小写实体仍独立。不增加文件系统探测、全局锁、junction/短名解析或新 helper。原 batches 全字段多重集匹配、顺序/资源/训练评估屏障不变。
+
+缓存读取在 include_done/readiness 前无条件调用此边界，仅原 KeyError/TypeError/ValueError 返回 None 请求重建；不吞 RuntimeError 或调用参数错误，不修改或部分修复缓存。write_jobs_json 无条件复用边界，在旧 jobs.json 发布前拒绝坏计划；render_bash、launch_jobs 已进入边界，移除启动处重复的字符串校验。合法空计划、缺可选字段的 legacy 计划和成功过滤保持。脚本/配置/结果/peer 原字节拒绝前后不变；不改空队列 CLI 退出策略、schema、文件架构/磁盘布局、producer 或科学门。
+
+先 Issue182/183，再 e86727a 红39项28失败/11控制与 8b99bc1 红20项12失败/8控制，之后本方案，再最小实现。原生 Windows 别名/字面重复/独立 Run、显式/隐式批次与缓存/启动/脚本路径、POSIX 独立大小写实体均由同一测试在实际 CI 平台执行，无新增 skip。两项同主题合批，一个完整里程碑 PR→dev；最终 head/实际 dev 全部实际 CI 后验收，不待设计审批。
+
+
+B133–B134本机已实施（2026-10-17）：6349765按本节统一边界完成，230相邻/core2137 passed+1既有skip/Flow424 passed，新59全执行；POSIX实体分支及双侧实际CI待PR，不提前验收。详record§227，原始坏缓存与重复派发证据保留。方案已实施，不待设计批准。

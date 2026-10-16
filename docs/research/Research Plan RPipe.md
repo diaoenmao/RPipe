@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
-> Version 1.4; updated 2026-10-16. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
+> Version 1.4; updated 2026-10-17. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `8480d795d0cb09714deb9bdd4bd79f41bdc5b2a9`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `593385f1f0eb002a7a7ef937bf6de4e4a9f09264`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -710,3 +710,22 @@ The readonly identity theme continues accumulating locally: no PR yet, Issue179 
 On accepted dev53ae142, the same theme combines Issue179 native event owner identity and Issue180 report code-span Run identity. Each followed issue, separate red regression, design and minimal implementation (86f6a86/acdd3e7). Only two existing display files change; no new helper/import/dependency/schema/disk location. Producer/path guard/legacy fallback/sorting, plan binding/numerical statistics/links/other columns/atomic publication remain unchanged. Adjacent624 passed, core2080 passed/1 pre-existing skip, CPU Flow422 passed; all68 new nodes execute (36 unit,32 integration). An extra local CommonMark parser verified12 ID/peer cases and byte-identical whole output for3 ordinary controls; it is not a project dependency. See record sections221-224 for protocol sources and evidence; raw .tmp/audit131/132 files do not accompany a clone.
 
 One complete themed PR is being prepared; Issues179/180 stay open. Actual final-head/merged-dev CI and native POSIX distinct-directory execution remain pending. The next accepted merge brings cleanup baseline161 to approximately5 (currently4 accepted,46 remote branches ended), requiring periodic inventory. No GPU, performance or formal Study experiment ran, nor new scientific conclusions or architecture/artifact-layout changes. Unknown legacy identities/unavailable short names gain no expanded behavior; research gaps and next experiments remain governed by earlier sections.
+
+
+### 2026-10-17 PR181 actual acceptance and next plan-validation gaps
+
+B131-B132 merged normally through PR181 into dev593385f. Final head7e231ca and actual merged dev passed every actual CPU/package matrix and aggregate, completing native Windows/Ubuntu execution; Issues179/180 are accepted and closed. Adjacent624, core2080 passed/1 pre-existing skip, Flow422 passed, and all68 new nodes executed; red/parser/raw-byte evidence remains retained. The five-PR cycle165/169/174/178/181 is complete: merged task tips preserved and branches cleaned, new baseline181 count0/remote branches ended47, no disposable worktree/unmerged candidate or data/result deletion. A detached-HEAD display pseudo-row caused a post-cleanup verifier rejection; retained it and checked real refs without repeating deletion. Sources/hashes/inventory: record section225.
+
+Next confirmed, unfixed engineering gaps are B133/Issue182 and B134/Issue183: corrupted cached jobs can become empty/partial and return CLI0 while pending, and same-Run case aliases can be dispatched twice. Isolated native calls and forbidden/stubbed child processes supplied evidence; no actual task or data corruption was observed. The next common milestone starts with red regressions and minimal documented validation, preserving valid empty plans, modes/layout and avoiding a global Run lock. No GPU, performance or formal Study experiment ran or new scientific conclusion followed; research gaps and next experiments remain governed by earlier sections, not CI.
+
+
+### 2026-10-17 engineering update: complete launch-plan trust boundary (B133–B134)
+
+The accepted baseline remains PR181/dev593385f, with all actual final-head and merged-dev CI successful. New confirmed gaps #182/#183 are grouped on codex/launch-plan-validation: corrupted cached job rows silently became empty/partial queues (native CLI returned0 with process.complete=false/pending1), and Windows case aliases dispatched one physical Run twice (Popen stub only). No actual corruption or scientific result is claimed.
+
+Regression commits e86727a and8b99bc1 precede design06563fc and minimal production6349765. The two red suites execute39 cases (28fail/11controls) and20 (12fail/8controls), with no errors/skips. The existing wait_groups now validates object rows, the existing safe string Run component, and platform Path uniqueness before filtering, dispatch or plan publication. Valid empty queues, missing optional legacy fields, batching/resource order and POSIX distinct-case ownership remain supported. No new framework, dependencies, schema, file architecture or artifact layout. Portable tests and strict failure-side-effect checks are committed; raw originals/XML/logs under .tmp/audit133/134 are local-only.
+
+Next: finish adjacent/core/CPU Flow checks, submit one complete milestone PR to dev, then verify exact final-head and actual merged-dev CI before issue acceptance and branch cleanup. CPU contract evidence does not satisfy numerical/scientific gates. Literature remains the existing targeted preliminary review; E3/E4 and current-dev scientific replication remain unexecuted without new resource authorization. No GPU, timing, training, download, main merge or tag.
+
+
+Local validation completed: adjacent230 passed; core2137 passed/1 pre-existing skip; CPU Flow424 passed; all59 new nodes executed and passed (57unit+2integration). Production scope is schedule.py only,14 additions/12 deletions. Exact final-head and actual-dev CI, including native POSIX distinct-case ownership, remain pending. Sources and limits: record section227; local-only LOCAL_CHECKED SHA256 d06bee3fe299748a6207f3126fd70f64fff4e6b8d182af9a5d280ebb0189fa11.

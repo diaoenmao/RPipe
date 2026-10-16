@@ -581,3 +581,138 @@ def test_failure_invalidation_keeps_result_publish_error_strict(tmp_path, monkey
         schedule._fail_result(tmp_path, 'target', 'primary run failure')
     assert caught.value is primary
     assert layout.result_path.read_bytes() == before
+
+
+@pytest.mark.parametrize('bad', [None, [], {}, {'run_id': ''}, {'run_id': '../peer'}, {'run_id': 1}],
+                         ids=['null', 'list', 'missing-id', 'empty-id', 'unsafe-id', 'numeric-id'])
+@pytest.mark.parametrize('batched', [False, True])
+@pytest.mark.parametrize('include_done', [False, True])
+def test_cached_invalid_job_rebuilds_before_readiness(tmp_path, monkeypatch, bad, batched, include_done):
+    jobs = _study(tmp_path)[:1] + [bad]
+    cache = tmp_path / 'scripts/jobs.json'
+    cache.parent.mkdir()
+    payload = {'jobs': jobs, 'num_gpus': 0, 'round': 2}
+    if batched:
+        payload['batches'] = [jobs]
+    cache.write_text(json.dumps(payload), encoding='utf-8')
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    def forbidden(*args, **kwargs):
+        pytest.fail('invalid cache reached readiness filtering')
+    monkeypatch.setattr(schedule, 'run_succeeded', forbidden)
+    assert schedule.load_launch_plan(tmp_path, init_gpu=0, num_gpus=0, round_size=2,
+                                     include_done=include_done) is None
+    assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
+
+
+@pytest.mark.parametrize('route', ['launch', 'scripts', 'render'])
+@pytest.mark.parametrize('bad', [None, {}, {'run_id': '../peer'}], ids=['null', 'missing-id', 'unsafe-id'])
+def test_invalid_native_plan_refuses_before_side_effects(tmp_path, monkeypatch, route, bad):
+    jobs = _study(tmp_path)[:1] + [bad]
+    _succeed(tmp_path, 't0')
+    scripts = tmp_path / 'scripts'
+    scripts.mkdir()
+    for name in ['jobs.json', 'launch.sh', 'launch.ps1']:
+        (scripts / name).write_bytes(b'previous artifact')
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    def forbidden(*args, **kwargs):
+        pytest.fail('invalid plan reached child creation')
+    monkeypatch.setattr(schedule.subprocess, 'Popen', forbidden)
+    with pytest.raises(ValueError):
+        if route == 'launch':
+            schedule.launch_jobs(tmp_path, jobs, retry_failed=False, console='shared')
+        elif route == 'scripts':
+            schedule.write_launch_scripts(tmp_path, jobs, round_size=2, init_gpu=0, num_gpus=0)
+        else:
+            schedule.render_bash(tmp_path, jobs, python_exe='python', round_size=2, split_round=1)
+    assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
+
+
+@pytest.mark.parametrize('include_done', [False, True])
+@pytest.mark.parametrize('empty', [False, True])
+def test_cached_minimal_legacy_job_and_empty_controls(tmp_path, include_done, empty):
+    _study(tmp_path)
+    _succeed(tmp_path, 't0')
+    cache = tmp_path / 'scripts/jobs.json'
+    cache.parent.mkdir()
+    jobs = [] if empty else [{'run_id': 't0'}, {'run_id': 't1'}]
+    cache.write_text(json.dumps({'jobs': jobs}), encoding='utf-8')
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    plan = schedule.load_launch_plan(tmp_path, init_gpu=0, num_gpus=1, round_size=0,
+                                     include_done=include_done)
+    expected = jobs if empty or include_done else [jobs[1]]
+    assert plan is not None and plan['job_list'] == expected and plan['n_jobs'] == len(expected)
+    assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
+
+
+@pytest.mark.parametrize('batched', [False, True])
+@pytest.mark.parametrize('other', ['Owner', 'owner', 'Other'], ids=['literal', 'case-alias', 'distinct'])
+@pytest.mark.parametrize('route', ['launch', 'cache', 'scripts'])
+def test_plan_run_identity_uses_native_platform_before_effects(tmp_path, monkeypatch, batched, other, route):
+    first = artifact_layout(tmp_path, 'Owner')
+    first.config_path.write_text('{}', encoding='utf-8')
+    second = artifact_layout(tmp_path, other)
+    second.config_path.write_text('{}', encoding='utf-8')
+    same_run = first.root.samefile(second.root)
+    assert same_run == (other == 'Owner' or (os.name == 'nt' and other == 'owner'))
+    jobs = [{'run_id': name, 'mode': 'train', 'device': 'cpu'} for name in ['Owner', other]]
+    batches = [jobs] if batched else None
+    scripts = tmp_path / 'scripts'
+    scripts.mkdir()
+    cache = scripts / 'jobs.json'
+    cache.write_text(json.dumps({'jobs': jobs, 'round': 2, 'num_gpus': 0,
+                                **({'batches': batches} if batched else {})}), encoding='utf-8')
+    for name in ['launch.sh', 'launch.ps1']:
+        (scripts / name).write_bytes(b'previous artifact')
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    starts = []
+    class Proc:
+        def __init__(self, args, **kwargs):
+            starts.append(args[-1])
+        def wait(self):
+            return 1
+    def forbidden(*args, **kwargs):
+        pytest.fail('duplicate plan reached result invalidation')
+    monkeypatch.setattr(schedule.subprocess, 'Popen', Proc)
+    monkeypatch.setattr(schedule, '_fail_result', forbidden)
+    def execute():
+        if route == 'launch':
+            return schedule.launch_jobs(tmp_path, jobs, round_size=2, batches=batches,
+                                        retry_failed=False, console='shared')
+        if route == 'scripts':
+            return schedule.write_launch_scripts(tmp_path, jobs, round_size=2, init_gpu=0,
+                                                  num_gpus=0, batches=batches)
+        return schedule.load_launch_plan(tmp_path, init_gpu=0, num_gpus=0, round_size=2,
+                                         include_done=True)
+    if same_run:
+        if route == 'cache':
+            assert execute() is None
+        else:
+            with pytest.raises(ValueError, match='duplicate Run'):
+                execute()
+        assert starts == []
+        assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
+    else:
+        result = execute()
+        assert result is not None
+        if route == 'launch':
+            assert result == [1, 1] and len(starts) == 2
+        elif route == 'cache':
+            assert result['job_list'] == jobs
+        for path, raw in before.items():
+            if route != 'scripts' or path not in [cache, scripts / 'launch.sh', scripts / 'launch.ps1']:
+                assert path.read_bytes() == raw
+
+
+@pytest.mark.parametrize('include_done', [False, True])
+def test_duplicate_cache_rejected_before_success_can_hide_it(tmp_path, monkeypatch, include_done):
+    cache = tmp_path / 'scripts/jobs.json'
+    cache.parent.mkdir()
+    jobs = [{'run_id': 'target'}, {'run_id': 'target'}]
+    cache.write_text(json.dumps({'jobs': jobs}), encoding='utf-8')
+    before = cache.read_bytes()
+    def forbidden(*args, **kwargs):
+        pytest.fail('duplicate cache reached readiness filtering')
+    monkeypatch.setattr(schedule, 'run_succeeded', forbidden)
+    assert schedule.load_launch_plan(tmp_path, init_gpu=0, num_gpus=1, round_size=0,
+                                     include_done=include_done) is None
+    assert cache.read_bytes() == before
