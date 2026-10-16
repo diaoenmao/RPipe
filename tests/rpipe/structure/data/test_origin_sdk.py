@@ -780,11 +780,13 @@ def test_actual_media_feature_keeps_deferred_file_guard(monkeypatch, kind, strea
     assert origin._download_transports_installed is False
 
 
-def test_domestic_reader_preserves_binary_file_protocol_and_pickle():
+@pytest.mark.parametrize('protocol', range(6))
+def test_domestic_reader_preserves_binary_file_protocol_and_pickle(protocol):
     import pickle
     from rpipe.structure import origin
     reader = origin._DomesticReader(io.BytesIO(b'first\nsecond\n'))
-    reader = pickle.loads(pickle.dumps(reader))
+    assert reader.__getstate__() == {'stream': reader.stream}
+    reader = pickle.loads(pickle.dumps(reader, protocol=protocol))
     assert reader.readable() and reader.seekable()
     assert reader.tell() == 0
     assert next(iter(reader)) == b'first\n'

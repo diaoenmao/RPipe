@@ -458,6 +458,9 @@ class _DomesticDatasetCall:
 class _DomesticReader:
     stream: Any
 
+    def __getstate__(self) -> dict[str, Any]:
+        return self.__dict__
+
     def __getattr__(self, name: str) -> Any:
         value = getattr(object.__getattribute__(self, 'stream'), name)
         return _DomesticDatasetCall(value, 'mirror') if callable(value) else value
