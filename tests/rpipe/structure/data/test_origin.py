@@ -85,3 +85,92 @@ def test_discard_bad_archive_removes_partial_and_keeps_matching_md5(tmp_path: Pa
     )
     discard_bad_archive(tmp_path, endpoint)
     assert good.read_bytes() == payload
+
+
+@pytest.mark.parametrize('kind', ['model', 'data'])
+def test_domestic_origin_is_set_before_registered_builder(monkeypatch, tmp_path, kind):
+    from rpipe.structure.model.factory import Model, ModelFactory, ModelRegistry
+    from rpipe.structure.model.config import ModelConfig
+    from rpipe.structure.data.factory import Data, DataFactory, DataRegistry
+    from rpipe.structure.data.config import DataConfig
+
+    monkeypatch.setenv('HF_ENDPOINT', 'https://example.invalid')
+    seen = []
+    def builder(config, assets, **kwargs):
+        seen.append(os.environ['HF_ENDPOINT'])
+        if kind == 'model':
+            return Model(name='routing-test', source='test', module=None, meta={})
+        return Data(name='routing-test', source='test', loaders={}, meta={})
+    registry = ModelRegistry if kind == 'model' else DataRegistry
+    monkeypatch.setitem(registry._items, ('routing-test', 'test'), builder)
+    factory, config = (ModelFactory, ModelConfig) if kind == 'model' else (DataFactory, DataConfig)
+    factory.build(config(name='routing-test', source='test'), tmp_path, origin='domestic')
+    assert seen == ['https://hf-mirror.com']
+
+
+def test_domestic_model_uses_modelscope_before_mirror(monkeypatch, tmp_path):
+    import sys
+    import types
+    from rpipe.structure import origin
+    calls = []
+    def snapshot_download(**kwargs):
+        calls.append(kwargs)
+        return str(tmp_path / 'snapshot')
+    monkeypatch.setitem(sys.modules, 'modelscope', types.SimpleNamespace(snapshot_download=snapshot_download))
+    result = origin.download_model('org/model', tmp_path, revision='fixed')
+    assert result == str(tmp_path / 'snapshot')
+    assert calls == [dict(model_id='org/model', revision='fixed', cache_dir=str(tmp_path))]
+
+
+def test_domestic_model_falls_back_only_to_explicit_mirror(monkeypatch, tmp_path):
+    import sys
+    import types
+    from rpipe.structure import origin
+    calls = []
+    def missing(**kwargs):
+        raise OSError('not available in ModelScope')
+    def mirror(**kwargs):
+        calls.append(kwargs)
+        return str(tmp_path / 'hf-snapshot')
+    monkeypatch.setitem(sys.modules, 'modelscope', types.SimpleNamespace(snapshot_download=missing))
+    monkeypatch.setitem(sys.modules, 'huggingface_hub', types.SimpleNamespace(snapshot_download=mirror))
+    assert origin.download_model('org/model', tmp_path, revision='fixed') == str(tmp_path / 'hf-snapshot')
+    assert calls == [dict(repo_id='org/model', revision='fixed', cache_dir=str(tmp_path), endpoint='https://hf-mirror.com')]
+
+
+def test_domestic_model_dual_failure_keeps_both_diagnostics(monkeypatch, tmp_path):
+    import sys
+    import types
+    from rpipe.structure import origin
+    def missing(**kwargs):
+        raise OSError('ModelScope unavailable')
+    def failed(**kwargs):
+        raise OSError('mirror unavailable')
+    monkeypatch.setitem(sys.modules, 'modelscope', types.SimpleNamespace(snapshot_download=missing))
+    monkeypatch.setitem(sys.modules, 'huggingface_hub', types.SimpleNamespace(snapshot_download=failed))
+    with pytest.raises(RuntimeError, match='ModelScope') as caught:
+        origin.download_model('org/model', tmp_path)
+    assert 'mirror' in str(caught.value)
+    assert isinstance(caught.value.__cause__, OSError)
+
+
+def test_hf_dataset_import_and_call_use_domestic_endpoint(monkeypatch, tmp_path):
+    import sys
+    import types
+    from rpipe.structure import origin
+    calls = []
+    def load_dataset(*args, **kwargs):
+        calls.append((os.environ['HF_ENDPOINT'], args, kwargs))
+        return 'dataset'
+    monkeypatch.setitem(sys.modules, 'datasets', types.SimpleNamespace(load_dataset=load_dataset))
+    assert origin.load_hf_dataset('org/data', cache_dir=str(tmp_path), split='train') == 'dataset'
+    assert calls == [('https://hf-mirror.com', ('org/data',), dict(cache_dir=str(tmp_path), split='train'))]
+
+
+def test_domestic_refuses_already_imported_foreign_dataset_endpoint(monkeypatch):
+    import sys
+    import types
+    from rpipe.structure import origin
+    monkeypatch.setitem(sys.modules, 'datasets.config', types.SimpleNamespace(HF_ENDPOINT='https://huggingface.co'))
+    with pytest.raises(RuntimeError, match='import'):
+        origin.apply_model_origin('domestic')
