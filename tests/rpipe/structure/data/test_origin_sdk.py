@@ -824,3 +824,23 @@ def test_modelscope_supported_endpoint_is_explicitly_domestic(monkeypatch, tmp_p
     monkeypatch.setattr(socket.socket, 'connect', lambda *a, **k: pytest.fail('real network'))
     assert download_model('synthetic/model', tmp_path, revision='fixed') == str(tmp_path / 'modelscope-snapshot')
     assert calls == ['https://modelscope.cn/api/synthetic']
+
+
+def test_model_sdk_custom_client_cannot_bypass_domestic_transport_guard(sdk_download, monkeypatch):
+    client = sdk_download.client
+    method = '_send_single_request' if isinstance(client, sdk_download.httpx.Client) else 'send'
+    original = getattr(type(client), method)
+
+    class CustomClient(type(client)):
+        pass
+
+    def send(instance, request, *args, **kwargs):
+        return original(instance, request, *args, **kwargs)
+
+    setattr(CustomClient, method, send)
+    monkeypatch.setattr(client, '__class__', CustomClient)
+    sdk_download.target[0] = 'https://huggingface.co/synthetic/config.json'
+    with pytest.raises(RuntimeError, match='domestic'):
+        sdk_download.run()
+    assert all(sdk_download.httpx.URL(url).host == 'hf-mirror.com' for url in sdk_download.calls)
+    assert not client.is_closed
