@@ -698,3 +698,8 @@ a55f38a先红36项18失败/18控制、0error/skip：Numbers factor-key/factor-va
 B139同类消费面补全（2026-10-17）：4926b81单处_text_cell已使808相邻通过，初core2256passed+1既有skip；继续沿共用readout发现实际compare_runs→write_compare仍把同一source metric key放入items.metrics.keys，派生JSON序列化后真实UTF-8写入失败，正常label/peer控制通过、旧目标/输入不变。已在191原body一次追加此边界，仍同一B139/同一分支，不另Issue或PR。c0dc401先6项红3失败/3控制（高/低/混合，ASCII/中文emoji/字面backslash控制），验证完整json.loads roundtrip等于原report，不将科学key替换成诊断文本。
 
 补全方案只在write_compare现有json.dumps(...ensure_ascii=False)之后加UTF-8 backslashreplace encode/decode，再交原strict atomic_write_text。只转义无效code unit为JSON合法转义；有效Unicode/字面backslash原输出字节及json.loads后的原始key保持，现有finite清理/字段/数值/顺序/indent2/路径全不动。不复用_text_cell处理整份JSON（那会改换行/tab），不改generic Result/config/provenance encoder或writer的严格拒绝。原始36红及所有初轮绿/完整检查保留为partial-stage证据，最终两处消费修复需重新完整本机验证；继续本地积累，不单B立即PR。此补全取代最初“只需_text_cell一行即可覆盖所有readout发布”的范围判断，未放宽严格输入/身份或科学门。
+
+
+B139可选activity消费面补全（2026-10-17）：继续按同类UTF-8输出扫描，_format_activity是未复用_text_cell的独立归一出口，caller仅CLI status提示与announce。原生main配真实strict UTF-8 TextIOWrapper、外包不带reconfigure的输出流，正常hint可打印peer/计数，JSON转义surrogate detail会在权威表之前真实UnicodeEncodeError；不声称默认Windows replace控制台同样崩溃，POSIX原生行为尚待CI。activity/index/result字节保持，ACTIVITY_REPRO/ACTIVITY_ORIGINAL.zip本机留存；仍一处191 body追加，无新Issue/PR。
+
+0b061f9先红14项6失败/8控制：phase/detail各6（高/低/间隔混合失败，ASCII/中文emoji/字面backslash正常），另2个announce真实UnicodeEncodeError严格拒绝、旧activity保全控制。方案只给既有_format_activity归一返回加同样UTF-8 backslashreplace roundtrip，调用/导入/格式/字段/路径/类型校验不变；announce仍先strict JSON写入再print，不能借display fallback写入坏source。原子writer/Result/config/provenance严格合同不动，不捕输出流BrokenPipe等真实错误。两处readout阶段已完整2262core+1既有skip/429Flow保留为此补全前证据，最终三处源码要重新完整验收。先本方案再最小修，同B139继续合批，下一B140仍未用。

@@ -4075,3 +4075,6 @@ a55f38a红36项18失败/18控制→f2bf035方案→4926b81一处_text_cell UTF-8
 最终readout+Result IO+atomic相邻814passed/0fail/error/skip，42新（report18/status12/compareformat6/compareJSON6）逐XML节点全执行通过；原生Numbers/compare旧失败反例均转绿，源JSON/peer数据不变，compare json.loads完整等于原report且正常对照文件原字节一致。strictResult真实UnicodeEncodeError仍按既有测试拒绝并保旧目标，非编码程序错原样传播。原始ZIP/两类输入归档/REPRO/GREEN_REPRO/COMPARE_REPRO/COMPARE_GREEN_REPRO和各红阶段都在.tmp/audit139，不随clone。
 
 两个最终全检以独立basetemp运行FINAL_CORE/FINAL_FLOW（48760/82148），尚在执行；不把初阶段完整绿冒充两处最终fix验收。当前只本地主题提交，191仍OPEN，继续相关主题累积后一个完整里程碑PR，符合每天少量PR规则；新B140尚未登记，不为活跃制造反例。无GPU/下载/测速/训练、main/tag或布局变化。
+
+
+B139第三消费面：两处源码9b2246c的完整core2262passed+1既有skip/Flow429passed已终结；继续同类扫描确认可选activity提示在原生main+不可reconfigure的真实UTF-8 strict stdout上遮住权威peer/计数。默认Windows替换控制台不声称崩溃，输入字节保留。0b061f9先14红6失败/8正常及严格announce控制；方案先写design，再只改_format_activity显示返回编码边界，announce仍strict先写后打印。仍191同一B139，不拆新Issue或PR，旧完整结果只证明前两处阶段，不冒充最终三处验收。
