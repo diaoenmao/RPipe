@@ -3332,3 +3332,10 @@ PR152继续同一分支收敛#150/#151/#153，生产总计3个现有文件14行�
 实际生产修复是fffd872：origin.py仅加标准库RLock及bind_endpoint全上下文所有权范围，16行增加/11行删除（原主体仅缩进），SOURCE_CHECKED按原字节验证其他内容全保留。55ad528仅修正测试文件名，不是生产修复；该提交标题未精确表达范围，后以独立主题提交保留真实生产回滚点，未重写历史。首次测试收集因新test_origin.py与既有data/test_origin.py同名拒绝，INVALID_COLLECTION_GREEN XML/log保留；改为源镜像test_origin_concurrency.py后13项全部执行/通过，收集拒绝不计库失败。
 
 在真实DataFactory.build入口、两个独立缓存根、合成registry builder中分别调用原ZIP中binder和当前binder：原版两次读错且最终类URL残留；当前版两次读到各自URL、结束恢复原值。probe使用真实cache_lock，不导入torchvision/下载/访问正式数据；REPRO_FACTORY保留。本轮core1910 passed/1既有平台skip，新8全执行，0failure/error；CPU Flow273 passed，0failure/error/skip。未宣称不同后端或真实下载并发均已验收，不做测速。原始证据.tmp/audit117不随clone，正式回归/设计可携带。完整里程碑本地积累，最终head/实际devCI仍待后续验收。
+
+
+## 190. B118 / Issue162：共享准备的临时环境所有权（2026-10-16）
+
+同类全局状态复查确认prepare_shared_data在独立项目缓存根下并发保存/设置/恢复TQDM_DISABLE，后一个_prepare会看到None/调用方原值，全部退出还残留1。第一次探针误用共享同一根的两个Study，现有cache_lock使人为交错等待超时；INVALID_PROBE_NOTE保留，不计库失败。改用两个独立项目根后实际公共prepare入口/真实cache_lock+合成_prepare稳定复现，无数据下载。先Issue162，再b04a5cd红9项4 failed/5有效控制passed、0error/skip，覆盖初值缺失/自定义/已为1、正常/原错退出和同线程嵌套。
+
+方案仅在prepare.py增加标准库RLock，以独立的进程内环境所有权范围包住原保存、设置、cache_lock内_prepare和finally恢复；必须在原资产根锁之前取得环境锁，维持一致顺序。同线程嵌套仍可重入，异常和返回值原样。与bind_endpoint锁分别保护不同全局对象，不引入通用全局状态框架、配置或路径，不改_prepare/body、下载/hash、数据/结果/科学门。与B117统一归入当前PR161临时进程状态并发里程碑，原已触发CI保留，新增代码后以新最终head重新验收；不因观察超时取消或重跑CI。
