@@ -789,3 +789,24 @@ def test_healthy_group_ownership_keeps_original_wait_order(tmp_path, monkeypatch
         batches=[jobs[:2], jobs[2:]] if batched else None, retry_failed=False, console='shared') == [0, 0, 0]
     assert events == [('start', 'first'), ('start', 'second'), ('wait', 'first'),
                       ('wait', 'second'), ('start', 'third'), ('wait', 'third')]
+
+
+
+def test_exceptional_group_keeps_nonzero_peer_failure_evidence(tmp_path, monkeypatch):
+    primary = OSError('later spawn refused')
+    class Proc:
+        def wait(self):
+            _succeed(tmp_path, 'first')
+            return 7
+    def spawn(args, **kwargs):
+        if args[-1] == 'second':
+            raise primary
+        return Proc()
+    monkeypatch.setattr(schedule.subprocess, 'Popen', spawn)
+    jobs = [{'run_id': name, 'mode': 'train', 'device': 'cpu'} for name in ['first', 'second']]
+    with pytest.raises(OSError) as caught:
+        schedule.launch_jobs(tmp_path, jobs, round_size=2, retry_failed=False, console='shared')
+    assert caught.value is primary
+    result = load_result(tmp_path / 'runs/first/result.json')
+    assert result['status'] == 'failed'
+    assert result['error'] == 'run-one exited with code 7'
