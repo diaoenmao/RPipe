@@ -931,6 +931,8 @@ status / logs 的逐文件 I/O 容错同时覆盖存在性查询和内容读取�
 
 整数 checkpoint 张量在非零容差下也须保留全部整数位：先保持既有形状/空张量与零容差判断，再将两边均为非 bool 整数的张量值交给现有标量树和 Fraction 容差判断，不经过 float64。绝对/相对界及最大差值按整数精确值；标量/向量/多维一致。零容差的既有诊断、bool/混合类型、浮点/复数/非有限值路径保持，不修改 checkpoint、输出格式、恢复合同或布局。
 
+有限 compare 输入的差值或容差中间量溢出时，不能按 inf≤inf 或 inf>inf 的浮点结果决定通过。普通有限运算保留；仅溢出回退到现有_close中的精确Fraction判断。复数有限张量回退用实/虚部分的范数平方：D²、B²和A=atol、R=rtol，若M=D²−A²−R²B²≤0则通过，否则判M²≤4A²R²B²，等价原绝对+相对界且无需浮点平方根。张量仅对输入均有限但diff/bound非有限的单元复用该标量判断；原NaN/inf身份mask、普通单元、整数路径、shape/empty和输出schema不变。超出float可表达范围的最大差值仍用原inf→JSON null合同，不将它误写成零或成功依据。
+
 report 导出前以当前 index 核对 process 的 Study 名、完整计划 Run ID / seed / 因素归属；无新格式字段，合法部分聚合兼容。当前索引不可用、重复 / 缺失 Run 或身份不匹配时拒绝导出，保留旧聚合与数字表；仅校验成功后用已有 atomic writer 替换 NUMBERS。完整边界见 [flow.md §13](flow.md#13-climake--launch-与-wait)。
 
 `provenance.py` 记录来源 / 执行计划的哈希、环境与 Git 信息，并提供 freeze 检查。make 写入，Flow 在执行前核对；Study `flow/` 与 `structure/` 的 Python 源码自动发现，额外输入显式 include。完整范围、覆盖与迁移边界见 [flow.md §14.2](flow.md#142-来源清单)。

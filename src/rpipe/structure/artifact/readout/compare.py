@@ -26,13 +26,27 @@ def _close(a: float, b: float, atol: float, rtol: float) -> tuple[bool, float]:
     if isinstance(a, int) and isinstance(b, int):
         diff = abs(a - b)
         return diff <= Fraction(atol) + Fraction(rtol) * abs(b), diff
+    if isinstance(a, complex) or isinstance(b, complex):
+        # Finite overflowing tensor cells: square the bound without taking a root.
+        distance2 = (Fraction(a.real) - Fraction(b.real))**2 + (Fraction(a.imag) - Fraction(b.imag))**2
+        reference2 = Fraction(b.real)**2 + Fraction(b.imag)**2
+        absolute, relative = Fraction(atol), Fraction(rtol)
+        remainder = distance2 - absolute**2 - relative**2 * reference2
+        try:
+            diff = abs(a - b)
+        except OverflowError:
+            diff = math.inf
+        return remainder <= 0 or remainder**2 <= 4 * absolute**2 * relative**2 * reference2, diff
     if math.isnan(a) or math.isnan(b):
         same = math.isnan(a) and math.isnan(b)
         return same, 0.0 if same else math.inf
     if math.isinf(a) or math.isinf(b):
         return a == b, 0.0 if a == b else math.inf
     diff = abs(a - b)
-    return diff <= atol + rtol * abs(b), diff
+    bound = atol + rtol * abs(b)
+    if not math.isfinite(diff) or not math.isfinite(bound):
+        return abs(Fraction(a) - Fraction(b)) <= Fraction(atol) + Fraction(rtol) * abs(Fraction(b)), diff
+    return diff <= bound, diff
 
 
 def _item(passed: bool, max_abs_diff: float, **extra: Any) -> dict[str, Any]:
@@ -69,9 +83,15 @@ def _tree(a: Any, b: Any, atol: float, rtol: float, path: str, problems: list[st
         same = both_nan | (left == right)
         nonfinite = ~torch.isfinite(left) | ~torch.isfinite(right)
         diff = (left - right).abs().masked_fill(same, 0.0).masked_fill(nonfinite & ~same, math.inf)
-        worst = float(diff.max())
         bound = (atol + rtol * right.abs()).masked_fill(nonfinite, 0.0)
-        if math.isnan(worst) or bool((diff > bound).any()):
+        overflow = ~nonfinite & (~torch.isfinite(diff) | ~torch.isfinite(bound))
+        different = diff > bound
+        for index in overflow.reshape(-1).nonzero().reshape(-1).tolist():
+            different.reshape(-1)[index] = not _close(
+                left.reshape(-1)[index].item(), right.reshape(-1)[index].item(), atol, rtol)[0]
+        diff = diff.masked_fill(overflow & torch.isnan(diff), math.inf)
+        worst = float(diff.max())
+        if math.isnan(worst) or bool(different.any()):
             problems.append(f'{path}: max abs diff {worst:g}')
         return worst
     if isinstance(a, dict) and isinstance(b, dict):

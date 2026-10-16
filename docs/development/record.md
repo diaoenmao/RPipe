@@ -1,8 +1,8 @@
-> 现状：B098/#122最小修复完成，本机全部正确性门通过；PR121最终/实际dev已验收。
-> 最新：25新合同修前20失败/5控制；整数张量非零容差复用原标量树，见§140–142。
-> 验证：readout525/core1507+1既有POSIX skip/CPU Flow189通过，新合同RED/GREEN/CORE全执行。
-> 下一步：推同一分支、PRdev；最终head/实际dev全部实际CI后清结束remote，Issue等下版。
-> 边界：无GPU/测速/main/tag/布局或原产物修改，旧收集错误与真实失败保留。
+> 现状：B099/#124有限算术溢出统一修复完成，本机正确性门通过；PR123已实际验收。
+> 最新：30先红15失败/15控制，另4补充冻结原比较器回放2失败/2控制，共34新增合同，见§143–145。
+> 验证：readout559/core1541+1既有POSIX skip/CPU Flow189通过，原输入/peer与非有限/整数合同保持。
+> 下一步：推同一分支、PRdev，最终提交和实际dev全部实际CI后清结束remote，Issue等下版。
+> 边界：无GPU/测速/main/tag/布局或原产物更改；首轮及补充全部结果保留。
 
 # 一、摘要
 
@@ -2766,3 +2766,27 @@ PR121最终head09549cd的Branch38818522331/Package38818522318/Unit38818522341全
 readout525 passed、core1507 passed/1既有POSIX executable-mode skip、CPU Flow189 passed；0fail/error，跳过不计通过。25新合同在修前/相关绿/core均核对实际节点，API/CLI/JSON差值、signed两端不溢出、原checkpoint/peer字节保全。红测试Git LF blob可精确重建实际CRLF执行字节，修后断言不变。SOURCE_BYTES_CHECKED确认仅一块替换，其他生产字节保持；LOCAL_CHECKED SHA256 2c6927b3cffc1520b806ab1aefd28e4c85acfafb51268aa223f5f46fe1bfb047。原始ZIP、REPRO、收集错误、两个真实RED及GREEN/CORE/FLOW XML/log都保留.tmp/audit098（不随clone）。
 
 本轮无Study运行或研究结论，不查超时、测速或GPU；无布局/schema/恢复规则改变，不声称混合整数/浮点大数精度或任意稀疏/量化tensor全覆盖。接续同一分支PR到dev，最终提交和实际dev全部实际矩阵/聚合成功前不称集成验收完成。Issue122留至下一版，不合main/tag，结束remote仅在提交保全和实际dev验收后按授权删除。
+
+
+## 143. 2026-10-16 B-099：有限容差算术溢出（红合同及设计）
+
+基线dev17460b1。公开API/CLI八场景：metrics、history、float64张量、complex128张量的±1.7e308输入均有限，rtol1.5时实际passed=true/exit0，数学期望False；rtol2为正确边界控制。差值3.4e308和界2.55e308都转inf，原scalar比较inf≤inf、tensor比较inf>inf均失真。不是B089/#104的非有限输入身份，不修改已修Infinity/NaN规则。输入/peer每文件hash均保留，原快照/REPRO在.tmp/audit099（不随clone）。
+
+先Issue124，再decd552提交30合同：六入口/shape×相对界外/界上与atol+rtol和界外/界上24项，另复数两分量范数溢出×普通/paired-inf/paired-NaN×界外/界上6项。实际219节点：15失败、204通过（30新中15红失败/15控制，另189旧控制），0error/skip。覆盖API/CLI/输出JSON非有限差值原null、input/peer原字节；不删失败。
+
+设计先于修复：不新建模块/helper/格式，不改容差语义。现有_close对普通有限float仍走原式，仅diff或bound非有限时用现有Fraction重算绝对+相对界；已知输入非有限的原分支先返回。复数仅为有限张量溢出格回退时，在_close用实/虚Fraction计算D²/B²，再以M=D²−A²−R²B²≤0或M²≤4A²R²B²判断，避免溢出与平方根舍入；返回的不可表达差值仍inf。tensor原nonfinite/same/diff/bound保持，只有输入均有限且中间diff/bound非有限的格逐个复用_close，普通格及pairedNaN/inf身份不变；中间NaN差值按超范围inf报告，不改JSON null规则。旧整数/零容差/bool/shape/empty/归属/严格读取不动。只做CPU小合同，无性能/GPU/Study或原结果重写。
+
+## 144. 2026-10-16 PR123最终和实际dev验收、结束remote清理
+
+最终head e2376234d40b5dc45be407d522031ff4e102b8d5 的Branch38850044398/Package38850044255/Unit38850044235全部实际矩阵/聚合成功，PR_CHECKED 7c613f03052760a90e4a22719d5e41849ec7e6843692d7f6b4d4485906052c8b。普通合dev17460b1b579d180dec34a956bfc80d6c34023f34，实际devPackage38850576040/Unit38850576054全部实际矩阵/聚合成功，DEV_CHECKED 3b7d04dad80c16ee1d33813b785835cd137f327c41a4f6c587d00b0260f4dd9f。核对祖先/无开放PR/提交保全后删除结束remote codex/integer-tensor-tolerance，本地保留，累计23条；当时remote仅main/dev，main00e70b1未变。Issue122保留open至下一版，PR/Issue正文已附验收，原证据.tmp/audit098不随clone，无存活验证句柄或待合事项。
+
+
+## 145. 2026-10-16 B-099修复及补充复数绝对界、本机验收
+
+设计f200686后ba5892a仅在现有_close和_tensor树里补算术溢出回退：有限scalar用已有Fraction比较绝对+相对界；有限complex以范数平方等价式决定；tensor仅输入均有限但diff/bound非有限的格复用同判断，原same/nonfinite/整数/shape/empty及普通有限式保持。生产净增20行，不新增helper/模块/依赖/schema，不改训练计算或产物。返回不可表示差值仍inf，原CLI JSON写null不变；有限输入不能因inf≤inf或inf>inf假通过。
+
+补充fbe1285四项：有限complex两分量模长溢出时，rtol0可产生0×inf=NaN；用nextafter产生可表示微差，覆盖exact drift、绝对界外、绝对界上、相同值。冻结before.zip原比较器模块回放2失败/2控制，明确不是当前HEAD生产红；模块SHA和测试SHA已保存核对，API及CLI实际调用冻结比较器、不模拟数值/I/O。现有修复无需再改便全部通过。原30合同decd552仍逐字前缀相同，不改断言换通过。
+
+初轮readout555/core1537+1skip/Flow189已通过；补4新合同后保留初轮XML/log，更新readout559、core1541+1同一既有POSIX executable-mode skip，0fail/error，34新节点全部执行。生产源码未变、Flow用例未变，189 CPU Flow不重复。额外两个微型连续/转置checkpoint均拒绝界外差异，仅该场景布局控制，不称任意layout全覆盖。原所有Run/result/tracker/checkpoint/peer字节保持。LOCAL_CHECKED SHA256 67db96bec8732148fccd11991fcd17f5418515ebb9392b6c54a4fea930d1c9b4；原ZIP、REPRO、两批红、两轮GREEN/CORE及FLOW、源码三块精确替换与红测试LF/CRLF证明在.tmp/audit099（不随clone）。
+
+后续按唯一分支PR到dev，最终head与实际dev全部实际矩阵/聚合后才完成集成验收；Issue124留至下版。无测速/GPU/原始Study运行或科学结论，不合main/tag/强推/改布局；提交保全后仅清结束remote，不删本地/数据。

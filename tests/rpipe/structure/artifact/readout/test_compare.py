@@ -426,3 +426,81 @@ def test_integer_tensor_tolerance_keeps_other_numeric_contracts(tmp_path, dtype,
     assert report['passed'] is passed
     assert report['items']['checkpoint.latest.model']['max_abs_diff'] == difference
     assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('kind', ['metrics', 'history', 'tensor', 'scalar-tensor', 'complex-tensor', 'scalar-complex-tensor'])
+@pytest.mark.parametrize('atol,rtol,passed', [
+    (0.0, 1.5, False), (0.0, 2.0, True),
+    (1.7e308, 0.8, False), (1.7e308, 1.0, True),
+], ids=['relative-outside', 'relative-boundary', 'sum-outside', 'sum-boundary'])
+def test_finite_comparison_overflow_keeps_mathematical_tolerance(tmp_path, capsys, kind, atol, rtol, passed):
+    import torch
+
+    a, b = _run(tmp_path, 'a'), _run(tmp_path, 'b')
+    for run, value in [(a, -1.7e308), (b, 1.7e308)]:
+        if kind == 'metrics':
+            path = run / 'result.json'
+            body = json.loads(path.read_text())
+            body['metrics']['loss'] = value
+            path.write_text(json.dumps(body), encoding='utf-8')
+        elif kind == 'history':
+            path = run / 'assets/tracker/tracker_state.json'
+            body = json.loads(path.read_text())
+            body['splits']['train']['Loss']['history'] = [value]
+            path.write_text(json.dumps(body), encoding='utf-8')
+        else:
+            path = run / 'assets/checkpoints/latest.pt'
+            body = torch.load(path, weights_only=False)
+            dtype = torch.complex128 if 'complex' in kind else torch.float64
+            body['model']['w'] = torch.tensor(value if kind.startswith('scalar') else [value, 2.0], dtype=dtype)
+            torch.save(body, path)
+    before = {p: p.read_bytes() for run in (a, b) for p in run.rglob('*') if p.is_file()}
+    assert compare_runs(a, b, atol=atol, rtol=rtol)['passed'] is passed
+    output = tmp_path / 'comparison.json'
+    assert cli.main(['compare', str(a), str(b), f'--atol={atol}', f'--rtol={rtol}', '--out', str(output)]) == (0 if passed else 1)
+    report = json.loads(output.read_text(encoding='utf-8'))
+    assert report['passed'] is passed
+    assert any(item['max_abs_diff'] is None for item in report['items'].values())
+    assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('lead', [None, float('inf'), float('nan')], ids=['finite-only', 'paired-inf', 'paired-nan'])
+@pytest.mark.parametrize('rtol,passed', [(1.5, False), (2.0, True)], ids=['outside', 'boundary'])
+def test_complex_norm_overflow_preserves_finite_and_nonfinite_cells(tmp_path, lead, rtol, passed):
+    import torch
+
+    a, b = _run(tmp_path, 'a'), _run(tmp_path, 'b')
+    for run, value in [(a, complex(-1.7e308, -1.7e308)), (b, complex(1.7e308, 1.7e308))]:
+        values = [value, complex(2.0, 3.0)]
+        if lead is not None:
+            values.append(complex(lead, 0.0))
+        torch.save({'model': {'w': torch.tensor([values], dtype=torch.complex128)}},
+                   run / 'assets/checkpoints/latest.pt')
+    before = {p: p.read_bytes() for run in (a, b) for p in run.rglob('*') if p.is_file()}
+    assert compare_runs(a, b, rtol=rtol)['passed'] is passed
+    assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('case', ['exact-drift', 'absolute-outside', 'absolute-boundary', 'identical'])
+def test_finite_complex_norm_overflow_keeps_zero_relative_bound(tmp_path, case):
+    import math
+    import torch
+
+    high = 1.7e308
+    low = high if case == 'identical' else math.nextafter(high, 0.0)
+    difference = high - low
+    atol = {'exact-drift': 0.0, 'absolute-outside': difference / 2,
+            'absolute-boundary': difference, 'identical': 0.0}[case]
+    passed = case in ('absolute-boundary', 'identical')
+    a, b = _run(tmp_path, 'a'), _run(tmp_path, 'b')
+    for run, value in [(a, complex(high, high)), (b, complex(high, low))]:
+        torch.save({'model': {'w': torch.tensor([value, 2.0], dtype=torch.complex128)}},
+                   run / 'assets/checkpoints/latest.pt')
+    before = {p: p.read_bytes() for run in (a, b) for p in run.rglob('*') if p.is_file()}
+    report = compare_runs(a, b, atol=atol)
+    assert report['passed'] is passed
+    assert report['items']['checkpoint.latest.model']['max_abs_diff'] == difference
+    output = tmp_path / 'comparison.json'
+    assert cli.main(['compare', str(a), str(b), f'--atol={atol}', '--out', str(output)]) == (0 if passed else 1)
+    assert json.loads(output.read_text())['passed'] is passed
+    assert {p: p.read_bytes() for p in before} == before
