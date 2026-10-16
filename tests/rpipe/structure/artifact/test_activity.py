@@ -170,3 +170,28 @@ def test_optional_activity_integer_decode_keeps_authoritative_status(tmp_path, c
         assert captured.out.startswith('make:') and not captured.err
     assert captured.out.startswith('make:') == (not large)
     assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
+
+
+@pytest.mark.parametrize('field', ['phase', 'detail'])
+@pytest.mark.parametrize('separator', ['\n', '\r\n', '\u2028', '\t'])
+def test_announcement_projects_unsafe_hint_fields_to_one_line_without_changing_mapping(tmp_path, capsys, field, separator):
+    from rpipe.structure.artifact.activity import announce
+    body = {'phase': 'make', 'detail': 'working'}
+    body[field] += separator + 'foreign'
+    peer = tmp_path / 'peer.bin'
+    peer.write_bytes(b'peer')
+    announce(tmp_path, body['phase'], body['detail'])
+    output = capsys.readouterr().out
+    assert len(output.splitlines()) == 1 and '\t' not in output
+    assert all(word in output for word in ('make', 'working', 'foreign'))
+    assert read_activity(tmp_path) == body
+    assert json.loads((tmp_path / 'activity.json').read_text(encoding='utf-8')) == body
+    assert peer.read_bytes() == b'peer'
+
+
+@pytest.mark.parametrize('detail', ['', '准备共享输入'])
+def test_single_line_announcement_keeps_existing_print_and_persistence(tmp_path, capsys, detail):
+    from rpipe.structure.artifact.activity import announce
+    announce(tmp_path, ' custom ', detail)
+    assert capsys.readouterr().out == f' custom : {detail}\n'
+    assert read_activity(tmp_path) == {'phase': ' custom ', 'detail': detail}
