@@ -1,7 +1,7 @@
 > **RPipe 研究计划：研究执行与证据一致性的可验证合同**
-> 版本：1.4；更新：2026-10-16；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
+> 版本：1.4；更新：2026-10-17；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
 > 当前阶段：完成计划重做和定向文献初筛；继续代码正确性，尚未执行本计划的新科学实验。
-> 当前实现基线：dev `8480d795d0cb09714deb9bdd4bd79f41bdc5b2a9`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
+> 当前实现基线：dev `593385f1f0eb002a7a7ef937bf6de4e4a9f09264`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
 > 本轮零 GPU、零测速、零训练、零数据下载；保持既有文件架构与产物布局。
 
 ## 本次人工审阅摘要（2026-10-16，按12:53更新）
@@ -718,3 +718,15 @@ B129–B130两处同类修复已PR178正常合dev53ae142；最终head26131eb及�
 B131–B132两项身份修复已PR181正常合dev593385f，最终head7e231ca及实际dev全部实际CPU/安装包矩阵/聚合成功，Windows与Ubuntu实际分支已补齐，179/180验收关闭。624相邻/core2080 passed+1既有skip/Flow422 passed、新68全执行与原失败/解析/字节证据保留。五PR165/169/174/178/181周期盘点完成，已合主题均保全并清理；新基线181计数0/remote47，无废弃worktree/未合待定分支、无数据结果删除。校验器detached提示误拒绝单独留证、更正后未重删，来源/hash/清单见record§225。
 
 下一工程缺口B133/#182与B134/#183均确认未修：坏cached job可变空/部分队列并CLI0但计划pending，同Run大小写别名可重复派发；均以隔离原生调用与禁止/桩子进程验证，无实际子任务或观察数据破坏。下一主题先红回归再同批最小方案，不改合法空计划/模式/布局或加入全局Run锁。无GPU/性能/正式Study实验或新科学结论，研究缺口与下一步实验仍按原章节，不以CI替代。
+
+
+### 2026-10-17 工程更新：启动计划信任边界完整里程碑（B133–B134）
+
+已接受基线仍是PR181/dev593385f，最终head与实际dev全部实际CI成功。新确认缺口#182/#183合批于codex/launch-plan-validation：坏cached job行静默变空/部分队列（原生CLI返回0而process.complete=false/pending1），Windows大小写别名可对同物理Run派发两次（仅Popen stub）；不声称已造成真实损坏或获得科学结果。
+
+先e86727a及8b99bc1回归，再06563fc方案、6349765最小生产修；两红批39项28失败/11控制与20项12失败/8控制，0error/skip。复用既有wait_groups，在过滤、派发或计划发布前校验object行、既有安全字符串Run组件与平台Path唯一性。合法空队列/缺可选legacy字段、批次资源顺序和POSIX不同大小写实体保持；无新框架/依赖/schema/文件架构或产物布局。便携回归与拒绝前后原字节/副作用检查已提交，原始XML/log及源ZIP在本机.tmp/audit133/134，不随clone。
+
+下一：完成相邻/core/CPU Flow，完整里程碑一个PR合dev，最终head和实际dev全部实际CI后验收Issue并清分支。CPU合同证据不替代数值/科学门；文献仍为已有定向初筛，E3/E4及当前dev科学复验未获新资源授权而未执行。无GPU/测速/训练/下载，不合main或打tag。
+
+
+本机验证完成：相邻230 passed、core2137 passed/1既有skip、CPU Flow424 passed；新59（57unit+2integration）全执行通过。生产仅schedule.py，14行加/12行删。最终head/实际dev实际CI（含POSIX不同大小写实体）仍待，出处/边界见record§227；本机LOCAL_CHECKED SHA256 d06bee3fe299748a6207f3126fd70f64fff4e6b8d182af9a5d280ebb0189fa11，原始临时证据不随clone。

@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：B133/#182+B134/#183启动计划完整里程碑本机验收，生产6349765；接受dev593385f，尚未推送/开PR。
+> 最新：共用wait_groups校验缓存/启动/脚本发布；两红批39项28失败、20项12失败，详§226–227。
+> 验证：相邻230 passed；core2137 passed+1既有skip；CPU Flow424 passed；新59全执行/0新skip。
+> 下一：同主题一个PR→dev，最终head/实际dev全部实际CI后关闭182/183并清本地+remote；无决策阻塞。
+> 保护：周期基线181计数0/remote47；main/tag/GPU/数据/结果/布局不动，临时原始证据不随clone。
+
 > 当前（2026-10-17）：PR181双侧全部实际CI验收，dev593385f；179/180已关闭、主题本地/remote已清、五PR周期盘点完成。
 > 最新：原生/Markdown身份两B完成；下一B133/#182坏缓存队列与B134/#183同Run别名重复派发均已原生复现，详§225。
 > 验证：624相邻/core2080 passed+1既有skip/Flow422 passed，68新全执行；Windows/Ubuntu实际矩阵及聚合全成功。
@@ -3869,3 +3875,14 @@ Git仅唯一主工作区，当前聊天list_artifacts共91个PR附件、无workt
 e86727a：#182 红39项28失败/11控制通过（含2 CLI integration）；8b99bc1：#183 红20项12失败/8控制通过。两批0 error/skip，全节点执行，分别 .tmp/audit133/RED.xml、audit134/RED.xml 与原 log 留存，不随 clone。便携测试已入库，现仍是有意红状态。
 
 共同根因在计划信任边界缺失：方案已写入 artifact_consistency_design.md，复用 wait_groups 校验 dict/既有安全字符串 ID/平台 Path 唯一性；缓存和 jobs 发布无条件进入该边界，启动不重复字符串校验。保留合法空队列、可选 legacy 字段、成功过滤、批次全字段匹配及全部布局/科学合同。下一步最小实现、相邻/core/CPU Flow 验证，同主题累积到完整里程碑再开一个 PR；无设计/用户决策阻塞。不改 main/tag/GPU，不动实验数据/结果。
+
+
+## 227. B133–B134 共用计划校验实施及完整本机验收（2026-10-17）
+
+6349765仅改src/rpipe/structure/make/schedule.py，14行加/12行删：load_launch_plan在include_done/就绪查询前无条件wait_groups，原明确异常返回None；write_jobs_json发布前无条件同边界；wait_groups验证dict与既有安全原字符串run_id、以平台Path去重；移除launch_jobs重复的字符串去重。原batches全字段多重集、资源/波次/重试/console/env、合法空计划/可选legacy缺省、严格程序错误和调用参数错误、producer/schema/原子写/文件架构/磁盘产物布局均保持。没有新helper/import/依赖/全局锁或实际文件系统身份查询。
+
+本机相邻230 passed/0fail/error/skip（schedule/make/CLI）；core2137 passed/1既有skip，0fail/error；CPU Flow424 passed/0fail/error/skip。59新增全部执行并通过（57unit+2integration），XML逐节点核验，无新增skip。2734/96460及17834均终结exit0，独立basetemp不冲突。原两红失败保留，LOCAL_CHECKED SHA256 d06bee3fe299748a6207f3126fd70f64fff4e6b8d182af9a5d280ebb0189fa11；RED/GREEN/CORE/FLOW XML/log、SOURCE_CHECKED与原ZIP在.tmp/audit133/134，仅本机不随clone。CRLF原字节保持，生产范围单文件已复核。
+
+拒绝覆盖缓存/脚本/Run旧结果/peer前后逐字节一致，CLI在provenance/process/dispatch前进入rebuild sentinel，合法空和完成过滤控制保持；原生Windows Owner/owner同实体拒绝，真正不同Run允许。实际POSIX不同大小写实体分支待远端CI，不能用本机Windows替代。任意junction/短名别名、跨独立launch调用互斥、真实不可用存储/大规模并发故障未扩大保证；不运行实验/训练/测速/GPU，不改科学门。
+
+完整同主题准备一个PR，不为每个Issue或几行文档拆PR。同步structure、bugs、handover与项目唯一中文/完整英译计划；文献和科学缺口/下一步实验按既有计划保留，CPU工程合同不作科学结论。182/183仍OPEN，最终head和实际dev全部实际CI后才验收关闭/清主题；新B135，目标active，无设计批准阻塞。已合PR181五PR盘点见§225，不重复清理。

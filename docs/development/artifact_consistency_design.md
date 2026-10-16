@@ -609,3 +609,6 @@ PR181实际验收状态（2026-10-17）：B131–B132已正常合dev593385f，�
 缓存读取在 include_done/readiness 前无条件调用此边界，仅原 KeyError/TypeError/ValueError 返回 None 请求重建；不吞 RuntimeError 或调用参数错误，不修改或部分修复缓存。write_jobs_json 无条件复用边界，在旧 jobs.json 发布前拒绝坏计划；render_bash、launch_jobs 已进入边界，移除启动处重复的字符串校验。合法空计划、缺可选字段的 legacy 计划和成功过滤保持。脚本/配置/结果/peer 原字节拒绝前后不变；不改空队列 CLI 退出策略、schema、文件架构/磁盘布局、producer 或科学门。
 
 先 Issue182/183，再 e86727a 红39项28失败/11控制与 8b99bc1 红20项12失败/8控制，之后本方案，再最小实现。原生 Windows 别名/字面重复/独立 Run、显式/隐式批次与缓存/启动/脚本路径、POSIX 独立大小写实体均由同一测试在实际 CI 平台执行，无新增 skip。两项同主题合批，一个完整里程碑 PR→dev；最终 head/实际 dev 全部实际 CI 后验收，不待设计审批。
+
+
+B133–B134本机已实施（2026-10-17）：6349765按本节统一边界完成，230相邻/core2137 passed+1既有skip/Flow424 passed，新59全执行；POSIX实体分支及双侧实际CI待PR，不提前验收。详record§227，原始坏缓存与重复派发证据保留。方案已实施，不待设计批准。

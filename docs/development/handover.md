@@ -1,3 +1,7 @@
+## 2026-10-17 B133–B134启动计划完整里程碑本机验收
+
+当前codex/launch-plan-validation：红e86727a/8b99bc1→方案06563fc→最小6349765，共用wait_groups信任边界；相邻230/core2137 passed+1既有skip/CPU Flow424 passed，新59全执行。182/183仍OPEN，下一单个完整主题PR→dev，最终head和实际dev所有实际CI再验收关闭、清本地/remote；不得拆bug或tiny-doc PR。原始及LOCAL_CHECKED在本机.tmp/audit133/134不随clone，详record§226–227。当前无活测试/阻塞；平台POSIX实体分支仍待实际CI，跨调用锁/junction等不增保证。已接受dev593385f，周期基线181计数0/remote47，下一B135；不合main/tag/GPU/测速，不动数据/结果/布局。
+
 # Flow 与 Study 重构交接
 
 ## 2026-10-17 PR181双侧验收/五PR周期清理完成；下一计划校验主题
