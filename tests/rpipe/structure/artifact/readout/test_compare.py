@@ -390,7 +390,7 @@ def test_integer_tensor_tolerance_matches_exact_scalar_contract(tmp_path, capsys
 
     a, b = _run(tmp_path, 'a'), _run(tmp_path, 'b')
     for run, number in [(a, base + delta), (b, base)]:
-        torch.save({'model': {'counter': torch.tensor(number, dtype=torch.int64).reshape(shape)},
+        torch.save({'model': {'counter': torch.tensor(number, dtype=torch.int64).reshape(shape)}},
                    run / 'assets/checkpoints/latest.pt')
     before = {p: p.read_bytes() for run in (a, b) for p in run.rglob('*') if p.is_file()}
     report = compare_runs(a, b, atol=atol, rtol=rtol)
