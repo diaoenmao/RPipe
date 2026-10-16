@@ -147,3 +147,22 @@ def test_recipe_dataclass_resolves_annotations_in_defining_module(tmp_path, nest
     assert [field.name for field in fields(module.Payload)] == ['value']
     assert sys.path == paths
     assert sys.modules.get(name) is previous
+
+
+@pytest.mark.parametrize('nested', [False, True], ids=['root-recipe', 'nested-recipe'])
+@pytest.mark.parametrize('postponed', [False, True], ids=['eager-annotations', 'postponed-annotations'])
+def test_dataclass_defined_during_register_has_defining_module(tmp_path, nested, postponed):
+    study = tmp_path / 'registration-dataclass'
+    folder = study / 'recipes' if nested else study
+    folder.mkdir(parents=True)
+    prefix = 'from __future__ import annotations\n' if postponed else ''
+    (folder / 'recipe.py').write_text(
+        prefix + 'from dataclasses import dataclass, fields\nfrom typing import ClassVar\n'
+        'def register(ctx):\n'
+        '    @dataclass\n    class Payload:\n        value: int\n        label: ClassVar[str] = "tag"\n'
+        '    ctx.observed.append((Payload(7).value, [f.name for f in fields(Payload)]))\n',
+        encoding='utf-8')
+    observed = []
+    assert apply_recipe(study, {'recipe': ('recipes/' if nested else '') + 'recipe.py'},
+                        SimpleNamespace(observed=observed))
+    assert observed == [(7, ['value'])]
