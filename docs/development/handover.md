@@ -1,5 +1,10 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 PR121已实际验收、B098整数张量非零容差
+
+PR121普通合dev039db15，最终head/实际dev全部实际CI成功；结束remote optional-state-stat已核验删除，本地tip/数据保留，累计22，详record§141。当前唯一未合codex/integer-tensor-tolerance，Issue122，B098：int64/uint64大数非零容差先float64丢位，公开API/CLI假通过和差值0。ff6b92e18红失败，56bbfe7另外2红失败/5兼容控制，首次fixture收集错误独立保留。f351121设计后7f3c391仅原整数分支新增tolist→_tree→Fraction，零容差/其他类型保持，净增3行，无新helper/依赖。readout525/core1507+1既有POSIX skip/Flow189通过，25新合同全执行、原字节/peer保持，LOCAL_CHECKED 2c6927b3cffc1520b806ab1aefd28e4c85acfafb51268aa223f5f46fe1bfb047。下一推最终head、PRdev与实际dev全部实际CI后清remote，Issue留至下版；不合main/tag、测速/GPU/改布局或删数据。证据.tmp/audit098不随clone。
+
+
 ## 2026-10-16 设计状态实际验收完成、B097可选state完整I/O边界
 
 PR119实际dev4d12719全部实际CI全绿，设计状态修订与B096已集成；e44b94d将三类/PR98/102标已实施、补merge记录，原锚点/12相对链接保持、第七节不实施，不再等设计批准。结束remote codex/scheduling-query-parse已删、本地保留，本目标累计21条；Issue118留至下版。

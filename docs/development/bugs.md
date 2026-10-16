@@ -6,7 +6,7 @@
 
 ## 开放
 
-B-098 / [#122](https://github.com/DreamSoul-AI/RPipe/issues/122)：dev039db15 的非零容差整数张量先转 float64，2**60+1 对 2**60 在 atol=0.5 错误通过；delta2/atol1同样假通过，边界通过时差值误报0。期望复用已有标量整数精确容差，不丢位；公开API/CLI六场景与原字节已冻结。ff6b92e修复前18新合同全失败，原164项通过；其中9项错误通过、9项差值不准。583c16f首次fixture括号导致收集错误独立保留，不当库反例。范围仅只读compare整数张量非零容差，拟复用原树/Fraction，零容差及其他类型路径保持，见record§140。
+B-098 / [#122](https://github.com/DreamSoul-AI/RPipe/issues/122)：非零容差int64/uint64转float64丢位，真实25新合同修前20失败/5控制；ff6b92e/56bbfe7红→f351121设计→7f3c391复用原标量树/Fraction，生产净增3行，bool/零容差/其他路径保持。readout525/core1507+1平台skip/CPU Flow189通过，最终head/实际dev CI待验，Issue留至下版。首次fixture收集错误单独保留，不当库反例；详record§140–142。
 
 B-097/#120已PR121普通合dev039db15，最终head与实际dev全部实际CI成功；结束remote已核验删除，本地保留。DEV_CHECKED SHA256 09f769a2e8168852f9e1a9151108d543268a915a46dabec9d28e3c3ed768d3e6，Issue留至下版，详record§141。
 
