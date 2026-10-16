@@ -89,3 +89,11 @@ B106含流关闭补充的最终本机验收：25新节点/core1734/CPU Flow207 p
 B106/#140已PR141更新head/实际dev全CI验收关闭并清分支。B107/[Issue142](https://github.com/DreamSoul-AI/RPipe/issues/142)：共享锁unlock/close IO可遮准备首错/取消；25项先红19/6后最小退出回调修复，共享101通过，待core/Flow/两侧CI。见[record§165–166](record.md)。
 
 B107 / Issue142本机补充：共享101、core1759 passed/1既有平台skip、CPU Flow207 passed，25新回归全部执行；最终head/实际dev CI待验收，见record §166。
+
+
+## 2026-10-16 B108 当前开放项
+
+[Issue144](https://github.com/DreamSoul-AI/RPipe/issues/144)：四个文本/日志/tracker写入口的close IO替换首错或取消。dcd4e2d先30项16红/14控制，383d68c设计、2c33a65最小四写入块修复；30新节点全绿、相邻98 passed/1既有平台skip、core1789 passed/1既有skip；Flow和最终head/实际dev CI待验。原写入格式与字节通过冻结旧源码对照，临时原证据.tmp/audit108不随clone，见[record §167](record.md)。前序Issue142已PR143合dev，实际dev验收尚待完成，不冒充关闭。
+
+
+B107/#142已PR143最终head与实际dev全CI验收关闭；主题本地/remote已清。B108/#144最终本机30新回归全执行通过、相邻98+1既有平台skip、core1789+1同一skip、CPU Flow207 passed；0failure/error，最终head与实际dev CI待验，保持open，见record §168。

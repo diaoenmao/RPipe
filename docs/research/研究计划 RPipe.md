@@ -1,7 +1,7 @@
 > **RPipe 研究计划：研究执行与证据一致性的可验证合同**
 > 版本：1.4；更新：2026-10-16；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
 > 当前阶段：完成计划重做和定向文献初筛；继续代码正确性，尚未执行本计划的新科学实验。
-> 当前实现基线：dev `c42a78b5835c5fda460b7ad4d0c49e8a1884293e`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
+> 当前实现基线：dev `e589862dbd7348f5425f5c64d56bafa4b883cb3c`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
 > 本轮零 GPU、零测速、零训练、零数据下载；保持既有文件架构与产物布局。
 
 ## 本次人工审阅摘要（2026-10-16，按12:53更新）
@@ -562,3 +562,11 @@ B106含流关闭补充的最终本机验收：25新节点/core1734/CPU Flow207 p
 ## 2026-10-16 B106验收与B107清理首错
 
 PR141更新head/实际dev全部实际CI成功，Issue140关闭、主题分支本地/remote已清；PR139基线后累计1。B107/Issue142把共享锁unlock/close首错、获取失败cause、重入和builder staging归为一批，25项先红19/6后局部ExitStack修复，共享101通过，待core/Flow/CI。预算/原语、数据/模型共享身份与布局保持，不产生新科学实验结论，详[record§165–166](../development/record.md)。
+
+
+### 工程进展：B108 / Issue144（2026-10-16）
+
+PR143最终head全实际CI成功并正常合dev e589862d，实际dev验收待完成；B108四文本/ledger入口close遮首错/取消的12探针确认8反例，30正式回归先16红/14控制，再设计与最小修复，30全绿、相邻98+1既有平台skip、core1789+1既有skip。Flow/两侧CI待验。旧/新有效UTF8换行、ledger和冻结时间日志字节一致，tracker state除root path一致；不是新科学结果，所有Study章节/数值门/预算不变。后续先完成工程验收，再按计划前置门判断实验；无GPU/测速/正式Study或布局改变。见[record §167](../development/record.md)。
+
+
+PR143最终head与实际dev全部实际CI已验收、Issue142关闭并清本地/remote主题分支。B108最终本机30新节点、core1789 passed/1既有skip与CPU Flow207 passed，最终head/实际devCI待验；工程验证不代替科学实验或放宽数值门，见record §168。

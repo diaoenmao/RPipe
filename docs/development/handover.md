@@ -458,3 +458,11 @@ B106含流关闭补充的最终本机验收：25新节点/core1734/CPU Flow207 p
 PR141更新head和实际dev c42a78b全实际CI通过，Issue140关闭，curve-publication-ownership本地/remote普通删；PR139基线后累计1。当前Issue142唯一未合分支codex/shared-lock-cleanup：7614d31红25项19/6→4b34097设计→691c240既有函数内ExitStack退出IO优先级；共享101通过，待core/Flow/两侧CI。预算原语、重入物理键、多根排序和builder staging保留保持，非IO程序错误不吞。详record§165–166，目标active，无main/tag/GPU/布局变化。
 
 B107 / Issue142本机补充：共享101、core1759 passed/1既有平台skip、CPU Flow207 passed，25新回归全部执行；最终head/实际dev CI待验收，见record §166。
+
+
+## B108 / Issue144（2026-10-16）
+
+当前唯一未合主题codex/writer-close-errors，基于PR143合并dev e589862d（该实际dev CI仍待验，旧锁主题分支保留至验收）。30新回归先提交dcd4e2d得到16红/14控制；设计383d68c后2c33a65仅3模块4写入块保留首错/取消且正常close严格。新30全绿、相邻98+1既有skip、core1789+1既有skip，Flow/最终head/实际dev CI待验。有效字节对照通过；原始临时证据.tmp/audit108不随clone，record §167提供开发事实。清理基线PR139，实际验收累计仍1；不提前关闭142/144或删除待验分支。
+
+
+PR143两侧全部实际CI已验收，Issue142关闭，codex/shared-lock-cleanup本地/remote普通删除；基线PR139累计2。B108本机最终core1789+1既有平台skip、CPU Flow207、30新节点全绿；有效字节与写入主体对照通过，下一步同一codex/writer-close-errors推送PR→dev，最终head和实际dev实际CI分别验收后再关Issue144与清分支。原始证据.tmp/audit107–108不随clone，record §168可携带。

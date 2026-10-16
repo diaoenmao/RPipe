@@ -1,7 +1,7 @@
-> 当前：PR141更新head/实际dev全CI验收，Issue140关闭、本地/remote分支已清；基线139后累计1。
-> 最新：B107/Issue142共享锁unlock/close遮首错与取消，正式25项19红/6有效控制。
-> 修复：691c240既有函数局部退出回调后共享101全绿；预算/OS原语、重入和builder staging保持。
-> 下一步：本机core1759+1既有skip/CPU Flow207已通过；开PR验最终head与实际dev全CI，目标active，见§165–166。
+> 当前：PR143最终head/实际dev全CI验收，Issue142关闭、主题本地/remote已清；基线139后累计2。
+> 最新：B108/Issue144四写入入口12探针8反例；30正式回归16红/14有效控制。
+> 修复：2c33a65后30新节点全执行通过，相邻98+1既有skip、core1789+1既有skip、Flow207绿；有效字节相同。
+> 下一步：B108同主题PR→dev，分别验最终head与实际devCI后关144/清分支；目标active，见§167–168。
 > 保护：无GPU/测速/正式Study、main/tag或产物布局变更；以下旧状态保留。
 
 > 当前：PR135实际dev已全CI验收、Issue134关闭，工作分支本地/remote普通删。
@@ -3085,3 +3085,21 @@ B106含流关闭补充的最终本机验收：25新节点/core1734/CPU Flow207 p
 完整共享101项通过，25新节点全执行，包含获取错误原cause、嵌套重入、descriptor关闭、不同线程真实重获、prepared_resource原builder错误与诊断staging保留、不可变输入字节及程序错误控制。core/CPU Flow及最终head/实际dev CI待分别验收。临时REPRO/ZIP/red/green在.tmp/audit107不随clone，正式测试/设计随Git提供；不加模块、依赖、资源框架或磁盘schema，不改checkpoint诊断保留，无GPU/测速/正式Study/main/tag。
 
 B107最终本机验收：RED25项19 failed/6有效控制passed，GREEN101、core1759 passed/1既有Windows平台skip、CPU Flow207 passed；0error，全部25新节点执行。LOCAL_CHECKED及原始XML/log在.tmp/audit107（不随clone），最终head/实际dev全部实际CI仍待分别验收。
+
+
+## 167. B108 / Issue144：四个文本与ledger写入口同批修复（2026-10-16）
+
+前序PR143最终head d9574cf的Branch38884484744/Package38884484539/Unit38884484516全部实际矩阵和聚合成功，正常合dev e589862dbd7348f5425f5c64d56bafa4b883cb3c；实际dev Package38885286451/Unit38885286323待验，未提前关闭Issue142或删该主题分支。工程验收不是发布，不动main/tag。
+
+B108探针在atomic_write_text、Logger._emit、AlgorithmTracker.begin_run/append_jsonl四入口真实部分写入后注入ENOSPC或KeyboardInterrupt，关闭真实descriptor后再注入EIO：12组合中8首错/取消被替换，4正常close控制严格失败，旧target/peer仍保留。先开Issue144，再dcd4e2d提交30正式回归16 failed/14有效控制passed、0error/skip；383d68c设计；f9f5cf6把两个既有Path.write_text高层故障注入调整到实际stream.write，修前99项仍16 failed/82 passed/1既有平台skip，原红与相邻红均留证。
+
+2c33a65仅既有_atomic.py/logger.py/tracker.py共四写入块显式open/close；已有BaseException时尽力关闭，只有close OSError不遮首错，bare raise保留身份/取消；正常写完close严格传播，非IO关闭程序错继续暴露。无新helper/module/依赖或万能I/O层，既有格式/追加/flush/原子发布/模式/临时所有权/诊断staging不变。30新回归全绿，相邻98 passed/1既有Windows POSIX模式skip；core1789 passed/1同一既有skip，CPU Flow与最终head/实际dev CI尚待验收。
+
+冻结旧源码与当前对UTF8默认/LF/CRLF文本、带旧残片的ledger起始标记和指标追加、冻结时间戳日志逐字节相同；tracker state除实际root path外相同。logger/tracker三原写入主体AST相同。原始ZIP/hash/REPRO/RED/ADJACENT_RED/GREEN/CORE和PARITY_CHECKED在.tmp/audit108（不会随clone）；portable测试与设计已入库。本轮无GPU/测速/正式Study/数据下载、main/tag或产物布局变化。
+
+
+## 168. B107 / PR143 实际dev验收与B108本机收尾（2026-10-16）
+
+PR143实际dev e589862dbd7348f5425f5c64d56bafa4b883cb3c的Package38885286451 / Unit38885286323全部实际矩阵/聚合成功；DEV_CHECKED SHA256 a6240a64cd8d4786653845e9ab28a0421e047fb0047d39078cd9f1d07092db88。最终head d9574cf此前Branch38884484744/Package38884484539/Unit38884484516全绿，PR143正文已追加两侧验收。Issue142验收关闭；核对tip/祖先/唯一worktree后codex/shared-lock-cleanup本地与remote各1条普通删除，当前未合codex/writer-close-errors保留。清理基线仍PR139，实际验收累计2，未达到下一次约5批清理门；无数据、结果、provenance或worktree删除。
+
+B108最终本机验收：30新节点全部执行/通过；相邻98 passed/1既有Windows POSIX模式skip，core1789 passed/1同一既有skip，CPU Flow207 passed，全部0failure/error。LOCAL_CHECKED记录XML/hash、全部新节点执行和原主体AST/有效字节对照。Issue144仍开放，后续新PR最终head与实际dev全部实际CI须分别验收；不把本机通过当远端或发布验收。原始证据在.tmp/audit108不随clone；源码/正式回归/设计和本记录可携带。
