@@ -159,9 +159,10 @@ def test_recipe_checkpoint_state_keeps_legacy_and_relocated_imports(tmp_path, mo
         parent.mkdir()
         study = _study(parent, recipe=recipe)
         (study / 'helper.py').write_text(
-            'from dataclasses import dataclass\n@dataclass\nclass State:\n'
-            f'    value: int\n    label = {label!r}\n', encoding='utf-8')
+            'import torch\nfrom dataclasses import dataclass\n@dataclass\nclass State:\n'
+            f'    value: int\n    tensor_type = torch.Tensor\n    label = {label!r}\n', encoding='utf-8')
         (study / 'torch.py').write_text('MARK = "unused local source"\n', encoding='utf-8')
+        (study / 'rpipe.py').write_text('MARK = "unused local source"\n', encoding='utf-8')
         declaration = study / 'study.yaml'
         declaration.write_text(declaration.read_text(encoding='utf-8').replace(
             'notes/*.txt', 'notes/*.txt, helper.py'), encoding='utf-8')
@@ -204,6 +205,7 @@ def test_recipe_checkpoint_state_keeps_legacy_and_relocated_imports(tmp_path, mo
     loaded = ctx.state['system'].load_checkpoint(str(bundle))
     assert loaded['model']['_extra_state'].value == 7
     assert loaded['metadata'].value == 9
+    assert loaded['model']['_extra_state'].tensor_type is torch.Tensor
     assert torch.equal(loaded['model']['tensor'], torch.tensor([1, 2]))
     if form == 'bundle':
         from rpipe.structure.artifact.readout.compare import _checkpoint
