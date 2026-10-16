@@ -1,5 +1,12 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 PR165验收收尾；继续三类下一里程碑
+
+B119/#163、B120/#164、B121/#166统一PR165，最终head3a74728的Branch38917963279/Package38917963440/Unit38917963881和实际dev70a8750的Package38918867862/Unit38918867923所有实际矩阵/聚合成功。本机core1974 passed/1既有skip、CPU Flow279 passed，新61全执行；三Issue各一次验收评论后关闭，PR原文保留追加。完整链接、hash与保留失败见record§203；原始.tmp/audit119/120/121不随clone。
+
+已合codex/study-loader-isolation本地+remote普通删除，tip3a74728保全于dev；main/local dev/origin main、_staging_from_DEM和数据结果保持，remote累计43。清理基线161计数1，未到约5批。实际开放Issue快照为空，唯一活动未合codex/correctness-next-milestone从实际dev建立；下一编号B122。继续三类正确性复查，不制造缺陷、不测速/跑GPU/改布局；本地主题提交，完整里程碑再统一PR，本收尾不单独开PR，目标active，无决策阻塞。
+
+
 ## 2026-10-16 PR165同批B119/B120/B121，当前完整本机验收
 
 PR165已开；d385c410验收前复查发现importlib动态helper候选回归，登记#166，先f32416d红10项8失败/2控制、8f37360设计、9166cbd最小修。原分支普通累积，不拆新PR；core1974 passed/1既有skip、CPU Flow279 passed，新61全执行，目标67含6既有节点。四生产文件范围保全，详record§202及.tmp/audit121（本机证据不随clone）。

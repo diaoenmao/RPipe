@@ -6,21 +6,7 @@
 
 ## 开放
 
-### B-119：Study配方同名helper缓存与导入生命周期隔离（本机已修，待里程碑CI）
-
-- Issue：[163](https://github.com/DreamSoul-AI/RPipe/issues/163)。原顺序加载第二Study复用第一个helper，原始红与候选晚导入等反例见[record§192–201](record.md)。
-- 当前ac65eb1/041e8c1以Study私有包和绑定导入覆盖加载/注册/晚导入，不占外部裸名cache，保留标准库/自身/已加载安装运行时优先级。原生System/compare reader兼容旧helper和跨根私有类；缺失自有类严格拒绝，不从外国cache借类。
-- 当前core1974 passed/1既有skip、CPU Flow279 passed，新61全部执行，范围/原始字节已核对。PR165同批补B121动态导入，等待新最终head与实际devCI，Issue保留OPEN；临时.tmp/audit119不随clone，不用旧绿色结果替代当前边界。
-
-### B-120：合法延迟注解dataclass配方缺少定义模块身份（本机已修，待里程碑CI）
-
-- Issue：[164](https://github.com/DreamSoul-AI/RPipe/issues/164)。原spec.exec无模块注册，future/dataclass加载及register内部定义失败；正式加载8红4失败/4控制与注册4红2失败/2控制保留。
-- 与B119统一模块生命周期实现；加载、注册、后续注解反射/pickle、失败替换保全与合法_helper文件名均验过，同一批完整结果见上。同一PR165主题分支、未合dev/不关闭Issue；[record§194–201](record.md)，原始.tmp/audit120不随clone。
-
-### B-121：私有recipe候选漏掉importlib动态入口（本机已修，待PR165验收）
-
-- Issue：[166](https://github.com/DreamSoul-AI/RPipe/issues/166)。最终验收复查发现原dev可用的动态helper导入在候选失败；先红10项8失败/2控制，9166cbd复用私有Study命名空间补动态绑定，当前完整本机结果见上。
-- 与B119/B120同PR165，不拆新PR；原始/候选/驱动错误分开保留，详[record§202](record.md)。三Issue仍OPEN，最终head/实际devCI尚待验收，不改变布局或科学门。
+当前开放Issue快照为空；B119/#163、B120/#164、B121/#166已由[PR165](https://github.com/DreamSoul-AI/RPipe/pull/165)合dev70a8750，最终head/实际dev所有实际CI成功，三Issue已按验收后关闭授权关闭。旧候选晚导入/动态导入/运行时与checkpoint反例保留，详[record§192–203](record.md)。已合codex/study-loader-isolation本地及remote清理；活动未合codex/correctness-next-milestone保留，按三类继续复查，下一编号B122，不把尚未确认的假设登记成缺陷。
 
 B117/#160、B118/#162已PR161双侧全部实际CI验收关闭且主题本地/remote清理，第5批周期盘点见[record§193](record.md)。
 

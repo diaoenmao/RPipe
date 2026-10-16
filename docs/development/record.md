@@ -1,3 +1,9 @@
+> 当前：PR165已双侧全实际CI验收，dev70a8750；#163/#164/#166已关闭，已合主题本地/remote均清理。
+> 最新：B119/B120/B121统一加载隔离、dataclass身份、动态导入与checkpoint兼容，详§202–203；原候选反例保留。
+> 验证：core1974 passed/1既有skip、CPU Flow279 passed，新61全执行；最终head与实际dev所有矩阵/聚合均成功。
+> 下一步：开放Issue快照为空，codex/correctness-next-milestone继续三类复查；本地主题积累、完整里程碑再PR，无决策阻塞。
+> 保护：已删codex/study-loader-isolation本地+remote，累计remote43，清理基线161计数1；main/tag/GPU/数据/布局未动。
+
 > 当前：B119/#163、B120/#164、B121/#166统一PR165，动态导入候选回归已补修，本机完整检查完成。
 > 最新：原dev动态helper返回37、原候选ModuleNotFoundError；先红10项8失败/2控制，再9166cbd修复，见§202。
 > 验证：当前core1974 passed/1既有skip，CPU Flow279 passed，新增61全执行、0新skip；目标67含6既有节点。
@@ -3472,3 +3478,23 @@ B119/#163、B120/#164完整本机检查后统一开PR165，最终候选d385c410�
 SOURCE_CHECKED核对相对于上个完整候选只有recipe动态绑定改变，其余3个生产文件hash完全不变；此前System保存、compare数值/格式、API已有字节及文件架构/磁盘产物布局合同仍保持。没有数据迁移、GPU、测速、下载、正式Study/科学结论、main/tag/发布或数据/结果删除。
 
 三项作为同一完整加载里程碑继续PR165普通推送，不amend/force push。待新最终head的全部实际矩阵/聚合CI，再正常合dev并另验实际dev；目前163/164/166都OPEN，已接受基线仍PR161/dev8480d79，清理基线161计数0。旧候选CI即使通过亦不可替代当前head。验收后的收尾记录随下一里程碑入库，不为几行文档再拆PR。
+
+
+## 203. PR165双侧实际CI验收、三Issue关闭与已合主题清理（2026-10-16）
+
+完整加载里程碑B119/#163、B120/#164、B121/#166统一[PR165](https://github.com/DreamSoul-AI/RPipe/pull/165)。最终head3a74728e34c8f5f27216e27dd3fe7b50e5b7ccd8的[Branch38917963279](https://github.com/DreamSoul-AI/RPipe/actions/runs/38917963279)、[Package38917963440](https://github.com/DreamSoul-AI/RPipe/actions/runs/38917963440)、[Unit38917963881](https://github.com/DreamSoul-AI/RPipe/actions/runs/38917963881)及所有实际矩阵/聚合均success。严格PR_CHECKED SHA256 c73dafef661ecb02c06e7cdbedc4913c68e0f90455b1db8d778a47be762261c7，未采用已被动态导入反例否决的d385c410检查替代当前head。
+
+使用expected-head正常merge到实际dev70a8750e98df9cb941e6c8f525d51f9d41cec77b，未squash/force push。实际dev的[Package38918867862](https://github.com/DreamSoul-AI/RPipe/actions/runs/38918867862)、[Unit38918867923](https://github.com/DreamSoul-AI/RPipe/actions/runs/38918867923)及所有实际矩阵/聚合亦success；DEV_CHECKED SHA256 1560ec68260bc7a864ef2ff4e99265c9a002dc638a015ed95d6aec42d74cbc56。PR正文保留原材料并追加真实验收；163/164/166各关闭并一次引用同批验收，不重复评论。关闭不是main发布或新实施授权。
+
+本机当前core1974 passed/1既有Windows POSIX模式skip、CPU Flow279 passed；新增61（55 unit+6 integration）全执行/0新skip，目标67还包含6既有Flow节点。原始红、候选回归、两个驱动import sys遗漏、ZIP/hash/XML及严格checker日志保留.tmp/audit119/120/121，不随clone；正式portable测试/方案和工程记录随Git提供。相邻复核recipe/phase、atomic文本、共享锁、checkpoint诊断、Tracker追加与status/log/report/index，除本批已修动态入口外未确认新反例；检索清单仅是源码搜索，不冒称穷尽所有IO路径，也不代替既有403组全仓清单。
+
+双侧验收后核对实际远端tip=3a74728、其为dev祖先、工作区只有保留的_staging_from_DEM、仅一个primary worktree、没有命令引用RPipe的活动Python进程。先detach到实际dev，再普通删除以下已合分支：
+
+| **范围** | **删除分支** | **提交保全位置** |
+| --- | --- | --- |
+| 本地 | codex/study-loader-isolation | dev70a8750包含tip3a74728 |
+| 远端origin | codex/study-loader-isolation | dev70a8750包含tip3a74728 |
+
+删除后远端与本地均不存在该主题；main7a15c46、本地dev9324014、origin/main00e70b1原值保持，没有worktree、数据、Run、结果或provenance删除。remote累计结束43条。清理基线仍PR161/dev8480d79，已验收累计1/约5；本批即时清理完成，不重复触发全面第5批清理。实际开放Issue快照为空，下一缺陷编号B122，不为活跃制造Issue。
+
+从实际dev建立唯一活动未合分支codex/correctness-next-milestone，继续三类正确性复查；本节收尾及后续同类内容先本地按主题积累，随下一个完整里程碑统一PR，不为几行文档另开PR。目标保持active，无决策阻塞；无GPU/测速/下载/正式Study/main/tag/发布/数据删除或文件架构与产物布局更改。
