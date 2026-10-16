@@ -1,3 +1,21 @@
+> 当前（2026-10-17）：B137/#188+B138/#189合批本机验收完成，唯一未合optional-metadata分支，准备统一PR→dev。
+> 最新：国内源ModelScope优先/显式hf-mirror兜底，含4类URL绕过拒绝；26新增回归全执行，原始红/失败候选保留。
+> 验证：最终core2220 passed+1既有skip、CPU Flow429 passed、路由21 passed，0fail/error；证据见§238。
+> 下一：最终head和实际dev全部实际CI后关闭188/189并清主题；本机句柄全终结，无用户决策阻塞。
+> 保护：接受PR187/devcd0a8a0，remote49/基线181后2；真实下载/GPU/数据/历史结果/布局/main/tag未动。
+
+> 当前（2026-10-17）：#188+#189当前批次本地修复，唯一未合optional-metadata分支；未开PR，不合main/tag。
+> 最新：国内源16新回归含4种显式海外URL绕过，21路由节点全通过；生产de4c34f，原始红/失败候选保留。
+> 验证：前候选core2218 passed+1既有skip；最终位置参数补强后core/Flow在独立COMPLETE目录重验，不能混用旧绿。
+> 下一：本批完整本机检查后统一里程碑PR及双侧全部实际CI，再关闭188/189清主题；无用户决策阻塞。
+> 保护：已接受PR187/devcd0a8a0、185/186关闭，旧主题已清；remote49/基线181后2，真实下载/GPU/数据/结果/布局未动。
+
+> 当前（2026-10-17）：PR187双侧实际CI已验收，185/186关闭，旧主题本地+远端已清；当前唯一未合optional-metadata分支。
+> 最新：#188本地修0a266a1；新增国内源要求登记B138/#189，先红03bb7ce，7新失败/5旧控制通过。
+> 验证：188相邻155/core2204 passed+1既有skip/CPU Flow429 passed，新10全执行；189尚待实现/完整验收。
+> 下一：ModelScope优先、hf-mirror兜底和datasets镜像路由并入当前完整里程碑，不拆单项PR；无用户决策阻塞。
+> 保护：devcd0a8a0，清理基线181计数2/remote49；main/tag/GPU/数据/历史结果/布局不动，真实下载未执行。
+
 > 当前（2026-10-17）：B135/#185+B136/#186同一启动所有权里程碑本机验收，生产0df9943/3594c1e；仍未推送/开PR。
 > 最新：补齐首次wait短暂失败恢复，并修Windows Run别名丢sibling依赖/误成功/绕过eval屏障；先红与原生证据见§231–233。
 > 验证：295相邻/core2194 passed+1既有skip/CPU Flow429 passed，新62（57unit+5integration）全执行/0新skip。
@@ -3971,3 +3989,45 @@ B136按Issue186→7ae8a6d红30项10失败/20控制→9e93586方案→3594c1e最�
 | atomic/shared锁相邻 | 本轮只读复查 | 原owned staging/主错保全/诊断合同保持，未确认新反例、未改代码 |
 
 GitHub当天PR盘点原始PR_CADENCE_INVENTORY：本地2026-10-17零点后已创建/合入174/178/181/184共4个；当前批不马上新开第五个，不按B拆PR，继续同主题本地积累到后续完整里程碑统一PR。185/186保持OPEN，尚无本批远端CI，不冒称合dev/发布。接受基线仍PR184/dev28f3dde双侧实际全绿，旧主题已清；周期基线181计数1/累计remote48，当前唯一未合分支保留。记录和唯一中文/完整英文研究计划同步，不改文献阅读范围/科学缺口，不以CPU合同宣称新实验。新编号B137，目标active，无用户/设计审批阻塞。
+
+
+## 234. PR187已合待actualdevCI，B137/#188可选Git解码故障先红（2026-10-17）
+
+当前轮先status/fetch保全既有_staging_from_DEM，复查无新启动合同反例，B135/B136两Issue及完整62回归形成共同里程碑后统一PR187，不拆单B/tiny-doc PR。finalhead1314e4159260da158a522f0d13d4c0defb35bf5f，Branch38953094391/Package38953094340/Unit38953094373所有实际矩阵/聚合success，PR_CHECKED SHA2569009db6214e3228d86c6f049d48903f90021c3c205c141638c0ca5a3e8de18d8；已正常merge actualdevcd0a8a0185820f74a75c932d7d5ff373fb580255，独立CI仍执行，185/186未提前关闭，旧主题保留待验收。
+
+新B137/#188：真实隔离Git输出Unicode文件名（repo-local quotePath=false），本机默认UTF8 decoder正常；显式ASCII父decoder模拟非UTF8locale，Windows reader thread UnicodeDecodeError使stdout=None，公开capture_git AttributeError中断可选元数据。未声称本机默认locale也失败；保留真实bytes/正常headdirty控制/公开异常。初driver只捕UnicodeDecodeError漏WindowsAttributeError，单独留证后修driver，保留原repo无删数据；73条Issue去重后登记188，原ZIP/REPRO在.tmp/audit137不随clone。
+
+dbab1ff先红10项2失败/8控制、0error/skip，八个真实Git capture/publish×decoder/文件名节点及两种stage RuntimeError严格控制；发布仅stub设备环境，其他原链实际执行，输入/peer原字节保全，零GPU/实验/测速。方案先写design：两个原subprocess.run增加errors='replace'，headASCII/dirty bool不需文件名文本，status非空仍dirty；不捕AttributeError/程序RuntimeError，不改encoding/命令/timeout/退出码/格式/布局/冻结规则。当前唯一未合codex/optional-metadata-correctness自actualdev创建，187旧已合branch暂留pendingCI，未新开PR；下一本地修/验证并同主题积累，新编号B138，无用户或设计阻塞。
+
+
+## 235. PR187双侧实际CI验收与主题清理（2026-10-17）
+
+finalhead1314e4159260da158a522f0d13d4c0defb35bf5f的Branch38953094391/Package38953094340/Unit38953094373及全部实际矩阵/聚合成功；actualdevcd0a8a0185820f74a75c932d7d5ff373fb580255的Package38954018787/Unit38954018839及全部实际矩阵/聚合成功。PR_CHECKED SHA2569009db6214e3228d86c6f049d48903f90021c3c205c141638c0ca5a3e8de18d8；DEV_CHECKED SHA256e35af757e18e7f2395b54c96b4fe2510dd1ae4ec3fe21ec813315a64a7ea4af9。185/186保留原正文、各一次真实验收评论后关闭；PR正文一次补验收，无重复反馈。
+
+核tip已入actualdev、工作区仅用户暂存未跟踪、protected refs不变、仅primary worktree后，codex/launch-failure-ownership本地及远端正常删除。当前codex/optional-metadata-correctness未合保留；累计remote49，周期基线181后2PR，不删数据/结果/Run/provenance。原始证据.tmp/audit136不随clone。§234待CI系当时状态，以本节实际验收为准。
+
+## 236. B137/#188本地验收及B138/#189国内路由先红（2026-10-17）
+
+188按dbab1ff先红→a398e07设计→0a266a1仅两处errors='replace'，SOURCE_CHECKED精确原始CRLF字节比对通过。155相邻、core2204 passed+1既有skip、Flow429 passed，0fail/error，10新节点全执行；LOCAL_CHECKED SHA256d8711abce4abcf072baaf1be44b94da652d8f56e8ceab5812b77dc3523c5bd45。原ZIP/REPRO/红绿XML及driver拒绝保留于.tmp/audit137，不随clone；未开PR/未冒称远端验收。
+
+用户03:16国内源要求并入本批，登记189；先核已跟踪Python下载入口（无HF原生实现）与origin全部caller、两factory/API/CLI/prepare、torchvision镜像、optional依赖。03bb7ce先红7新失败/5旧控制通过。方案在artifact_consistency_design末B138，先方案再改代码；下载替身，无实际模型数据请求。ModelScope/HF官方源码读取范围见设计，不凭浏览结果宣称服务可用。188/189均OPEN，本地同一分支完整里程碑后统一PR，不拆小PR，新B139。
+
+
+## 237. B138/#189国内源首轮实施与完整回归修正（2026-10-17）
+
+03bb7ce先红7新失败/5旧控制→c97eb6d方案→c859b8e最小生产。Model/Data factory在builder前设置显式origin，原origin模块增加ModelScope优先/显式hf-mirror兜底和HF datasets入口，API复用；本地模型路径不下载、取消不换源、两源失败保异常链。hf可选依赖增加modelscope/datasets，新模板domestic；不改历史Run/共享根/布局，未实际下载。
+
+增强相邻126通过；首完整core7失败/2209passed/1既有skip，发现通用origin对既有HF模块旧端点拒绝过宽，阻挡纯CPU/torch。已保留CORE.xml/log，将检查限于实际HF dataset入口导入前/后，模型fallback显式endpoint。测试独立控制已导入模块；首修正替身不完整触发真实datasets import失败亦保留，随后67定向通过。原Flow检查仍执行，期间源码调整，不能作为最终源码验收；新完整core独立basetemp执行，之后重跑final Flow。早先文档批处理SyntaxError发生在任何写入前，修正后重做，不作库失败。当前两IssueOPEN，不拆小PR，真实服务可用性/第三方脚本URL未验证。
+
+B138最终URL补强：a597b54先红2项均到达禁止替身，c494969递归拒绝path/data_files显式海外URL；19路由节点通过（5既有+14新），修正前完整core2216passed+1既有skip/Flow429仅为过程证据。最终生产c494969重新SEALED_CORE/SEALED_FLOW独立basetemp执行，当前未完成；所有初轮失败/修正日志保留。外部源码静态地址清单仅限Git跟踪Python（未发现既有HF下载调用），不改历史Run/版本快照地址。
+
+B138传参完整性补强：bbcaed3先红位置data_files/远程data_dir两项（原另两项绿），de4c34f让同一验证涵盖全部位置参数、path/data_files/data_dir关键字。21路由节点全通过（5既有+16新）；最终源码COMPLETE_CORE/FLOW会话86471/36374仍活，先前sealed Flow81009仍观察、不取消，不把旧源码结果混为当前验收。当前无PR，后续复用这些句柄检查，不因观察超时重启。
+
+
+## 238. B137–B138元数据与国内输入合批本机验收（2026-10-17）
+
+188保dbab1ff红→a398e07方案→0a266a1两处errors='replace'；189保03bb7ce初红7/12、a597b54显式URL红2/2、bbcaed3位置URL红2/4及全部失败候选，再修至de4c34f。最终21路由节点全执行/0skip（16新+5旧）；完整COMPLETE_CORE2220passed+1既有skip、COMPLETE_FLOW429passed，0fail/error。26新（18810+18916）全执行，0新skip；86471/36374及旧81009均terminal0，无活本机验证句柄。LOCAL_CHECKED SHA2564f1a9ca2bb3178fd0884f6e855bfd826724d5d95189af29e7f5ce1d391800ffe，原始XML/log/ZIP及源码hash在.tmp/audit137/138，仅本机不随clone，便携回归已入库。
+
+实际调用覆盖：origin由CLI/prepare及Data/Model factory在builder前设，注册builder可经原model_api.download_model/data_api.load_hf_dataset使用共用入口；没有增加内置HF模型/数据类型或修改builder签名。ModelScope优先、HF显式国内endpoint兜底；双失败保异常链、取消不换源、本地路径不下载；dataset检查实际入口的旧import缓存及path/data_files/data_dir/全部位置参数URL，不把通用origin当下载。torchvision已有国内源保持、无镜像类型拒绝。没有改历史Run/缓存根、科学门、文件架构/产物布局。任意外部脚本自定义下载仍需作者按国内源规则审查；真实服务可用性未测，SDK替身不等于真实下载成功。
+
+完整里程碑统一一个PR，188/189仍OPEN，待最终head及实际dev全部实际矩阵/聚合后才验收关闭和清理本分支；不直接推dev/main、不tag/发布。前§237与顶部旧候选状态仅保留历史，以本节最终本机结果为准。PR187先前已验收清理不重做，remote49/周期基线181后2。新B139，目标active，无用户/设计阻塞。

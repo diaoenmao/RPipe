@@ -655,3 +655,11 @@ PR147两侧实际CI全部验收，Issue146关闭、study-plot-publication本地/
 
 
 2026-10-17 PR174追加B128/#175：原head85826fe的Windows3.10 core真实失败，shared空锁初始化在OS所有权前flush被拒，三其他CPU矩阵/Package/Branch通过不能替代。先Issue/两项红/方案，再f5b3591移原三行至release登记后；相邻123、core2015+1既有skip、Flow354均终结成功，本PR84新全执行。五Issue170–173/175仍开放，更新同PR174再验最终head与实际dev全部CI，之后清理当前主题本地/远端。原失败与错误探针均保留.tmp/audit128，不随clone；无main/tag/GPU/数据/布局改动。
+
+
+## 2026-10-17 国内源当前批次
+
+PR187双侧实际CI全绿，185/186各一次验收评论关闭，codex/launch-failure-ownership本地+远端正常清理（remote49，基线181后2）。当前唯一未合codex/optional-metadata-correctness：188本地155/core2204+1skip/Flow429全通过，新10执行；189先红03bb7ce7失败/5控制，方案c97eb6d、生产c859b8e，增强相邻126通过。完整core首候选7失败发现通用origin旧端点拒绝过宽，现仅HF实际数据入口检查；修正定向67通过、core重验中。所有失败保留，不将原Flow运行冒充最终源码验证。当前无PR、188189仍OPEN，新B139；无真实下载/GPU/训练/测速/布局变化，无用户决策阻塞。
+
+
+2026-10-17最终本机验收补充：#188/#189合批core2220passed+1既有skip、Flow429passed、路由21passed，26新节点全执行/0新skip，0fail/error；无活本机句柄，仍待同一里程碑PR双侧全部实际CI，Issue保持OPEN。详record§238；原候选拒绝/红回归保留，不作删除或服务可用性证明。

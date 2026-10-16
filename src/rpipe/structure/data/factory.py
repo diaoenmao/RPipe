@@ -7,7 +7,7 @@ from typing import Any, Callable, Iterator
 
 from rpipe.structure.data.config import DataConfig
 from rpipe.structure.artifact.shared import cache_lock, reference_tree
-from rpipe.structure.origin import bind_endpoint, discard_bad_archive, endpoint_for
+from rpipe.structure.origin import apply_model_origin, bind_endpoint, discard_bad_archive, endpoint_for
 
 
 class Data:
@@ -174,6 +174,8 @@ class DataFactory:
         builder = DataRegistry.get(name, source)
         if builder is None:
             raise ValueError(f'unknown data name/source: {name!r}/{source!r}')
+        if origin not in (None, ''):
+            apply_model_origin(origin)
         with cache_lock(assets_dir):
             if builder is _build_torch_vision:
                 return _build_torch_vision(data_config, Path(assets_dir), seed=seed, origin=origin,

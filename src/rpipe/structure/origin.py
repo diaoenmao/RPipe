@@ -9,11 +9,13 @@ from __future__ import annotations
 
 import hashlib
 import os
+import sys
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from threading import RLock
 from typing import Any, Iterator
+from urllib.parse import urlsplit
 
 FOREIGN = 'foreign'
 DOMESTIC = 'domestic'
@@ -174,3 +176,56 @@ def _md5(path: Path) -> str:
                 break
             digest.update(block)
     return digest.hexdigest()
+
+
+def download_model(repo_id: str, cache_dir: Path | str, *, revision: str | None = None) -> str:
+    """Resolve a local input or download via ModelScope, then hf-mirror only."""
+    if Path(repo_id).exists():
+        return str(repo_id)
+    try:
+        from modelscope import snapshot_download
+
+        return snapshot_download(model_id=repo_id, revision=revision, cache_dir=str(cache_dir))
+    except Exception as modelscope_error:
+        # SDK failures permit a domestic fallback; cancellation still propagates.
+        try:
+            from huggingface_hub import snapshot_download
+
+            return snapshot_download(repo_id=repo_id, revision=revision,
+                                     cache_dir=str(cache_dir), endpoint=DOMESTIC_MODEL_HUB)
+        except Exception as mirror_error:
+            raise RuntimeError(
+                f'ModelScope failed ({modelscope_error}); hf-mirror failed ({mirror_error}); '
+                'no overseas fallback is permitted'
+            ) from mirror_error
+
+
+def load_hf_dataset(*args: Any, **kwargs: Any) -> Any:
+    """Load HF datasets after selecting the domestic endpoint before import."""
+    _check_dataset_urls((args, kwargs.get('path'), kwargs.get('data_files'), kwargs.get('data_dir')))
+    apply_model_origin(DOMESTIC)
+    _check_hf_endpoint()
+    from datasets import load_dataset
+
+    _check_hf_endpoint()
+    return load_dataset(*args, **kwargs)
+
+
+def _check_hf_endpoint() -> None:
+    for name, attr in (('huggingface_hub.constants', 'ENDPOINT'),
+                       ('datasets.config', 'HF_ENDPOINT')):
+        module = sys.modules.get(name)
+        if module is not None and getattr(module, attr, DOMESTIC_MODEL_HUB) != DOMESTIC_MODEL_HUB:
+            raise RuntimeError(f'select domestic origin before importing {name}; start a fresh worker')
+
+
+def _check_dataset_urls(value: Any) -> None:
+    if isinstance(value, dict):
+        value = tuple(value.values())
+    if isinstance(value, (list, tuple)):
+        for item in value:
+            _check_dataset_urls(item)
+    elif isinstance(value, str) and '://' in value:
+        url = urlsplit(value)
+        if url.scheme != 'hf' and (url.scheme != 'https' or url.netloc != 'hf-mirror.com'):
+            raise ValueError('HF dataset URLs must use domestic hf-mirror; prepare other inputs locally')

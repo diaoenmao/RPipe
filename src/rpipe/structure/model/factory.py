@@ -65,6 +65,8 @@ class ModelFactory:
         builder = ModelRegistry.get(name, source)
         if builder is None:
             raise ValueError(f'unknown model name/source: {name!r}/{source!r}')
+        if origin not in (None, ''):
+            apply_model_origin(origin)
         with cache_lock(assets_dir):
             model = builder(model_config, Path(assets_dir), data_meta=data_meta)
         model.module = _attach_input_norm(model.module, data_meta)

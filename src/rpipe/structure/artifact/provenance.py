@@ -128,12 +128,12 @@ def capture_environment() -> dict[str, Any]:
 def capture_git(study_dir: Path | str) -> dict[str, Any]:
     try:
         head = subprocess.run(
-            ['git', 'rev-parse', 'HEAD'], cwd=study_dir, capture_output=True, text=True, timeout=10,
+            ['git', 'rev-parse', 'HEAD'], cwd=study_dir, capture_output=True, text=True, errors='replace', timeout=10,
         )
         if head.returncode != 0:
             return {}
         dirty = subprocess.run(
-            ['git', 'status', '--porcelain'], cwd=study_dir, capture_output=True, text=True, timeout=30,
+            ['git', 'status', '--porcelain'], cwd=study_dir, capture_output=True, text=True, errors='replace', timeout=30,
         )
         if dirty.returncode != 0:
             return {}

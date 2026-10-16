@@ -132,3 +132,11 @@ B108/#144已PR145最终head与实际dev全CI验收关闭，主题本地/remote�
 
 
 B109/#146已PR147最终head与实际dev全CI验收关闭，主题本地/remote普通删除。B110/#148最终本机12新节点全部执行（core4/Flow8），相邻204、core1818 passed/1既有平台skip、CPU Flow215 passed；0failure/error，最终head/实际devCI待验，保持open。见record §172。
+
+
+### B138 / #189 国内源下载路由（2026-10-17）
+
+按用户03:16新增合同登记：旧ModelFactory在builder后才设HF_ENDPOINT，DataFactory不设置；没有共享ModelScope优先/镜像数据入口。03bb7ce先红7失败/5旧控制→c97eb6d方案→c859b8e生产。完整core发现通用origin拒绝旧HF导入过宽，7失败保留并收回到实际HF数据入口；修正定向67通过，完整重验中。188/189保持OPEN、当前分支未开PR，合批里程碑验收。原始.tmp/audit138不随clone，零真实下载/GPU/训练，服务可用性未验证。
+
+
+2026-10-17最终本机验收补充：#188/#189合批core2220passed+1既有skip、Flow429passed、路由21passed，26新节点全执行/0新skip，0fail/error；无活本机句柄，仍待同一里程碑PR双侧全部实际CI，Issue保持OPEN。详record§238；原候选拒绝/红回归保留，不作删除或服务可用性证明。
