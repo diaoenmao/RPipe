@@ -204,11 +204,10 @@ def load_launch_plan(
     if int(round_size) > 0 and stored_round != int(round_size):
         return None
     raw_batches = payload.get('batches')
-    if raw_batches:
-        try:
-            wait_groups(payload['jobs'], stored_round, raw_batches)
-        except (KeyError, TypeError, ValueError):
-            return None
+    try:
+        wait_groups(payload['jobs'], stored_round, raw_batches)
+    except (KeyError, TypeError, ValueError):
+        return None
     for job in payload['jobs']:
         if isinstance(job, dict) and not include_done and run_succeeded(study_dir, str(job.get('run_id') or '')):
             continue
@@ -249,8 +248,7 @@ def write_jobs_json(
     extra: dict[str, Any] | None = None,
     batches: list[list[dict[str, Any]]] | None = None,
 ) -> Path:
-    if batches:
-        wait_groups(jobs, round_size, batches)
+    wait_groups(jobs, round_size, batches)
     payload = {
         'study_dir': str(study_dir.resolve()),
         'round': int(round_size),
@@ -271,6 +269,15 @@ def wait_groups(
     round_size: int,
     batches: list[list[dict[str, Any]]] | None = None,
 ) -> list[list[dict[str, Any]]]:
+    run_ids = []
+    for job in jobs:
+        if not isinstance(job, dict):
+            raise ValueError('launch job must be an object')
+        run_id = job.get('run_id')
+        validate_run_directory(run_id)
+        run_ids.append(Path(run_id))
+    if len(run_ids) != len(set(run_ids)):
+        raise ValueError('duplicate Run in launch plan; use a new version for repeated computation')
     if batches:
         grouped = [job for group in batches for job in group]
         key = lambda job: str(job['run_id'])
@@ -438,11 +445,6 @@ def launch_jobs(
     py = python_exe or sys.executable
     root = cwd or repo_root_from(study_dir)
     groups = wait_groups(jobs, round_size, batches)
-    run_ids = [str(job['run_id']) for group in groups for job in group]
-    for run_id in run_ids:
-        validate_run_directory(run_id)
-    if len(run_ids) != len(set(run_ids)):
-        raise ValueError('duplicate Run in launch plan; use a new version for repeated computation')
     codes: list[int] = []
     console_mode = resolve_console(console)
     popen_extra = job_popen_kwargs(console_mode)
