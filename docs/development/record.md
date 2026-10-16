@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：#188+#189当前批次本地修复，唯一未合optional-metadata分支；未开PR，不合main/tag。
+> 最新：国内源14新回归含2显式海外URL绕过，19路由节点全通过；生产c494969，红/失败候选均保留。
+> 验证：上一修正core2216 passed+1既有skip、Flow429；URL补强后的最终源码core/Flow正在独立重验，不能混用旧绿。
+> 下一：本批完整本机检查后统一里程碑PR及双侧全部实际CI，再关闭188/189清主题；无用户决策阻塞。
+> 保护：已接受PR187/devcd0a8a0、185/186关闭，旧主题已清；remote49/基线181后2，真实下载/GPU/数据/结果/布局未动。
+
 > 当前（2026-10-17）：PR187双侧实际CI已验收，185/186关闭，旧主题本地+远端已清；当前唯一未合optional-metadata分支。
 > 最新：#188本地修0a266a1；新增国内源要求登记B138/#189，先红03bb7ce，7新失败/5旧控制通过。
 > 验证：188相邻155/core2204 passed+1既有skip/CPU Flow429 passed，新10全执行；189尚待实现/完整验收。
@@ -4006,3 +4012,5 @@ finalhead1314e4159260da158a522f0d13d4c0defb35bf5f的Branch38953094391/Package389
 03bb7ce先红7新失败/5旧控制→c97eb6d方案→c859b8e最小生产。Model/Data factory在builder前设置显式origin，原origin模块增加ModelScope优先/显式hf-mirror兜底和HF datasets入口，API复用；本地模型路径不下载、取消不换源、两源失败保异常链。hf可选依赖增加modelscope/datasets，新模板domestic；不改历史Run/共享根/布局，未实际下载。
 
 增强相邻126通过；首完整core7失败/2209passed/1既有skip，发现通用origin对既有HF模块旧端点拒绝过宽，阻挡纯CPU/torch。已保留CORE.xml/log，将检查限于实际HF dataset入口导入前/后，模型fallback显式endpoint。测试独立控制已导入模块；首修正替身不完整触发真实datasets import失败亦保留，随后67定向通过。原Flow检查仍执行，期间源码调整，不能作为最终源码验收；新完整core独立basetemp执行，之后重跑final Flow。早先文档批处理SyntaxError发生在任何写入前，修正后重做，不作库失败。当前两IssueOPEN，不拆小PR，真实服务可用性/第三方脚本URL未验证。
+
+B138最终URL补强：a597b54先红2项均到达禁止替身，c494969递归拒绝path/data_files显式海外URL；19路由节点通过（5既有+14新），修正前完整core2216passed+1既有skip/Flow429仅为过程证据。最终生产c494969重新SEALED_CORE/SEALED_FLOW独立basetemp执行，当前未完成；所有初轮失败/修正日志保留。外部源码静态地址清单仅限Git跟踪Python（未发现既有HF下载调用），不改历史Run/版本快照地址。
