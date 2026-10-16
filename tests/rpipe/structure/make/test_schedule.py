@@ -716,3 +716,76 @@ def test_duplicate_cache_rejected_before_success_can_hide_it(tmp_path, monkeypat
     assert schedule.load_launch_plan(tmp_path, init_gpu=0, num_gpus=1, round_size=0,
                                      include_done=include_done) is None
     assert cache.read_bytes() == before
+
+
+@pytest.mark.parametrize('stage', ['spawn', 'stdout', 'environment', 'invalidation', 'wait', 'exit-diagnostic'])
+@pytest.mark.parametrize('cancelled', [False, True], ids=['error', 'cancel'])
+@pytest.mark.parametrize('secondary_failure', [False, True], ids=['clean-wait', 'secondary-wait-error'])
+def test_exceptional_group_waits_owned_children_preserving_primary(tmp_path, monkeypatch, stage, cancelled, secondary_failure):
+    _study(tmp_path)
+    _succeed(tmp_path, 'peer')
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    primary = KeyboardInterrupt('primary cancellation') if cancelled else OSError('primary launch failure')
+    secondary = OSError('secondary wait failure')
+    starts, waits = [], []
+    failed = False
+    class Proc:
+        def __init__(self, name):
+            self.name = name
+        def wait(self):
+            nonlocal failed
+            waits.append(self.name)
+            if stage == 'wait' and self.name == 'first' and not failed:
+                failed = True
+                raise primary
+            if secondary_failure and ((stage == 'exit-diagnostic' and self.name == 'second')
+                    or (stage != 'exit-diagnostic' and self.name == 'first' and (stage != 'wait' or failed))):
+                raise secondary
+            return 1 if stage == 'exit-diagnostic' and self.name == 'first' else 0
+    def spawn(args, **kwargs):
+        if stage == 'spawn' and args[-1] == 'second':
+            raise primary
+        starts.append(args[-1])
+        return Proc(args[-1])
+    def output(message, **kwargs):
+        if ((stage == 'stdout' and str(message).startswith('+ cpu second'))
+                or (stage == 'exit-diagnostic' and str(message).startswith('error first'))):
+            raise primary
+    def env(job):
+        if stage == 'environment' and job['run_id'] == 'second':
+            raise primary
+        return {}
+    def result(study, run):
+        return {'status': 'succeeded'} if stage == 'invalidation' and run == 'second' else {}
+    def invalidate(*args):
+        raise primary
+    monkeypatch.setattr(schedule.subprocess, 'Popen', spawn)
+    monkeypatch.setattr('builtins.print', output)
+    monkeypatch.setattr(schedule, 'launch_job_env', env)
+    monkeypatch.setattr(schedule, '_run_result', result)
+    monkeypatch.setattr(schedule, '_fail_result', invalidate)
+    jobs = [{'run_id': name, 'device': 'cpu', 'mode': 'train'} for name in ['first', 'second', 'third']]
+    with pytest.raises(type(primary)) as caught:
+        schedule.launch_jobs(tmp_path, jobs, round_size=2, retry_failed=True, console='shared')
+    assert caught.value is primary
+    assert 'third' not in starts
+    assert set(starts) <= set(waits)
+    assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
+
+
+@pytest.mark.parametrize('batched', [False, True])
+def test_healthy_group_ownership_keeps_original_wait_order(tmp_path, monkeypatch, batched):
+    events = []
+    class Proc:
+        def __init__(self, args, **kwargs):
+            self.name = args[-1]
+            events.append(('start', self.name))
+        def wait(self):
+            events.append(('wait', self.name))
+            return 0
+    monkeypatch.setattr(schedule.subprocess, 'Popen', Proc)
+    jobs = [{'run_id': name, 'device': 'cpu'} for name in ['first', 'second', 'third']]
+    assert schedule.launch_jobs(tmp_path, jobs, round_size=2,
+        batches=[jobs[:2], jobs[2:]] if batched else None, retry_failed=False, console='shared') == [0, 0, 0]
+    assert events == [('start', 'first'), ('start', 'second'), ('wait', 'first'),
+                      ('wait', 'second'), ('start', 'third'), ('wait', 'third')]

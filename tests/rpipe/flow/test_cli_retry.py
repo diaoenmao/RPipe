@@ -101,3 +101,38 @@ def test_invalid_cached_launch_rebuilds_before_dispatch_or_process(tmp_path, mon
     assert caught.value is boundary
     assert cache.read_bytes() == before
     assert not (tmp_path / 'process.json').exists()
+
+
+
+def test_native_launch_spawn_failure_finishes_its_already_started_child(tmp_path, monkeypatch):
+    import rpipe.flow.cli as cli
+    import rpipe.structure.make.schedule as schedule
+
+    cache = tmp_path / 'scripts/jobs.json'
+    cache.parent.mkdir()
+    jobs = [{'run_id': name, 'mode': 'train', 'device': 'cpu'} for name in ['first', 'second']]
+    cache.write_text(json.dumps({'jobs': jobs, 'num_gpus': 0, 'round': 2}), encoding='utf-8')
+    before = cache.read_bytes()
+    real_popen = subprocess.Popen
+    children = []
+    primary = OSError('second native spawn refused')
+    def spawn(args, **kwargs):
+        if args[-1] == 'second':
+            raise primary
+        child = real_popen([sys.executable, '-c', 'import time; time.sleep(0.4)'],
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        children.append(child)
+        return child
+    monkeypatch.setattr(cli, '_provenance_gate', lambda *_: True)
+    monkeypatch.setattr(schedule.subprocess, 'Popen', spawn)
+    try:
+        with pytest.raises(OSError) as caught:
+            cli.main(['launch', str(tmp_path), '--num-gpus', '0', '--round', '2', '--console', 'shared'])
+        assert caught.value is primary
+        assert len(children) == 1 and children[0].poll() == 0
+        assert cache.read_bytes() == before
+        assert not (tmp_path / 'process.json').exists()
+    finally:
+        # Preserve red-test evidence while allowing the isolated CPU child to finish naturally.
+        for child in children:
+            child.communicate(timeout=10)
