@@ -337,3 +337,34 @@ def test_process_optional_state_decode_failure_keeps_peer_evidence(tmp_path, raw
         assert not run_process_path(b.root).exists()
     assert json.loads(target.read_text(encoding='utf-8')) == body
     assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('failure', ['nonobject', 'deep', 'stat_permission', 'stat_io', 'read_permission', 'syntax', 'missing', 'valid'])
+def test_study_optional_result_failures_keep_peer_partial_output_and_inputs(tmp_path, monkeypatch, failure):
+    """Actual Study process -> one unreadable optional result -> fresh partial output with valid peer and all source bytes retained."""
+    bad = _write_succeeded(tmp_path, 'bad', 0, 500, {'accuracy': 42.0}, [])
+    peer = _write_succeeded(tmp_path, 'peer', 1, 500, {'accuracy': 42.0}, [])
+    write_index(tmp_path, build_index(study='synthetic', description='', experiments=[
+        {'factors': {}, 'runs': [{'id': 'bad', 'seed': 0}, {'id': 'peer', 'seed': 1}]}]))
+    if failure == 'missing':
+        bad.result_path.unlink()
+    elif failure in ('nonobject', 'deep', 'syntax'):
+        raw = b'[]' if failure == 'nonobject' else b'{' if failure == 'syntax' else b'{"unused":' + b'[' * 12000 + b'0' + b']' * 12000 + b'}'
+        bad.result_path.write_bytes(raw)
+    before = {f: f.read_bytes() for f in tmp_path.rglob('*') if f.is_file()}
+    process_path(tmp_path).write_bytes(b'previous derived process')
+    method = 'read_text' if failure == 'read_permission' else 'stat'
+    original = getattr(Path, method)
+    def refuse(path, *args, **kwargs):
+        if path == bad.result_path and failure in ('stat_permission', 'stat_io', 'read_permission'):
+            raise OSError(5, 'result IO') if failure == 'stat_io' else PermissionError(13, 'result denied')
+        return original(path, *args, **kwargs)
+    with monkeypatch.context() as fault:
+        fault.setattr(Path, method, refuse)
+        body = run_study(tmp_path)
+    cell = body['experiments'][0]
+    count = 2 if failure == 'valid' else 1
+    assert body['complete'] is (failure == 'valid')
+    assert cell['n'] == count and cell['n_planned'] == 2 and cell['metrics']['accuracy']['mean'] == 42.0
+    assert json.loads(process_path(tmp_path).read_text(encoding='utf-8')) == body
+    assert {f: f.read_bytes() for f in before} == before

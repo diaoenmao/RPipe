@@ -164,3 +164,74 @@ def test_optional_jsonl_keeps_unexpected_decoder_runtime_error(tmp_path, monkeyp
         load_curve_series(tmp_path, 'a')
     assert caught.value is error
     assert scalar.read_bytes() == b'{}\n'
+
+
+def _result_read_inputs(root, payload):
+    from rpipe.structure.artifact.result import write_result
+
+    index = {'study': 'synthetic', 'experiments': [{'factors': {}, 'runs': [
+        {'id': 'bad', 'seed': 0}, {'id': 'peer', 'seed': 1}]}]}
+    for run in ('bad', 'peer'):
+        write_result(root / 'runs' / run / 'result.json', {
+            'status': 'succeeded', 'control': {}, 'metrics': {'accuracy': 42.0}, 'paths': {}})
+    bad = root / 'runs/bad/result.json'
+    if payload == 'missing':
+        bad.unlink()
+    elif payload != 'valid':
+        raw = {'nonobject': b'[]', 'syntax': b'{', 'utf8': b'\xff',
+               'deep': b'{"unused":' + b'[' * 12000 + b'0' + b']' * 12000 + b'}'}[payload]
+        bad.write_bytes(raw)
+    return index, bad, {f: f.read_bytes() for f in root.rglob('*') if f.is_file()}
+
+
+@pytest.mark.parametrize('payload', ['nonobject', 'deep', 'syntax', 'utf8', 'missing', 'valid'])
+def test_optional_result_decode_keeps_peer_and_existing_partial_counts(tmp_path, payload):
+    from rpipe.flow.process.aggregate import collect_from_index, summarize
+
+    index, bad, before = _result_read_inputs(tmp_path, payload)
+    body = summarize(collect_from_index(tmp_path, index), study='synthetic', source_run=None)
+    cell = body['experiments'][0]
+    count = 2 if payload == 'valid' else 1
+    assert cell['n'] == count and cell['n_planned'] == 2
+    assert cell['metrics']['accuracy'] == {'mean': 42.0, 'std': 0.0, 'min': 42.0, 'max': 42.0, 'n': count}
+    assert body['complete'] is (payload == 'valid')
+    assert cell['runs'][0]['status'] == ('succeeded' if payload == 'valid' else None)
+    assert {f: f.read_bytes() for f in before} == before
+
+
+@pytest.mark.parametrize('operation', ['stat', 'read_text'])
+@pytest.mark.parametrize('failure', ['permission', 'io', 'missing', 'programming'])
+def test_optional_result_stat_read_and_programming_error_boundary(tmp_path, monkeypatch, operation, failure):
+    from rpipe.flow.process.aggregate import collect_from_index, summarize
+
+    index, bad, before = _result_read_inputs(tmp_path, 'valid')
+    error = {'permission': PermissionError(13, 'result denied'), 'io': OSError(5, 'result IO'),
+             'missing': FileNotFoundError(2, 'result disappeared'), 'programming': RuntimeError('reader programming error')}[failure]
+    original = getattr(Path, operation)
+    def refuse(path, *args, **kwargs):
+        if path == bad:
+            raise error
+        return original(path, *args, **kwargs)
+    with monkeypatch.context() as fault:
+        fault.setattr(Path, operation, refuse)
+        if failure == 'programming':
+            with pytest.raises(RuntimeError) as caught:
+                collect_from_index(tmp_path, index)
+            assert caught.value is error
+        else:
+            body = summarize(collect_from_index(tmp_path, index), study='synthetic', source_run=None)
+            assert not body['complete']
+            assert body['experiments'][0]['n'] == 1 and body['experiments'][0]['n_planned'] == 2
+            assert body['experiments'][0]['metrics']['accuracy']['mean'] == 42.0
+    assert {f: f.read_bytes() for f in before} == before
+
+
+@pytest.mark.parametrize('payload,kind', [('nonobject', 'artifact'), ('deep', 'recursion')])
+def test_optional_result_fix_does_not_relax_strict_public_loader(tmp_path, payload, kind):
+    from rpipe.structure.artifact.errors import CorruptArtifactError
+    from rpipe.structure.artifact.result import load_result
+
+    _, bad, before = _result_read_inputs(tmp_path, payload)
+    with pytest.raises(CorruptArtifactError if kind == 'artifact' else RecursionError):
+        load_result(bad)
+    assert {f: f.read_bytes() for f in before} == before
