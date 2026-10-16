@@ -231,6 +231,8 @@ def test_domestic_model_cancellation_does_not_try_another_source(monkeypatch, tm
 @pytest.mark.parametrize('args,kwargs', [
     (('https://huggingface.co/org/data/resolve/main/data.json',), {}),
     (('json',), {'data_files': {'train': ['https://example.org/data.json']}}),
+    (('json', None, None, {'train': ['https://example.org/data.json']}), {}),
+    (('json',), {'data_dir': 'https://example.org/data/'}),
 ])
 def test_hf_dataset_rejects_explicit_overseas_urls(monkeypatch, args, kwargs):
     import sys
