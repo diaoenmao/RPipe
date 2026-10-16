@@ -50,11 +50,11 @@ class FlowRunner:
                 module.run(ctx)
                 if name != 'write':
                     run_study_phase(ctx.study_dir, name, ctx, study)
+            logger.info('succeeded')
         except Exception as exc:
             self._log_failure(ctx, current, exc)
             self._write_failed_result(ctx, exc, preserve_success=_preserve_success(current, exc))
             raise
-        logger.info('succeeded')
         return ctx.layout.result_path
 
     def _ensure_logger(self, ctx: FlowContext):
