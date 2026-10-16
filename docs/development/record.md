@@ -1,8 +1,8 @@
-> 现状：PR123最终及实际dev已验收并清remote；B099/#124已真实复现、先提交红合同。
-> 最新：30新合同15失败/15控制，另189既有控制通过；有限输入算术溢出假通过，见§143。
-> 下一步：先设计后最小统一判断，保留普通路径与非有限身份；本机及最终/实际devCI验收。
-> 边界：不测速/GPU/main/tag/改布局，不改原输入或科学计算。
-> 阻塞：无；只收录真实反例，不恢复旧已修Issue。
+> 现状：B099/#124有限算术溢出统一修复完成，本机正确性门通过；PR123已实际验收。
+> 最新：30先红15失败/15控制，另4补充冻结原比较器回放2失败/2控制，共34新增合同，见§143–145。
+> 验证：readout559/core1541+1既有POSIX skip/CPU Flow189通过，原输入/peer与非有限/整数合同保持。
+> 下一步：推同一分支、PRdev，最终提交和实际dev全部实际CI后清结束remote，Issue等下版。
+> 边界：无GPU/测速/main/tag/布局或原产物更改；首轮及补充全部结果保留。
 
 # 一、摘要
 
@@ -2779,3 +2779,14 @@ readout525 passed、core1507 passed/1既有POSIX executable-mode skip、CPU Flow
 ## 144. 2026-10-16 PR123最终和实际dev验收、结束remote清理
 
 最终head e2376234d40b5dc45be407d522031ff4e102b8d5 的Branch38850044398/Package38850044255/Unit38850044235全部实际矩阵/聚合成功，PR_CHECKED 7c613f03052760a90e4a22719d5e41849ec7e6843692d7f6b4d4485906052c8b。普通合dev17460b1b579d180dec34a956bfc80d6c34023f34，实际devPackage38850576040/Unit38850576054全部实际矩阵/聚合成功，DEV_CHECKED 3b7d04dad80c16ee1d33813b785835cd137f327c41a4f6c587d00b0260f4dd9f。核对祖先/无开放PR/提交保全后删除结束remote codex/integer-tensor-tolerance，本地保留，累计23条；当时remote仅main/dev，main00e70b1未变。Issue122保留open至下一版，PR/Issue正文已附验收，原证据.tmp/audit098不随clone，无存活验证句柄或待合事项。
+
+
+## 145. 2026-10-16 B-099修复及补充复数绝对界、本机验收
+
+设计f200686后ba5892a仅在现有_close和_tensor树里补算术溢出回退：有限scalar用已有Fraction比较绝对+相对界；有限complex以范数平方等价式决定；tensor仅输入均有限但diff/bound非有限的格复用同判断，原same/nonfinite/整数/shape/empty及普通有限式保持。生产净增20行，不新增helper/模块/依赖/schema，不改训练计算或产物。返回不可表示差值仍inf，原CLI JSON写null不变；有限输入不能因inf≤inf或inf>inf假通过。
+
+补充fbe1285四项：有限complex两分量模长溢出时，rtol0可产生0×inf=NaN；用nextafter产生可表示微差，覆盖exact drift、绝对界外、绝对界上、相同值。冻结before.zip原比较器模块回放2失败/2控制，明确不是当前HEAD生产红；模块SHA和测试SHA已保存核对，API及CLI实际调用冻结比较器、不模拟数值/I/O。现有修复无需再改便全部通过。原30合同decd552仍逐字前缀相同，不改断言换通过。
+
+初轮readout555/core1537+1skip/Flow189已通过；补4新合同后保留初轮XML/log，更新readout559、core1541+1同一既有POSIX executable-mode skip，0fail/error，34新节点全部执行。生产源码未变、Flow用例未变，189 CPU Flow不重复。额外两个微型连续/转置checkpoint均拒绝界外差异，仅该场景布局控制，不称任意layout全覆盖。原所有Run/result/tracker/checkpoint/peer字节保持。LOCAL_CHECKED SHA256 67db96bec8732148fccd11991fcd17f5418515ebb9392b6c54a4fea930d1c9b4；原ZIP、REPRO、两批红、两轮GREEN/CORE及FLOW、源码三块精确替换与红测试LF/CRLF证明在.tmp/audit099（不随clone）。
+
+后续按唯一分支PR到dev，最终head与实际dev全部实际矩阵/聚合后才完成集成验收；Issue124留至下版。无测速/GPU/原始Study运行或科学结论，不合main/tag/强推/改布局；提交保全后仅清结束remote，不删本地/数据。

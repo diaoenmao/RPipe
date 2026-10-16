@@ -1,5 +1,10 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 PR123已实际验收、B099有限算术溢出合同
+
+PR123普通合dev17460b1，最终head/实际dev全部实际CI成功并清结束remote integer-tensor-tolerance，本地/数据保留，累计23，见record§144。当前唯一未合codex/finite-tolerance-overflow，Issue124：有限输入diff/bound同时溢出或复数0×inf=NaN可假通过；不同于非有限输入身份。decd552先30红15失败/15控制，f200686设计后ba5892a仅现有_close/tensor回退，净增20行，无新helper/依赖/布局。fbe1285另4合同冻结原比较器回放2失败/2控制，明确不冒充当前HEAD红；现有代码无需再改全绿。最终readout559/core1541+1既有POSIX skip/Flow189通过，34新节点全执行，原30红断言逐字保持。初轮555/core1537+1/Flow189及补充结果全保留；Flow生产/用例不变不重复。LOCAL_CHECKED 67db96bec8732148fccd11991fcd17f5418515ebb9392b6c54a4fea930d1c9b4，证据.tmp/audit099不随clone。下一推最终head、PRdev与实际dev全部实际CI后清remote，Issue等下版；无main/tag/GPU/测速/改布局或数据删除。
+
+
 ## 2026-10-16 PR121已实际验收、B098整数张量非零容差
 
 PR121普通合dev039db15，最终head/实际dev全部实际CI成功；结束remote optional-state-stat已核验删除，本地tip/数据保留，累计22，详record§141。当前唯一未合codex/integer-tensor-tolerance，Issue122，B098：int64/uint64大数非零容差先float64丢位，公开API/CLI假通过和差值0。ff6b92e18红失败，56bbfe7另外2红失败/5兼容控制，首次fixture收集错误独立保留。f351121设计后7f3c391仅原整数分支新增tolist→_tree→Fraction，零容差/其他类型保持，净增3行，无新helper/依赖。readout525/core1507+1既有POSIX skip/Flow189通过，25新合同全执行、原字节/peer保持，LOCAL_CHECKED 2c6927b3cffc1520b806ab1aefd28e4c85acfafb51268aa223f5f46fe1bfb047。下一推最终head、PRdev与实际dev全部实际CI后清remote，Issue留至下版；不合main/tag、测速/GPU/改布局或删数据。证据.tmp/audit098不随clone。
