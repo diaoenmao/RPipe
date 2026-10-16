@@ -287,3 +287,12 @@ Issue132后，1e8c5d1先提交22项合同：unit12覆盖RuntimeError/KeyboardInt
 9da02b4相邻故障注入确认：with临时流的__exit__/close再抛OSError，会替换savefig已经抛出的RuntimeError或KeyboardInterrupt。a095ef0先提交6项补充回归（两种首错×新旧目标4 failed，成功保存后close错误的2控制passed），与最初19项红分开保存；仍属Issue140/PR141，不另起主题。
 
 仅把临时流上下文改为显式取得/关闭：保存已有BaseException时尽力close，只有关闭OSError不替换首错，随后bare raise；保存正常时close仍严格传播，未关闭成功不发布。捕获BaseException只为取消也释放资源且原样重抛，不吞新的终止信号或关闭中的非IO程序错误。PNG绘制/权限/所有权规则不变。原head9da02b4的CI快照保留，新代码应更新同一PR并重新接受最终head的实际CI，不能沿用旧head绿作为验收。
+
+
+## B107 / #142：共享锁释放与关闭的首错保全（2026-10-16）
+
+实际OS锁取得后注入unlock/close IO，准备RuntimeError或KeyboardInterrupt均被OSError替换；不同线程随后仍能零预算重获。Issue142后7614d31先提交25项正式回归：19 failed/6有效控制passed，0error/skip。覆盖两种/同时清理故障、首错/取消/正常体、重入、获取busy/坏descriptor后close、prepared_resource诊断staging及非IO程序错误；未假授锁，无训练/测速。
+
+最小方案只改既有shared.py的cache_lock：复用已导入的stdlib ExitStack，在文件取得后登记close退出回调，取得OS锁后再登记release回调；逆序先release、后close。回调只在已有exc_type时不让自身OSError替换首错；没有首错则照常抛出，两个清理故障保留先发生的unlock错；非IO程序错误不吞。回调不返回True，不抑制原异常/取消。获取失败不登记unlock，仍保留Timeout的cause与原预算。held移除时机、物理root/PID键、OS原语/死持有者释放、模式与锁文件、多根排序和输入staging保全保持。不加资源框架、模块、路径/schema或共享状态推断。
+
+native Windows/Posix各用原生获取，仅注入cleanup/acquire故障；失败/取消和普通严格控制均要验证descriptor关闭及另一线程真实重获、不可变输入字节和builder staging保留。随后共享相邻、core/CPU Flow与最终head/实际dev全部实际CI分别验收。原始探针/ZIP/red在.tmp/audit107不随clone，正式回归/设计随Git提供；无GPU/main/tag或正式Study。

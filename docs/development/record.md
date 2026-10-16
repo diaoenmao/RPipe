@@ -1,7 +1,7 @@
-> 当前：PR139两侧全实际CI成功、Issue138关闭并完成五批清理；新基线139。
-> 最新：B106/Issue140同PR收敛PNG破坏/figure释放与关闭二错遮首错，原19红17/2、补6红4/2。
-> 修复：66f6f16后25新节点全绿，core1734+1既有skip；冻结旧/新PNG字节一致。
-> 下一步：更新后的最终head与实际dev全CI；最终Flow207通过，目标active，无阻塞，见§163–164。
+> 当前：PR141更新head/实际dev全CI验收，Issue140关闭、本地/remote分支已清；基线139后累计1。
+> 最新：B107/Issue142共享锁unlock/close遮首错与取消，正式25项19红/6有效控制。
+> 修复：691c240既有函数局部退出回调后共享101全绿；预算/OS原语、重入和builder staging保持。
+> 下一步：本机core1759+1既有skip/CPU Flow207已通过；开PR验最终head与实际dev全CI，目标active，见§165–166。
 > 保护：无GPU/测速/正式Study、main/tag或产物布局变更；以下旧状态保留。
 
 > 当前：PR135实际dev已全CI验收、Issue134关闭，工作分支本地/remote普通删。
@@ -3072,3 +3072,16 @@ B106本机验收：19新节点/core1728/CPU Flow207 passed，core另1既有平�
 
 
 B106含流关闭补充的最终本机验收：25新节点/core1734/CPU Flow207 passed，core另1既有平台skip；25新节点含原生只读清理全执行，PNG字节仍一致。更新后最终head/实际dev CI仍须验收；旧9da02b4绿仅历史。
+
+
+## 165. B106 / PR141 最终与实际dev验收、分支清理（2026-10-16）
+
+更新head c9e344b的Branch38881441414 / Package38881441317 / Unit38881441470，以及正常合并实际dev c42a78b5835c5fda460b7ad4d0c49e8a1884293e的Package38882276100 / Unit38882275925，全部实际矩阵与聚合成功。旧9da02b4绿仅历史，不代更新head。DEV_CHECKED SHA256：40c8fb6c77d3ab5e9327d1fc34c86155a6035513d3c948ef6669a37ad13d386c。Issue140验收关闭，codex/curve-publication-ownership本地/remote各1条普通删除；源码/25正式节点保全于dev，数据、Run、provenance、main和_staging_from_DEM保持。清理基线仍PR139，已验收累计1；新Issue142保留。原CI/清理清单在.tmp/audit106不随clone，PR141正文提供可携带验收记录。
+
+## 166. B107 / Issue142：共享锁清理IO不替换准备首错（2026-10-16）
+
+真实OS锁加上unlock/close IO注入的六组合探针：四个准备错/取消被OSError替换，两正常体清理控制严格失败；恢复原语后其他线程全部零预算重获。先Issue142，再7614d31正式25项19 failed/6有效控制passed、0error/skip，再4b34097设计，691c240仅shared.py cache_lock复用stdlib ExitStack两个局部退出回调。获取后登记文件close，锁取得后登记release；先release后close，仅已有exc_type时清理OSError不替换首错，没有首错仍严格，非IO程序错误继续暴露，不返回True吞原错。held键/移除、PID/物理身份、预算/重试、OS锁文件和多根排序保持；原获取/预算代码块逐行原样。
+
+完整共享101项通过，25新节点全执行，包含获取错误原cause、嵌套重入、descriptor关闭、不同线程真实重获、prepared_resource原builder错误与诊断staging保留、不可变输入字节及程序错误控制。core/CPU Flow及最终head/实际dev CI待分别验收。临时REPRO/ZIP/red/green在.tmp/audit107不随clone，正式测试/设计随Git提供；不加模块、依赖、资源框架或磁盘schema，不改checkpoint诊断保留，无GPU/测速/正式Study/main/tag。
+
+B107最终本机验收：RED25项19 failed/6有效控制passed，GREEN101、core1759 passed/1既有Windows平台skip、CPU Flow207 passed；0error，全部25新节点执行。LOCAL_CHECKED及原始XML/log在.tmp/audit107（不随clone），最终head/实际dev全部实际CI仍待分别验收。

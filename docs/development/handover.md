@@ -451,3 +451,10 @@ B106同PR补充：a095ef0先红6项4/2→e9cae39设计→66f6f16保留首错/取
 
 
 B106含流关闭补充的最终本机验收：25新节点/core1734/CPU Flow207 passed，core另1既有平台skip；25新节点含原生只读清理全执行，PNG字节仍一致。更新后最终head/实际dev CI仍须验收；旧9da02b4绿仅历史。
+
+
+## 2026-10-16 B107共享锁清理；B106已实际dev验收
+
+PR141更新head和实际dev c42a78b全实际CI通过，Issue140关闭，curve-publication-ownership本地/remote普通删；PR139基线后累计1。当前Issue142唯一未合分支codex/shared-lock-cleanup：7614d31红25项19/6→4b34097设计→691c240既有函数内ExitStack退出IO优先级；共享101通过，待core/Flow/两侧CI。预算原语、重入物理键、多根排序和builder staging保留保持，非IO程序错误不吞。详record§165–166，目标active，无main/tag/GPU/布局变化。
+
+B107 / Issue142本机补充：共享101、core1759 passed/1既有平台skip、CPU Flow207 passed，25新回归全部执行；最终head/实际dev CI待验收，见record §166。

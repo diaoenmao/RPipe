@@ -606,3 +606,139 @@ def test_migration_lock_order_is_independent_of_path_namespace(tmp_path, monkeyp
         assert len(order) == 4 and len(set(order)) == 4
         orders.append(order)
     assert orders[0] == orders[1]
+
+
+def _lock_cleanup_faults(patch, *, unlock_error=None, close_error=None, acquire_error=None):
+    if os.name == 'nt':
+        import msvcrt as backend
+        method, unlock = 'locking', backend.LK_UNLCK
+    else:
+        import fcntl as backend
+        method, unlock = 'flock', backend.LOCK_UN
+    native = getattr(backend, method)
+    calls, handles = [], []
+    def locking(*args):
+        releasing = args[1] == unlock
+        calls.append('unlock' if releasing else 'acquire')
+        error = unlock_error if releasing else acquire_error
+        if error is not None:
+            raise error
+        return native(*args)
+    original_open = Path.open
+    class Stream:
+        def __init__(self, raw):
+            self.raw = raw
+        def __getattr__(self, name):
+            return getattr(self.raw, name)
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            self.close()
+        def close(self):
+            self.raw.close()
+            raise close_error
+    def open_lock(path, mode='r', *args, **kwargs):
+        handle = original_open(path, mode, *args, **kwargs)
+        if path.name == '.rpipe.lock' and mode == 'a+b':
+            handles.append(handle)
+            if close_error is not None:
+                return Stream(handle)
+        return handle
+    patch.setattr(backend, method, locking)
+    patch.setattr(Path, 'open', open_lock)
+    return calls, handles
+
+
+def _reacquire_shared_lock_on_other_thread(root):
+    from concurrent.futures import ThreadPoolExecutor
+    def acquire():
+        with cache_lock(root, timeout=0):
+            return 'acquired'
+    with ThreadPoolExecutor(max_workers=1) as worker:
+        assert worker.submit(acquire).result(timeout=5) == 'acquired'
+
+
+@pytest.mark.parametrize('nested', [False, True])
+@pytest.mark.parametrize('body', ['error', 'cancel', 'normal'])
+@pytest.mark.parametrize('cleanup', ['unlock', 'close', 'both'])
+def test_lock_cleanup_retains_primary_and_normal_cleanup_stays_strict(tmp_path, monkeypatch, nested, body, cleanup):
+    import contextlib
+    import errno
+
+    primary = RuntimeError('preparation failed') if body == 'error' else KeyboardInterrupt('cancel preparation') if body == 'cancel' else None
+    unlock_error = OSError(errno.EIO, 'unlock IO failed') if cleanup in ('unlock', 'both') else None
+    close_error = OSError(errno.EIO, 'close IO failed') if cleanup in ('close', 'both') else None
+    expected = primary if primary is not None else unlock_error if unlock_error is not None else close_error
+    peer = tmp_path / 'immutable.bin'
+    peer.write_bytes(b'immutable shared bytes')
+    with monkeypatch.context() as patch:
+        calls, handles = _lock_cleanup_faults(patch, unlock_error=unlock_error, close_error=close_error)
+        with pytest.raises(type(expected)) as caught:
+            with cache_lock(tmp_path, timeout=0):
+                with cache_lock(tmp_path / '.', timeout=0) if nested else contextlib.nullcontext():
+                    if primary is not None:
+                        raise primary
+        assert caught.value is expected
+        assert calls == ['acquire', 'unlock']
+        assert len(handles) == 1 and handles[0].closed
+    _reacquire_shared_lock_on_other_thread(tmp_path)
+    assert peer.read_bytes() == b'immutable shared bytes'
+
+
+@pytest.mark.parametrize('fault', ['busy', 'bad_descriptor'])
+def test_lock_acquisition_failure_is_not_replaced_by_close_io(tmp_path, monkeypatch, fault):
+    import errno
+
+    error = BlockingIOError(errno.EACCES, 'occupied') if fault == 'busy' else OSError(errno.EBADF, 'invalid descriptor')
+    with monkeypatch.context() as patch:
+        calls, handles = _lock_cleanup_faults(patch, acquire_error=error, close_error=OSError(errno.EIO, 'close failed'))
+        with pytest.raises(TimeoutError if fault == 'busy' else OSError) as caught:
+            with cache_lock(tmp_path, timeout=0):
+                pytest.fail('failed acquisition yielded a body')
+        if fault == 'busy':
+            assert caught.value.__cause__ is error
+        else:
+            assert caught.value is error
+        assert calls == ['acquire']
+        assert len(handles) == 1 and handles[0].closed
+    _reacquire_shared_lock_on_other_thread(tmp_path)
+
+
+@pytest.mark.parametrize('cleanup', ['unlock', 'close', 'both'])
+def test_prepared_resource_retains_builder_error_and_diagnostic_staging(tmp_path, monkeypatch, cleanup):
+    import errno
+
+    error = RuntimeError('builder failed')
+    staging = []
+    def build(folder):
+        staging.append(folder)
+        (folder / 'input.bin').write_bytes(b'partial builder evidence')
+        raise error
+    with monkeypatch.context() as patch:
+        calls, handles = _lock_cleanup_faults(
+            patch, unlock_error=OSError(errno.EIO, 'unlock failed') if cleanup in ('unlock', 'both') else None,
+            close_error=OSError(errno.EIO, 'close failed') if cleanup in ('close', 'both') else None)
+        with pytest.raises(RuntimeError) as caught:
+            prepared_resource(tmp_path, {'version': 'cleanup-test'}, ['input.bin'], build)
+        assert caught.value is error
+        assert calls == ['acquire', 'unlock']
+        assert len(handles) == 1 and handles[0].closed
+    assert len(staging) == 1 and staging[0].name.startswith('.building-')
+    assert (staging[0] / 'input.bin').read_bytes() == b'partial builder evidence'
+    assert not (staging[0].parent / 'inputs').exists()
+    _reacquire_shared_lock_on_other_thread(staging[0].parent)
+
+
+@pytest.mark.parametrize('body_error', [False, True])
+def test_lock_unexpected_release_programming_error_is_not_silenced(tmp_path, monkeypatch, body_error):
+    error = RuntimeError('unexpected release programming error')
+    with monkeypatch.context() as patch:
+        calls, handles = _lock_cleanup_faults(patch, unlock_error=error)
+        with pytest.raises(RuntimeError) as caught:
+            with cache_lock(tmp_path, timeout=0):
+                if body_error:
+                    raise ValueError('preparation failed')
+        assert caught.value is error
+        assert calls == ['acquire', 'unlock']
+        assert len(handles) == 1 and handles[0].closed
+    _reacquire_shared_lock_on_other_thread(tmp_path)

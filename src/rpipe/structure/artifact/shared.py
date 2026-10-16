@@ -58,7 +58,15 @@ def cache_lock(root: Path | str, *, timeout: float = 120):
     if key in held:
         yield
         return
-    with (root / '.rpipe.lock').open('a+b') as handle:
+    with contextlib.ExitStack() as stack:
+        handle = (root / '.rpipe.lock').open('a+b')
+        def close_handle(exc_type, _exc, _tb):
+            try:
+                handle.close()
+            except OSError:
+                if exc_type is None:
+                    raise
+        stack.push(close_handle)
         if handle.seek(0, os.SEEK_END) == 0:
             handle.write(b'0')
             handle.flush()
@@ -81,17 +89,21 @@ def cache_lock(root: Path | str, *, timeout: float = 120):
                 time.sleep(0.05)
         held[key] = True
         _held.roots = held
-        try:
-            yield
-        finally:
+        def release_lock(exc_type, _exc, _tb):
             del held[key]
-            if os.name == 'nt':
-                import msvcrt
-                handle.seek(0)
-                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
-            else:
-                import fcntl
-                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            try:
+                if os.name == 'nt':
+                    import msvcrt
+                    handle.seek(0)
+                    msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            except OSError:
+                if exc_type is None:
+                    raise
+        stack.push(release_lock)
+        yield
 
 
 def _digest(path: Path) -> str:
