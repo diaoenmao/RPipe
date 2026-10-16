@@ -1,3 +1,9 @@
+> 当前：B122/#167已本机修复并完整验证，尚未推送/开PR；接受dev仍PR165/70a8750。
+> 最新：末条Runner日志绕过失败留证；先红12项8失败/4控制，再761700f只缩进原语句，见§204–205。
+> 验证：Runner49 passed；core1974 passed/1既有skip、CPU Flow291 passed，新12全执行/0skip；源码仅两行diff。
+> 下一步：同一codex/correctness-next-milestone继续三类及相邻失败边界复查，相关主题完整里程碑再PR；167仍OPEN，无决策阻塞。
+> 保护：清理基线161计数1、累计remote43；未合分支/数据/结果保留，无GPU/测速/Study/main/tag或布局变更。
+
 > 当前：PR165已双侧全实际CI验收，dev70a8750；#163/#164/#166已关闭，已合主题本地/remote均清理。
 > 最新：B119/B120/B121统一加载隔离、dataclass身份、动态导入与checkpoint兼容，详§202–203；原候选反例保留。
 > 验证：core1974 passed/1既有skip、CPU Flow279 passed，新61全执行；最终head与实际dev所有矩阵/聚合均成功。
@@ -3507,3 +3513,12 @@ PR165验收/清理后，工作区65ed4e6仅多收尾文档；fetch正常、开�
 先开#167，再4ac6883提交portable12节点红回归：真实末条stdout/file-write两拒绝×collect/process×新旧结果8失败，正常末条4对照通过，0error/skip；phase body均实际调用一次、真实peer/原异常身份与process旧成功原字节均锁定。并非再开已修B101启动Issue，根因是同一Runner的最后一条日志未纳入既有失败处理。
 
 按已批准第一类合同只缩进原语句进入try，保持所有阶段完成后输出时机，_preserve_success/原except/failed IO完全原样，不引入更多保全范围或吞日志错误。实施方案见artifact_consistency_design§204；当前先本地同主题合批，不单bug开PR。接受基线dev70a8750，清理基线161计数1，活动codex/correctness-next-milestone保留；不动main/tag/布局/数据结果，下一编号B123。
+
+
+## 205. B122本机修复与完整验证（2026-10-16，同主题本地积累）
+
+761700f只将FlowRunner末条logger.info('succeeded')原语句缩进到既有try中；除这一处移动外，_preserve_success、整个except/_log_failure/_write_failed_result、阶段/hook顺序与输出时机等原字节完全保持。SOURCE_CHECKED与原zip/hash锁定原生源文件仅runner.py两行diff；未改result/schema、磁盘路径、日志格式、算法/Tracker/checkpoint或科学门，不增加helper/模块/依赖。
+
+RED12项8失败/4正常对照，GREEN同文件49 passed，全部12新节点执行；当前完整core1974 passed/1既有Windows POSIX模式skip、CPU Flow291 passed，均0failure/error，新增12全执行/0skip。不是用只跑目标49替代完整当前集合。独立basetemp和XML/hash/ZIP/原始REPRO均在.tmp/audit122，不随clone；正式回归已入库。完整检查进程52264/58084均exit0终结，不保留伪活动观察句柄。
+
+复查相邻launch打印/失败定稿、prepare结束日志及Runner调用方，尚未确认需另记的新反例；没有为活跃拆新Issue/PR。#167保持OPEN，本机通过尚不能代替最终head/实际devCI。当前codex/correctness-next-milestone仅本地积累（含PR165收尾记录），按20:56将相关失败留证工作汇成完整里程碑再统一PR；未推送或开PR，接受dev仍70a8750，清理基线161计数1，remote累计43。继续三类复查，下一编号B123；目标active，无决策阻塞，无GPU/测速/下载/正式Study/main/tag/数据删除或文件架构/产物布局变化。

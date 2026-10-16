@@ -463,3 +463,6 @@ load_recipe在上述上下文内执行spec前，将自己的既有模块名临�
 第一类新反例：最后logger.info('succeeded')位于run既有try/except之外。真实Logger的末条stdout或文件write被拒时，原异常虽传播，却绕过_log_failure/_write_failed_result；普通collect新Run无failed、旧Run残留succeeded，process旧成功按原规则应保留但也没有原错诊断。四个原生Runner/Logger合成探针确认stdout路径，正式12节点（stdout/file-write/正常×collect/process×新旧结果）先红8失败/4正常对照，4ac6883已提交。与B101启动日志处不同：原修复保留末条时机，本批保持该时机，只补末条异常范围。
 
 最小方案：将末条info原语句缩进到现有try内、仍在全部阶段/Study hook之后；已有except原样记录并按当前最后phase调用_preserve_success。process旧成功仍逐字节保全；其他普通阶段仍failed，首错对象/既有诊断fallback/failed写二错规则不变。没有新catch、helper、phase名、依赖、结果字段、路径、文件或目录。日志本身失败仍对调用方失败，不吞错或伪造成功。只在同主题下一里程碑分支积累，先本机定向+core/CPU Flow，后续完整批次一个PR验最终head/实际dev；不为单个相邻bug立刻开PR。
+
+
+2026-10-16本机已实施B122：761700f仅原末条日志缩进到既有try，原捕获/保全规则及全部其他源码原字节不变。Runner49/core1974 passed+1既有skip/CPU Flow291 passed，新增12全执行。#167仍OPEN，等待同主题完整里程碑最终head/实际devCI，不是等待设计批准；不单bug立即开PR。详record§205。

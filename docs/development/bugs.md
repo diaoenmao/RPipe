@@ -6,7 +6,13 @@
 
 ## 开放
 
-当前开放Issue快照为空；B119/#163、B120/#164、B121/#166已由[PR165](https://github.com/DreamSoul-AI/RPipe/pull/165)合dev70a8750，最终head/实际dev所有实际CI成功，三Issue已按验收后关闭授权关闭。旧候选晚导入/动态导入/运行时与checkpoint反例保留，详[record§192–203](record.md)。已合codex/study-loader-isolation本地及remote清理；活动未合codex/correctness-next-milestone保留，按三类继续复查，下一编号B122，不把尚未确认的假设登记成缺陷。
+### B-122：Runner终末日志错误绕过失败留证（本机已修，待同主题里程碑CI）
+
+- Issue：[167](https://github.com/DreamSoul-AI/RPipe/issues/167)。终末stdout/file-write失败发生在run既有try之外，普通阶段无failed/残留旧成功，process缺诊断。4原始探针和12红（8失败/4正常控制）保留，4ac6883先测试、01b394f设计、761700f最小修。
+- 当前仅将原末条info纳入既有try，保持输出时机及process旧成功例外、原首错/诊断/failed写规则；Runner49、core1974 passed/1既有skip、CPU Flow291 passed，12新节点全部执行。详[record§204–205](record.md)，原始.tmp/audit122不随clone。
+- 167仍OPEN，本机检查不代替最终head/实际devCI；同一codex/correctness-next-milestone本地积累，不为单bug开PR，不改布局或科学门。
+
+B119/#163、B120/#164、B121/#166已PR165双侧全实际CI验收并关闭，已合主题本地+remote清理，详[record§203](record.md)。
 
 B117/#160、B118/#162已PR161双侧全部实际CI验收关闭且主题本地/remote清理，第5批周期盘点见[record§193](record.md)。
 

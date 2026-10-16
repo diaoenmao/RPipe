@@ -1,5 +1,12 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 B122/#167本机完成；下一失败留证里程碑积累
+
+fetch及开放Issue空快照后发现末条Runner日志未纳入既有失败处理；#167→4ac6883红12项8失败/4控制→01b394f设计→761700f只缩进原语句。_preserve_success/原except/日志时机及全部其他源码原字节保持，见record§204–205。Runner49/core1974 passed+1既有skip/CPU Flow291 passed，12新全执行；52264/58084终结exit0，原始证据.tmp/audit122不随clone。
+
+当前仅本地codex/correctness-next-milestone，未推送/未开PR，#167仍OPEN；按20:56继续同主题积累，不一bug一PR。接受dev70a8750/PR165，清理基线161计数1，remote累计43；下一编号B123。继续三类及相邻失败边界复查，未确认新反例不造Issue，不等审批；目标active，无决策阻塞。不合main/tag、不跑GPU/测速/正式Study、不删数据/结果、不改文件架构和产物布局。
+
+
 ## 2026-10-16 PR165验收收尾；继续三类下一里程碑
 
 B119/#163、B120/#164、B121/#166统一PR165，最终head3a74728的Branch38917963279/Package38917963440/Unit38917963881和实际dev70a8750的Package38918867862/Unit38918867923所有实际矩阵/聚合成功。本机core1974 passed/1既有skip、CPU Flow279 passed，新61全执行；三Issue各一次验收评论后关闭，PR原文保留追加。完整链接、hash与保留失败见record§203；原始.tmp/audit119/120/121不随clone。
