@@ -44,7 +44,7 @@ CIFAR_MD5 = 'c58f30108f718f92721af3b95e74349a'
 
 def digest(path: Path, algorithm: str = 'sha256') -> str:
     hasher = hashlib.new(algorithm)
-    with path.open('rb') as handle:
+    with _owned_stream(path.open('rb')) as handle:
         for block in iter(lambda: handle.read(1024 * 1024), b''):
             hasher.update(block)
     return hasher.hexdigest()
@@ -63,7 +63,6 @@ def expected_files(manifest: Path) -> dict[str, str]:
 
 def verify_file(path: Path, expected: str, algorithm: str = 'sha256') -> bool:
     return path.is_file() and digest(path, algorithm) == expected
-
 
 
 def _require_domestic_url(url: str) -> None:
@@ -207,9 +206,9 @@ def split_counts(data_root: Path) -> dict[str, dict[str, int]]:
     for split, prefix, expected in [('train', 'train', 60000), ('test', 't10k', 10000)]:
         images = mnist / f'{prefix}-images-idx3-ubyte'
         labels = mnist / f'{prefix}-labels-idx1-ubyte'
-        with images.open('rb') as handle:
+        with _owned_stream(images.open('rb')) as handle:
             magic, n, rows, cols = struct.unpack('>IIII', handle.read(16))
-        with labels.open('rb') as handle:
+        with _owned_stream(labels.open('rb')) as handle:
             label_magic, label_n = struct.unpack('>II', handle.read(8))
         if (magic, n, rows, cols, label_magic, label_n) != (2051, expected, 28, 28, 2049, expected):
             raise ValueError(f'invalid MNIST {split} IDX header')
@@ -218,13 +217,13 @@ def split_counts(data_root: Path) -> dict[str, dict[str, int]]:
     counts['MNIST'] = {'train': 60000, 'test': 10000, 'classes': 10}
     cifar = data_root / 'CIFAR10' / 'raw' / 'cifar-10-batches-py'
     for name in [*(f'data_batch_{i}' for i in range(1, 6)), 'test_batch']:
-        with (cifar / name).open('rb') as handle:
+        with _owned_stream((cifar / name).open('rb')) as handle:
             batch = pickle.load(handle, encoding='latin1')
         if batch['data'].shape != (10000, 3072) or len(batch['labels']) != 10000:
             raise ValueError(f'invalid CIFAR10 batch dimensions: {name}')
         if min(batch['labels']) < 0 or max(batch['labels']) > 9:
             raise ValueError(f'invalid CIFAR10 labels: {name}')
-    with (cifar / 'batches.meta').open('rb') as handle:
+    with _owned_stream((cifar / 'batches.meta').open('rb')) as handle:
         if len(pickle.load(handle, encoding='latin1')['label_names']) != 10:
             raise ValueError('invalid CIFAR10 metadata')
     counts['CIFAR10'] = {'train': 50000, 'test': 10000, 'classes': 10}
