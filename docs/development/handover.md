@@ -1,5 +1,14 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 B115本机完成；PR155已双侧验收；19:53准入规则
+
+PR155最终head34653e2和实际dev720a13df全部实际CI成功，Issue154关闭，execute-final-evidence本地/remote各1条普通删；保留唯一未合codex/archive-exclusive-creation，清理周期149累计2，见record§182。
+
+B115/#156两处固定源码归档统一修：0383bd1红28项12失败/16控制→862db93设计→832c1c9仅原write_bytes行换xb排他及首错close。28新节点全执行，core1874 passed/1既有skip、CPU Flow273 passed，0failure/error；不加载历史源码/正式归档或改manifest/路径/固定ref/科学门，原始.tmp/audit115不随clone。完整里程碑后一个PR→dev，分别验最终head/实际devCI，见record§181–183。
+
+GPU准入按19:53授权：显示/远控白名单+Graphics/G或C+G且无/极少CUDA计算占用，不因身份未知阻塞，也不杀/挂起；只看真实CUDA计算进程、实际free显存和RAM实测峰值+2GB。未知真占CUDA计算才留证告知监督。静态核对无当前身份拒绝脚本，入库capacity只查free；10-13.tmp脚本保留为历史，未来执行须先按新规则补分类/验证，不以旧margin当新准入。当前不调用GPU探针、不启动/干预任务；以下旧状态仅历史。
+
+
 ## 2026-10-16 B114本机完成；PR152双侧验收
 
 PR152最终head c91691b及实际dev f956c635全部实际CI成功，150/151/153已验收关闭，codex/optional-read-boundaries本地/remote普通删；周期基线149累计1，见record§178。正文精简被自动审批拒绝未执行，保留原文并只追加验收，不影响代码。

@@ -1,8 +1,8 @@
-> 当前：PR152双侧全部实际CI验收，150/151/153已关闭，原主题本地/remote已清；周期基线149累计1。
-> 最新：B114/#154通用execute最终写入拒绝仍假成功；24正式红6失败/18控制→82890ce修复后全绿。
-> 验证：core1846 passed/1既有平台skip、CPU Flow273 passed，24新节点全执行；见§178–180。
-> 下一步：完整失败写入里程碑统一PR→dev，分别验最终head/实际dev CI；唯一未合分支本地累积，无代码阻塞。
-> 保护：无GPU/测速/正式Study、main/tag或布局/数据修改；临时原证据保留且不随clone。
+> 当前：PR155最终head/实际dev全部CI已验收，Issue154关闭，已合主题本地/remote已清；周期149累计2。
+> 最新：B115/#156两处历史源码导出竞态覆盖；28正式红12失败/16控制→832c1c9后全绿，见§181–183。
+> 验证：core1874 passed/1既有平台skip，CPU Flow273 passed；28新节点全部执行，正式归档未访问。
+> 下一步：完整源码所有权里程碑统一PR→dev；新GPU准入规则已记录，当前不启动/干预GPU任务。
+> 保护：无测速/正式Study、main/tag、布局或数据结果改动；原失败/无效夹具证据保留，.tmp不随clone。
 
 > 当前：PR135实际dev已全CI验收、Issue134关闭，工作分支本地/remote普通删。
 > 最新：B104/Issue136同Study路径别名翻转多根锁顺序，真实并发循环已复现。
@@ -3252,3 +3252,23 @@ PR152继续同一分支收敛#150/#151/#153，生产总计3个现有文件14行�
 先Issue156，再0383bd1正式红28项12 failed/16有效控制passed、0error/skip。覆盖创建竞态、相同竞争者完成后重试、四种原写错/终止与close IO、无二次close错控制、成功close失败严格及旧manifest/自有部分诊断bytes。首轮夹具tree变量覆盖为AST Module的28失败无效；INVALID_FIXTURE_RED及原因保留，修正source_tree后才提交正式红，生产未先改。临时探针/全部合成文件/ZIP/hash与红在.tmp/audit115不随clone。
 
 设计仅两处else用xb取得创建所有权，显式沿既有write/close首错合同；失去创建权拒绝、不碰peer或旧manifest，自己失败字节保留。原固定Git ref、序列化/hash/路径、导出内容与数值/科学门均不改。PR155最终head34653e2已全实际CI成功并正常合dev720a13df514efaf8d765c24613c019e664af0b4e，实际dev CI仍运行；#154和已合旧主题待双侧验收清理。当前唯一未合codex/archive-exclusive-creation本地积累，不拆两导出PR，不推单行文档。
+
+
+## 182. PR155 双侧验收与旧主题清理（2026-10-16）
+
+最终head34653e2705ec056fd946a7eaf6e14fc5c744e910的Branch38895906175 / Package38895906115 / Unit38895906081所有实际矩阵与聚合成功；正常合dev720a13df514efaf8d765c24613c019e664af0b4e。实际dev Package38896655882 / Unit38896656144亦全部实际矩阵/聚合成功，DEV_CHECKED SHA256 d8c8137a19fab24759512fbb145b9fe498437ceb81edad0b4f72e8e66d047757。Issue154已验收关闭并引用PR/两侧CI，PR155正文只追加验收、不删除旧说明，不表示main发布或批准科学运行。
+
+两侧CI成功后核对tip/祖先/唯一worktree及无未保全改动，codex/execute-final-evidence本地/remote各1条普通删除；未合codex/archive-exclusive-creation和Issue156保留。主工作区、main/dev、远端main、_staging_from_DEM原样，worktree/数据/结果/provenance删除0。周期基线仍149，累计2个已验收PR152/155，未达约5批完整盘点；累计结束remote39。原始核验.tmp/audit114不随clone，验收/清理随本完整里程碑合入，不单开文档PR。
+
+
+## 183. B115 原子所有权/首错集中验收及新准入规则（2026-10-16）
+
+按862db93设计，832c1c9只替换main_exp.export_source和main_probe.MainArchive.__init__各一条write_bytes为xb排他open及既有首错优先的write/close模式，共22行增加/2行删除。抢占失败原生FileExistsError拒绝且不触碰peer/旧manifest；相同winner完成后下一次调用沿原校验复用。自有部分写错/终止保留诊断字节和原错，成功close失败仍拒绝；不宣称多文件归档整体事务或所有竞争者必定成功。
+
+28新节点全部实际执行/通过；完整core1874 passed、1既有Windows POSIX模式skip，CPU Flow273 passed，均0failure/error。新28均在core执行，无新skip；正式红28项12失败/16控制保留，初次无效夹具另存不计库失败。SOURCE_CHECKED精确原字节证明每文件仅替换原write_bytes行，固定Git refs、其他源码/科学门、manifest路径/格式/内容哈希与有效blob字节保持；测试使用合成Git数据和空ROOTS，不加载历史源码或访问正式归档。原ZIP/hash/探针/所有失败与XML在.tmp/audit115，不随clone，正式测试/设计/记录可携带。
+
+所有原始binary写入点复核：这两个不可变归档点本批修复；main_exp raw准备的download/MNIST/CIFAR固定part在现有cache_lock和完整hash验证下，未执行/改写；shared link_input使用内核排他链接/自有staging；checkpoint committed/diagnostic bundle保持严格恢复及诊断保留。除新28外，其余为源审/既有合同和本轮已有回归定位，不声称重新运行原始数据准备或科学门。最终head/实际dev全部实际CI仍待统一里程碑验收。
+
+19:53监督授权的新GPU准入规则随本批记录：桌面/图形/远控按白名单加进程类型判定，Graphics/G或C+G且无/极少CUDA计算占用的Figma、浏览器、dwm、explorer、Office、RayLink/RayLinkCapturer、ToDesk、Sunlogin/向日葵、Parsec、TeamViewer归显示类，不能仅因“未分类身份”阻塞；仅真实CUDA计算占用、实际空闲显存与主机RAM实测峰值+2GB参与准入。未知进程只有真实CUDA计算占用才阻塞并记录告知监督，不杀/挂起任何进程。
+
+静态核对：入库capacity.py只查询GPU/free，不以进程身份拒绝；Study手动capacity入口同样是free检查。找到的.tmp/v030-20261013校准/恢复/telemetry是10-13历史证据，当前不使用，不为套新规则改写历史脚本/原观测。当前会话没有正在使用的进程身份准入脚本可补分类，因此未增加新的GPU框架或宣称已实现分类器；未来GPU准入须先按上述新规则实现/验证白名单+类型和RAM条件，旧脚本不能直接作为新准入依据。本轮只读源码，未调用nvidia-smi/torch.cuda、未启动或干预GPU/性能任务。
