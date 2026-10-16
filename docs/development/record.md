@@ -3860,3 +3860,12 @@ Git仅唯一主工作区，当前聊天list_artifacts共91个PR附件、无workt
 新清理基线PR181/dev593385f，基线后计数0、累计结束remote47。下一唯一未合codex/launch-plan-validation从实际dev建立、仅本地保留；本条收尾文档随下一完整里程碑，不拆几行文档PR。B133/#182坏cached job条目被静默删除/部分接受、include_done前缺失结构校验，原生CLI可0但process.complete=false/pending1；B134/#183 Windows同物理Run大小写别名绕过字符串去重，一组先发两start再wait，真实不同Run与字面重复控制正确。两者均已先Issue/本机隔离REPRO，尚未修，下一先红回归再同主题最小实现。进程仅stub/禁止启动，未运行实验或观测实际破坏。
 
 两新缺陷原ZIP/REPRO及范围在.tmp/audit133/134，不随clone；下一新编号B135。没有main/tag/发布/GPU/测速/正式Study/科学结论或文件架构/产物布局变化，持续目标active，无决策阻塞。
+
+
+## 226. B133/#182、B134/#183 启动计划完整里程碑：先红回归与统一方案（2026-10-17）
+
+接受基线为 PR181/dev593385f，收尾记录7048f5c。当前唯一工作分支 codex/launch-plan-validation；fetch origin --no-prune 有界完成，已有 _staging_from_DEM 保留。两已开 Issue 的原生反例与范围见§225及 design 文末，未新增 PR。
+
+e86727a：#182 红39项28失败/11控制通过（含2 CLI integration）；8b99bc1：#183 红20项12失败/8控制通过。两批0 error/skip，全节点执行，分别 .tmp/audit133/RED.xml、audit134/RED.xml 与原 log 留存，不随 clone。便携测试已入库，现仍是有意红状态。
+
+共同根因在计划信任边界缺失：方案已写入 artifact_consistency_design.md，复用 wait_groups 校验 dict/既有安全字符串 ID/平台 Path 唯一性；缓存和 jobs 发布无条件进入该边界，启动不重复字符串校验。保留合法空队列、可选 legacy 字段、成功过滤、批次全字段匹配及全部布局/科学合同。下一步最小实现、相邻/core/CPU Flow 验证，同主题累积到完整里程碑再开一个 PR；无设计/用户决策阻塞。不改 main/tag/GPU，不动实验数据/结果。
