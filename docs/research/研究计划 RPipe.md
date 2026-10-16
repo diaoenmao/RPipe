@@ -1,7 +1,7 @@
 > **RPipe 研究计划：研究执行与证据一致性的可验证合同**
 > 版本：1.4；更新：2026-10-16；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
 > 当前阶段：完成计划重做和定向文献初筛；继续代码正确性，尚未执行本计划的新科学实验。
-> 当前实现基线：dev `720a13df514efaf8d765c24613c019e664af0b4e`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
+> 当前实现基线：dev `50d5a6bd9d2c4fca76199d7a0dd9cb6d4f1af97b`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
 > 本轮零 GPU、零测速、零训练、零数据下载；保持既有文件架构与产物布局。
 
 ## 本次人工审阅摘要（2026-10-16，按12:53更新）
@@ -610,3 +610,10 @@ PR152最终head及实际dev全部实际CI通过，#150/#151/#153已关闭且主�
 PR155最终head/实际dev全部实际CI通过，#154关闭且主题本地/remote清理，已接受基线dev720a13df。B115/#156把main_exp/main_probe两处相同竞态统一处理：存在性观察后新竞争者字节会被覆盖；两处改用排他创建，失败保全原写错/部分诊断字节和旧manifest。先红28项12失败/16控制，再832c1c9；28新节点全执行/通过、core1874 passed/1既有平台skip、CPU Flow273 passed，最终/实际dev CI待验收。源文件其余原字节、固定ref、有效Git blob、manifest/hash/路径与科学门保持。详[record§181–183](../development/record.md)。测试只用合成Git tree/blob和隔离AST、无历史源码加载/正式归档/数据/训练/测速；未来科学复验仍新version/实际provenance，旧Run/负结果保留，无格式/目录迁移。
 
 19:53批准的未来GPU准入：按白名单加进程类型将Figma、浏览器、dwm、explorer、Office及RayLink（含RayLinkCapturer）、ToDesk、Sunlogin/向日葵、Parsec、TeamViewer等Graphics/G或C+G且无/极少CUDA计算占用归为显示，不以未知身份挡准入，不杀/挂起。仅真实CUDA计算进程、实际空闲显存与RAM实测峰值+2GB决定准入；未知进程只有真占CUDA计算才阻塞、留证并告知监督。入库容量入口无身份过滤，仅free检查；历史.tmp校准/恢复材料不改写、不直接作为新准入，未来执行前须补齐并验证分类/RAM条件。本轮不启用GPU或性能工作，资源授权与原科学实验顺序/数值门仍保持。
+
+
+## 2026-10-16 工程进展：跨时区日志的只读时序
+
+PR157最终head与实际dev全部实际CI已验收，#156关闭、主题本地/remote清理，当前接受基线dev50d5a6bd。B116/#158六actual CLI案例确认DST回拨/跨日/跨偏移三种墙钟文本排序反例，先红28项8失败/20控制，再ba665de只改共享sort key。28新节点全执行/通过，core1902 passed/1既有平台skip、CPU Flow273 passed；最终head/实际dev CI待验收。原生aware时间在datetime精度内按UTC顺序，原输出行/格式/输入不改；坏/无时区/缺失/溢出及旧亚微秒键保持fallback，不宣称新增其UTC语义。详[record§184–186](../development/record.md)。
+
+这是只读工程事件排序，不是科学曲线/采样坐标重算，不改状态、指标、实验顺序、数值门、文件架构/布局或原Run证据；没有新的科学实验、GPU/测速或main/tag。未来实际复验仍新version/实际provenance，旧数值/负结果保留。19:53 GPU准入规则与资源授权保持，当前不启动或干预GPU任务。

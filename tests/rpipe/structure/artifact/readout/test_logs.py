@@ -313,3 +313,68 @@ def test_log_reference_windows_namespace_preserves_share_ownership(server, share
     else:
         with pytest.raises(ValueError):
             _log_path_key(candidate).relative_to(_log_path_key(owner))
+
+
+_LOG_TIME_PAIRS = [
+    ('dst-fold', '2026-11-01T01:45:00.000-04:00', '2026-11-01T01:15:00.000-05:00'),
+    ('cross-day', '2026-01-02T00:15:00.000+02:00', '2026-01-01T23:00:00.000+00:00'),
+    ('cross-offset', '2026-01-01T11:00:00.000+09:00', '2026-01-01T04:00:00.000+00:00'),
+    ('utc-z-fraction', '2026-01-01T04:00:00Z', '2026-01-01T04:00:00.100Z'),
+    ('same-positive', '2026-01-01T04:00:01.000+08:00', '2026-01-01T04:00:02.000+08:00'),
+    ('same-negative', '2026-01-01T04:00:01.000-05:00', '2026-01-01T04:00:02.000-05:00'),
+    ('same-utc', '2026-01-01T04:00:01.000+00:00', '2026-01-01T04:00:02.000+00:00'),
+    ('legacy-naive', '2026-01-01T04:00:01.000', '2026-01-01T04:00:02.000'),
+]
+
+
+def _log_time_inputs(study, early_stamp, late_stamp):
+    write_index(study, {'study': 'synthetic', 'experiments': [
+        {'factors': {}, 'runs': [{'id': 'late'}, {'id': 'early'}]}]})
+    lines = {}
+    for rid, stamp in [('early', early_stamp), ('late', late_stamp)]:
+        path = study / 'runs' / rid / 'assets/logs/run.log'
+        path.parent.mkdir(parents=True)
+        lines[rid] = (stamp + ' ' if stamp else '') + f'INFO  {rid} [flow] {rid.upper()}'
+        path.write_text(lines[rid] + '\n', encoding='utf-8')
+    entries = set(study.rglob('*'))
+    before = {f: f.read_bytes() for f in entries if f.is_file()}
+    return lines, entries, before
+
+
+def _read_log_time_entry(study, entry, capsys):
+    if entry == 'library':
+        from rpipe.structure.artifact.readout.logs import event_lines
+        return event_lines(study)
+    assert main(['logs', str(study)]) == 0
+    captured = capsys.readouterr()
+    assert not captured.err
+    return captured.out.splitlines()
+
+
+@pytest.mark.parametrize('entry', ['library', 'cli'])
+@pytest.mark.parametrize('case,early,late', _LOG_TIME_PAIRS, ids=[r[0] for r in _LOG_TIME_PAIRS])
+def test_logs_aware_time_order_keeps_original_lines_and_input_bytes(tmp_path, capsys, entry, case, early, late):
+    """Library/actual CLI -> indexed native-format offset events -> actual time order, original line text and bytes."""
+    lines, entries, before = _log_time_inputs(tmp_path, early, late)
+    assert _read_log_time_entry(tmp_path, entry, capsys) == [lines['early'], lines['late']]
+    assert {f: f.read_bytes() for f in before} == before
+    assert set(tmp_path.rglob('*')) == entries
+
+
+@pytest.mark.parametrize('entry', ['library', 'cli'])
+@pytest.mark.parametrize('case', ['missing', 'malformed', 'invalid-date', 'sub-microsecond', 'utc-overflow', 'equal-stamp'])
+def test_logs_timestamp_fallback_and_ties_retain_existing_text_order(tmp_path, capsys, entry, case):
+    """Unusable/legacy timestamp keys and equal stamps keep prior fallback/order, without dropping peer evidence."""
+    stamps = {
+        'missing': ('', ''),
+        'malformed': ('2026-01-01Tbad-A', '2026-01-01Tbad-B'),
+        'invalid-date': ('2026-02-30T00:00:01+00:00', '2026-02-30T00:00:02+00:00'),
+        'sub-microsecond': ('2026-01-01T00:00:00.1234561+00:00', '2026-01-01T00:00:00.1234562+00:00'),
+        'utc-overflow': ('0001-01-01T00:00:01+14:00', '0001-01-01T00:00:02+14:00'),
+        'equal-stamp': ('2026-01-01T00:00:01.000+08:00', '2026-01-01T00:00:01.000+08:00'),
+    }[case]
+    lines, entries, before = _log_time_inputs(tmp_path, *stamps)
+    order = ['late', 'early'] if case in ('missing', 'equal-stamp') else ['early', 'late']
+    assert _read_log_time_entry(tmp_path, entry, capsys) == [lines[rid] for rid in order]
+    assert {f: f.read_bytes() for f in before} == before
+    assert set(tmp_path.rglob('*')) == entries

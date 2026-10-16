@@ -1,8 +1,8 @@
-> 当前：PR155最终head/实际dev全部CI已验收，Issue154关闭，已合主题本地/remote已清；周期149累计2。
-> 最新：B115/#156两处历史源码导出竞态覆盖；28正式红12失败/16控制→832c1c9后全绿，见§181–183。
-> 验证：core1874 passed/1既有平台skip，CPU Flow273 passed；28新节点全部执行，正式归档未访问。
-> 下一步：完整源码所有权里程碑统一PR→dev；新GPU准入规则已记录，当前不启动/干预GPU任务。
-> 保护：无测速/正式Study、main/tag、布局或数据结果改动；原失败/无效夹具证据保留，.tmp不随clone。
+> 当前：PR157双侧全部实际CI验收，Issue156已关闭，已合主题本地/remote已清；周期149累计3。
+> 最新：B116/#158跨偏移/DST/UTC日志顺序反例；28正式红8失败/20控制→ba665de后全绿。
+> 验证：core1902 passed/1既有平台skip，CPU Flow273 passed；28新节点全执行，见§184–186。
+> 下一步：完整只读时序里程碑按频率规则流转PR→dev，最终head与实际devCI分别验收；无代码阻塞。
+> 保护：旧时间fallback/原日志字节与格式、布局/数值/科学门保持；无GPU/测速/Study/main/tag。
 
 > 当前：PR135实际dev已全CI验收、Issue134关闭，工作分支本地/remote普通删。
 > 最新：B104/Issue136同Study路径别名翻转多根锁顺序，真实并发循环已复现。
@@ -3272,3 +3272,26 @@ PR152继续同一分支收敛#150/#151/#153，生产总计3个现有文件14行�
 19:53监督授权的新GPU准入规则随本批记录：桌面/图形/远控按白名单加进程类型判定，Graphics/G或C+G且无/极少CUDA计算占用的Figma、浏览器、dwm、explorer、Office、RayLink/RayLinkCapturer、ToDesk、Sunlogin/向日葵、Parsec、TeamViewer归显示类，不能仅因“未分类身份”阻塞；仅真实CUDA计算占用、实际空闲显存与主机RAM实测峰值+2GB参与准入。未知进程只有真实CUDA计算占用才阻塞并记录告知监督，不杀/挂起任何进程。
 
 静态核对：入库capacity.py只查询GPU/free，不以进程身份拒绝；Study手动capacity入口同样是free检查。找到的.tmp/v030-20261013校准/恢复/telemetry是10-13历史证据，当前不使用，不为套新规则改写历史脚本/原观测。当前会话没有正在使用的进程身份准入脚本可补分类，因此未增加新的GPU框架或宣称已实现分类器；未来GPU准入须先按上述新规则实现/验证白名单+类型和RAM条件，旧脚本不能直接作为新准入依据。本轮只读源码，未调用nvidia-smi/torch.cuda、未启动或干预GPU/性能任务。
+
+
+## 184. B116 / Issue158：日志墙钟文本颠倒实际事件顺序（2026-10-16）
+
+只读复查六个实际cli.main日志案例，三个原生RFC3339毫秒+偏移反例（DST回拨、UTC跨日、跨偏移）均return0却较晚在前；三个同正/负/UTC偏移控制正确，全输入字节保留。先Issue158，再正式28红8 failed/20有效控制passed、0error/skip，库/CLI两入口及Z不同小数精度也复现。没有执行数据/训练/Study或改日志原文，临时REPRO/ZIP/hash/RED在.tmp/audit116不随clone。
+
+设计只用stdlib datetime规范已识别aware排序键到UTC固定微秒字符串；保留原行与缺失/损坏/无时区/高于微秒文本、转换溢出的原fallback，避免放宽strict loader或截断旧高精度键。Python稳定排序、筛选/路径/IO、状态/数值/科学门保持，不新增模块/依赖/字段/路径。当前唯一未合codex/readout-time-order按18:53规则本地累积，PR157已正常合dev50d5a6bd9d2c4fca76199d7a0dd9cb6d4f1af97b、实际dev CI仍待验；旧已合主题及#156待验收清理。GPU新规则已在§183记录，当前无活动准入/执行任务。
+
+
+## 185. PR157 双侧验收与归档主题清理（2026-10-16）
+
+最终head10f01de5807d196db84fdc2a274a20c9a65237af的Branch38898015200 / Package38898015174 / Unit38898015143所有实际矩阵与聚合成功，正常合dev50d5a6bd9d2c4fca76199d7a0dd9cb6d4f1af97b。实际dev Package38898741388 / Unit38898741528同样全部实际成功，DEV_CHECKED SHA256 58c2c7f73e20a4a1969f728e490bf054c8438dbac7395c7f46ee298e870fe8be。Issue156验收关闭，PR正文只追加验收，不表示main发布/科学授权。
+
+两侧CI后核对tip/祖先、活动工作区和唯一worktree，codex/archive-exclusive-creation本地/remote各1条普通删除；当前未合codex/readout-time-order与Issue158保留，main/dev和远端main不动，worktree/数据/结果/provenance/_staging_from_DEM删除0。周期基线149累计3（PR152/155/157），未达约5批；累计结束remote40。证据.tmp/audit115不随clone，清理/验收随完整里程碑提交，不另开文档PR。
+
+
+## 186. B116 原生日志时序本机验收（2026-10-16）
+
+按a183394设计，ba665de仅logs.py增加stdlib datetime导入与原排序键局部处理，11行增加/1行删除。带时区且在datetime精度内的已识别时间转UTC固定微秒字符串比较，避免墙钟文本及小数精度导致颠倒；原行内容、Logger/格式、事件选择、traceback筛选、可选IO/path归属、strict index/CLI错误边界均原字节保持。无时区/缺失/坏时间或转换溢出沿原fallback；高于微秒的旧文本保持原键、不宣称新增其UTC语义，未截断原精度。原稳定排序保持，不加依赖/配置/模块/路径，不改系统时区、状态/数值/科学门。
+
+28新节点全部执行/通过：完整core1902 passed、1既有Windows POSIX模式skip，CPU Flow273 passed，均0failure/error。新28均在core，0新skip；正式红28项8失败/20有效控制保留。LOCAL_CHECKED保存XML/hash与实际节点；SOURCE_CHECKED按原字节确认仅预期导入/排序键变化。六actual CLI原探针与正式library/CLI节点覆盖DST/跨日/跨偏移/Z小数、同偏移、无时区/缺失/坏时间/旧亚微秒/UTC溢出/等时稳定性，输入及目录项保全。证据.tmp/audit116不随clone，正式测试与设计随Git提供。
+
+继续源审其他readout消费者：status提示沿单个Run原追加顺序提取最后事件，不是跨Run排序；report日志链接只做归属映射；compare/轨迹按既有step或observation坐标，不应套墙钟归一化。只event_lines共享排序边界确认新反例，统一修在一处；不宣称整个外部历史日志格式或科学时间轨迹已经验收。新GPU准入规则继续按§183与计划约束，当前不执行GPU探针、准入或性能任务。最终head与实际dev全部实际CI仍须完整里程碑分别验收。
