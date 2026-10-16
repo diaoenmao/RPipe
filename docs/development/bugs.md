@@ -82,3 +82,10 @@ B106同批补充确认关闭IO二错可遮原保存错/取消；6项先红4/2后
 
 
 B106含流关闭补充的最终本机验收：25新节点/core1734/CPU Flow207 passed，core另1既有平台skip；25新节点含原生只读清理全执行，PNG字节仍一致。更新后最终head/实际dev CI仍须验收；旧9da02b4绿仅历史。
+
+
+## 2026-10-16 B107 当前开放项
+
+B106/#140已PR141更新head/实际dev全CI验收关闭并清分支。B107/[Issue142](https://github.com/DreamSoul-AI/RPipe/issues/142)：共享锁unlock/close IO可遮准备首错/取消；25项先红19/6后最小退出回调修复，共享101通过，待core/Flow/两侧CI。见[record§165–166](record.md)。
+
+B107 / Issue142本机补充：共享101、core1759 passed/1既有平台skip、CPU Flow207 passed，25新回归全部执行；最终head/实际dev CI待验收，见record §166。

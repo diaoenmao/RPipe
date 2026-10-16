@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
 > Version 1.4; updated 2026-10-16. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `90078c81421fd39e746212c16d84bf2b3c9a44de`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `c42a78b5835c5fda460b7ad4d0c49e8a1884293e`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -556,3 +556,8 @@ B106 remains one PR141: six supplemental close-error regressions yielded4 failur
 
 
 B106 final local acceptance after stream-close supplement:25 new nodes/core1734/CPU Flow207 passed; core has one existing platform skip. All25 new nodes executed, including native readonly cleanup. PNG bytes remain identical. Final updated-head and actual-dev CI remain required; old9da02b4 green is historical.
+
+
+## B106 acceptance and B107 cleanup priorities, 2026-10-16
+
+PR141 updated-head/actual-dev CI passed all real jobs; Issue140 is closed and its local/remote task branch removed. One batch is accepted after cleanup baseline139. B107/Issue142 groups shared-lock unlock/close primary-error handling, acquisition causes, reentry and builder staging:25 test-first nodes produced19 failures/6 valid controls, then a local ExitStack fix passes101 shared tests. Core/Flow/CI remain pending. Budgets/OS primitives, shared-input identity and layout are unchanged; no new scientific conclusion. See [record§165–166](../development/record.md).

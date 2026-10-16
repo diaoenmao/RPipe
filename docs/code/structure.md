@@ -1104,3 +1104,6 @@ Run 目录名必须为非空单一目录组件，拒绝点 / 父目录、分隔�
 
 
 migrate_shared在取得多个共享根锁前确保原有根目录存在，并按与cache_lock重入相同的物理目录身份排序，避免namespace拼写改变跨线程/进程加锁次序。原有四根、冲突检查、硬链接发布和诊断保留合同保持。见B104/Issue136。
+
+
+共享锁退出按先OS release、后句柄close处理：已有准备异常/取消时，清理OSError不得替换首错；正常结束的清理失败仍严格传播，多个清理故障保留先发生者，非IO程序错误继续暴露。未取得锁不尝试unlock，获取Timeout的cause/原预算、PID物理root重入键、多根顺序及OS所有权不变。prepared_resource失败staging不按锁清理删除。见B107/Issue142。
