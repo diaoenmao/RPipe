@@ -35,33 +35,44 @@ class Logger:
                 pass
 
     def _emit(self, level: str, event: str, message: str) -> None:
+        first_error = None
         for message in f'{message}'.splitlines() or ['']:
             stamp = datetime.now().astimezone().isoformat(timespec='milliseconds')
             run_id = self.run_id or '-'
             text = f'{stamp} {_LEVELS[level]} {run_id} [{event}] {message}'.rstrip()
-            print(text, flush=True)
-            separator = ''
             try:
-                with self.path.open('rb') as previous:
-                    previous.seek(0, 2)
-                    if previous.tell():
-                        previous.seek(-1, 2)
-                        if previous.read(1) not in (b'\n', b'\r'):
-                            separator = '\n'
-            except OSError:
-                pass  # shortcut: unreadable tails stay append-only; repair requires readable log bytes.
-            handle = self.path.open('a', encoding='utf-8')
+                print(text, flush=True)
+            except (OSError, ValueError) as error:
+                if first_error is None:
+                    first_error = error
             try:
-                handle.write(separator + text + '\n')
-                handle.flush()
-            except BaseException:
+                separator = ''
                 try:
-                    handle.close()
+                    with self.path.open('rb') as previous:
+                        previous.seek(0, 2)
+                        if previous.tell():
+                            previous.seek(-1, 2)
+                            if previous.read(1) not in (b'\n', b'\r'):
+                                separator = '\n'
                 except OSError:
-                    pass
-                raise
-            else:
-                handle.close()
+                    pass  # shortcut: unreadable tails stay append-only; repair requires readable log bytes.
+                handle = self.path.open('a', encoding='utf-8')
+                try:
+                    handle.write(separator + text + '\n')
+                    handle.flush()
+                except BaseException:
+                    try:
+                        handle.close()
+                    except OSError:
+                        pass
+                    raise
+                else:
+                    handle.close()
+            except (OSError, ValueError) as error:
+                if first_error is None:
+                    first_error = error
+        if first_error is not None:
+            raise first_error
 
     def info(self, message: str, *, event: str = 'flow') -> None:
         self._emit('INFO', event, message)
@@ -74,11 +85,21 @@ class Logger:
 
     def exception(self, message: str, exc: BaseException) -> None:
         """ERROR line plus traceback. Same text on stdout and ``run.log``."""
-        self.error(f'{message} {type(exc).__name__}: {exc}')
+        first_error = None
+        try:
+            self.error(f'{message} {type(exc).__name__}: {exc}')
+        except (OSError, ValueError) as error:
+            first_error = error
         formatted = traceback.format_exception(type(exc), exc, exc.__traceback__)
         for line in ''.join(formatted).splitlines():
             if line:
-                self._emit('ERROR', 'error', line)
+                try:
+                    self._emit('ERROR', 'error', line)
+                except (OSError, ValueError) as error:
+                    if first_error is None:
+                        first_error = error
+        if first_error is not None:
+            raise first_error
 
     def report(self, tracker: Any, split: str, extra: dict[str, Any] | None = None) -> None:
         extra = extra or {}

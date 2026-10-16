@@ -761,3 +761,64 @@ def test_native_readout_keeps_samefile_alias_and_distinct_case_run_ownership(tmp
         assert _note_from_log(logger.path, errors_only=True) == expected
     assert {p: p.read_bytes() for p in before} == before
     assert set(tmp_path.rglob('*')) == entries
+
+
+@pytest.mark.parametrize('fault', ['normal', 'pipe', 'closed', 'file'])
+def test_logger_peer_sink_retains_original_phase_traceback(tmp_path, stream_close_fault, fault):
+    import contextlib
+    import io
+    import os
+    from types import SimpleNamespace
+    from rpipe.structure.artifact import write_result
+    from rpipe.structure.control import control_from_config
+    from rpipe.structure.system.logger import Logger
+
+    layout = artifact_layout(tmp_path, 'sink-failure')
+    write_result(layout.result_path, {'status': 'succeeded', 'control': {}, 'metrics': {}, 'paths': {}})
+    logger = Logger(layout.assets_dir)
+    peer = layout.root / 'peer.bin'
+    peer.write_bytes(b'peer evidence')
+    original = RuntimeError('original algorithm failure')
+    active = [False]
+    if fault == 'file':
+        stream_close_fault(lambda path, mode: active[0] and path == logger.path and mode == 'a',
+                           PermissionError('file log unavailable'), None)
+    reader = []
+    if fault in ('pipe', 'closed'):
+        read_fd, write_fd = os.pipe()
+        reader.append(read_fd)
+        sink = io.TextIOWrapper(os.fdopen(write_fd, 'wb', buffering=0), encoding='utf-8', write_through=True)
+    else:
+        sink = io.StringIO()
+    class Algorithm:
+        mode = 'train'
+        def run(self, *_args):
+            active[0] = True
+            if fault == 'pipe':
+                os.close(reader.pop())
+            elif fault == 'closed':
+                sink.close()
+            raise original
+    config = {'id': 'sink-failure', 'seed': 0, 'data': {'name': 'Toy', 'source': 'stub'},
+              'model': {'name': 'linear'}, 'algorithm': {'mode': 'train'}, 'system': {'device': 'cpu'}}
+    ctx = FlowContext(tmp_path, layout, config)
+    ctx.control = control_from_config(config)
+    ctx.state.update(logger=logger, algorithm=Algorithm(), tracker=SimpleNamespace(flush_state=lambda: None))
+    try:
+        with contextlib.redirect_stdout(sink):
+            with pytest.raises(RuntimeError) as caught:
+                FlowRunner(['execute']).run(ctx)
+        assert caught.value is original
+        result = load_result(layout.result_path)
+        assert result['status'] == 'failed' and result['error'] == 'RuntimeError: original algorithm failure'
+        view = sink.getvalue() if fault == 'file' else logger.path.read_text(encoding='utf-8')
+        assert 'original algorithm failure' in view
+        assert 'Traceback (most recent call last):' in view
+        assert peer.read_bytes() == b'peer evidence'
+    finally:
+        try:
+            sink.close()
+        except (OSError, ValueError):
+            pass
+        if reader:
+            os.close(reader.pop())
