@@ -573,3 +573,36 @@ def test_cache_lock_extended_alias_reentry_keeps_thread_ownership(tmp_path, exte
             with pytest.raises(TimeoutError):
                 worker.submit(acquire).result(timeout=10)
         assert worker.submit(acquire).result(timeout=10) == 'acquired'
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='requires native Windows extended paths')
+@pytest.mark.parametrize('shared_name', ['aaa', 'zzz'])
+@pytest.mark.parametrize('extended_shared', [False, True])
+def test_migration_lock_order_is_independent_of_path_namespace(tmp_path, monkeypatch, shared_name, extended_shared):
+    import contextlib
+    import json
+    import rpipe.structure.artifact.shared as shared
+
+    study = tmp_path / 'studies' / 'sample'
+    study.mkdir(parents=True)
+    resource = tmp_path / shared_name
+    extended = lambda path: Path('\\\\?\\' + str(path.resolve()))
+    declared = extended(resource) if extended_shared else resource
+    (study / 'study.yaml').write_text(
+        'shared:\n  root: ' + json.dumps(str(declared)) + '\n', encoding='utf-8')
+    original = shared.cache_lock
+    orders = []
+    for spelling in (study, extended(study)):
+        order = []
+        @contextlib.contextmanager
+        def observe(root):
+            with original(root, timeout=0):
+                identity = Path(root).stat()
+                order.append((identity.st_dev, identity.st_ino))
+                yield
+        with monkeypatch.context() as patch:
+            patch.setattr(shared, 'cache_lock', observe)
+            assert shared.migrate_shared(spelling)['files'] == []
+        assert len(order) == 4 and len(set(order)) == 4
+        orders.append(order)
+    assert orders[0] == orders[1]
