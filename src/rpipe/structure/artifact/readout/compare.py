@@ -288,4 +288,5 @@ def write_compare(path: Path | str, report: dict[str, Any]) -> Path:
             for key, item in report['items'].items()
         },
     }
-    return atomic_write_text(Path(path), json.dumps(clean, indent=2, ensure_ascii=False))
+    text = json.dumps(clean, indent=2, ensure_ascii=False).encode('utf-8', errors='backslashreplace').decode('utf-8')
+    return atomic_write_text(Path(path), text)
