@@ -11,7 +11,7 @@ from rpipe.structure.artifact.activity import announce
 from rpipe.structure.artifact.config import load_config
 from rpipe.structure.artifact.layout import ensure_study_layout
 from rpipe.structure.artifact.shared import cache_lock, shared_paths
-from rpipe.structure.artifact._atomic import atomic_write_text
+from rpipe.structure.artifact._atomic import _read_text, atomic_write_text
 from rpipe.structure.data.config import DataConfig
 from rpipe.structure.data.factory import DataFactory, vision_root
 from rpipe.structure.origin import endpoint_for, normalize_origin
@@ -58,7 +58,7 @@ def _prepare(study, shared, config_paths, seen, names):
         root_name = vision_root(key[0]) or key[0]
         folder = shared / root_name
         marker = folder / READY_NAME
-        if marker.is_file() and marker.read_text(encoding='utf-8').strip() == origin:
+        if marker.is_file() and _read_text(marker).strip() == origin:
             announce(study, 'make', f'shared {key[0]} cached')
             continue
         endpoint = endpoint_for(key[0], origin)

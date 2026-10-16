@@ -664,13 +664,15 @@ def test_failed_result_survives_unavailable_shared_path_metadata(tmp_path, monke
     declaration_path = tmp_path / 'study.yaml'
     if declaration != 'missing':
         declaration_path.write_bytes(contents[declaration])
-    original_read = Path.read_text
+    original_read = Path.open
     io_error = PermissionError('declaration temporarily unreadable')
     def read(path, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original_read(path, *args, **kwargs)
         if declaration == 'read-io' and path == declaration_path:
             raise io_error
         return original_read(path, *args, **kwargs)
-    monkeypatch.setattr(Path, 'read_text', read)
+    monkeypatch.setattr(Path, 'open', read)
     with pytest.raises(Exception) as caught:
         FlowRunner(phases=('prepare',)).run(ctx)
     if declaration == 'read-io':

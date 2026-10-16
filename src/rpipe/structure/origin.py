@@ -174,8 +174,10 @@ def bind_endpoint(ctor: Any, endpoint: DownloadEndpoint) -> Iterator[DownloadEnd
 
 
 def _md5(path: Path) -> str:
+    from rpipe.structure.artifact._atomic import _owned_stream
+
     digest = hashlib.md5()
-    with path.open('rb') as handle:
+    with _owned_stream(path.open('rb')) as handle:
         while True:
             block = handle.read(1024 * 1024)
             if not block:

@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from rpipe.structure.artifact._atomic import atomic_write_text
+from rpipe.structure.artifact._atomic import _read_text, atomic_write_text
 
 ACTIVITY_NAME = 'activity.json'
 
@@ -20,7 +20,7 @@ def read_activity(study_dir: Path | str) -> dict[str, Any] | None:
     try:
         if not path.is_file():
             return None
-        body = json.loads(path.read_text(encoding='utf-8'))
+        body = json.loads(_read_text(path))
     except (OSError, UnicodeError, ValueError, RecursionError, TypeError):
         return None
     if (not isinstance(body, dict)

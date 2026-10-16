@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from rpipe.structure.artifact import paths
-from rpipe.structure.artifact._atomic import atomic_write_text
+from rpipe.structure.artifact._atomic import _read_bytes, _read_text, atomic_write_text
 from rpipe.structure.artifact.index import load_index
 from rpipe.structure.artifact.layout import validate_run_directory
 
@@ -25,7 +25,7 @@ def provenance_path(study_dir: Path | str) -> Path:
 
 
 def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    return hashlib.sha256(_read_bytes(path)).hexdigest()
 
 
 def _inside(study_dir: Path, raw: str) -> Path:
@@ -167,7 +167,7 @@ def load_provenance(study_dir: Path | str) -> dict[str, Any] | None:
     path = provenance_path(study_dir)
     if not path.is_file():
         return None
-    body = json.loads(path.read_text(encoding='utf-8'))
+    body = json.loads(_read_text(path))
     if not isinstance(body, dict) or any(
             body.get(key) is not None and not isinstance(body[key], dict) for key in ('files', 'plan')):
         raise ValueError('provenance must be a mapping with optional files/plan mappings')

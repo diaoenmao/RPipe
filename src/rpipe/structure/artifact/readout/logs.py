@@ -6,6 +6,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
+from rpipe.structure.artifact._atomic import _read_text
 from rpipe.structure.artifact.index import load_index
 from rpipe.structure.artifact.readout.status import _event_match, _read_optional, _traceback_detail, log_path
 
@@ -21,7 +22,7 @@ def event_lines(study_dir: Path | str) -> list[str]:
         for run in exp.get('runs') or []:
             run_dir = str(run.get('run_dir') or run.get('id') or '')
             path = log_path(study_dir, run, run_dir)
-            state, text = _read_optional(path, lambda p: p.read_text(encoding='utf-8', errors='replace'))
+            state, text = _read_optional(path, lambda p: _read_text(p, errors='replace'))
             if state != 'available':
                 continue
             for line in text.splitlines():

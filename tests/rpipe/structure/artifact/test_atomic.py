@@ -719,3 +719,41 @@ def test_library_whole_file_reads_use_owned_failure_boundary():
               if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
               and node.func.attr in ('read_text', 'read_bytes')]
     assert not direct, direct
+
+
+def test_owned_stream_enter_failure_does_not_exit_unentered_manager():
+    from rpipe.structure.artifact._atomic import _owned_stream
+    failure = RuntimeError('enter failed')
+    exits = []
+    class Manager:
+        def __enter__(self):
+            raise failure
+        def __exit__(self, *args):
+            exits.append(args)
+    with pytest.raises(RuntimeError) as caught:
+        with _owned_stream(Manager()):
+            pytest.fail('body must not execute')
+    assert caught.value is failure and exits == []
+
+
+@pytest.mark.parametrize('suppress', [False, True])
+def test_owned_stream_retains_original_enter_value_and_exit_suppression(suppress):
+    from rpipe.structure.artifact._atomic import _owned_stream
+    value, failure, exits = object(), ValueError('body failed'), []
+    class Manager:
+        def __enter__(self):
+            return value
+        def __exit__(self, kind, error, traceback):
+            exits.append((kind, error, traceback))
+            return suppress
+    def body():
+        with _owned_stream(Manager()) as actual:
+            assert actual is value
+            raise failure
+    if suppress:
+        body()
+    else:
+        with pytest.raises(ValueError) as caught:
+            body()
+        assert caught.value is failure
+    assert len(exits) == 1 and exits[0][0] is ValueError and exits[0][1] is failure

@@ -353,9 +353,11 @@ def test_study_optional_result_failures_keep_peer_partial_output_and_inputs(tmp_
         bad.result_path.write_bytes(raw)
     before = {f: f.read_bytes() for f in tmp_path.rglob('*') if f.is_file()}
     process_path(tmp_path).write_bytes(b'previous derived process')
-    method = 'read_text' if failure == 'read_permission' else 'stat'
+    method = 'open' if failure == 'read_permission' else 'stat'
     original = getattr(Path, method)
     def refuse(path, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original(path, *args, **kwargs)
         if path == bad.result_path and failure in ('stat_permission', 'stat_io', 'read_permission'):
             raise OSError(5, 'result IO') if failure == 'stat_io' else PermissionError(13, 'result denied')
         return original(path, *args, **kwargs)
@@ -388,9 +390,11 @@ def test_run_process_optional_result_failure_keeps_history_and_source(tmp_path, 
     scalar.write_text(json.dumps({'split': 'test', 'name': 'Accuracy', 'mean': 75.0,
                                  'optimizer_step': 1}) + '\n', encoding='utf-8')
     before = {f: f.read_bytes() for f in tmp_path.rglob('*') if f.is_file()}
-    method = 'stat' if failure.startswith('stat_') else 'read_text'
+    method = 'stat' if failure.startswith('stat_') else 'open'
     original = getattr(Path, method)
     def refuse(path, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original(path, *args, **kwargs)
         if path == layout.result_path and failure.startswith(('stat_', 'read_')):
             raise PermissionError('optional result denied') if failure.endswith('permission') else OSError('optional result IO')
         return original(path, *args, **kwargs)
@@ -411,6 +415,7 @@ def test_run_process_optional_result_failure_keeps_history_and_source(tmp_path, 
 @pytest.mark.parametrize('operation', ['stat', 'read_text'])
 def test_run_process_optional_result_keeps_programming_error_identity(tmp_path, monkeypatch, operation):
     """Run process read boundary propagates unexpected RuntimeError; it never writes before the read succeeds."""
+    operation = 'open' if operation == 'read_text' else operation
     from rpipe.flow.process.individual import run
 
     layout = artifact_layout(tmp_path, 'only')
@@ -419,6 +424,8 @@ def test_run_process_optional_result_keeps_programming_error_identity(tmp_path, 
     error = RuntimeError('unexpected result reader bug')
     original = getattr(Path, operation)
     def refuse(path, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original(path, *args, **kwargs)
         if path == layout.result_path:
             raise error
         return original(path, *args, **kwargs)

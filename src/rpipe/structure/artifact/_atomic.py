@@ -4,7 +4,34 @@ from __future__ import annotations
 
 import time
 import uuid
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
+
+
+@contextmanager
+def _owned_stream(manager):
+    with ExitStack() as stack:
+        value = manager.__enter__()
+
+        def close(exc_type, exc, tb):
+            try:
+                return manager.__exit__(exc_type, exc, tb)
+            except OSError:
+                if exc_type is None:
+                    raise
+
+        stack.push(close)
+        yield value
+
+
+def _read_text(path: Path | str, *, errors: str = 'strict') -> str:
+    with _owned_stream(Path(path).open('r', encoding='utf-8', errors=errors)) as handle:
+        return handle.read()
+
+
+def _read_bytes(path: Path | str) -> bytes:
+    with _owned_stream(Path(path).open('rb')) as handle:
+        return handle.read()
 
 
 def atomic_replace(source: Path | str, target: Path | str) -> Path:

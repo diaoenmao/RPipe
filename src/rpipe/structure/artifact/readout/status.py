@@ -9,6 +9,7 @@ from typing import Any
 
 import yaml
 
+from rpipe.structure.artifact._atomic import _read_text
 from rpipe.structure.artifact.asset import kinds
 from rpipe.structure.artifact.config import load_config
 from rpipe.structure.artifact.errors import ArtifactError
@@ -143,7 +144,7 @@ def _note_from_log(path: Path | None, *, errors_only: bool = False, run_dir: str
 
     ``errors_only`` keeps the last ``[error]`` summary and ignores later epochs.
     """
-    state, text = _read_optional(path, lambda p: p.read_text(encoding='utf-8', errors='replace'))
+    state, text = _read_optional(path, lambda p: _read_text(p, errors='replace'))
     if state != 'available':
         return '-'
     if run_dir is None and path is not None:

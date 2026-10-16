@@ -29,9 +29,11 @@ def test_native_readout_denied_log_preserves_results_and_peer_output(tmp_path, m
     files = [p for p in entries if p.is_file()]
     before = {p: p.read_bytes() for p in files}
     denied_log = tmp_path / 'runs/bad/assets/logs/run.log'
-    method = 'is_file' if operation == 'stat' else 'read_text'
+    method = 'is_file' if operation == 'stat' else 'open'
     original = getattr(Path, method)
     def denied(path, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original(path, *args, **kwargs)
         if path == denied_log:
             raise PermissionError('optional log denied')
         return original(path, *args, **kwargs)

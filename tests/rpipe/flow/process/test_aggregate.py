@@ -59,6 +59,7 @@ def test_optional_state_legacy_fallback_contract(tmp_path, raw):
 @pytest.mark.parametrize('error_kind', ['permission', 'io', 'missing', 'programming'])
 def test_optional_state_keeps_io_and_programming_error_boundary(
         tmp_path, monkeypatch, reader, primary, operation, error_kind):
+    operation = 'open' if operation == 'read_text' else operation
     state = tmp_path / 'runs/a/assets' / kinds.TRACKER_STATE
     state.parent.mkdir(parents=True)
     state.write_text('{}', encoding='utf-8')
@@ -74,6 +75,8 @@ def test_optional_state_keeps_io_and_programming_error_boundary(
              'programming': RuntimeError('unexpected reader bug')}[error_kind]
     original = getattr(Path, operation)
     def read(path, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original(path, *args, **kwargs)
         if path == state:
             raise error
         return original(path, *args, **kwargs)
@@ -202,6 +205,7 @@ def test_optional_result_decode_keeps_peer_and_existing_partial_counts(tmp_path,
 @pytest.mark.parametrize('operation', ['stat', 'read_text'])
 @pytest.mark.parametrize('failure', ['permission', 'io', 'missing', 'programming'])
 def test_optional_result_stat_read_and_programming_error_boundary(tmp_path, monkeypatch, operation, failure):
+    operation = 'open' if operation == 'read_text' else operation
     from rpipe.flow.process.aggregate import collect_from_index, summarize
 
     index, bad, before = _result_read_inputs(tmp_path, 'valid')
@@ -209,6 +213,8 @@ def test_optional_result_stat_read_and_programming_error_boundary(tmp_path, monk
              'missing': FileNotFoundError(2, 'result disappeared'), 'programming': RuntimeError('reader programming error')}[failure]
     original = getattr(Path, operation)
     def refuse(path, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original(path, *args, **kwargs)
         if path == bad:
             raise error
         return original(path, *args, **kwargs)

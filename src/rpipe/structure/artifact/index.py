@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from rpipe.structure.artifact._atomic import atomic_write_text
+from rpipe.structure.artifact._atomic import _owned_stream, atomic_write_text
 from rpipe.structure.artifact.paths import INDEX_NAME
 from rpipe.structure.artifact.asset.kinds import RUN_LOG
 from rpipe.structure.control.hashing import compute_index_id
@@ -95,7 +95,7 @@ def write_index(study_dir: Path | str, mapping: dict[str, Any]) -> Path:
 
 
 def load_index(study_dir: Path | str) -> dict[str, Any]:
-    with index_path(study_dir).open(encoding='utf-8') as f:
+    with _owned_stream(index_path(study_dir).open(encoding='utf-8')) as f:
         data = json.load(f)
     if not isinstance(data, dict):
         raise TypeError('Study index must be an object')

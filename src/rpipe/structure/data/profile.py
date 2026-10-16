@@ -12,7 +12,7 @@ from typing import Any
 
 import yaml
 
-from rpipe.structure.artifact._atomic import atomic_write_text
+from rpipe.structure.artifact._atomic import _read_text, atomic_write_text
 from rpipe.structure.data.config import DataConfig
 from rpipe.structure.artifact.shared import shared_paths
 from rpipe.structure.data.factory import DataFactory, vision_root
@@ -81,7 +81,7 @@ def load_stats(path: Path | str) -> dict[str, Any] | None:
     file = Path(path)
     if not file.is_file():
         return None
-    body = yaml.safe_load(file.read_text(encoding='utf-8')) or {}
+    body = yaml.safe_load(_read_text(file)) or {}
     if not isinstance(body, dict) or not body.get('mean') or not body.get('std'):
         return None
     return body

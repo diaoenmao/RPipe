@@ -35,12 +35,12 @@ def test_overlapping_discovery_preserves_read_failure(tmp_path, monkeypatch):
     target = tmp_path / 'structure/helper.py'
     target.parent.mkdir()
     target.write_bytes(b'input')
-    original = Path.read_bytes
+    original = provenance._read_bytes
     def denied(path):
         if path == target:
             raise PermissionError('source denied')
         return original(path)
-    monkeypatch.setattr(Path, 'read_bytes', denied)
+    monkeypatch.setattr(provenance, '_read_bytes', denied)
     with pytest.raises(PermissionError, match='source denied'):
         provenance.source_files(tmp_path, {'provenance': {'include': ['structure/*.py']}})
 

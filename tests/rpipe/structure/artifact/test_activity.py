@@ -22,11 +22,14 @@ def test_unusable_activity_is_ignored_without_rewriting(tmp_path, payload):
 
 @pytest.mark.parametrize('operation', ['is_file', 'read_text'])
 def test_unreadable_activity_is_ignored_including_existence_check(tmp_path, monkeypatch, operation):
+    operation = 'open' if operation == 'read_text' else operation
     path = tmp_path / 'activity.json'
     path.write_bytes(b'{"phase": "make"}')
     before = path.read_bytes()
     original = getattr(Path, operation)
     def denied(candidate, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original(candidate, *args, **kwargs)
         if candidate == path:
             raise PermissionError('activity denied')
         return original(candidate, *args, **kwargs)
@@ -52,12 +55,14 @@ def test_valid_unicode_activity_keeps_original_bytes(tmp_path):
 def test_unexpected_activity_reader_bug_is_not_suppressed(tmp_path, monkeypatch):
     path = tmp_path / 'activity.json'
     path.write_bytes(b'{"phase": "make"}')
-    original = Path.read_text
+    original = Path.open
     def broken(candidate, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original(candidate, *args, **kwargs)
         if candidate == path:
             raise RuntimeError('unexpected reader bug')
         return original(candidate, *args, **kwargs)
-    monkeypatch.setattr(Path, 'read_text', broken)
+    monkeypatch.setattr(Path, 'open', broken)
     with pytest.raises(RuntimeError, match='unexpected reader bug'):
         read_activity(tmp_path)
 
