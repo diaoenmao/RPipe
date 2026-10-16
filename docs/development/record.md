@@ -3272,3 +3272,10 @@ PR152继续同一分支收敛#150/#151/#153，生产总计3个现有文件14行�
 19:53监督授权的新GPU准入规则随本批记录：桌面/图形/远控按白名单加进程类型判定，Graphics/G或C+G且无/极少CUDA计算占用的Figma、浏览器、dwm、explorer、Office、RayLink/RayLinkCapturer、ToDesk、Sunlogin/向日葵、Parsec、TeamViewer归显示类，不能仅因“未分类身份”阻塞；仅真实CUDA计算占用、实际空闲显存与主机RAM实测峰值+2GB参与准入。未知进程只有真实CUDA计算占用才阻塞并记录告知监督，不杀/挂起任何进程。
 
 静态核对：入库capacity.py只查询GPU/free，不以进程身份拒绝；Study手动capacity入口同样是free检查。找到的.tmp/v030-20261013校准/恢复/telemetry是10-13历史证据，当前不使用，不为套新规则改写历史脚本/原观测。当前会话没有正在使用的进程身份准入脚本可补分类，因此未增加新的GPU框架或宣称已实现分类器；未来GPU准入须先按上述新规则实现/验证白名单+类型和RAM条件，旧脚本不能直接作为新准入依据。本轮只读源码，未调用nvidia-smi/torch.cuda、未启动或干预GPU/性能任务。
+
+
+## 184. B116 / Issue158：日志墙钟文本颠倒实际事件顺序（2026-10-16）
+
+只读复查六个实际cli.main日志案例，三个原生RFC3339毫秒+偏移反例（DST回拨、UTC跨日、跨偏移）均return0却较晚在前；三个同正/负/UTC偏移控制正确，全输入字节保留。先Issue158，再正式28红8 failed/20有效控制passed、0error/skip，库/CLI两入口及Z不同小数精度也复现。没有执行数据/训练/Study或改日志原文，临时REPRO/ZIP/hash/RED在.tmp/audit116不随clone。
+
+设计只用stdlib datetime规范已识别aware排序键到UTC固定微秒字符串；保留原行与缺失/损坏/无时区/高于微秒文本、转换溢出的原fallback，避免放宽strict loader或截断旧高精度键。Python稳定排序、筛选/路径/IO、状态/数值/科学门保持，不新增模块/依赖/字段/路径。当前唯一未合codex/readout-time-order按18:53规则本地累积，PR157已正常合dev50d5a6bd9d2c4fca76199d7a0dd9cb6d4f1af97b、实际dev CI仍待验；旧已合主题及#156待验收清理。GPU新规则已在§183记录，当前无活动准入/执行任务。
