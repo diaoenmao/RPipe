@@ -119,3 +119,31 @@ def test_registered_functions_keep_each_studies_helper_globals(tmp_path, package
         for name in list(sys.modules):
             if name == helper or name.startswith(helper + '.'):
                 sys.modules.pop(name)
+
+
+@pytest.mark.parametrize('nested', [False, True], ids=['root-recipe', 'nested-recipe'])
+@pytest.mark.parametrize('alias', [False, True], ids=['direct-dataclass', 'module-alias'])
+@pytest.mark.parametrize('postponed', [False, True], ids=['eager-annotations', 'postponed-annotations'])
+def test_recipe_dataclass_resolves_annotations_in_defining_module(tmp_path, nested, alias, postponed):
+    from dataclasses import fields
+    from rpipe.structure.make.recipe import load_recipe
+
+    study = tmp_path / 'dataclass-study'
+    folder = study / 'recipes' if nested else study
+    folder.mkdir(parents=True)
+    prefix = 'from __future__ import annotations\n' if postponed else ''
+    prefix += 'import dataclasses as dc\n' if alias else 'from dataclasses import dataclass\n'
+    decorator = '@dc.dataclass' if alias else '@dataclass'
+    (folder / 'recipe.py').write_text(
+        prefix + 'from typing import ClassVar\n' + decorator + '\n'
+        'class Payload:\n    value: int\n    label: ClassVar[str] = "tag"\n'
+        'def register(ctx):\n    pass\n', encoding='utf-8')
+    paths = list(sys.path)
+    name = 'rpipe_recipe_' + study.resolve().name
+    previous = sys.modules.get(name)
+    module = load_recipe(study, {'recipe': ('recipes/' if nested else '') + 'recipe.py'})
+    assert module.Payload(7).value == 7
+    assert module.Payload.label == 'tag'
+    assert [field.name for field in fields(module.Payload)] == ['value']
+    assert sys.path == paths
+    assert sys.modules.get(name) is previous
