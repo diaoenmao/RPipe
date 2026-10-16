@@ -199,3 +199,93 @@ def test_manual_verify_only_retains_original_download_provenance(tmp_path, monke
     report = json.loads(manifest.read_text(encoding='utf-8'))
     assert report['downloads'] == downloads and report['reused_caches'] == {'old': 'cache'}
     assert report['historical_sha256_matches'] == 1 and raw.read_bytes() == before
+
+
+@pytest.mark.parametrize('kind,cleanup', [
+    ('download', 'destination'), ('download', 'source'),
+    ('mnist', 'destination'), ('mnist', 'source'),
+    ('cifar', 'destination'), ('cifar', 'source'), ('cifar', 'archive'),
+])
+@pytest.mark.parametrize('outcome', ['error', 'cancel', 'normal-close', 'programming-close', 'ok'])
+def test_manual_raw_copy_preserves_primary_across_owned_close(tmp_path, monkeypatch, stream_close_fault,
+                                                             raw_prepare, kind, cleanup, outcome):
+    import gzip
+    import tarfile
+
+    payload = b'synthetic raw evidence'
+    primary = (KeyboardInterrupt('original cancellation') if outcome == 'cancel'
+               else OSError('original partial write failure') if outcome in ('error', 'programming-close') else None)
+    secondary = (RuntimeError('unexpected close implementation bug') if outcome == 'programming-close'
+                 else OSError('secondary close failure') if outcome != 'ok' else None)
+    sources = []
+    close_calls = []
+    class Source:
+        def __init__(self, raw, owner):
+            self.raw, self.owner = raw, owner
+            sources.append(raw)
+        def __getattr__(self, name):
+            return getattr(self.raw, name)
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            self.close()
+        def close(self):
+            close_calls.append(self.owner)
+            self.raw.close()
+            if cleanup == self.owner and secondary is not None:
+                raise secondary
+
+    peer = tmp_path / 'peer.bin'
+    peer.write_bytes(b'peer evidence')
+    if kind == 'download':
+        target = tmp_path / 'raw.gz'
+        def receive(self, request):
+            return Source(_response(request, payload), 'source')
+        _transport(monkeypatch, receive)
+        invoke = lambda: raw_prepare.download(domestic_endpoint('MNIST').mirrors[0] + 'raw.gz', target,
+                                               hashlib.md5(payload).hexdigest())
+    elif kind == 'mnist':
+        archive = tmp_path / 'MNIST/raw/fixture.gz'
+        archive.parent.mkdir(parents=True)
+        archive.write_bytes(gzip.compress(payload))
+        monkeypatch.setattr(raw_prepare, 'MNIST_RESOURCES', (('fixture.gz', hashlib.md5(archive.read_bytes()).hexdigest()),))
+        target = archive.with_suffix('')
+        native = gzip.open
+        monkeypatch.setattr(gzip, 'open', lambda *args, **kwargs: Source(native(*args, **kwargs), 'source'))
+        invoke = lambda: raw_prepare.prepare_mnist(tmp_path, {'MNIST/raw/fixture': hashlib.sha256(payload).hexdigest()})
+    else:
+        archive = tmp_path / 'CIFAR10/raw/cifar-10-python.tar.gz'
+        archive.parent.mkdir(parents=True)
+        with tarfile.open(archive, 'w:gz') as handle:
+            member = tarfile.TarInfo('cifar-10-batches-py/data_batch_1')
+            member.size = len(payload)
+            handle.addfile(member, io.BytesIO(payload))
+        monkeypatch.setattr(raw_prepare, 'CIFAR_MD5', hashlib.md5(archive.read_bytes()).hexdigest())
+        target = archive.parent / 'cifar-10-batches-py/data_batch_1'
+        native_open, native_extract = tarfile.open, tarfile.TarFile.extractfile
+        monkeypatch.setattr(tarfile, 'open', lambda *args, **kwargs: Source(native_open(*args, **kwargs), 'archive'))
+        monkeypatch.setattr(tarfile.TarFile, 'extractfile', lambda obj, *args, **kwargs: Source(native_extract(obj, *args, **kwargs), 'source'))
+        invoke = lambda: raw_prepare.prepare_cifar(tmp_path, {'CIFAR10/raw/cifar-10-batches-py/data_batch_1': hashlib.sha256(payload).hexdigest()})
+    before = {path: path.read_bytes() for path in tmp_path.rglob('*') if path.is_file()}
+    handles, calls = stream_close_fault(lambda path, mode: path.name.endswith('.part') and mode == 'wb',
+                                        primary, secondary if cleanup == 'destination' else None)
+    expected = primary if outcome in ('error', 'cancel') else secondary
+    if expected is None:
+        invoke()
+    else:
+        with pytest.raises(type(expected)) as caught:
+            invoke()
+        assert caught.value is expected
+    assert len(handles) == 1 and all(handle.closed for handle in handles)
+    assert calls.count('close') == 1
+    assert sources and all(source.closed for source in sources)
+    assert close_calls.count('source') == 1
+    if kind == 'cifar':
+        assert close_calls.count('archive') == 1
+    partial = target.with_name(target.name + '.part')
+    if outcome == 'ok' or (cleanup == 'archive' and outcome == 'normal-close'):
+        assert target.read_bytes() == payload and not partial.exists()
+    else:
+        assert not target.exists()
+        assert partial.read_bytes() == (payload[:3] if primary is not None else payload)
+    assert {path: path.read_bytes() for path in before} == before
