@@ -21,6 +21,7 @@ from rpipe.structure.artifact.result.format import VALID_STATUS
 STATUS_PENDING = 'pending'
 _EVENT = re.compile(r'\[(epoch|error|flow)\]\s*(.*)$')
 _NATIVE_RECORD = re.compile(r'^\d{4}-\d{2}-\d{2}T\S+\s+(?:INFO|WARN|ERROR)\s+(.*)$')
+_TRACEBACK_FRAME = re.compile(r'File ".*", line [0-9]+(?:, in .*)?')
 
 
 def _read_optional(path: Path | None, loader) -> tuple[str, Any]:
@@ -121,6 +122,10 @@ def log_path(study_dir: Path, run: dict[str, Any], run_dir: str) -> Path | None:
     return path
 
 
+def _traceback_detail(payload: str) -> bool:
+    return payload == 'Traceback (most recent call last):' or _TRACEBACK_FRAME.fullmatch(payload) is not None
+
+
 def _event_match(line: str, pattern, run_dir: str | None = None):
     native = _NATIVE_RECORD.match(line)
     if native is not None:
@@ -151,7 +156,7 @@ def _note_from_log(path: Path | None, *, errors_only: bool = False, run_dir: str
         if match is None:
             continue
         event, payload = match.group(1), match.group(2).strip()
-        if event == 'error' and (payload.startswith('Traceback') or payload.startswith('File ')):
+        if event == 'error' and _traceback_detail(payload):
             continue
         text = f'[{event}] {payload}'.strip()
         if event == 'error':
