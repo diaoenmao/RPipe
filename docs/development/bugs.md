@@ -52,3 +52,11 @@ B102/#132 已经 PR133 合入 dev 并全 CI 验收关闭，上文待验收文字
 
 
 B103 本机补记：CPU Flow 207 passed、0 failure/error/skip；最终 head 与实际 dev CI 仍待验收。
+
+
+## 2026-10-16 B104 当前开放项
+
+B103/#134 已PR135实际dev验收关闭并普通清分支；当前B104/[Issue136](https://github.com/DreamSoul-AI/RPipe/issues/136)为迁移多根锁顺序受namespace拼写影响，2红/2控制后最小修复，共享76通过，待完整本机及CI验收。详[record§159–160](record.md)。
+
+
+B104本机验收补记：shared76/core1701/CPU Flow207 passed，core另1既有平台skip；新四节点全执行。最终head/实际dev CI待验收。

@@ -1,3 +1,9 @@
+> 当前：PR135实际dev已全CI验收、Issue134关闭，工作分支本地/remote普通删。
+> 最新：B104/Issue136同Study路径别名翻转多根锁顺序，真实并发循环已复现。
+> 修复：四回归2红/2控制→设计→共享物理身份排序；shared76及双并发空目录迁移通过。
+> 下一步：core/CPU Flow、最终head与实际devCI；无代码阻塞，见record§159–160。
+> 保护：无GPU/测速/正式Study、main/tag、数据删除或产物布局变更；以下旧状态保留。
+
 > 当前：PR133实际dev已全CI验收、Issue132关闭，已删train-failure-finalizer本地/remote各1条。
 > 最新：B103/Issue134路径别名锁自争用，四红42c8b5b→设计afd8ea0→最小修复41ce552。
 > 验证：共享72/core1697 passed，1既有平台skip；证据见record§157–158与.tmp/audit103。
@@ -2998,3 +3004,21 @@ GREEN_FINAL：72 passed；core：1697 passed、1既有Windows POSIX模式位 ski
 
 
 B103 本机补记：CPU Flow 207 passed、0 failure/error/skip；最终 head 与实际 dev CI 仍待验收。
+
+
+## 159. B103 / PR135 实际 dev 验收及清理（2026-10-16）
+
+PR135 正常合 dev e80724caa06082c5fe313d59c4cf4e54dbf1559e。最终head 1720b0d 的 Branch38871098681 / Package38871098565 / Unit38871098385，以及实际dev Package38871748863 / Unit38871749092 全部实际矩阵与聚合成功。Issue134 验收关闭，核对祖先及干净工作区后普通删除 codex/cache-lock-path-identity 本地1条、remote1条；远端仅main/dev，累计结束remote30条，PR129周期基线后已合3批。无数据/结果/provenance或main改动。
+
+DEV_CHECKED SHA256：d85c429564dcdaf012ace6e8fcf63a6488224270eb45864b64970cc00d0dbdba；最终head证据SHA256：7ab4e4ceecc684088819041594d83688350d2ff4dba23eff87fb7cb93260dd2a。临时原始证据与分支清单在.tmp/audit103，不随clone。范围检查器误以为总共8文件，实际含单独设计文档为9文件；已按实际职责核对1生产/1测试/7文档，拒绝保留，不当库失败。文档审批拒绝后仅追加与精确基线替换，全文历史保留。
+
+## 160. B104 / Issue136：迁移多根锁顺序（2026-10-16）
+
+PR135相邻复查确认：同Study普通/扩展namespace表示，shared.root绝对路径表示及根名相对字典序组合可翻转物理加锁顺序。原生空目录两线程各持前两根再请求第三根，注入零预算立即暴露两侧TimeoutError循环；退出四根可重获。未运行真实Study、下载、测速或等待120秒。
+
+先Issue136，再d3083d2四项正式回归2 failed/2有效controls passed，再3a9267a设计，788a9b4仅shared.py提取物理身份私有函数供重入和排序复用，并先mkdir原本就会创建的四根再按身份加锁。完整shared76 passed，新四节点全部执行；额外实际并发的两个别名迁移均成功，限定1秒等待防挂起而不记录耗时，全部空合成目录。CPU core/Flow与最终/实际dev CI待分别验收。
+
+不改目录、配置/schema、冲突验证、硬链接/发布路径、checkpoint诊断staging、科学门或数值。原始源码、红/绿/并发证据在.tmp/audit104，不随clone；正式测试与合同记录随Git提供。此前B102/B103 pending文字仅历史。
+
+
+B104本机验收补记：shared76/core1701/CPU Flow207 passed，core另1既有平台skip；新四节点全执行。最终head/实际dev CI待验收。

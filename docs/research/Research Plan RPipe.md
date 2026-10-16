@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
 > Version 1.4; updated 2026-10-16. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `bc3743e6ef33cc1b87833122a4d070dca2ee6ad3`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `e80724caa06082c5fe313d59c4cf4e54dbf1559e`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -526,3 +526,11 @@ B102 merged via PR133 into dev bc3743e; final-head and actual-dev CI passed all 
 
 
 B103 local completion: CPU Flow 207 passed, no failures/errors/skips; final-head and actual-dev CI remain pending.
+
+
+## B103 acceptance and B104 follow-up, 2026-10-16
+
+PR135 merged into dev e80724c; final-head and actual-dev CI passed all real jobs. Issue134 is closed and its local/remote branch removed. B104/Issue136 reproduces namespace-dependent multi-root lock ordering with native concurrent locks. Four regressions produced two failures and two valid controls; the minimal shared identity/order fix passes 76 shared tests and two actual concurrent empty-directory migrations. Core/Flow/CI remain pending. No new scientific result, Study protocol or artifact layout change; see [record§159–160](../development/record.md).
+
+
+B104 local completion: shared76/core1701/CPU Flow207 passed; core has one existing platform skip. All four new nodes executed. Final-head/actual-dev CI remains pending.
