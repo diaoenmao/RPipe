@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from threading import RLock
 from typing import Any
 
 from rpipe.structure.artifact.activity import announce
@@ -16,6 +17,7 @@ from rpipe.structure.data.factory import DataFactory, vision_root
 from rpipe.structure.origin import endpoint_for, normalize_origin
 
 READY_NAME = '.ready'
+_prepare_environment_lock = RLock()
 
 
 def prepare_shared_data(study_dir: Path | str, config_paths: list[Path]) -> list[str]:
@@ -29,16 +31,17 @@ def prepare_shared_data(study_dir: Path | str, config_paths: list[Path]) -> list
     shared = shared_paths(study)['data']
     seen: set[tuple[str, str, str]] = set()
     names: list[str] = []
-    previous = os.environ.get('TQDM_DISABLE')
-    os.environ['TQDM_DISABLE'] = '1'
-    try:
-        with cache_lock(shared):
-            return _prepare(study, shared, config_paths, seen, names)
-    finally:
-        if previous is None:
-            os.environ.pop('TQDM_DISABLE', None)
-        else:
-            os.environ['TQDM_DISABLE'] = previous
+    with _prepare_environment_lock:
+        previous = os.environ.get('TQDM_DISABLE')
+        os.environ['TQDM_DISABLE'] = '1'
+        try:
+            with cache_lock(shared):
+                return _prepare(study, shared, config_paths, seen, names)
+        finally:
+            if previous is None:
+                os.environ.pop('TQDM_DISABLE', None)
+            else:
+                os.environ['TQDM_DISABLE'] = previous
 
 
 def _prepare(study, shared, config_paths, seen, names):
