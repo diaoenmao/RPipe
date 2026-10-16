@@ -33,7 +33,7 @@ def _count(value: Any) -> str:
 
 
 def _text_cell(value: Any) -> str:
-    return ' '.join(str(value).splitlines()).replace('\t', ' ')
+    return ' '.join(str(value).splitlines()).replace('\t', ' ').encode('utf-8', errors='backslashreplace').decode('utf-8')
 
 
 def _markdown_cell(value: Any) -> str:
