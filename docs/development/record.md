@@ -4200,3 +4200,10 @@ B14180009d7红20项11失败/9控制→13f46c5设计→9e2bcd2路由修；B142bce
 源码AST证明digest/expected_files/verify_file/reuse_caches/split_counts/main及HISTORICAL_REF/MNIST_RESOURCES/CIFAR_MD5原样；normal下载manifest字段/cache/verify-only旧来源控制通过，架构/路径/schema/科学门不变。原脚本从253行到当前290行均LF，没有CR；一次校验器照搬前批Logger CRLF假设而拒绝，NEWLINE_CHECK保留，按本文件原字节复核后更正，非库失败/不改源码换行凑通过。早期误指model测试路径的未执行记录亦保留。
 
 当前两个Issue仍OPEN，未推送/PR；遵完整里程碑合批，接着检查同模块剩余digest/split_counts严格读取退出边界，不凭同一with外观登记新缺陷，不泛称七copy边界修复已覆盖所有读取。下一B143尚未使用；当前goal active，无设计/用户阻塞，无GPU/训练/性能/实际下载/main/tag或正式Study改动。
+
+
+## 252. B142/#196剩余strict raw读取边界补红（2026-10-17）
+
+本轮先核对工作区仅用户_staging、current488c579、fetch正常、195/196仍OPEN且无PR；上一goal turn为完成两红/方案/本地修及完整55节点验收的progress。按上一检查点继续digest/split_counts显式读取退出，实际digest及精确四AST reader配真实struct/pickle/文件，五处均close IO遮首错；不运行科学数据验证/下载。第一meta探针路径误设input.bin导致FileNotFoundError拒绝，Issue读取范围追加曾早于最后探针校验；随即修正batches.meta、五处全重验，并在同正文追加校验说明，原body与拒候选/log保留，无重复评论、不得计作库失败。
+
+补充先红25项10失败/15控制（五读取×错误/取消/正常close/程序错/成功），原脚本仍4954933的READER_ORIGINAL字节。只复用原私有_owned_stream包装五with，保持所有严格read/struct/pickle条件、正常close错误和未知程序错；不新增B或Issue，不另小PR。此前55新/core2359+1/Flow433为中间阶段，最终80节点完整检查待重验。READER_REPRO/READER_RED/ZIP在.tmp/audit142不随clone；实际数据/Study/科学门/布局与main/tag/GPU/性能/网络均不动，下一B143未用，无审批阻塞。
