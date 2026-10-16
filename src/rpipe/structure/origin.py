@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from threading import RLock
 from typing import Any, Iterator
+from urllib.parse import urlsplit
 
 FOREIGN = 'foreign'
 DOMESTIC = 'domestic'
@@ -201,6 +202,7 @@ def download_model(repo_id: str, cache_dir: Path | str, *, revision: str | None 
 
 def load_hf_dataset(*args: Any, **kwargs: Any) -> Any:
     """Load HF datasets after selecting the domestic endpoint before import."""
+    _check_dataset_urls((args[0] if args else kwargs.get('path'), kwargs.get('data_files')))
     apply_model_origin(DOMESTIC)
     _check_hf_endpoint()
     from datasets import load_dataset
@@ -215,3 +217,15 @@ def _check_hf_endpoint() -> None:
         module = sys.modules.get(name)
         if module is not None and getattr(module, attr, DOMESTIC_MODEL_HUB) != DOMESTIC_MODEL_HUB:
             raise RuntimeError(f'select domestic origin before importing {name}; start a fresh worker')
+
+
+def _check_dataset_urls(value: Any) -> None:
+    if isinstance(value, dict):
+        value = tuple(value.values())
+    if isinstance(value, (list, tuple)):
+        for item in value:
+            _check_dataset_urls(item)
+    elif isinstance(value, str) and '://' in value:
+        url = urlsplit(value)
+        if url.scheme != 'hf' and (url.scheme != 'https' or url.netloc != 'hf-mirror.com'):
+            raise ValueError('HF dataset URLs must use domestic hf-mirror; prepare other inputs locally')
