@@ -6,15 +6,11 @@
 
 ## 开放
 
-### B-129：失败回写被共享路径二次解析阻断（本机已修，待同批CI）
+### B-131：Windows同文件Run大小写别名绕过原生event定位（确认未修）
 
-- Issue：[176](https://github.com/DreamSoul-AI/RPipe/issues/176)。36项红24失败/12控制后3743b59隔离可选shared元数据，不猜根/不改原异常/正常严格路径/成功保全；已有draft键不再eager求值。见[record§217–219](record.md)。
+- Issue：[179](https://github.com/DreamSoul-AI/RPipe/issues/179)。原log_path守卫和samefile接受Run文件系统别名，但_event_match按字符串精确拼写比较所有者，回退后名字/正文tag可覆盖真实event，status错误note、logs误收split；standalone原拼写读取正常。两别名失败/两原拼写控制通过，输入字节不变。不是mode大小写扩展、未知legacy所有权或早先修复引入原错误的结论。下一先提交组件语义与原生消费者红回归，保留POSIX大小写不同目录和既有legacy回退，见[record§220](record.md)，.tmp/audit131不随clone。
 
-### B-130：launcher失效化被共享布局初始化阻断（本机已修，待同批CI）
-
-- Issue：[177](https://github.com/DreamSoul-AI/RPipe/issues/177)。红29项19失败/10控制后1b6885c仅直接写已校验Run路径并去掉多余layout依赖；旧body/原子发布错误/重试/依赖/console/env不变。helper fresh/旧success与公开rerun均覆盖，不跑实际子任务。见[record§218–219](record.md)。
-
-两项同主题完整里程碑本机相邻272/core2044 passed+1既有skip/CPU Flow390 passed，65新全执行，0新skip；176/177仍OPEN，尚未开本批PR，待最终head/实际dev全部实际CI后关闭。原始.tmp/audit129/130不随clone，portable回归入库；真实存储不可写不保证落盘，CLI原前置拒绝边界保持，文件/产物布局与科学门不变。
+B129–B130/#176/#177已随[PR178](https://github.com/DreamSoul-AI/RPipe/pull/178)最终head及实际dev53ae142全部实际CI验收关闭，主题本地/remote已清；原红/验证/限制留[record§217–220](record.md)。
 
 B124–B128/#170–#173/#175已随[PR174](https://github.com/DreamSoul-AI/RPipe/pull/174)最终head与实际dev9d78fb4全部实际CI验收关闭，已清本地/远程主题分支；原Windows失败与回归证据留[record§209–216](record.md)。
 

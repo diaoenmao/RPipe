@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR178两B双侧全部实际CI验收，dev53ae142；#176/#177已关闭，已合主题本地+remote已清。
+> 最新：失败证据与非必要shared元数据/布局解耦完成；另确认B131/#179 Windows同文件大小写别名读取反例，详§220。
+> 验证：相邻272/core2044 passed+1既有skip/CPU Flow390 passed，65新全执行；最终head和实际dev全部矩阵/聚合成功。
+> 下一步：codex/readout-identity-next给#179先提交原生/跨平台语义红回归，相关问题完整里程碑再PR；无决策阻塞。
+> 保护：已删codex/failure-evidence-next本地+remote，基线161计数4/remote46；main/tag/GPU/数据/结果/布局不动。
+
 > 当前（2026-10-17）：B129/#176与B130/#177同主题失败留证里程碑本机完整验收，尚未推送/开PR；接受dev9d78fb4。
 > 最新：Runner可选shared元数据与launcher共享布局初始化阻断failed证据两处统一修，先独立红再最小实现，详§217–219。
 > 验证：相邻272 passed；core2044 passed/1既有skip、CPU Flow390 passed，65新（29 unit+36 integration）全执行/0新skip。
@@ -3746,3 +3752,16 @@ B129/#176经方案236ef3c后3743b59仅将Runner失败回写中paths.shared求值
 合批相邻272 passed，完整core2044 passed/1既有Windows POSIX模式skip，CPU Flow390 passed，均0failure/error；新增65节点（29 unit+36 integration）全部执行，0新skip。40954/75073均exit0终结；B129早先core2015+1/Flow390只证明当时单处修复，不能替代当前完整集合。SOURCE_CHECKED分别证明Runner原字节单处替换、schedule仅import/写路径两处替换，其他源码/验证/语义未动。
 
 原始REPRO/ZIP/各红绿/XML/hash/源码证明在.tmp/audit129与audit130，不随clone；portable回归/设计和正式记录入库。两个Issue176/177仍OPEN，本批尚无PR；完整里程碑统一PR，最终head及实际dev全部实际矩阵/聚合验收后再关闭并清理。接受dev9d78fb4，周期基线161计数3/remote45；下一新编号B131。没有GPU/性能/正式Study实验或科学结论新增，不合main/tag/发布、不force push、不删数据/结果/Run/provenance。
+
+
+## 220. PR178双侧全部实际CI验收、两Issue关闭与分支清理（2026-10-17）
+
+B129–B130最终head26131eb54ca79459b31cad2961cc86e18b6d214c的Branch38939964823、Package38939964948、Unit38939964815及所有实际矩阵/聚合均成功。PR178正常merge进入dev53ae142b72128868fac69092c7ce23059ca29fcc；实际dev独立Package38940832132、Unit38940832165及所有实际矩阵/聚合亦成功。PR_CHECKED SHA256 274958a564d34caf407ad566295047df0cfb058bf21c7153abc0b885ff6386c8；DEV_CHECKED SHA256 86b59d3615a67e77e5704a8ba2abd877e6c2f49c3e5edcfb162afd78a9d63925。
+
+Issue176/177逐项验收说明各一次后关闭，PR原正文保留并追加实际验收；回读确认两Issue原正文未改、验收marker各一次、PR合入SHA正确。本机272相邻/core2044 passed+1既有skip/CPU Flow390 passed、新65全执行（29 unit+36 integration），原独立红和限制保留，不把无法写存储视为必能留证。
+
+清理前再次核对工作区仅用户_staging_from_DEM未跟踪、topic local/remote tip均26131eb且为实际dev祖先、唯一主工作区、无项目引用Python进程。普通detach→push --delete→branch -d删除codex/failure-evidence-next本地及远程，随后确认双侧不存在。没有移除worktree/数据/结果/Run/provenance，main7a15c46、local dev9324014、origin/main00e70b1保持。周期基线161后已验收4个PR（165/169/174/178），remote累计46；下一合入约达5时做完整周期清单。
+
+下一唯一未合codex/readout-identity-next仅本地，从接受dev53ae142建立；本条收尾文档随下一完整主题，不拆小PR。B131/Issue179确认未修：Windows有效Run大小写别名经原log_path守卫与samefile确认指向同一日志，原生_event_match仍文本精确比较而回退，正文/名字tag可抢占event，status与standalone note不一致，split误入logs。两场别名失败/两原拼写控制成功，全部输入字节不变；这是原172/PR174未覆盖的同文件别名边界，不声称早先修复引入原问题，也不扩展大小写mode或未知legacy所有权。
+
+原始Windows REPRO/ZIP在.tmp/audit131，不随clone；下一先提交跨平台组件语义与原生只读消费者红回归，再最小方案，不改生产者/schema/路径布局或每行增加文件系统I/O。PR178验收/反馈/清理原件.tmp/audit130同样不随clone。持续目标active，下一新缺陷编号B132；不合main/tag/发布，不跑GPU/测速/正式Study，不改数据结果或科学结论。
