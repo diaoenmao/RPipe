@@ -594,3 +594,6 @@ PR147两侧实际CI全部验收，Issue146关闭、study-plot-publication本地/
 ## 2026-10-16 PR161统一B117/B118补记
 
 相邻B118/#162已按先Issue→b04a5cd红9项4失败/5控制→b6edba0设计→0aaae0b最小修复。与B117合批同一PR161，不新开PR；两处相邻27项通过，合批core1919 passed/1既有skip、新17全执行，CPU Flow273 passed，最终/实际devCI待验。端点类字段/临时环境分别有可重入所有权范围，不改文件架构/产物布局。20:56后按相关B项完整里程碑、每日少量PR，不再一bug一PR；已开161正常收尾，详record§190–191及cicd。
+
+
+2026-10-17 PR174追加B128/#175：原head85826fe的Windows3.10 core真实失败，shared空锁初始化在OS所有权前flush被拒，三其他CPU矩阵/Package/Branch通过不能替代。先Issue/两项红/方案，再f5b3591移原三行至release登记后；相邻123、core2015+1既有skip、Flow354均终结成功，本PR84新全执行。五Issue170–173/175仍开放，更新同PR174再验最终head与实际dev全部CI，之后清理当前主题本地/远端。原失败与错误探针均保留.tmp/audit128，不随clone；无main/tag/GPU/数据/布局改动。

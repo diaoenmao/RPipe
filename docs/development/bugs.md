@@ -134,3 +134,6 @@ B108/#144已PR145最终head与实际dev全CI验收关闭，主题本地/remote�
 
 
 B109/#146已PR147最终head与实际dev全CI验收关闭，主题本地/remote普通删除。B110/#148最终本机12新节点全部执行（core4/Flow8），相邻204、core1818 passed/1既有平台skip、CPU Flow215 passed；0failure/error，最终head/实际devCI待验，保持open。见record §172。
+
+
+B128/[Issue175](https://github.com/DreamSoul-AI/RPipe/issues/175)仍OPEN：PR174原head85826fe Windows3.10既有双进程测试在空锁初始化flush PermissionError；确认锁前写入绕过竞争合同。先两项原生红，再f5b3591移动原三行到持锁范围，六新含错误/取消清理全执行，相邻123/core2015+1既有skip/Flow354本机通过。待同PR174新最终head及实际dev全部实际CI，原失败不重跑抹去，见record§214–215。

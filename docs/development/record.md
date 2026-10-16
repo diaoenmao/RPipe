@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR174合批B124–B128/#170–#173/#175，本机完整复验完成，准备更新最终head；接受dev仍bef7de9。
+> 最新：原CI Windows3.10暴露空锁初始化竞争，已先Issue/两项红再三行顺序移动，失败完整保留，详§214–215。
+> 验证：共享相邻123、core2015 passed/1既有skip、CPU Flow354 passed；本PR84新全执行（27 unit+57 integration）。
+> 下一步：同PR更新后验新最终head/实际dev全部实际CI，再关五Issue及清主题分支；无决策阻塞。
+> 保护：基线161计数2/remote44，main/tag/GPU/数据/结果/布局不动；旧CI不能当新head验收。
+
 > 当前（2026-10-17）：B124–B127/#170–#173同分支字段/事件身份里程碑本机完成，尚未推送/开PR；接受dev仍bef7de9。
 > 最新：合法消息/提示的行边界、原生事件字段定位、标准traceback过滤四项统一收敛，详§209–213，独立红证据保留。
 > 验证：相邻420 passed；core2009 passed/1既有skip、CPU Flow354 passed，新增78（21 unit+57 integration）全执行/0新skip。
@@ -3666,3 +3672,14 @@ PR174已统一提交B124–B127，原head85826fe。Branch38934229573及Package38
 B128/#175在原未改shared代码确认：空锁文件在取得OS所有权前写入，持锁进程的Windows强制字节锁使竞争者绕过既有TimeoutError。原生子进程保持空文件byte0锁，本地timeout=0复现PermissionError；先Issue再5822a41红2/2，c7eef67调整锁内只stat的成功断言后仍2/2同位置红。第一探针错误在锁期间另开读取句柄，被拒是探针错误，单独保留而非库失败。ORIGINAL.zip/CI失败日志/REPRO/两场红均在.tmp/audit128，不随clone。
 
 方案仅移动原初始化至OS锁取得并登记release后，保留原锁inode/重入/deadline/退出恢复/布局；原子写与并发类同PR174收敛，不另开小PR。待最小实现及相邻/core/CPU Flow、全新最终head/实际dev全部实际CI。Issue170–173/175仍开放，main/tag/GPU/数据/结果不动，下一B129。
+
+
+## 215. PR174五B完整里程碑：修正原生CI空锁竞争并重新本机验收（2026-10-17）
+
+B128/#175先红5822a41/c7eef67共两项零/有限预算竞争均PermissionError，方案8ec4a8a后f5b3591仅把shared.cache_lock原三行初始化移动到OS锁取得并登记release之后。新增四项write/flush错误与取消控制验证主异常同对象、OS解锁/关闭、跨线程与原线程再获取；空锁竞争两项亦验证重入、原inode与释放后初始化。没有替换锁文件或改变超时/重入/数据布局，不新增并发支持范围。
+
+更新后共享/引用/原生Flow相邻123 passed，完整core2015 passed/1既有skip、CPU Flow354 passed，0failure/error，进程37512/88615均exit0。B128六新unit全执行；本PR累计84新节点（27 unit+57 integration），此前四B红证据不合并冒称一场84红。前四B五源文件原字节未再改，SOURCE_CHECKED证明新生产差异只有shared.py原三行顺序移动。
+
+初次相邻命令误填不存在test_shared_alias.py而未收集测试，原GREEN.log保留；更正到真实test_shared_references.py后119 passed，再加入四清理控制后123 passed。第一探针锁期间读取及锁内另开句柄控制的错误分别保留说明，均不算库失败。原PR Unit38934229616已completed failure：三CPU矩阵成功、Windows3.10失败/其Flow跳过、聚合失败；不重跑、不取消、不用本机绿冒称原CI绿。更新相同PR174并触发新head全部CI；五Issue170–173/175保持开放直至双侧实际验收。
+
+原始CI失败、REPRO、原源码ZIP/hash、RED/RED2、GREEN/GREEN2/GREEN3与最终CORE/FLOW/SOURCE/LOCAL_CHECKED在.tmp/audit128，不随clone。没有GPU/性能/正式Study实测或科学结论，不改架构/产物布局/main/tag/数据/结果。下一B129，接受dev仍bef7de9，清理基线161计数2、remote44。
