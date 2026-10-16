@@ -148,3 +148,6 @@ B109/#146已PR147最终head与实际dev全CI验收关闭，主题本地/remote�
 ### B139 / Issue #191：可解析JSON中的surrogate标签阻断readout发布（2026-10-17）
 
 真实write_numbers和compare_runs→write_compare：正常label可发布peer，ASCII JSON转义的未配对代理label可解析却真实UnicodeEncodeError，旧目标/输入保持。75全状态Issue去重（111是测试证据JSON，非readout）；191一处范围追加保原文。先红a55f38a36项18失败、c0dc4016项3失败，方案f2bf035/0cfea56；4926b81修共用display文本、9b2246c修派生compare JSON，strictResult/config/provenance及atomic writer不变。814最终相邻passed，42新全执行；原生roundtrip/正常字节/peer保持。最终core/Flow进行中，未推送/PR，保持OPEN。证据.tmp/audit139不随clone，详record§240–241。
+
+
+B139同类补全（2026-10-17）：可选activity提示亦真实strict stdout编码失败遮住status权威表；默认Win replace控制台不作同样崩溃声明。0b061f9先14红6失败/8控制→ce9e716方案→d10e759最小显示修；仍191一类，不另Issue/PR，announce严格写入控制保持。最终相邻878passed，新56全执行，三个最终源码全检进行中，详record§242。前两处完整绿属于历史阶段，不冒充最终三处CI或本机验收。

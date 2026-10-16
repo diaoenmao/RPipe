@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：同一B139/#191本地补齐三处消费边界，唯一未合evidence-boundaries-next分支；尚未推送/PR。
+> 最新：display文本、派生compare JSON、可选activity提示分别最小修；三种公开链反例均转绿，source/peer/正常字节保全。
+> 验证：三批先红36/18失败、6/3失败、14/6失败；最终相邻878 passed，56新节点全执行/0skip；三处最终core/Flow执行中。
+> 下一：复用64004/25458验收最终源码d10e759，继续同类/相关主题本地累积，再完整里程碑PR；191仍OPEN，无决策阻塞。
+> 保护：已接受PR190/dev e31fbf5；remote50/基线181后3，main/tag/GPU/数据/实验/布局不动，旧失败与部分阶段绿保留。
+
 > 当前（2026-10-17）：B139/#191在唯一未合evidence-boundaries-next分支本地修复，尚未推送/PR；已接受dev e31fbf5。
 > 最新：同类surrogate标签使Numbers及派生compare JSON发布失败，两处消费边界修4926b81/9b2246c；源输入/数值/严格writer不变。
 > 验证：两批先红36项18失败、6项3失败；最终相邻814 passed，新42节点全执行/0skip；最终core/Flow进行中，详§240–241。
@@ -4078,3 +4084,14 @@ a55f38a红36项18失败/18控制→f2bf035方案→4926b81一处_text_cell UTF-8
 
 
 B139第三消费面：两处源码9b2246c的完整core2262passed+1既有skip/Flow429passed已终结；继续同类扫描确认可选activity提示在原生main+不可reconfigure的真实UTF-8 strict stdout上遮住权威peer/计数。默认Windows替换控制台不声称崩溃，输入字节保留。0b061f9先14红6失败/8正常及严格announce控制；方案先写design，再只改_format_activity显示返回编码边界，announce仍strict先写后打印。仍191同一B139，不拆新Issue或PR，旧完整结果只证明前两处阶段，不冒充最终三处验收。
+
+
+## 242. B139第三消费面与最终合批验证启动（2026-10-17）
+
+同类扫描源UTF-8输出/归一出口发现activity._format_activity不走_text_cell。原生CLI main配真实strict UTF-8输出wrapper（无reconfigure）下，正常hint可打印peer与succeeded计数，surrogate detail真实编码失败并提前遮住权威表。只声明该明确支持的嵌入输出边界，不把Windows默认errors=replace控制台说成同样崩溃。191原body仅追加本边界一次，保原文，无另Issue/PR。
+
+0b061f9先红14项6失败/8控制（phase/detail×6，另2announce strict writer保全控制）→ce9e716补方案→d10e759只加_format_activity显示UTF-8 backslashreplace roundtrip。announce原JSON strict写入、atomic/type guards/phase/detail字段/布局保持；没有吞输出流错误。先前4926b81/9b2246c两处完整core2262passed+1既有skip/Flow429passed仅为此前阶段绿，各原始记录不覆盖。
+
+三处最终相邻readout/activity/Result IO/atomic共878passed/0fail/error/skip，56新（原42+activity14）逐XML全部执行；三个原生失败链均转绿，输入/peer字节保全，派生compare JSON原key/code unit完整roundtrip且正常对照原字节相同，strictResult/announce仍对原始坏Unicode拒绝并保旧目标。源report/compare各一块替换及activity一块替换均单独原字节/CRLF证明，无新helper/依赖或科学门变化。
+
+以最终生产d10e759重新COMPLETE_CORE/COMPLETE_FLOW，64004/25458存活，basetemp独立；不因观察间隔重派。当前源码冻结以验收本批，191保持OPEN、不立即单B PR，收尾文档与PR190已验收记录同在本地分支，后续相关主题完整里程碑统一合dev。原生strict输出scope、所有红/阶段绿/ZIP/hash/CLI输入字节证明在.tmp/audit139不随clone；下一B140无新登记，无用户/设计阻塞。

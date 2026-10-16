@@ -675,3 +675,6 @@ actualdev e31fbf5927dfea94472c712d249a48e05212a66d，PR190 finalhead6f66f37与ac
 ## 2026-10-17 B139/#191当前本地批次
 
 唯一未合codex/evidence-boundaries-next在接受dev e31fbf5上；10691e1保PR190收尾文档，未单独PR。B139同类readout surrogate边界：a55f38a36红18失败→f2bf035→4926b81展示textcell；继续实际compare派生JSON复现追加191body一次，c0dc4016红3失败→0cfea56→9b2246c派生JSON序列化边界。原producer/strictatomic/JSONschema/数值/路径保持；正常字节与json.loads的原code units保真。最终相邻814通过，42新全执行；FINAL_CORE48760/FINAL_FLOW82148尚活，复用原句柄观察、不重派、不用初阶段2256/429替代最终验收。191仍OPEN、未推送/PR，继续本地合批；新B140。原始.tmp/audit139全部失败/ZIP/原生重现保留，无GPU/训练/下载/测速/布局变更。
+
+
+B139第三消费面续接：两处阶段完整core2262+1skip/Flow429终结后，native main+真实strict/no-reconfigure stdout的activity surrogate反例补入191。0b061f9红14/6失败→ce9e716→d10e759一处_format_activity显示编码；原announce JSON writer仍严格，两个保旧控制通过。最终三处相邻878、新56全执行/0skip，COMPLETE_CORE64004/COMPLETE_FLOW25458正运行，复用句柄；旧48760/82148已终结，不再等待/重派。原ZIP/ACTIVITY_REPRO/ACTIVITY_GREEN_REPRO/节点证明在.tmp/audit139；未推送/PR，191仍OPEN，新B140，详record§242。
