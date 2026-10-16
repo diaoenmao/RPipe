@@ -569,3 +569,12 @@ B129–B130本机实施状态（2026-10-17）：3743b59与1b6885c已按上文最
 
 
 PR178验收状态（2026-10-17）：B129–B130已实施并正常合dev53ae142，最终head26131eb及实际dev全部实际CPU/安装包矩阵及聚合成功；176/177验收关闭，主题本地/remote清理。上文待CI保留为当时历史，勿当未实施/待审批。完整来源/hash/限制见record§220。下一B131/#179是新确认的Windows同文件别名原生event身份边界，尚未实施；不改变此前规范或重做已验收任务。
+
+
+### B131 / Issue179：原生event所有者采用平台组件身份语义（2026-10-17，实施方案）
+
+接受dev53ae142上Windows原生samefile/log_path均确认有效Run别名，仅Owner→owner等大小写拼写差异导致_event_match精确字符串前缀不命中而回退；正文/Run名tag抢占，split误进logs，list_runs与standalone note不一致。两别名失败/两原拼写控制留.tmp/audit131；1cfad38先提交44项红17失败/27控制（12单测+32原生集成）。集成含正常/含tag名称、原拼写/别名、默认/custom日志、split/warn/flow/error、peer及全部输入字节/目录清单。
+
+最小方案只改status.py共用_event_match一处条件：已知identity非None时，用既有Path对record相同长度的所有者组件作平台比较，并仍要求紧邻的原' ['边界；事件起点/正则/选择集合/返回偏移与原legacy搜索回退保持。Path组件比较只做文本路径语义，不resolve/stat/samefile，不给每行增加文件系统I/O；Windows匹配同文件大小写别名，POSIX大小写不同组件保持不同。run_dir/producer/log字节和磁盘路径不规范化，不扩大mode、未知外来legacy身份或更改日志schema。
+
+两个既有消费者_note_from_log与logs.event_lines共用此helper，无其他调用者需改；原log_path的所有权/路径守卫、readonly模式、排序与traceback政策全部原字节保持。12单测显式模拟PureWindowsPath/PurePosixPath语义，不能当POSIX实机；32集成在Windows验证实际别名，在POSIX分支创建大小写不同实体并验证foreign日志不被借用，没有新增平台skip。实际POSIX证据须后续CI；先本条方案再最小实现，同主题本地积累后完整里程碑PR。

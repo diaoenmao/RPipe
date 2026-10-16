@@ -3765,3 +3765,12 @@ Issue176/177逐项验收说明各一次后关闭，PR原正文保留并追加实
 下一唯一未合codex/readout-identity-next仅本地，从接受dev53ae142建立；本条收尾文档随下一完整主题，不拆小PR。B131/Issue179确认未修：Windows有效Run大小写别名经原log_path守卫与samefile确认指向同一日志，原生_event_match仍文本精确比较而回退，正文/名字tag可抢占event，status与standalone note不一致，split误入logs。两场别名失败/两原拼写控制成功，全部输入字节不变；这是原172/PR174未覆盖的同文件别名边界，不声称早先修复引入原问题，也不扩展大小写mode或未知legacy所有权。
 
 原始Windows REPRO/ZIP在.tmp/audit131，不随clone；下一先提交跨平台组件语义与原生只读消费者红回归，再最小方案，不改生产者/schema/路径布局或每行增加文件系统I/O。PR178验收/反馈/清理原件.tmp/audit130同样不随clone。持续目标active，下一新缺陷编号B132；不合main/tag/发布，不跑GPU/测速/正式Study，不改数据结果或科学结论。
+
+
+## 221. B131/#179平台所有者身份红回归与最小方案（2026-10-17）
+
+基于PR178已验收dev53ae142的新主题codex/readout-identity-next，1cfad38先提交44项红17 failed/27 passed、0error/skip：12路径组件语义单测与32原生Logger→Runner→status/logs集成，正常/含tag Run名、原拼写/大小写别名、默认/custom日志和四event，验证真实samefile、计划计数/peer/原字节/目录列表。17失败为Windows同文件别名回退误读，既有原拼写与POSIX兼容控制通过，不把模拟PurePosixPath单测当POSIX实机。原生POSIX分支会创建大小写不同目录验证foreign日志隔离，后续实际CI验收。
+
+方案只替换共用_event_match的已知所有者匹配条件：相同长度前缀用原Path组件比较，仍要求原' ['边界，事件偏移/正则/选择集合与legacy回退不变；不resolve/stat/samefile，不逐行增FS I/O。仅status.py现有helper，两reader调用方保持；不改生产者、schema、log字节、路径守卫、traceback/时间排序或mode合同。先本方案再最小实现，原始Windows REPRO/ZIP/hash/RED在.tmp/audit131，不随clone，portable回归随Git。
+
+当前#179仍OPEN，本批无PR；前PR178验收/两Issue关闭/分支清理完毕见§220，勿重复。基线161计数4/remote46，下一新编号B132；不合main/tag/发布、不跑GPU/性能/正式Study或删数据结果。
