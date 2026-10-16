@@ -4171,3 +4171,12 @@ finalhead26dd6d28f2f865c22a8cf137c2054c6189593bae的Branch38966619127/Package389
 PR194双侧验收及周期清理完成后，当前correctness-milestone-next仅验收文档本地提交，源码仍为已接受devf2c286d。继续在.tmp/audit140/followup-native隔离复查，不读写正式Study、数据或实验产物：原生Windows只读目标使atomic_write_text抛PermissionError时，原目标字节和peer保持、自有临时文件清理；三个独立写入者共享同一目标时，观察到的文本及最终目标均为一份完整合法payload、无临时残留；含坏UTF-8字节的可选run.log经现有replace读取仍展示健康peer和权威计数，全部源文件字节与文件集合不变。
 
 以上三个有限原生对照全部通过，未确认新缺陷；不以此证明所有时序/存储故障，不增加生产代码/框架/锁或checkpoint并发承诺，没有计时/吞吐测量、GPU/下载/训练。FOLLOWUP_NATIVE_CHECKED SHA256 c32ef725ffaf152e04167495b3d33cc915582030f813449051b897c22889ec99，脚本/输入/结果在上述.tmp目录不随clone，不能代替便携回归或既有完整CI。继续三类实际审计，确认反例才登记B141/Issue并先红；本地文档随下一完整里程碑合批，不单开小PR。无新Issue/用户阻塞，goal active。
+
+
+## 249. B141/#195独立数据准备入口路由反例与先红（2026-10-17）
+
+本轮先workspace/fetch核对：仅_staging_from_DEM未跟踪、local860f3c8在唯一correctness-milestone-next，origin/dev仍f2c286d，open Issue/PR皆空；上一轮PR194双侧验收/关闭193/清理为已完成progress，不重发或重删。扩展全仓源扫描后发现手动main_exp/flow/prepare_data.py不经过PR190库入口，MNIST/CIFAR两个海外常量仍可达，违反用户新增下载规则；旧record把该工具归IO专用协议合规，不表示它已经满足后来的国内路由要求。
+
+实际prepare_*在替身transport入口确认海外首请求；另实际urllib302流程用合成HTTPS响应确认国内起点仍会进入海外transport。没有socket连接/真实下载/数据或正式Study动作，REPRO/原始ZIP在.tmp/audit141，临时不随clone。77全状态Issue与189原body核对后新195登记；80009d7先红20项11失败/9控制、0error/skip，生产脚本及origin.py原ZIP字节均未变。设计先记B141，拟只复用既有国内endpoint和stdlib redirect边界守卫；正常缓存、hash、partial、manifest及verify-only来源保持。
+
+所有改动在当前批次本地累积，不立即单脚本PR；后续继续相关故障留证复查后整类里程碑本机/CI验收。195仍OPEN，下一B142，无设计/用户阻塞，main/tag/GPU/性能/数据/布局保护保持。

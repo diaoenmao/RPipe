@@ -727,3 +727,16 @@ B140本机实施完成（2026-10-17）：2fa9f0a只改既有Logger两方法，AD
 
 
 B140已实施并双侧验收（2026-10-17）：PR194 finalhead26dd6d2及actualdevf2c286d所有实际矩阵/聚合success，193已按授权关闭，旧主题本地+remote普通删除。无待审/待CI；单writer checkpoint/程序错/取消等原合同不扩大，详record§247。
+
+
+### B141 / #195：独立raw准备入口的国内下载边界（2026-10-17，实施方案）
+
+用户03:16国内下载规则也覆盖baseline/手动脚本。PR190/B138只修库factory及HF/ModelScope入口，独立studies/main_exp/flow/prepare_data.py仍硬编码ossci S3/toronto。77条全状态Issue去重、原Issue189范围核对后先195登记；调用实际prepare_mnist/cifar并在urllib传输前拦截，两个海外首请求确认。另用真实urllib重定向流程配合合成HTTPS响应确认国内起点302可继续发往海外；未发真实网络，不声称现有国内镜像实际这样重定向。源码ZIP/REPRO在.tmp/audit141不随clone，正式Study/历史manifest/归档原字节不动。
+
+80009d7先红20项11失败/9有效控制、0error/skip：两默认路径、六越界authority、HTTPS/HTTP/FTP海外redirect；正常大小写/default443、同国内redirect、缓存/坏缓存、长度/MD5拒绝保partial、verify-only保原下载来源为控制。仅网络transport替身，urllib请求/redirect/哈希/文件发布实际执行，socket.connect禁止作为后备。
+
+最小方案只改现有手动prepare_data.py，不改src/rpipe原有foreign显式兼容：MNIST_URL/CIFAR_URL复用domestic_endpoint已有登记镜像，归档/MD5及raw SHA256原样。一个私有URL校验点要求HTTPS、hostname属于这两个已登记endpoint、端口缺省或443、无userinfo；有效host大小写不误拒。校验仅在真实下载前（有效缓存继续不联网复用，即使旧来源字符串是海外），并用标准库HTTPRedirectHandler薄子类在redirect_request进入下一transport之前复用同一校验，覆盖HTTP/FTP重定向逃逸。使用本次download独立build_opener，不install全局opener，不加配置/依赖/重试/海外fallback。
+
+保留既有60秒timeout、headers、Content-Length/MD5校验、.part证据、同目录发布、cache_lock、raw路径与manifest字段；拒绝时要求本地预备已校验raw，不换海外源。记录新实际国内URL；verify-only仍保留原downloads/reused_caches来源，不就地重写历史证据。国内镜像可用性/下载数据一致性尚未实测，不拿mock代替；源码冻结后实际复跑须新version，当前不运行正式Study/GPU/训练/测速。此变更只落实已授权下载合同，不扩展科学目标/布局。
+
+完成该入口后继续同类/相关失败留证复查，本地按主题累积到完整里程碑再PR，不为这个脚本单开小PR。当前唯一未合codex/correctness-milestone-next，195待最终里程碑本机/双侧CI，下一B142；无设计审批等待。

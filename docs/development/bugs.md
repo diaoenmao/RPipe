@@ -162,3 +162,8 @@ B139同类补全（2026-10-17）：可选activity提示亦真实strict stdout编
 
 
 2026-10-17 B140验收：PR194 finalhead26dd6d2/actualdevf2c286d全部实际CI成功；193原body保持、一次评论后关闭，旧主题本地/remote正常删，详record§247。上文待CI为历史阶段，非当前阻塞。无新开放Issue，不代表所有可能故障已排除。
+
+
+### B141 / Issue #195：独立历史raw下载脚本绕过国内源（2026-10-17）
+
+PR190库入口不覆盖手动prepare_data.py。实际prepare_mnist/cifar在传输替身处暴露S3/toronto首请求，真实urllib重定向流程配合合成响应亦可从国内起点继续请求海外。零实际网络/下载，不声称实际镜像重定向。77全状态Issue去重后195登记，80009d7红20项11失败/9控制，设计见artifact_consistency_design末B141；先复用已有domestic_endpoint并在初始/redirect传输前统一校验，缓存/hash/raw/layout/manifest schema不改。原始.tmp/audit141不随clone，正式数据/归档/报告不动，继续本地合批而非单bug PR。
