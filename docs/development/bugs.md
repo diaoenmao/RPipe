@@ -44,3 +44,11 @@ B-002、B-021 / B-024及B-025至B-029的既有修复证据仍在 [record.md](rec
 已使用至 B-102，编号不复用；下次新增问题从 **B-103** 起编号。历史段落的旧“下一编号”仅表当时状态。
 
 新增条目一条一事，记录编号、open / investigating状态、复现条件、期望 / 实际、影响落点、方案和实际验证证据。
+
+
+## 2026-10-16 最新状态补记
+
+B102/#132 已经 PR133 合入 dev 并全 CI 验收关闭，上文待验收文字仅历史。B103/[Issue134](https://github.com/DreamSoul-AI/RPipe/issues/134) 为当前开放项：共享锁路径别名自争用，四红后最小修复，本机共享72/core1697+1既有skip通过，待Flow及最终/实际dev CI。详[record§157–158](record.md)。
+
+
+B103 本机补记：CPU Flow 207 passed、0 failure/error/skip；最终 head 与实际 dev CI 仍待验收。

@@ -1,3 +1,9 @@
+> 当前：PR133实际dev已全CI验收、Issue132关闭，已删train-failure-finalizer本地/remote各1条。
+> 最新：B103/Issue134路径别名锁自争用，四红42c8b5b→设计afd8ea0→最小修复41ce552。
+> 验证：共享72/core1697 passed，1既有平台skip；证据见record§157–158与.tmp/audit103。
+> 下一步：CPU Flow、最终head及实际dev全部实际CI；当前无代码阻塞。
+> 保护：无main/tag/GPU/测速、无数据删除或产物布局修改；以下旧状态保留为历史。
+
 > 当前：B102/#132已红1e8c5d1→设计75e9885→最小生产384bf2c完成本机；待PR最终/实际dev CI。
 > 最新：22新节点全执行/通过；core1693+1既有POSIX skip、CPU Flow207通过；成功路径错误仍传播。
 > 补强：a758de4只加3条实际tracker staging清理断言，冻结旧函数20 failed/2控制passed；当前22绿。
@@ -2974,3 +2980,21 @@ PR131普通合dev `a458eae998e25a908250ed3da887bdd8cd5bf451`；最终head `25601
 复查测试后a758de4仅增3条tracker.state_path.parent实际staging目录断言，原root/peer及所有红断言保留。冻结原源码函数回放22项20 failed/2控制passed，明确不是HEAD红；当前补强22 passed。完整core/Flow运行于同一384bf2c生产源码、补强前断言集，补强后只重跑受影响22节点；生产未再改，最终CI将执行完整最终断言集。原始RED_INITIAL两控制注入拒绝、无效stub探针、更正正式红、冻结回放和全部原始日志/XML/hash/ZIP均保留.tmp/audit102，不随clone。
 
 LOCAL_CHECKED SHA256 `fd535488c7f66d6b29dff899681bd7916cabd74978c44bbeb8a55d244662144c`；实际模块物理路径和源文件hash已核对。结果可写才尽力生成failed，tracker本身拒绝写入时保留旧state与peer、本写者staging清干净；secondary诊断不能写时仅保证原错误优先，不承诺日志总能落盘。未放宽严格恢复或科学门。待最终head及实际dev全部实际矩阵/聚合分别验收后正常合dev、关闭132并普通清本地/remote；PR129全面清理基线后本批合入将累计2个PR，仍逐批清自身结束分支。
+
+
+## 157. PR133 实际 dev 验收与已合分支清理（2026-10-16）
+
+PR133 正常合入 dev bc3743e6ef33cc1b87833122a4d070dca2ee6ad3。最终 head ea1d06c 的 Branch38863702787 / Package38863702737 / Unit38863702706，以及实际 dev Package38864260990 / Unit38864260983 全部实际矩阵和聚合成功；Issue132 已验收关闭。DEV_CHECKED SHA256：524566748d28e698049518047387b3c10abc12fb53d5a42a6e4ba469bbcdf5b6。
+
+观察句柄69911因 GitHub unexpected EOF 退出，短超时重读原运行验收成功；不是 CI 失败，未重跑/取消 CI。15:44 最新指令覆盖旧 heartbeat 暂时保留规则，核对提交已纳入 dev 后，普通删除 codex/train-failure-finalizer 本地1条、远程1条；远端仅 main/dev，累计结束远程分支29条。PR129周期清理基线后已合2批。未动 main、GPU 任务、数据、Run、结果或 provenance。原始核验 .tmp/audit102/BRANCH_DELETED_CHECKED.json 不随 clone。此前 pending/保留措辞仅记录当时状态。
+
+## 158. B103 / Issue134：共享锁路径别名重入（2026-10-16）
+
+原生 Windows 两个目录路径 samefile 为真，但普通路径与扩展命名空间路径的 resolve 字符串不同；两个嵌套方向在 timeout=0 均自争用。先 Issue134，42c8b5b 提交四项红回归全部失败，再 afd8ea0 设计，41ce552 只将线程局部重入键改为 pid/st_dev/st_ino 物理目录身份。根路径、锁文件、OS 所有权、超时验证和磁盘布局保持；四项覆盖嵌套方向、内层正常/异常退出、其他线程排斥与释放后重获。
+
+GREEN_FINAL：72 passed；core：1697 passed、1既有Windows POSIX模式位 skip、0 failure/error，新四节点全部执行。CPU Flow 和最终 head/实际 dev CI 尚待验收。证据位于 .tmp/audit103，不随 clone；正式测试随 Git 提供。
+
+首轮 CRLF 替换校验在实际 LF 源文件上拒绝，未写生产；当时 GREEN 仍为旧源码四失败，后按实际 LF 唯一替换再验。自动审批拒绝了可能因切片丢失历史的文档脚本，未执行；改用追加记录和精确替换保全全文，原拒绝说明保留。不把校验拒绝或网络失败算库失败。无 GPU、测速、正式 Study、main/tag 或迁移。
+
+
+B103 本机补记：CPU Flow 207 passed、0 failure/error/skip；最终 head 与实际 dev CI 仍待验收。

@@ -1,7 +1,7 @@
 > **RPipe 研究计划：研究执行与证据一致性的可验证合同**
 > 版本：1.4；更新：2026-10-16；中文为正本，[English](<Research Plan RPipe.md>) 逐章对应。
 > 当前阶段：完成计划重做和定向文献初筛；继续代码正确性，尚未执行本计划的新科学实验。
-> 当前实现基线：dev `a458eae998e25a908250ed3da887bdd8cd5bf451`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
+> 当前实现基线：dev `bc3743e6ef33cc1b87833122a4d070dca2ee6ad3`；已发布对照为 v0.4.1，不将 dev 冒充发布版。
 > 本轮零 GPU、零测速、零训练、零数据下载；保持既有文件架构与产物布局。
 
 ## 本次人工审阅摘要（2026-10-16，按12:53更新）
@@ -519,3 +519,11 @@ CPU 合同门使用伪计算与微小张量验证阶段职责、正常定稿、�
 
 仅用现有 `recipe.preflight` 做 MNIST/linear、seed0、200-step / 完整 test 的同设备原版与当前链前缀对照，保持 sampler / scheduler 总预算 80000、batch250、原精度与数值门。独立验证标识为 main-exp-flow-smoke-20261012-01，输出到本 Study `shared/validation/` 的新目录，逐段数字写入 `docs/`。这不是正式 64-Run 实验，不改 version03 的声明、index、provenance、Run 或 `PREFLIGHT.json`，也不触发正式 Flow launch；现有 loader / scope 合同检查另行复验。200-step 单组不满足 600-step 八格前置门，不能解锁长实验。以后正式复跑仍需新 version、重新 make 和完整前置门。
 <!-- END archive-main-exp-v030 -->
+
+
+## 2026-10-16 最新工程验收补记
+
+B102已PR133合dev bc3743e，最终head及实际dev全部实际CI成功，Issue132关闭、工作分支本地/remote已清；上文待CI仅历史。B103/Issue134四项原生Windows红回归确认共享锁路径别名自争用，修复仅改内存重入身份；共享72/core1697+1既有平台skip通过，待Flow及CI。不是新科学实验，不改布局或Study方案，详[record§157–158](../development/record.md)。
+
+
+B103 本机补记：CPU Flow 207 passed、0 failure/error/skip；最终 head 与实际 dev CI 仍待验收。

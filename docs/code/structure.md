@@ -1098,3 +1098,6 @@ Run 目录名必须为非空单一目录组件，拒绝点 / 父目录、分隔�
 2. 配置：基底 ⊕ **make** → run config → control；`study.yaml` 声明 `axes` / `seeds`（见 Study 指南）。
 3. result 快照契约（§9.4）先文档后单测固化。
 4. Flow：summarize 之后是 **write**（写 result），再 **process**。
+
+
+共享准备锁的同线程重入使用 pid 与目录 stat 的 st_dev/st_ino 身份（与标准库 samefile 一致），避免普通/扩展命名空间路径自争用。该身份只存线程局部内存，实际路径和锁文件保持；其他线程/进程仍须取得 OS 锁。见 B103 / Issue134。
