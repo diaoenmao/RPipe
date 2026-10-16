@@ -154,8 +154,13 @@ def render_numbers(study_dir: Path | str) -> str:
             href = links.get(run_id, f'../runs/{run_id}/assets/logs/run.log')
             log_text = f'[run.log]({href})' if href else '-'
             seed = '' if run.get('seed') is None else _markdown_cell(run['seed'])
+            run_label = _markdown_cell(run_id)
+            fence = '`'
+            while fence in run_label:
+                fence += '`'
+            run_label = f'{fence} {run_label} {fence}' if len(fence) > 1 else f'{fence}{run_label}{fence}'
             lines.append(
-                f'| {factors} | {seed} | `{_markdown_cell(run_id)}` | {metric_text} | {log_text} |'
+                f'| {factors} | {seed} | {run_label} | {metric_text} | {log_text} |'
             )
     lines.append('')
     return '\n'.join(lines)
