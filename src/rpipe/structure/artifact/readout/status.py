@@ -13,13 +13,14 @@ from rpipe.structure.artifact.asset import kinds
 from rpipe.structure.artifact.config import load_config
 from rpipe.structure.artifact.errors import ArtifactError
 from rpipe.structure.artifact.index import index_path, load_index
-from rpipe.structure.artifact.paths import CONFIG_NAME, RESULT_NAME, RUNS_DIRNAME
+from rpipe.structure.artifact.paths import ASSETS_DIRNAME, CONFIG_NAME, RESULT_NAME, RUNS_DIRNAME
 from rpipe.structure.artifact.readout.report import _fmt, _text_cell
 from rpipe.structure.artifact.result import STATUS_SUCCEEDED, load_result
 from rpipe.structure.artifact.result.format import VALID_STATUS
 
 STATUS_PENDING = 'pending'
 _EVENT = re.compile(r'\[(epoch|error|flow)\]\s*(.*)$')
+_NATIVE_RECORD = re.compile(r'^\d{4}-\d{2}-\d{2}T\S+\s+(?:INFO|WARN|ERROR)\s+(.*)$')
 
 
 def _read_optional(path: Path | None, loader) -> tuple[str, Any]:
@@ -120,7 +121,17 @@ def log_path(study_dir: Path, run: dict[str, Any], run_dir: str) -> Path | None:
     return path
 
 
-def _note_from_log(path: Path | None, *, errors_only: bool = False) -> str:
+def _event_match(line: str, pattern, run_dir: str | None = None):
+    native = _NATIVE_RECORD.match(line)
+    if native is not None:
+        record = native.group(1)
+        for identity in (run_dir, '-'):
+            if identity is not None and record.startswith(identity + ' ['):
+                return pattern.match(record[len(identity) + 1:])
+    return pattern.search(line)
+
+
+def _note_from_log(path: Path | None, *, errors_only: bool = False, run_dir: str | None = None) -> str:
     """Last ``[epoch]`` or ``[error]`` summary, else the last ``[flow]`` line.
 
     ``errors_only`` keeps the last ``[error]`` summary and ignores later epochs.
@@ -128,11 +139,15 @@ def _note_from_log(path: Path | None, *, errors_only: bool = False) -> str:
     state, text = _read_optional(path, lambda p: p.read_text(encoding='utf-8', errors='replace'))
     if state != 'available':
         return '-'
+    if run_dir is None and path is not None:
+        assets = path.parent.parent
+        if Path(assets.name) == Path(ASSETS_DIRNAME) and Path(assets.parent.parent.name) == Path(RUNS_DIRNAME):
+            run_dir = assets.parent.name
     lines = text.splitlines()
     chosen = None
     fallback = None
     for line in lines:
-        match = _EVENT.search(line)
+        match = _event_match(line, _EVENT, run_dir)
         if match is None:
             continue
         event, payload = match.group(1), match.group(2).strip()
@@ -202,9 +217,9 @@ def list_runs(
             run_log = log_path(study_dir, run, run_dir)
             note = '-'
             if status == STATUS_PENDING:
-                note = _note_from_log(run_log)
+                note = _note_from_log(run_log, run_dir=run_dir)
             elif status == 'failed':
-                note = _note_from_log(run_log, errors_only=True)
+                note = _note_from_log(run_log, errors_only=True, run_dir=run_dir)
             error = None if status == STATUS_SUCCEEDED else error
             if result_state == 'unreadable':
                 error = f'result unreadable: {result_path}'
