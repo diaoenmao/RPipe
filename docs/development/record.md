@@ -4057,3 +4057,6 @@ B137/#188与B138/#189完整合批PR190最终head6f66f37f55643691d11bcc5180ff35ed
 本轮先status/fetch并核GitHub无开放Issue，当前唯一未合codex/evidence-boundaries-next只有10691e1验收收尾文档，保留用户暂存。沿readout所有展示caller确认原JSON可正常解析的转义high surrogate metric label使write_numbers真实UnicodeEncodeError，peer新表亦无法发布；相同正常label两行/指标均在，旧表及输入字节保留。不是原子writer失败，不改strict编码/producer/schema。原始两例REPRO/ZIP在.tmp/audit139不随clone，零实验/训练/下载/GPU。
 
 75全状态Issue去重：111/B093是测试证据JSON的既定backslashreplace，191是readout显示边界。先Issue191→a55f38a红36项18失败/18有效Unicode/ASCII/字面反斜杠控制，0error/skip；report实际发布18、status12、compare6。所有caller共用_text_cell，方案先补design末B139，仅显示端原归一后增加UTF-8 backslashreplace roundtrip，不改源JSON/科学数字/身份/布局，严格Result错误照旧拒绝。下一最小fix/完整本机验证并同主题本地累积，不立即单B PR；新B140，无设计/用户决策阻塞。
+
+
+B139同类扩展：4926b81先使808相邻通过、首core2256passed+1既有skip；沿同一标签追到compare_runs→write_compare派生JSON仍实际UnicodeEncodeError，正常label/peer可发布，旧比较目标和输入保留。已一次追加191原body，仍同B139，不拆新B/Issue/PR。c0dc401先6项红3失败/3有效控制，完整decoded report==原report作为code unit保真门；补全方案先写design，再仅派生JSON序列化边界加backslashreplace，不改strict atomic或Result/config/provenance writer。原阶段红/绿/完整检查均保留，不冒充最终两处fix验收。

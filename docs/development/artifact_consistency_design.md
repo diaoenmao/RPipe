@@ -693,3 +693,8 @@ a55f38a先红36项18失败/18控制、0error/skip：Numbers factor-key/factor-va
 全部caller已核：report._markdown_cell/_factors、标题及指标/Run展示；status.format_status的study及各单元格；compare.format_compare的标签，均复用report._text_cell。最小方案只在原_text_cell完成现有换行/tab归一后，加UTF-8 encode(errors=backslashreplace)/decode roundtrip：合法Unicode/ASCII/字面反斜杠保持，只有无效代理code unit显示为可打印反斜杠诊断。既有Markdown反斜杠/管道转义、Run fence、URI guard、计数/数值格式、sort和行顺序原样。不修写回源数据，不在atomic writer加errors宽容，不吞UnicodeEncodeError或任意程序错误；严格write_result无效Unicode仍照原测试拒绝/保旧目标。此为显示文本容错，不声称诊断转义是可逆的科学字段或规范身份编码。
 
 采用现有B093测试证据的backslashreplace策略，不加helper/依赖/配置/路径；只补同一显示边界的一行。参考RFC8259§8.2明确指出语法可容纳无法表示Unicode字符的孤立代理、互操作行为不可靠（https://www.rfc-editor.org/rfc/rfc8259#section-8.2，实际阅读此节）；本地json解析/UTF-8失败是独立实测。该规则只在展示消费端，不改变格式规范。先本方案再生产最小fix，完整本机检查后继续相关主题本地累积，一个完整里程碑PR；不单B立即开PR，不等待额外设计批准。新B140，无GPU/测速/下载/正式Study/main/tag/布局变更。
+
+
+B139同类消费面补全（2026-10-17）：4926b81单处_text_cell已使808相邻通过，初core2256passed+1既有skip；继续沿共用readout发现实际compare_runs→write_compare仍把同一source metric key放入items.metrics.keys，派生JSON序列化后真实UTF-8写入失败，正常label/peer控制通过、旧目标/输入不变。已在191原body一次追加此边界，仍同一B139/同一分支，不另Issue或PR。c0dc401先6项红3失败/3控制（高/低/混合，ASCII/中文emoji/字面backslash控制），验证完整json.loads roundtrip等于原report，不将科学key替换成诊断文本。
+
+补全方案只在write_compare现有json.dumps(...ensure_ascii=False)之后加UTF-8 backslashreplace encode/decode，再交原strict atomic_write_text。只转义无效code unit为JSON合法转义；有效Unicode/字面backslash原输出字节及json.loads后的原始key保持，现有finite清理/字段/数值/顺序/indent2/路径全不动。不复用_text_cell处理整份JSON（那会改换行/tab），不改generic Result/config/provenance encoder或writer的严格拒绝。原始36红及所有初轮绿/完整检查保留为partial-stage证据，最终两处消费修复需重新完整本机验证；继续本地积累，不单B立即PR。此补全取代最初“只需_text_cell一行即可覆盖所有readout发布”的范围判断，未放宽严格输入/身份或科学门。
