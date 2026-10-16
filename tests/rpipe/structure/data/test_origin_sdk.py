@@ -1,5 +1,6 @@
 """Actual SDK transfer policy; repository metadata and transport are synthetic."""
 import hashlib
+import io
 import socket
 import sys
 from types import SimpleNamespace
@@ -31,9 +32,12 @@ def sdk_download(monkeypatch, tmp_path):
     target = ['https://hf-mirror.com/synthetic/config.json']
     failure = [None]
     extra_headers = {}
+    on_request = [None]
 
     def transport(request):
         calls.append(str(request.url))
+        if on_request[0] is not None:
+            on_request[0](request)
         if failure[0] is not None:
             raise failure[0]
         headers = {'x-repo-commit': commit, 'etag': oid,
@@ -55,14 +59,48 @@ def sdk_download(monkeypatch, tmp_path):
     monkeypatch.setitem(sys.modules, 'modelscope', SimpleNamespace(snapshot_download=unavailable))
     monkeypatch.setattr(HfApi, 'list_repo_tree', lambda *a, **k: [
         RepoFile(path='config.json', size=len(payload), oid=oid)])
-    with httpx.Client(transport=httpx.MockTransport(transport), follow_redirects=True) as client:
+    if hasattr(_http, '_GLOBAL_CLIENT'):
+        client = httpx.Client(transport=httpx.MockTransport(transport), follow_redirects=True)
         monkeypatch.setattr(_http, '_GLOBAL_CLIENT', client)
+    else:
+        import requests
+
+        class Adapter(requests.adapters.BaseAdapter):
+            def send(self, request, **kwargs):
+                fake = transport(httpx.Request(request.method, request.url))
+                response = requests.Response()
+                response.status_code = fake.status_code
+                response.headers.update(dict(fake.headers))
+                response.raw = io.BytesIO(fake.content)
+                response._content = fake.content
+                response.url = request.url
+                response.request = request
+                return response
+
+            def close(self):
+                pass
+
+        class Session(requests.Session):
+            is_closed = False
+
+            def close(self):
+                self.is_closed = True
+                super().close()
+
+        client = Session()
+        client.mount('https://', Adapter())
+        client.mount('http://', Adapter())
+        client.event_hooks = client.hooks
+        monkeypatch.setattr(_http, '_get_session_from_cache', lambda **kwargs: client)
+        monkeypatch.setattr(HfApi, 'repo_info', lambda *a, **k: SimpleNamespace(
+            sha=commit, siblings=[SimpleNamespace(rfilename='config.json')]))
+    with client:
 
         def run():
             return download_model('rpipe-audit/synthetic-model', tmp_path, revision=commit)
 
         yield SimpleNamespace(run=run, target=target, calls=calls, client=client,
-                              payload=payload, httpx=httpx, failure=failure, extra_headers=extra_headers)
+                              payload=payload, httpx=httpx, failure=failure, extra_headers=extra_headers, on_request=on_request)
 
 
 @pytest.mark.parametrize('target', [
@@ -131,3 +169,35 @@ def test_model_sdk_xet_metadata_uses_guarded_http_without_native_transfer(sdk_do
     assert (result / 'config.json').read_bytes() == sdk_download.payload
     assert native == []
     assert file_download.is_xet_available() is True
+
+
+def test_model_sdk_foreign_thread_keeps_client_and_native_configuration(sdk_download, monkeypatch):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Event
+    from huggingface_hub import file_download
+    entered, release = Event(), Event()
+    monkeypatch.setattr(file_download, 'is_xet_available', lambda: True)
+    original_constants = file_download.constants
+    hooks = {name: list(values) for name, values in sdk_download.client.event_hooks.items()}
+
+    def pause(request):
+        if request.url.host == 'hf-mirror.com' and request.method == 'HEAD':
+            entered.set()
+            assert release.wait(5), 'test failed to release the synthetic model transfer'
+
+    sdk_download.on_request[0] = pause
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(sdk_download.run)
+        try:
+            assert entered.wait(5), 'model never entered synthetic transport'
+            assert file_download.is_xet_available() is True
+            response = sdk_download.client.get('https://example.org/concurrent.json')
+            assert response.content == sdk_download.payload
+            assert sdk_download.client.event_hooks == hooks
+        finally:
+            release.set()
+        assert future.result(timeout=5)
+    assert file_download.constants is original_constants
+    assert file_download.is_xet_available() is True
+    assert sdk_download.client.event_hooks == hooks
+    assert not sdk_download.client.is_closed
