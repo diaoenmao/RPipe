@@ -18,6 +18,11 @@ import yaml
 _held = threading.local()
 
 
+def _root_identity(root: Path) -> tuple[int, int]:
+    identity = root.stat()
+    return identity.st_dev, identity.st_ino
+
+
 def shared_paths(study_dir: Path | str) -> dict[str, Path]:
     study = Path(study_dir).resolve()
     declaration = study / 'study.yaml'
@@ -48,8 +53,7 @@ def cache_lock(root: Path | str, *, timeout: float = 120):
         raise ValueError('cache lock timeout must be finite and >= 0')
     root = Path(root).resolve()
     root.mkdir(parents=True, exist_ok=True)
-    identity = root.stat()
-    key = (os.getpid(), identity.st_dev, identity.st_ino)
+    key = (os.getpid(), *_root_identity(root))
     held = getattr(_held, 'roots', {})
     if key in held:
         yield
@@ -189,8 +193,11 @@ def migrate_shared(study_dir: Path | str) -> dict[str, object]:
     roots = shared_paths(study)
     rows = []
     with contextlib.ExitStack() as stack:
-        for root in sorted({roots['data'], roots['model'], study / 'shared' / 'data',
-                            study / 'shared' / 'model'}, key=str):
+        lock_roots = {roots['data'], roots['model'], study / 'shared' / 'data',
+                      study / 'shared' / 'model'}
+        for root in lock_roots:
+            root.mkdir(parents=True, exist_ok=True)
+        for root in sorted(lock_roots, key=_root_identity):
             stack.enter_context(cache_lock(root))
         for kind in ('data', 'model'):
             old, new = study / 'shared' / kind, roots[kind]

@@ -421,3 +421,11 @@ PR133 实际dev bc3743e全CI已验收，Issue132关闭，train-failure-finalizer
 
 
 B103 本机补记：CPU Flow 207 passed、0 failure/error/skip；最终 head 与实际 dev CI 仍待验收。
+
+
+## 2026-10-16 B104迁移锁顺序；PR135已完成
+
+PR135实际dev e80724c全部实际CI成功，Issue134关闭，cache-lock-path-identity本地/remote普通删。当前唯一工作分支codex/shared-migration-lock-order，Issue136：d3083d2先红2失败/2有效控制→3a9267a设计→788a9b4物理顺序修复；共享76与两个实际并发空目录迁移通过，待core/Flow/CI。详record§159–160；无GPU/main/tag/布局修改。
+
+
+B104本机验收补记：shared76/core1701/CPU Flow207 passed，core另1既有平台skip；新四节点全执行。最终head/实际dev CI待验收。
