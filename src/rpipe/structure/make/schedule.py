@@ -453,13 +453,14 @@ def launch_jobs(
     except (OSError, TypeError, ValueError):
         index = {}
     dependencies = {
-        run_id: parent
+        Path(run_id): parent
         for exp in index.get('experiments') or []
         for run in exp.get('runs') or []
         if (run_id := str(run.get('run_dir') or run.get('id') or ''))
         if (parent := sibling_train_dependency(study_dir, run_id)) is not None
     }
     for run_id, parent in dependencies.items():
+        run_id = str(run_id)
         if _run_result(study_dir, run_id).get('status') == STATUS_SUCCEEDED and not run_succeeded(study_dir, run_id):
             _fail_result(study_dir, run_id, f'sibling train {parent} is unfinished or newer; re-evaluation required')
     # A supplied batch must not bypass the train/eval barrier either.
@@ -492,42 +493,61 @@ def launch_jobs(
             position = f'{wait_index}/{total_waits}' if kind == 'wait' else f'{index}/{total}'
             print(f'launch: {kind} {position} mode={_group_mode(group)}', flush=True)
             procs: list[tuple[dict[str, Any], subprocess.Popen[str]]] = []
-            for job in group:
-                run_id = str(job['run_id'])
-                parent = dependencies.get(run_id)
-                if parent is not None and not run_succeeded(study_dir, parent):
-                    message = f'blocked: sibling train {parent} did not succeed'
-                    _fail_result(study_dir, run_id, message)
-                    print(f'error {run_id} {message}', flush=True)
-                    pairs.append((job, 1))
-                    continue
-                for eval_id, train_id in dependencies.items():
-                    if train_id == run_id and _run_result(study_dir, eval_id).get('status') == STATUS_SUCCEEDED:
-                        _fail_result(study_dir, eval_id, f'sibling train {run_id} is being rerun; re-evaluation required')
-                if _run_result(study_dir, run_id).get('status') == STATUS_SUCCEEDED:
-                    _fail_result(study_dir, run_id, 'rerun started; no successful result from this execution yet')
-                cmd = [py, '-m', 'rpipe', 'run-one', str(study_dir), run_id]
-                where = 'window' if console_mode == 'new' and os.name == 'nt' else 'here'
-                resource = f'gpu={job["gpu"]}' if job.get('gpu') is not None and str(job.get('device') or 'cuda').lower() != 'cpu' else 'cpu'
-                print(f'+ {resource} {job["run_id"]} ({where})', flush=True)
-                procs.append(
-                    (
-                        job,
-                        subprocess.Popen(
-                            cmd,
-                            cwd=str(root),
-                            env=launch_job_env(job),
-                            **popen_extra,
-                        ),
+            primary_error = None
+            try:
+                for job in group:
+                    run_id = str(job['run_id'])
+                    parent = dependencies.get(Path(run_id))
+                    if parent is not None and not run_succeeded(study_dir, parent):
+                        message = f'blocked: sibling train {parent} did not succeed'
+                        _fail_result(study_dir, run_id, message)
+                        print(f'error {run_id} {message}', flush=True)
+                        pairs.append((job, 1))
+                        continue
+                    for eval_id, train_id in dependencies.items():
+                        if Path(train_id) == Path(run_id) and _run_result(study_dir, str(eval_id)).get('status') == STATUS_SUCCEEDED:
+                            _fail_result(study_dir, str(eval_id), f'sibling train {run_id} is being rerun; re-evaluation required')
+                    if _run_result(study_dir, run_id).get('status') == STATUS_SUCCEEDED:
+                        _fail_result(study_dir, run_id, 'rerun started; no successful result from this execution yet')
+                    cmd = [py, '-m', 'rpipe', 'run-one', str(study_dir), run_id]
+                    where = 'window' if console_mode == 'new' and os.name == 'nt' else 'here'
+                    resource = f'gpu={job["gpu"]}' if job.get('gpu') is not None and str(job.get('device') or 'cuda').lower() != 'cpu' else 'cpu'
+                    print(f'+ {resource} {job["run_id"]} ({where})', flush=True)
+                    procs.append(
+                        (
+                            job,
+                            subprocess.Popen(
+                                cmd,
+                                cwd=str(root),
+                                env=launch_job_env(job),
+                                **popen_extra,
+                            ),
+                        )
                     )
-                )
+            except BaseException as error:
+                primary_error = error
             for job, proc in procs:
-                code = int(proc.wait())
-                pairs.append((job, code))
-                if code != 0:
-                    if _run_result(study_dir, str(job['run_id'])).get('status') == STATUS_SUCCEEDED:
-                        _fail_result(study_dir, str(job['run_id']), f'run-one exited with code {code}')
-                    print(f'error {job["run_id"]} exit={code}', flush=True)
+                try:
+                    code = int(proc.wait())
+                except BaseException as error:
+                    if primary_error is None:
+                        primary_error = error
+                    try:
+                        code = int(proc.wait())
+                    except BaseException:
+                        # shortcut: repeated wait failure leaves completion unknown; revisit for forced cancellation.
+                        continue
+                try:
+                    pairs.append((job, code))
+                    if code != 0:
+                        if _run_result(study_dir, str(job['run_id'])).get('status') == STATUS_SUCCEEDED:
+                            _fail_result(study_dir, str(job['run_id']), f'run-one exited with code {code}')
+                        print(f'error {job["run_id"]} exit={code}', flush=True)
+                except BaseException as error:
+                    if primary_error is None:
+                        primary_error = error
+            if primary_error is not None:
+                raise primary_error
         return pairs
 
     for wave in waves:
@@ -536,8 +556,8 @@ def launch_jobs(
         failed = [
             job for job, code in pairs
             if (code != 0 or not run_succeeded(study_dir, str(job['run_id'])))
-            and (dependencies.get(str(job['run_id'])) is None
-                 or run_succeeded(study_dir, dependencies[str(job['run_id'])]))
+            and (dependencies.get(Path(job['run_id'])) is None
+                 or run_succeeded(study_dir, dependencies[Path(job['run_id'])]))
         ]
         if retry_failed and failed:
             print(f'retry {len(failed)} failed jobs (resume latest)', flush=True)

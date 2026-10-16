@@ -6,13 +6,15 @@
 
 ## 开放
 
-### B-133：坏cached job条目静默变空/部分计划（本机已修，待完整验收）
+### B-135：组异常退出遗漏本次子进程收尾（本机已修，待同主题里程碑验收）
 
-- Issue：[182](https://github.com/DreamSoul-AI/RPipe/issues/182)。load_launch_plan不在include_done/就绪过滤前校验条目，非dict被丢弃、混合行变部分队列、缺ID两种include_done结果不同；原生CLI0但process.complete=false/pending1且不请求重建。十场loader+CLI反例、原字节保持，禁止实际子进程。已e86727a先红、06563fc方案、6349765复用既有None重建边界统一校验，不改合法空队列/CLI退出政策。见[record§225](record.md)，.tmp/audit133不随clone。
+- Issue：[185](https://github.com/DreamSoul-AI/RPipe/issues/185)。六类异常统一复用原wait/非零纠正保首错；1215806补强红证明首次wait短暂失败仍漏child，0df9943追加一次同句柄恢复wait。保留25红失败与额外非零纠正补红、8补强红失败及拒候选，不能用旧绿替代。最终合批295相邻/core2194 passed+1既有skip/Flow429 passed，新62全执行；未推送/未开PR，仍OPEN，持续OS wait拒绝仅attempt保证，不杀停或扩布局。详[record§228–233](record.md)，本机.tmp/audit135/136不随clone。
 
-### B-134：Windows同Run大小写别名绕过重复派发拒绝（本机已修，待完整验收）
+### B-136：Windows Run别名丢sibling身份、误成功并绕过eval屏障（本机已修，待同主题里程碑验收）
 
-- Issue：[183](https://github.com/DreamSoul-AI/RPipe/issues/183)。公共launcher字符串去重允许Owner/owner同物理Run先start两次再wait，字面重复会拒绝、真正不同Run正常。Popen仅stub、无真实子进程/破坏；已8b99bc1先红、06563fc方案、6349765与B133同批最小修，保留POSIX不同组件与原单写者计划边界，不新增全局锁。见[record§225](record.md)，.tmp/audit134不随clone。
+- Issue：[186](https://github.com/DreamSoul-AI/RPipe/issues/186)。原生Eval/eval samefile，alias丢父Train依赖/权重选择、父failed时readiness True且可派发替身。7ae8a6d先红30项10失败/20控制，再3594c1e将原sibling比较及调度依赖key/lookup/失效比较用平台Path；metadata原字符串、因素/seed/显式checkpoint/mtime/布局不变。原生POSIX不同大小写实体独立控制待实际CI；与185同批继续本地积累不另PR。详[record§232–233](record.md)，原始.tmp/audit136不随clone。
+
+B133–B134/#182/#183已随[PR184](https://github.com/DreamSoul-AI/RPipe/pull/184)最终head及实际dev28f3dde所有实际CI验收关闭，主题本地+remote已清；详[record§226–229](record.md)。
 
 B131–B132/#179/#180已随[PR181](https://github.com/DreamSoul-AI/RPipe/pull/181)最终head及实际dev593385f全部实际CI验收关闭，主题已清，五PR周期盘点完成；原独立红/解析/字节/限制见[record§221–225](record.md)。
 

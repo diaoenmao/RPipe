@@ -1070,7 +1070,7 @@ Study 编排清单。`rpipe.structure.artifact.index`，**不是** Flow 的 writ
 
 复用可选jobs缓存时，存在性查询、文件读取/解码及已存init_gpu/num_gpus/round数值转换处于同一文件错误边界；明确 IO、编码、类型、值、溢出或解析 RecursionError 返回既有 None 重建请求，loader不写回或修文件。合法缺省/整数文本/round空值兼容保留；当前调用参数的int转换在该边界外，意外RuntimeError等继续传播，不把程序错误当坏缓存。
 
-调度的 `run_succeeded` 是保守成功查询：旧结果缺失、坏 JSON、非 object 根（CorruptArtifactError）或无法解析的嵌套（RecursionError）沿现有空 mapping 返回 False，不让单个不可用记录中断其余计划过滤。严格 `load_result / decode_result` 仍报原错，合法成功与 sibling 新鲜度、include_done、调用方路径校验及普通 RuntimeError 传播保持；不扩大旧成功保留或改变重试策略。
+调度的 `run_succeeded` 是保守成功查询：旧结果缺失、坏 JSON、非 object 根（CorruptArtifactError）或无法解析的嵌套（RecursionError）沿现有空 mapping 返回 False，不让单个不可用记录中断其余计划过滤。严格 `load_result / decode_result` 仍报原错，合法成功与 sibling 新鲜度、include_done、调用方路径校验及普通 RuntimeError 传播保持；sibling匹配及调度内存依赖key/lookup/失效比较均用当前平台Path组件身份，metadata与父ID保持index原字符串，POSIX不同大小写组件独立；不扩大旧成功保留或改变重试策略。
 
 复用已有 jobs.json 时，存在的 config 所声明的 mode / 实际 device 必须与保存计划一致；不一致返回重建请求，不继续沿用错误 CPU / CUDA 分配。旧计划的显存与估时不会自动升级，使用新估算需重新 make；正式实测仍用新的 version，不能重写旧验收基线。
 
@@ -1078,7 +1078,7 @@ CPU job 的旧计划若仍有 gpu 绑定须重新 make；直接调度 CPU job �
 
 显式 batches 必须是所声明 jobs 的同一完整多重集（含每条job字段），允许组内/组间重新排序，不允许漏项、额外Run或同ID字段漂移。在既有wait_groups统一拒绝不一致；写jobs.json前与复用缓存过滤成功Run前调用同一校验。坏缓存返回原有重建请求None，原生launch/脚本生成直接拒绝，均先于旧结果失效、子进程启动或脚本覆盖。
 
-启动计划在既有 wait_groups 统一校验：声明 job 必须是 object，run_id 必须通过既有安全字符串目录组件校验；缓存读取在 include_done/就绪过滤前无条件进入，坏条目返回 None 重建，不静默丢弃。jobs.json 发布、原生启动及脚本渲染也经过该边界。重复 Run 按当前平台 Path 组件比较（Windows 大小写别名相同，POSIX 不同大小写组件独立），在脚本覆盖、子进程启动或旧结果失效前拒绝，维持 Run 单写者合同。合法空队列和缺可选字段的 legacy job 保持；不新增文件系统探测或跨调用全局锁。计划内的失败重试是后续独立轮次，不算同一清单的重复任务；需要重复实测时使用新 version。
+启动计划在既有 wait_groups 统一校验：声明 job 必须是 object，run_id 必须通过既有安全字符串目录组件校验；缓存读取在 include_done/就绪过滤前无条件进入，坏条目返回 None 重建，不静默丢弃。jobs.json 发布、原生启动及脚本渲染也经过该边界。重复 Run 按当前平台 Path 组件比较（Windows 大小写别名相同，POSIX 不同大小写组件独立），在脚本覆盖、子进程启动或旧结果失效前拒绝，维持 Run 单写者合同。合法空队列和缺可选字段的 legacy job 保持；不新增文件系统探测或跨调用全局锁。计划内的失败重试是后续独立轮次，不算同一清单的重复任务；需要重复实测时使用新 version。 同一wait组启动或等待/结果纠正/退出诊断出现异常时，保留首个异常并继续原等待和非零退出纠正循环，尝试本次已启动的其余句柄后传播原错，不开启后续组或重试。正常codes/顺序不变，首次wait异常对同一已知句柄追加一次恢复wait，恢复成功仍执行原非零退出纠正；完成后诊断失败不重wait。不kill/suspend；OS wait持续拒绝仅保证尝试，不能推断句柄已退出或扩大跨调用互斥。
 
 Study 展开也在写入 Run config / index 前拒绝重复内容 ID，包括重复 seed / 轴值，防止顺序执行及聚合重复计入同一产物。Accuracy 按目标形状区分每个样本的标签与类别分数，样本数不一致时报错，不允许广播得到虚假准确率。正预算训练没有 batch 时失败，不定稿零步成功；合法的已恢复 epoch 尾段保持原语义。完整 RNG 恢复仅声明 CPU / CUDA，其他后端属于部分恢复。
 

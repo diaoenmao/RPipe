@@ -612,3 +612,41 @@ PR181实际验收状态（2026-10-17）：B131–B132已正常合dev593385f，�
 
 
 B133–B134本机已实施（2026-10-17）：6349765按本节统一边界完成，230相邻/core2137 passed+1既有skip/Flow424 passed，新59全执行；POSIX实体分支及双侧实际CI待PR，不提前验收。详record§227，原始坏缓存与重复派发证据保留。方案已实施，不待设计批准。
+
+
+### B135 / #185：异常 wait 分组保全本次已启动子进程的收尾（2026-10-17，实施方案）
+
+PR184已正常合dev28f3dde，实际devCI尚待；本项在其后唯一未合codex/launch-failure-ownership本地推进，不追加到已合PR。当前_run_groups先启动整组再等待：后续spawn、输出、env、失效写入或wait/退出诊断抛错时，已启动peer不再wait。真实临时CPU子进程只sleep2秒，第二spawn注入OSError后launcher已返回异常而child仍存活，探针随后等其自然退出0；不声称实际研究损坏。六失败入口替身反例同根因，合为一B，不另拆Issue/PR。
+
+先Issue185，再f9ce20d红27项25失败/2正常批次控制通过（26unit+1原生CLI integration），0error/skip。首次RED与加强secondary-wait分支的RED2均留存，未改生产代码。首gh search参数被CLI错误解析，保留失败，再用71条全状态Issue清单去重成功；不是库或CI失败。证据.tmp/audit135不随clone，便携回归已提交。
+
+复用_run_groups原有procs列表与等待循环：同组启动/等待放入同一try；记录已成功wait数量（在退出诊断前递增），异常时只对尚未成功wait的本次owned handles依次尝试wait，再原样raise最初BaseException。secondary wait异常不遮蔽primary且仍尝试其余peer；已成功wait不重复，正常路径与codes/配对/重试/波次顺序不变。取消也不遗弃已知owned child；等待自然退出，不kill/suspend任何进程，不增全局锁/进程管理框架/timeout配置或磁盘产物。
+
+若OS wait本身持续不可用，仅能保证尝试所有已知句柄，不能声称子进程已终结；最初异常仍严格向上传播。本项不承诺强制取消、解决hang子进程或跨独立launch互斥。无schema/文件架构/产物布局、科学门或GPU/性能变化。按本地主题commit积累完整失败所有权里程碑，再考虑单PR→dev，遵守少量PR频率；不立即为单B另开PR，不待设计审批。
+
+
+B135方案修正（2026-10-17，先补回归再实施）：首个仅补wait候选257相邻通过，但审查指出其遗漏既有非零退出→成功结果纠正。232ff08新增红1/1：已启动peer在wait中写succeeded后返回7，后续spawn原错传播而结果仍succeeded；这是本地候选不完整，未提交生产/未推送/未验收，不另立B或PR。WAIT_ONLY_CANDIDATE.py、首GREEN与EVIDENCE_RED保留于.tmp/audit135，不能被后绿覆盖。
+
+改为继续复用同一原wait/非零结果纠正循环，不另造wait-only收尾分支：捕获组启动最初BaseException后仍进入原等待循环；每个wait/结果纠正/退出诊断也保留首个异常并继续其余已启动peer，循环结束再raise原异常对象。正常等待返回/结果处理不变，成功wait仅一次；OS wait持续拒绝仍只有尝试保证。两处try与一个primary变量位于原_run_groups，原spawn/非零纠正正文不丢失，无新helper/import/进程杀停/全局锁/超时/布局。先记录本修正，再替换未提交候选；此前成功wait计数方案属于被拒候选，不作为最终已实施描述。
+
+
+B135本机实施状态（2026-10-17）：最终ba04ae3按修正方案复用原循环实施，258相邻/core2164 passed+1既有skip/Flow425 passed，新28全执行。仅wait候选及补红保留，未冒充验收；185仍OPEN且未推送/开PR，按少量PR规则本地积累。PR184已双侧实际CI验收清理，详record§229–230；无待设计批准。
+
+
+B135二次复查修正（2026-10-17，仍未推送）：ba04ae3对启动错误已收尾peer，却在wait自身首次短暂失败时直接跳到下一peer，没有给该句柄恢复等待机会。真实仅sleep CPU子进程两探针（首wait KeyboardInterrupt/OSError、下一wait可成功）均保留首错但只wait1次、返回时child仍存活；随后探针等自然退出0。1215806先提交加强红28项8失败/20控制，含4原生CLI（首错两类×真实child exit0/7）及原等待类增强；原先28新已绿证据只属该不完整候选，不替代本边界。
+
+保留同一B135/#185范围及分支，不新立B/PR。原每child的wait与int code转换单独try；首次wait抛错时仍保存最初异常对象，并对同一已知owned句柄追加一次恢复wait。恢复成功继续原非零退出纠正/诊断；恢复仍失败则保留首错并尝试其余peer。正常wait只1次、完成后诊断异常不重复wait，不增加公开重试配置或全局进程策略；该一次恢复是异常收尾而非重跑训练。不能保证持续OS wait拒绝或真实hang已完成，源码标出边界。原启动body、结果纠正、codes/资源/波次/既有训练失败重试、布局/文件架构均保持。先本修正再最小实现，后重新完整检查；不拿旧绿冒称完成。
+
+
+### B136 / #186：sibling身份与调度依赖共用当前平台Run组件（2026-10-17，实施方案）
+
+原生Windows Eval/eval同实体，canonical能找到Train、旧成功在parent failed时False、能选best路径；alias却parents空/dependency None/readiness True/checkpoint None。直接alias eval在parent failed时Popen替身被调用。只读各文件字节不变，无真实子进程/权重加载/训练/GPU。72条全状态Issue去重，区别于已修183重复计划及179日志归属；初探针漏failed.error被严格writer拒绝，保留driver拒绝而不当库失败。原始ZIP/REPRO在.tmp/audit136不随clone。
+
+先Issue186再7ae8a6d红30项10失败/20正常控制，0error/skip，均已执行。覆盖sibling IDs/依赖/checkpoint选择、failed/newer/valid parent×include_done、eval拒绝、train别名rerun失效及重试耗尽屏障；原生POSIX实际创建不同大小写独立Run作为有效控制，不新增平台skip。本机Windows证明别名反例，POSIX结论仍待实际CI。
+
+最小方案不改产物/metadata字符串：resume.sibling_train_ids原同Run判断用Path(rid)==Path(run_id)；现有schedule.dependencies临时mapping以Path(run_id)为key，三处查询使用Path，遍历时转回原字符串传既有安全validator/结果写与诊断，train rerun比较也按Path。父ID仍用index原字符串，不改seed/factor匹配、current-index范围、外部/本地显式checkpoint独立控制、mtime新鲜度或训练评估波次。无新helper/import/schema/全局lower-case/任意symlink或短名探测，不扩大跨调用互斥。
+
+全部调用者已核：sibling_train_checkpoint和sibling_train_dependency共用ID选择；run_succeeded/plan/cache/CLI经原依赖入口，launcher依赖lookup/旧eval失效/失败重试过滤用同平台key。与B135异常子进程所有权同一启动正确性里程碑、本地同分支累积，再完整验证；不另开一个bug一个PR。先本方案再最小修，不待设计批准。
+
+
+B135–B136本机实施状态（2026-10-17）：0df9943/3594c1e按最后修正方案实施，295相邻/core2194 passed+1既有skip/Flow429 passed，新62全执行；先前候选失败及原生首wait反例均保留。186不改变metadata/布局，只在原两文件统一平台组件身份；185/186仍OPEN、未推送/未开PR，当天4PR后继续本地积累，完整主题后统一PR。双侧实际CI及POSIX实体分支尚待，不提前验收。详record§231–233，无待设计批准。

@@ -111,7 +111,7 @@ def sibling_train_ids(study_dir: Path, run_id: str) -> list[str]:
     for exp in index.get('experiments') or []:
         for run in exp.get('runs') or []:
             rid = str(run.get('run_dir') or run.get('id') or '')
-            if rid == run_id:
+            if Path(rid) == Path(run_id):
                 current_factors = dict(exp.get('factors') or {})
                 current_seed = run.get('seed')
                 break

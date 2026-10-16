@@ -101,3 +101,87 @@ def test_invalid_cached_launch_rebuilds_before_dispatch_or_process(tmp_path, mon
     assert caught.value is boundary
     assert cache.read_bytes() == before
     assert not (tmp_path / 'process.json').exists()
+
+
+
+def test_native_launch_spawn_failure_finishes_its_already_started_child(tmp_path, monkeypatch):
+    import rpipe.flow.cli as cli
+    import rpipe.structure.make.schedule as schedule
+
+    cache = tmp_path / 'scripts/jobs.json'
+    cache.parent.mkdir()
+    jobs = [{'run_id': name, 'mode': 'train', 'device': 'cpu'} for name in ['first', 'second']]
+    cache.write_text(json.dumps({'jobs': jobs, 'num_gpus': 0, 'round': 2}), encoding='utf-8')
+    before = cache.read_bytes()
+    real_popen = subprocess.Popen
+    children = []
+    primary = OSError('second native spawn refused')
+    def spawn(args, **kwargs):
+        if args[-1] == 'second':
+            raise primary
+        child = real_popen([sys.executable, '-c', 'import time; time.sleep(0.4)'],
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        children.append(child)
+        return child
+    monkeypatch.setattr(cli, '_provenance_gate', lambda *_: True)
+    monkeypatch.setattr(schedule.subprocess, 'Popen', spawn)
+    try:
+        with pytest.raises(OSError) as caught:
+            cli.main(['launch', str(tmp_path), '--num-gpus', '0', '--round', '2', '--console', 'shared'])
+        assert caught.value is primary
+        assert len(children) == 1 and children[0].poll() == 0
+        assert cache.read_bytes() == before
+        assert not (tmp_path / 'process.json').exists()
+    finally:
+        # Preserve red-test evidence while allowing the isolated CPU child to finish naturally.
+        for child in children:
+            child.communicate(timeout=10)
+
+
+@pytest.mark.parametrize('cancelled', [False, True], ids=['oserror', 'interrupt'])
+@pytest.mark.parametrize('exit_code', [0, 7], ids=['child-success', 'child-nonzero'])
+def test_native_launch_recovers_transient_wait_before_propagating_primary(tmp_path, monkeypatch, cancelled, exit_code):
+    import rpipe.flow.cli as cli
+    import rpipe.structure.make.schedule as schedule
+    from rpipe.structure.artifact.result import load_result
+
+    cache = tmp_path / 'scripts/jobs.json'
+    cache.parent.mkdir()
+    cache.write_text(json.dumps({'jobs': [{'run_id': 'only', 'mode': 'train', 'device': 'cpu'}],
+                                'num_gpus': 0, 'round': 1}), encoding='utf-8')
+    before = cache.read_bytes()
+    result_path = tmp_path / 'runs/only/result.json'
+    real_popen = subprocess.Popen
+    children, waits = [], []
+    primary = KeyboardInterrupt('first wait interrupted') if cancelled else OSError('first wait temporarily unavailable')
+    class Proc:
+        def __init__(self, *args, **kwargs):
+            script = ('import json,sys,time; from pathlib import Path; '
+                      'p=Path(sys.argv[1]); p.parent.mkdir(parents=True,exist_ok=True); '
+                      'p.write_text(json.dumps({"status":"succeeded","control":{},"metrics":{},"paths":{}})); '
+                      'time.sleep(0.4); sys.exit(int(sys.argv[2]))')
+            self.child = real_popen([sys.executable, '-c', script, str(result_path), str(exit_code)],
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            children.append(self.child)
+        def wait(self):
+            waits.append('wait')
+            if len(waits) == 1:
+                raise primary
+            return self.child.wait()
+    monkeypatch.setattr(cli, '_provenance_gate', lambda *_: True)
+    monkeypatch.setattr(schedule.subprocess, 'Popen', Proc)
+    try:
+        with pytest.raises(type(primary)) as caught:
+            cli.main(['launch', str(tmp_path), '--num-gpus', '0', '--round', '1', '--console', 'shared'])
+        assert caught.value is primary
+        assert waits == ['wait', 'wait']
+        assert len(children) == 1 and children[0].poll() == exit_code
+        result = load_result(result_path)
+        assert result['status'] == ('failed' if exit_code else 'succeeded')
+        if exit_code:
+            assert result['error'] == 'run-one exited with code 7'
+        assert cache.read_bytes() == before
+        assert not (tmp_path / 'process.json').exists()
+    finally:
+        for child in children:
+            child.communicate(timeout=10)

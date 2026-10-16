@@ -716,3 +716,184 @@ def test_duplicate_cache_rejected_before_success_can_hide_it(tmp_path, monkeypat
     assert schedule.load_launch_plan(tmp_path, init_gpu=0, num_gpus=1, round_size=0,
                                      include_done=include_done) is None
     assert cache.read_bytes() == before
+
+
+@pytest.mark.parametrize('stage', ['spawn', 'stdout', 'environment', 'invalidation', 'wait', 'exit-diagnostic'])
+@pytest.mark.parametrize('cancelled', [False, True], ids=['error', 'cancel'])
+@pytest.mark.parametrize('secondary_failure', [False, True], ids=['clean-wait', 'secondary-wait-error'])
+def test_exceptional_group_waits_owned_children_preserving_primary(tmp_path, monkeypatch, stage, cancelled, secondary_failure):
+    _study(tmp_path)
+    _succeed(tmp_path, 'peer')
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    primary = KeyboardInterrupt('primary cancellation') if cancelled else OSError('primary launch failure')
+    secondary = OSError('secondary wait failure')
+    starts, waits = [], []
+    failed = False
+    class Proc:
+        def __init__(self, name):
+            self.name = name
+        def wait(self):
+            nonlocal failed
+            waits.append(self.name)
+            if stage == 'wait' and self.name == 'first' and not failed:
+                failed = True
+                raise primary
+            if secondary_failure and ((stage == 'exit-diagnostic' and self.name == 'second')
+                    or (stage != 'exit-diagnostic' and self.name == 'first' and (stage != 'wait' or failed))):
+                raise secondary
+            return 1 if stage == 'exit-diagnostic' and self.name == 'first' else 0
+    def spawn(args, **kwargs):
+        if stage == 'spawn' and args[-1] == 'second':
+            raise primary
+        starts.append(args[-1])
+        return Proc(args[-1])
+    def output(message, **kwargs):
+        if ((stage == 'stdout' and str(message).startswith('+ cpu second'))
+                or (stage == 'exit-diagnostic' and str(message).startswith('error first'))):
+            raise primary
+    def env(job):
+        if stage == 'environment' and job['run_id'] == 'second':
+            raise primary
+        return {}
+    def result(study, run):
+        return {'status': 'succeeded'} if stage == 'invalidation' and run == 'second' else {}
+    def invalidate(*args):
+        raise primary
+    monkeypatch.setattr(schedule.subprocess, 'Popen', spawn)
+    monkeypatch.setattr('builtins.print', output)
+    monkeypatch.setattr(schedule, 'launch_job_env', env)
+    monkeypatch.setattr(schedule, '_run_result', result)
+    monkeypatch.setattr(schedule, '_fail_result', invalidate)
+    jobs = [{'run_id': name, 'device': 'cpu', 'mode': 'train'} for name in ['first', 'second', 'third']]
+    with pytest.raises(type(primary)) as caught:
+        schedule.launch_jobs(tmp_path, jobs, round_size=2, retry_failed=True, console='shared')
+    assert caught.value is primary
+    assert 'third' not in starts
+    assert set(starts) <= set(waits)
+    if stage == 'wait':
+        assert waits.count('first') == 2
+    assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
+
+
+@pytest.mark.parametrize('batched', [False, True])
+def test_healthy_group_ownership_keeps_original_wait_order(tmp_path, monkeypatch, batched):
+    events = []
+    class Proc:
+        def __init__(self, args, **kwargs):
+            self.name = args[-1]
+            events.append(('start', self.name))
+        def wait(self):
+            events.append(('wait', self.name))
+            return 0
+    monkeypatch.setattr(schedule.subprocess, 'Popen', Proc)
+    jobs = [{'run_id': name, 'device': 'cpu'} for name in ['first', 'second', 'third']]
+    assert schedule.launch_jobs(tmp_path, jobs, round_size=2,
+        batches=[jobs[:2], jobs[2:]] if batched else None, retry_failed=False, console='shared') == [0, 0, 0]
+    assert events == [('start', 'first'), ('start', 'second'), ('wait', 'first'),
+                      ('wait', 'second'), ('start', 'third'), ('wait', 'third')]
+
+
+
+def test_exceptional_group_keeps_nonzero_peer_failure_evidence(tmp_path, monkeypatch):
+    primary = OSError('later spawn refused')
+    class Proc:
+        def wait(self):
+            _succeed(tmp_path, 'first')
+            return 7
+    def spawn(args, **kwargs):
+        if args[-1] == 'second':
+            raise primary
+        return Proc()
+    monkeypatch.setattr(schedule.subprocess, 'Popen', spawn)
+    jobs = [{'run_id': name, 'mode': 'train', 'device': 'cpu'} for name in ['first', 'second']]
+    with pytest.raises(OSError) as caught:
+        schedule.launch_jobs(tmp_path, jobs, round_size=2, retry_failed=False, console='shared')
+    assert caught.value is primary
+    result = load_result(tmp_path / 'runs/first/result.json')
+    assert result['status'] == 'failed'
+    assert result['error'] == 'run-one exited with code 7'
+
+
+@pytest.mark.parametrize('spelling', ['e0', 'E0'])
+@pytest.mark.parametrize('parent_state', ['failed', 'newer', 'valid'])
+@pytest.mark.parametrize('include_done', [False, True])
+def test_alias_eval_readiness_and_cache_keep_train_binding(tmp_path, spelling, parent_state, include_done):
+    _study(tmp_path)
+    # POSIX case-distinct E0 is an independent, unindexed Run, not a Windows alias.
+    layout = artifact_layout(tmp_path, spelling)
+    layout.config_path.write_text(json.dumps({'algorithm': {'mode': 'eval'}, 'system': {'device': 'cpu'}}), encoding='utf-8')
+    for name in ['t0', 'e0', spelling, 't1', 'e1']:
+        _succeed(tmp_path, name)
+    parent = tmp_path / 'runs/t0/result.json'
+    canonical = tmp_path / 'runs/e0/result.json'
+    os.utime(parent, ns=(1_000_000_000, 1_000_000_000))
+    os.utime(canonical, ns=(2_000_000_000, 2_000_000_000))
+    if parent_state == 'failed':
+        write_result(parent, {'status': 'failed', 'error': 'unfinished train'})
+    elif parent_state == 'newer':
+        os.utime(parent, ns=(3_000_000_000, 3_000_000_000))
+    same_run = (tmp_path / 'runs/e0').samefile(layout.root)
+    ready = not same_run or parent_state == 'valid'
+    jobs = [{'run_id': spelling, 'config': str(layout.config_path), 'mode': 'eval', 'device': 'cpu'}]
+    schedule.write_jobs_json(tmp_path, jobs, round_size=1, init_gpu=0, num_gpus=0)
+    before = {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    assert schedule.run_succeeded(tmp_path, spelling) == ready
+    plan = schedule.load_launch_plan(tmp_path, init_gpu=0, num_gpus=0, round_size=1, include_done=include_done)
+    assert plan is not None and plan['job_list'] == (jobs if include_done or not ready else [])
+    assert {p: p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
+
+
+@pytest.mark.parametrize('spelling', ['e0', 'E0', 'Other'])
+def test_alias_eval_launch_blocks_its_failed_train_before_spawn(tmp_path, monkeypatch, spelling):
+    _study(tmp_path)
+    layout = artifact_layout(tmp_path, spelling)
+    layout.config_path.write_text(json.dumps({'algorithm': {'mode': 'eval'}, 'system': {'device': 'cpu'}}), encoding='utf-8')
+    write_result(tmp_path / 'runs/t0/result.json', {'status': 'failed', 'error': 'unfinished train'})
+    same_run = (tmp_path / 'runs/e0').samefile(layout.root)
+    starts = _fake_processes(monkeypatch, tmp_path, {})
+    codes = schedule.launch_jobs(tmp_path, [{'run_id': spelling, 'mode': 'eval', 'device': 'cpu'}],
+                                 retry_failed=False, console='shared')
+    assert starts == ([] if same_run else [spelling])
+    assert codes == ([1] if same_run else [0])
+    if same_run:
+        assert 'blocked: sibling train t0' in load_result(layout.result_path)['error']
+
+
+@pytest.mark.parametrize('spelling', ['t0', 'T0'])
+def test_alias_train_rerun_invalidates_only_its_sibling_before_spawn(tmp_path, monkeypatch, spelling):
+    _study(tmp_path)
+    layout = artifact_layout(tmp_path, spelling)
+    layout.config_path.write_text(json.dumps({'algorithm': {'mode': 'train'}, 'system': {'device': 'cpu'}}), encoding='utf-8')
+    for name in ['t0', 'e0', 't1', 'e1', spelling]:
+        _succeed(tmp_path, name)
+    os.utime(tmp_path / 'runs/t0/result.json', ns=(1_000_000_000, 1_000_000_000))
+    os.utime(tmp_path / 'runs/e0/result.json', ns=(2_000_000_000, 2_000_000_000))
+    same_run = (tmp_path / 'runs/t0').samefile(layout.root)
+    peer = tmp_path / 'runs/e1/result.json'
+    before_peer = peer.read_bytes()
+    observed = []
+    class Proc:
+        def __init__(self, *args, **kwargs):
+            observed.append(load_result(tmp_path / 'runs/e0/result.json')['status'])
+        def wait(self):
+            return 1
+    monkeypatch.setattr(schedule.subprocess, 'Popen', Proc)
+    assert schedule.launch_jobs(tmp_path, [{'run_id': spelling, 'mode': 'train', 'device': 'cpu'}],
+                                retry_failed=False, console='shared') == [1]
+    assert observed == (['failed'] if same_run else ['succeeded'])
+    assert peer.read_bytes() == before_peer
+
+
+@pytest.mark.parametrize('spelling', ['e0', 'E0'])
+@pytest.mark.parametrize('train_failures', [1, 2], ids=['retry-recovers', 'retry-exhausted'])
+def test_alias_eval_waits_for_train_retry_before_dispatch(tmp_path, monkeypatch, spelling, train_failures):
+    _study(tmp_path)
+    layout = artifact_layout(tmp_path, spelling)
+    layout.config_path.write_text(json.dumps({'algorithm': {'mode': 'eval'}, 'system': {'device': 'cpu'}}), encoding='utf-8')
+    same_run = (tmp_path / 'runs/e0').samefile(layout.root)
+    jobs = [{'run_id': 't0', 'mode': 'train', 'device': 'cpu'},
+            {'run_id': spelling, 'mode': 'eval', 'device': 'cpu'}]
+    starts = _fake_processes(monkeypatch, tmp_path, {'t0': train_failures})
+    schedule.launch_jobs(tmp_path, jobs, round_size=2, batches=[jobs], console='shared')
+    expected = ['t0', 't0'] + ([] if same_run and train_failures == 2 else [spelling])
+    assert starts == expected
