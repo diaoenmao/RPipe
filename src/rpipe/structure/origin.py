@@ -12,6 +12,7 @@ import os
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
+from threading import RLock
 from typing import Any, Iterator
 
 FOREIGN = 'foreign'
@@ -142,22 +143,26 @@ def discard_bad_archive(root: Path, endpoint: DownloadEndpoint) -> None:
     path.unlink()
 
 
+_endpoint_lock = RLock()
+
+
 @contextmanager
 def bind_endpoint(ctor: Any, endpoint: DownloadEndpoint) -> Iterator[DownloadEndpoint]:
     """Point one torchvision dataset class at this endpoint, then restore it."""
-    saved_url = getattr(ctor, 'url', None)
-    saved_mirrors = getattr(ctor, 'mirrors', None)
-    if endpoint.url is not None and saved_url is not None:
-        ctor.url = endpoint.url
-    if endpoint.mirrors and saved_mirrors is not None:
-        ctor.mirrors = list(endpoint.mirrors)
-    try:
-        yield endpoint
-    finally:
+    with _endpoint_lock:
+        saved_url = getattr(ctor, 'url', None)
+        saved_mirrors = getattr(ctor, 'mirrors', None)
         if endpoint.url is not None and saved_url is not None:
-            ctor.url = saved_url
+            ctor.url = endpoint.url
         if endpoint.mirrors and saved_mirrors is not None:
-            ctor.mirrors = saved_mirrors
+            ctor.mirrors = list(endpoint.mirrors)
+        try:
+            yield endpoint
+        finally:
+            if endpoint.url is not None and saved_url is not None:
+                ctor.url = saved_url
+            if endpoint.mirrors and saved_mirrors is not None:
+                ctor.mirrors = saved_mirrors
 
 
 def _md5(path: Path) -> str:

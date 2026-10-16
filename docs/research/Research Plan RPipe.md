@@ -1,7 +1,7 @@
 > **RPipe research plan: verifiable contracts for research execution and evidence consistency**
 > Version 1.4; updated 2026-10-16. The [Chinese plan](<研究计划 RPipe.md>) is authoritative; this is its chapter-by-chapter English counterpart.
 > Stage: plan revision and targeted preliminary literature review; no new scientific experiments under this plan.
-> Implementation baseline: dev `50d5a6bd9d2c4fca76199d7a0dd9cb6d4f1af97b`; the published reference is v0.4.1. Dev is not a release.
+> Implementation baseline: dev `ab5c825ea6016681ba48623cbfcc282d2e781d4e`; the published reference is v0.4.1. Dev is not a release.
 > This round uses no GPU, timing study, training or data download, and changes no file architecture or artifact layout.
 
 ## Human-review checkpoint (2026-10-16,12:53 instruction)
@@ -616,3 +616,13 @@ The19:53 authorized future GPU-admission policy combines a display whitelist wit
 PR157 passed every actual final-head/merged-dev CI job;#156 is closed and its local/remote topic was cleaned. The accepted baseline is dev50d5a6bd. B116/#158 confirmed three wall-clock-text ordering errors in six actual CLI cases (DST fold, UTC day carry and different offsets). The28 formal tests first yielded8 failures/20 controls;ba665de changes only the shared sort key. All28 new nodes executed/passed; core1902 passed/1 existing platform skip, CPU Flow273 passed. Final-head/actual-dev CI remain pending. Aware native timestamps within datetime precision sort by UTC instant without rewriting output lines/formats/inputs. Missing, malformed, unzoned, overflow and legacy sub-microsecond keys keep their fallback; no new sub-microsecond UTC semantics are claimed. See[record§184–186](../development/record.md).
 
 This orders engineering events, not scientific curve/sampler coordinates. Status, metrics, experiment order, numerical gates, architecture/layout and original Run evidence remain unchanged. No new scientific experiment, GPU/timing/main/tag action occurs. Future actual revalidation still uses a new version/actual provenance and retains previous numerical/negative evidence. The19:53 GPU-admission policy and resource authorization remain in force; no GPU task is started or interrupted.
+
+
+## Concurrent endpoint isolation engineering update, 2026-10-16
+
+PR159 passed every actual final-head and merged-dev CI job;#158 is closed and its topic was cleaned. The accepted baseline is dev ab5c825. B117/#160 reproduced two incorrect endpoint reads and residual dataset class state when different cache roots bind the same class concurrently. Red commit9c95667 produced4 failures/4 nested controls;fffd872 holds a standard-library RLock across saving, binding, construction and restoration, preserving nested and exceptional exits. All13 endpoint tests passed; core1910 passed/1 existing skip, with all8 new nodes executed. CPU Flow273 passed with no failure/error/skip; final-head/actual-dev CI remain pending. A real Factory/two-root probe uses synthetic builders, with no network, download or scientific run. Endpoint definitions, cache layout, download/hash, precision and numerical gates remain unchanged. See[record§187–189](../development/record.md). Future scientific validation still needs a new version, actual provenance and the existing prerequisite gates; this update adds no scientific conclusion or changes to the five Study protocols.
+
+
+## Temporary environment concurrency follow-up, 2026-10-16
+
+B118/#162 extends the same temporary-global-state audit: independent project preparations can observe another call's restored TQDM_DISABLE and leave its temporary value behind. Red9 tests yielded4 failures/5 controls;0aaae0b adds only RLock ownership around the existing environment save/set/prepare/restore scope. It is batched with B117 in PR161 rather than a separate PR. All27 new/adjacent tests passed; combined core1919 passed/1 existing skip, all17 new nodes executed. CPU Flow273 passed with no failure/error/skip; final-head/actual-dev CI remain pending. Synthetic preparation bodies exercise the real public prepare path/cache locks and isolated projects without network, data, GPU or science. The five Study protocols and numerical/recovery gates remain unchanged. See[record§190–191](../development/record.md). The20:56 cadence requires related B items to accumulate locally into complete milestones and only a few PRs per day; existing PR161 finishes normally.

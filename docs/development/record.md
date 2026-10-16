@@ -1,3 +1,21 @@
+> 当前：PR161统一收尾B117/#160与B118/#162临时进程状态并发修复，唯一未合codex/correctness-followup。
+> 最新：两次独立正式红8项4失败/4控制、9项4失败/5控制；fffd872/0aaae0b后两处相邻27项全绿。
+> 验证：合批core1919 passed/1既有skip、CPU Flow273 passed，新17全执行；详§188–191，原证据含拒绝均保留。
+> 下一步：最终head与实际dev全部实际CI验收后关两Issue/清主题/第5批盘点；后续按20:56规则攒相关B项里程碑，少量PR。
+> 边界：无下载/GPU/测速/正式Study/main/tag/数据删除或布局变化；当前无代码阻塞。
+
+> 当前：B117/#160本机修复完成，唯一未合codex/correctness-followup；PR159双侧验收/清理已完成。
+> 最新：并发端点串用/残留；8正式红4失败/4控制→fffd872后13新旧端点测试全绿，见§188–189。
+> 验证：core1910 passed/1既有skip，CPU Flow273 passed，新8全执行；真实Factory双根原版失败/当前正确。
+> 下一步：完整并发里程碑PR→dev，分别验最终head/实际devCI；无代码阻塞，验收后清已合主题。
+> 保护：无网络下载/GPU/测速/正式Study/main/tag/数据删除或布局变化；原失败与收集拒绝保留。
+
+> 当前：PR159已双侧全部实际CI验收，Issue158已关闭，已合readout-time-order本地/remote均已删除。
+> 最新：28新回归全执行；core1902 passed/1既有skip，CPU Flow273 passed，详见§184–187。
+> 验收：实际dev ab5c825，Package38901125267/Unit38901125320全部实际成功；周期基线149累计4。
+> 下一步：继续三类正确性复查，验收文档本地积累随下一完整里程碑合入，不单开小文档PR；无代码阻塞。
+> 边界：GPU准入新规见§183，仅静态复核；无GPU探测/任务干预、测速、main/tag或布局变更。
+
 > 当前：PR157双侧全部实际CI验收，Issue156已关闭，已合主题本地/remote已清；周期149累计3。
 > 最新：B116/#158跨偏移/DST/UTC日志顺序反例；28正式红8失败/20控制→ba665de后全绿。
 > 验证：core1902 passed/1既有平台skip，CPU Flow273 passed；28新节点全执行，见§184–186。
@@ -3295,3 +3313,42 @@ PR152继续同一分支收敛#150/#151/#153，生产总计3个现有文件14行�
 28新节点全部执行/通过：完整core1902 passed、1既有Windows POSIX模式skip，CPU Flow273 passed，均0failure/error。新28均在core，0新skip；正式红28项8失败/20有效控制保留。LOCAL_CHECKED保存XML/hash与实际节点；SOURCE_CHECKED按原字节确认仅预期导入/排序键变化。六actual CLI原探针与正式library/CLI节点覆盖DST/跨日/跨偏移/Z小数、同偏移、无时区/缺失/坏时间/旧亚微秒/UTC溢出/等时稳定性，输入及目录项保全。证据.tmp/audit116不随clone，正式测试与设计随Git提供。
 
 继续源审其他readout消费者：status提示沿单个Run原追加顺序提取最后事件，不是跨Run排序；report日志链接只做归属映射；compare/轨迹按既有step或observation坐标，不应套墙钟归一化。只event_lines共享排序边界确认新反例，统一修在一处；不宣称整个外部历史日志格式或科学时间轨迹已经验收。新GPU准入规则继续按§183与计划约束，当前不执行GPU探针、准入或性能任务。最终head与实际dev全部实际CI仍须完整里程碑分别验收。
+
+
+## 187. PR159 双侧验收与时序主题清理（2026-10-16）
+
+最终head33cf72f9ac3bc85106999e6054a268c4829435c6的Branch38899904017 / Package38899904021 / Unit38899904100全部实际矩阵和聚合成功；正常合dev ab5c825ea6016681ba48623cbfcc282d2e781d4e。实际dev Package38901125267 / Unit38901125320亦全部实际成功，DEV_CHECKED SHA256 6c726eaffe276fb390448bd939eff620c65b7f7e2e5c71ec0ab79cf860438ee6。Issue158已验收关闭，PR159正文仅追加验收，不表示main发布或GPU/科学运行授权。
+
+双侧验收后核对tip/祖先/唯一worktree与无未保全改动，普通删除codex/readout-time-order本地、remote各1条。首次ls-remote25秒超时在任何切换/删除前停止，CLEANUP_REFUSAL_1保留；同分支重新核对成功后清理。main/dev及远端main保持，数据/结果/provenance/worktree删除0，_staging_from_DEM保留。周期基线149累计4个已验收PR152/155/157/159，累计结束remote41；尚未达约5批完整盘点阈值。原始证据.tmp/audit116不随clone。
+
+继续静态复查原子文本写入、report/index验证与DataFactory/ModelFactory按调用构造路径，本轮新增确认缺陷0；这是源码复核，不冒称新故障矩阵或科学验证。验收文档在codex/correctness-followup本地积累，按18:53频率规则随下一完整里程碑推送，不为几行文档另开PR。
+
+
+## 188. B117 / Issue160：同进程数据端点绑定的并发所有权（2026-10-16，已确认实施方案）
+
+`bind_endpoint` 临时修改第三方数据集类的 url / mirrors。DataFactory 的 cache_lock 保护各自资产根，无法保护两个不同根共用的同一个 Python 类。合成类、两个线程与事件调度复现两次上下文读错 URL，退出后还残留国内 URL；不访问网络、真实缓存或 torchvision。先 Issue160，再 9c95667 正式红回归：8项中4 failed/4有效控制 passed，0error/skip，覆盖CIFAR URL/MNIST mirrors、正常/原错退出和同线程嵌套恢复。
+
+方案在既有 bind_endpoint 这一共同边界使用一个进程内可重入锁，持有范围覆盖保存原字段、绑定、整个构造上下文与 finally 恢复。普通互斥锁会破坏现有同线程嵌套，因此用标准库 RLock；不把锁放在每个资产根，也不新增每类锁注册表/依赖/模块。不同进程仍沿既有磁盘 cache_lock，不宣称进程锁替代磁盘锁。端点定义、调用签名、yield endpoint、正常和异常恢复、数据构造内容、下载/hash/布局与科学门保持。锁只解决原本不可并行安全的进程全局类字段，非测速/性能优化。
+
+调用方只有原生 _build_torch_vision 中 train/test 两次构造的同一个上下文；既有调用方无需改。apply_model_origin 是显式进程环境设置，非临时绑定合同，不把本方案扩展成配置新语义。临时原ZIP/hash/probe/红XML在.tmp/audit117不随clone，正式回归按source镜像放tests/rpipe/structure/test_origin.py。生产修改后复查实际Factory路径、首错/嵌套/恢复及相邻origin，再做core/CPU Flow；同分支积累完整里程碑后再PR dev。
+
+
+## 189. B117 本机并发验证与验证收集纠正（2026-10-16）
+
+实际生产修复是fffd872：origin.py仅加标准库RLock及bind_endpoint全上下文所有权范围，16行增加/11行删除（原主体仅缩进），SOURCE_CHECKED按原字节验证其他内容全保留。55ad528仅修正测试文件名，不是生产修复；该提交标题未精确表达范围，后以独立主题提交保留真实生产回滚点，未重写历史。首次测试收集因新test_origin.py与既有data/test_origin.py同名拒绝，INVALID_COLLECTION_GREEN XML/log保留；改为源镜像test_origin_concurrency.py后13项全部执行/通过，收集拒绝不计库失败。
+
+在真实DataFactory.build入口、两个独立缓存根、合成registry builder中分别调用原ZIP中binder和当前binder：原版两次读错且最终类URL残留；当前版两次读到各自URL、结束恢复原值。probe使用真实cache_lock，不导入torchvision/下载/访问正式数据；REPRO_FACTORY保留。本轮core1910 passed/1既有平台skip，新8全执行，0failure/error；CPU Flow273 passed，0failure/error/skip。未宣称不同后端或真实下载并发均已验收，不做测速。原始证据.tmp/audit117不随clone，正式回归/设计可携带。完整里程碑本地积累，最终head/实际devCI仍待后续验收。
+
+
+## 190. B118 / Issue162：共享准备的临时环境所有权（2026-10-16）
+
+同类全局状态复查确认prepare_shared_data在独立项目缓存根下并发保存/设置/恢复TQDM_DISABLE，后一个_prepare会看到None/调用方原值，全部退出还残留1。第一次探针误用共享同一根的两个Study，现有cache_lock使人为交错等待超时；INVALID_PROBE_NOTE保留，不计库失败。改用两个独立项目根后实际公共prepare入口/真实cache_lock+合成_prepare稳定复现，无数据下载。先Issue162，再b04a5cd红9项4 failed/5有效控制passed、0error/skip，覆盖初值缺失/自定义/已为1、正常/原错退出和同线程嵌套。
+
+方案仅在prepare.py增加标准库RLock，以独立的进程内环境所有权范围包住原保存、设置、cache_lock内_prepare和finally恢复；必须在原资产根锁之前取得环境锁，维持一致顺序。同线程嵌套仍可重入，异常和返回值原样。与bind_endpoint锁分别保护不同全局对象，不引入通用全局状态框架、配置或路径，不改_prepare/body、下载/hash、数据/结果/科学门。与B117统一归入当前PR161临时进程状态并发里程碑，原已触发CI保留，新增代码后以新最终head重新验收；不因观察超时取消或重跑CI。
+
+
+## 191. B117/B118 临时进程状态统一里程碑（2026-10-16）
+
+B118按b6edba0设计，以0aaae0b在prepare.py增加RLock及完整保存/设置/资产锁内body/恢复范围，13行增加/10行删除；SOURCE_CHECKED精确证明其他原字节保持。B117/B118分别保护类端点和临时环境变量，不改root锁合同、数据构造、端点内容、下载/hash、marker、返回值、异常或科学门。27项两处及相邻回归全执行/通过，新17项均执行；合批core1919 passed/1既有平台skip，CPU Flow273 passed，0failure/error/skip。两次正式红独立保留：B117为8项4失败/4控制；B118为9项4失败/5控制，不冒称一场17项红执行。
+
+新一轮20:56频率指令已收录cicd：本地正常按主题提交，同主题按一批相关B项完整里程碑后开少量PR；已开的PR161同时收尾#160/#162，不拆PR。先前e8dd7cf的CI只是B117阶段，不作为新增B118后最终head验收。原始失败、无效夹具/收集拒绝、ZIP/hash/XML保留.tmp/audit117与audit118，不随clone；正式回归与记录可携带。无下载/GPU/性能/Study/main/tag/数据删除或布局变化。

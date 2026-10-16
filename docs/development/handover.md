@@ -1,5 +1,13 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 B117 本机验证中；PR159双侧验收
+
+PR159最终head33cf72f与实际dev ab5c825全部实际CI成功，#158关闭，readout-time-order本地/remote均普通删除；周期基线149累计4，remote累计结束41。record§187验收本地提交ac48da2随本里程碑合批，不单开文档PR。唯一未合主题codex/correctness-followup继续本地积累。
+
+B117/#160：并发临时端点绑定污染进程内数据集类字段。9c95667红8项4失败/4控制→1fe29ba设计→fffd872在既有bind_endpoint以RLock保护完整恢复范围；55ad528只改测试文件名，首次同名收集拒绝保留。13端点新旧回归通过、core1910 passed/1既有skip，新8均执行；CPU Flow273 passed，0failure/error/skip。真实DataFactory双根合成builder原版串用/残留，当前各自正确并恢复；不下载/训练/测速。证据.tmp/audit117不随clone，record§188–189。最终head/实际devCI待完整里程碑验收，未合分支/Issue保留。
+
+
+
 ## 2026-10-16 B116本机完成；PR157双侧验收
 
 PR157最终head10f01de/实际dev50d5a6bd全部实际CI成功，Issue156关闭，archive-exclusive-creation本地/remote普通清理；唯一未合codex/readout-time-order保留。周期基线149累计3、结束remote40，main/dev、数据/Run/provenance和_staging_from_DEM不动，详record§185。
@@ -521,3 +529,8 @@ codex/freeze-parser-refusal基于PR147正常合dev9a7af37（实际devCI待验，
 
 
 PR147两侧实际CI全部验收，Issue146关闭、study-plot-publication本地/remote普通删除；基线139累计4，下一次accepted PR须完整周期盘点。B110本机新12全执行（core4/Flow8）、相邻204/core1818+1既有平台skip/CPU Flow215绿，源码仅一处except元组替换。下一步同一freeze-parser-refusal推PR→dev，最终head和实际dev全部实际CI分别验收后关148/清分支。原始无效探针及更正证据.tmp/audit110不随clone，record §172可携带。
+
+
+## 2026-10-16 PR161统一B117/B118补记
+
+相邻B118/#162已按先Issue→b04a5cd红9项4失败/5控制→b6edba0设计→0aaae0b最小修复。与B117合批同一PR161，不新开PR；两处相邻27项通过，合批core1919 passed/1既有skip、新17全执行，CPU Flow273 passed，最终/实际devCI待验。端点类字段/临时环境分别有可重入所有权范围，不改文件架构/产物布局。20:56后按相关B项完整里程碑、每日少量PR，不再一bug一PR；已开161正常收尾，详record§190–191及cicd。
