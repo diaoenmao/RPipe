@@ -443,7 +443,7 @@ def _dataset_worker_policy_probe(batch):
             for _ in batch]
 
 
-@pytest.mark.parametrize('backend', ['spawn', 'threads'])
+@pytest.mark.parametrize('backend', ['spawn', 'default', 'threads'])
 def test_dataset_download_workers_keep_domestic_policy(monkeypatch, backend):
     import importlib
     import multiprocessing
@@ -455,7 +455,8 @@ def test_dataset_download_workers_keep_domestic_policy(monkeypatch, backend):
     from huggingface_hub import constants
     from rpipe.structure.origin import load_hf_dataset
     parallel = importlib.import_module('datasets.parallel.parallel')
-    pool = multiprocessing.get_context('spawn').Pool if backend == 'spawn' else ThreadPool
+    pool = (ThreadPool if backend == 'threads' else multiprocessing.get_context('spawn').Pool
+            if backend == 'spawn' else multiprocessing.Pool)
     monkeypatch.setattr(parallel, 'Pool', pool)
     monkeypatch.setattr(constants, 'ENDPOINT', 'https://hf-mirror.com')
     monkeypatch.setattr(datasets.config, 'HF_ENDPOINT', 'https://hf-mirror.com')
@@ -468,7 +469,7 @@ def test_dataset_download_workers_keep_domestic_policy(monkeypatch, backend):
     monkeypatch.setattr(datasets, 'load_dataset', load_dataset)
     result = load_hf_dataset('synthetic/data')
     assert len(result) == 4
-    if backend == 'spawn':
+    if backend != 'threads':
         assert all(row['pid'] != os.getpid() for row in result), 'probe did not reach child processes'
     else:
         assert all(row['thread'] != threading.get_ident() for row in result), 'probe ran on caller thread'
@@ -515,21 +516,30 @@ def test_dataset_generator_close_keeps_primary_failure_and_context(primary, clos
     assert origin._download_transports_installed is False
 
 
-@pytest.mark.parametrize('streaming', [False, True])
-@pytest.mark.parametrize('host,allowed', [('hf-mirror.com', True), ('huggingface.co', False)])
-def test_actual_dataset_media_reads_keep_domestic_policy(monkeypatch, streaming, host, allowed):
+def _image_rows(url, shape):
+    if shape == 'nested':
+        yield {'media': {'image': url}}
+    elif shape == 'sequence':
+        yield {'images': [url]}
+    else:
+        yield {'image': url}
+
+
+@pytest.fixture
+def actual_image_case(monkeypatch):
     datasets = pytest.importorskip('datasets')
     requests = pytest.importorskip('requests')
     from PIL import Image
-    from huggingface_hub import constants
+    from huggingface_hub import constants, HfFileSystem
     import datasets.features.image as image_module
     from rpipe.structure.origin import load_hf_dataset
+    # A native streaming deepcopy mutates a populated fsspec cache while copying it.
+    monkeypatch.setattr(HfFileSystem, '_cache', {})
     monkeypatch.setattr(constants, 'ENDPOINT', 'https://hf-mirror.com')
     monkeypatch.setattr(datasets.config, 'HF_ENDPOINT', 'https://hf-mirror.com')
     content = io.BytesIO()
     Image.new('RGB', (1, 1), (1, 2, 3)).save(content, format='PNG')
     calls = []
-    url = f'https://{host}/synthetic/image.png'
 
     def transport(self, request, **kwargs):
         calls.append(request.url)
@@ -541,28 +551,103 @@ def test_actual_dataset_media_reads_keep_domestic_policy(monkeypatch, streaming,
     def xopen(path, *args, **kwargs):
         return io.BytesIO(requests.get(path).content)
 
-    def rows():
-        yield {'image': url}
-
-    features = datasets.Features({'image': datasets.Image()})
-    result = (datasets.IterableDataset.from_generator(rows, features=features) if streaming
-              else datasets.Dataset.from_dict({'image': [url]}, features=features))
-    monkeypatch.setattr(datasets, 'load_dataset', lambda *a, **k: result)
     monkeypatch.setattr(image_module, 'xopen', xopen)
     monkeypatch.setattr(requests.adapters.HTTPAdapter, 'send', transport)
     monkeypatch.setattr(socket.socket, 'connect', lambda *a, **k: pytest.fail('real network'))
-    loaded = load_hf_dataset('synthetic/images', streaming=streaming)
+
+    def load(streaming, host, shape='flat'):
+        url = f'https://{host}/synthetic/image.png'
+        feature = ({'media': {'image': datasets.Image()}} if shape == 'nested' else
+                   {'images': datasets.List(datasets.Image())} if shape == 'sequence' else
+                   {'image': datasets.Image()})
+        features = datasets.Features(feature)
+        row = next(_image_rows(url, shape))
+        result = (datasets.IterableDataset.from_generator(_image_rows,
+                  gen_kwargs={'url': url, 'shape': shape}, features=features) if streaming else
+                  datasets.Dataset.from_dict({key: [value] for key, value in row.items()}, features=features))
+        if streaming:
+            import copy
+            copy.deepcopy(result)  # Verify this fixture's native baseline before binding.
+        before_schema = result.features.to_dict()
+        before_type = type(result)
+        before_fingerprint = getattr(result, '_fingerprint', None)
+        before_table = result.data.table if not streaming else None
+        monkeypatch.setattr(datasets, 'load_dataset', lambda *a, **k: result)
+        loaded = load_hf_dataset('synthetic/images', streaming=streaming)
+        assert loaded is result and type(loaded) is before_type
+        assert loaded.features.to_dict() == before_schema
+        assert getattr(loaded, '_fingerprint', None) == before_fingerprint
+        if before_table is not None:
+            assert loaded.data.table.equals(before_table, check_metadata=True)
+        return loaded, url
+
+    return SimpleNamespace(load=load, calls=calls)
+
+
+@pytest.mark.parametrize('streaming', [False, True])
+@pytest.mark.parametrize('host,allowed', [('hf-mirror.com', True), ('huggingface.co', False)])
+def test_actual_dataset_media_reads_keep_domestic_policy(actual_image_case, streaming, host, allowed):
+    loaded, url = actual_image_case.load(streaming, host)
 
     def consume():
         return next(iter(loaded)) if streaming else loaded[0]
 
     if allowed:
         assert consume()['image'].getpixel((0, 0)) == (1, 2, 3)
-        assert calls == [url]
+        assert actual_image_case.calls == [url]
     else:
         with pytest.raises(RuntimeError, match='domestic'):
             consume()
-        assert calls == []
+        assert actual_image_case.calls == []
+
+
+@pytest.mark.parametrize('streaming', [False, True])
+@pytest.mark.parametrize('host,allowed', [('hf-mirror.com', True), ('huggingface.co', False)])
+@pytest.mark.parametrize('view', ['copy', 'pickle', 'shuffle', 'batch'])
+def test_actual_dataset_media_views_preserve_policy(actual_image_case, streaming, host, allowed, view):
+    import copy
+    import pickle
+    loaded, url = actual_image_case.load(streaming, host)
+    if view == 'copy':
+        loaded = copy.deepcopy(loaded)
+    elif view == 'pickle':
+        loaded = pickle.loads(pickle.dumps(loaded))
+    elif view == 'shuffle':
+        loaded = loaded.shuffle(seed=7)
+
+    def consume():
+        if view == 'batch':
+            return next(loaded.iter(batch_size=1))['image'][0]
+        return (next(iter(loaded)) if streaming else loaded[0])['image']
+
+    if allowed:
+        assert consume().getpixel((0, 0)) == (1, 2, 3)
+        assert actual_image_case.calls == [url]
+    else:
+        with pytest.raises(RuntimeError, match='domestic'):
+            consume()
+        assert actual_image_case.calls == []
+
+
+@pytest.mark.parametrize('streaming', [False, True])
+@pytest.mark.parametrize('host,allowed', [('hf-mirror.com', True), ('huggingface.co', False)])
+@pytest.mark.parametrize('shape', ['nested', 'sequence'])
+def test_actual_nested_media_features_preserve_policy(actual_image_case, streaming, host, allowed, shape):
+    import pickle
+    loaded, url = actual_image_case.load(streaming, host, shape)
+    loaded = pickle.loads(pickle.dumps(loaded))
+
+    def consume():
+        row = next(iter(loaded)) if streaming else loaded[0]
+        return row['media']['image'] if shape == 'nested' else row['images'][0]
+
+    if allowed:
+        assert consume().getpixel((0, 0)) == (1, 2, 3)
+        assert actual_image_case.calls and set(actual_image_case.calls) == {url}
+    else:
+        with pytest.raises(RuntimeError, match='domestic'):
+            consume()
+        assert actual_image_case.calls == []
 
 
 def test_domestic_sdk_worker_keeps_guard_after_parent_scope_returns(monkeypatch):
@@ -600,3 +685,142 @@ def test_domestic_sdk_worker_keeps_guard_after_parent_scope_returns(monkeypatch)
     assert calls == []
     assert origin._download_origin.get() is None
     assert origin._download_transports_installed is False
+
+
+@pytest.mark.parametrize('kind', ['Audio', 'Video', 'Pdf'])
+@pytest.mark.parametrize('streaming', [False, True])
+@pytest.mark.parametrize('host,allowed', [('hf-mirror.com', True), ('huggingface.co', False)])
+def test_actual_media_feature_keeps_deferred_file_guard(monkeypatch, kind, streaming, host, allowed):
+    import importlib
+    datasets = pytest.importorskip('datasets')
+    requests = pytest.importorskip('requests')
+    from huggingface_hub import constants
+    from rpipe.structure import origin
+    monkeypatch.setattr(constants, 'ENDPOINT', 'https://hf-mirror.com')
+    monkeypatch.setattr(datasets.config, 'HF_ENDPOINT', 'https://hf-mirror.com')
+    monkeypatch.setattr(datasets.config, 'HUB_DATASETS_URL',
+                        datasets.config.HUB_DATASETS_URL.replace('https://huggingface.co', 'https://hf-mirror.com'))
+    calls, opened = [], []
+    url = f'https://{host}/datasets/rpipe/audit/resolve/main/media.bin'
+
+    class Decoder:
+        def __init__(self, source, **kwargs):
+            assert hasattr(source, 'read') and hasattr(source, 'seek')
+            self.source = source
+            self.metadata = SimpleNamespace(path=None)
+
+        def read(self):
+            self.source.seek(0)
+            return self.source.read(3)
+
+    class DeferredFile(io.BytesIO):
+        def read(self, size=-1):
+            requests.get(url)
+            return super().read(size)
+
+    def xopen(path, *args, **kwargs):
+        assert path == url
+        handle = DeferredFile(b'synthetic')
+        opened.append(handle)
+        return handle
+
+    def transport(self, request, **kwargs):
+        calls.append(request.url)
+        response = requests.Response()
+        response.status_code = 200
+        response._content = b'synthetic'
+        return response
+
+    monkeypatch.setattr(datasets.config, 'TORCHCODEC_AVAILABLE', True)
+    monkeypatch.setattr(datasets.config, 'PDFPLUMBER_AVAILABLE', True)
+    monkeypatch.setitem(sys.modules, 'datasets.features._torchcodec', SimpleNamespace(AudioDecoder=Decoder))
+    monkeypatch.setitem(sys.modules, 'torchcodec', SimpleNamespace())
+    monkeypatch.setitem(sys.modules, 'torchcodec.decoders', SimpleNamespace(AudioDecoder=Decoder, VideoDecoder=Decoder))
+    monkeypatch.setitem(sys.modules, 'torchcodec.encoders', SimpleNamespace(
+        AudioEncoder=lambda *a, **k: pytest.fail('URL fixture must not encode media')))
+    monkeypatch.setitem(sys.modules, 'pdfplumber', SimpleNamespace(open=Decoder, pdf=SimpleNamespace(PDF=Decoder)))
+    module = importlib.import_module('datasets.features.' + kind.lower())
+    monkeypatch.setattr(module, 'xopen', xopen)
+    monkeypatch.setattr(requests.adapters.HTTPAdapter, 'send', transport)
+    monkeypatch.setattr(socket.socket, 'connect', lambda *a, **k: pytest.fail('real network'))
+    features = datasets.Features({'media': getattr(datasets, kind)()})
+
+    def rows():
+        yield {'media': url}
+
+    result = (datasets.IterableDataset.from_generator(rows, features=features) if streaming else
+              datasets.Dataset.from_dict({'media': [url]}, features=features))
+    before = result.features.to_dict()
+    monkeypatch.setattr(datasets, 'load_dataset', lambda *a, **k: result)
+    loaded = origin.load_hf_dataset('synthetic/media', streaming=streaming)
+    assert loaded is result and loaded.features.to_dict() == before
+
+    def consume():
+        return (next(iter(loaded)) if streaming else loaded[0])['media']
+
+    if not allowed:
+        with pytest.raises(RuntimeError, match='domestic'):
+            consume()
+        assert calls == [] and opened == []
+    else:
+        from concurrent.futures import ThreadPoolExecutor
+        decoder = consume()
+        assert calls == [] and len(opened) == 1
+        assert origin._download_origin.get() is None
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            assert executor.submit(decoder.read).result(timeout=5) == b'syn'
+        assert calls == [url]
+        assert not opened[0].closed
+        if kind != 'Pdf':
+            assert decoder.metadata.path == url
+            assert decoder._hf_encoded == {'path': url, 'bytes': None}
+        decoder.source.close()
+        assert opened[0].closed
+    assert origin._download_origin.get() is None
+    assert origin._download_transports_installed is False
+
+
+def test_domestic_reader_preserves_binary_file_protocol_and_pickle():
+    import pickle
+    from rpipe.structure import origin
+    reader = origin._DomesticReader(io.BytesIO(b'first\nsecond\n'))
+    reader = pickle.loads(pickle.dumps(reader))
+    assert reader.readable() and reader.seekable()
+    assert reader.tell() == 0
+    assert next(iter(reader)) == b'first\n'
+    reader.seek(0)
+    target = bytearray(5)
+    assert reader.readinto(target) == 5
+    assert target == b'first'
+    with reader as same:
+        assert same is reader
+        assert reader.read() == b'\nsecond\n'
+    assert reader.closed
+    assert origin._download_origin.get() is None
+    assert origin._download_transports_installed is False
+
+
+def test_modelscope_supported_endpoint_is_explicitly_domestic(monkeypatch, tmp_path):
+    requests = pytest.importorskip('requests')
+    calls = []
+
+    def transport(self, request, **kwargs):
+        calls.append(request.url)
+        response = requests.Response()
+        response.status_code = 200
+        response._content = b'synthetic'
+        return response
+
+    def modelscope(model_id, revision, cache_dir, endpoint='https://modelscope.ai'):
+        requests.get(endpoint + '/api/synthetic')
+        return str(tmp_path / 'modelscope-snapshot')
+
+    def forbidden_mirror(**kwargs):
+        raise AssertionError('domestic ModelScope must be tried before mirror')
+
+    monkeypatch.setitem(sys.modules, 'modelscope', SimpleNamespace(snapshot_download=modelscope))
+    monkeypatch.setitem(sys.modules, 'huggingface_hub', SimpleNamespace(snapshot_download=forbidden_mirror))
+    monkeypatch.setattr(requests.adapters.HTTPAdapter, 'send', transport)
+    monkeypatch.setattr(socket.socket, 'connect', lambda *a, **k: pytest.fail('real network'))
+    assert download_model('synthetic/model', tmp_path, revision='fixed') == str(tmp_path / 'modelscope-snapshot')
+    assert calls == ['https://modelscope.cn/api/synthetic']
