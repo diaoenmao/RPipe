@@ -1,5 +1,12 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-16 PR165同批B119/B120/B121，当前完整本机验收
+
+PR165已开；d385c410验收前复查发现importlib动态helper候选回归，登记#166，先f32416d红10项8失败/2控制、8f37360设计、9166cbd最小修。原分支普通累积，不拆新PR；core1974 passed/1既有skip、CPU Flow279 passed，新61全执行，目标67含6既有节点。四生产文件范围保全，详record§202及.tmp/audit121（本机证据不随clone）。
+
+新最终head/实际devCI待验，163/164/166仍OPEN，已接受PR161/dev8480d79，清理基线161计数0、累计remote42。旧候选绿色不可替代新head。无决策阻塞，不长watch；合后双侧验收再关Issue并清本地/远端主题。下一编号B122。无GPU/测速/下载/正式Study/main/tag/数据删除或文件/产物布局变化。
+
+
 ## 2026-10-16 B119/B120本机完整验收；尚未推送
 
 当前codex/study-loader-isolation：ac65eb1/041e8c1修模块生命周期及兼容reader，aa75064补严格类归属。current core1964 passed/1既有skip、CPU Flow279 passed，新增51（45 unit+6 integration）全执行/0新skip，SOURCE_CURRENT_CHECKED验证只4既有源码、System保存/compare数学门/布局原字节保持。旧候选31绿后晚导入2红、namespace checkpoint/运行时/钩子/保留名反例全部保留，不以旧结果替代当前验收，详record§198–201。

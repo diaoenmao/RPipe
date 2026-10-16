@@ -637,3 +637,8 @@ PR161双侧全部实际CI已验收，#160/#162关闭并清主题；接受基线d
 ## 2026-10-16 加载隔离本机完整检查补记
 
 B119/#163、B120/#164当前本机修复通过core1964 passed/1既有skip、CPU Flow279 passed，新51节点全执行（45 unit+6 integration）。模块生命周期和定义身份覆盖晚导入/注解，原生System及compare reader兼容旧helper和移开原namespace缓存的换根状态；运行时/外部cache保全、严格缺失类拒绝和原checkpoint字节保持均覆盖。四源码原字节范围核对见[record§198–201](../development/record.md)。原候选失败仍保留，当前结果不替代尚未运行的最终head/实际devCI；尚未推PR，163/164不关闭，接受基线仍PR161/dev8480d79。按20:56同主题本地积累完整里程碑、少量PR，不改变五Study计划、旧Run、科学负证据或数值/恢复门；无GPU/测速/数据下载或新科学实验。
+
+
+## 2026-10-16 加载里程碑PR165候选复查补记
+
+B119/#163、B120/#164统一PR165后，验收前发现B121/#166：原dev可用的recipe动态helper导入在候选ModuleNotFoundError。先提交10红（8失败/2控制），9166cbd复用所属Study私有空间补动态入口；当前core1974 passed/1既有skip、CPU Flow279 passed，新增61全执行，详[record§202](../development/record.md)。原始与候选失败均保留；三项同一PR，不逐bug拆分。新最终head/实际devCI待验，163/164/166仍OPEN，接受基线仍PR161/dev8480d79。无新增科学运行/数字/结论，不改变五个Study方案、历史反例、恢复/数值门或产物布局；后续科学复验仍须新version和原前置门。

@@ -1,3 +1,9 @@
+> 当前：B119/#163、B120/#164、B121/#166统一PR165，动态导入候选回归已补修，本机完整检查完成。
+> 最新：原dev动态helper返回37、原候选ModuleNotFoundError；先红10项8失败/2控制，再9166cbd修复，见§202。
+> 验证：当前core1974 passed/1既有skip，CPU Flow279 passed，新增61全执行、0新skip；目标67含6既有节点。
+> 下一步：推同一PR新head验全部实际CI，再正常合dev并验实际dev；三Issue仍OPEN，无决策阻塞。
+> 保护：清理基线161计数0，活动未合分支保留；不合main/打tag/跑GPU或测速，不删数据/结果、不改布局。
+
 > 当前：#163/#164同分支本机修复与完整回归完成，尚未推送PR；已验收dev仍PR161/8480d79。
 > 最新：Study私有导入生命周期、dataclass模块身份及旧/迁移checkpoint兼容统一修；原候选晚导入/运行时误接管反例均保留，见§198–201。
 > 验证：当前core1964 passed/1既有skip，CPU Flow279 passed，新增51（45 unit+6 integration）全执行、0新skip；4源码范围已核对。
@@ -3453,3 +3459,16 @@ system_api私有桥只检查已加载recipe及标准Run assets，System原4处to
 原字节核对SOURCE_CURRENT_CHECKED：只4个既有源码文件变更。recipe的phase校验、RecipeContext字段、路径拒绝等原字节保持；System.save_checkpoint全部原字节保持，load只在4处既有torch.load加可选reader参数；compare只加同类reader，整个数学树、容差/非有限/整数精度、格式和错误门其他字节保持；system_api既有导出/build签名保持，仅附私有桥。无新源模块/配置/Run字段/产物路径，未改producer协议、checkpoint布局/恢复指纹或科学门。正常代码helper按Study模块缓存，不承诺热改源码自动reload；原生reader已验证旧helper和迁移后私有类，外部直接反序列化自定义类仍需要定义代码可导入。
 
 全部仅本地codex/study-loader-isolation主题提交，当前open163/164保留；本批未开PR、未跑最终head/实际devCI、未合dev/main、未打tag。接受的dev仍8480d79/PR161，清理基线161计数0。按20:56相关B项完整里程碑和每日少量PR规则继续本地收敛，不以多次验证拆更多PR；后续流转仍须最终head/实际dev全实际CI验收后再关闭Issue和清已合分支。原始.tmp/audit119/120不随clone，正式回归/设计/记录可携带；无GPU/测速/下载/正式Study或数据/结果删除。
+
+
+## 202. PR165验收前补齐B121 / #166动态导入候选回归（2026-10-16）
+
+B119/#163、B120/#164完整本机检查后统一开PR165，最终候选d385c410在实际CI执行期间继续审查相邻入口，发现recipe在register内用importlib.import_module加载同目录helper：dev8480d79独立子进程成功返回37，候选报ModuleNotFoundError。PR未合并、Issue未关闭，未将任何旧head绿色结果当作本批完成。此为加载隔离候选引入的回归，与原B119/B120失败分开；登记#166后f32416d先提交10节点红回归，8失败/2非本地对照通过，8f37360记录同批设计，不拆新PR。
+
+9166cbd只在原recipe.py增加14行/替换1行：当前Study私有代码导入importlib时持有局部模块视图，其import_module沿同一归属判定解析本地绝对名，其他名/相对名委托当前原生函数；不修改全局importlib及其cache。importlib子模块仍是原模块，现有标准运行时与外部导入hook继续委托。加载、register、注册后、helper内动态导入×2取用方式均覆盖；未引入源模块/依赖/目录或checkpoint写入改变。视图并非原生importlib对象本身，属于私有recipe执行环境，不宣称全局模块身份被替换。
+
+当前源码重新完整检查：core1974 passed/1既有Windows POSIX模式skip，CPU Flow279 passed，均0failure/error；当前新增61（55 unit+6 integration）全部执行、0新skip。目标两个文件67 passed，含6既有Flow节点，不冒称67都是新增。原始动态探针的前后子进程、RED8失败、TARGET_GREEN、CORE、FLOW、hash和SOURCE_CHECKED保存在.tmp/audit121及.tmp/audit119，不随clone；两个探针驱动的import sys遗漏均发生在子进程调用之前，单独保留、不算库失败。修复后独立子进程返回37。
+
+SOURCE_CHECKED核对相对于上个完整候选只有recipe动态绑定改变，其余3个生产文件hash完全不变；此前System保存、compare数值/格式、API已有字节及文件架构/磁盘产物布局合同仍保持。没有数据迁移、GPU、测速、下载、正式Study/科学结论、main/tag/发布或数据/结果删除。
+
+三项作为同一完整加载里程碑继续PR165普通推送，不amend/force push。待新最终head的全部实际矩阵/聚合CI，再正常合dev并另验实际dev；目前163/164/166都OPEN，已接受基线仍PR161/dev8480d79，清理基线161计数0。旧候选CI即使通过亦不可替代当前head。验收后的收尾记录随下一里程碑入库，不为几行文档再拆PR。

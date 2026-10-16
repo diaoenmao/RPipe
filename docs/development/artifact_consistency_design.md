@@ -450,3 +450,6 @@ load_recipe在上述上下文内执行spec前，将自己的既有模块名临�
 方案：复用每Study私有包的导入归属判定，在recipe/helper导入importlib时提供仅当前私有代码持有的模块视图，import_module将绝对本地名映射到自己的私有空间；相对名和非本地名委托当前原生importlib.import_module。视图复制原模块属性，不修改sys.modules['importlib']或其函数，不改变其他调用方；importlib子模块继续使用原模块。Python import语句、标准库/已加载运行时优先级、外部导入hook、旧/迁移checkpoint读取合同不变。动态导入类与普通导入类使用同一稳定身份。
 
 先提交10节点红回归：2种importlib取用方式×加载/注册/注册后/辅助模块4时机为8失败，2个非本地json对照通过。修复后运行当前全部新增集合与core/CPU Flow，再推同一个PR165重验最终head；此前d385c410的CI即使通过也不能替代新head。原始红/前后子进程/无效驱动证据在.tmp/audit121和.tmp/audit119（不随clone），portable回归已入库。不改变文件架构/产物布局，不等待设计审批。
+
+
+2026-10-16本机实施：9166cbd在同一recipe文件补动态入口绑定；当前core1974 passed/1既有skip、CPU Flow279 passed，新增61全执行。该importlib视图仅属于私有代码执行环境，不替换全局模块身份；原生子模块与当前外部动态函数继续委托。最终PR165新head/实际devCI仍待验，不是等待设计批准，详record§202。
