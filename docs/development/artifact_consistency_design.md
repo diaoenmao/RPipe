@@ -578,3 +578,6 @@ PR178验收状态（2026-10-17）：B129–B130已实施并正常合dev53ae142�
 最小方案只改status.py共用_event_match一处条件：已知identity非None时，用既有Path对record相同长度的所有者组件作平台比较，并仍要求紧邻的原' ['边界；事件起点/正则/选择集合/返回偏移与原legacy搜索回退保持。Path组件比较只做文本路径语义，不resolve/stat/samefile，不给每行增加文件系统I/O；Windows匹配同文件大小写别名，POSIX大小写不同组件保持不同。run_dir/producer/log字节和磁盘路径不规范化，不扩大mode、未知外来legacy身份或更改日志schema。
 
 两个既有消费者_note_from_log与logs.event_lines共用此helper，无其他调用者需改；原log_path的所有权/路径守卫、readonly模式、排序与traceback政策全部原字节保持。12单测显式模拟PureWindowsPath/PurePosixPath语义，不能当POSIX实机；32集成在Windows验证实际别名，在POSIX分支创建大小写不同实体并验证foreign日志不被借用，没有新增平台skip。实际POSIX证据须后续CI；先本条方案再最小实现，同主题本地积累后完整里程碑PR。
+
+
+B131本机实施状态（2026-10-17）：86f6a86已按上文单处条件替换实施，450相邻/core2056 passed+1既有skip/CPU Flow422 passed，44新全执行。Windows原生别名与两平台组件语义已本机覆盖，POSIX原生实体隔离尚待后续CI，不能提前验收。#179仍OPEN，本地读取身份主题继续积累、未开PR；上文方案已实施，无待设计批准。原始与原字节证明见record§222及本机.tmp/audit131，不随clone；未知legacy回退、真实不可用存储/任意外来身份不增加保证。

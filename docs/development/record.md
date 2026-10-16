@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：B131/#179已本机修复并完整检查，codex/readout-identity-next仅本地，同主题继续积累，尚无新PR。
+> 最新：原生event所有者用平台组件语义匹配，单处条件替换；44红17失败/27控制→相邻450绿，详§221–222。
+> 验证：core2056 passed/1既有skip、CPU Flow422 passed，44新（12 unit+32 integration）全执行；POSIX实机CI尚待。
+> 下一步：继续同主题读取身份与相邻合同复查，完整里程碑再统一PR/双侧CI；#179保持OPEN，无决策阻塞。
+> 保护：PR178全验收并清本地/remote，接受dev53ae142，基线161计数4/remote46；main/tag/GPU/数据/结果/布局不动。
+
 > 当前（2026-10-17）：PR178两B双侧全部实际CI验收，dev53ae142；#176/#177已关闭，已合主题本地+remote已清。
 > 最新：失败证据与非必要shared元数据/布局解耦完成；另确认B131/#179 Windows同文件大小写别名读取反例，详§220。
 > 验证：相邻272/core2044 passed+1既有skip/CPU Flow390 passed，65新全执行；最终head和实际dev全部矩阵/聚合成功。
@@ -3774,3 +3780,14 @@ Issue176/177逐项验收说明各一次后关闭，PR原正文保留并追加实
 方案只替换共用_event_match的已知所有者匹配条件：相同长度前缀用原Path组件比较，仍要求原' ['边界，事件偏移/正则/选择集合与legacy回退不变；不resolve/stat/samefile，不逐行增FS I/O。仅status.py现有helper，两reader调用方保持；不改生产者、schema、log字节、路径守卫、traceback/时间排序或mode合同。先本方案再最小实现，原始Windows REPRO/ZIP/hash/RED在.tmp/audit131，不随clone，portable回归随Git。
 
 当前#179仍OPEN，本批无PR；前PR178验收/两Issue关闭/分支清理完毕见§220，勿重复。基线161计数4/remote46，下一新编号B132；不合main/tag/发布、不跑GPU/性能/正式Study或删数据结果。
+
+
+## 222. B131/#179本机实施与完整检查；读取身份主题继续积累（2026-10-17）
+
+1cfad38先红44项17失败/27控制，方案8dde822后86f6a86仅把原status._event_match已知所有者条件改为Path组件比较且保留原' ['边界。只改变此一处条件，事件起点/偏移/正则/选择集合、logs模块、所有权路径守卫、legacy搜索回退、traceback/时间排序及生产者原字节保持；Path比较无resolve/stat/samefile，不逐行增FS I/O。SOURCE_CHECKED以原ZIP精确原字节单处替换证明，未改架构/schema/路径/输入日志或数值门。
+
+最终相邻450 passed，完整core2056 passed/1既有Windows POSIX模式skip，CPU Flow422 passed，0failure/error；新增44全执行（12 unit+32 integration），0新skip，81117/66970均exit0终结。12单测中的PurePosixPath只证明组件语义，不冒称POSIX实机；本机32原生集成在Windows实际确认别名，POSIX不同大小写实体隔离分支尚待未来CI执行。默认/custom日志、正常/含tag Run名、四事件、peer/status counts/原字节/目录清单均覆盖。
+
+继续同主题只读核对可用别名：本机GetShortPathNameW在现有隔离Run返回原完整名称，未产生不同8.3组件，故无短名反例，不开新Issue、不扩展规则或宣称短名实测通过；候选探针结果保留.tmp/audit131/SHORT_PATH_CANDIDATE.json。未知/复制后身份不匹配的legacy原回退保持，不新增任意历史所有者重建或鉴权保证；此限制与本次Windows平台同组件别名不同。
+
+当前#179仍OPEN，本主题仅本地，不拆单bug PR；继续读取身份/可选展示与相邻原子/失败边界复查，完成相关里程碑再统一PR，最终head及实际dev全实际CI后再关闭/清理。已接受dev53ae142；PR178两Issue与主题均已验收关闭/清理，周期基线161计数4/remote46，下次合入约5时做完整周期盘点。原REPRO/ZIP/hash/红绿/完整XML/SOURCE/LOCAL_CHECKED在.tmp/audit131，不随clone，portable回归与正式记录入库。无GPU/性能/正式Study实验、科学结论、main/tag/发布、数据/结果删除或布局改变；下一新缺陷编号B132，目标active。

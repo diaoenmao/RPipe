@@ -1,5 +1,12 @@
 # Flow 与 Study 重构交接
 
+## 2026-10-17 B131平台所有者身份本机完整检查；读取主题继续积累
+
+当前codex/readout-identity-next仅本地：#179已先1cfad38红44项17失败/27控制、8dde822方案，再86f6a86单处条件修。450相邻/core2056 passed+1既有skip/CPU Flow422 passed，新44（12 unit+32 integration）全执行，81117/66970终结exit0。Windows真实samefile别名与PureWindows/PurePosix组件语义本机覆盖；POSIX实体隔离分支仍待未来CI。生产者/guard/schema/layout/legacy/排序原字节保持，Source精确替换证明在.tmp/audit131，不随clone。
+
+本主题继续相关只读身份与相邻合同复查，不立即拆单bug PR；#179仍OPEN、尚无PR，完整里程碑后双侧实际CI。短名API未产生不同名，无真实反例不扩展；未知legacy身份保留原回退。PR178全验收清理完毕详record§220，当前§221–222，接受dev53ae142，基线161计数4/remote46，下次约5要周期盘点；目标active，不合main/tag/GPU/性能/数据删除。
+
+
 ## 2026-10-17 PR178双侧验收/清理；下一B131/#179
 
 最终head26131eb的Branch38939964823/Package38939964948/Unit38939964815、实际dev53ae142的Package38940832132/Unit38940832165全部实际矩阵/聚合成功。176/177各一次验收反馈后关闭、原正文不变；已普通删codex/failure-evidence-next本地+remote，未删worktree/数据/结果，基线161计数4/remote46。Hash及回读证据见record§220与本机.tmp/audit130，不随clone。

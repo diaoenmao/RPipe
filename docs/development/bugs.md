@@ -6,9 +6,9 @@
 
 ## 开放
 
-### B-131：Windows同文件Run大小写别名绕过原生event定位（确认未修）
+### B-131：Windows同文件Run大小写别名绕过原生event定位（本机已修，待完整主题CI）
 
-- Issue：[179](https://github.com/DreamSoul-AI/RPipe/issues/179)。原log_path守卫和samefile接受Run文件系统别名，但_event_match按字符串精确拼写比较所有者，回退后名字/正文tag可覆盖真实event，status错误note、logs误收split；standalone原拼写读取正常。两别名失败/两原拼写控制通过，输入字节不变。不是mode大小写扩展、未知legacy所有权或早先修复引入原错误的结论。下一先提交组件语义与原生消费者红回归，保留POSIX大小写不同目录和既有legacy回退，见[record§220](record.md)，.tmp/audit131不随clone。
+- Issue：[179](https://github.com/DreamSoul-AI/RPipe/issues/179)。先44红17失败/27控制，再86f6a86仅替换共用matcher的已知所有者条件，用原Path组件语义并保留事件边界/偏移/选择集/legacy回退，原guard/日志字节/生产者不变，不逐行加FS I/O。450相邻/core2056 passed+1既有skip/CPU Flow422 passed，44新全执行；Windows原生已验，POSIX实体隔离须后续CI，不用PurePosixPath单测替代。当前仅本地继续同主题积累、未PR，179保持OPEN。见[record§221–222](record.md)，.tmp/audit131不随clone；8.3本机未产生不同名、无反例不收录，未知历史身份不猜造。
 
 B129–B130/#176/#177已随[PR178](https://github.com/DreamSoul-AI/RPipe/pull/178)最终head及实际dev53ae142全部实际CI验收关闭，主题本地/remote已清；原红/验证/限制留[record§217–220](record.md)。
 
