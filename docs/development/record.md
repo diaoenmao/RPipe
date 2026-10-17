@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：reader PR201 已双侧验收清理；§2.1 结构首批在 structure-packages 完成本机验收，准备一个里程碑 PR→dev。
+> 验证：core 2466 passed +1 既有 skip、CPU Flow 525 passed；16 新结构节点全执行，0 fail/error（§267）。
+> 结果：15 个 init 仅导出；control 小文件归并，64 个实现文件已登记；80/9132 →79/9097（文件/行），尚未满足总目标。
+> 下一：首批最终 head 与实际 dev CI 验收、主题分支清理；新增 artifact/make 门面和 origin pickle 兼容方案须先确认。
+> 状态：未实施 API 形状/公开行为变化；不新增边界修复、不训练/GPU/main/tag；用户暂存与数据保留。
+
 > 当前（2026-10-17）：PR201 reader 修复与获批 §2.1 已合 dev eb9642b，最终 head/实际 dev 全部 CI 成功，#200 已关闭。
 > 验证：core 2450 passed +1 既有 skip、Flow 525 passed、72 新节点全执行；PR Unit38985157783、dev Unit38985763930（§266）。
 > 清理：codex/library-reader-exits 本地及远端已删除；累计远程主题清理 55，main/dev 与用户暂存、数据均保留。
