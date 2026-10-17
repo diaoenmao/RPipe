@@ -132,3 +132,59 @@ def test_version_merge_and_roundtrip_preserve_value_and_id(patch, expected_versi
     assert base.to_mapping()['version'] == 'base'
     assert mapping['version'] == expected_version
     assert again.to_mapping() == mapping
+
+
+@pytest.mark.parametrize('kind,identifier', [('experiment', None), ('run', ''), ('run', 'chosen')])
+def test_root_mapping_preserves_layer_calls_extras_identity_and_id_position(kind, identifier):
+    from rpipe.structure.control.run_config import RunConfig
+    calls = []
+    class Layer:
+        def __init__(self, label):
+            self.label = label
+        def to_mapping(self):
+            calls.append(self.label)
+            return {'label': self.label}
+    token = object()
+    tags = ('x',)
+    options = dict(seed=0, experiment='', description='', tags=tags,
+                   extras={'seed': None, 'data': token, 'id': 'extra', 'tail': token},
+                   **{name: Layer(name) for name in ('data', 'model', 'algorithm', 'system')})
+    value = ExperimentConfig(**options) if kind == 'experiment' else RunConfig(id=identifier, **options)
+    result = value.to_mapping()
+    assert calls == ['data', 'model', 'algorithm', 'system']
+    keys = ['seed', 'experiment', 'description', 'tags', 'data', 'model', 'algorithm', 'system']
+    assert list(result) == (['id', *keys, 'tail'] if identifier else [*keys, 'id', 'tail'])
+    assert result['id'] == 'extra' and result['seed'] is None
+    assert result['data'] is token and result['tail'] is token
+    assert result['tags'] == ['x'] and result['tags'] is not tags
+
+
+@pytest.mark.parametrize('kind', ['experiment', 'run'])
+def test_root_mapping_layer_failure_preserves_original_exception_and_call_order(kind):
+    from rpipe.structure.control.run_config import RunConfig
+    failure, calls = RuntimeError('model mapping refused'), []
+    class Layer:
+        def __init__(self, label):
+            self.label = label
+        def to_mapping(self):
+            calls.append(self.label)
+            if self.label == 'model':
+                raise failure
+            return {}
+    cls = ExperimentConfig if kind == 'experiment' else RunConfig
+    value = cls(**{name: Layer(name) for name in ('data', 'model', 'algorithm', 'system')})
+    with pytest.raises(RuntimeError) as caught:
+        value.to_mapping()
+    assert caught.value is failure and calls == ['data', 'model']
+
+
+@pytest.mark.parametrize('kind', ['experiment', 'run'])
+def test_root_mapping_does_not_expand_subclass_default_fields(kind):
+    from dataclasses import dataclass
+    from rpipe.structure.control.run_config import RunConfig
+    base = ExperimentConfig if kind == 'experiment' else RunConfig
+    @dataclass
+    class Extended(base):
+        future: str = 'default'
+    value = Extended(seed=0)
+    assert value.future == 'default' and 'future' not in value.to_mapping()
