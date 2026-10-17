@@ -153,10 +153,7 @@ def _md5(path: Path) -> str:
 
     digest = hashlib.md5()
     with _owned_stream(path.open('rb')) as handle:
-        while True:
-            block = handle.read(1024 * 1024)
-            if not block:
-                break
+        while block := handle.read(1024 * 1024):
             digest.update(block)
     return digest.hexdigest()
 
