@@ -8,9 +8,9 @@ from typing import Any
 from urllib.parse import quote
 
 from rpipe.structure.artifact._atomic import atomic_write_text
-from rpipe.structure.artifact.errors import CorruptArtifactError
+from rpipe.structure.artifact.layout import CorruptArtifactError
 from rpipe.structure.artifact.index import index_path, load_index
-from rpipe.structure.artifact.paths import DOCS_DIRNAME, PROCESS_NAME
+from rpipe.structure.artifact.layout import DOCS_DIRNAME, PROCESS_NAME
 from rpipe.structure.artifact.result import load_result
 
 

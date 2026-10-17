@@ -11,7 +11,7 @@ from typing import Any
 
 from rpipe.structure.artifact._atomic import _read_text, atomic_write_text
 from rpipe.structure.artifact.asset import kinds
-from rpipe.structure.artifact.paths import ASSETS_DIRNAME, RESULT_NAME
+from rpipe.structure.artifact.layout import ASSETS_DIRNAME, RESULT_NAME
 from rpipe.structure.artifact.readout.report import _text_cell
 from rpipe.structure.artifact.readout.status import _log_path_key
 

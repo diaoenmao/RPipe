@@ -12,12 +12,12 @@ import yaml
 from rpipe.structure.artifact._atomic import _read_text
 from rpipe.structure.artifact.asset import kinds
 from rpipe.structure.artifact.config import load_config
-from rpipe.structure.artifact.errors import ArtifactError
+from rpipe.structure.artifact.layout import ArtifactError
 from rpipe.structure.artifact.index import index_path, load_index
-from rpipe.structure.artifact.paths import ASSETS_DIRNAME, CONFIG_NAME, RESULT_NAME, RUNS_DIRNAME
+from rpipe.structure.artifact.layout import ASSETS_DIRNAME, CONFIG_NAME, RESULT_NAME, RUNS_DIRNAME
 from rpipe.structure.artifact.readout.report import _fmt, _text_cell
 from rpipe.structure.artifact.result import STATUS_SUCCEEDED, load_result
-from rpipe.structure.artifact.result.format import VALID_STATUS
+from rpipe.structure.artifact.result.io import VALID_STATUS
 
 STATUS_PENDING = 'pending'
 _EVENT = re.compile(r'\[(epoch|error|flow)\]\s*(.*)$')

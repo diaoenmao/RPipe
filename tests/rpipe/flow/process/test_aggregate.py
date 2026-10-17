@@ -234,7 +234,7 @@ def test_optional_result_stat_read_and_programming_error_boundary(tmp_path, monk
 
 @pytest.mark.parametrize('payload,kind', [('nonobject', 'artifact'), ('deep', 'recursion')])
 def test_optional_result_fix_does_not_relax_strict_public_loader(tmp_path, payload, kind):
-    from rpipe.structure.artifact.errors import CorruptArtifactError
+    from rpipe.structure.artifact.layout import CorruptArtifactError
     from rpipe.structure.artifact.result import load_result
 
     _, bad, before = _result_read_inputs(tmp_path, payload)

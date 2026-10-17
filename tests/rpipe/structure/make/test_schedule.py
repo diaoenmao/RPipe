@@ -403,7 +403,7 @@ def test_saved_plan_rejects_mismatched_batches_without_rewrite(tmp_path, kind, i
     ('valid', b'{"status":"succeeded","control":{},"metrics":{},"paths":{}}'),
 ], ids=['list', 'null', 'bool', 'text', 'number', 'syntax', 'deep', 'valid'])
 def test_readiness_parse_failure_keeps_cached_jobs_and_peer(tmp_path, kind, raw, include_done):
-    from rpipe.structure.artifact.errors import CorruptArtifactError
+    from rpipe.structure.artifact.layout import CorruptArtifactError
 
     jobs = _study(tmp_path)[:2]
     _succeed(tmp_path, 't1')

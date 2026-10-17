@@ -1,3 +1,7 @@
+> 2026-10-17：codex/structure-artifacts完整本地验收core2608+1同一既有skip/Flow525，99库源码哈希全程一致；首轮源码尾空行改动触发provenance拒绝已完整留证并冻结重跑。见record§275与.tmp/structure-artifacts/STATE.json。最新人工明确本批不删分支/数据；下一为push一次PR→dev、双侧全部实际CI。PR203已验收，勿重复操作；结构总目标未完成。
+
+> 2026-10-17：PR203 final5167cea/actual dev70526bd全部实际CI验收，本地/远端structure-api-design已删，周期基线203。09:12 API授权已实施，不再等待旧审批。下一批codex/structure-artifacts本地f74ef58完成5文件归并，core2601+1既有skip/Flow525全通过；未开PR，继续同分支大模块职责精简，见record §273和.tmp/structure-artifacts/STATE.json。当前76文件/9152行，比目标起点9132仍多20，总目标未完成。保留用户暂存与数据，不新增边界修复，不训练/GPU/main/tag。
+
 ## 2026-10-17：09:12批准已执行，门面/origin本机通过（最新）
 
 唯一codex/structure-api-design。09:12已批准新增artifact_api/make_api和origin→system_api，旧等待门不再阻止这部分工作；未批准旧别名且本批没有添加。实际存盘核查：正式2318 checkpoint0旧引用、临时115989候选仅1上轮人工探针，读取0错误；证据/范围/限制见record§269，不声称覆盖库外或未知下游。

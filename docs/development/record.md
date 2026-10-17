@@ -1,3 +1,27 @@
+> 当前（2026-10-17）：structure-artifacts 完整本地里程碑验收通过，准备一次 push/PR→dev；不再等待旧 API 审批（§275）。
+> 验证：core2608 passed +1同一既有skip、CPU Flow525 passed；99个库源码哈希重跑前后相同。
+> 结果：artifact归并5文件、配置估算独立、dict顺序/groupby简化；当前77文件/9146行，整体明显缩行仍未达成。
+> 下一：最终head全部实际CI后正常合dev，再验实际dev全部CI；继续schedule/data factory/origin职责精简。
+> 状态：首轮修改尾空行触发1项provenance拒绝，证据保留；依最新指示不删本地/远端分支或数据，不GPU/main/force。
+
+> 当前（2026-10-17）：同一 structure-artifacts 分支继续归并；artifact 已本地全回归，capacity 的纯配置估算已移入 estimate（§273–274）。
+> 最新验证：make/结构针对性512 passed；6个移动函数AST、全部估算常量一致；400组调度及1093组标签差分一致。
+> 结构：capacity 574→393行，纯配置 estimate 177行；结构总77文件/9148行，尚未满足明显缩行停止条件。
+> 下一：继续同分支梳理schedule/data factory/origin，完整里程碑再跑全部回归和PR/CI→dev；本轮未开新PR。
+> 状态：fetch成功、无审批阻塞；保留暂存/数据，不训练/GPU/测速/main/tag；本轮成功不替代后续提交全验收。
+
+> 当前（2026-10-17）：PR203 已双侧 CI 验收并清理主题；下一批 artifact 五文件归并在 structure-artifacts 本地验收完成（§272–273）。
+> 验证：core2601 passed +1同一既有skip；CPU Flow525 passed；针对性1538 passed +1既有skip；41定义AST一致。
+> 结果：structure 81/9172→76/9152（文件/行）；相对目标起点80/9132仍多20行，尚未满足明显缩行的停止条件。
+> 下一：在同一未合分支继续大模块职责精简，完整里程碑再开PR/CI→dev；不新增边界修复。
+> 状态：无审批阻塞；无训练/GPU/main/tag；不动用户暂存/实验数据，库外未知pickle未覆盖。
+
+> 当前（2026-10-17）：PR203 已合 dev 70526bd，最终 head/实际 dev 全部矩阵及聚合 CI 通过；门面与 origin 迁移验收完成。
+> 验证：core2606 passed +1既有skip、Flow525、156结构检查；正式2318 checkpoint旧origin引用0（§269–270）。
+> 清理：codex/structure-api-design 本地+远端已删；周期基线203，累计远端删除57；新 structure-artifacts 与暂存/数据保留。
+> 下一：artifact 五个碎文件归并已应用，针对性测试通过，继续完整回归与职责精简；总目标尚未完成。
+> 状态：无审批阻塞；不训练/GPU/main/tag、不加兼容旁路；库外及未知下游对象未纳入本仓扫描。
+
 > 当前（2026-10-17）：09:12 批准的门面/origin 迁移已完成本地验收，准备统一里程碑 PR→dev；不再等待旧 API 审批门。
 > 验证：core 2606 passed +1 同一既有 skip、CPU Flow 525 passed，最终156结构节点全执行（§270）。
 > 证据：正式2318 checkpoint旧引用0，临时115989候选仅人工探针命中1；无读取错误，无旧模块别名（§269）。
@@ -4480,3 +4504,47 @@ PR202 final `a634074bb1bdd81d58fbe7c6a52d0395626be9e4`：Branch38986989262、Pac
 初始 RED：120 项中 29 failed/91 passed（0 error/skip）；SHAPE 的唯一失败为当时尚未更新的文件登记；TARGET 的39失败为旧测试入口遗漏，CORE 的80 setup errors为遗漏的当前 Study raw caller，均保留。修正归属与调用方后 TARGET2 248 passed、CALLERS 236 passed，最终完整 core/Flow 如上。源扫描器的175伪缺失与错误AST基线拒绝单独保留，不混为库缺陷。
 
 仅修改当前 Study 的 import；归档版本、shared/runs、正式数字、checkpoint、原始数据和磁盘格式未变；未运行 Study、测速、原生 codec 或 GPU。后续继续合并过碎 artifact 文件并按职责精简 capacity/schedule/data factory/origin；本批机械结构规则已过，不等于“行数明显下降”和全部重构目标完成。
+
+
+## 271. 2026-10-17：artifact 职责归并方案（实施前）
+
+按已批准 §2.1，在既有模块归并：paths/errors→layout；asset/tree 的两个操作→asset/kinds；config/result 的 format→各自 io。保留 kinds 模块对象与原常量，公开门面名称、签名、返回、校验及磁盘布局不变，不加旧模块别名。库内源码、测试导入、镜像测试位置及结构登记同步。正式2318 checkpoint 对 errors/layout/asset.tree/config.format/result.format 的只读 pickle 字节扫描命中0、错误0；证据 `.tmp/structure-api/ARTIFACT_PICKLE_CHECKED.json` 不随 clone，未覆盖库外或未知下游。按原有回归和 AST 定义对照验收，不新增边界修复。
+
+
+## 272. 2026-10-17：PR203 双侧验收与周期清理
+
+最终 head `5167cea02d86b4cc40f4019879a6153f049894ec` 已正常合入实际 dev `70526bd87edc626a4d69daeaa604c8c2d3dbde9d`。head Unit38991550747/Package38991550766/Branch38991550814；dev Unit38992040041/Package38992040050，所有实际矩阵与聚合成功。PR_CHECKED SHA256 `921b6d8e7f48f547b4351b7a7cabd9bde94eb335fd93928a410a7bcd36092cb6`；DEV_CHECKED `fedd21bce25580de12a042c786651fab49a361593546e9dc4bc43cd66ddd55fd`。原 PR 正文追加一次验收记录。
+
+约5 PR周期（194→203）盘点：仅一个主工作树，无开放 PR/Issue；codex/structure-api-design 提交已保全，删除本地及远端；累计远程清理57。当前新分支 codex/structure-artifacts 未合保留，清理前后该分支tip、全部diff与status一致；main/dev/origin/main保护引用不变。无废弃登记worktree、无其他未合主题。证据 `.tmp/structure-api/` 不随clone。附件工具因100条上限拒绝附加PR203，GitHub PR与验收均正常；保留历史附件不绕过上限。
+
+本批继续 §271 的归并，未新增文件/包装层/边界缺陷任务；原子写及错误处理保留。实现中脚本先改了将删除文件的import，git rm因本地修改拒绝；逐字核对为本次import替换后恢复该import并正常git rm，未使用force、未丢用户内容。
+
+
+## 273. 2026-10-17：artifact 五文件归并本地验收（未开 PR）
+
+实施提交 `f74ef588a0a7c84e961f1bd50c7b6d8b64b42c18`：paths/errors→layout，asset/tree→asset/kinds，config/result format→各自io，删除5个实现文件；tests镜像test_tree→test_kinds，当前调用导入和结构登记同步。现有公开门面及kinds模块身份保留，无旧模块兼容旁路。41个原函数/类/常量定义AST一致，仅paths/kinds常量限定改为本地同值名称；原子写、校验、错误处理和磁盘路径未变。
+
+core2601 passed +1同一POSIX executable mode bits skip，CPU Flow525 passed/0skip；针对性1538 passed +1同一skip。与PR203 core节点对照只减少被删除5文件对应的跨层导入检查，其余全部执行；结构机械检查仍通过。LOCAL_CHECKED SHA256 `da54b3b35d10af155c7468c25f813919c3e763846c1cc6f6191ca1522f6efa24`，证据 `.tmp/structure-artifacts/` 不随clone。验证未调用GPU或实际下载模型/数据。
+
+逐Git跟踪源码统计：目标起点80文件/9132行；PR20279/9097；PR20381/9172；当前76/9152。不得把搬移/少文件当成明显缩行，总目标未完成。当前分支本地按主题提交，未开新PR，继续capacity/schedule/data factory/origin的职责拆分及有依据的去重，再合完整里程碑；不为文档几行单开PR。周期清理基线203保持。
+
+
+## 274. 2026-10-17：make capacity 职责精简方案
+
+延续同一structure-artifacts里程碑：将capacity中纯配置内存/时间估算及job注解挪至make/estimate.py，capacity保留硬件发现/分组/报告和原有公开名称的直接导出；不改数值、阈值、设备准入或估算口径，不执行测速/硬件探测。按职责新增模块，不为bug扩张。分组用dict原生插入顺序替代并行order列表；连续名称折叠用标准库groupby。补交错类别顺序/连续标签回归，并做旧实现差分；完整批次后再PR。
+
+
+### 274.1 本地实施与验证
+
+估算6函数及全部常量AST一致；574行capacity分为393行硬件/分组/报告和177行纯配置估算。原公开capacity估算名称直接重导出，make_api不改形状。分组用dict顺序，标签用groupby，移3个既有估算测试至test_estimate镜像，补6个分组/标签回归。make+结构512 passed/0fail/error/skip；400组交错CPU/CUDA及train/eval合成调度（含原地gpu字段变更）、1093组连续/分隔标签、cap不同设置均与旧实现相同。合成GpuInfo仅Python数据，不执行GPU探测、训练或测速。证据`.tmp/structure-artifacts/CAPACITY.xml`、`ESTIMATE_DEFINITIONS_CHECKED.json`、`CAPACITY_DIFFERENTIAL_CHECKED.json`不随clone。
+
+未用旧core/Flow成功替代当前新增提交的完整验收；完整里程碑PR前再跑全套。该主题继续本地积累，无新PR/Issue。
+
+
+## 275. 2026-10-17：artifact 与 estimates 完整里程碑本地验收
+
+在同一codex/structure-artifacts合批提交§271–274，不再拆小PR。固定源码后core2608 passed +1同一POSIX executable mode bits skip、Flow525 passed/0skip，0fail/error，99个库Python源文件SHA256在验证前后完全一致。六个新增分组/标签节点均执行；41个artifact定义、6个估算函数及全部校准常量AST对照一致；400调度/1093标签差分记录保留。正式2318 checkpoint对capacity引用0、读取错误0；库外/未知下游不在范围。当前structure77文件/9146行，总目标未完成。MILESTONE_LOCAL_CHECKED SHA256 `e1be1e9b21dc36874b608eea0ccffceb0a09a63461eb68f3f9edcf091cf132fc`；证据`.tmp/structure-artifacts/`不随clone。
+
+首轮core通过，Flow524 passed/1 failed：代理在测试运行时清理estimate.py尾空行，真实provenance门正确拒绝success-no-retry；不是生产缺陷。保留FLOW_FINAL.xml/日志/FULL_FIRST_FAILURES.json及DIFF_CHECK_REJECTED.json，修正流程为冻结源码后全部重跑；未改/绕过provenance、未删除失败。EOF清理AST不变。
+
+最新人工要求优先于旧周期清理约定：本批不删除本地或远端分支、数据；main/tag/force push不操作。公开门面形状、签名/返回/异常及磁盘产物布局不变；按本地主题提交，一次里程碑PR合dev并双侧实际CI验收。
