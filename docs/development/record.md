@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR217已合dev712a3d2，最终head实际CI全绿，actualdev独立验收中。
+> 可执行项：14段旧修复叙事已原文迁入§291.3，结构文档回链，标题树/63项登记保持；结构专项153 passed/0skip。
+> 后续里程碑：仅文档整理，无源码/测试/Study/API/布局改动；原文哈希保全证据在.tmp/structure-history-cleanup。
+> 剩余卡点：粒度拆分受文件架构冻结限制，库外同步缺目标根/版本及范围；详见§291.4。
+> 收口：完成本批PR及双侧CI后按指示停下，不新增无依据源码改动；保留_staging/分支/数据，不用GPU或测速。
+
 > 当前（2026-10-17）：PR216双侧实际CI全绿，已普通合dev ee9050f9，源码全部入dev（§290.4）。
 > 里程碑：§2.1结构专项153 passed/0skip，机械检查无违规；后续未选中值得实施的同文件源码精简。
 > 剩余：文件粒度待评审、结构文档旧叙事获准暂缓、派生副本未验收，逐条小结见§290.3；总体目标未完成。
@@ -5181,3 +5187,118 @@ factory.py188→185，全structure78文件/9001行，对起点9132净少131；�
 最终headd90ec72195d029088d42615c3ea2c08f48e56ba8的Branch39018065191/Package39018065098/Unit39018065307全部实际矩阵与聚合成功后普通合actualdev ee9050f96ac97b8aeca09ecdf80b60664a4cb8d6；实际dev的Package39018598865/Unit39018598926及所有实际矩阵/聚合同样成功。PR_CHECKED SHA256 3db1866c021591602ff9354ed0671ffbf9fa295cba4ca7ab3a987d5a33da936c；DEV_CHECKED 314eacfb5cbe8036fa67db67761b0b073d2a6bb97633f099c0462063ac74e774。head/dev源码、测试、Study、结构文档无差异；PR正文一次追加验收标记，无重复评论，附件100上限错误保留。main/local dev/origin main保护引用与合前相同，当前主题本地/远端及所有数据/_staging保留，无force push/main/tag/release操作。盘点基线213，214/215/216为后续3次合入，未满约5不重复盘点/清理或关闭已处理单。
 
 本轮后续只有按明确要求编写的§2.1逐条小结及收尾记录，没有新源码/测试变更；小结主题本地提交，尚未推送/开新PR，不为记录再开小PR。当前源码全部已入dev；153节点专项覆盖与机械边界见§290.2–290.3，完整CPU结果保持78332d0的2743 passed+1既有POSIX skip/Flow525，源码100哈希一致。宏观目标不标完成，文件粒度/旧叙事/派生同步三类边界保留。原始证据.tmp/structure-tracker-final不随clone，当前STATE为唯一入口，无活测试/CI句柄。
+
+
+## 291. 2026-10-17 结构小结发布与可执行剩余项收口
+
+### 291.1 PR217最终head与普通合入
+
+按最新明确授权推送结构小结4ba6298并创建[PR217](https://github.com/DreamSoul-AI/RPipe/pull/217)。最终head4ba629800f779efc7e29fcf519267f70122cf2b5的Branch39019820698/Package39019820683/Unit39019820682全部实际矩阵/聚合成功，普通合actualdev712a3d2b4243fdbafa4ace360dfa179ef0e834cc；head/dev源码、测试、Study、结构文档一致。PR_CHECKED SHA256 13dcf9596b9c425752cfdb294a4a74273981d0fdeb7cf77ed0da3ec7ed13a36e；actualdev独立验收中。此PR仅文档，没有重跑无变更的本地完整CPU，原完整CPU2743+1既有skip/Flow525仍覆盖同一100源码哈希；远端CI独立执行。
+
+### 291.2 可在CPU推进的旧叙事整理方案
+
+最新指示要求剩余项能在CPU推进的继续做；据此将此前暂缓的14段显式Bug/Issue修复叙事从structure.md逐段原文迁入本记录§291.3，结构文档原位置仅留归档回链，合并连续重复回链；原标题树与63项文件登记保持。过时的“本次不移动、后续整理”说明改为归档入口。每段保留迁移前位置及SHA256，不改段落字节、不裁剪失败/兼容/科学边界、不将旧日期当今天新增实现。此为文档整理，不改任何源码/测试/公开API/文件架构/磁盘产物布局；无训练/GPU/测速/真实下载，不删任何实验数据。归档以往叙述供追溯，不把原文的旧模块位置当新的设计结论；当前职责仍按structure.md文件表。
+
+### 291.3 Structure history archive
+
+以下14段为迁移前structure.md的既有原文；原行号绑定本次迁移前版本，不随后续排版变化更新。记录日期为2026-10-17，原段落内日期/编号保留其历史含义。
+
+#### 291.3.1 原文 01
+
+原位置：structure.md第553行起；段落SHA256：26a46f29f4223acc045ed99bead0e57d21509ec1a989d2daeb62a0cd615ebbb1。
+
+- **batch**：只内存 `append`
+- **report 间隔**（这一轮 step 结束时至少一次；中途用 `log_period`，整数 step，和 `checkpoint_period` 一样）：`system.Logger.report` 并立刻 flush `run.log`；tracker 往 jsonl 追加并 flush；写出 `tracker_state.json` 并 flush
+- **epoch 末**：`save`+`reset`，再 flush state
+- **execute 结束**：成功体最终 state 写失败须传播并阻止成功；已有执行错误或终止时尽力再 flush 一遍且保首错（Flow 通用收尾与原生 train 一致，见 B114/#154）
+
+#### 291.3.2 原文 02
+
+原位置：structure.md第713行起；段落SHA256：fe0629a65197f2455327b00503920d506e3dd2dc78c67c99e929e8bf451158fa。
+
+RNG 和采样位置恢复完整不等于所有算子数值确定。严格数值续训还要求经过验证的确定性运行条件、相同设备 / 依赖和实际精度；TF32 或其他设备 kernel 的重复前向差异仍按 B-023 的边界处理，不能通过本合同自动关闭。
+
+#### 291.3.3 原文 03
+
+原位置：structure.md第1272行起；段落SHA256：54413b5d76c3e447379dd374e7835190847ee1c0ac278f3c134b9d6bb8c6e4bd。
+
+共享准备锁的同线程重入使用 pid 与目录 stat 的 st_dev/st_ino 身份（与标准库 samefile 一致），避免普通/扩展命名空间路径自争用。该身份只存线程局部内存，实际路径和锁文件保持；其他线程/进程仍须取得 OS 锁。见 B103 / Issue134。
+
+#### 291.3.4 原文 04
+
+原位置：structure.md第1275行起；段落SHA256：f43bdc34a0ca1c60e50ab6733fcf824174cfa8ce2dbe60038d9cd02ca872bae8。
+
+migrate_shared在取得多个共享根锁前确保原有根目录存在，并按与cache_lock重入相同的物理目录身份排序，避免namespace拼写改变跨线程/进程加锁次序。原有四根、冲突检查、硬链接发布和诊断保留合同保持。见B104/Issue136。
+
+#### 291.3.5 原文 05
+
+原位置：structure.md第1278行起；段落SHA256：e8cdd6ff933afecabed484230b8338ca4f0eaa0fea9dc69be469c86238f06703。
+
+共享锁退出按先OS release、后句柄close处理：已有准备异常/取消时，清理OSError不得替换首错；正常结束的清理失败仍严格传播，多个清理故障保留先发生者，非IO程序错误继续暴露。未取得锁不尝试unlock，获取Timeout的cause/原预算、PID物理root重入键、多根顺序及OS所有权不变。prepared_resource失败staging不按锁清理删除。见B107/Issue142。
+
+#### 291.3.6 原文 06
+
+原位置：structure.md第1283行起；段落SHA256：84ba148d8fad23d290769e8b0968b06abcec838498170e85ef181a742537f92a。
+
+文本与ledger写入退出合同（Issue144）：_atomic、Logger._emit、AlgorithmTracker的begin_run/append_jsonl在已有写入/flush/编码异常或取消时，尽力close且仅不让close OSError替换首错；正常体close仍严格，非IO程序错继续暴露。打开模式、编码/newline、原JSON/日志字节、flush与追加顺序、原子发布和staging所有权保持；不引入通用I/O层。
+
+#### 291.3.7 原文 07
+
+原位置：structure.md第1286行起；段落SHA256：1ba97b63dedad174bdc472dcc207450dfc637db4de0366fa7c980d4b9c129980。
+
+Study comparison PNG退出合同（Issue146）：main_exp/flow/process/curves.plot_report沿用库PNG已实施的同目录排他staging→保存/关闭→atomic_replace与自有figure/tmp清理规则，失败保留旧historical_comparison.png与peer；正常close严格、保存首错/取消不被close OSError替换。figsize/dpi、数据/轴/标注、返回None及科学比较/读取/gate函数保持，无文件架构或产物路径变化。
+
+#### 291.3.8 原文 08
+
+原位置：structure.md第1289行起；段落SHA256：a643aa69bf75a589f0ed8dd6b3690badc5b2f647310d7b1b9781a832549e4e46。
+
+冻结校验拒绝合同（Issue148）：check_frozen将无法完成解析的RecursionError和已有OSError/ValueError同样包装为ProvenanceChangedError并保留原cause，使初始/prepare冻结拒绝沿用已有成功字节保全规则。strict load_provenance仍抛真实解析异常，freeze关闭不触及坏文件；不改JSON限额/schema、路径、source/plan哈希、真实phase失败或任意程序RuntimeError传播。
+
+#### 291.3.9 原文 09
+
+原位置：structure.md第1295行起；段落SHA256：9d9bde7e2064cf7b49267f1d5eee7af3dc21fcecd754fbd88a11c86043e6441c。
+
+Logger中断尾行边界（B123/#168）：既有_emit在可读的非空尾字节既非LF也非CR时，以原append文本写在新record前补一个分隔；不截断/重写旧字节，合法记录的stdout/文件内容、编码/newline、追加权限及首错规则保持。可选尾读OSError沿原append-only行为继续，不能读旧日志时不保证修复中断半行；不因此新增读取权限要求。Tracker恢复协议与只读解析不改，非任意多写者事务。当前本机与合批状态见[record§207](../development/record.md)。
+
+#### 291.3.10 原文 10
+
+原位置：structure.md第1298行起；段落SHA256：63011adccb8a9a577435fdbf11035b29a5a70ea24273f04ce7a0b3cf0cea56bb。
+
+Logger多行消息（B124/#170，2026-10-17本机修复）：内容行复用原完整record主体，保持同级别/Run/event、原行文本与每条IO错误规则；空/普通单行及原f-string转换保持。此规则沿用已有traceback逐行记录政策，不改变文件格式或Tracker；既有旧日志不重写/重建。当前工程验收状态见[record§213](../development/record.md)。
+
+#### 291.3.11 原文 11
+
+原位置：structure.md第1301行起；段落SHA256：a029e66e390fb83a4c6a0877d7b2ddbca48943fdfe73607d3073297ebc406c62。
+
+共享锁在取得OS所有权并登记释放处理后才初始化空锁字节，等待者不在锁外写入；同一.rpipe.lock inode、超时预算、线程重入与进程退出释放保持。初始化write/flush失败及取消也走已登记的解锁/关闭，不替换主异常。见B128/#175、record§214–215。
+
+#### 291.3.12 原文 12
+
+原位置：structure.md第1304行起；段落SHA256：348007123b29fa3b0cafaded515c0c204dff674274677915d7d0b3258ffed3dc。
+
+原生日志只读事件定位在已知Run上下文下使用平台Path组件身份比较，并保留紧邻事件边界：Windows大小写同组件别名不再回退误读正文tag，POSIX不同组件仍不同。比较不执行resolve/stat/samefile；原生产者、输入日志、事件集合/偏移、legacy回退、路径所有权守卫、traceback和排序保持。此规则不重建任意未知历史身份；本机实施与验证边界见B131/#179、record§222。
+
+#### 291.3.13 原文 13
+
+原位置：structure.md第1307行起；段落SHA256：d498efa0289b65bb96a345add8cc6c5e8bb6d9482684f0b5b7b98b67724adc36。
+
+NUMBERS.md既有Run ID代码单元格沿用原文本投影；对合法反引号ID选择正文不含的反引号分隔符并必要padding，以保留字面身份。普通ID的原Markdown字节、其他列/数值/链接/计划绑定和原子发布保持，无新依赖或通用富文本框架。协议依据[CommonMark §6.1](https://spec.commonmark.org/0.31.2/#code-spans)，B132/#180及同批读取身份边界证据见record§224。
+
+#### 291.3.14 原文 14
+
+原位置：structure.md第1315行起；段落SHA256：486103b9c28ea3274eda9507944ad5b592687a7ca9d64bd1f6967e139d454e2e。
+
+2026-10-17 国内下载边界（B143/#198）：现有 origin.py 统一模型/数据 SDK 的逐请求来源核验，使用 ContextVar 区分国内消费者及未标记调用。安装/还原短锁与实际消费者计数覆盖 worker、streaming generator、media feature decoder 和延迟文件读；不持锁等待 SDK 工作、不替换/关闭共享客户端。HF 实际 get_session/get_async_session 返回的 client class 也受检查，退出还原继承关系。没有新增模块/目录/公共配置、Dataset 类型或磁盘格式；仅可选 hf 使用路径增加明确的传输拒绝。支持边界及实际 SDK/协议验证限制见 README 与 artifact_consistency_design 的 B143 节。
+
+
+### 291.4 可执行项与剩余卡点
+
+| **事项** | **当前结果** | **卡点及后续所需条件** |
+| --- | --- | --- |
+| §2.1.7 已定位旧叙事 | 14段原文逐段保全迁出，原结构位置留回链；过时暂缓说明改为归档入口。原叙述日期/编号和失败/兼容/科学边界不改，其他职责/接口说明保留 | 本批可在CPU完成，无API或布局变化；不把删编号当删除原始依据，也不把接口设计细节一并裁剪 |
+| §2.1.4 capacity文件粒度 | 已只读复核385行实际职责：硬件发现、装箱、容量报告共处一模块；既有estimate只负责配置估算且明确不做硬件探测 | 真正分责需要新增模块或迁移职责，超出当前“不新建/迁移/归并文件、不改文件架构”限制；把探测塞进estimate或把实现塞进api会制造新职责冲突。CPU不是障碍，需要先明确允许的文件职责重划范围；本轮不改API也不擅拆 |
+| 较长train/HF/schedule/transfers热点 | 作为人工评审线索保留，不按行数自动认定违规；未找到当前文件内值得实施且保持行为的实质精简 | 不以新增包装、改格式、删必要验证/状态处理来凑缩行；当前没有可按原约束推进的源码项 |
+| §2.1.8 库外派生副本同步 | 本轮未读取/修改下游vendor或运行其Study，不能宣称副本一致 | 技术上可用CPU比对；当前未给出明确副本物理根、期望上游版本和本次同步/读取范围，且已有不触碰vendor限制。须先明确这些输入与允许范围，不自行扩到库外项目 |
+| 宏观明显缩行目标 | 源码仍78文件/8989物理行，对起点少2文件/143行约1.57%；本批只整理文档，不冒充源码缩行 | 当前范围内无进一步值得做的候选，不能通过改API/架构或删科学门强行达成；总体目标不标完成 |
+
+文档迁移后结构专项153 passed/0skip，14段原文字节哈希全部匹配、标题树与63项登记一致，显式Bug/Issue修复标记不再留在structure.md；100源码哈希及所有测试/Study文件未变。未重跑无变更的本地完整CPU；最近完整core2743+1既有POSIXskip/Flow525仍覆盖同一源码，最终head/实际dev CI仍分别要求全部真实矩阵与聚合成功。最新指示为无可做项则写清卡点后停下；完成本批双侧验收后执行该停止条件，不恢复旧边界修复运动，不为活跃制造任务。
