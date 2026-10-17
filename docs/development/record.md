@@ -1,6 +1,6 @@
 > 当前（2026-10-17 PR219后）：继续同文件/同函数内部净删减，4函数本地净少16行，79文件/8966行。
 > 变更：删重复分组顺序状态/名称去重循环/HF别名字典，规则改原生短路；API、其他声明AST、文件架构与产物布局保持。
-> 验证：106组原新对照一致，定向293 passed/0skip，新增11节点；完整CPU待冻结后执行，不借PR219绿灯。
+> 验证：106原新对照一致；完整core2775 passed+1既有skip、CPU Flow525 passed，11新增/154结构节点与101源码哈希通过。
 > 下一步：只在现有范围积累实质里程碑，本地主题提交；本批不因16行另开PR，不提新架构改动。
 > 边界：定时器PAUSED、派生不同步；保留分支/数据/_staging，不合main、不force push、不跑GPU/测速。
 
@@ -5424,3 +5424,11 @@ Enmao已批准新建make/hardware.py，仅迁GpuInfo、probe_gpus、_probe_torch
 四个既有函数内部改动：index121→117（删重复order状态与分组创建分支）、profile176→173（用原生有序dict去重，去重复类型判断）、hf_map107→101（删8键临时aliases映射，保留eps缺省/None语义与键序）、expand138→135（原生any保留__ne__/短路）。生产净少16行，79源码文件/8966行；相对最初9132累计少166行约1.82%，不称宏观完成。没有新增/删除生产函数、helper、文件、目录、公共字段或磁盘产物；四个函数签名/返回注解保持，同文件其余声明AST完全相同。
 
 原新对照106组（Experiment分组24、数据名42、HF参数24、规则16）返回/异常/顺序及必要身份保持；便携新增11节点：分组首见顺序与tags身份1、名称4、HF eps/None/身份/键序3、规则__ne__/短路/异常身份3。首轮target240 passed，扩展TARGET2 293 passed/0skip/fail/error（含154结构节点）。对照脚本/JSON/XML/日志留.tmp/structure-inline，不随clone。前次权限审批超时未执行、一次重试成功的工具证据保存，不记成代码失败。完整CPU尚待冻结后验证，不能借PR219绿灯；先本地按主题提交累计，不推送或开小PR。
+
+### 294.3 冻结源码完整CPU验收，继续本地累计
+
+冻结本地源码提交b0bb61dee15760d7466ab3bf98968d5746da18d5后，tests/run.py core2775 passed/1同一既有POSIX executable mode skip/0fail/error；显式c1/c2、not gpu/external/slow的CPU Flow525 passed/0skip/fail/error。11新增节点和154结构节点均在CORE.xml实际执行，101源码哈希与冻结HEAD一致；106原新对照和TARGET2 293pass保持。没有训练/GPU/下载/测速实测，不改变科学门或接受条件。LOCAL_CHECKED及CORE/FLOW/TARGET XML、对照/AST指标/冻结证明位于.tmp/structure-inline，不随clone；源码/tests/doc主题提交保全，没有活测试句柄。
+
+当前79文件/8966生产行，比实际dev1b64a6e2净少16行，四个已有函数体内的重复状态/循环归并，不新增helper或改变接口/架构/产物布局；功能/类声明数量保持，其他声明AST不变。此为下一里程碑的本地积累，未推送/开新PR/合dev，不能借PR219 CI成功验收本批；a740952等尾记也保留，后续实质里程碑一起交付，不因16行或记录另开小PR。当前新入口.tmp/structure-inline/STATE.json；宏观目标未完成，不为活跃硬造删减。
+
+定时器与派生副本按最新指示仍不碰，分支/数据/Run/provenance/_staging保留，不合main/打tag/发版/force push。新的架构变化若确有必要，先写具体proposal并提交后停下等审，不以本次局部归并偷换授权范围。
