@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：09:12 已批准 artifact_api/make_api 与 origin→system_api；旧别名未批准且不添加，复用 structure-api-design。
+> 证据：正式 Study 2318 checkpoint 旧引用0；临时115989候选仅命中上轮人工探针1，全部成功读取检查（§269）。
+> 结论：本仓库未发现实际在用旧对象；不把探针当兼容需求，不跟随库外链接或声称覆盖未知下游。
+> 下一：纯重导出门面、调用方迁移与八包/跨层检查，测试及完整CI后一个里程碑PR→dev。
+> 状态：旧确认门已按新指示解除对应范围；不训练/GPU/main/tag、不改签名/返回/磁盘布局、不加兼容旁路。
+
 > 当前（2026-10-17）：reader PR201 与结构首批 PR202 均已合 dev 并完成最终 head/实际 dev 全部 CI 验收；当前 dev d37fea6。
 > 验证：core 2466 passed +1 同一既有 skip、CPU Flow 525 passed，16 新结构节点全执行（§267–268；PR202/dev CI）。
 > 结果：15 个 init 仅导出，64 个实现文件登记；80/9132 →79/9097；两主题本地/远端已清理，结构总目标尚未完成。
@@ -4437,3 +4443,21 @@ PR202 final `a634074bb1bdd81d58fbe7c6a52d0395626be9e4`：Branch38986989262、Pac
 首批完成不等于总目标完成：八包约束仍被根 origin.py 阻挡，跨层调用仍待 API 收口，大文件职责精简与明显缩行还未完成。15 个入口只导出和逐文件登记两项已落地。API 新增和旧 pickle 的最小模块别名方案见 §267；origin 经 system_api 属已批准方向，尚待确认的是额外 artifact/make 门面形状以及历史 pickle 兼容映射例外。按照用户 08:05 的“若改动会改变 api 的形状或对外行为，先停下报告，等确认”，在此门等待，不自行把 heartbeat 或旧持续修复目标当作批准。
 
 保留一个本地未推分支 codex/structure-api-design，仅保存这份收尾与待确认报告，随下一完整里程碑合入，不单开纯 docs 小 PR。未改任何待确认 API 的实现；不再新开边界 Issue，不训练、不占 GPU、不改 main、不打 tag/发布、不 force push。
+
+
+## 269. 2026-10-17：09:12 API 方案批准与实际旧 pickle 清点
+
+新增 artifact_api.py（磁盘产物层）与 make_api.py（脚本生成层）获批准，采用纯重导出；origin 迁入 system 并经 system_api，原 data_api.load_hf_dataset / model_api.download_model 同名保留。旧模块别名未获批准，先检查实际产物，不能把可构造的理论反例当作迁移需求。
+
+只读清点范围：本仓库 asset/shared/studies/tests/src/docs/_staging_from_DEM，以及 .tmp，按 .pt/.pth/.pkl/.pickle/.bin/.joblib/.dill/.ckpt 枚举（rg 不跟随目录链接）。zip checkpoint 只读 pickle 成员，其他候选按原字节流定位 rpipe.structure.origin；不反序列化、不执行 pickle、不加载模型或训练。三份当前 Study 声明均无自定义库外 shared.root；未跟随库外重解析目录，未知下游和内存中对象不在本次范围。
+
+| **分类** | **候选文件路径数** | **旧模块引用命中** | **结论** |
+| --- | --- | --- | --- |
+| 正式目录（全部位于 studies，均为 .pt） | 2318 | 0 | 本仓库已存正式 checkpoint 未发现该引用。 |
+| 临时输出 | 115989 | 1 | 唯一命中 .tmp/structure-refactor/OLD_ORIGIN_READER.pkl，是本会话上轮生成的人工探针，不是正式消费产物。 |
+
+最终扫描 118307 条候选记录、0 读取错误；唯一命中的 SHA256 与上轮 PICKLE_MODULE_REFERENCE.json 的探针记录精确相同。没有发现本仓库实际在用的旧对象，因此不添加任何旧模块别名或兼容旁路。原 §267–268 “旧 pickle 需要兼容”是待评估方案，现被此实际盘点结论约束，不能据此自行加别名。若以后提供真实受影响文件，按指示重新报告并等确认。
+
+证据保留在 .tmp/structure-api：PICKLE_SCAN.json、formal_scan.json、temporary_scan.json、NUL 分隔原清单、脚本与历史拒绝（不随 clone）。首次不限重解析边界的 os.walk 广扫已按唯一自有进程身份取消；后续按行解析 rg 清单误拆换行文件名，产生 175 个伪缺失路径，结果保留为 PICKLE_SCAN_NEWLINE_REJECTED.json，改用 NUL 清单后全部读取成功。两项是扫描器取消/校验拒绝，不是仓库运行缺陷，也不删除任何输入。
+
+本批实现计划：新门面只 import 原对象；跨层调用使用对应门面，层内直连和 control 既有例外保留。为避免提前加载未完成的层，api 包只声明导出名，由 structure 完成 control 类型导出后导入六个门面；不使用 __getattr__ 懒加载或兜底包装。增加八包、纯重导出门面、逐文件跨层 import 检查，现有包入口/文件登记检查继续执行。迁移 origin 不添加旧路径文件、sys.modules 别名或重复实现，原生命周期/下载策略/缓存格式不变。
