@@ -108,18 +108,11 @@ class System:
         pickle_options = {} if reader is None else {'pickle_module': reader}
 
         raw = str(name)
-        candidate = Path(raw)
-        path = candidate
-        if not (candidate.suffix.lower() == '.pt' or candidate.is_file() or candidate.is_dir() or '/' in raw or '\\' in raw):
-            stem = raw.replace('/', '_').replace('\\', '_')
-            bundle = self.checkpoint_dir() / f'{stem}.pt'
-            folder = self.checkpoint_dir() / stem
-            if bundle.is_file():
-                path = bundle
-            elif folder.is_dir():
-                path = folder
-            else:
-                path = bundle
+        path = Path(raw)
+        if not (path.suffix.lower() == '.pt' or path.is_file() or path.is_dir() or '/' in raw or '\\' in raw):
+            bundle = self.checkpoint_dir() / f'{raw}.pt'
+            folder = self.checkpoint_dir() / raw
+            path = folder if not bundle.is_file() and folder.is_dir() else bundle
         if not path.is_file():
             folder = path if path.is_dir() or path.suffix.lower() != '.pt' else path.with_suffix('')
             bundle = folder.with_name(f'{folder.name}.pt')
@@ -153,9 +146,7 @@ class System:
         if not path.is_file():
             return None
         loaded = torch.load(path, map_location=self.device, weights_only=False, **pickle_options)
-        if isinstance(loaded, dict):
-            return loaded
-        return {'model': loaded}
+        return loaded if isinstance(loaded, dict) else {'model': loaded}
 
     def to_result_snapshot(self) -> dict[str, Any]:
         return {'device': self.device, **self.meta}

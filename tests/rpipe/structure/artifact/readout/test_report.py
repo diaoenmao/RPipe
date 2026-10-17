@@ -434,3 +434,15 @@ def test_status_display_labels_are_utf8_and_preserve_input_bytes(report_study, f
     assert body['counts'] == {'planned': 2, 'succeeded': 1, 'failed': 0, 'pending': 1}
     assert view.splitlines()[-1].split('\t')[3] == 'b'
     assert {p: p.read_bytes() for p in before} == before
+
+
+def test_number_statistics_keep_mean_std_min_max_order(report_study):
+    from rpipe.structure.artifact.readout.report import render_numbers
+
+    path = report_study / 'process.json'
+    body = json.loads(path.read_text(encoding='utf-8'))
+    body['experiments'][0]['metrics']['accuracy'] = {
+        'max': 4, 'min': 3, 'std': 2, 'mean': 1, 'n': 5,
+    }
+    path.write_text(json.dumps(body), encoding='utf-8')
+    assert '| accuracy | 1.0000 | 2.0000 | 3.0000 | 4.0000 | 5 |' in render_numbers(report_study)

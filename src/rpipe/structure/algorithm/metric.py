@@ -30,10 +30,9 @@ def resolve_metric_names(raw: Any) -> dict[str, list[str]]:
     if raw is None:
         return {k: list(v) for k, v in DEFAULT_NAMES.items()}
     if isinstance(raw, dict):
-        out: dict[str, list[str]] = {}
-        for split, names in raw.items():
-            items = names if isinstance(names, (list, tuple)) else [names]
-            out[str(split)] = [canon_name(name) for name in items]
+        out = {str(split): [canon_name(name) for name in
+                            (names if isinstance(names, (list, tuple)) else [names])]
+               for split, names in raw.items()}
         if out:
             return out
     if isinstance(raw, (list, tuple)):
@@ -101,11 +100,10 @@ def loss_value(packed: dict[str, Any]) -> float:
     logits = packed.get('logits')
     target = packed.get('target')
     if logits is None or target is None:
-        pred = packed.get('pred')
-        if pred is None or target is None:
+        logits = packed.get('pred')
+        if logits is None or target is None:
             return 0.0
-        return float(F.mse_loss(pred, target).item())
-    if getattr(target, 'dtype', None) == torch.int64:
+    elif getattr(target, 'dtype', None) == torch.int64:
         return float(F.cross_entropy(logits, target).item())
     return float(F.mse_loss(logits, target).item())
 
@@ -226,12 +224,5 @@ class MetricBundle:
         return out
 
     def finish_full(self, split: str) -> dict[str, float]:
-        out: dict[str, float] = {}
-        for name in self.names_for(split):
-            if name not in FULL_NAMES:
-                continue
-            holder = self._full.get((split, name))
-            if holder is None:
-                continue
-            out[name] = float(holder.compute())
-        return out
+        return {name: float(holder.compute()) for name in self.names_for(split)
+                if name in FULL_NAMES and (holder := self._full.get((split, name))) is not None}

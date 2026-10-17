@@ -1,8 +1,8 @@
-> 当前（2026-10-17）：同文件净瘦身里程碑本地完成，6处源码比dev净少55行，79文件/8927行。
-> 主要产出：视觉规格九字段结构由5份归一，差异表保留全部统计常量；单项净少37行，不搬文件、不增helper/API。
-> 验证：冻结770619e完整core2785 passed+1既有skip、CPU Flow525 passed；21新增/154结构节点执行，101源码哈希一致。
-> 下一步：本批合成一个里程碑PR→dev，核对最终head与actualdev全部实际CI；不为空轮追加record。
-> 边界：15分钟定时ACTIVE；新可用里程碑版本之前不派生。保留分支/数据/_staging，不改main/tag/布局，不用GPU/测速。
+> 当前（2026-10-17 22:19后）：全structure系统盘点完成，79文件、15导出init、64登记非init，未登记/失效0；批次计划已入proposal§六。
+> 第一可执行B1：四个现有文件六函数体净少22行，79文件/8905行；无新helper/API/文件架构/磁盘布局。
+> 验证：冻结ec9254a完整core2800 passed+1既有skip、CPU Flow525 passed；15新增/154结构节点执行，101源码哈希一致。
+> 下一步：B1多项合一个里程碑PR并双侧实际CI验收；B2 checkpoint合同方案仅待审，不动旧格式/诊断/staging。
+> 边界：继续原宏观目标，不等待新目标；空轮不补记，保留分支/数据/_staging，定时ACTIVE，不派生/main/GPU/测速。
 
 > 当前（2026-10-17）：PR217/218双侧实际CI全部成功，最新dev1bded360；源码与实质文档均已入dev。
 > 已完成：结构小结发布、14段旧叙事原文迁移/回链；153结构节点通过，原文哈希/标题/63项登记保持。
@@ -5480,3 +5480,27 @@ Enmao 本次明确批准恢复每15分钟周期续跑。通过应用 automation_
 数据层及结构定向206 passed；冻结源码770619ea89b6c9c03216b0a14415abd31347a42b后，完整core2785 passed/1同一既有POSIX执行权限skip/0fail/error、显式排除gpu/external/slow的CPU Flow525 passed/0skip/fail/error；整个本地累计21个新节点与154结构节点全部执行，101源码哈希及冻结HEAD一致。新规格6节点包含五个数据集常量与键序、可变参数字典隔离/注册；既有fake dataset公共构建回归通过，未下载数据、未跑训练或GPU。原始BASE/COMPARISON_CHECKED/TARGET/CORE/FLOW/XML/LOCAL_CHECKED/FROZEN位于.tmp/structure-vision-specs，不随clone；便携回归入tests。
 
 相对实际dev1b64a6e2，6个已有源码文件32行增加/87行删除，净少55行（此前18+本项37），79文件/8927行；相对起点9132累计净少205行约2.24%，仍不称宏观完成。无新helper/模块/目录/门面，无API形状/文件架构/磁盘布局改变。符合本次人工要求的单项几十行实质候选，与此前同主题归并合一个里程碑PR；后续最终head/实际dev CI另验，不借旧PR绿灯。当前.tmp/structure-vision-specs/STATE.json，原入口有指针，无活测试句柄。
+
+### 296.2 PR220普通合dev与双侧实际CI验收
+
+按同主题实质里程碑推送既有本地提交，PR220（https://github.com/DreamSoul-AI/RPipe/pull/220）最终head88826981fb274c45890c86b04eb70aa826495f28：Branch39031355358、Package39031355414、Unit39031355346及四个实际CPU矩阵、两个实际打包矩阵与全部聚合成功。PR_CHECKED SHA256016a136b78e0dbda51ccc6812139fc30462f2042d67a4b80020e1abf241e7bb5。严格按match-head-commit普通合并，无admin/force/删除分支；actualdev2c6bf0c8dd0589e6395c8c72f960b6eb5ab956a9的Package39031882629、Unit39031882682及全部实际矩阵/聚合同样成功，DEV_CHECKED SHA256bc59a9172b5c3f09dab4f5926df22c4b127d5da34d6728365e3167617f29552f。
+
+最终head/actualdev的源码、tests、Study及docs树无差异，101源码哈希与冻结770619e本机core2785+1既有skip/Flow525一致；21新增/154结构节点实际执行。当前所有生产改动已入dev，79文件/8927行，本批净少55行；单项37行来自重复规格字段结构归一，非格式压缩或搬移。整体相对起点净少205行约2.24%，不宣称宏观完成。PR正文只追加一次PR220_ACTUAL_DEV_ACCEPTED验收，无重复评论；应用附件仍达100上限，保存错误和有效PR链接，不删历史附件绕过。原始对照/验证/CI/每次有界查询与附件错误在.tmp/structure-vision-specs，不随clone；便携测试与开发事实已入库。
+
+当前主题本地已快进actualdev，本地/远端分支均按最新授权保留，删除清单为空，未触碰数据/结果/Run/provenance/_staging。盘点基线218，219/220累计2次，未重复全面盘点。15分钟定时保持ACTIVE，指令已明确空轮不追加record、优先较大同文件候选；派生仍等新的可用里程碑版本，本批未同步或覆盖下游。无活测试/CI观察句柄，当前STATE complete；本段验收尾记本地保全，随下一源码里程碑合入，不为尾记新开PR。不动main/tag/release/force push/GPU/训练/测速，不新增架构方案或接口。
+
+## 297. 2026-10-17 22:19 全structure盘点与B1实施
+
+按最新人工纠正恢复原宏观目标，不再把连续未发现候选等同于目标不存在。对Git跟踪全部79文件做AST/行数/声明与structure逐文件登记盘点：15个init只导出，64个非init登记双向一致，未登记/失效0。正式全文件清单、职责热点与按收益/权限排序的批次计划见structure_simplification_proposal§六，机器清单在.tmp/structure-systematic/INVENTORY.json（不随clone）。机械完整不等于无冗余，长文件不按行数自动判违规。
+
+第一可执行B1覆盖四个现有文件六函数，先行预计20–35行，实际初稿净少22行：metric名称映射/完整指标收集/MSE尾部复用9行，checkpoint路径重复赋值/非dict返回9行，logger两时间字段循环1行，report四统计字段透传循环3行。保留全部签名、异常、调用顺序、指标计算、bundle优先与旧目录读取，不增helper/模块/门面，不改布局。新增便携回归验证顺序/空值/重复metric、原错误身份、MSE/CE选择、bundle/folder优先、logger时间与报告列序；完整CPU结果随后补记。
+
+潜在大项B2仅提案：checkpoint多套持久化/旧格式恢复预计可删50–90行，但涉及诊断/staging和旧对象合同，未经批准不得实施；同文件B1独立继续，不等该提案。train/HF/transfers/schedule等职责热点列B3，缺可核验净收益时不为拆分搬运。多个改动组成一个里程碑，不逐项开PR，不以配额删必要门；派生副本、分支/数据/_staging保留，不动main/GPU/测速。
+
+### 297.1 B1完整CPU验收与覆盖
+
+冻结源码ec9254adb4cf6d551d3913c80b1f835a0fad47fd，定向486 passed；完整core2800 passed/1同一既有Windows POSIX执行权限skip/0fail/error、CPU Flow525 passed/0skip/fail/error。15新增节点和154结构节点均实际执行，101源码哈希及冻结HEAD一致。新增覆盖metric名字的空list/键字符串化冲突、完整指标的缺holder/重复compute顺序/原异常对象与短路、loss fallback MSE和分类CE的分派、checkpoint bundle/folder/both/missing选择、时间字段None/0/False/空串与顺序、报告mean/std/min/max列序；既有失败/取消/清理/镜像/旧目录回归全部保留并通过，不放宽测试。
+
+B1初稿净少22行，处于先前20–35行估计内；四个源码文件其余AST与全部签名/注解保持，没有新增helper或生产文件。当前79文件/8905行，相对最初9132累计净少227行约2.49%，不称宏观完成。15新节点数量不代替上述行为覆盖。原始源码/AST_CHECKED/INVENTORY/DIFF_METRICS/TARGET/CORE/FLOW/XML/FROZEN/LOCAL_CHECKED在.tmp/structure-systematic，不随clone；正式计划含全部79文件逐项清单，便携回归入tests。
+
+本机验证完成，当前无活测试句柄，STATE入口.tmp/structure-systematic/STATE.json；B1待单个合批PR及最终head/实际dev分别验收，不借PR220绿灯。B2为尚未批准的恢复/布局合同proposal，未实施，明确接受格式/迁移/诊断保全之前不删任何旧分支。22:19新指示已同步定时任务，原宏观目标持续，不再等新目标；空轮不追加record，不为扫描或几行尾记开PR。

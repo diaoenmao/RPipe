@@ -120,10 +120,9 @@ class Logger:
         if metrics:
             parts.append('[metric] ' + ' '.join(metrics))
         time_bits: list[str] = []
-        if extra.get('elapsed') is not None:
-            time_bits.append(f"elapsed={extra['elapsed']}")
-        if extra.get('eta') is not None:
-            time_bits.append(f"eta={extra['eta']}")
+        for key in ('elapsed', 'eta'):
+            if extra.get(key) is not None:
+                time_bits.append(f'{key}={extra[key]}')
         if time_bits:
             parts.append('[time] ' + ' '.join(time_bits))
         skip = {'epoch', 'elapsed', 'eta'}
