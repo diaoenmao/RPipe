@@ -899,3 +899,12 @@ def test_alias_eval_waits_for_train_retry_before_dispatch(tmp_path, monkeypatch,
     schedule.launch_jobs(tmp_path, jobs, round_size=2, batches=[jobs], console='shared')
     expected = ['t0', 't0'] + ([] if same_run and train_failures == 2 else [spelling])
     assert starts == expected
+
+
+@pytest.mark.parametrize('mode', ['train', 'eval'])
+def test_launch_mode_log_collapses_repeated_labels(tmp_path, monkeypatch, capsys, mode):
+    jobs = [{'run_id': str(i), 'device': 'cpu', 'mode': mode} for i in range(2)]
+    _fake_processes(monkeypatch, tmp_path, {})
+    assert schedule.launch_jobs(tmp_path, jobs, console='shared') == [0, 0]
+    lines = [line for line in capsys.readouterr().out.splitlines() if line.startswith('launch:')]
+    assert lines == [f'launch: wait 1/1 mode={mode}']

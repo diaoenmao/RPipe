@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：同一structure-artifacts分支推进data/runtime及schedule/scripts分责；本轮make/结构/CLI CPU针对性535 passed（§277–278）。
+> 验证：8个脚本函数AST相同、15个schedule函数规范化对照相同；72组生成文本逐字一致，原生成脚本导入仍可用。
+> 结构：schedule566→366行、scripts208行；整体79文件/9140行，尚未明显缩行，不标总完成。
+> 下一：同分支继续origin职责精简与有依据去重，再完整core+CPU Flow/CI→dev；未另开碎PR。
+> 状态：本轮明确排除GPU/external/slow；前轮误GPU记录保留且不重复通报；按最新人工不删分支或数据。
+
 > 当前（2026-10-17）：继续同一structure-artifacts分支，data runtime/factory分责及局部去重已实施，本轮CPU针对性229 passed（§277）。
 > 接口：公开Data为同一类；Data及3个loader helper AST原样，11注册组合与原版一致；factory457→250行，runtime193行。
 > 重要失败：首轮遗漏not-gpu过滤，误执行CUDA连续/中断探针（fixture预算6+2步），恢复因CUDA不可见失败；本次worker均已退出。
@@ -4592,3 +4598,10 @@ Data类及_loader_options/_empty_train_loader/_train_loader_for_samples移入run
 ## 278. 2026-10-17：schedule 与脚本发布分责方案
 
 延续同一未合批次：bash_path/repo_root_from/scripts_dir/write_jobs_json/wait_groups/job_waves/render_bash/write_launch_scripts及脚本叶名移至make/scripts.py；schedule保留读取就绪、复用计划、分配与进程等待/失败留证，普通导入所需脚本函数并保留既有名称。scripts不依赖schedule实现；生成的既有schedule.launch_jobs/run_succeeded导入字符串保持，不破坏已生成脚本或新增兼容模块。公开make_api形状、所有函数签名/返回/校验/原子写/异常传播与磁盘内容不变。单次日志mode聚合复用job_mode与dict有序去重，删除只有一个调用点的_group_mode包装；其余移动函数AST逐一对照。继续显式CPU成本/not gpu过滤，保留所有旧失败，不执行真实GPU或窗口启动。
+
+
+### 278.1 本地实施与针对性验收
+
+schedule566→366行，scripts208行：8个函数原AST一致，包含等待组校验、原子发布及生成的旧schedule导入字面量；15个保留schedule函数在仅还原_group_mode局部有序去重后AST一致。新模块不反向import schedule，不引入循环导入、包装层或新API形状。既有名称经普通直接import保留，8个逐对象导出身份节点均执行；另补train/eval重复日志标签CPU回归（Popen全为测试替身，console=shared）。72组空/单模式/混合模式、round/split/batch组合的旧/新render返回字符串完全相同；没有执行生成命令。
+
+仓库统一入口c1/c2、not gpu/not external/not slow：结构+全部make+CLI retry共535 passed/0fail/error/skip。证据`.tmp/structure-scripts/`不随clone，LOCAL_TARGETED_CHECKED SHA256 `be148115f8e8988d587401434bcf3b02fb34baa3077442ff32428da9f408be2a`。原Data重构的229 CPU通过仍仅为其当时定向验证；当前整批完整core/Flow/CI尚待origin分责后执行，不用PR204或旧成功替代。整体79文件/9140行，仍未达到明显缩行。
