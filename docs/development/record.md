@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：继续完成Config共享映射里程碑，本机完整CPU回归通过，准备同主题PR→dev（§282.3）。
+> 验证：core2677 passed+1同一既有skip、CPU Flow525 passed；31新节点/155结构节点全执行，102源码哈希不变。
+> 结果：四类Config公开字段/方法/模块与API门面保持；共享内部序列化，移除重复复制和递归前判断。
+> 下一：最终head与actualdev分别验收全部实际CI；总体80文件/9089行，净减43行，不夸大缩行幅度。
+> 状态：保留分支/暂存/数据；旧goal元数据仍paused，当前人工授权工作照常推进，不新增边界修复。
+
 > 当前（2026-10-17）：PR207已双侧验收；同分支继续Config共享映射精简，定向CPU204 passed（§282）。
 > 验证：31个新增输入隔离/字段序/extras/merge节点全执行；临时原型四层各10组及100组合并一致。
 > 结果：公开Config方法、字段、pickle模块与磁盘布局保持，仅增加Control私有共享helper，去除重复复制/判定。
@@ -4765,3 +4771,9 @@ from_mapping复用split_known已有的单次dict复制与None归一化，删去�
 五个既有源文件实施原型方案，无新增源文件或公开门面。四层保留原emit/split_known等名称，新增的_layer_mapping只为内部复用；to_mapping保持显式字段表和原方法/签名，未引入基类、动态子类字段或deepcopy。from_mapping只移除调用端重复dict复制，split_known的输入隔离/None归一化和Data origin拒绝仍保留；deep_merge只移除递归前重复判断，入口判定与叶替换身份保留。
 
 Control+结构CPU204 passed/0fail/error/skip，31个新增portable节点全执行（12输入隔离/空值、4extras覆盖身份、4字段序、5叶替换、5非mapping替换、1分支复制/引用身份），均围绕既有输出/隔离合同。LOCAL_TARGETED_CHECKED SHA256 `0a864a75c3aea3ad0f9bb98044dc0d0a0d8634c60a15f5fc8baf54111df8ff33`，证据.tmp/structure-config不随clone。当前80文件/9089行，不凭单次定向结果宣称完整验收。接下来冻结源码、完整core/CPU Flow与最终head/actualdev双侧CI，作为一个Config映射里程碑PR收尾。
+
+### 282.3 完整CPU验收与Config里程碑收尾
+
+冻结源码后完整core2677 passed/1同一既有POSIX skip，CPU Flow525 passed/0skip，均0fail/error；31个新合同节点及155个结构节点全执行。102库源码哈希前后一致。FULL_CHECKED SHA256 `a3279a3d7dec3cc1cb91d45e5eb34eba8c300d413c751e21da5b671cdadf676c`，原始log/XML/原型/签名字段对照在.tmp/structure-config（不随clone），不把原型或PR207成功代替当前验收。
+
+实际应用后的四类Config字段定义、方法签名/装饰器及原模块均与基线相同，api/目录和Study代码无差异；没有新增公开门面、基类或配置字段。既有Control hash/Run ID与序列化回归全部保留执行。源文件仍80个、总9089行，对总起点9132净少43行；四类重复序列化实现归一到现有Control职责，幅度有限，不为行数删除错误处理或增加泛化框架。按本轮继续Occam里程碑授权将本批作为一个Config PR收尾，先最终head全部实际CI再普通合dev，后验actualdev全部实际CI；不合main、不force push，不删分支/数据。
