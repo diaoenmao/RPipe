@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR214双侧实际CI全绿，已普通合dev7275d8b（§288.2）。
+> 后续本地：origin摘要读取循环06ca025，core2739 passed+1既有skip、CPU Flow525 passed。
+> 证据：4新块边界/6既有reader退出/153结构节点及前批回归执行、100源码哈希一致；structure78文件/8992行，净少140。
+> 未完成：后续源码未推送/开PR/合dev，继续同主题合批，不为3行精简单开PR；总体Occam目标未完成。
+> 保护：无活句柄，保留_staging/分支/数据，不改main/API形状/文件架构/布局，不跑GPU/测速/逐路径审计。
+
 > 当前（2026-10-17）：PR214已普通合dev7275d8b，最终head全部实际CI成功；actualdev独立验收中。
 > 后续本地：origin校验和读取循环归纳，定向196 passed，4新块边界/6既有reader退出/153结构节点执行。
 > 范围：仅原生赋值表达式，保留1MiB读取与_owned_stream语义，不改签名/文件架构/产物布局。
@@ -5083,3 +5089,13 @@ factory.py188→185，全structure78文件/9001行，对起点9132净少131；�
 ### 288.1 origin摘要循环定向CPU
 
 定向196 passed/0skip，4新空/短/块边界/跨块节点、6既有reader失败/取消/关闭节点和153结构节点全执行。公开归档入口逐1MiB读取，包含末尾EOF读取，摘要匹配时输入原字节保留，真实句柄关闭；24组原新流结果及轨迹对照一致。_md5签名/返回注解与其余声明AST不变，_owned_stream原上下文和digest.update未改，只有while/read/真假/break合为赋值表达式。源码净少3行，全structure78文件/8992行，对起点9132净少140；仅本地提交，随后冻结完整CPU，不借PR214或旧本地绿灯验收。
+
+### 288.2 PR214 双侧实际CI完成
+
+最终headb83b0c650ca5d18b4213b5728f4fba4ec4b300ad的Branch39014936716/Package39014936688/Unit39014936772全部实际矩阵与聚合成功后普通合actualdev7275d8b66a1c8b1c4f907246a64ac66b7a459208；实际dev的Package39015408920/Unit39015408925及全部实际矩阵/聚合同样成功。PR_CHECKED SHA256 a607dc42eca71ee4c7322c2e1c27870a53de1c5810bdc28042b9a3ec98b0ec65；DEV_CHECKED b78ed6372cf378137f853478f4a17a26ae97ca14614e47233136d0af7655b7ae。head/dev源码、测试、Study、结构文档无差异，不借后续origin本地结果验收PR。PR正文一次追加验收标记，无重复评论；附件100上限错误保留，不删历史附件。main/local dev/origin main保护引用与合前相同，当前本地/远端主题及数据/_staging全部保留，不force push/发布/tag。盘点基线213，214是后续第1个合入，未达到约5次，不重复盘点或关闭已处理单。原始证据.tmp/structure-json-percent-final不随clone。
+
+### 288.3 后续origin摘要循环完整CPU（本地、未推送）
+
+冻结06ca025fc5df00c4677b00949725e2afd33062f5：core2739 passed+1同一既有POSIX skip、CPU Flow525 passed；4新空/短/块边界/跨块回归、6既有reader失败/取消/关闭节点、前批6百分位与8JSON节点以及153结构节点全部执行，100源码哈希一致。定向196 passed/0skip；24组离线原新读取/终止/关闭/原异常身份对照一致。只将_md5原read/真假判断/break合为原生赋值表达式，1MiB读取（含EOF读取）、digest更新次序及_owned_stream边界不变；全部签名/返回注解与其余声明AST保持。公开discard_bad_archive摘要匹配时原输入字节保留、真实句柄关闭；没有下载真实归档/模型或数据，没有改下载源、校验规则、归档路径/产物布局。
+
+源码净少3行，全structure78文件/8992行，对起点9132净少140；幅度有限，不标总目标完成。仅本地源码提交，未推送/开PR/合dev，继续同主题合批，不为3行精简或收尾记录单开PR。原证据.tmp/structure-origin-digest不随clone，当前STATE指向此处，无活测试/CI句柄。不新建/迁移模块，不改API形状，未跑训练/GPU/测速/逐路径审计，保留_staging/分支/数据。
