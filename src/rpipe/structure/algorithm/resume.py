@@ -67,10 +67,7 @@ def study_dir_from_assets(assets_dir: Path | str | None) -> Path | None:
     if assets.name != 'assets':
         return None
     # studies/<name>/runs/<id>/assets
-    try:
-        return assets.parent.parent.parent
-    except Exception:
-        return None
+    return assets.parent.parent.parent
 
 
 def sibling_train_checkpoint(

@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR210已双侧实际CI验收；后续模型归并与parent兜底精简本地积累，尚未推送。
+> 最新验证：恢复相邻/结构165 passed；完整core2699+1既有skip/Flow525仅覆盖e712c93，parent延伸后需重跑。
+> 结果：structure78文件/9023行，对起点净少109；API形状与产物布局保持，不标总目标完成。
+> 下一步：继续有依据的同主题精简，完整里程碑再冻结验收/PR，避免小PR。
+> 保护：无活句柄，保留分支、数据、_staging_from_DEM；不改main、不force push、不跑GPU。
+
 > 当前（2026-10-17）：PR210已普通合dev2955ef4，最终head与actualdev全部实际CI成功（§284.3）。
 > 后续本地：两个单调用模型函数已归并factory，core2699 passed+1既有skip、CPU Flow525 passed。
 > 证据：10新节点/153结构节点执行，100源码哈希一致；两模块各2318正式候选0引用/0读取错误。
@@ -4909,3 +4915,9 @@ PR209 最终 head ad7f1740ffb9089e290f5aa2a79e8b2ec181f5e5 的 Branch39005314326
 冻结e712c932a842e6440305eaf7249967a416daf00f：core2699 passed+1同一既有POSIX skip，CPU Flow525 passed；10个新增shape节点、153个当前文件树结构节点均执行，100源码哈希一致，无GPU节点。两个旧模块各自正式2318候选扫描0引用/0读取错误，函数AST原样。全structure78文件/9026行，对起点9132净少106；这是源文件范围的变化，不把增加回归和详细证据的整个仓库说成缩行，也不标总目标完成。
 
 本批源码仍仅本地e712c93，收尾记录随下个同主题完整里程碑合入；不因本地通过立即另开小PR。剩余35行以下单定义文件是各层Config和已批准API门面，依现有职责保留，不为缩文件强并。原始验证/36组输入对照/两个模块扫描在.tmp/structure-model-candidate与.tmp/structure-shape-candidate，不随clone。无活测试/CI观察句柄。
+
+### 284.5 同主题延伸：删除不可达的 parent 兜底
+
+algorithm.resume.study_dir_from_assets 在try之前已由标准Path构造并resolve，且保留assets名称检查；之后三次Path.parent是纯路径运算，根路径parent仍是根，原except Exception返回None分支不可达。删除3行异常包装，不改None/name/resolve拒绝或恢复流程，不增加helper；本仓库仅一处该形态。7组含根/浅层/assets/非assets/None输入原新输出一致，恢复相邻测试随后定向执行；模型批次e712c93完整CPU结果不能覆盖此后续改动，后续完整里程碑需重新冻结。原证据.tmp/structure-model-candidate，不随clone。
+
+parent延伸：恢复相邻与当前结构定向165 passed、0skip。全structure78文件/9023行，对起点净少109。仅本地主题提交；此后续改动尚未跑完整core/Flow，不复用e712c93的100哈希冻结证明为当前提交背书。
