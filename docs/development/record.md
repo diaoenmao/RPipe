@@ -4587,3 +4587,8 @@ Data类及_loader_options/_empty_train_loader/_train_loader_for_samples移入run
 第一条目标命令误写不存在的test_resume.py，pytest exit4、未执行节点，TARGET.log/EXIT保留。第二条修正路径后使用raw pytest而漏加not-gpu过滤，意外选中明确标gpu的CUDA恢复用例；229 passed/1failed。连续与中断CUDA探针子进程均已成功返回（fixture分别6/2个优化步），resume子进程因CUDA device_count=0的反序列化错误失败。这违反本轮不占GPU的指示；不声称全轮无GPU，不把该结果判为新生产缺陷，也不在GPU复验。原日志、XML及全部临时checkpoint保留，GPU_SELECTION_INCIDENT.json记完整事实，CIM核对本次recovery_worker无存活进程。未杀/挂起其他进程，未删除任何结果。
 
 纠正为仅走仓库测试入口并显式标注CPU成本与排除GPU；第三条同源验证229 passed。此次是代理执行范围错误，不放宽数据/恢复校验、不改测试阈值、不把未执行GPU算成功。
+
+
+## 278. 2026-10-17：schedule 与脚本发布分责方案
+
+延续同一未合批次：bash_path/repo_root_from/scripts_dir/write_jobs_json/wait_groups/job_waves/render_bash/write_launch_scripts及脚本叶名移至make/scripts.py；schedule保留读取就绪、复用计划、分配与进程等待/失败留证，普通导入所需脚本函数并保留既有名称。scripts不依赖schedule实现；生成的既有schedule.launch_jobs/run_succeeded导入字符串保持，不破坏已生成脚本或新增兼容模块。公开make_api形状、所有函数签名/返回/校验/原子写/异常传播与磁盘内容不变。单次日志mode聚合复用job_mode与dict有序去重，删除只有一个调用点的_group_mode包装；其余移动函数AST逐一对照。继续显式CPU成本/not gpu过滤，保留所有旧失败，不执行真实GPU或窗口启动。

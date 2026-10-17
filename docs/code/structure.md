@@ -1218,7 +1218,8 @@ Study 编排清单。`rpipe.structure.artifact.index`，**不是** Flow 的 writ
 | `make/estimate.py` | Config-only job memory/time estimates and annotation; no hardware probing. |
 | `make/expand.py` | Expand a Study declaration into Run patches. |
 | `make/recipe.py` | Load a Study recipe and call its ``register(ctx)`` before Data / Model are built. |
-| `make/schedule.py` | GPU round-robin and ``&`` / ``wait`` launch scripts. |
+| `make/schedule.py` | Run readiness, launch-plan reuse and subprocess lifecycle. |
+| `make/scripts.py` | Wait-group validation, shell generation and atomic script publication. |
 | `make/write.py` | Expand a Study declaration and write Run configs, index, and provenance. |
 
 多实验管理与调度脚本化。与 **control** 并列：control 做**一次**合并；make **循环**调用 control 与 artifact。不直接 import 四层或 flow；调度时经 `algorithm_api` 复用 resume 的 sibling 依赖解析，避免另写一套匹配规则。
