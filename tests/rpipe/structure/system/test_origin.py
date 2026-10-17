@@ -263,3 +263,20 @@ def test_archive_checksum_read_exit_preserves_first_failure(tmp_path, reader_exi
             assert caught.value is case.expected
     assert len(handles) == len(closes) == 1 and handles[0].closed
     assert source.read_bytes() == payload and peer.read_bytes() == b'peer untouched'
+
+
+@pytest.mark.parametrize('name,archive,checksum', [
+    ('CIFAR10', 'cifar-10-python.tar.gz', 'c58f30108f718f92721af3b95e74349a'),
+    ('CIFAR100', 'cifar-100-python.tar.gz', 'eb9058c3a382ffc7106e4002c42a8d85'),
+])
+@pytest.mark.parametrize('policy,host', [
+    ('foreign', 'https://www.cs.toronto.edu/~kriz'),
+    ('domestic', 'https://dataset.bj.bcebos.com/cifar'),
+])
+def test_cifar_endpoint_retains_exact_archive_contract(name, archive, checksum, policy, host):
+    from dataclasses import asdict
+
+    endpoint = endpoint_for(name, policy)
+    assert asdict(endpoint) == dict(name=name, origin=policy, url=f'{host}/{archive}',
+                                   mirrors=(), archive=archive, archive_md5=checksum)
+    assert endpoint.location == f'{host}/{archive}'

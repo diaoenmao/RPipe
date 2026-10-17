@@ -25,8 +25,10 @@ DOMESTIC = 'domestic'
 FOREIGN_MODEL_HUB = 'https://huggingface.co'
 DOMESTIC_MODEL_HUB = 'https://hf-mirror.com'
 
-_CIFAR10_MD5 = 'c58f30108f718f92721af3b95e74349a'
-_CIFAR100_MD5 = 'eb9058c3a382ffc7106e4002c42a8d85'
+_CIFAR_ARCHIVES = (
+    ('CIFAR10', 'cifar-10-python.tar.gz', 'c58f30108f718f92721af3b95e74349a'),
+    ('CIFAR100', 'cifar-100-python.tar.gz', 'eb9058c3a382ffc7106e4002c42a8d85'),
+)
 _BCEBOS = 'https://dataset.bj.bcebos.com'
 
 
@@ -72,22 +74,10 @@ def apply_model_origin(origin: Any) -> str:
 
 def foreign_endpoint(name: str) -> DownloadEndpoint:
     """Official torchvision hosts."""
-    if name == 'CIFAR10':
-        return DownloadEndpoint(
-            name,
-            FOREIGN,
-            url='https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz',
-            archive='cifar-10-python.tar.gz',
-            archive_md5=_CIFAR10_MD5,
-        )
-    if name == 'CIFAR100':
-        return DownloadEndpoint(
-            name,
-            FOREIGN,
-            url='https://www.cs.toronto.edu/~kriz/cifar-100-python.tar.gz',
-            archive='cifar-100-python.tar.gz',
-            archive_md5=_CIFAR100_MD5,
-        )
+    for dataset, archive, checksum in _CIFAR_ARCHIVES:
+        if name == dataset:
+            return DownloadEndpoint(name, FOREIGN, url=f'https://www.cs.toronto.edu/~kriz/{archive}',
+                                    archive=archive, archive_md5=checksum)
     if name == 'MNIST':
         return DownloadEndpoint(
             name,
@@ -104,22 +94,10 @@ def foreign_endpoint(name: str) -> DownloadEndpoint:
 
 def domestic_endpoint(name: str) -> DownloadEndpoint:
     """Mainland data mirrors. Same archives and md5 as the foreign files."""
-    if name == 'CIFAR10':
-        return DownloadEndpoint(
-            name,
-            DOMESTIC,
-            url=f'{_BCEBOS}/cifar/cifar-10-python.tar.gz',
-            archive='cifar-10-python.tar.gz',
-            archive_md5=_CIFAR10_MD5,
-        )
-    if name == 'CIFAR100':
-        return DownloadEndpoint(
-            name,
-            DOMESTIC,
-            url=f'{_BCEBOS}/cifar/cifar-100-python.tar.gz',
-            archive='cifar-100-python.tar.gz',
-            archive_md5=_CIFAR100_MD5,
-        )
+    for dataset, archive, checksum in _CIFAR_ARCHIVES:
+        if name == dataset:
+            return DownloadEndpoint(name, DOMESTIC, url=f'{_BCEBOS}/cifar/{archive}',
+                                    archive=archive, archive_md5=checksum)
     if name == 'MNIST':
         return DownloadEndpoint(
             name,
