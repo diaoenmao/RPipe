@@ -1,8 +1,8 @@
-> 当前（2026-10-17）：PR220已普通合dev2c6bf0c8，最终head与实际dev全部真实CI矩阵/聚合成功。
-> 净产出：本批生产源码少55行，视觉规格单项少37行；79文件/8927行，起点累计少205行约2.24%，宏观目标未完成。
-> 验证：core2785 passed+1既有skip、CPU Flow525 passed，21新增/154结构节点、101源码哈希；签名/字节合同与可变字典隔离保持。
-> 下一步：继续现有文件内较大候选，积累实质里程碑PR；空轮不追加record，不为收尾文档另开PR。
-> 边界：定时15分钟ACTIVE，未派生/删分支或数据/改架构布局；不动main/tag/force push/GPU，_staging保留。
+> 当前（2026-10-17 22:19后）：全structure系统盘点完成，79文件、15导出init、64登记非init，未登记/失效0；批次计划已入proposal§六。
+> 第一可执行B1：四个现有文件六函数体净少22行，79文件/8905行；无新helper/API/文件架构/磁盘布局。
+> 验证：冻结ec9254a完整core2800 passed+1既有skip、CPU Flow525 passed；15新增/154结构节点执行，101源码哈希一致。
+> 下一步：B1多项合一个里程碑PR并双侧实际CI验收；B2 checkpoint合同方案仅待审，不动旧格式/诊断/staging。
+> 边界：继续原宏观目标，不等待新目标；空轮不补记，保留分支/数据/_staging，定时ACTIVE，不派生/main/GPU/测速。
 
 > 当前（2026-10-17）：PR217/218双侧实际CI全部成功，最新dev1bded360；源码与实质文档均已入dev。
 > 已完成：结构小结发布、14段旧叙事原文迁移/回链；153结构节点通过，原文哈希/标题/63项登记保持。
@@ -5496,3 +5496,11 @@ Enmao 本次明确批准恢复每15分钟周期续跑。通过应用 automation_
 第一可执行B1覆盖四个现有文件六函数，先行预计20–35行，实际初稿净少22行：metric名称映射/完整指标收集/MSE尾部复用9行，checkpoint路径重复赋值/非dict返回9行，logger两时间字段循环1行，report四统计字段透传循环3行。保留全部签名、异常、调用顺序、指标计算、bundle优先与旧目录读取，不增helper/模块/门面，不改布局。新增便携回归验证顺序/空值/重复metric、原错误身份、MSE/CE选择、bundle/folder优先、logger时间与报告列序；完整CPU结果随后补记。
 
 潜在大项B2仅提案：checkpoint多套持久化/旧格式恢复预计可删50–90行，但涉及诊断/staging和旧对象合同，未经批准不得实施；同文件B1独立继续，不等该提案。train/HF/transfers/schedule等职责热点列B3，缺可核验净收益时不为拆分搬运。多个改动组成一个里程碑，不逐项开PR，不以配额删必要门；派生副本、分支/数据/_staging保留，不动main/GPU/测速。
+
+### 297.1 B1完整CPU验收与覆盖
+
+冻结源码ec9254adb4cf6d551d3913c80b1f835a0fad47fd，定向486 passed；完整core2800 passed/1同一既有Windows POSIX执行权限skip/0fail/error、CPU Flow525 passed/0skip/fail/error。15新增节点和154结构节点均实际执行，101源码哈希及冻结HEAD一致。新增覆盖metric名字的空list/键字符串化冲突、完整指标的缺holder/重复compute顺序/原异常对象与短路、loss fallback MSE和分类CE的分派、checkpoint bundle/folder/both/missing选择、时间字段None/0/False/空串与顺序、报告mean/std/min/max列序；既有失败/取消/清理/镜像/旧目录回归全部保留并通过，不放宽测试。
+
+B1初稿净少22行，处于先前20–35行估计内；四个源码文件其余AST与全部签名/注解保持，没有新增helper或生产文件。当前79文件/8905行，相对最初9132累计净少227行约2.49%，不称宏观完成。15新节点数量不代替上述行为覆盖。原始源码/AST_CHECKED/INVENTORY/DIFF_METRICS/TARGET/CORE/FLOW/XML/FROZEN/LOCAL_CHECKED在.tmp/structure-systematic，不随clone；正式计划含全部79文件逐项清单，便携回归入tests。
+
+本机验证完成，当前无活测试句柄，STATE入口.tmp/structure-systematic/STATE.json；B1待单个合批PR及最终head/实际dev分别验收，不借PR220绿灯。B2为尚未批准的恢复/布局合同proposal，未实施，明确接受格式/迁移/诊断保全之前不删任何旧分支。22:19新指示已同步定时任务，原宏观目标持续，不再等新目标；空轮不追加record，不为扫描或几行尾记开PR。
