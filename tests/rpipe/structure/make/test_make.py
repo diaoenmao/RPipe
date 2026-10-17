@@ -470,11 +470,14 @@ def test_saved_plan_bad_encoding_json_or_root_requests_rebuild(tmp_path, raw):
 
 @pytest.mark.parametrize('operation', ['is_file', 'read_text'])
 def test_saved_plan_stat_or_read_refusal_is_optional(tmp_path, monkeypatch, operation):
+    operation = 'open' if operation == 'read_text' else operation
     path = _saved_plan_file(tmp_path, {'jobs': []})
     before = path.read_bytes()
     original = getattr(Path, operation)
 
     def refused(self, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original(self, *args, **kwargs)
         if self == path:
             raise PermissionError('injected saved-plan refusal')
         return original(self, *args, **kwargs)
@@ -506,15 +509,17 @@ def test_saved_plan_invalid_caller_numbers_are_not_swallowed(tmp_path, field):
 
 def test_saved_plan_unexpected_reader_error_propagates(tmp_path, monkeypatch):
     path = _saved_plan_file(tmp_path, {'jobs': []})
-    original = Path.read_text
+    original = Path.open
     error = RuntimeError('unexpected cache-reader program error')
 
     def broken(self, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original(self, *args, **kwargs)
         if self == path:
             raise error
         return original(self, *args, **kwargs)
 
-    monkeypatch.setattr(Path, 'read_text', broken)
+    monkeypatch.setattr(Path, 'open', broken)
     with pytest.raises(RuntimeError) as caught:
         load_launch_plan(tmp_path, init_gpu=0, num_gpus=1, round_size=0)
     assert caught.value is error

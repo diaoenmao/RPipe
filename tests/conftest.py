@@ -297,3 +297,59 @@ def stream_close_fault(monkeypatch):
         monkeypatch.setattr(Path, 'open', opening)
         return handles, calls
     return inject
+
+
+@pytest.fixture(params=['read-io', 'cancel', 'body-programming', 'close-io', 'close-programming', 'success'])
+def reader_exit_case(request):
+    from types import SimpleNamespace
+    kind = request.param
+    primary = (OSError('first read IO') if kind == 'read-io' else
+               KeyboardInterrupt('first read cancellation') if kind == 'cancel' else
+               ValueError('first read programming error') if kind == 'body-programming' else None)
+    secondary = (RuntimeError('unexpected close programming error') if kind == 'close-programming' else
+                 None if kind == 'success' else OSError('second close IO'))
+    if kind == 'close-programming':
+        primary = OSError('first read IO')
+    expected = secondary if kind == 'close-programming' or primary is None else primary
+    return SimpleNamespace(kind=kind, primary=primary, secondary=secondary, expected=expected)
+
+
+@pytest.fixture
+def reader_close_fault(monkeypatch):
+    from contextlib import contextmanager
+    @contextmanager
+    def inject(selected, case, selected_mode):
+        native = Path.open
+        handles, closes = [], []
+        class Stream:
+            def __init__(self, raw):
+                self.raw = raw
+            def __getattr__(self, name):
+                return getattr(self.raw, name)
+            def __enter__(self):
+                return self
+            def __exit__(self, *_args):
+                self.close()
+            def read(self, *args, **kwargs):
+                if case.primary is not None:
+                    raise case.primary
+                return self.raw.read(*args, **kwargs)
+            def readline(self, *args, **kwargs):
+                if case.primary is not None:
+                    raise case.primary
+                return self.raw.readline(*args, **kwargs)
+            def close(self):
+                closes.append(self.raw)
+                self.raw.close()
+                if case.secondary is not None:
+                    raise case.secondary
+        def opening(path, mode='r', *args, **kwargs):
+            raw = native(path, mode, *args, **kwargs)
+            if path == selected and mode == selected_mode:
+                handles.append(raw)
+                return Stream(raw)
+            return raw
+        with monkeypatch.context() as scope:
+            scope.setattr(Path, 'open', opening)
+            yield handles, closes
+    return inject

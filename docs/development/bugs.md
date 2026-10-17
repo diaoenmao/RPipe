@@ -195,3 +195,11 @@ B143 PR199首head3639ae0的真实3.10 CI拒绝：文件代理pickle state错误�
 ### B144 / Issue #200：库显式reader退出遮首错、可选reader吞取消（2026-10-17）
 
 三strict入口（archive MD5/shared digest/index JSON）在read error/cancel后close OSError覆盖原对象；两个optional入口（aggregate JSONL/Logger binary tail）吞原KeyboardInterrupt而正常返回。20探针真实临时文件/公共入口，owned close一次，输入/peer字节或Logger旧前缀保全；错误注入不当实盘故障，原始.tmp/audit144不随clone。80全Issue去重，旧144writer/142lock/196手动script不重开。200先登记并一次正文补全Logger边界，排199验收清理后的统一下一类别；尚无portable红回归/生产修复。保optional IO回退、strict成功close拒绝和未知程序错，不改布局/输出/schema/科学门。详record§259。
+
+
+2026-10-17 B143/#198已验收：PR199 finalfe84bff/actualdev1bf3c85所有实际CI成功，198原body保持、一次评论关闭，旧主题本地/remote普通清理；首3.10红与所有拒绝证据保留。详record§260，未真实下载/原生codec/科学验收。
+
+B144/#200正式红：425cd72的31项14failed/17passed、0error/skip，五显式reader的首错/取消问题确认；当前尚未生产修复，继续归并隐式Path whole-file读同类。200唯一OPEN、唯一library-reader-exits，后续整类一个PR，详record§261。
+
+
+B144整类实现fdfef59：五显式+19whole-file库读取统一owned首错/取消；原69红28失败后72针对性全通过，相邻2185passed+1既有skip/core2450passed+1既有skip。原验证、编码/错误回退、缓存与字节/布局不变；最终Flow/PR双侧CI仍待，200未验收关闭。16旧故障夹具跟随实际owned-open入口，未放宽旧断言；拒夹具/结构checker保留，详record§263。一个整类里程碑不逐点PR。

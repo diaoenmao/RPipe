@@ -9,7 +9,7 @@ from fractions import Fraction
 from pathlib import Path
 from typing import Any
 
-from rpipe.structure.artifact._atomic import atomic_write_text
+from rpipe.structure.artifact._atomic import _read_text, atomic_write_text
 from rpipe.structure.artifact.asset import kinds
 from rpipe.structure.artifact.paths import ASSETS_DIRNAME, RESULT_NAME
 from rpipe.structure.artifact.readout.report import _text_cell
@@ -153,7 +153,7 @@ def _load_json(path: Path, field: str | None = None) -> dict[str, Any] | None:
         if path.exists():
             raise ValueError(f'not a regular file: {path}')
         return None
-    body = json.loads(path.read_text(encoding='utf-8'))
+    body = json.loads(_read_text(path))
     if not isinstance(body, dict):
         raise ValueError(f'expected an object: {path}')
     if field is not None:

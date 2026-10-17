@@ -8,6 +8,7 @@ import statistics
 from pathlib import Path
 from typing import Any
 
+from rpipe.structure.artifact._atomic import _owned_stream, _read_text
 from rpipe.structure.artifact.asset import kinds
 from rpipe.structure.artifact.errors import CorruptArtifactError
 from rpipe.structure.artifact.paths import PROCESS_NAME, RESULT_NAME, RUNS_DIRNAME
@@ -27,7 +28,7 @@ def _state_history(study_dir: Path | str, run_dir: str) -> dict[str, dict[str, l
     try:
         if not path.is_file():
             return {}
-        body = json.loads(path.read_text(encoding='utf-8'))
+        body = json.loads(_read_text(path))
     except (OSError, ValueError, RecursionError, UnicodeError, TypeError):
         return {}
     splits = body.get('splits') if isinstance(body, dict) else None
@@ -69,7 +70,7 @@ def load_curve_series(study_dir: Path | str, run_dir: str) -> dict[str, dict[str
     # ponytail: read one log in memory; index byte offsets if very long logs become a bottleneck.
     records = []
     try:
-        with path.open('rb') as handle:
+        with _owned_stream(path.open('rb')) as handle:
             while line := handle.readline():
                 end = handle.tell()
                 try:

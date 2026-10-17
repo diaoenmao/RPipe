@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from rpipe.structure.artifact._atomic import atomic_write_text
+from rpipe.structure.artifact._atomic import _read_text, atomic_write_text
 from rpipe.structure.artifact.config.format import decode_config, encode_config
 from rpipe.structure.artifact.errors import MissingConfigError
 
@@ -14,7 +14,7 @@ def load_config(path: Path | str) -> dict[str, Any]:
     target = Path(path)
     if not target.is_file():
         raise MissingConfigError(f'missing config: {target}')
-    return decode_config(target.read_text(encoding='utf-8'))
+    return decode_config(_read_text(target))
 
 
 def write_config(path: Path | str, data: dict[str, Any]) -> Path:

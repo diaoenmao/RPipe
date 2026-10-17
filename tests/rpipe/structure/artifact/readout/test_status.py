@@ -271,9 +271,11 @@ def test_status_read_denial_keeps_other_runs_and_original_bytes(tmp_path, monkey
     path = study / 'runs/bad/result.json' if target == 'result' else log
     files = [p for p in study.rglob('*') if p.is_file()]
     before = {p: p.read_bytes() for p in files}
-    method = 'is_file' if operation == 'stat' else 'read_text'
+    method = 'is_file' if operation == 'stat' else 'open'
     original = getattr(Path, method)
     def denied(candidate, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original(candidate, *args, **kwargs)
         if candidate == path:
             raise PermissionError('readout input denied')
         return original(candidate, *args, **kwargs)

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from rpipe.structure.artifact._atomic import atomic_write_text
+from rpipe.structure.artifact._atomic import _read_text, atomic_write_text
 from rpipe.structure.artifact.result.format import (
     STATUS_FAILED,
     STATUS_SUCCEEDED,
@@ -23,7 +23,7 @@ def write_result(path: Path | str, data: dict[str, Any]) -> Path:
 
 
 def load_result(path: Path | str) -> dict[str, Any]:
-    return decode_result(Path(path).read_text(encoding='utf-8'))
+    return decode_result(_read_text(Path(path)))
 
 
 __all__ = [

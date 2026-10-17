@@ -61,9 +61,11 @@ def test_logs_skip_only_unreadable_run_and_keep_peer_events(tmp_path, monkeypatc
         path.parent.mkdir(parents=True)
         path.write_text(f'[flow] {path.parts[-4]} event\n', encoding='utf-8')
     before = {p: p.read_bytes() for p in logs}
-    method = 'is_file' if operation == 'stat' else 'read_text'
+    method = 'is_file' if operation == 'stat' else 'open'
     original = getattr(Path, method)
     def denied(path, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original(path, *args, **kwargs)
         if path == logs[0]:
             raise PermissionError('log denied')
         return original(path, *args, **kwargs)
@@ -94,12 +96,14 @@ def test_log_decoder_programming_typeerror_is_not_optional_io(tmp_path, monkeypa
     path = tmp_path / 'runs/bad/assets/logs/run.log'
     path.parent.mkdir(parents=True)
     path.write_bytes(b'event')
-    original = Path.read_text
+    original = Path.open
     def broken(candidate, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original(candidate, *args, **kwargs)
         if candidate == path:
             raise TypeError('decoder programming error')
         return original(candidate, *args, **kwargs)
-    monkeypatch.setattr(Path, 'read_text', broken)
+    monkeypatch.setattr(Path, 'open', broken)
     with pytest.raises(TypeError, match='decoder programming error'):
         _note_from_log(path) if reader == 'note' else event_lines(tmp_path)
 
@@ -378,3 +382,26 @@ def test_logs_timestamp_fallback_and_ties_retain_existing_text_order(tmp_path, c
     assert _read_log_time_entry(tmp_path, entry, capsys) == [lines[rid] for rid in order]
     assert {f: f.read_bytes() for f in before} == before
     assert set(tmp_path.rglob('*')) == entries
+
+
+def test_logs_whole_read_preserves_cancel_and_io_fallback(tmp_path, reader_exit_case, reader_close_fault):
+    from rpipe.structure.artifact.readout.logs import event_lines
+    case = reader_exit_case
+    path = tmp_path / 'runs/r1/assets/logs/run.log'
+    path.parent.mkdir(parents=True)
+    payload = b'2026-10-17T00:00:00+00:00 INFO  r1 [flow] synthetic\n'
+    path.write_bytes(payload)
+    (tmp_path / 'index.json').write_bytes(b'{"experiments":[{"runs":[{"id":"r1","run_dir":"r1"}]}]}')
+    before = {p:p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    baseline = event_lines(tmp_path)
+    assert baseline
+    expected = case.expected if case.kind in ('cancel', 'close-programming') else None
+    with reader_close_fault(path, case, 'r') as (handles, closes):
+        if expected is not None:
+            with pytest.raises(type(expected)) as caught:
+                event_lines(tmp_path)
+            assert caught.value is expected
+        else:
+            assert event_lines(tmp_path) == (baseline if case.kind == 'success' else [])
+    assert len(handles) == len(closes) == 1 and handles[0].closed
+    assert {p:p.read_bytes() for p in before} == before

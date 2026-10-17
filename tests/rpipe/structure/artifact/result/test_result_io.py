@@ -54,3 +54,20 @@ def test_invalid_status_refuses_write_before_touching_target_or_peer(tmp_path, s
     with pytest.raises(ValueError, match='invalid result:.*status'):
         write_result(target, {'status': status})
     assert {p: p.read_bytes() for p in tmp_path.iterdir()} == before
+
+
+def test_result_whole_read_keeps_first_failure(tmp_path, reader_exit_case, reader_close_fault):
+    case = reader_exit_case
+    path, peer = tmp_path / 'input', tmp_path / 'peer'
+    payload = b'{"status":"failed","error":"synthetic"}'
+    path.write_bytes(payload)
+    peer.write_bytes(b'peer unchanged')
+    with reader_close_fault(path, case, 'r') as (handles, closes):
+        if case.expected is None:
+            assert load_result(path) == {'status':'failed','error':'synthetic'}
+        else:
+            with pytest.raises(type(case.expected)) as caught:
+                load_result(path)
+            assert caught.value is case.expected
+    assert len(handles) == len(closes) == 1 and handles[0].closed
+    assert path.read_bytes() == payload and peer.read_bytes() == b'peer unchanged'

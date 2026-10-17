@@ -22,11 +22,14 @@ def test_unusable_activity_is_ignored_without_rewriting(tmp_path, payload):
 
 @pytest.mark.parametrize('operation', ['is_file', 'read_text'])
 def test_unreadable_activity_is_ignored_including_existence_check(tmp_path, monkeypatch, operation):
+    operation = 'open' if operation == 'read_text' else operation
     path = tmp_path / 'activity.json'
     path.write_bytes(b'{"phase": "make"}')
     before = path.read_bytes()
     original = getattr(Path, operation)
     def denied(candidate, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original(candidate, *args, **kwargs)
         if candidate == path:
             raise PermissionError('activity denied')
         return original(candidate, *args, **kwargs)
@@ -52,12 +55,14 @@ def test_valid_unicode_activity_keeps_original_bytes(tmp_path):
 def test_unexpected_activity_reader_bug_is_not_suppressed(tmp_path, monkeypatch):
     path = tmp_path / 'activity.json'
     path.write_bytes(b'{"phase": "make"}')
-    original = Path.read_text
+    original = Path.open
     def broken(candidate, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original(candidate, *args, **kwargs)
         if candidate == path:
             raise RuntimeError('unexpected reader bug')
         return original(candidate, *args, **kwargs)
-    monkeypatch.setattr(Path, 'read_text', broken)
+    monkeypatch.setattr(Path, 'open', broken)
     with pytest.raises(RuntimeError, match='unexpected reader bug'):
         read_activity(tmp_path)
 
@@ -249,3 +254,22 @@ def test_activity_writer_keeps_strict_encoding_despite_display_fallback(tmp_path
         announce(tmp_path, 'make', value)
     assert target.read_bytes() == old
     assert not list(tmp_path.glob('*.tmp'))
+
+
+def test_activity_whole_read_preserves_cancel_and_io_fallback(tmp_path, reader_exit_case, reader_close_fault):
+    case = reader_exit_case
+    path, peer = tmp_path / 'activity.json', tmp_path / 'peer'
+    payload = b'{"phase":"prepare","detail":"synthetic"}'
+    path.write_bytes(payload)
+    peer.write_bytes(b'peer unchanged')
+    expected = case.expected if case.kind in ('cancel', 'close-programming') else None
+    with reader_close_fault(path, case, 'r') as (handles, closes):
+        if expected is not None:
+            with pytest.raises(type(expected)) as caught:
+                read_activity(tmp_path)
+            assert caught.value is expected
+        else:
+            assert read_activity(tmp_path) == ({'phase':'prepare','detail':'synthetic'}
+                                              if case.kind == 'success' else None)
+    assert len(handles) == len(closes) == 1 and handles[0].closed
+    assert path.read_bytes() == payload and peer.read_bytes() == b'peer unchanged'

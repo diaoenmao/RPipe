@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from rpipe.structure.artifact._atomic import _read_text
 from rpipe.structure.system.config import SystemConfig
 from rpipe.structure.system.logger import Logger
 
@@ -135,7 +136,7 @@ class System:
             assembled: dict[str, Any] = {}
             meta_json = path / 'meta.json'
             if meta_json.is_file():
-                assembled.update(json.loads(meta_json.read_text(encoding='utf-8')))
+                assembled.update(json.loads(_read_text(meta_json)))
             meta_pt = path / 'meta.pt'
             if meta_pt.is_file():
                 extra = torch.load(meta_pt, map_location=self.device, weights_only=False, **pickle_options)
@@ -147,10 +148,10 @@ class System:
                     assembled[key] = torch.load(piece, map_location=self.device, weights_only=False, **pickle_options)
             tracker_json = path / 'tracker.json'
             if tracker_json.is_file():
-                assembled['tracker'] = json.loads(tracker_json.read_text(encoding='utf-8'))
+                assembled['tracker'] = json.loads(_read_text(tracker_json))
             logger_json = path / 'logger.json'
             if logger_json.is_file():
-                assembled['logger'] = json.loads(logger_json.read_text(encoding='utf-8'))
+                assembled['logger'] = json.loads(_read_text(logger_json))
             return assembled or None
         if not path.is_file():
             return None

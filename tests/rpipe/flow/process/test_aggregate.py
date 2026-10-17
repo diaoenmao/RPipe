@@ -59,6 +59,7 @@ def test_optional_state_legacy_fallback_contract(tmp_path, raw):
 @pytest.mark.parametrize('error_kind', ['permission', 'io', 'missing', 'programming'])
 def test_optional_state_keeps_io_and_programming_error_boundary(
         tmp_path, monkeypatch, reader, primary, operation, error_kind):
+    operation = 'open' if operation == 'read_text' else operation
     state = tmp_path / 'runs/a/assets' / kinds.TRACKER_STATE
     state.parent.mkdir(parents=True)
     state.write_text('{}', encoding='utf-8')
@@ -74,6 +75,8 @@ def test_optional_state_keeps_io_and_programming_error_boundary(
              'programming': RuntimeError('unexpected reader bug')}[error_kind]
     original = getattr(Path, operation)
     def read(path, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original(path, *args, **kwargs)
         if path == state:
             raise error
         return original(path, *args, **kwargs)
@@ -202,6 +205,7 @@ def test_optional_result_decode_keeps_peer_and_existing_partial_counts(tmp_path,
 @pytest.mark.parametrize('operation', ['stat', 'read_text'])
 @pytest.mark.parametrize('failure', ['permission', 'io', 'missing', 'programming'])
 def test_optional_result_stat_read_and_programming_error_boundary(tmp_path, monkeypatch, operation, failure):
+    operation = 'open' if operation == 'read_text' else operation
     from rpipe.flow.process.aggregate import collect_from_index, summarize
 
     index, bad, before = _result_read_inputs(tmp_path, 'valid')
@@ -209,6 +213,8 @@ def test_optional_result_stat_read_and_programming_error_boundary(tmp_path, monk
              'missing': FileNotFoundError(2, 'result disappeared'), 'programming': RuntimeError('reader programming error')}[failure]
     original = getattr(Path, operation)
     def refuse(path, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original(path, *args, **kwargs)
         if path == bad:
             raise error
         return original(path, *args, **kwargs)
@@ -235,3 +241,46 @@ def test_optional_result_fix_does_not_relax_strict_public_loader(tmp_path, paylo
     with pytest.raises(CorruptArtifactError if kind == 'artifact' else RecursionError):
         load_result(bad)
     assert {f: f.read_bytes() for f in before} == before
+
+
+def test_optional_curve_read_exit_never_swallows_cancellation(tmp_path, reader_exit_case, reader_close_fault):
+    case = reader_exit_case
+    path = tmp_path / 'runs' / 'r1' / 'assets' / kinds.TRACKER_JSONL
+    path.parent.mkdir(parents=True)
+    payload = b'{"split":"test","name":"Accuracy","mean":75.0,"optimizer_step":1}\n'
+    path.write_bytes(payload)
+    peer = tmp_path / 'peer'
+    peer.write_bytes(b'peer untouched')
+    expected = case.expected if case.kind in ('cancel', 'body-programming', 'close-programming') else None
+    with reader_close_fault(path, case, 'rb') as (handles, closes):
+        if expected is not None:
+            with pytest.raises(type(expected)) as caught:
+                load_curve_series(tmp_path, 'r1')
+            assert caught.value is expected
+        else:
+            result = load_curve_series(tmp_path, 'r1')
+            assert result == ({} if case.kind == 'read-io' else {
+                'test': {'Accuracy': {'unit': 'step', 'x': [1], 'values': [75.0]}}})
+    assert len(handles) == len(closes) == 1 and handles[0].closed
+    assert path.read_bytes() == payload and peer.read_bytes() == b'peer untouched'
+
+
+def test_tracker_state_whole_read_preserves_cancel_and_io_fallback(tmp_path, reader_exit_case, reader_close_fault):
+    case = reader_exit_case
+    path = tmp_path / 'runs' / 'r1' / 'assets' / kinds.TRACKER_STATE
+    path.parent.mkdir(parents=True)
+    payload = b'{"splits":{"test":{"Accuracy":{"history":[75.0]}}}}'
+    path.write_bytes(payload)
+    peer = tmp_path / 'peer'
+    peer.write_bytes(b'peer unchanged')
+    expected = case.expected if case.kind in ('cancel', 'close-programming') else None
+    with reader_close_fault(path, case, 'r') as (handles, closes):
+        if expected is not None:
+            with pytest.raises(type(expected)) as caught:
+                load_tracker_history(tmp_path, 'r1')
+            assert caught.value is expected
+        else:
+            assert load_tracker_history(tmp_path, 'r1') == ({'test':{'Accuracy':[75.0]}}
+                                                           if case.kind == 'success' else {})
+    assert len(handles) == len(closes) == 1 and handles[0].closed
+    assert path.read_bytes() == payload and peer.read_bytes() == b'peer unchanged'

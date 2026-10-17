@@ -817,3 +817,21 @@ def test_empty_shared_lock_initialization_failure_releases_os_and_reentry_state(
     _reacquire_shared_lock_on_other_thread(tmp_path)
     with cache_lock(tmp_path, timeout=0):
         pass
+
+
+def test_shared_digest_read_exit_preserves_first_failure(tmp_path, reader_exit_case, reader_close_fault):
+    case = reader_exit_case
+    source, target = tmp_path / 'source', tmp_path / 'target'
+    payload = b'same immutable bytes'
+    source.write_bytes(payload)
+    target.write_bytes(payload)
+    with reader_close_fault(source, case, 'rb') as (handles, closes):
+        if case.expected is None:
+            assert link_input(source, target) == target
+        else:
+            with pytest.raises(type(case.expected)) as caught:
+                link_input(source, target)
+            assert caught.value is case.expected
+    assert len(handles) == len(closes) == 1 and handles[0].closed
+    assert source.read_bytes() == target.read_bytes() == payload
+    assert target.samefile(source) is (case.expected is None)

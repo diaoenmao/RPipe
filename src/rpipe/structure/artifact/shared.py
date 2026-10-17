@@ -15,6 +15,8 @@ import uuid
 
 import yaml
 
+from rpipe.structure.artifact._atomic import _owned_stream, _read_text
+
 _held = threading.local()
 
 
@@ -26,7 +28,7 @@ def _root_identity(root: Path) -> tuple[int, int]:
 def shared_paths(study_dir: Path | str) -> dict[str, Path]:
     study = Path(study_dir).resolve()
     declaration = study / 'study.yaml'
-    body = yaml.safe_load(declaration.read_text(encoding='utf-8')) if declaration.is_file() else None
+    body = yaml.safe_load(_read_text(declaration)) if declaration.is_file() else None
     if body is not None and not isinstance(body, dict):
         raise ValueError('study.yaml must be a mapping')
     block = (body or {}).get('shared', {})
@@ -108,7 +110,7 @@ def cache_lock(root: Path | str, *, timeout: float = 120):
 
 def _digest(path: Path) -> str:
     digest = hashlib.sha256()
-    with path.open('rb') as handle:
+    with _owned_stream(path.open('rb')) as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b''):
             digest.update(chunk)
     return digest.hexdigest()
@@ -186,7 +188,7 @@ def prepared_resource(root: Path | str, definition: dict, files: list[str], buil
                 {'definition': definition, 'files': {name: _digest(staging / name) for name in files}},
                 sort_keys=True, indent=2))
             staging.rename(cache)
-        manifest = json.loads((cache / 'manifest.json').read_text(encoding='utf-8'))
+        manifest = json.loads(_read_text(cache / 'manifest.json'))
         recorded = manifest.get('files')
         if (manifest.get('definition') != definition or not isinstance(recorded, dict)
                 or set(recorded) != set(files)

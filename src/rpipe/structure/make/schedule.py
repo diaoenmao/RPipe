@@ -13,7 +13,7 @@ from rpipe.structure.api.algorithm_api import sibling_train_dependency
 from rpipe.structure.artifact import CorruptArtifactError, load_config
 from rpipe.structure.artifact.index import load_index
 from rpipe.structure.artifact.layout import validate_run_directory
-from rpipe.structure.artifact._atomic import atomic_write_text
+from rpipe.structure.artifact._atomic import _read_text, atomic_write_text
 from rpipe.structure.artifact.result import write_result
 from rpipe.structure.artifact.result.format import STATUS_SUCCEEDED, decode_result
 from rpipe.structure.control.mapping import get_setting
@@ -48,7 +48,7 @@ def _run_result(study_dir: Path, run_id: str) -> dict[str, Any]:
     validate_run_directory(run_id)
     result_path = Path(study_dir) / 'runs' / run_id / 'result.json'
     try:
-        return decode_result(result_path.read_text(encoding='utf-8'))
+        return decode_result(_read_text(result_path))
     except (OSError, ValueError, CorruptArtifactError, RecursionError):
         return {}
 
@@ -189,7 +189,7 @@ def load_launch_plan(
     try:
         if not path.is_file():
             return None
-        payload = json.loads(path.read_text(encoding='utf-8'))
+        payload = json.loads(_read_text(path))
         if not isinstance(payload, dict) or not isinstance(payload.get('jobs'), list):
             return None
         stored_init_gpu = int(payload.get('init_gpu', 0))

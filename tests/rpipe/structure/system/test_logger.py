@@ -388,3 +388,26 @@ def test_logger_non_io_stdout_bug_remains_strict(tmp_path):
             _emit_sink_probe(logger, 'multiline')
     assert caught.value is error
     assert logger.path.read_bytes() == before
+
+
+def test_optional_log_tail_exit_never_swallows_cancellation(tmp_path, reader_exit_case, reader_close_fault, capsys):
+    from rpipe.structure.system.logger import Logger
+    case = reader_exit_case
+    logger = Logger(tmp_path / 'assets')
+    payload = b'previous complete record\n'
+    logger.path.write_bytes(payload)
+    peer = tmp_path / 'peer'
+    peer.write_bytes(b'peer untouched')
+    expected = case.expected if case.kind in ('cancel', 'body-programming', 'close-programming') else None
+    with reader_close_fault(logger.path, case, 'rb') as (handles, closes):
+        if expected is not None:
+            with pytest.raises(type(expected)) as caught:
+                logger.info('new synthetic record')
+            assert caught.value is expected
+        else:
+            logger.info('new synthetic record')
+    assert len(handles) == len(closes) == 1 and handles[0].closed
+    after = logger.path.read_bytes()
+    assert after.startswith(payload) and peer.read_bytes() == b'peer untouched'
+    assert (b'new synthetic record' in after) is (expected is None)
+    assert 'new synthetic record' in capsys.readouterr().out

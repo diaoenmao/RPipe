@@ -9,6 +9,7 @@ from typing import Any
 
 import yaml
 
+from rpipe.structure.artifact._atomic import _read_text
 from rpipe.structure.origin import normalize_origin
 
 
@@ -130,7 +131,7 @@ def load_study_yaml(study_dir: Path) -> dict[str, Any]:
     path = study_dir / 'study.yaml'
     if not path.is_file():
         raise FileNotFoundError(f'missing study.yaml: {path}')
-    data = yaml.safe_load(path.read_text(encoding='utf-8'))
+    data = yaml.safe_load(_read_text(path))
     data = {} if data is None else data
     if not isinstance(data, dict):
         raise ValueError(f'study.yaml must be a mapping: {path}')

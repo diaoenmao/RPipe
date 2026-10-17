@@ -535,12 +535,14 @@ def test_failure_invalidation_does_not_require_shared_layout(tmp_path, monkeypat
     if source.exists():
         protected.append(source)
     before = {p: p.read_bytes() for p in protected}
-    original_read = Path.read_text
+    original_read = Path.open
     def read(path, *args, **kwargs):
+        if kwargs.get('mode', args[0] if args else 'r') not in ('r', 'rt'):
+            return original_read(path, *args, **kwargs)
         if declaration == 'read-io' and path == source:
             raise PermissionError('unavailable shared metadata')
         return original_read(path, *args, **kwargs)
-    monkeypatch.setattr(Path, 'read_text', read)
+    monkeypatch.setattr(Path, 'open', read)
     starts = []
     class Proc:
         def wait(self):

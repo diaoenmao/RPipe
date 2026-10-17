@@ -1,8 +1,16 @@
-> 当前（2026-10-17）：PR199首head3639ae0被实际Python3.10矩阵拒绝，未合dev/未关198；仍同分支补全。
-> 最新：Linux/Windows3.10均pickle state错误（Unit38980543735），3.13通过；69ec7e4显式proxy自身状态，107针对性通过（§259）。
-> 检查：新源码core2384+1既有skip/CPU Flow519passed，86新SDK全执行，原2384+1/516为上版证据；原失败与协议0/1夹具拒绝均保留。
-> 下一：最终本机后更新同一PR，双侧全部实际CI再验收清理；B144/#200五读取边界已确认排下一批，不污染本PR。
-> 状态：goal active、无审批阻塞；未真实下载/原生codec/GPU/测速/Study/main/tag或数据删除，用户暂存保留。
+> 当前（2026-10-17）：PR201 reader 失败/取消修复已完成本地验收；按 08:05 最新指示收尾，停止新增边界修复。
+> 验证：core 2450 passed +1 既有 skip、CPU Flow 525 passed；72 新回归全执行（§263，.tmp/audit144/FINAL_LOCAL_CHECKED.json；临时证据不随 clone）。
+> 最新：Enmao 已批准 structure.md §2.1，原样纳入本批独立 docs 提交；先验收 PR201 最终 head 和实际 dev 的全部 CI。
+> 下一：合并并清理当前主题分支后，正式转入 §2.1 结构重构；分里程碑 PR，不训练、不占 GPU。
+> 状态：无人工审批阻塞；API 形状或对外行为如需变化则先报告等确认，保留用户暂存与所有数据。
+
+> 当前（2026-10-17）：B144/#200整类owned读取修fdfef59已提交，覆盖5显式+19whole-file点；唯一library-reader-exits，未PR。
+> 最新：69项先红28failed/41passed后转绿，另3个manager协议控制；72针对性、2185相邻+1既有skip、core2450passed+1既有skip通过（§263）。
+> 检查：最终CPU Flow525passed/72新节点已全执行；18模块原body/validation/order经限定逆变换AST同等核对，初checker拒绝保留不当库失败。
+> 下一：完成Flow与72新节点逐项本机核验，再一个类别PR→dev/双侧CI；200保持OPEN，PR199/198已验收清理不重派。
+> 状态：goal active、无审批阻塞；不合main/tag、不真实下载/原生codec/GPU/测速/Study或删数据，用户暂存保留。
+
+
 
 
 > 当前（2026-10-17）：B143/#198 在同一 domestic-sdk-transfers 分支完成模型 SDK、eager/streaming 根读取及 spawn 下载任务阶段修复；尚未 PR。
@@ -4306,3 +4314,57 @@ PR199首finalhead3639ae09cebd1406f6320169bcdab400bc2ab436：Branch38980543681和
 
 
 B143跨版本修正后完整本机检查：5978164（生产69ec7e4）CORE_PICKLE_FINAL2384passed+1既有skip/0fail/error、FLOW_PICKLE_FINAL519passed/0skip；86新SDK节点与107针对性XML同集核验全执行。FINAL_LOCAL_PICKLE_CHECKED保源码/测试/XML hash与限制，旧FINAL_LOCAL_CHECKED/原失败CI不覆盖；65922/86008均terminal0。没有本机3.10，不将此证明跨版本，下一更新同一PR199后必须四实际CPU矩阵/包/聚合全成功，actualdev另验收。86中四pickle协议均原生BytesIO支持，0/1原生拒绝证据单独保留。
+
+
+## 260. 2026-10-17：PR199双侧实际CI验收与主题清理
+
+最终headfe84bff3aa8593de5437bba5ead5d74c066b7d53：Unit38981480861、Package38981480876、Branch38981480866所有实际矩阵和聚合success；正常merge actualdev1bf3c8511dc6858d9ce09ac4595901ff70e67358：Unit38982108401、Package38982108345也全部实际success。PR_CHECKED SHA256942698087cacbfd2e54654121080205ef55956b69996eb43a30ebb1f44da5e8b，DEV_CHECKED SHA256e8b89519080089a3408ba047b779d7b464435275b306d148bd8cce651cd4de0d。原首head3639的两个3.10实际失败保留，新head两个3.10均实际通过；不以rerun旧head获得验收。最终本机core2384passed+1既有skip/Flow519passed，86新SDK全执行，107针对性/24旧HF兼容绿；服务下载/原生codec/科学结果未测。
+
+源校验两次checker拒绝保留：初轮把所有工作区SHA直接对Git blob，次轮又假定所有blob为LF；实际origin.py的Git/working均CRLF，新SDK测试Git LF/working CRLF。修正为逐文件分类后，final-head/actualdev两文件Git blob精确字节相同，working原始SHA与最终本机checker一致；没有源码内容变更，不当库失败。PR验收正文初次Path.write_text把已有CRLF二次转换导致段落比较拒绝，随后用保留原始正文的显式LF字节文件更正；原始正文段落+一个验收追加区全文回读一致，不重复评论。
+
+198原body逐字保持、仅一次验收评论6226765867后关闭；PR199正文仅一个Integrated acceptance/cleanup区，完整回读核对。删除清单：codex/domestic-sdk-transfers，本地与远端均普通删除。先核head/tip/远端一致、已为actualdev祖先、工作区只用户_staging_from_DEM、唯一primary worktree、保护main/dev/origin-main不变；detach到actualdev后push --delete/branch -d，再refs及ls-remote核对缺席。真实remote仅main/dev两条；历史remote累计已清54条（此前53是累计清理数，不是剩余分支数）。周期基线194后计数2；无其他本地/远端工作分支或废弃worktree，无force/数据/结果/Run/provenance/main/tag删除，用户暂存保留。59138及本机/观察句柄全部terminal，无重派。
+
+从actualdev建下一唯一codex/library-reader-exits；200保持OPEN。199验收/清理文档随下一类别里程碑提交，不单tiny-doc PR；不再重发198/199反馈。全部临时原证据在.tmp/audit143不随clone，portable SDK回归/设计已由199入库。goal继续，无设计/用户等待。
+
+## 261. 2026-10-17：B144/#200库reader类别正式红回归与范围归并
+
+425cd72先提交31项portable红回归（14failed/17passed、0error/skip）；与此前31草稿预检同集，真实文件和实际公共入口，不把草稿当正式提交。五处为archive MD5、shared digest、strict index JSON、optional curve JSONL、optional Logger binary tail；各六组read IO/取消/body程序错/正常body close IO/close程序错/成功，index再一项实际JSONDecodeError。检查原异常对象、owned close一次、输入/peer字节与Logger旧前缀/正常追加、strict拒绝与optional回退；完整RED.xml/log在.tmp/audit144不随clone。公共输入由临时字节构造，不依赖正式Study。
+
+生产尚未修改；本批不只机械修五处。继续盘点src/rpipe的Path.read_text/read_bytes隐式owned读取，查同一close遮首错/取消是否穿过strict与optional调用；确认后归入同一200类别并先补红，不另逐点Issue/PR。原始20probe/ZIP/hash、全80Issue去重、五显式reader与两空append acquisition的分类保留。设计/实现应复用既有模块与标准库，保持公开接口/编码/正常解析顺序、I/O回退、缓存hash/manifest、日志追加与路径，不变成通用parser/新框架/布局迁移。下一B145未用，当前只有200OPEN。
+
+
+## 262. 2026-10-17：B144隐式owned whole-file读归并与完整红基线
+
+五显式reader首红后，src/rpipe全AST盘点另19个Path.read_text/read_bytes点（18text/1binary）。实际Result/Config/activity/tracker-history/log公共入口20额外探针，所有5取消均丢失原KeyboardInterrupt；前两strict抛close OSError，后三optional正常fallback，全部owned close一次与输入/peer SHA保持、成功baseline真实执行。把同类范围追加200原正文一次并全文prose/顺序核对；GitHub body newline表达差异使初轮raw比较拒绝，原比较留证，不重复评论/不另Issue。
+
+e4ab3e4提交整类69正式回归，28failed/41passed、0error/skip；原425cd72的31红及14失败不覆盖。新增严格Result/Config/provenance byte-hash、optional activity/history/logs的错误/取消/close/成功控制，真实UTF8 decoder原错，以及库whole-file读路径清单约束。首扩展候选52失败因fixture给Path.open关键字mode重复传入，错误候选EXPANDED_RED保留并拒绝；修fixture关键字/位置参数兼容后EXPANDED_RED2为真实69/28红，不当52个库失败。未修改生产。
+
+方案见设计B144：现有_atomic一个_owned_stream加最薄UTF8 _read_text/_read_bytes复用，五显式with与19whole-file统一首错/取消；现有strict/optional外层、read-close再decode/hash顺序、errors=replace、本地输入导入边界保持。不新增模块/公开API/配置/磁盘格式或性能优化。下一先提交方案再生产实现与必要helper协议/相邻/core/Flow验证，整个200一个里程碑PR，当前无新PR/审批等待。
+
+
+## 263. 2026-10-17：B144整类owned读实现与完整验证进行中
+
+先425cd72（五显式31红）→e4ab3e4（69扩展28failed/41passed）→e3a76ef方案，再fdfef59最小生产修：原_atomic增加_owned_stream与薄UTF8 _read_text/_read_bytes，五with manager与19whole-file逐点使用；共18现有生产模块70插入/33删除，没有新增模块、磁盘布局或公开配置/接口。原decode/hash顺序和strict/optional捕获列表不改，errors=replace保留；只有次级close OSError不再覆盖已有body首错/取消，未知close程序错仍暴露。
+
+新增三个manager协议控制验证enter失败不exit、enter值/原__exit__抑制与不抑制语义；COMPLETE_TARGET72passed/0fail/error/skip，ADJACENT2185passed+1既有skip，CORE_FINAL2450passed+1既有skip/0fail/error。旧16个Path.read_text/read_bytes故障夹具已移到实际owned-open文本边界或本模块byte delegate，保持原IO/程序错对象/peer和输出断言，排除binary/write访问不误拦；不是删除旧故障或放宽断言。完整CPU Flow525passed、72新节点全执行、句柄81359已终结0，原core78731/adjacent44570均terminal0，不重复启动；当前不当最终验收。
+
+PRODUCTION_STRUCTURE_CHECKED对18源模块逆转仅声明的19call/5with、imports与新增helper后，与先红/方案e3a76ef AST精确同等，校验body/验证/顺序未随迁移丢失；SHA2569c10ade78b3ee2f0e253bb07e2db3cdf947c0d4ff22176f47923ed3cdfd1816f。初checker错误删除origin预存在的contextlib import导致拒绝，原拒绝留证；限定只逆转_atomic新增import后检查通过，不当库失败，结构核对不代替行为测试。
+
+全部新/旧红、夹具52拒绝、JSON/UTF8/描述符/输入字节、临时脚本与完整XML在.tmp/audit144不随clone。无真实镜像下载/原生codec/科学数据复验/GPU/性能/Study/main/tag动作，无数据删除；current200唯一OPEN/未PR，下一B145，无设计审批等待。下一Flow完成后从完整XML核72新节点，再统一类别PR和exact final-head/actualdev全部实际CI，不按单点拆PR。
+
+
+B144完整本机验收补记：fdfef59源码CORE_FINAL2450passed+1既有skip、FLOW_FINAL525passed/0skip，72新节点逐项与COMPLETE_TARGET核对为66core+6Flow全部执行；先红69全部包含，前批86SDK回归也在完整Flow全部执行。FINAL_LOCAL_CHECKED保存18源码hash/四XMLhash/72节点与边界（临时不随clone）；81359/78731/44570均terminal0，无活句柄。102实际Python源码与Git跟踪集合精确相同，无分支切换旧源码残留。下一统一类别PR，确切final-head和actualdev全部实际CI仍必需；200未关闭，不把本机绿当已合/发布。
+
+
+## 264. 2026-10-17：推送前外部结构文档改动保全
+
+本批10d9180已提交且完整本机绿，推送前工作区门禁发现docs/code/structure.md额外未提交60行结构约束（文件mtime07:58:48），来源未核实，不是本批所写；旧检查如实拒绝并保留PRE_PUSH_STATUS。全文原样快照/哈希8fff8069de374f17daabb1e64d3fbaa3e53452ad4b8c9e77616417f74bab833c留.tmp/audit144/EXTERNAL_STRUCTURE_PROTECTED，未覆盖、暂存、回退或夹带提交；用户_staging_from_DEM也保留。
+
+已阅读该结构草稿。它要求后续迁origin/训练实现、收紧跨层api等，而当前任务明确不改文件架构/产物布局。本批仅按已合dev与先红/设计保留既有依赖方向，在现有IO模块收敛读取退出，没有新增文件/层/公开配置；不把并行草稿自动变成全库架构迁移任务，不为此停止正确性推进。草稿本身留给其所属工作流，不在本批PR宣称全架构迁移或合规完成。
+
+本机CI观察器复用既有严格checker，仅在副本ci-check.py显式允许上述一个已核验SHA的外部文档M状态，加原用户暂存；任何其他工作区变化仍拒绝，final-head/分支/mergeable/所有实际矩阵与聚合的条件完全保留，不改基础checker。这样独立验证已提交代码，同时保全并行文档；不是忽略未保全生产改动。若该文档再变，hash检查会拒绝，重新核对后处理。无用户提问/审批等待，无新生产变化或实验动作。
+
+
+## 265. 2026-10-17：reader 收尾与获批结构重构交接
+
+08:05 指示批准 `docs/code/structure.md` §2.1，先前 §264 的外部草稿隔离为当时事实，现将同一 60 行原文纳入 PR201；正文 SHA256 8fff8069de374f17daabb1e64d3fbaa3e53452ad4b8c9e77616417f74bab833c。仅文档变化，不改变已验证 reader 生产代码。最终 head CI 必须重新验收；完成 actual dev 验收与分支清理后停止边界扩展，转入结构重构。重构保持磁盘产物布局与现有公开行为；涉及 API 形状变化先报告等确认。

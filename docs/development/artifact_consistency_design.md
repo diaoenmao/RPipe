@@ -802,3 +802,33 @@ B143 实际客户端与站点选择补全（2026-10-17）：52b3f72 先红 Model
 
 
 B143跨Python CI拒绝与补全（2026-10-17）：PR199首head3639ae0的实际Linux3.10矩阵在已提交媒体文件pickle控制中失败（_pickle.UnpicklingError: state is not a dictionary）；Linux3.13控制通过。Python [pickle官方合同](https://docs.python.org/3.10/library/pickle.html#object.__getstate__) 与 [3.11变更](https://docs.python.org/3.11/library/pickle.html#object.__getstate__)表明object默认__getstate__自3.11才存在，3.10会走代理__getattr__委托到底层BytesIO的非dict状态。最小修：文件代理显式返回自身__dict__作为pickle state，不委托底层stream状态；不新增磁盘格式/重建Dataset/要求Python升级。原回归在真实3.10 CI已先红；本地扩四个原生BytesIO支持的pickle协议（2–5）控制，再重核所有最终本机与远端矩阵，不把3.13绿代替3.10。原失败run/job/log保留，不通过rerun原head或删失败获得验收。仍同一PR199/Issue198，不另PR。
+
+
+### B144 / #200：整类owned读取退出保全（2026-10-17，红回归完成，实施方案）
+
+425cd72先红五个显式库reader（31项14failed/17passed），接着盘点全部src/rpipe，19个Path.read_text/read_bytes隐式owned读取同样会在close IO后丢原KeyboardInterrupt。实际Result/Config/activity/history/log入口20探针确认：前两个抛secondary IO，后三个返回fallback；原字节/peer和owned close一次保全。e4ab3e4再提交扩展69项28failed/41passed、0error/skip，含真实UTF8解码、binary provenance hash和whole-file读取入口清单约束；31原红保留。首扩展候选因fixture不接受Path.open(mode=...)关键字而52失败已拒绝，修正夹具后重验，不把TypeError误归库缺陷。临时原证据.tmp/audit144不随clone。
+
+五显式点：origin._md5（archive）、shared._digest（shared/hash）、index.load_index（strict JSON）、aggregate.load_curve_series（optional JSONL）、Logger._emit的binary tail。Logger/Tracker两处空append acquisition没有body读取，原关闭语义保留。19个whole-file点清单如下；严格/可选性质以现有调用方合同为准，不扩大catch列表。
+
+| **现有模块** | **whole-file点数** | **读取职责/保持的合同** |
+| --- | --- | --- |
+| system/factory.py | 3 | checkpoint目录meta/tracker/logger JSON，保持strict加载与原始staging诊断 |
+| make/schedule.py | 2 | result查询与已写schedule恢复，保持现有optional回退 |
+| artifact/provenance.py | 2 | 原始source字节SHA256、provenance JSON验证，保持strict身份 |
+| artifact/shared.py | 2 | study shared YAML、已准备输入manifest，保持strict hash/cache合同 |
+| artifact/config/io.py | 1 | strict config UTF8/YAML |
+| artifact/result/io.py | 1 | strict result UTF8/JSON |
+| artifact/activity.py | 1 | optional活动提示 |
+| artifact/readout/status.py | 1 | optional日志提示，errors=replace保持 |
+| artifact/readout/logs.py | 1 | optional事件读取，errors=replace保持 |
+| artifact/readout/compare.py | 1 | strict comparison JSON输入 |
+| flow/process/aggregate.py | 1 | optional tracker state |
+| make/expand.py | 1 | strict study YAML |
+| data/prepare.py | 1 | 已有ready marker来源身份 |
+| data/profile.py | 1 | strict profile YAML |
+
+最小公共实现放在现有artifact._atomic，不新增模块/公开export/配置/目录：一个私有_owned_stream，标准contextmanager+ExitStack先调用原manager.__enter__并登记原__exit__；只有body已有异常且exit再抛OSError时保留原body异常。正常body的close IO仍失败；未知close程序错继续传播；原manager抑制语义、enter失败和LIFO所有权保留，不重试close。
+
+同模块加最薄_read_text（UTF8，只有既有readout所需errors参数）与_read_bytes，均复用_owned_stream。19个既有Path read表达式逐点替换，不把parse/hash挪进with：原顺序是读取并关闭后再JSON/YAML/hash，继续保持。五个显式with只包现有manager，不改body。私有helper不全局monkeypatch Path，不吞read/parse的正常错误，不把optional IO改成strict；origin只在MD5函数内部导入，保留本地模型输入/可选SDK导入边界。文件API不变、成功字节/文本newline与编码行为、schema/cache/revision/科学门/布局不变，无性能工作。
+
+本批覆盖库内五显式+19whole-file owned读取，不声称覆盖第三方SDK内部所有IO或独立Study自有实现。正常/失败/取消/程序错/owned关闭、actualUTF8解码/JSON解析、不可变输入与peer、tolerant读出和strict验证分别回归；新增helper的enter失败/原exit抑制另补小控制。再完整相邻/core/CPU Flow和最终head/actualdev全部实际CI验收，一个library-reader-exits里程碑PR，不逐点拆PR；无设计审批等待，200保持OPEN。

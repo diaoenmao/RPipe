@@ -14,6 +14,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from rpipe.structure.artifact._atomic import _owned_stream
 from rpipe.structure.artifact.asset import kinds
 
 _LEVELS = {'INFO': 'INFO ', 'WARN': 'WARN ', 'ERROR': 'ERROR'}
@@ -48,7 +49,7 @@ class Logger:
             try:
                 separator = ''
                 try:
-                    with self.path.open('rb') as previous:
+                    with _owned_stream(self.path.open('rb')) as previous:
                         previous.seek(0, 2)
                         if previous.tell():
                             previous.seek(-1, 2)
