@@ -5504,3 +5504,10 @@ Enmao 本次明确批准恢复每15分钟周期续跑。通过应用 automation_
 B1初稿净少22行，处于先前20–35行估计内；四个源码文件其余AST与全部签名/注解保持，没有新增helper或生产文件。当前79文件/8905行，相对最初9132累计净少227行约2.49%，不称宏观完成。15新节点数量不代替上述行为覆盖。原始源码/AST_CHECKED/INVENTORY/DIFF_METRICS/TARGET/CORE/FLOW/XML/FROZEN/LOCAL_CHECKED在.tmp/structure-systematic，不随clone；正式计划含全部79文件逐项清单，便携回归入tests。
 
 本机验证完成，当前无活测试句柄，STATE入口.tmp/structure-systematic/STATE.json；B1待单个合批PR及最终head/实际dev分别验收，不借PR220绿灯。B2为尚未批准的恢复/布局合同proposal，未实施，明确接受格式/迁移/诊断保全之前不删任何旧分支。22:19新指示已同步定时任务，原宏观目标持续，不再等新目标；空轮不追加record，不为扫描或几行尾记开PR。
+
+
+## 298. 2026-10-17 22:40 TensorBoard 展示授权与实现批次
+
+Enmao 明确批准可选 TensorBoard：scalars.jsonl 是唯一数值主源，展示复用有效轨迹/恢复规则，Logger 一行不改，导出失败不影响正式 result。依赖仅放 tensorboard 可选组；README、structure §6.9.2/§7.8、监控调研与中英文计划已撤除“不做/实施未授权”的旧口径（跨项目 shared 及 legacy logger 迁移未因此获批）。
+
+本批在已有 flow/process/aggregate.py 提取 JSONL 读取私有实现供原 process 与展示共用，原公共签名及 state history 回退不变；在已有 curves.py 添加导出，CLI 提供独立 tensorboard 子命令，不改结构层架构或正式产物布局。TensorBoard int64 横轴限制及拒绝分数/未知坐标合同见监控文档§六；测试/净产出与远端验收待本批验证完成后补入，不将新增能力冒称净瘦身。

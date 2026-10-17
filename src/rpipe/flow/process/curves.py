@@ -161,3 +161,40 @@ def write_learning_curves(
                     pass
         finally:
             plt.close(fig)
+
+
+
+def export_tensorboard(study_dir: Path | str, destination: Path | str) -> Path:
+    """Export one immutable JSONL trajectory snapshot, separately from formal results."""
+    from urllib.parse import quote
+    from rpipe.flow.process.aggregate import _jsonl_curve_series
+    from rpipe.structure.api.artifact_api import kinds, RUNS_DIRNAME
+
+    study, dest = Path(study_dir).resolve(), Path(destination).resolve()
+    if dest.is_relative_to(study) or study.is_relative_to(dest):
+        raise ValueError('TensorBoard destination must be separate from the Study')
+    series = []
+    for path in sorted((study / RUNS_DIRNAME).glob(f'*/assets/{kinds.TRACKER_JSONL}')):
+        run = path.parents[2].name
+        for split, names in _jsonl_curve_series(path).items():
+            for name, row in names.items():
+                if row['unit'] == 'observation' or any(
+                    point != int(point) or not 0 <= point < 2**63 for point in row['x']
+                ):
+                    raise ValueError(f'{run}/{split}/{name}: TensorBoard needs integer optimizer_step/epoch; use JSONL plots for fractional or unknown coordinates')
+                tag = '/'.join((row['unit'], quote(split, safe=''), quote(name, safe='')))
+                series.append((run, tag, row))
+    if not series:
+        raise ValueError('no JSONL scalar trajectories to export')
+    from torch.utils.tensorboard import SummaryWriter
+
+    # A new directory prevents previous exports from reviving a rolled-back tail.
+    dest.mkdir(parents=True, exist_ok=False)
+    for run in dict.fromkeys(run for run, _, _ in series):
+        with SummaryWriter(log_dir=str(dest / run)) as writer:
+            for run_name, tag, row in series:
+                if run_name == run:
+                    for step, value in zip(row['x'], row['values']):
+                        writer.add_scalar(tag, value, global_step=int(step),
+                                          new_style=True, double_precision=True)
+    return dest

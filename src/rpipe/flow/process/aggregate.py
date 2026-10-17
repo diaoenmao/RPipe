@@ -66,7 +66,17 @@ def _finite(value: Any) -> bool:
 
 def load_curve_series(study_dir: Path | str, run_dir: str) -> dict[str, dict[str, dict[str, Any]]]:
     """Read the final JSONL trajectory; old observations never acquire guessed steps."""
-    path = Path(study_dir) / RUNS_DIRNAME / run_dir / 'assets' / kinds.TRACKER_JSONL
+    out = _jsonl_curve_series(Path(study_dir) / RUNS_DIRNAME / run_dir / 'assets' / kinds.TRACKER_JSONL)
+    for split, names in _state_history(study_dir, run_dir).items():
+        for name, values in names.items():
+            if name not in out.get(split, {}):
+                out.setdefault(split, {})[name] = {
+                    'unit': 'observation', 'x': list(range(1, len(values) + 1)), 'values': values,
+                }
+    return out
+
+
+def _jsonl_curve_series(path: Path) -> dict[str, dict[str, dict[str, Any]]]:
     # ponytail: read one log in memory; index byte offsets if very long logs become a bottleneck.
     records = []
     try:
@@ -114,12 +124,6 @@ def load_curve_series(study_dir: Path | str, run_dir: str) -> dict[str, dict[str
                 x = sorted(points)
                 values = [points[point] for point in x]
             out.setdefault(split, {})[name] = {'unit': unit, 'x': x, 'values': values}
-    for split, names in _state_history(study_dir, run_dir).items():
-        for name, values in names.items():
-            if name not in out.get(split, {}):
-                out.setdefault(split, {})[name] = {
-                    'unit': 'observation', 'x': list(range(1, len(values) + 1)), 'values': values,
-                }
     return out
 
 

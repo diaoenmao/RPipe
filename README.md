@@ -690,7 +690,7 @@ Study 可在 `study.yaml` 写 `flow: {study_phases: true}`。库加载 `flow/` �
 | 断点续训 | 在已验证的恢复合同内使用 train 的 `resume: latest`；自定义 Algorithm / 采样器不自动获得精确恢复 |
 | 调整项目执行链 | 直接复用模板时保持合同；需要重构时先更新设计，再验证调用方、状态和失败边界 |
 | 自动出报告 / 跨 Run 对比表 | 人写 `STUDY_REPORT.md`，有实际曲线时嵌图。库 Study process 出 mean/std/min/max 和 `docs/figures/learning_curves.png`。`report` 把同一份数字写成 `docs/NUMBERS.md`，不能代写结论 |
-| 训练曲线 | process 优先读 JSONL 的有效训练轨迹：显式 optimizer_step（优先）或 epoch；旧记录 / state history 回退仍用 observation。跨 seed 按坐标并集统计，缺失点不插值，逐点 n 见 process / 图；不同单位分开。原始日志保留回滚分支，恢复规则见 structure §6.9.2。不做 TensorBoard |
+| 训练曲线 | process 优先读 JSONL 的有效训练轨迹：显式 optimizer_step（优先）或 epoch；旧记录 / state history 回退仍用 observation。跨 seed 按坐标并集统计，缺失点不插值，逐点 n 见 process / 图；不同单位分开。原始日志保留回滚分支，恢复规则见 structure §6.9.2。可选 TensorBoard 展示由 JSONL 独立导出，Logger 不变 |
 | 终端 + 硬盘日志 | **Logger** 必写 `runs/<id>/assets/logs/run.log`（`时间 级别 Run id [事件]`）；失败时 traceback 每一行都是 `[error]`。`index.json` 的 `log` 指向它。没有 Study 级总 log |
 | 并行时日志挤在一起 | 文件按 Run 分开；终端每行带 Run `id`。Windows：`launch` 默认 `--console new`；`--console shared` 只混终端 |
 | 看这轮谁好了谁挂了 | `python -m <project_entry> status studies/<name>`（只读；`--mode eval` 可滤） |
@@ -795,3 +795,8 @@ GitHub Actions 配置包括：
 
 在当前授权范围内持续完成文档、重构和验证，不停在方案阶段。提交、推送、合并、发布、清理旧证据及大规模实验遵循当次明确授权。最终简要交付结构映射、真实运行命令、验证结果、剩余风险和未执行事项。
 ```
+
+
+### 可选 TensorBoard 展示
+
+安装 `pip install -e ".[tensorboard]"`，执行 `python -m rpipe tensorboard studies/<study> --out .tmp/tensorboard/<new-snapshot>`，再用 `tensorboard --logdir .tmp/tensorboard/<new-snapshot>` 查看。只导出 JSONL 有效轨迹，Logger 不变；新目录与 Study 隔离，失败不影响正式 result。当前支持整数 optimizer_step/epoch，分数 epoch 或未知横轴明确拒绝而非截断。恢复后重新导出到新目录，不混读旧快照。详见[导出合同](docs/issue/experiment_monitoring.md#六2026-10-17-授权的最小导出合同)。

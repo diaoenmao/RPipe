@@ -194,7 +194,7 @@ DOE/OR/BO/贝叶斯实验设计本轮不采用；无需为合同修复搭搜索�
 | P2 E1/E2 正确性 | 只接续真实可复现反例；先Issue/红合同、最小统一修复、本机CPU及最终head/实际dev CI | 三类合同、原输入字节与peer、普通错误不吞、严格前置输入不降级；独立basetemp | 已修且验收完成的Issue按最新授权关闭；无新反例不制造代码/空PR；不查480s或测速 |
 | P3 E3 main_probe | 另获明确GPU/新运行授权后，核对原代码归档、raw/Stats、环境、实际FP32及来源；新version/make | 八组合×seed0，连续60 steps，step30/60完整test10000，各自Loss-best eval，原atol1e-6/rtol1e-5及Loss≤1e-6/整数严格门 | 当前未执行，不把v0.3.0旧结果算当前验收；任何缺格/来源或数值异常即停止，不放宽门 |
 | P4 E4 main_exp | P3及自身八格600-step/eval200前置门通过、另获全预算/资源授权后才启动；新version且保留旧身份 | 八模型/数据组合×4seed，32连续80000-step train+32自身best eval，400完整test点；原TARGET/REFERENCE_CURVES估读门 | 当前未执行；200-step两格不解锁；自定义sampler精确resume未验收，训练中断换新身份从头，不续写旧证据 |
-| 独立探索 | 跨项目shared [#89](https://github.com/DreamSoul-AI/RPipe/issues/89)、TensorBoard/legacy logger [#90](https://github.com/DreamSoul-AI/RPipe/issues/90) 继续独立文献/协议调研 | 不绑定三类修复，不先迁目录或替换logger | 89/90初步调研交付已完成并关闭；实施仍未授权，shared仍项目根不可变输入、Run可变状态独立 |
+| 独立探索 | 跨项目shared [#89](https://github.com/DreamSoul-AI/RPipe/issues/89)、TensorBoard/legacy logger [#90](https://github.com/DreamSoul-AI/RPipe/issues/90) 继续独立文献/协议调研 | 不绑定三类修复，不先迁目录或替换logger | 89/90初步调研交付已完成并关闭；2026-10-17 22:40 已授权 JSONL→TensorBoard 可选展示，Logger 不改；shared 实施仍未授权，项目根不可变输入、Run可变状态独立 |
 
 未完成的研究能力还包括：当前源码完整科学复验、历史全部原始权重/seed的可取得性、custom sampler精确恢复、异机/独立外部复现和系统文献覆盖。不得由工程通过推断这些已完成。四任务共享24GB GPU只作为已知资源约束；本轮不申请、不占用、不终止GPU任务。未来排程须先确认授权、实际设备资源和同机任务，不能把历史吞吐或旧缓存状态称为新的冷启动/速度证据。
 
