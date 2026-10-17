@@ -238,3 +238,25 @@ def test_pack_interleaved_classes_keeps_first_seen_order():
             for i, name in enumerate(['b', 'a', 'b', 'c', 'a'])]
     assert [[job['run_id'] for job in batch] for batch in pack_jobs(jobs, [])] == [
         ['0', '2'], ['1', '4'], ['3']]
+
+
+@pytest.mark.parametrize('seconds,text', [
+    (-1, '0s'), (0, '0s'), (59, '59s'), (60, '1m'), (61, '1m1s'),
+    (3599, '59m59s'), (3600, '1h'), (3601, '1h'), (3661, '1h1m'),
+])
+def test_capacity_duration_preserves_display_precision(seconds, text):
+    assert format_duration(seconds) == text
+
+
+@pytest.mark.parametrize('size,text', [
+    (0, '0B'), (1023, '1023B'), (1024, '1.0KiB'),
+    (1024**4, '1.0TiB'), (1024**5, '1024.0TiB'),
+])
+def test_capacity_bytes_uses_final_unit_without_fallback(size, text):
+    from rpipe.structure.make.capacity import format_bytes
+    assert format_bytes(size) == text
+
+
+def test_capacity_wall_sum_preserves_empty_and_nonnegative_groups():
+    assert estimate_wall_seconds([]) == 0
+    assert estimate_wall_seconds([[], [{'seconds': -5}], [{'seconds': '3'}, {'seconds': 2}]]) == 3
