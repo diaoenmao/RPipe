@@ -1042,21 +1042,16 @@ prepare：`control_from_config` →（可选契约）→ 各 `*_api` Factory.bui
 | --- | --- |
 | `artifact/_atomic.py` | Atomic text write (unique temp file then replace). |
 | `artifact/activity.py` | Current Study task, so a long make can be seen without waiting for the final print. |
-| `artifact/asset/kinds.py` | Relative asset paths under ``runs/<id>/assets/``. |
-| `artifact/asset/tree.py` | Create and list files under a Run assets directory. |
-| `artifact/config/format.py` | YAML mapping encode / decode for Run config. |
-| `artifact/config/io.py` | Config entity IO (Study writes; prepare reads). |
-| `artifact/errors.py` | Artifact IO errors. |
+| `artifact/asset/kinds.py` | Run asset names, directory creation and recursive file listing. |
+| `artifact/config/io.py` | Config YAML mapping codec and atomic entity IO. |
 | `artifact/index.py` | Study ``index.json`` — orchestration plan written before Flow. |
-| `artifact/layout.py` | Study Artifact directory layout (shared + one Run subtree). |
-| `artifact/paths.py` | Canonical leaf names under a Study / Run. |
+| `artifact/layout.py` | Study/Run layout, canonical leaf names and artifact IO errors. |
 | `artifact/provenance.py` | Study provenance: source / plan hashes, environment, and the freeze gate. |
 | `artifact/readout/compare.py` | Compare two Run directories: result metrics, tracker history, checkpoint state. |
 | `artifact/readout/logs.py` | Print Study run.log event lines in timestamp order. Does not write a file. |
 | `artifact/readout/report.py` | Write Experiment and Run number tables from process.json. Does not write a conclusion. |
 | `artifact/readout/status.py` | Read-only Study listing: index plan joined with each Run result. |
-| `artifact/result/format.py` | JSON mapping encode / decode for result. |
-| `artifact/result/io.py` | Result entity IO. |
+| `artifact/result/io.py` | Result JSON mapping codec, validation and atomic entity IO. |
 | `artifact/shared.py` | Project input roots, interprocess preparation lock, and explicit cache migration. |
 
 持久化 IO 与路径。**不**解析 control 业务语义；**不** import `flow` 或四层实现。形状可做最小检查；字段契约在 `structure.control.contract`。
@@ -1066,19 +1061,13 @@ prepare：`control_from_config` →（可选契约）→ 各 `*_api` Factory.bui
 ```
 structure/artifact/
   layout.py
-  paths.py
-  errors.py
   index.py
   provenance.py
   config/
     io.py
-    format.py
   result/
     io.py
-    format.py
   asset/
-    io.py
-    tree.py
     kinds.py
   readout/
     status.py
@@ -1117,11 +1106,11 @@ studies/<study>/
   index
 ```
 
-叶名由 `paths.py` 集中配置。Run `id` 规则见 §8。
+叶名与路径错误由 `layout.py` 集中定义。Run `id` 规则见 §8。
 
 RunConfig 可选字段 `version` 参与 `id` hash，用于让相同实验配置、同 seed 的不同实测得到不同 Run identity。artifact 文件本身不另设本轮所讨论的格式版本。
 
-### 9.2 `layout.py` / `paths.py` / `errors.py`
+### 9.2 `layout.py`
 
 | **符号** | **职责** |
 |------|------|
@@ -1209,7 +1198,7 @@ Study 编排清单。`rpipe.structure.artifact.index`，**不是** Flow 的 writ
 
 | **层次** | **位置** | **做什么** |
 |------|------|--------|
-| 字节 / 格式 | `artifact/*/format.py`、`io.py` | 解析 mapping、原子写 |
+| 字节 / 格式 | `artifact/config/io.py` / `artifact/result/io.py`、`io.py` | 解析 mapping、原子写 |
 | 业务契约 | `structure/control/contract.py` | 字段、result 必选键（含 `status`） |
 | 消费方 | Study / autoresearch | 读 result / index；需要时再读 config |
 

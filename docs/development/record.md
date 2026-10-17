@@ -4480,3 +4480,8 @@ PR202 final `a634074bb1bdd81d58fbe7c6a52d0395626be9e4`：Branch38986989262、Pac
 初始 RED：120 项中 29 failed/91 passed（0 error/skip）；SHAPE 的唯一失败为当时尚未更新的文件登记；TARGET 的39失败为旧测试入口遗漏，CORE 的80 setup errors为遗漏的当前 Study raw caller，均保留。修正归属与调用方后 TARGET2 248 passed、CALLERS 236 passed，最终完整 core/Flow 如上。源扫描器的175伪缺失与错误AST基线拒绝单独保留，不混为库缺陷。
 
 仅修改当前 Study 的 import；归档版本、shared/runs、正式数字、checkpoint、原始数据和磁盘格式未变；未运行 Study、测速、原生 codec 或 GPU。后续继续合并过碎 artifact 文件并按职责精简 capacity/schedule/data factory/origin；本批机械结构规则已过，不等于“行数明显下降”和全部重构目标完成。
+
+
+## 271. 2026-10-17：artifact 职责归并方案（实施前）
+
+按已批准 §2.1，在既有模块归并：paths/errors→layout；asset/tree 的两个操作→asset/kinds；config/result 的 format→各自 io。保留 kinds 模块对象与原常量，公开门面名称、签名、返回、校验及磁盘布局不变，不加旧模块别名。库内源码、测试导入、镜像测试位置及结构登记同步。正式2318 checkpoint 对 errors/layout/asset.tree/config.format/result.format 的只读 pickle 字节扫描命中0、错误0；证据 `.tmp/structure-api/ARTIFACT_PICKLE_CHECKED.json` 不随 clone，未覆盖库外或未知下游。按原有回归和 AST 定义对照验收，不新增边界修复。
