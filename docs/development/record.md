@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR205 已合 dev e7d3096，本批职责拆分双侧实际 CI 全绿验收完成（§279.5）。
+> 验证：core2627 passed+1既有skip、CPU Flow525 passed；155结构节点全执行，102库源码哈希不变。
+> 结果：data/runtime、schedule/scripts、origin/transfers 分责；公开门面与磁盘布局保持，无旧origin别名。
+> 下一：继续有依据的源码精简；整体80文件/9147行，明显缩行未达成，不标总目标完成。
+> 状态：无存活验证句柄；按最新人工保留本地/远程工作分支和暂存/数据；拒绝与失败证据完整保留。
+
 > 当前（2026-10-17）：data/runtime、schedule/scripts、origin/transfers 合批本地完整 CPU 验收通过，准备一次 PR→dev（§279）。
 > 验证：core2627 passed+1同一既有skip、CPU Flow525 passed；16个新增行为回归及1个迁移节点全执行，冻结库源码哈希不变。
 > 结果：origin593→244行、transfers361行；公开门面/签名/返回/磁盘布局保持，2318正式候选旧限定名引用0。
@@ -4637,3 +4643,11 @@ torchvision_load 删除5行不可达兜底，新增5个次数/耗尽/原异常�
 当前 structure 80文件/9147行，对照目标起点80文件/9132行，仍未明显缩行；本批只验收职责拆分与有据精简，不声称总目标完成。首轮 core 收集重名错误保留，改文件名后上述完整重跑通过。全部新运行使用仓库入口、c1/c2及 not gpu/external/slow；没有新增GPU运行或真实网络下载。下一步同一分支推送、唯一 PR→dev、最终head和实际dev双侧实际CI；不新开碎文档PR。
 
 验收脚本首次用名称包含gpu判断GPU执行，误将CPU容量/配置测试名拒绝；CHECKER_REJECTED.json 保留，未将其当库失败或重跑通过测试。GPU排除依据为仓库入口实际 -m/not-gpu 与c1/c2筛选；XML确认旧误选CUDA恢复节点未执行。
+
+### 279.5 PR205 最终 head 与实际 dev 双侧验收
+
+[PR205](https://github.com/DreamSoul-AI/RPipe/pull/205) 正常合入 dev `e7d309681875526d845ca4d0c6ebf0b3bdc38066`。最终head `bf2a9d3a6f873750b9a8ea51a3b126821e06d110` 的 Branch38997497469、Package38997497435、Unit38997497463及全部实际矩阵/聚合成功；实际dev的Package38997984822、Unit38997984841及全部实际矩阵/聚合同样成功。PR_CHECKED SHA256 `2d1a3e9d733cce7dbcdacce0c76e8dae516d2a89eb71763f65669d5f9f9abcdc`，DEV_CHECKED `7f33dff0e5ec38fc3ba8c1b3da7327e839bafaa35feda904d8184481e8b9493a`；本机155个结构节点全部执行，完整core/CPU Flow见§279.4。
+
+合前自动审批拒绝了含合并命令的预备脚本写入，原因当时Package尚未结束；没有执行该脚本或提前合并。真实合并仅在最终head全绿证据生成后进行。拒绝记录保留，不作为库失败。PR正文只追加一次真实验收，不重复评论；附件挂载触及100上限，链接有效，未删除历史附件。
+
+库源码、测试、Study及结构文档在实际dev与验收head间无差异；main、本地dev与origin/main引用保持。当前分支普通快进至实际dev，依最新人工保留本地/远程主题，不删任何数据或_staging_from_DEM；收尾记录本地按主题提交，随下一完整里程碑合入，不另开碎文档PR。本批不表示整体Occam完成：80文件/9147行仍未达明显缩行；后续只做保持公开行为的实质精简，不恢复边界修复任务。原始证据 .tmp/structure-origin 不随clone。
