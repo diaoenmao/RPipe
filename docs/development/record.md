@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR215已普通合dev7bd0e9f，最终head全部实际CI成功；actualdev独立验收中。
+> 后续本地：tracker展示筛选归纳，定向252 passed，4新公共入口/153结构节点执行。
+> 范围：仅n>0字典筛选，均值/save/reset/状态AST保持，不改API形状/文件架构/产物布局。
+> 未完成：后续完整CPU和源码PR尚未完成，总体Occam目标未完成。
+> 保护：保留_staging/分支/数据，不改main，不训练/GPU/测速/逐路径审计。
+
 > 当前（2026-10-17）：PR214双侧实际CI全绿，已普通合dev7275d8b（§288.2）。
 > 后续本地：origin摘要读取循环06ca025，core2739 passed+1既有skip、CPU Flow525 passed。
 > 证据：4新块边界/6既有reader退出/153结构节点及前批回归执行、100源码哈希一致；structure78文件/8992行，净少140。
@@ -5099,3 +5105,14 @@ factory.py188→185，全structure78文件/9001行，对起点9132净少131；�
 冻结06ca025fc5df00c4677b00949725e2afd33062f5：core2739 passed+1同一既有POSIX skip、CPU Flow525 passed；4新空/短/块边界/跨块回归、6既有reader失败/取消/关闭节点、前批6百分位与8JSON节点以及153结构节点全部执行，100源码哈希一致。定向196 passed/0skip；24组离线原新读取/终止/关闭/原异常身份对照一致。只将_md5原read/真假判断/break合为原生赋值表达式，1MiB读取（含EOF读取）、digest更新次序及_owned_stream边界不变；全部签名/返回注解与其余声明AST保持。公开discard_bad_archive摘要匹配时原输入字节保留、真实句柄关闭；没有下载真实归档/模型或数据，没有改下载源、校验规则、归档路径/产物布局。
 
 源码净少3行，全structure78文件/8992行，对起点9132净少140；幅度有限，不标总目标完成。仅本地源码提交，未推送/开PR/合dev，继续同主题合批，不为3行精简或收尾记录单开PR。原证据.tmp/structure-origin-digest不随clone，当前STATE指向此处，无活测试/CI句柄。不新建/迁移模块，不改API形状，未跑训练/GPU/测速/逐路径审计，保留_staging/分支/数据。
+
+
+## 289. 2026-10-17 origin里程碑收尾与tracker展示筛选归纳
+
+按最新明确收尾授权推送既有44c0364并创建[PR215](https://github.com/DreamSoul-AI/RPipe/pull/215)。最终head44c03648f64ebc344b3f292d2a62fa924d735f9c的Branch39016550638/Package39016549245/Unit39016549150全部实际矩阵及聚合成功，普通合actualdev7bd0e9fea71d84d3745d009b1a24c5c07788371b；head/dev源码、测试、Study、结构文档一致。PR_CHECKED SHA256 f64b35fad7731f959adb09d38d25ffaf6741d83d4467293c21ecea01c58c7905；actualdev CI独立等待，不将head成功当集成验收。原始证据.tmp/structure-origin-final不随clone；附件100上限错误保留，不删历史附件。
+
+下一项只在现有algorithm/tracker.py的display_mean，将临时字典/for/if/赋值改原生字典推导，保留n>0筛选、零值、键序及无活动项时整段segment_mean回退。均值算术、save/reset、权重累计、history及状态恢复和其余声明AST保持，签名/返回注解不变，不增helper/模块，不改API/文件架构/产物布局。已核对Logger.report调用与窗口回归；16组原新输出/mean属性访问/fallback调用对照一致。新增公共入口回归覆盖回退副本/读取不变状态/零值/顺序/原异常传播，随后定向与冻结完整CPU。仅净少3行，不为此立即开小PR，不做训练/GPU/测速/逐路径审计。候选与对照.tmp/structure-tracker-display不随clone。
+
+### 289.1 tracker展示筛选定向CPU
+
+定向252 passed/0skip，4新公共入口与153结构节点全执行，Logger联调回归通过。覆盖无活动样本时回退及返回副本、零均值仍显示、键序与不活跃旧指标省略、读取前后状态不变、原meter异常不被保存段吞掉；16组原新访问/fallback轨迹一致。仅display_mean的本地循环改原生推导，均值算术/权重/save/reset/history/状态恢复以及其余模块声明AST不变，公开签名/注解保持。源码净少3行，全structure78文件/8989行，对起点净少143，幅度有限不标宏观完成。随后冻结提交跑完整CPU，不借PR215或旧本地成功验收。原证据.tmp/structure-tracker-display不随clone。

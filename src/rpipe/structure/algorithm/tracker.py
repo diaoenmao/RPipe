@@ -115,10 +115,7 @@ class AlgorithmTracker:
 
     def display_mean(self, split: str) -> dict[str, float]:
         """Running mean if this segment still has samples; else last saved segment."""
-        running: dict[str, float] = {}
-        for name, meter in self._meters.get(split, {}).items():
-            if meter.n > 0:
-                running[name] = meter.mean
+        running = {name: meter.mean for name, meter in self._meters.get(split, {}).items() if meter.n > 0}
         if running:
             return running
         return self.segment_mean(split)
