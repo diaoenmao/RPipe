@@ -1,4 +1,4 @@
-> PR219后净删减本地累计：record§294/.tmp/structure-inline/STATE.json为当前入口，源码b0bb61d未推/开PR/合dev，4既有函数体内净少16行，79文件8966行，无新helper/接口/文件架构/布局。完整core2775pass+1既有POSIXskip/Flow525pass、11新节点/154结构节点/101源码哈希通过；106原新对照一致、TARGET2 293pass。a740952等尾记保留，继续攒实质里程碑而不为小批PR；不借PR219绿灯验本地后续。无活测试句柄，定时器PAUSED、派生不同步，保留分支/数据/_staging，不动main/GPU/测速；新架构必须proposal提交后等审。
+> PR219后净删减本地累计：record§294/.tmp/structure-inline/STATE.json为当前入口，源码b0bb61d未推/开PR/合dev，4既有函数体内净少16行，79文件8966行，无新helper/接口/文件架构/布局。完整core2775pass+1既有POSIXskip/Flow525pass、11新节点/154结构节点/101源码哈希通过；106原新对照一致、TARGET2 293pass。a740952等尾记保留，继续攒实质里程碑而不为小批PR；不借PR219绿灯验本地后续。无活测试句柄；19:25新授权已恢复rpipe每15分钟续跑，见record§295。三个副本仅在新可用里程碑版本后周期同步，本批不同步；保留分支/数据/_staging，不动main/GPU/测速；新架构必须proposal提交后等审。
 
 > 2026-10-17停止交接：PR217/218均双侧实际CI全绿，最新dev1bded360，源码和实质文档全部入dev。14段结构旧叙事原文迁移/回链完成，153结构节点通过，100源码哈希保持；源码78文件/8989行，完整CPU2743+1既有skip/Flow525覆盖同一源码。剩余粒度重划受架构冻结限制、派生同步缺根/版本/范围，已入库见record§291.4；按最新“无可做项写卡点后停下”指示已停止，定时rpipe为PAUSED，不凭旧heartbeat恢复。宏观目标未称完成；当前.tmp/structure-history-cleanup/STATE.json，无活句柄。盘点基线218、1主worktree/0开放PR/Issue；分支/数据/_staging保留，无API/布局/main/GPU变更。只有本地验收尾记待保全，不为它另开PR。
 
