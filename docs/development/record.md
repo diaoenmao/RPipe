@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：同一 structure-artifacts 分支继续归并；artifact 已本地全回归，capacity 的纯配置估算已移入 estimate（§273–274）。
+> 最新验证：make/结构针对性512 passed；6个移动函数AST、全部估算常量一致；400组调度及1093组标签差分一致。
+> 结构：capacity 574→393行，纯配置 estimate 177行；结构总77文件/9148行，尚未满足明显缩行停止条件。
+> 下一：继续同分支梳理schedule/data factory/origin，完整里程碑再跑全部回归和PR/CI→dev；本轮未开新PR。
+> 状态：fetch成功、无审批阻塞；保留暂存/数据，不训练/GPU/测速/main/tag；本轮成功不替代后续提交全验收。
+
 > 当前（2026-10-17）：PR203 已双侧 CI 验收并清理主题；下一批 artifact 五文件归并在 structure-artifacts 本地验收完成（§272–273）。
 > 验证：core2601 passed +1同一既有skip；CPU Flow525 passed；针对性1538 passed +1既有skip；41定义AST一致。
 > 结果：structure 81/9172→76/9152（文件/行）；相对目标起点80/9132仍多20行，尚未满足明显缩行的停止条件。
@@ -4520,3 +4526,10 @@ core2601 passed +1同一POSIX executable mode bits skip，CPU Flow525 passed/0sk
 ## 274. 2026-10-17：make capacity 职责精简方案
 
 延续同一structure-artifacts里程碑：将capacity中纯配置内存/时间估算及job注解挪至make/estimate.py，capacity保留硬件发现/分组/报告和原有公开名称的直接导出；不改数值、阈值、设备准入或估算口径，不执行测速/硬件探测。按职责新增模块，不为bug扩张。分组用dict原生插入顺序替代并行order列表；连续名称折叠用标准库groupby。补交错类别顺序/连续标签回归，并做旧实现差分；完整批次后再PR。
+
+
+### 274.1 本地实施与验证
+
+估算6函数及全部常量AST一致；574行capacity分为393行硬件/分组/报告和177行纯配置估算。原公开capacity估算名称直接重导出，make_api不改形状。分组用dict顺序，标签用groupby，移3个既有估算测试至test_estimate镜像，补6个分组/标签回归。make+结构512 passed/0fail/error/skip；400组交错CPU/CUDA及train/eval合成调度（含原地gpu字段变更）、1093组连续/分隔标签、cap不同设置均与旧实现相同。合成GpuInfo仅Python数据，不执行GPU探测、训练或测速。证据`.tmp/structure-artifacts/CAPACITY.xml`、`ESTIMATE_DEFINITIONS_CHECKED.json`、`CAPACITY_DIFFERENTIAL_CHECKED.json`不随clone。
+
+未用旧core/Flow成功替代当前新增提交的完整验收；完整里程碑PR前再跑全套。该主题继续本地积累，无新PR/Issue。

@@ -67,88 +67,8 @@ def test_pack_eval_after_train():
     assert [j['run_id'] for j in batches[1]] == ['e0']
 
 
-def test_estimate_resnet_heavier_than_linear():
-    linear = estimate_job_bytes(
-        {
-            'data': {'name': 'MNIST', 'config': {'batch_size': 64}},
-            'model': {'name': 'linear'},
-            'algorithm': {'mode': 'train'},
-        }
-    )
-    resnet = estimate_job_bytes(
-        {
-            'data': {'name': 'CIFAR10', 'config': {'batch_size': 250}},
-            'model': {'name': 'resnet18'},
-            'algorithm': {'mode': 'train'},
-        }
-    )
-    eval_resnet = estimate_job_bytes(
-        {
-            'data': {'name': 'CIFAR10', 'config': {'batch_size': 250}},
-            'model': {'name': 'resnet18'},
-            'algorithm': {'mode': 'eval'},
-        }
-    )
-    assert resnet > linear * 5
-    assert eval_resnet < resnet
-    assert eval_resnet > linear
 
 
-def test_estimate_seconds_resnet_heavier_and_eval_lighter():
-    linear = estimate_job_seconds(
-        {
-            'data': {'name': 'MNIST', 'config': {'batch_size': 250, 'train_size': 500}},
-            'model': {'name': 'linear'},
-            'algorithm': {'mode': 'train', 'num_epochs': 20},
-        }
-    )
-    resnet = estimate_job_seconds(
-        {
-            'data': {'name': 'CIFAR10', 'config': {'batch_size': 250, 'train_size': 50000}},
-            'model': {'name': 'resnet18'},
-            'algorithm': {'mode': 'train', 'num_epochs': 20},
-        }
-    )
-    eval_resnet = estimate_job_seconds(
-        {
-            'data': {'name': 'CIFAR10', 'config': {'batch_size': 250, 'train_size': 50000}},
-            'model': {'name': 'resnet18'},
-            'algorithm': {'mode': 'eval', 'num_epochs': 20},
-        }
-    )
-    assert resnet > linear
-    assert eval_resnet < resnet
-    assert eval_resnet >= 1
-    short = estimate_job_seconds(
-        {
-            'data': {'name': 'MNIST', 'config': {'batch_size': 64}},
-            'model': {'name': 'linear'},
-            'algorithm': {'mode': 'train', 'num_steps': 1000, 'progress_unit': 'step', 'eval_period': 0},
-        }
-    )
-    longer = estimate_job_seconds(
-        {
-            'data': {'name': 'MNIST', 'config': {'batch_size': 64}},
-            'model': {'name': 'linear'},
-            'algorithm': {'mode': 'train', 'num_steps': 2000, 'progress_unit': 'step', 'eval_period': 0},
-        }
-    )
-    assert longer - short == 6
-    eval_short = estimate_job_seconds(
-        {
-            'data': {'name': 'MNIST', 'config': {'batch_size': 64}},
-            'model': {'name': 'linear'},
-            'algorithm': {'mode': 'eval', 'num_epochs': 1},
-        }
-    )
-    eval_long = estimate_job_seconds(
-        {
-            'data': {'name': 'MNIST', 'config': {'batch_size': 64}},
-            'model': {'name': 'linear'},
-            'algorithm': {'mode': 'eval', 'num_epochs': 20},
-        }
-    )
-    assert eval_short == eval_long
 
 
 def test_estimate_wall_seconds_is_sum_of_group_maxima():
@@ -244,11 +164,6 @@ def test_tiny_jobs_round_equals_pending_count():
     assert suggest_round(jobs, [gpu]) == 9
 
 
-def test_estimate_nested_algorithm_settings_matches_runtime_precedence():
-    cfg = {'data': {'name': 'MNIST', 'config': {'batch_size': 64}}, 'model': {'name': 'linear'},
-           'algorithm': {'mode': 'train', 'num_steps': 1, 'config': {'num_steps': 1000, 'eval_period': 0}}}
-    equivalent = {**cfg, 'algorithm': {'mode': 'train', 'num_steps': 1000, 'eval_period': 0}}
-    assert estimate_job_seconds(cfg) == estimate_job_seconds(equivalent)
 
 
 @pytest.mark.parametrize('name,train_size', [('MNIST', 60000), ('FashionMNIST', 60000), ('SVHN', 73257)])
@@ -308,3 +223,18 @@ def test_attach_estimates_reads_calibrated_budget_from_run_config(tmp_path):
     jobs = attach_estimates([{'config': str(path)}])
     assert jobs[0]['vram_bytes'] == 4 * 1024**3
     assert jobs[0]['estimate_device'] == 'cuda'
+
+
+@pytest.mark.parametrize('models, expected', [
+    ([], ''), (['a'], 'a'), (['a', 'b', 'a'], 'a+b+a'),
+    (['a', 'a', 'b', 'a', 'a'], 'a×2+b+a×2'), (['', ''], '×2'),
+])
+def test_pack_label_keeps_separated_groups(models, expected):
+    assert pack_label(models) == expected
+
+
+def test_pack_interleaved_classes_keeps_first_seen_order():
+    jobs = [{'run_id': str(i), 'estimate_model': name, 'device': 'cpu', 'vram_bytes': 1}
+            for i, name in enumerate(['b', 'a', 'b', 'c', 'a'])]
+    assert [[job['run_id'] for job in batch] for batch in pack_jobs(jobs, [])] == [
+        ['0', '2'], ['1', '4'], ['3']]
