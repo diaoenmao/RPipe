@@ -26,3 +26,7 @@ def make_tracker(assets_dir: Path | str, algorithm_config: AlgorithmConfig | Non
             glue = str(algorithm_config.setting('glue_subset', 'cola') or 'cola')
     bundle = MetricBundle(names, glue_subset=glue) if glue else MetricBundle(names)
     return AlgorithmTracker(assets_dir, metrics=bundle)
+
+from rpipe.structure.algorithm.eval import EvalAlgorithm
+
+from rpipe.structure.algorithm.train import TrainAlgorithm

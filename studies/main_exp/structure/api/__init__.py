@@ -36,7 +36,7 @@ def bootstrap() -> None:
 
 def export_source() -> dict[str, Any]:
     """Export tracked blobs, refusing to overwrite a different existing file."""
-    from rpipe.structure.artifact._atomic import atomic_write_text
+    from rpipe.structure.api.artifact_api import atomic_write_text
 
     tree = subprocess.check_output(
         ['git', 'ls-tree', '--full-tree', '-r', '-z', COMMIT], cwd=REPO

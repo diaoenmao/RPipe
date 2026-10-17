@@ -39,14 +39,14 @@ def sha(path: Path) -> str:
 
 
 def save_json(path: Path, body: Any) -> None:
-    from rpipe.structure.artifact._atomic import atomic_write_text
+    from rpipe.structure.api.artifact_api import atomic_write_text
 
     atomic_write_text(path, json.dumps(body, ensure_ascii=False, indent=2) + '\n')
 
 
 def source_manifest() -> dict[str, str]:
-    from rpipe.structure.artifact.provenance import source_files
-    from rpipe.structure.make.expand import load_study_yaml
+    from rpipe.structure.api.artifact_api import source_files
+    from rpipe.structure.api.make_api import load_study_yaml
 
     study = Path(__file__).resolve().parents[2]
     # Reuse the canonical source contract: generated Run archives are artifacts.
@@ -173,14 +173,14 @@ class MainArchive:
 
 
 def runtime_config(device: str) -> Any:
-    from rpipe.structure.system.config import SystemConfig
+    from rpipe.structure.api.system_api import SystemConfig
     return SystemConfig.from_mapping({'device': device, 'deterministic': True,
                                      'cudnn_benchmark': False, 'cudnn_deterministic': True,
                                      'cudnn_allow_tf32': False, 'matmul_allow_tf32': False})
 
 
 def seed_runtime(device: str) -> Any:
-    from rpipe.structure.system.runtime import apply_runtime
+    from rpipe.structure.api.system_api import apply_runtime
     config = runtime_config(device)
     apply_runtime(SEED, config)
     return config
@@ -301,16 +301,16 @@ class Observations:
 
 
 def native_data(workspace: Path, name: str, assets: Path) -> Any:
-    from rpipe.structure.data.config import DataConfig
-    from rpipe.structure.data.factory import DataFactory
+    from rpipe.structure.api.data_api import DataConfig
+    from rpipe.structure.api.data_api import DataFactory
     return DataFactory.build(DataConfig.from_mapping({'name': name, 'source': 'torch', 'config': {
         'batch_size': 250, 'test_batch_ratio': 4, 'pin_memory': True, 'num_workers': 0, 'augment': True}}),
         workspace / 'native-data', seed=SEED, origin='foreign')
 
 
 def native_model(data: Any, name: str, assets: Path) -> Any:
-    from rpipe.structure.model.config import ModelConfig
-    from rpipe.structure.model.factory import ModelFactory
+    from rpipe.structure.api.model_api import ModelConfig
+    from rpipe.structure.api.model_api import ModelFactory
     return ModelFactory.build(ModelConfig.from_mapping({'name': name, 'source': 'custom_torch'}),
                               assets, data_meta=data.meta)
 
@@ -362,11 +362,11 @@ def mapping() -> dict[str, Any]:
 def run_pair(workspace: Path, device: str, pair: tuple[str, str], native: tuple[Any, Any, Any, Any, Any]) -> dict[str, Any]:
     bootstrap()
     import torch
-    from rpipe.structure.algorithm.config import AlgorithmConfig
-    from rpipe.structure.algorithm.train import TrainAlgorithm
-    from rpipe.structure.algorithm.eval import EvalAlgorithm
-    from rpipe.structure.algorithm.tracker import AlgorithmTracker
-    from rpipe.structure.system.factory import SystemFactory
+    from rpipe.structure.api.algorithm_api import AlgorithmConfig
+    from rpipe.structure.api.algorithm_api import TrainAlgorithm
+    from rpipe.structure.api.algorithm_api import EvalAlgorithm
+    from rpipe.structure.api.algorithm_api import AlgorithmTracker
+    from rpipe.structure.api.system_api import SystemFactory
     prepared = json.loads((workspace / 'PREPARED.json').read_text(encoding='utf-8'))
     if prepared.get('passed') is not True:
         raise ValueError('CPU preparation must pass before training')

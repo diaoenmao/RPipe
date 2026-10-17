@@ -53,11 +53,17 @@ def test_structure_has_exactly_eight_packages():
         '__init__.py', 'api', 'control', 'data', 'model', 'algorithm', 'system', 'artifact', 'make'}
 
 
-@pytest.mark.parametrize('path', sorted(ROOT.parent.rglob('*.py')),
-                         ids=lambda path: path.relative_to(ROOT.parent).as_posix())
+STUDIES = ROOT.parents[2] / 'studies'
+CURRENT_STUDY_CODE = sorted(p for study in STUDIES.iterdir() if study.is_dir()
+                           for area in ('flow', 'structure') for p in (study / area).rglob('*.py'))
+CURRENT_STUDY_CODE += sorted(STUDIES.glob('*/recipe.py'))
+
+
+@pytest.mark.parametrize('path', sorted(ROOT.parent.rglob('*.py')) + CURRENT_STUDY_CODE,
+                         ids=lambda path: path.relative_to(ROOT.parents[2]).as_posix())
 def test_cross_layer_imports_use_facades(path):
-    parts = path.relative_to(ROOT.parent).parts
-    layer = parts[1] if parts[0] == 'structure' and len(parts) > 2 else None
+    parts = path.relative_to(ROOT.parent).parts if path.is_relative_to(ROOT.parent) else ()
+    layer = parts[1] if len(parts) > 2 and parts[0] == 'structure' else None
     if layer in ('api', 'control'):
         return
     for node in ast.walk(ast.parse(path.read_text(encoding='utf-8-sig'))):

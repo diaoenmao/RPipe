@@ -326,7 +326,7 @@ def plot_report(report, reference, destination):
     import matplotlib.pyplot as plt
     import uuid
 
-    from rpipe.structure.artifact._atomic import atomic_replace
+    from rpipe.structure.api.artifact_api import atomic_replace
 
     tmp = destination.with_name(f'{uuid.uuid4().hex}.tmp')
     owned = False
@@ -394,7 +394,7 @@ def plot_report(report, reference, destination):
 
 
 def main(argv=None):
-    from rpipe.structure.artifact._atomic import atomic_write_text
+    from rpipe.structure.api.artifact_api import atomic_write_text
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--study', type=Path, default=STUDY)

@@ -1,7 +1,7 @@
 """Aggregate only the paired Runs in the current index, never stale workspaces."""
 import json
-from rpipe.structure.artifact.index import load_index
-from rpipe.structure.artifact._atomic import atomic_write_text
+from rpipe.structure.api.artifact_api import load_index
+from rpipe.structure.api.artifact_api import atomic_write_text
 
 
 def run(ctx):

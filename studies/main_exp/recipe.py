@@ -1,7 +1,7 @@
 """Register historical builders; explicit preflight/calibrate commands never run on import."""
 from __future__ import annotations
 
-from rpipe.structure.artifact.shared import shared_paths
+from rpipe.structure.api.artifact_api import shared_paths
 
 import copy
 import hashlib
@@ -51,8 +51,8 @@ def register(ctx: Any) -> None:
         raise RuntimeError('the same-device original/native preflight must pass before launch')
     if (report.get('environment') or {}).get('torch') != torch.__version__:
         raise RuntimeError('Torch environment changed after preflight')
-    from rpipe.structure.artifact.provenance import source_files
-    from rpipe.structure.make import load_study_yaml
+    from rpipe.structure.api.artifact_api import source_files
+    from rpipe.structure.api.make_api import load_study_yaml
 
     if report.get('source_hashes') != source_files(ctx.study_dir, load_study_yaml(ctx.study_dir)):
         raise RuntimeError('main_exp preflight sources changed; rerun preflight before launch')
@@ -123,21 +123,21 @@ def preflight(data_root: Path | str, output_dir: Path | str, *, steps: int = 200
     A new output directory is required so prior evidence cannot be overwritten.
     This probe verifies a prefix, never claims historical long-curve reproduction.
     """
-    from rpipe.structure.artifact._atomic import atomic_write_text
+    from rpipe.structure.api.artifact_api import atomic_write_text
 
     bootstrap()
     os.environ.setdefault('CUBLAS_WORKSPACE_CONFIG', ':4096:8')
     import torch
-    from rpipe.structure.algorithm.config import AlgorithmConfig
-    from rpipe.structure.algorithm.train import TrainAlgorithm
-    from rpipe.structure.algorithm.tracker import AlgorithmTracker
-    from rpipe.structure.data.config import DataConfig
-    from rpipe.structure.data.factory import DataFactory
-    from rpipe.structure.model.config import ModelConfig
-    from rpipe.structure.model.factory import ModelFactory
-    from rpipe.structure.system.config import SystemConfig
-    from rpipe.structure.system.factory import SystemFactory
-    from rpipe.structure.system.runtime import apply_runtime
+    from rpipe.structure.api.algorithm_api import AlgorithmConfig
+    from rpipe.structure.api.algorithm_api import TrainAlgorithm
+    from rpipe.structure.api.algorithm_api import AlgorithmTracker
+    from rpipe.structure.api.data_api import DataConfig
+    from rpipe.structure.api.data_api import DataFactory
+    from rpipe.structure.api.model_api import ModelConfig
+    from rpipe.structure.api.model_api import ModelFactory
+    from rpipe.structure.api.system_api import SystemConfig
+    from rpipe.structure.api.system_api import SystemFactory
+    from rpipe.structure.api.system_api import apply_runtime
 
     mapping = algorithm_config(steps)
     archive = install(data_root, seed)
@@ -316,9 +316,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument('command', choices=['preflight'])
     parser.parse_args(argv)
     bootstrap()
-    from rpipe.structure.artifact._atomic import atomic_write_text
-    from rpipe.structure.artifact.provenance import capture_environment, source_files
-    from rpipe.structure.make import load_study_yaml
+    from rpipe.structure.api.artifact_api import atomic_write_text
+    from rpipe.structure.api.artifact_api import capture_environment, source_files
+    from rpipe.structure.api.make_api import load_study_yaml
 
     study = load_study_yaml(STUDY)
     before = source_files(STUDY, study)

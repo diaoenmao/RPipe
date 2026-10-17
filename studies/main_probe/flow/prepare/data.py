@@ -13,7 +13,7 @@ from ...structure.algorithm.paired import (
 
 def prepare(workspace: Path, source_data: Path, pair: tuple[str, str]) -> dict[str, Any]:
     """Reference immutable raw / processed inputs and check CPU parity."""
-    from rpipe.structure.artifact.shared import link_input, reference_tree
+    from rpipe.structure.api.artifact_api import link_input, reference_tree
     bootstrap()
     import numpy as np
     import torch

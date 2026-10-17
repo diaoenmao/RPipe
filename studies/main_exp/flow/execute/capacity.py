@@ -1,7 +1,7 @@
 """Manual native Flow capacity validation; all computation remains in RPipe."""
 from __future__ import annotations
 
-from rpipe.structure.artifact.shared import shared_paths
+from rpipe.structure.api.artifact_api import shared_paths
 
 import argparse
 from concurrent.futures import ThreadPoolExecutor
@@ -36,7 +36,7 @@ def worker_prepare(ctx):
 
 def worker_write(ctx):
     import torch
-    from rpipe.structure.artifact._atomic import atomic_write_text
+    from rpipe.structure.api.artifact_api import atomic_write_text
     body = {'peak_allocated_bytes': torch.cuda.max_memory_allocated(),
             'peak_reserved_bytes': torch.cuda.max_memory_reserved(),
             'flow_seconds': time.perf_counter() - ctx.state['capacity_started'],
@@ -63,11 +63,11 @@ def main(recipe, argv):
     if args.rounds[0] != 1 or len(set(args.rounds)) != len(args.rounds) or len(set(args.models)) != len(args.models):
         parser.error('use unique models and rounds, starting with round1 as the strict baseline')
     recipe.bootstrap()
-    from rpipe.structure.artifact._atomic import atomic_write_text
-    from rpipe.structure.artifact import load_config, write_config
-    from rpipe.structure.artifact.provenance import source_files
-    from rpipe.structure.artifact.readout.compare import compare_runs
-    from rpipe.structure.make import expand_study, load_study_yaml, launch_jobs, plan_jobs
+    from rpipe.structure.api.artifact_api import atomic_write_text
+    from rpipe.structure.api.artifact_api import load_config, write_config
+    from rpipe.structure.api.artifact_api import source_files
+    from rpipe.structure.api.artifact_api import compare_runs
+    from rpipe.structure.api.make_api import expand_study, load_study_yaml, launch_jobs, plan_jobs
     ident = 'capacity-' + time.strftime('%Y%m%d-%H%M%S') + '-' + uuid.uuid4().hex[:8]
     root = STUDY / 'shared/validation' / ident
     root.mkdir(parents=True, exist_ok=False)

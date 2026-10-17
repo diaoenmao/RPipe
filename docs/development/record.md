@@ -4461,3 +4461,5 @@ PR202 final `a634074bb1bdd81d58fbe7c6a52d0395626be9e4`：Branch38986989262、Pac
 证据保留在 .tmp/structure-api：PICKLE_SCAN.json、formal_scan.json、temporary_scan.json、NUL 分隔原清单、脚本与历史拒绝（不随 clone）。首次不限重解析边界的 os.walk 广扫已按唯一自有进程身份取消；后续按行解析 rg 清单误拆换行文件名，产生 175 个伪缺失路径，结果保留为 PICKLE_SCAN_NEWLINE_REJECTED.json，改用 NUL 清单后全部读取成功。两项是扫描器取消/校验拒绝，不是仓库运行缺陷，也不删除任何输入。
 
 本批实现计划：新门面只 import 原对象；跨层调用使用对应门面，层内直连和 control 既有例外保留。为避免提前加载未完成的层，api 包只声明导出名，由 structure 完成 control 类型导出后导入六个门面；不使用 __getattr__ 懒加载或兜底包装。增加八包、纯重导出门面、逐文件跨层 import 检查，现有包入口/文件登记检查继续执行。迁移 origin 不添加旧路径文件、sys.modules 别名或重复实现，原生命周期/下载策略/缓存格式不变。
+
+迁移阶段回归与修正：首轮针对性失败来自测试仍以 from rpipe.structure import origin 访问旧入口，已按新归属改为 system.origin，未恢复别名；随后 248 项针对性全过。首次完整 core 暴露当前 Study raw 准备脚本遗漏旧路径（真实迁移遗漏，失败 XML 保留）；已迁移该调用，并把其他 89 处当前 Study 框架直连统一切门面。仅补现有对象的纯重导出；对 ac37afe 限定还原 import 模块名后，现有程序体/默认参数/校验/顺序 AST 相同。新增架构检查覆盖 src 与当前 Study flow/structure/recipe 代码；docs/versions、shared/runs 和历史数值未改，不执行 Study 或测速。CALLERS 236 项通过；完整 core/Flow 在最终源基线重新执行，不以前一阶段 Flow 代替验收。首次 AST 检查误选已迁移后的 HEAD 寻找旧 origin 文件，拒绝保留并改用迁移前 ac37afe；这是校验基线错误，不算库失败。

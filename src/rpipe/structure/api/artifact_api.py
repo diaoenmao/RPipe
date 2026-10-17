@@ -28,9 +28,13 @@ __all__ = [
     'announce', 'artifact_layout', 'atomic_replace', 'atomic_write_text', 'build_index',
     'cache_lock', 'capture_environment', 'check_frozen', 'clear_activity', 'compare_runs',
     'decode_result', 'encode_result', 'ensure_assets', 'ensure_study_layout', 'experiment_entries',
-    'format_compare', 'format_logs', 'format_status', 'index_path', 'kinds', 'list_asset_files',
-    'list_runs', 'load_config', 'load_index', 'load_provenance', 'load_result', 'migrate_shared',
-    'provenance_changes', 'read_activity', 'reference_tree', 'shared_paths', 'validate_result',
-    'validate_run_directory', 'write_compare', 'write_config', 'write_index', 'write_numbers',
-    'write_provenance', 'write_result',
+    'format_compare', 'format_logs', 'format_status', 'index_path', 'kinds', 'link_input',
+    'list_asset_files', 'list_runs', 'load_config', 'load_index', 'load_provenance', 'load_result',
+    'migrate_shared', 'prepared_resource', 'provenance_changes', 'read_activity', 'reference_tree',
+    'shared_paths', 'source_files', 'validate_result', 'validate_run_directory', 'write_compare',
+    'write_config', 'write_index', 'write_numbers', 'write_provenance', 'write_result',
 ]
+
+from rpipe.structure.artifact.provenance import source_files
+
+from rpipe.structure.artifact.shared import link_input, prepared_resource
