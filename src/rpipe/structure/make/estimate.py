@@ -173,5 +173,3 @@ def attach_estimates(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
             job['device'] = str(get_setting(system, 'device') or 'cpu').lower()
         job['estimate_device'] = str(job.get('device') or 'cuda').lower()
     return jobs
-
-
