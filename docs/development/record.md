@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：继续同一structure-artifacts分支，data runtime/factory分责及局部去重已实施，本轮CPU针对性229 passed（§277）。
+> 接口：公开Data为同一类；Data及3个loader helper AST原样，11注册组合与原版一致；factory457→250行，runtime193行。
+> 重要失败：首轮遗漏not-gpu过滤，误执行CUDA连续/中断探针（fixture预算6+2步），恢复因CUDA不可见失败；本次worker均已退出。
+> 留证：原始错误路径选择、CUDA失败和checkpoint均保留；已用仓库入口显式排除GPU重跑229通过；不把误执行说成无GPU。
+> 下一：同分支继续schedule/origin精简后完整core+Flow及CI；78文件/9132行尚未明显缩行，不改API形状、不删分支/数据。
+
 > 当前（2026-10-17）：PR204 已正常合 dev 0f4174f，最终head与实际dev全部矩阵/聚合CI通过，本批验收完成（§276）。
 > 验证：core2608 passed +1同一既有skip、CPU Flow525 passed；head Unit38993832863，dev Unit38994348622。
 > 结果：artifact五文件归并、估算独立、分组简化；77文件/9146行；原始失败/拒绝完整保留，无旁路或API形状变更。
@@ -4568,3 +4574,16 @@ core2601 passed +1同一POSIX executable mode bits skip，CPU Flow525 passed/0sk
 ## 277. 2026-10-17：data runtime 与 factory 分责方案
 
 继续同一保留分支，积累下一完整里程碑：Data类及其loader/step-budget helper原样移入data/runtime.py，factory继续负责注册/构造并直接使用Data；data_api与data包原公开名称/签名/返回不变，不新增门面或兼容模块。正式2318 checkpoint只读pickle字节检查对data.factory引用0、读取错误0，未覆盖库外。去掉只有本地一个调用方、均返回ToTensor的两层私有transform包装，原位置分别直接构造ToTensor，保持train/test各自实例；增强仍在模型侧。重复注册改为按同序名称循环，不改支持组合/顺序/校准值。现有Data方法AST、registry快照与builder输入输出为验收依据，保留sampler/RNG恢复和错误处理；不跑真实下载/训练/GPU。
+
+
+### 277.1 实施与CPU范围验证
+
+Data类及_loader_options/_empty_train_loader/_train_loader_for_samples移入runtime，4个定义AST逐一相同；factory457→250行，runtime193行。其余factory定义AST仅允许两个ToTensor包装就地展开，VISION规格AST相同；11个name/source组合、公开sorted顺序、stub/torch builder名称一致。原Data/API/包/factory普通导出身份相同；不新增兼容模块或门面形状。镜像移动既有rebind测试，补公开Data身份回归。structure78文件/9132行（与目标起点相同），不能称明显缩行完成。
+
+使用tests/run.py、c1/c2及not gpu/not external/not slow过滤：229 passed/0fail/error/skip，1个GPU用例明确未执行；包含结构、data/api、CPU fresh-process exact resume与checkpoint回归。LOCAL_TARGETED_CHECKED SHA256 `c153c4b7e0f7ff82dd88362f9236e261ed0fefa8f4415285c3d24203ff2c679c`，证据`.tmp/structure-runtime/`不随clone。当前代码的完整core/Flow/CI尚未执行，不挪用PR204结果作本轮验收；下一完整里程碑统一推送PR。
+
+### 277.2 代理测试选择失误：误执行GPU用例
+
+第一条目标命令误写不存在的test_resume.py，pytest exit4、未执行节点，TARGET.log/EXIT保留。第二条修正路径后使用raw pytest而漏加not-gpu过滤，意外选中明确标gpu的CUDA恢复用例；229 passed/1failed。连续与中断CUDA探针子进程均已成功返回（fixture分别6/2个优化步），resume子进程因CUDA device_count=0的反序列化错误失败。这违反本轮不占GPU的指示；不声称全轮无GPU，不把该结果判为新生产缺陷，也不在GPU复验。原日志、XML及全部临时checkpoint保留，GPU_SELECTION_INCIDENT.json记完整事实，CIM核对本次recovery_worker无存活进程。未杀/挂起其他进程，未删除任何结果。
+
+纠正为仅走仓库测试入口并显式标注CPU成本与排除GPU；第三条同源验证229 passed。此次是代理执行范围错误，不放宽数据/恢复校验、不改测试阈值、不把未执行GPU算成功。

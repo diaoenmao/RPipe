@@ -1,3 +1,5 @@
+> 2026-10-17：PR204已双侧验收，继续保留的structure-artifacts本地data/runtime分责（record§277、.tmp/structure-runtime/STATE.json）。CPU针对性229全过、1GPU明确排除，完整当前core/Flow/CI尚待后续批次。必须保留/报告本轮GPU选择失误：raw pytest漏not-gpu，误跑CUDA连续/中断探针，恢复失败；worker均退出，失败/临时checkpoint不删。以后仅仓库入口显式not gpu。Data与3helper AST相同，11注册组合不变，78文件/9132行，总目标未达成；继续schedule/origin，不改API形状，不删分支/数据。
+
 > 2026-10-17：PR204 finalefa7782→actual dev0f4174f双侧全部实际CI成功，见record§276及.tmp/structure-artifacts/STATE.json。最新人工明确不删分支/数据：structure-artifacts本地/远端保留，本地已快进dev接续下一批；收尾文档本地提交随下批合入，不单开文档PR。core2608+1同一既有skip/Flow525，原始provenance拒绝证据保留。整体结构目标仍未完成，继续schedule/data factory/origin职责精简，不改API形状，不等旧审批，不训练/GPU/main/tag/force。
 
 > 2026-10-17：codex/structure-artifacts完整本地验收core2608+1同一既有skip/Flow525，99库源码哈希全程一致；首轮源码尾空行改动触发provenance拒绝已完整留证并冻结重跑。见record§275与.tmp/structure-artifacts/STATE.json。最新人工明确本批不删分支/数据；下一为push一次PR→dev、双侧全部实际CI。PR203已验收，勿重复操作；结构总目标未完成。

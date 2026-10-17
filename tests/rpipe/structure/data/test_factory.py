@@ -41,27 +41,6 @@ def test_unregistered_data_is_rejected(tmp_path, mapping):
     assert list(tmp_path.iterdir()) == []
 
 
-def test_rebind_train_steps_uses_remaining_prefix():
-    import torch
-    from torch.utils.data import TensorDataset
-
-    from rpipe.structure.data.factory import Data
-
-    dataset = TensorDataset(torch.arange(20), torch.zeros(20, dtype=torch.long))
-    data = Data(name='toy', source='x', loaders={}, meta={'batch_size': 2, 'seed': 0})
-    data._train_set = dataset
-    data.rebind_train_steps(step=0, num_steps=4, step_period=1)
-    assert len(data._loaders['train']) == 4
-    full = [batch[0].clone() for batch in data.iter_batches('train')]
-    data.rebind_train_steps(step=2, num_steps=4, step_period=1)
-    rest = [batch[0].clone() for batch in data.iter_batches('train')]
-    assert len(rest) == 2
-    assert torch.equal(rest[0], full[0])
-    assert torch.equal(rest[1], full[1])
-    data.rebind_train_steps(step=4, num_steps=4, step_period=1)
-    assert len(data._loaders['train']) == 0
-
-
 def test_cifar10_builder_uses_fake_dataset(tmp_path: Path, monkeypatch):
     from PIL import Image
 
@@ -244,4 +223,3 @@ def test_dataloader_honors_pin_memory_and_workers(tmp_path, monkeypatch):
     assert test.pin_memory is True
     assert train.num_workers == 0
     assert data.meta['pin_memory'] is True
-
