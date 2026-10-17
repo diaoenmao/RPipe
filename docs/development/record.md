@@ -5488,3 +5488,11 @@ Enmao 本次明确批准恢复每15分钟周期续跑。通过应用 automation_
 最终head/actualdev的源码、tests、Study及docs树无差异，101源码哈希与冻结770619e本机core2785+1既有skip/Flow525一致；21新增/154结构节点实际执行。当前所有生产改动已入dev，79文件/8927行，本批净少55行；单项37行来自重复规格字段结构归一，非格式压缩或搬移。整体相对起点净少205行约2.24%，不宣称宏观完成。PR正文只追加一次PR220_ACTUAL_DEV_ACCEPTED验收，无重复评论；应用附件仍达100上限，保存错误和有效PR链接，不删历史附件绕过。原始对照/验证/CI/每次有界查询与附件错误在.tmp/structure-vision-specs，不随clone；便携测试与开发事实已入库。
 
 当前主题本地已快进actualdev，本地/远端分支均按最新授权保留，删除清单为空，未触碰数据/结果/Run/provenance/_staging。盘点基线218，219/220累计2次，未重复全面盘点。15分钟定时保持ACTIVE，指令已明确空轮不追加record、优先较大同文件候选；派生仍等新的可用里程碑版本，本批未同步或覆盖下游。无活测试/CI观察句柄，当前STATE complete；本段验收尾记本地保全，随下一源码里程碑合入，不为尾记新开PR。不动main/tag/release/force push/GPU/训练/测速，不新增架构方案或接口。
+
+## 297. 2026-10-17 22:19 全structure盘点与B1实施
+
+按最新人工纠正恢复原宏观目标，不再把连续未发现候选等同于目标不存在。对Git跟踪全部79文件做AST/行数/声明与structure逐文件登记盘点：15个init只导出，64个非init登记双向一致，未登记/失效0。正式全文件清单、职责热点与按收益/权限排序的批次计划见structure_simplification_proposal§六，机器清单在.tmp/structure-systematic/INVENTORY.json（不随clone）。机械完整不等于无冗余，长文件不按行数自动判违规。
+
+第一可执行B1覆盖四个现有文件六函数，先行预计20–35行，实际初稿净少22行：metric名称映射/完整指标收集/MSE尾部复用9行，checkpoint路径重复赋值/非dict返回9行，logger两时间字段循环1行，report四统计字段透传循环3行。保留全部签名、异常、调用顺序、指标计算、bundle优先与旧目录读取，不增helper/模块/门面，不改布局。新增便携回归验证顺序/空值/重复metric、原错误身份、MSE/CE选择、bundle/folder优先、logger时间与报告列序；完整CPU结果随后补记。
+
+潜在大项B2仅提案：checkpoint多套持久化/旧格式恢复预计可删50–90行，但涉及诊断/staging和旧对象合同，未经批准不得实施；同文件B1独立继续，不等该提案。train/HF/transfers/schedule等职责热点列B3，缺可核验净收益时不为拆分搬运。多个改动组成一个里程碑，不逐项开PR，不以配额删必要门；派生副本、分支/数据/_staging保留，不动main/GPU/测速。

@@ -411,3 +411,16 @@ def test_optional_log_tail_exit_never_swallows_cancellation(tmp_path, reader_exi
     assert after.startswith(payload) and peer.read_bytes() == b'peer untouched'
     assert (b'new synthetic record' in after) is (expected is None)
     assert 'new synthetic record' in capsys.readouterr().out
+
+
+@pytest.mark.parametrize('elapsed,eta,expected', [
+    ('a', 'b', '[time] elapsed=a eta=b'),
+    (0, '', '[time] elapsed=0 eta='),
+    (None, False, '[time] eta=False'),
+])
+def test_report_time_fields_keep_fixed_order_and_non_none_values(tmp_path, monkeypatch, elapsed, eta, expected):
+    logger = Logger(tmp_path)
+    rows = []
+    monkeypatch.setattr(logger, '_emit', lambda *row: rows.append(row))
+    logger.report(None, 'test', extra={'eta': eta, 'elapsed': elapsed})
+    assert rows == [('INFO', 'split', '[split] test ' + expected)]

@@ -280,3 +280,20 @@ def test_checkpoint_json_read_failure_keeps_original_error_order_and_bytes(tmp_p
     assert raised.value is failure
     assert calls == (['tracker'] if failure_key == 'tracker' else ['tracker', 'logger'])
     assert {p.name: p.read_bytes() for p in folder.iterdir()} == before
+
+
+@pytest.mark.parametrize('available', ['bundle', 'folder', 'both', 'missing'])
+def test_checkpoint_stem_selection_keeps_bundle_precedence(tmp_path, available):
+    import json
+    import torch
+
+    system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
+    root = system.checkpoint_dir()
+    if available in ('bundle', 'both'):
+        torch.save({'marker': 'bundle'}, root / 'selected.pt')
+    if available in ('folder', 'both'):
+        folder = root / 'selected'
+        folder.mkdir()
+        (folder / 'meta.json').write_text(json.dumps({'marker': 'folder'}), encoding='utf-8')
+    expected = None if available == 'missing' else {'marker': 'folder' if available == 'folder' else 'bundle'}
+    assert system.load_checkpoint('selected') == expected

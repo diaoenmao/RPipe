@@ -126,10 +126,7 @@ def render_numbers(study_dir: Path | str) -> str:
                     [
                         factors,
                         _markdown_cell(name),
-                        _fmt(stat.get('mean')),
-                        _fmt(stat.get('std')),
-                        _fmt(stat.get('min')),
-                        _fmt(stat.get('max')),
+                        *(_fmt(stat.get(field)) for field in ('mean', 'std', 'min', 'max')),
                         _count(stat.get('n', exp.get('n', 0))),
                     ]
                 )
