@@ -1,3 +1,5 @@
+> 2026-10-17 PR206 双侧实际CI完成：head f6700d6、actualdev cfbb09e，core2631+1既有skip/CPU Flow525；4新节点及155结构节点全执行。record§280.4与.tmp/structure-simplify/STATE.json为当前状态；无活句柄，分支/暂存/数据保留。总体80文件/9125行未达明显缩行，继续同主题完整批次，不恢复边界修复。
+
 > 2026-10-17 PR205 双侧实际CI验收完成：head bf2a9d3，actualdev e7d3096；core2627+1既有skip/CPU Flow525，结构155节点全过。record§279.5与.tmp/structure-origin/STATE.json为当前状态，无活句柄；分支及数据按最新人工保留。总体80文件/9147行，明显缩行未达成，继续结构精简，不新开边界修复。
 
 > 2026-10-17 当前：同一 codex/structure-artifacts 合批 data/runtime、schedule/scripts、origin/transfers；core2627+1既有skip、CPU Flow525全过，源码冻结核验通过。待本批最终head/actualdev双侧CI，实时状态 .tmp/structure-origin/STATE.json、record§279；前轮GPU误选及本轮收集拒绝均保留。整体明显缩行未达成，不宣称总完成。最新人工保留本地/远程分支，不删数据。

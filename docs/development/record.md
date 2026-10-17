@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR206 已合 dev cfbb09e，本批双侧实际矩阵/聚合 CI 全绿验收完成（§280.4）。
+> 验证：core2631 passed+1既有skip、CPU Flow525 passed；4新节点/155结构节点执行，102源码哈希一致。
+> 结果：CIFAR端点共享有序元数据，26组差分一致；API形状、字段/异常与产物布局保持。
+> 下一：整体80文件/9125行，明显缩行目标仍未完成；后续同主题积累完整精简批次，不新开边界修复。
+> 状态：无存活验证句柄；保留本地/远端工作分支、暂存和数据；收尾记录本地提交随下批合入。
+
 > 当前（2026-10-17）：按最新人工要求将本地origin元数据精简收尾为一批，完整CPU回归通过，准备PR→dev（§280.3）。
 > 验证：core2631 passed+1同一既有skip、CPU Flow525 passed；4个新增节点和155结构节点全执行。
 > 结果：102库源码哈希冻结前后一致；origin244→222行，公开API/磁盘布局保持，旧/新端点26组一致。
@@ -4681,3 +4687,13 @@ system/结构CPU396 passed/0fail/error/skip，4个新节点全部执行；此前
 监督助手明确要求将当前本地累积提交推送并开PR→dev，本批按该当次授权收尾，覆盖上一条继续积累、不单开小PR的阶段安排。源码冻结后 core2631 passed/1同一既有POSIX skip、CPU Flow525 passed/0skip，均0fail/error；4个新增端点节点及155个结构约束节点全部执行，102库源码哈希前后一致。FULL_CHECKED SHA256 `2d5a8e5c656d57dc3221963d8f6cc612c9ae5dc065332df33f7e511865ef3797`，原始日志/XML在.tmp/structure-simplify（不随clone）；测试均由tests/run.py选择c1/c2并明确排除gpu/external/slow，未运行GPU。
 
 公开门面名称与形状、端点全部字段、异常与磁盘产物布局保持。当前80文件/9125行，对目标起点仅减7行，本批不标整体Occam完成。下一步唯一PR最终head与实际dev分别验收全部实际矩阵/聚合CI；按最新人工保留本地/远端分支和_staging_from_DEM，不删数据、不碰main/tag、不force push。
+
+### 280.4 PR206 双侧实际CI验收与收尾
+
+[PR206](https://github.com/DreamSoul-AI/RPipe/pull/206) 正常合 dev `cfbb09ee198983d9c01241d4a323b44114f01e35`。最终head `f6700d677923532f1cd39b2923e485fe54ecea76` 的 Branch38999590279、Package38999590217、Unit38999590311及全部实际矩阵/聚合成功；actualdev Package39000056058、Unit39000056064及全部实际矩阵/聚合同样成功。PR_CHECKED SHA256 `28dff279e1d9dd78e2cd0a05b452410e3a1d96553c891349fb2676134ee08467`，DEV_CHECKED `5ae53886986bdc31c2486ebe2b0fafa2c7789dddfecd972513d4741e62cf0049`。本地完整回归见§280.3，实际dev快进后102源码哈希仍与冻结前一致；不借用PR205验收。
+
+实际dev与head的源码/测试/Study/结构文档无差异；main、本地dev、origin/main不变。依最新人工保留本地/远端codex/structure-artifacts与_staging_from_DEM，不删数据、不force push。PR正文只追加一次完整验收，无重复评论；应用附件100上限错误保留，链接有效，不删除历史附件绕过。工作分支普通快进至actualdev，收尾文档本地主题提交随下一完整批次合入，不另开纯文档PR。原始证据.tmp/structure-simplify不随clone。整体明显缩行仍未达成，不标总目标完成。
+
+### 280.5 后续候选只读复查
+
+源码/测试AST名称引用扫描未找到无引用的顶层私有实现；函数精确AST比较（仅忽略名称与docstring）只识别data/model的各10行to_mapping重复。该结果不是删除或新增跨层抽象的决定，本轮未改这些实现。证据NEXT_DUPLICATE_SCAN.json为本地候选索引；后续继续按职责和实际合同判断，不为行数强造抽象。
