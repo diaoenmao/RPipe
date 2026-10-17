@@ -873,7 +873,7 @@ Logger **不**改 AlgorithmTracker 的 mean/history；**不**写 TensorBoard。
 | --- | --- |
 | `control/contract.py` | Light contract checks for RunConfig / Control. |
 | `control/control.py` | Control object: holds RunConfig for one Run. |
-| `control/mapping.py` | Config mapping, deep merge, and stable content identifiers. |
+| `control/mapping.py` | Config mapping and shared layer serialization, deep merge, and stable content identifiers. |
 | `control/run_config.py` | ExperimentConfig / RunConfig and merge + id hashing. |
 
 编排层级与 concept §2 / §5 一致：

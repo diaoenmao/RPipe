@@ -4743,3 +4743,13 @@ system/结构CPU396 passed/0fail/error/skip，4个新节点全部执行；此前
 21个函数签名与19个其余函数/类AST不变；仅三项纯汇总函数体改变，不改GPU探测/装箱/SAFETY及API/磁盘布局。PR正文只追加一次真实验收；应用附件100上限错误保留，不删除历史附件。按最新人工保留本地/远端codex/structure-artifacts与暂存/数据，main、本地dev和origin/main不变，不force push。收尾文档本地主题提交随下一完整批次合入，不为几行记录另开PR。原始证据.tmp/structure-capacity不随clone。
 
 整体80文件/9117行，仅比起点少15行，仍不称明显缩行目标完成。下一步继续Config映射内部复用；临时原型100组merge、四层各10组Config对照已通过，但不作为生产实施/完整回归验收。旧目标paused元数据不作为新的API待审门，也未伪称已恢复active。
+
+## 282. 2026-10-17：四层Config共享映射与重复校验精简
+
+### 282.1 方案与API边界
+
+在同一codex/structure-artifacts主题继续。既有Control映射模块增加一个私有_layer_mapping纯函数，四类Config.to_mapping仍在各原模块、保留原公开签名，以显式原字段顺序传入该helper；保留config浅拷贝、空项省略、extras最后覆盖及叶对象共享，不使用会深复制的asdict，不自动扩展子类字段。既有emit等模块名称保留，未增加api/门面或改公开接口形状，不需要另造层或继承框架。
+
+from_mapping复用split_known已有的单次dict复制与None归一化，删去四处调用端重复复制；Data origin拒绝与各层构造转换原样保留。deep_merge保留函数入口的dict/叶替换判定，递归时不再在调用端重复同一判定；保留基底不变、未改叶对象身份及patch覆盖/键序。临时原型100组merge与四层各10组转换/异常、签名与映射访问轨迹一致，仍须实施后portable回归与完整CPU/CI验收。
+
+不改API形状、类所在模块、pickle路径、配置/产物布局；不跑GPU或实验、不做性能测量。先按此设计实施和本地验证，同主题完整里程碑收尾，不为单个函数或几行文档开碎PR。
