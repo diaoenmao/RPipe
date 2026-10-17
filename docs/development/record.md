@@ -4934,3 +4934,13 @@ parent延伸：恢复相邻与当前结构定向165 passed、0skip。全structur
 按最新人工明确授权，先推送现有e712c93/2c314a2/bad633e本地积累，通过单个PR合dev，后续精简仅在现有文件内做，不再改变文件架构或逐路径审计。冻结bad633ef014d8a99161b8061b40b22ccb18f1d9b的新完整CPU：core2699 passed+1同一既有POSIX skip、Flow525 passed；10新增shape节点/153当前结构节点执行，100源码哈希一致。这次结果覆盖parent延伸，不借e712c93旧绿灯。全structure78文件/9023行，比PR210的9038少15；比起点9132净少109，整体目标未称完成。
 
 范围为此前两模型函数原样归并、同名factory对象/公开门面保持及不可达Path.parent包装删除，说明/2318正式候选0引用扫描/函数AST/7与36组对照/旧失败证据见§284和原.tmp，不随clone。仅源码归并删除旧碎文件，不是删除实验数据或结果；_staging_from_DEM仍唯一未跟踪，未添加或读取。后续公开API形状与on-disk布局不变，无GPU/测速/强推/main操作。最终head及actualdev CI需分别真实验收。
+
+### 285.1 PR211最终head验收与后续局部配置精简
+
+最终head8c37d086b8ee5e75631195b0da3924a8b4c16eea的Branch39008563517/Package39008563472/Unit39008563468全部实际矩阵与聚合成功后普通合dev4f28bcf3a1062d55a9d066a60b3cd78d2da46770；actualdev CI独立验收中。原head/dev源码/测试/Study/结构文档无差异，当前分支/数据/_staging_from_DEM保留，未改main。
+
+后续仅在现有control.mapping.emit、algorithm.kwargs.filter_args、algorithm.hf_map.training_arguments_kwargs三个函数内精简：emit以同一等值判断和顺序生成字典；保留filter_args全部保留键/未知参数/可变参数门，仅合并接受条件；HF overlay是现有filter_args产生的普通dict，用原生update代替逐项赋值。签名/返回/异常、键序/空值/覆盖优先级/对象身份/全部输入校验保持，不新增helper或文件，不改架构/on-disk布局，不做逐路径审计或测速。3组等值比较探针/5组实际HF参数映射提案（合成TrainingArguments签名，不联网）及过滤对照已一致，临时证据.tmp/structure-config-operations不随clone；便携回归随后补入。
+
+### 285.2 局部配置操作本地定向验收
+
+三个函数所在源码全部函数签名/返回注解保持；定向205 passed/0skip，5新增比较/None覆盖/键序/身份/保留键与可变参数过滤回归、153结构节点执行。源码净少6行，全structure78文件/9017行，对起点净少115。不新建/迁移文件，不改API形状、磁盘格式或科学门；无新异常兜底。主题本地提交后冻结完整CPU验证，PR211实际dev仍独立等待，不把两批证明混用。

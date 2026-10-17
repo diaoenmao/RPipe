@@ -137,3 +137,22 @@ def test_data_subclass_origin_is_still_rejected_before_construction():
 
     with pytest.raises(ValueError, match='origin is set on the Study'):
         OriginData.from_mapping({'origin': 'domestic'})
+
+
+@pytest.mark.parametrize('match', [None, 'dict', 'list'])
+def test_emit_preserves_equality_omission_order_and_value_identity(match):
+    from rpipe.structure.control.mapping import emit
+    calls = []
+    class Probe:
+        def __eq__(self, other):
+            calls.append(type(other).__name__)
+            return type(other).__name__ == match
+        def __ne__(self, other):
+            pytest.fail('omission must retain equality semantics')
+    probe, tail = Probe(), object()
+    result = emit({'probe': probe, 'none': None, 'empty': [], 'zero': 0, 'false': False}, {'tail': tail})
+    assert calls == (['dict'] if match == 'dict' else ['dict', 'list'])
+    assert list(result) == (['probe', 'zero', 'false', 'tail'] if match is None else ['zero', 'false', 'tail'])
+    if match is None:
+        assert result['probe'] is probe
+    assert result['tail'] is tail and result['zero'] == 0 and result['false'] is False
