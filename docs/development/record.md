@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：同一Config PR208纳入三类共享构造，最终定向CPU213 passed，准备重新完整验收（§282.5）。
+> 验证：新增子类默认值/构造kwargs序/Data origin拒绝9节点通过，整批新增合同节点共40项。
+> 结果：内部复用映射读取与写出，公开字段/方法/模块/产物布局不变；Data专用校验保持独立。
+> 下一：最终源码冻结后core/CPU Flow→更新原PR208→最终head与actualdev双侧实际CI；不另开小PR。
+> 状态：中间head52ae26a证据保留，不作最终验收；保留分支/暂存/数据，旧goal暂停不据此停工。
+
 > 当前（2026-10-17）：继续完成Config共享映射里程碑，本机完整CPU回归通过，准备同主题PR→dev（§282.3）。
 > 验证：core2677 passed+1同一既有skip、CPU Flow525 passed；31新节点/155结构节点全执行，102源码哈希不变。
 > 结果：四类Config公开字段/方法/模块与API门面保持；共享内部序列化，移除重复复制和递归前判断。
@@ -4783,3 +4789,9 @@ Control+结构CPU204 passed/0fail/error/skip，31个新增portable节点全执�
 复查发现Model/Algorithm/System的from_mapping构造段相同，继续纳入同一个Config PR208，不另开PR。Control增加私有_layer_from_mapping，显式传入原基础字段tuple；保留fields(cls)识别、原默认值、config浅拷贝、extras分配与构造kwargs顺序，不把子类新增字段自动传给构造器。Data.from_mapping保留独立origin拒绝及原构造逻辑，不增加策略flag、回调框架或基类。公开方法/构造签名、模块、字段与API门面均不变。
 
 三类各7组输入/转换异常以及子类默认值、kwargs顺序的临时原型对照一致。实施前记录此方案，再补portable回归并重新完整CPU及最终head CI。中间head52ae26a的原始2677/525结果和CI记录仍在.tmp/structure-config，属于中间版本；不删除/取消其Run，不替代扩充后的最终版本验收。最终证据改存.tmp/structure-config-final，仍使用PR208唯一分支。
+
+### 282.5 扩充后的实施与定向回归
+
+新增Control私有_layer_from_mapping，Model/Algorithm/System原from_mapping保留classmethod/公开签名，以显式字段tuple复用它；Data原from_mapping及origin拒绝AST未动。既有模块名称保留，没有公开门面/基类/配置字段或pickle路径变化。字段识别仍用原dataclass fields，构造只传原基础字段，不自动扩展子类字段，config/extras/kwargs序保持。
+
+Control+结构CPU213 passed/0fail/error/skip，新增扩充节点9项（4子类默认值、4构造kwargs序、1Data子类origin拒绝），整批新合同节点40。LOCAL_TARGETED_CHECKED SHA256 `f3d11562412013498d445de01b63bfdb5759446fe48fe7b138967b8d3fbe3cb2`。当前80文件/9073行；完整core/Flow及最终CI尚未执行，不能套用中间head证据。最终证据.tmp/structure-config-final，不随clone；原.tmp/structure-config证据及GitHub旧Run不删不取消。

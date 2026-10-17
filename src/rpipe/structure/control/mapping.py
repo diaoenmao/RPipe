@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from typing import Any
+from dataclasses import fields as _fields
 
 
 def get_setting(mapping: dict[str, Any], key: str, default: Any = None) -> Any:
@@ -29,6 +30,12 @@ def emit(known: dict[str, Any], extras: dict[str, Any]) -> dict[str, Any]:
         out[key] = value
     out.update(extras)
     return out
+
+
+def _layer_from_mapping(cls: Any, mapping: dict[str, Any] | None, names: tuple[str, ...]) -> Any:
+    body, extras = split_known(mapping, {f.name for f in _fields(cls) if f.name != 'extras'})
+    return cls(**{name: body.get(name) for name in names},
+               config=dict(body.get('config') or {}), extras=extras)
 
 
 def _layer_mapping(layer: Any, names: tuple[str, ...]) -> dict[str, Any]:

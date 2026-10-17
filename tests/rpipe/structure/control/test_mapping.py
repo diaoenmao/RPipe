@@ -94,3 +94,46 @@ def test_deep_merge_copies_changed_branches_and_retains_other_references():
     assert result['kept'] is kept and result['new'] is added
     assert base == {'nested': {'a': 1}, 'kept': kept} and patch['nested'] == {'b': 2}
     assert list(result) == ['nested', 'kept', 'new']
+
+
+@pytest.mark.parametrize('config_type', [DataConfig, ModelConfig, AlgorithmConfig, SystemConfig])
+def test_layer_mapping_retains_subclass_default_without_expanding_fields(config_type):
+    from dataclasses import dataclass
+
+    @dataclass
+    class Child(config_type):
+        extra_field: str = 'kept'
+
+    child = Child.from_mapping({'extra_field': 'ignored', 'custom': 1})
+    assert child.extra_field == 'kept'
+    assert child.extras == {'custom': 1}
+    assert child.to_mapping() == {'custom': 1}
+
+
+@pytest.mark.parametrize('config_type,names', [
+    (DataConfig, ['name', 'source', 'path', 'config', 'extras']),
+    (ModelConfig, ['name', 'source', 'path', 'config', 'extras']),
+    (AlgorithmConfig, ['mode', 'source', 'path', 'config', 'extras']),
+    (SystemConfig, ['source', 'path', 'config', 'extras']),
+])
+def test_layer_mapping_keeps_constructor_keyword_order(config_type, names):
+    seen = []
+
+    class Probe(config_type):
+        def __init__(self, **kwargs):
+            seen.append(list(kwargs))
+            super().__init__(**kwargs)
+
+    Probe.from_mapping(None)
+    assert seen == [names]
+
+
+def test_data_subclass_origin_is_still_rejected_before_construction():
+    from dataclasses import dataclass
+
+    @dataclass
+    class OriginData(DataConfig):
+        origin: str | None = None
+
+    with pytest.raises(ValueError, match='origin is set on the Study'):
+        OriginData.from_mapping({'origin': 'domestic'})

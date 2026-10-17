@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, fields
 from typing import Any
 
-from rpipe.structure.control.mapping import emit, split_known, _layer_mapping
+from rpipe.structure.control.mapping import emit, split_known, _layer_mapping, _layer_from_mapping
 
 
 @dataclass
@@ -18,15 +18,7 @@ class AlgorithmConfig:
 
     @classmethod
     def from_mapping(cls, mapping: dict[str, Any] | None) -> AlgorithmConfig:
-        known_names = {f.name for f in fields(cls) if f.name != 'extras'}
-        body, extras = split_known(mapping, known_names)
-        return cls(
-            mode=body.get('mode'),
-            source=body.get('source'),
-            path=body.get('path'),
-            config=dict(body.get('config') or {}),
-            extras=extras,
-        )
+        return _layer_from_mapping(cls, mapping, ('mode', 'source', 'path'))
 
     def to_mapping(self) -> dict[str, Any]:
         return _layer_mapping(self, ('mode', 'source', 'path'))
