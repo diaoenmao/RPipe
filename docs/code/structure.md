@@ -186,7 +186,8 @@ structure/
 | **文件（相对 structure/）** | **职责** |
 | --- | --- |
 | `data/config.py` | DataConfig dataclass. |
-| `data/factory.py` | Runtime Data object, registry, and factory. |
+| `data/factory.py` | Dataset registry, factory and vision builders. |
+| `data/runtime.py` | Runtime Data consumption, loader options and step-budget rebinding. |
 | `data/prepare.py` | Materialize project-shared datasets once (not per Run). |
 | `data/profile.py` | Dataset profile written next to shared data. |
 | `data/resume.py` | Replay sampler indices, never consumed dataset transforms, on CPU-loader resume. |
@@ -740,7 +741,8 @@ RNG 和采样位置恢复完整不等于所有算子数值确定。严格数值�
 | `system/logger.py` | System Logger: stdout + assets/logs/run.log (flush on every emit). |
 | `system/runtime.py` | Apply Run seed and torch runtime flags. Call at the start of prepare. |
 | `system/torchvision_load.py` | Load torchvision after its native ops are actually registered. |
-| `system/origin.py` | 国内来源、SDK 传输策略与延迟读取生命周期；经 system_api 对外提供。 |
+| `system/origin.py` | 来源与端点选择、模型/数据下载入口及输入预检；公开名称经 system_api 对外提供。 |
+| `system/transfers.py` | SDK 传输钩子、并发策略作用域及延迟 reader/media/generator 生命周期；私有状态由本模块独占。 |
 
 管理计算在硬件上的执行（concept §6 **system**）：设备、精度、并行、内存与 IO。prepare 确认设备与输出位置；checkpoint **文件**读写在本层，**resume 语义**在 algorithm（§6.11.3）。声明字段由 **`SystemConfig`** 从 JSON / Config 加载。
 
@@ -1217,7 +1219,8 @@ Study 编排清单。`rpipe.structure.artifact.index`，**不是** Flow 的 writ
 | `make/estimate.py` | Config-only job memory/time estimates and annotation; no hardware probing. |
 | `make/expand.py` | Expand a Study declaration into Run patches. |
 | `make/recipe.py` | Load a Study recipe and call its ``register(ctx)`` before Data / Model are built. |
-| `make/schedule.py` | GPU round-robin and ``&`` / ``wait`` launch scripts. |
+| `make/schedule.py` | Run readiness, launch-plan reuse and subprocess lifecycle. |
+| `make/scripts.py` | Wait-group validation, shell generation and atomic script publication. |
 | `make/write.py` | Expand a Study declaration and write Run configs, index, and provenance. |
 
 多实验管理与调度脚本化。与 **control** 并列：control 做**一次**合并；make **循环**调用 control 与 artifact。不直接 import 四层或 flow；调度时经 `algorithm_api` 复用 resume 的 sibling 依赖解析，避免另写一套匹配规则。

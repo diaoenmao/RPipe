@@ -1,3 +1,27 @@
+> 当前（2026-10-17）：data/runtime、schedule/scripts、origin/transfers 合批本地完整 CPU 验收通过，准备一次 PR→dev（§279）。
+> 验证：core2627 passed+1同一既有skip、CPU Flow525 passed；16个新增行为回归及1个迁移节点全执行，冻结库源码哈希不变。
+> 结果：origin593→244行、transfers361行；公开门面/签名/返回/磁盘布局保持，2318正式候选旧限定名引用0。
+> 下一：最终head全部实际CI通过后正常合dev，再核验实际dev；整体明显缩行仍未达成，不标总目标完成。
+> 状态：首轮收集重名拒绝证据保留，已修后完整重跑；本轮显式排除GPU，按最新人工保留分支/数据。
+
+> 当前（2026-10-17）：同一structure-artifacts分支推进data/runtime及schedule/scripts分责；本轮make/结构/CLI CPU针对性535 passed（§277–278）。
+> 验证：8个脚本函数AST相同、15个schedule函数规范化对照相同；72组生成文本逐字一致，原生成脚本导入仍可用。
+> 结构：schedule566→366行、scripts208行；整体79文件/9140行，尚未明显缩行，不标总完成。
+> 下一：同分支继续origin职责精简与有依据去重，再完整core+CPU Flow/CI→dev；未另开碎PR。
+> 状态：本轮明确排除GPU/external/slow；前轮误GPU记录保留且不重复通报；按最新人工不删分支或数据。
+
+> 当前（2026-10-17）：继续同一structure-artifacts分支，data runtime/factory分责及局部去重已实施，本轮CPU针对性229 passed（§277）。
+> 接口：公开Data为同一类；Data及3个loader helper AST原样，11注册组合与原版一致；factory457→250行，runtime193行。
+> 重要失败：首轮遗漏not-gpu过滤，误执行CUDA连续/中断探针（fixture预算6+2步），恢复因CUDA不可见失败；本次worker均已退出。
+> 留证：原始错误路径选择、CUDA失败和checkpoint均保留；已用仓库入口显式排除GPU重跑229通过；不把误执行说成无GPU。
+> 下一：同分支继续schedule/origin精简后完整core+Flow及CI；78文件/9132行尚未明显缩行，不改API形状、不删分支/数据。
+
+> 当前（2026-10-17）：PR204 已正常合 dev 0f4174f，最终head与实际dev全部矩阵/聚合CI通过，本批验收完成（§276）。
+> 验证：core2608 passed +1同一既有skip、CPU Flow525 passed；head Unit38993832863，dev Unit38994348622。
+> 结果：artifact五文件归并、估算独立、分组简化；77文件/9146行；原始失败/拒绝完整保留，无旁路或API形状变更。
+> 下一：同一保留分支继续schedule/data factory/origin职责精简；整体明显缩行未达成，目标不标完成。
+> 状态：依最新人工保留本地与远端分支、不删数据；无训练/GPU/测速/main/tag/force；收尾记录本地提交随下批合入。
+
 > 当前（2026-10-17）：structure-artifacts 完整本地里程碑验收通过，准备一次 push/PR→dev；不再等待旧 API 审批（§275）。
 > 验证：core2608 passed +1同一既有skip、CPU Flow525 passed；99个库源码哈希重跑前后相同。
 > 结果：artifact归并5文件、配置估算独立、dict顺序/groupby简化；当前77文件/9146行，整体明显缩行仍未达成。
@@ -4548,3 +4572,68 @@ core2601 passed +1同一POSIX executable mode bits skip，CPU Flow525 passed/0sk
 首轮core通过，Flow524 passed/1 failed：代理在测试运行时清理estimate.py尾空行，真实provenance门正确拒绝success-no-retry；不是生产缺陷。保留FLOW_FINAL.xml/日志/FULL_FIRST_FAILURES.json及DIFF_CHECK_REJECTED.json，修正流程为冻结源码后全部重跑；未改/绕过provenance、未删除失败。EOF清理AST不变。
 
 最新人工要求优先于旧周期清理约定：本批不删除本地或远端分支、数据；main/tag/force push不操作。公开门面形状、签名/返回/异常及磁盘产物布局不变；按本地主题提交，一次里程碑PR合dev并双侧实际CI验收。
+
+
+## 276. 2026-10-17：PR204 双侧全部实际CI验收，依最新指示保留分支
+
+[PR204](https://github.com/DreamSoul-AI/RPipe/pull/204)最终head `efa77829b8ed23241140a789be8261a378dc5e9a`：Branch38993832830、Package38993832827、Unit38993832863全部实际矩阵和聚合成功；正常合入实际dev `0f4174f018db5c64e5a09675ee0328758c39add2`，Package38994348413、Unit38994348622所有实际矩阵与聚合再次成功。PR_CHECKED SHA256 `86b15226a25f5a7cf49ca1b471d3952b9d8f6ddeffc378134acf5d927a89bbc5`；DEV_CHECKED `6bffcdfcf1fc7fd3785bfd86665b780d20a77033b4b7d20fe3a1fc4d7716e509`。实际dev与最终head的src/tests/studies/structure.md一致；原PR正文只追加一次验收，不重派/重合。证据`.tmp/structure-artifacts/`不随clone。
+
+最新人工要求本轮不删分支：`codex/structure-artifacts`本地和远端均保留；本地快进至已验收dev后承接下一批，main/dev/origin/main保护引用不变，无force push、tag或数据/结果/暂存删除。只做收尾文档本地主题提交，不新增docs-only PR；周期清理基线203保留，本次为其后第1个合入。
+
+整体结构目标尚未完成：当前77文件/9146行，仍高于目标起点9132行；后续重点为schedule的脚本计划与进程生命周期、data factory的运行时Data/loader与builder、origin的端点声明与SDK传输生命周期。仅做职责精简与有依据去重，不新开边界修复、不改变API形状，不裁剪下载校验/失败留证/恢复逻辑。下一批依相同完整本地/最终head/实际dev CI里程碑推进。
+
+
+## 277. 2026-10-17：data runtime 与 factory 分责方案
+
+继续同一保留分支，积累下一完整里程碑：Data类及其loader/step-budget helper原样移入data/runtime.py，factory继续负责注册/构造并直接使用Data；data_api与data包原公开名称/签名/返回不变，不新增门面或兼容模块。正式2318 checkpoint只读pickle字节检查对data.factory引用0、读取错误0，未覆盖库外。去掉只有本地一个调用方、均返回ToTensor的两层私有transform包装，原位置分别直接构造ToTensor，保持train/test各自实例；增强仍在模型侧。重复注册改为按同序名称循环，不改支持组合/顺序/校准值。现有Data方法AST、registry快照与builder输入输出为验收依据，保留sampler/RNG恢复和错误处理；不跑真实下载/训练/GPU。
+
+
+### 277.1 实施与CPU范围验证
+
+Data类及_loader_options/_empty_train_loader/_train_loader_for_samples移入runtime，4个定义AST逐一相同；factory457→250行，runtime193行。其余factory定义AST仅允许两个ToTensor包装就地展开，VISION规格AST相同；11个name/source组合、公开sorted顺序、stub/torch builder名称一致。原Data/API/包/factory普通导出身份相同；不新增兼容模块或门面形状。镜像移动既有rebind测试，补公开Data身份回归。structure78文件/9132行（与目标起点相同），不能称明显缩行完成。
+
+使用tests/run.py、c1/c2及not gpu/not external/not slow过滤：229 passed/0fail/error/skip，1个GPU用例明确未执行；包含结构、data/api、CPU fresh-process exact resume与checkpoint回归。LOCAL_TARGETED_CHECKED SHA256 `c153c4b7e0f7ff82dd88362f9236e261ed0fefa8f4415285c3d24203ff2c679c`，证据`.tmp/structure-runtime/`不随clone。当前代码的完整core/Flow/CI尚未执行，不挪用PR204结果作本轮验收；下一完整里程碑统一推送PR。
+
+### 277.2 代理测试选择失误：误执行GPU用例
+
+第一条目标命令误写不存在的test_resume.py，pytest exit4、未执行节点，TARGET.log/EXIT保留。第二条修正路径后使用raw pytest而漏加not-gpu过滤，意外选中明确标gpu的CUDA恢复用例；229 passed/1failed。连续与中断CUDA探针子进程均已成功返回（fixture分别6/2个优化步），resume子进程因CUDA device_count=0的反序列化错误失败。这违反本轮不占GPU的指示；不声称全轮无GPU，不把该结果判为新生产缺陷，也不在GPU复验。原日志、XML及全部临时checkpoint保留，GPU_SELECTION_INCIDENT.json记完整事实，CIM核对本次recovery_worker无存活进程。未杀/挂起其他进程，未删除任何结果。
+
+纠正为仅走仓库测试入口并显式标注CPU成本与排除GPU；第三条同源验证229 passed。此次是代理执行范围错误，不放宽数据/恢复校验、不改测试阈值、不把未执行GPU算成功。
+
+
+## 278. 2026-10-17：schedule 与脚本发布分责方案
+
+延续同一未合批次：bash_path/repo_root_from/scripts_dir/write_jobs_json/wait_groups/job_waves/render_bash/write_launch_scripts及脚本叶名移至make/scripts.py；schedule保留读取就绪、复用计划、分配与进程等待/失败留证，普通导入所需脚本函数并保留既有名称。scripts不依赖schedule实现；生成的既有schedule.launch_jobs/run_succeeded导入字符串保持，不破坏已生成脚本或新增兼容模块。公开make_api形状、所有函数签名/返回/校验/原子写/异常传播与磁盘内容不变。单次日志mode聚合复用job_mode与dict有序去重，删除只有一个调用点的_group_mode包装；其余移动函数AST逐一对照。继续显式CPU成本/not gpu过滤，保留所有旧失败，不执行真实GPU或窗口启动。
+
+
+### 278.1 本地实施与针对性验收
+
+schedule566→366行，scripts208行：8个函数原AST一致，包含等待组校验、原子发布及生成的旧schedule导入字面量；15个保留schedule函数在仅还原_group_mode局部有序去重后AST一致。新模块不反向import schedule，不引入循环导入、包装层或新API形状。既有名称经普通直接import保留，8个逐对象导出身份节点均执行；另补train/eval重复日志标签CPU回归（Popen全为测试替身，console=shared）。72组空/单模式/混合模式、round/split/batch组合的旧/新render返回字符串完全相同；没有执行生成命令。
+
+仓库统一入口c1/c2、not gpu/not external/not slow：结构+全部make+CLI retry共535 passed/0fail/error/skip。证据`.tmp/structure-scripts/`不随clone，LOCAL_TARGETED_CHECKED SHA256 `be148115f8e8988d587401434bcf3b02fb34baa3077442ff32428da9f408be2a`。原Data重构的229 CPU通过仍仅为其当时定向验证；当前整批完整core/Flow/CI尚待origin分责后执行，不用PR204或旧成功替代。整体79文件/9140行，仍未达到明显缩行。
+
+## 279. 2026-10-17：origin 来源入口与私有传输生命周期分责
+
+### 279.1 方案与边界
+
+按最新人工指示继续同一 codex/structure-artifacts 里程碑。origin 保留公开函数、DownloadEndpoint、端点/输入预检；SDK transport hook、reader/media/generator 及全部可变 scope 状态一起迁入 system/transfers.py，避免复制标量状态或循环 import。system_api、data_api.load_hf_dataset、model_api.download_model 的名称、签名和对象身份关系不变，不增加旧 origin 别名。现有 SDK 测试仅将私有状态读取改指实际所有者；迁移函数逐项 AST 对照，并核查正式 pickle 字节引用。
+
+同时删除 torchvision_load 中必达 return/raise 循环之后不可达的 last-error 兜底，保留重试次数钳制、清理、退避和原异常；补最小次数与耗尽回归。设计先记录再实施。合并 data/runtime、schedule/scripts 与本批后冻结源码，完整 core + 显式 not-gpu 的 CPU Flow 回归，再一次 PR 经双侧实际 CI 合 dev。保留所有失败证据、暂存和分支；不训练、不改磁盘产物布局或 API 形状。
+
+### 279.2 实施与定向验证
+
+origin 593→244行，私有 transfers361行；25个函数/类逐项 AST 相同，包含传输白名单、scope/fork/并发恢复、reader/media/generator 的取消与失败清理。公开函数仍定义于 origin，system_api 与其他门面无变更，无旧别名。正式2318个持久化候选按原始字节或ZIP内pickle成员扫描：旧 system.origin 引用0、读取错误0（不反序列化、不代表未知下游）；证据 .tmp/structure-origin/PICKLE_SCAN.json 不随clone。
+
+torchvision_load 删除5行不可达兜底，新增5个次数/耗尽/原异常身份回归。仓库入口 c1/c2 显式排除 gpu/external/slow，system+结构392 passed/0fail/error/skip；SDK网络均为既有测试替身。迁移定义对照及原始日志均保留，尚未把定向结果当作整批验收。当前整体文件/行数在完整验收时记实，不把职责迁移称为明显缩行。
+
+### 279.3 完整回归首轮收集拒绝
+
+首次 core 在收集阶段退出2：新 data/test_runtime.py 与既有 system/test_runtime.py 同名，pytest 默认导入发生 import-file-mismatch（529 deselected、1 collection error，未执行测试）。保留 CORE.log/XML/EXIT；仅将新增 Data 测试文件改为 test_runtime_data.py，沿用既有 test_origin_concurrency 等职责后缀命名，不改全仓 pytest 导入设置或生产代码。修正后重新执行整批，不能沿用旧结果。
+
+### 279.4 整批 CPU 完整验收
+
+冻结后 core2627 passed/1同一既有POSIX skip、CPU Flow525 passed/0skip，均0fail/error。16个本批新增行为回归及1个原有迁移节点全执行（Data身份1、schedule导出8、模式日志2、重试耗尽5，另Data原有迁移节点1），不把迁移节点称为新增行为。102个库源码哈希前后相同。LOCAL_CHECKED SHA256 `1697168e33befb8c435e9f9504ea431731c6963961e7e3acef7f36aa0c654f04`，原始 XML/log/选择错误证据在 .tmp/structure-origin，不随clone。
+
+当前 structure 80文件/9147行，对照目标起点80文件/9132行，仍未明显缩行；本批只验收职责拆分与有据精简，不声称总目标完成。首轮 core 收集重名错误保留，改文件名后上述完整重跑通过。全部新运行使用仓库入口、c1/c2及 not gpu/external/slow；没有新增GPU运行或真实网络下载。下一步同一分支推送、唯一 PR→dev、最终head和实际dev双侧实际CI；不新开碎文档PR。
+
+验收脚本首次用名称包含gpu判断GPU执行，误将CPU容量/配置测试名拒绝；CHECKER_REJECTED.json 保留，未将其当库失败或重跑通过测试。GPU排除依据为仓库入口实际 -m/not-gpu 与c1/c2筛选；XML确认旧误选CUDA恢复节点未执行。
