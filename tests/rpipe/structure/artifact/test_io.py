@@ -200,7 +200,7 @@ def test_index_keeps_legacy_optional_empty_containers(tmp_path, body):
 @pytest.mark.parametrize('text', ['false', '0', '[]', "''", 'true', '1'],
                          ids=['false', 'zero', 'empty-list', 'empty-string', 'true', 'one'])
 def test_config_rejects_non_mapping_yaml_root_without_writes(tmp_path, text):
-    from rpipe.structure.artifact.errors import CorruptArtifactError
+    from rpipe.structure.artifact.layout import CorruptArtifactError
 
     path = tmp_path / 'config.yaml'
     raw = text.encode('utf-8')

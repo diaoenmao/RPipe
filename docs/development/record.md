@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR203 已合 dev 70526bd，最终 head/实际 dev 全部矩阵及聚合 CI 通过；门面与 origin 迁移验收完成。
+> 验证：core2606 passed +1既有skip、Flow525、156结构检查；正式2318 checkpoint旧origin引用0（§269–270）。
+> 清理：codex/structure-api-design 本地+远端已删；周期基线203，累计远端删除57；新 structure-artifacts 与暂存/数据保留。
+> 下一：artifact 五个碎文件归并已应用，针对性测试通过，继续完整回归与职责精简；总目标尚未完成。
+> 状态：无审批阻塞；不训练/GPU/main/tag、不加兼容旁路；库外及未知下游对象未纳入本仓扫描。
+
 > 当前（2026-10-17）：09:12 批准的门面/origin 迁移已完成本地验收，准备统一里程碑 PR→dev；不再等待旧 API 审批门。
 > 验证：core 2606 passed +1 同一既有 skip、CPU Flow 525 passed，最终156结构节点全执行（§270）。
 > 证据：正式2318 checkpoint旧引用0，临时115989候选仅人工探针命中1；无读取错误，无旧模块别名（§269）。
@@ -4485,3 +4491,12 @@ PR202 final `a634074bb1bdd81d58fbe7c6a52d0395626be9e4`：Branch38986989262、Pac
 ## 271. 2026-10-17：artifact 职责归并方案（实施前）
 
 按已批准 §2.1，在既有模块归并：paths/errors→layout；asset/tree 的两个操作→asset/kinds；config/result 的 format→各自 io。保留 kinds 模块对象与原常量，公开门面名称、签名、返回、校验及磁盘布局不变，不加旧模块别名。库内源码、测试导入、镜像测试位置及结构登记同步。正式2318 checkpoint 对 errors/layout/asset.tree/config.format/result.format 的只读 pickle 字节扫描命中0、错误0；证据 `.tmp/structure-api/ARTIFACT_PICKLE_CHECKED.json` 不随 clone，未覆盖库外或未知下游。按原有回归和 AST 定义对照验收，不新增边界修复。
+
+
+## 272. 2026-10-17：PR203 双侧验收与周期清理
+
+最终 head `5167cea02d86b4cc40f4019879a6153f049894ec` 已正常合入实际 dev `70526bd87edc626a4d69daeaa604c8c2d3dbde9d`。head Unit38991550747/Package38991550766/Branch38991550814；dev Unit38992040041/Package38992040050，所有实际矩阵与聚合成功。PR_CHECKED SHA256 `921b6d8e7f48f547b4351b7a7cabd9bde94eb335fd93928a410a7bcd36092cb6`；DEV_CHECKED `fedd21bce25580de12a042c786651fab49a361593546e9dc4bc43cd66ddd55fd`。原 PR 正文追加一次验收记录。
+
+约5 PR周期（194→203）盘点：仅一个主工作树，无开放 PR/Issue；codex/structure-api-design 提交已保全，删除本地及远端；累计远程清理57。当前新分支 codex/structure-artifacts 未合保留，清理前后该分支tip、全部diff与status一致；main/dev/origin/main保护引用不变。无废弃登记worktree、无其他未合主题。证据 `.tmp/structure-api/` 不随clone。附件工具因100条上限拒绝附加PR203，GitHub PR与验收均正常；保留历史附件不绕过上限。
+
+本批继续 §271 的归并，未新增文件/包装层/边界缺陷任务；原子写及错误处理保留。实现中脚本先改了将删除文件的import，git rm因本地修改拒绝；逐字核对为本次import替换后恢复该import并正常git rm，未使用force、未丢用户内容。

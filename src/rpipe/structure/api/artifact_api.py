@@ -5,10 +5,10 @@ from rpipe.structure.artifact import (
 from rpipe.structure.artifact._atomic import _owned_stream, _read_text, atomic_replace, atomic_write_text
 from rpipe.structure.artifact.activity import _format_activity, announce, clear_activity, read_activity
 from rpipe.structure.artifact.asset import ensure_assets, kinds, list_asset_files
-from rpipe.structure.artifact.errors import CorruptArtifactError
+from rpipe.structure.artifact.layout import CorruptArtifactError
 from rpipe.structure.artifact.index import index_path, load_index
 from rpipe.structure.artifact.layout import ArtifactLayout, ensure_study_layout, validate_run_directory
-from rpipe.structure.artifact.paths import (
+from rpipe.structure.artifact.layout import (
     ASSETS_DIRNAME, DOCS_DIRNAME, PROCESS_NAME, RESULT_NAME, RUNS_DIRNAME,
 )
 from rpipe.structure.artifact.provenance import (
@@ -18,7 +18,7 @@ from rpipe.structure.artifact.provenance import (
 from rpipe.structure.artifact.readout import format_logs, format_status, list_runs, write_numbers
 from rpipe.structure.artifact.readout.compare import compare_runs, format_compare, write_compare
 from rpipe.structure.artifact.result import STATUS_FAILED, STATUS_SUCCEEDED, load_result, write_result
-from rpipe.structure.artifact.result.format import decode_result, encode_result
+from rpipe.structure.artifact.result.io import decode_result, encode_result
 from rpipe.structure.artifact.shared import cache_lock, migrate_shared, reference_tree, shared_paths
 
 __all__ = [

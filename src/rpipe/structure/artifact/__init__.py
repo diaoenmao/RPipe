@@ -1,6 +1,6 @@
 from rpipe.structure.artifact.asset import ensure_assets, list_asset_files
 from rpipe.structure.artifact.config import load_config, write_config
-from rpipe.structure.artifact.errors import (
+from rpipe.structure.artifact.layout import (
     ArtifactError,
     CorruptArtifactError,
     MissingConfigError,

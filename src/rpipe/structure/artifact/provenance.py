@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from rpipe.structure.artifact import paths
+from rpipe.structure.artifact.layout import INDEX_NAME, RUNS_DIRNAME, CONFIG_NAME
 from rpipe.structure.artifact._atomic import _read_bytes, _read_text, atomic_write_text
 from rpipe.structure.artifact.index import load_index
 from rpipe.structure.artifact.layout import validate_run_directory
@@ -85,10 +85,10 @@ def source_files(study_dir: Path | str, study: dict[str, Any]) -> dict[str, str]
 def plan_files(study_dir: Path | str) -> dict[str, str]:
     """``index.json`` and the config of every Run it lists."""
     study_dir = Path(study_dir).resolve()
-    index = _inside(study_dir, paths.INDEX_NAME)
+    index = _inside(study_dir, INDEX_NAME)
     if not index.is_file():
         return {}
-    out = {paths.INDEX_NAME: _sha256(index)}
+    out = {INDEX_NAME: _sha256(index)}
     try:
         body = load_index(study_dir)
     except TypeError as exc:
@@ -97,7 +97,7 @@ def plan_files(study_dir: Path | str) -> dict[str, str]:
         for run in experiment.get('runs') or []:
             run_id = run.get('id')
             validate_run_directory(run_id)
-            relative = f'{paths.RUNS_DIRNAME}/{run_id}/{paths.CONFIG_NAME}'
+            relative = f'{RUNS_DIRNAME}/{run_id}/{CONFIG_NAME}'
             config = _inside(study_dir, relative)
             if config.is_file():
                 out[relative] = _sha256(config)

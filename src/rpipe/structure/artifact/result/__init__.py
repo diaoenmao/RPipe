@@ -1,4 +1,4 @@
-from rpipe.structure.artifact.result.format import (
+from rpipe.structure.artifact.result.io import (
     STATUS_FAILED,
     STATUS_SUCCEEDED,
     validate_result,

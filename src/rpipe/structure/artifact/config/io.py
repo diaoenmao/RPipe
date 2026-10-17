@@ -6,8 +6,21 @@ from pathlib import Path
 from typing import Any
 
 from rpipe.structure.artifact._atomic import _read_text, atomic_write_text
-from rpipe.structure.artifact.config.format import decode_config, encode_config
-from rpipe.structure.artifact.errors import MissingConfigError
+from rpipe.structure.artifact.layout import MissingConfigError
+
+import yaml
+
+from rpipe.structure.artifact.layout import CorruptArtifactError
+
+def decode_config(text: str) -> dict[str, Any]:
+    data = yaml.safe_load(text)
+    data = {} if data is None else data
+    if not isinstance(data, dict):
+        raise CorruptArtifactError('Config must be a mapping')
+    return data
+
+def encode_config(data: dict[str, Any]) -> str:
+    return yaml.safe_dump(data, sort_keys=False, allow_unicode=True)
 
 
 def load_config(path: Path | str) -> dict[str, Any]:
