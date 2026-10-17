@@ -1,8 +1,9 @@
-> 当前（2026-10-17）：PR199双侧实际CI全成功、#198已关闭；已正常删domestic-sdk-transfers本地+远端，远端仅main/dev。
-> 最新：B144/#200五个库reader的31正式红回归已提交425cd72（14 failed/17 passed、0error/skip），唯一新分支library-reader-exits。
-> 出处：§260–261、audit143的PR/DEV_CHECKED、audit144/RED.xml；临时证据不随clone，portable测试入库。
-> 下一：继续归并显式/隐式whole-file读取同类边界，先补证/红测试与设计，再统一最小修和一个类别PR；未改生产。
-> 状态：goal active、无审批阻塞/活句柄；不合main/tag、不真实下载/原生codec/GPU/测速/Study或删数据，用户暂存保留。
+> 当前（2026-10-17）：B144/#200整类owned读取修fdfef59已提交，覆盖5显式+19whole-file点；唯一library-reader-exits，未PR。
+> 最新：69项先红28failed/41passed后转绿，另3个manager协议控制；72针对性、2185相邻+1既有skip、core2450passed+1既有skip通过（§263）。
+> 检查：最终CPU Flow525passed/72新节点已全执行；18模块原body/validation/order经限定逆变换AST同等核对，初checker拒绝保留不当库失败。
+> 下一：完成Flow与72新节点逐项本机核验，再一个类别PR→dev/双侧CI；200保持OPEN，PR199/198已验收清理不重派。
+> 状态：goal active、无审批阻塞；不合main/tag、不真实下载/原生codec/GPU/测速/Study或删数据，用户暂存保留。
+
 
 
 
@@ -4333,3 +4334,17 @@ B143跨版本修正后完整本机检查：5978164（生产69ec7e4）CORE_PICKLE
 e4ab3e4提交整类69正式回归，28failed/41passed、0error/skip；原425cd72的31红及14失败不覆盖。新增严格Result/Config/provenance byte-hash、optional activity/history/logs的错误/取消/close/成功控制，真实UTF8 decoder原错，以及库whole-file读路径清单约束。首扩展候选52失败因fixture给Path.open关键字mode重复传入，错误候选EXPANDED_RED保留并拒绝；修fixture关键字/位置参数兼容后EXPANDED_RED2为真实69/28红，不当52个库失败。未修改生产。
 
 方案见设计B144：现有_atomic一个_owned_stream加最薄UTF8 _read_text/_read_bytes复用，五显式with与19whole-file统一首错/取消；现有strict/optional外层、read-close再decode/hash顺序、errors=replace、本地输入导入边界保持。不新增模块/公开API/配置/磁盘格式或性能优化。下一先提交方案再生产实现与必要helper协议/相邻/core/Flow验证，整个200一个里程碑PR，当前无新PR/审批等待。
+
+
+## 263. 2026-10-17：B144整类owned读实现与完整验证进行中
+
+先425cd72（五显式31红）→e4ab3e4（69扩展28failed/41passed）→e3a76ef方案，再fdfef59最小生产修：原_atomic增加_owned_stream与薄UTF8 _read_text/_read_bytes，五with manager与19whole-file逐点使用；共18现有生产模块70插入/33删除，没有新增模块、磁盘布局或公开配置/接口。原decode/hash顺序和strict/optional捕获列表不改，errors=replace保留；只有次级close OSError不再覆盖已有body首错/取消，未知close程序错仍暴露。
+
+新增三个manager协议控制验证enter失败不exit、enter值/原__exit__抑制与不抑制语义；COMPLETE_TARGET72passed/0fail/error/skip，ADJACENT2185passed+1既有skip，CORE_FINAL2450passed+1既有skip/0fail/error。旧16个Path.read_text/read_bytes故障夹具已移到实际owned-open文本边界或本模块byte delegate，保持原IO/程序错对象/peer和输出断言，排除binary/write访问不误拦；不是删除旧故障或放宽断言。完整CPU Flow525passed、72新节点全执行、句柄81359已终结0，原core78731/adjacent44570均terminal0，不重复启动；当前不当最终验收。
+
+PRODUCTION_STRUCTURE_CHECKED对18源模块逆转仅声明的19call/5with、imports与新增helper后，与先红/方案e3a76ef AST精确同等，校验body/验证/顺序未随迁移丢失；SHA2569c10ade78b3ee2f0e253bb07e2db3cdf947c0d4ff22176f47923ed3cdfd1816f。初checker错误删除origin预存在的contextlib import导致拒绝，原拒绝留证；限定只逆转_atomic新增import后检查通过，不当库失败，结构核对不代替行为测试。
+
+全部新/旧红、夹具52拒绝、JSON/UTF8/描述符/输入字节、临时脚本与完整XML在.tmp/audit144不随clone。无真实镜像下载/原生codec/科学数据复验/GPU/性能/Study/main/tag动作，无数据删除；current200唯一OPEN/未PR，下一B145，无设计审批等待。下一Flow完成后从完整XML核72新节点，再统一类别PR和exact final-head/actualdev全部实际CI，不按单点拆PR。
+
+
+B144完整本机验收补记：fdfef59源码CORE_FINAL2450passed+1既有skip、FLOW_FINAL525passed/0skip，72新节点逐项与COMPLETE_TARGET核对为66core+6Flow全部执行；先红69全部包含，前批86SDK回归也在完整Flow全部执行。FINAL_LOCAL_CHECKED保存18源码hash/四XMLhash/72节点与边界（临时不随clone）；81359/78731/44570均terminal0，无活句柄。102实际Python源码与Git跟踪集合精确相同，无分支切换旧源码残留。下一统一类别PR，确切final-head和actualdev全部实际CI仍必需；200未关闭，不把本机绿当已合/发布。

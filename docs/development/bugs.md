@@ -200,3 +200,6 @@ B143 PR199首head3639ae0的真实3.10 CI拒绝：文件代理pickle state错误�
 2026-10-17 B143/#198已验收：PR199 finalfe84bff/actualdev1bf3c85所有实际CI成功，198原body保持、一次评论关闭，旧主题本地/remote普通清理；首3.10红与所有拒绝证据保留。详record§260，未真实下载/原生codec/科学验收。
 
 B144/#200正式红：425cd72的31项14failed/17passed、0error/skip，五显式reader的首错/取消问题确认；当前尚未生产修复，继续归并隐式Path whole-file读同类。200唯一OPEN、唯一library-reader-exits，后续整类一个PR，详record§261。
+
+
+B144整类实现fdfef59：五显式+19whole-file库读取统一owned首错/取消；原69红28失败后72针对性全通过，相邻2185passed+1既有skip/core2450passed+1既有skip。原验证、编码/错误回退、缓存与字节/布局不变；最终Flow/PR双侧CI仍待，200未验收关闭。16旧故障夹具跟随实际owned-open入口，未放宽旧断言；拒夹具/结构checker保留，详record§263。一个整类里程碑不逐点PR。

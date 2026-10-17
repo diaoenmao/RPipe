@@ -1,3 +1,7 @@
+## 2026-10-17 B144/#200整类owned读已修，最终本机Flow进行中（最新）
+
+唯一library-reader-exits，生产fdfef59已提交；先31红425cd72→69红e4ab3e4（28failed/41passed）→设计e3a76ef，再五显式+19whole-file整类修。COMPLETE_TARGET72passed、ADJACENT2185passed+1既有skip、core2450passed+1既有skip，18模块限定逆变换AST核body/order/validation保持；fixture52与初AST checker拒绝保留，不当库失败。16旧故障夹具移实际owned-open边界，原断言不放宽。Flow525passed、72新节点全执行、81359终结0；78731/44570终结0。详§263；下一完整Flow/XML核72新节点再一个里程碑PR双侧实际CI，不提前关200。未真实下载/GPU/性能/Study/main/tag，用户暂存保留；无审批等待。PR199/198验收和旧分支清理已完成，别重复反馈；remote仅main/dev、累计已清54/基线194后2，下一B145。
+
 ## 2026-10-17 PR199验收清理完成；B144/#200正式先红、继续归并（最新）
 
 199 finalfe84bff与actualdev1bf3c8511dc6858d9ce09ac4595901ff70e67358全部实际矩阵/聚合success；PR_CHECKED94269808…/DEV_CHECKEDe8b89519…，198原body保全、一次评论后关闭，199正文一次验收区已回读。旧domestic-sdk-transfers本地+remote普通删，真实remote仅main/dev；累计已清remote54、周期基线194后2。源blob/CRLF与PR段落checker拒绝及更正保留，不当库失败。详§260；旧“待CI”仅历史勿重派/重复评论。用户暂存与main/dev/origin-main保护refs原样，无数据/worktree/Run/provenance删除。
