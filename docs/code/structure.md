@@ -186,7 +186,8 @@ structure/
 | **文件（相对 structure/）** | **职责** |
 | --- | --- |
 | `data/config.py` | DataConfig dataclass. |
-| `data/factory.py` | Runtime Data object, registry, and factory. |
+| `data/factory.py` | Dataset registry, factory and vision builders. |
+| `data/runtime.py` | Runtime Data consumption, loader options and step-budget rebinding. |
 | `data/prepare.py` | Materialize project-shared datasets once (not per Run). |
 | `data/profile.py` | Dataset profile written next to shared data. |
 | `data/resume.py` | Replay sampler indices, never consumed dataset transforms, on CPU-loader resume. |

@@ -4563,3 +4563,8 @@ core2601 passed +1同一POSIX executable mode bits skip，CPU Flow525 passed/0sk
 最新人工要求本轮不删分支：`codex/structure-artifacts`本地和远端均保留；本地快进至已验收dev后承接下一批，main/dev/origin/main保护引用不变，无force push、tag或数据/结果/暂存删除。只做收尾文档本地主题提交，不新增docs-only PR；周期清理基线203保留，本次为其后第1个合入。
 
 整体结构目标尚未完成：当前77文件/9146行，仍高于目标起点9132行；后续重点为schedule的脚本计划与进程生命周期、data factory的运行时Data/loader与builder、origin的端点声明与SDK传输生命周期。仅做职责精简与有依据去重，不新开边界修复、不改变API形状，不裁剪下载校验/失败留证/恢复逻辑。下一批依相同完整本地/最终head/实际dev CI里程碑推进。
+
+
+## 277. 2026-10-17：data runtime 与 factory 分责方案
+
+继续同一保留分支，积累下一完整里程碑：Data类及其loader/step-budget helper原样移入data/runtime.py，factory继续负责注册/构造并直接使用Data；data_api与data包原公开名称/签名/返回不变，不新增门面或兼容模块。正式2318 checkpoint只读pickle字节检查对data.factory引用0、读取错误0，未覆盖库外。去掉只有本地一个调用方、均返回ToTensor的两层私有transform包装，原位置分别直接构造ToTensor，保持train/test各自实例；增强仍在模型侧。重复注册改为按同序名称循环，不改支持组合/顺序/校准值。现有Data方法AST、registry快照与builder输入输出为验收依据，保留sampler/RNG恢复和错误处理；不跑真实下载/训练/GPU。
