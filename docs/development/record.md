@@ -1,3 +1,21 @@
+> 当前（2026-10-17）：按最新人工要求将本地origin元数据精简收尾为一批，完整CPU回归通过，准备PR→dev（§280.3）。
+> 验证：core2631 passed+1同一既有skip、CPU Flow525 passed；4个新增节点和155结构节点全执行。
+> 结果：102库源码哈希冻结前后一致；origin244→222行，公开API/磁盘布局保持，旧/新端点26组一致。
+> 下一：推送唯一工作分支、最终head实际CI后正常合dev，再核验actualdev；不借用PR205绿灯。
+> 状态：保留分支、暂存和数据；总体80文件/9125行，明显缩行停止条件仍未达成。
+
+> 当前（2026-10-17）：PR205已双侧验收；同分支继续来源元数据精简，本地system/结构396 passed（§280）。
+> 验证：26组旧/新端点返回或异常一致，4个新增字段合同节点全执行；不下载、不运行GPU。
+> 结果：共享CIFAR元数据消除四段分支重复，origin244→222行；structure80文件/9125行，仍不称明显缩行完成。
+> 下一：本地同主题继续累积完整精简里程碑，再完整core/CPU Flow及双侧CI；本小改不单独开PR。
+> 状态：分支、暂存和数据保留；当前全量/CI尚未执行，不沿用PR205结果验收新提交。
+
+> 当前（2026-10-17）：PR205 已合 dev e7d3096，本批职责拆分双侧实际 CI 全绿验收完成（§279.5）。
+> 验证：core2627 passed+1既有skip、CPU Flow525 passed；155结构节点全执行，102库源码哈希不变。
+> 结果：data/runtime、schedule/scripts、origin/transfers 分责；公开门面与磁盘布局保持，无旧origin别名。
+> 下一：继续有依据的源码精简；整体80文件/9147行，明显缩行未达成，不标总目标完成。
+> 状态：无存活验证句柄；按最新人工保留本地/远程工作分支和暂存/数据；拒绝与失败证据完整保留。
+
 > 当前（2026-10-17）：data/runtime、schedule/scripts、origin/transfers 合批本地完整 CPU 验收通过，准备一次 PR→dev（§279）。
 > 验证：core2627 passed+1同一既有skip、CPU Flow525 passed；16个新增行为回归及1个迁移节点全执行，冻结库源码哈希不变。
 > 结果：origin593→244行、transfers361行；公开门面/签名/返回/磁盘布局保持，2318正式候选旧限定名引用0。
@@ -4637,3 +4655,29 @@ torchvision_load 删除5行不可达兜底，新增5个次数/耗尽/原异常�
 当前 structure 80文件/9147行，对照目标起点80文件/9132行，仍未明显缩行；本批只验收职责拆分与有据精简，不声称总目标完成。首轮 core 收集重名错误保留，改文件名后上述完整重跑通过。全部新运行使用仓库入口、c1/c2及 not gpu/external/slow；没有新增GPU运行或真实网络下载。下一步同一分支推送、唯一 PR→dev、最终head和实际dev双侧实际CI；不新开碎文档PR。
 
 验收脚本首次用名称包含gpu判断GPU执行，误将CPU容量/配置测试名拒绝；CHECKER_REJECTED.json 保留，未将其当库失败或重跑通过测试。GPU排除依据为仓库入口实际 -m/not-gpu 与c1/c2筛选；XML确认旧误选CUDA恢复节点未执行。
+
+### 279.5 PR205 最终 head 与实际 dev 双侧验收
+
+[PR205](https://github.com/DreamSoul-AI/RPipe/pull/205) 正常合入 dev `e7d309681875526d845ca4d0c6ebf0b3bdc38066`。最终head `bf2a9d3a6f873750b9a8ea51a3b126821e06d110` 的 Branch38997497469、Package38997497435、Unit38997497463及全部实际矩阵/聚合成功；实际dev的Package38997984822、Unit38997984841及全部实际矩阵/聚合同样成功。PR_CHECKED SHA256 `2d1a3e9d733cce7dbcdacce0c76e8dae516d2a89eb71763f65669d5f9f9abcdc`，DEV_CHECKED `7f33dff0e5ec38fc3ba8c1b3da7327e839bafaa35feda904d8184481e8b9493a`；本机155个结构节点全部执行，完整core/CPU Flow见§279.4。
+
+合前自动审批拒绝了含合并命令的预备脚本写入，原因当时Package尚未结束；没有执行该脚本或提前合并。真实合并仅在最终head全绿证据生成后进行。拒绝记录保留，不作为库失败。PR正文只追加一次真实验收，不重复评论；附件挂载触及100上限，链接有效，未删除历史附件。
+
+库源码、测试、Study及结构文档在实际dev与验收head间无差异；main、本地dev与origin/main引用保持。当前分支普通快进至实际dev，依最新人工保留本地/远程主题，不删任何数据或_staging_from_DEM；收尾记录本地按主题提交，随下一完整里程碑合入，不另开碎文档PR。本批不表示整体Occam完成：80文件/9147行仍未达明显缩行；后续只做保持公开行为的实质精简，不恢复边界修复任务。原始证据 .tmp/structure-origin 不随clone。
+
+## 280. 2026-10-17：同主题来源元数据去重（本地累积）
+
+### 280.1 方案
+
+PR205 已双侧验收，不重复合并。下一批继续结构精简：四段 CIFAR10/100 端点分支共享同一有序 archive/checksum 元数据，以原次序 equality 扫描生成各自 host；保留 foreign/domestic 两个公开函数与所有端点字段、异常类型/消息。采用有序元组而非 dict lookup，不改变非哈希输入原来的拒绝行为；不新增兼容旁路或新校验。先逐输入旧/新差分，再 CPU system/结构回归，本地主题提交积累，不为这几十行另开小PR。
+
+### 280.2 实施与定向验证
+
+共享有序CIFAR archive/checksum表，删除四段重复构造中的元数据重复；原先两种host及两条公开入口不变。26组旧/新差分一致，包含五种既有数据集、未知名称、空值/非哈希输入及不可哈希str子类；比较返回dataclass全部字段或异常类型/消息，不真实下载。新portable回归4个节点检查两种CIFAR×两种来源的全部端点字段与location。
+
+system/结构CPU396 passed/0fail/error/skip，4个新节点全部执行；此前392个不含新节点的定向运行亦保留，不代替最终结果。LOCAL_CHECKED SHA256 `1fb816912f1593fa4bac2125c0d581553e756829a6c4a6778f742a4545774724`，证据 .tmp/structure-simplify 不随clone。origin244→222行，整体80文件/9125行；相对总起点9132仅少7行，不能据此宣称整体明显缩行。尚未执行此提交完整core/Flow或CI，不复用PR205的绿色结论；留在本地同一主题积累完整批次，不另开小PR。heartbeat已同步实时入口、PR205完成事实和人工保留分支要求，仍15分钟且仅重要变化通知。
+
+### 280.3 最新人工收尾授权与完整CPU回归
+
+监督助手明确要求将当前本地累积提交推送并开PR→dev，本批按该当次授权收尾，覆盖上一条继续积累、不单开小PR的阶段安排。源码冻结后 core2631 passed/1同一既有POSIX skip、CPU Flow525 passed/0skip，均0fail/error；4个新增端点节点及155个结构约束节点全部执行，102库源码哈希前后一致。FULL_CHECKED SHA256 `2d5a8e5c656d57dc3221963d8f6cc612c9ae5dc065332df33f7e511865ef3797`，原始日志/XML在.tmp/structure-simplify（不随clone）；测试均由tests/run.py选择c1/c2并明确排除gpu/external/slow，未运行GPU。
+
+公开门面名称与形状、端点全部字段、异常与磁盘产物布局保持。当前80文件/9125行，对目标起点仅减7行，本批不标整体Occam完成。下一步唯一PR最终head与实际dev分别验收全部实际矩阵/聚合CI；按最新人工保留本地/远端分支和_staging_from_DEM，不删数据、不碰main/tag、不force push。
