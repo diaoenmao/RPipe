@@ -1,3 +1,9 @@
+> 当前（2026-10-17 13:10指示收尾）：PR209已普通合dev be8f3a2，最终head与实际dev全部CI成功（§283.4）。
+> 最新源码：四写流退出复用已本地主题提交，core2690 passed+1既有skip、CPU Flow525 passed。
+> 结果：四新回归/155结构节点全执行、102源码哈希一致；全structure80文件/9044行，较起点净少88行。
+> 未完成：本批源码尚未推送/开PR/合dev；同主题继续合批，首轮8项Flow反例与报告器错误均保留。
+> 边界：无GPU/API形状/磁盘布局变化；保留分支与_staging_from_DEM，目标未称完成。
+
 > 当前（2026-10-17）：本轮PR207与PR208均已合dev并双侧实际CI全绿，最新dev4483455（§282.7）。
 > 验证：最终core2686 passed+1既有skip、CPU Flow525 passed；40新节点/155结构节点全执行，102源码哈希一致。
 > 结果：Config转换5文件238→194行，全structure9132→9073行；公开API/字段/模块/产物布局保持，不夸大总缩行幅度。
@@ -4848,3 +4854,11 @@ PR正文只追加一次最终真实验收，无重复评论；附件100上限错
 首轮 core2686 passed+1既有skip；Flow517 passed/8 failed。直接传写流给 _owned_stream 会调用代理 __enter__，部分代理经 __getattr__ 返回底层文件，绕过原 write 拒绝；这是本次重构引入的行为差异，不是测试误报。保留 CORE/FLOW.xml/log 与主题提交560898f。使用标准库 closing 保持此前只调用 close、始终使用原句柄的合同，再复用既有错误优先级；不改八项失败回归。新增四个实际写入口代理不应 enter/exit 的回归，完整验证需重跑新提交。
 
 新回归第一次代理范围过宽，误拦截测试报告器的 events.jsonl 追加造成 INTERNALERROR（TARGET2 原日志保留）；已将代理限定到该测试 tmp_path，不改库以适应报告器。TARGET3 已全部通过，含原八个 Flow 反例与四个新入口。closing 是标准库的 close-only 适配，不引入新 helper 或修改 _owned_stream 的读取合同。
+
+### 283.4 PR209 双侧验收及本地写流里程碑
+
+PR209 最终 head ad7f1740ffb9089e290f5aa2a79e8b2ec181f5e5 的 Branch39005314326、Package39005314277、Unit39005314330 所有实际矩阵与聚合成功后普通合并。实际 dev be8f3a2a601d4347d256cf52096a86f6fe782087 的 Package39005661619、Unit39005661617 也全部实际成功；PR_CHECKED SHA256 e6476d9ff0b9ddce1bb10faf9ba667c64f7543a311ef7e82bb5726ee3f00ef16；DEV_CHECKED 21149d2a85c29731b1ac68595e64b4375312cb3dac5ff0610e97f697270edca5。PR 正文只追加一次验收，无新评论；附件上限错误保留，未删除历史附件。
+
+本地源码里程碑最终冻结提交065742bc59eeddbc78c4fa8d23fb4d89ce268877：core2690 passed+1同一POSIX skip、CPU Flow525 passed；四个新写入口回归和155结构节点均执行，102源码哈希一致，无GPU节点。相关入口TARGET3为369 passed+1同一skip，原八个Flow反例全部通过。四写流保留原对象/close-only语义，采用标准库closing和已有_owned_stream；三源码475→446行，净少29，全structure80文件/9044行，对起点9132净少88，不夸大幅度或标宏观目标完成。
+
+本批本地主题提交包含初稿及修正，不删失败历史；暂不为该29行精简单独再开源码PR，随下一完整同主题里程碑合入，13:10明确要求的记录PR209已完成。_staging_from_DEM、当前主题本地/远端均保留；main/dev保护分支未直接推送或修改，无数据/Run/provenance删除。原始证据及冻结校验在.tmp/structure-owned-writers，不随clone。
