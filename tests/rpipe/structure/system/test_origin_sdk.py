@@ -8,6 +8,7 @@ from types import SimpleNamespace
 import pytest
 
 from rpipe.structure.system.origin import download_model
+from rpipe.structure.system import transfers
 
 pytestmark = [
     pytest.mark.integration, pytest.mark.content, pytest.mark.p1,
@@ -308,7 +309,7 @@ def test_actual_dataset_streaming_preserves_views_state_and_pickle(monkeypatch, 
     result = origin.load_hf_dataset('json', data_files=paths, split='train', streaming=True)
     assert isinstance(result, datasets.IterableDataset)
     assert list(result) == [{'value': n} for n in range(4)]
-    assert origin._download_origin.get() is None
+    assert transfers._download_origin.get() is None
     assert list(result.iter(batch_size=3)) == [{'value': [0, 1, 2]}, {'value': [3]}]
     assert sorted(row['value'] for row in result.shuffle(seed=7, buffer_size=2)) == list(range(4))
     assert list(result.shard(num_shards=2, index=1)) == [{'value': 2}, {'value': 3}]
@@ -320,7 +321,7 @@ def test_actual_dataset_streaming_preserves_views_state_and_pickle(monkeypatch, 
     state = restored.state_dict()
     restored.load_state_dict(state)
     assert list(restored) == [{'value': n} for n in range(1, 4)]
-    assert origin._download_origin.get() is None
+    assert transfers._download_origin.get() is None
 
 
 def test_actual_dataset_deferred_generator_refuses_transfer(monkeypatch, tmp_path):
@@ -397,7 +398,7 @@ def test_aiohttp_actual_redirect_loop_checks_before_next_connection(monkeypatch,
         # Windows creates its event-loop wakeup socket before this coroutine starts.
         monkeypatch.setattr(socket.socket, 'connect', lambda *a, **k: pytest.fail('real network'))
         async with aiohttp.ClientSession(trust_env=False) as client:
-            with origin._domestic_transfers('mirror'):
+            with transfers._domestic_transfers('mirror'):
                 if allowed:
                     async with client.get('https://hf-mirror.com/entry') as response:
                         assert await response.read() == b'synthetic'
@@ -438,7 +439,7 @@ def _dataset_worker_policy_probe(batch):
             client.get('https://huggingface.co/synthetic-worker')
         except RuntimeError:
             pass
-    return [dict(policy=origin._download_origin.get(), pid=os.getpid(),
+    return [dict(policy=transfers._download_origin.get(), pid=os.getpid(),
                  thread=threading.get_ident(), transport=bool(entered))
             for _ in batch]
 
@@ -493,17 +494,17 @@ def test_dataset_generator_close_keeps_primary_failure_and_context(primary, clos
             return self
 
         def __next__(self):
-            assert origin._download_origin.get() == 'mirror'
+            assert transfers._download_origin.get() == 'mirror'
             if primary is not None:
                 raise primary
             raise StopIteration
 
         def close(self):
-            closed.append(origin._download_origin.get())
+            closed.append(transfers._download_origin.get())
             if close_error is not None:
                 raise close_error
 
-    iterator = origin._DomesticDatasetGenerator(Iterator)()
+    iterator = transfers._DomesticDatasetGenerator(Iterator)()
     expected = close_error if primary is None or isinstance(close_error, ValueError) else primary
     if expected is None:
         assert list(iterator) == []
@@ -512,8 +513,8 @@ def test_dataset_generator_close_keeps_primary_failure_and_context(primary, clos
             next(iterator)
         assert caught.value is expected
     assert closed == ['mirror']
-    assert origin._download_origin.get() is None
-    assert origin._download_transports_installed is False
+    assert transfers._download_origin.get() is None
+    assert transfers._download_transports_installed is False
 
 
 def _image_rows(url, shape):
@@ -677,14 +678,14 @@ def test_domestic_sdk_worker_keeps_guard_after_parent_scope_returns(monkeypatch)
     monkeypatch.setattr(requests.adapters.HTTPAdapter, 'send', transport)
     monkeypatch.setattr(socket.socket, 'connect', lambda *a, **k: pytest.fail('real network'))
     with ThreadPoolExecutor(max_workers=1) as executor:
-        with origin._domestic_transfers('mirror'):
+        with transfers._domestic_transfers('mirror'):
             future = executor.submit(worker)
             assert started.wait(5), 'worker did not start'
         release.set()
         assert future.result(timeout=5), 'worker lost guard when its parent returned'
     assert calls == []
-    assert origin._download_origin.get() is None
-    assert origin._download_transports_installed is False
+    assert transfers._download_origin.get() is None
+    assert transfers._download_transports_installed is False
 
 
 @pytest.mark.parametrize('kind', ['Audio', 'Video', 'Pdf'])
@@ -766,7 +767,7 @@ def test_actual_media_feature_keeps_deferred_file_guard(monkeypatch, kind, strea
         from concurrent.futures import ThreadPoolExecutor
         decoder = consume()
         assert calls == [] and len(opened) == 1
-        assert origin._download_origin.get() is None
+        assert transfers._download_origin.get() is None
         with ThreadPoolExecutor(max_workers=1) as executor:
             assert executor.submit(decoder.read).result(timeout=5) == b'syn'
         assert calls == [url]
@@ -776,15 +777,15 @@ def test_actual_media_feature_keeps_deferred_file_guard(monkeypatch, kind, strea
             assert decoder._hf_encoded == {'path': url, 'bytes': None}
         decoder.source.close()
         assert opened[0].closed
-    assert origin._download_origin.get() is None
-    assert origin._download_transports_installed is False
+    assert transfers._download_origin.get() is None
+    assert transfers._download_transports_installed is False
 
 
 @pytest.mark.parametrize('protocol', range(2, 6))
 def test_domestic_reader_preserves_binary_file_protocol_and_pickle(protocol):
     import pickle
     from rpipe.structure.system import origin
-    reader = origin._DomesticReader(io.BytesIO(b'first\nsecond\n'))
+    reader = transfers._DomesticReader(io.BytesIO(b'first\nsecond\n'))
     assert reader.__getstate__() == {'stream': reader.stream}
     reader = pickle.loads(pickle.dumps(reader, protocol=protocol))
     assert reader.readable() and reader.seekable()
@@ -798,8 +799,8 @@ def test_domestic_reader_preserves_binary_file_protocol_and_pickle(protocol):
         assert same is reader
         assert reader.read() == b'\nsecond\n'
     assert reader.closed
-    assert origin._download_origin.get() is None
-    assert origin._download_transports_installed is False
+    assert transfers._download_origin.get() is None
+    assert transfers._download_transports_installed is False
 
 
 def test_modelscope_supported_endpoint_is_explicitly_domestic(monkeypatch, tmp_path):
@@ -893,7 +894,7 @@ def test_actual_async_sdk_client_getter_keeps_guard_and_client(monkeypatch, allo
             # An actual SDK getter alias is delegated, never replaced with a new client.
             monkeypatch.setattr(_http, 'get_async_session', lambda: client, raising=False)
             before = dict(vars(CustomClient))
-            with origin._domestic_transfers('mirror'):
+            with transfers._domestic_transfers('mirror'):
                 actual = _http.get_async_session()
                 assert actual is client
                 url = ('https://hf-mirror.com/blob' if allowed else 'https://huggingface.co/blob')
@@ -906,8 +907,8 @@ def test_actual_async_sdk_client_getter_keeps_guard_and_client(monkeypatch, allo
             assert dict(vars(CustomClient)) == before
             assert not client.is_closed
             assert (await client.get('https://example.org/unrelated')).content == b'synthetic'
-            assert origin._download_origin.get() is None
-            assert not origin._download_transports_installed
+            assert transfers._download_origin.get() is None
+            assert not transfers._download_transports_installed
     asyncio.run(run())
 
 
@@ -918,9 +919,9 @@ def test_domestic_sdk_unsupported_client_fails_before_use(monkeypatch):
     client = object()
     getter = lambda: client
     monkeypatch.setattr(_http, 'get_session', getter)
-    with origin._domestic_transfers('mirror'):
+    with transfers._domestic_transfers('mirror'):
         with pytest.raises(RuntimeError, match='no supported single-request transport'):
             _http.get_session()
     assert _http.get_session is getter
     assert _http.get_session() is client
-    assert not origin._download_transports_installed
+    assert not transfers._download_transports_installed

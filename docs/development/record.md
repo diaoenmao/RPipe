@@ -4613,3 +4613,9 @@ schedule566→366行，scripts208行：8个函数原AST一致，包含等待组�
 按最新人工指示继续同一 codex/structure-artifacts 里程碑。origin 保留公开函数、DownloadEndpoint、端点/输入预检；SDK transport hook、reader/media/generator 及全部可变 scope 状态一起迁入 system/transfers.py，避免复制标量状态或循环 import。system_api、data_api.load_hf_dataset、model_api.download_model 的名称、签名和对象身份关系不变，不增加旧 origin 别名。现有 SDK 测试仅将私有状态读取改指实际所有者；迁移函数逐项 AST 对照，并核查正式 pickle 字节引用。
 
 同时删除 torchvision_load 中必达 return/raise 循环之后不可达的 last-error 兜底，保留重试次数钳制、清理、退避和原异常；补最小次数与耗尽回归。设计先记录再实施。合并 data/runtime、schedule/scripts 与本批后冻结源码，完整 core + 显式 not-gpu 的 CPU Flow 回归，再一次 PR 经双侧实际 CI 合 dev。保留所有失败证据、暂存和分支；不训练、不改磁盘产物布局或 API 形状。
+
+### 279.2 实施与定向验证
+
+origin 593→244行，私有 transfers361行；25个函数/类逐项 AST 相同，包含传输白名单、scope/fork/并发恢复、reader/media/generator 的取消与失败清理。公开函数仍定义于 origin，system_api 与其他门面无变更，无旧别名。正式2318个持久化候选按原始字节或ZIP内pickle成员扫描：旧 system.origin 引用0、读取错误0（不反序列化、不代表未知下游）；证据 .tmp/structure-origin/PICKLE_SCAN.json 不随clone。
+
+torchvision_load 删除5行不可达兜底，新增5个次数/耗尽/原异常身份回归。仓库入口 c1/c2 显式排除 gpu/external/slow，system+结构392 passed/0fail/error/skip；SDK网络均为既有测试替身。迁移定义对照及原始日志均保留，尚未把定向结果当作整批验收。当前整体文件/行数在完整验收时记实，不把职责迁移称为明显缩行。
