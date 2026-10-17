@@ -59,17 +59,8 @@ def atomic_write_text(path: Path | str, text: str, encoding: str = 'utf-8', *, n
             mode = None
         tmp.touch(exist_ok=False)
         owned = True
-        handle = tmp.open('w', encoding=encoding, newline=newline)
-        try:
+        with _owned_stream(tmp.open('w', encoding=encoding, newline=newline)) as handle:
             handle.write(text)
-        except BaseException:
-            try:
-                handle.close()
-            except OSError:
-                pass
-            raise
-        else:
-            handle.close()
         if mode is not None:
             tmp.chmod(mode)
         return atomic_replace(tmp, target)

@@ -4829,3 +4829,16 @@ PR正文只追加一次最终真实验收，无重复评论；附件100上限错
 上一基线203，本次204/205/206/207/208共5个dev合入均有GitHub实际合并记录。盘点基线更新为208；主worktree仅D:/GitHub/diaoenmao/RPipe一处，无废弃登记worktree；开放PR0、Issue0，无需重复关闭。保留本地main/dev/codex/structure-artifacts，远端origin/main、origin/dev、origin/codex/structure-artifacts及origin/HEAD符号引用。当前主题虽已保全合入仍在用且人工明确不删分支/数据，本次删除分支/worktree/数据清单均为空；未更改GitHub自动删除设置。INVENTORY_RAW/INVENTORY_CHECKED在本地最终证据目录。
 
 最终再次get_goal确认仍是旧08:05 API待审objective、status=paused；后续人工批准已解除审批门，本轮工作确已继续完成，但工具不支持恢复active或改写未完成目标，未伪称恢复。该元数据会影响回合结束后的目标自动续跑，已在会话报告；不据其重新索取已批准API许可，也不以虚假完成状态替代恢复。
+
+
+## 283. 2026-10-17：收尾记录 PR209 与写流退出规则复用
+
+### 283.1 已授权范围与实施方案
+
+按 13:10 人工指示，ad7f174 的两份收尾文档（22 行）通过 PR209 普通合 dev；最终 head ad7f174 的 Branch39005314326、Package39005314277、Unit39005314330 所有实际矩阵与聚合成功。实际 dev 为 be8f3a2a601d4347d256cf52096a86f6fe782087，其 CI 单独验收，不借 head 绿灯。当前主题分支和 _staging_from_DEM 保留。
+
+下一批只复用已有 artifact._atomic._owned_stream，替换 atomic_write_text、Logger._emit、AlgorithmTracker.begin_run/append_jsonl 四处重复关闭框架。写入体、编码、打开模式、flush、追加顺序、原子发布与清理保持；复用既有“体异常优先于 close OSError，正常 close 严格，非 IO close 错继续暴露”的同一规则。不增加 helper/API/文件，不动 checkpoint 或训练状态，现有失败/取消与双故障回归用于验证。checkpoint 调度候选不实施：两边已共用 checkpoint_names，再包装只增加参数。临时扫描/提案及 CI 原证据在 .tmp/structure-closeout、.tmp/structure-owned-writers，不随 clone。
+
+### 283.2 写流精简针对性验收
+
+四处写入体 AST 原样相等，三源码文件 475→440 行（净少 35），不靠格式缩行；_atomic 的既有混合换行原样保留。tests/run.py 显式 c1/c2、not gpu/external/slow 运行 atomic/logger/tracker：189 passed、1 既有 POSIX 模式 skip；现有写入/flush/close 双故障、取消、原字节保全测试覆盖复用后的实际入口。不新增镜像实现测试。完整 CPU core/Flow 尚待本批冻结后执行；PR209 实际 dev CI 独立进行。
