@@ -757,3 +757,47 @@ def test_owned_stream_retains_original_enter_value_and_exit_suppression(suppress
             body()
         assert caught.value is failure
     assert len(exits) == 1 and exits[0][0] is ValueError and exits[0][1] is failure
+
+
+@pytest.mark.parametrize('writer', ['atomic', 'logger', 'tracker-start', 'tracker-append'])
+def test_owned_writers_keep_raw_handle_without_entering_proxy(tmp_path, monkeypatch, writer):
+    """Write ownership uses close only; proxy context entry may select another object."""
+    from rpipe.structure.algorithm.tracker import AlgorithmTracker
+    from rpipe.structure.system.logger import Logger
+    from rpipe.structure.artifact._atomic import atomic_write_text
+    logger, tracker = Logger(tmp_path / 'log'), AlgorithmTracker(tmp_path / 'tracker')
+    tracker.append('train', values={'Loss': 2.0})
+    opened, closed = [], []
+    original_open = Path.open
+    class Writer:
+        def __init__(self, raw):
+            self.raw = raw
+        def __getattr__(self, name):
+            return getattr(self.raw, name)
+        def __enter__(self):
+            pytest.fail('writer ownership must not call proxy __enter__')
+        def __exit__(self, *args):
+            pytest.fail('writer ownership must not call proxy __exit__')
+        def close(self):
+            closed.append(self.raw)
+            self.raw.close()
+    def opening(path, mode='r', *args, **kwargs):
+        raw = original_open(path, mode, *args, **kwargs)
+        if path.is_relative_to(tmp_path) and mode.startswith(('a', 'w')):
+            opened.append(raw)
+            return Writer(raw)
+        return raw
+    monkeypatch.setattr(Path, 'open', opening)
+    if writer == 'atomic':
+        target = atomic_write_text(tmp_path / 'atomic.txt', 'content')
+        assert target.read_bytes() == b'content'
+    elif writer == 'logger':
+        logger.info('content')
+        assert logger.path.read_bytes().rstrip().endswith(b'[flow] content')
+    elif writer == 'tracker-start':
+        tracker.begin_run()
+        assert b'"event": "start"' in tracker.jsonl_path.read_bytes()
+    else:
+        tracker.append_jsonl('train')
+        assert b'"mean": 2.0' in tracker.jsonl_path.read_bytes()
+    assert len(opened) == 1 and closed == opened and opened[0].closed

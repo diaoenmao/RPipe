@@ -1,3 +1,17 @@
+> 当前（2026-10-17）：按新收尾授权推送五入口退出复用里程碑；冻结源码完整CPU验收通过（§284）。
+> 验证：core2691 passed+1既有skip，CPU Flow525 passed；5新节点/155结构节点执行，102源码哈希一致。
+> 范围：源码净少35行，全structure80文件/9038行；API形状与产物布局保持。
+> 状态：PR最终head与实际devCI尚待验收，不把本地CPU通过称为已合入。
+> 保护：保留当前分支/数据/_staging_from_DEM；不改main、不force push、不跑GPU。
+
+> 最新延伸（2026-10-17）：共享锁退出规则与四写流复用同一close-only规则，本地targeted307 passed+1既有skip；完整core/Flow需下批冻结后重跑（§283.5）。
+
+> 当前（2026-10-17 13:10指示收尾）：PR209已普通合dev be8f3a2，最终head与实际dev全部CI成功（§283.4）。
+> 最新源码：四写流退出复用已本地主题提交，core2690 passed+1既有skip、CPU Flow525 passed。
+> 结果：四新回归/155结构节点全执行、102源码哈希一致；全structure80文件/9044行，较起点净少88行。
+> 未完成：本批源码尚未推送/开PR/合dev；同主题继续合批，首轮8项Flow反例与报告器错误均保留。
+> 边界：无GPU/API形状/磁盘布局变化；保留分支与_staging_from_DEM，目标未称完成。
+
 > 当前（2026-10-17）：本轮PR207与PR208均已合dev并双侧实际CI全绿，最新dev4483455（§282.7）。
 > 验证：最终core2686 passed+1既有skip、CPU Flow525 passed；40新节点/155结构节点全执行，102源码哈希一致。
 > 结果：Config转换5文件238→194行，全structure9132→9073行；公开API/字段/模块/产物布局保持，不夸大总缩行幅度。
@@ -4829,3 +4843,43 @@ PR正文只追加一次最终真实验收，无重复评论；附件100上限错
 上一基线203，本次204/205/206/207/208共5个dev合入均有GitHub实际合并记录。盘点基线更新为208；主worktree仅D:/GitHub/diaoenmao/RPipe一处，无废弃登记worktree；开放PR0、Issue0，无需重复关闭。保留本地main/dev/codex/structure-artifacts，远端origin/main、origin/dev、origin/codex/structure-artifacts及origin/HEAD符号引用。当前主题虽已保全合入仍在用且人工明确不删分支/数据，本次删除分支/worktree/数据清单均为空；未更改GitHub自动删除设置。INVENTORY_RAW/INVENTORY_CHECKED在本地最终证据目录。
 
 最终再次get_goal确认仍是旧08:05 API待审objective、status=paused；后续人工批准已解除审批门，本轮工作确已继续完成，但工具不支持恢复active或改写未完成目标，未伪称恢复。该元数据会影响回合结束后的目标自动续跑，已在会话报告；不据其重新索取已批准API许可，也不以虚假完成状态替代恢复。
+
+
+## 283. 2026-10-17：收尾记录 PR209 与写流退出规则复用
+
+### 283.1 已授权范围与实施方案
+
+按 13:10 人工指示，ad7f174 的两份收尾文档（22 行）通过 PR209 普通合 dev；最终 head ad7f174 的 Branch39005314326、Package39005314277、Unit39005314330 所有实际矩阵与聚合成功。实际 dev 为 be8f3a2a601d4347d256cf52096a86f6fe782087，其 CI 单独验收，不借 head 绿灯。当前主题分支和 _staging_from_DEM 保留。
+
+下一批只复用已有 artifact._atomic._owned_stream，替换 atomic_write_text、Logger._emit、AlgorithmTracker.begin_run/append_jsonl 四处重复关闭框架。写入体、编码、打开模式、flush、追加顺序、原子发布与清理保持；复用既有“体异常优先于 close OSError，正常 close 严格，非 IO close 错继续暴露”的同一规则。不增加 helper/API/文件，不动 checkpoint 或训练状态，现有失败/取消与双故障回归用于验证。checkpoint 调度候选不实施：两边已共用 checkpoint_names，再包装只增加参数。临时扫描/提案及 CI 原证据在 .tmp/structure-closeout、.tmp/structure-owned-writers，不随 clone。
+
+### 283.2 写流精简针对性验收
+
+四处写入体 AST 原样相等，三源码文件 475→440 行（净少 35），不靠格式缩行；_atomic 的既有混合换行原样保留。tests/run.py 显式 c1/c2、not gpu/external/slow 运行 atomic/logger/tracker：189 passed、1 既有 POSIX 模式 skip；现有写入/flush/close 双故障、取消、原字节保全测试覆盖复用后的实际入口。不新增镜像实现测试。完整 CPU core/Flow 尚待本批冻结后执行；PR209 实际 dev CI 独立进行。
+
+### 283.3 保留首轮反例并修正句柄语义
+
+首轮 core2686 passed+1既有skip；Flow517 passed/8 failed。直接传写流给 _owned_stream 会调用代理 __enter__，部分代理经 __getattr__ 返回底层文件，绕过原 write 拒绝；这是本次重构引入的行为差异，不是测试误报。保留 CORE/FLOW.xml/log 与主题提交560898f。使用标准库 closing 保持此前只调用 close、始终使用原句柄的合同，再复用既有错误优先级；不改八项失败回归。新增四个实际写入口代理不应 enter/exit 的回归，完整验证需重跑新提交。
+
+新回归第一次代理范围过宽，误拦截测试报告器的 events.jsonl 追加造成 INTERNALERROR（TARGET2 原日志保留）；已将代理限定到该测试 tmp_path，不改库以适应报告器。TARGET3 已全部通过，含原八个 Flow 反例与四个新入口。closing 是标准库的 close-only 适配，不引入新 helper 或修改 _owned_stream 的读取合同。
+
+### 283.4 PR209 双侧验收及本地写流里程碑
+
+PR209 最终 head ad7f1740ffb9089e290f5aa2a79e8b2ec181f5e5 的 Branch39005314326、Package39005314277、Unit39005314330 所有实际矩阵与聚合成功后普通合并。实际 dev be8f3a2a601d4347d256cf52096a86f6fe782087 的 Package39005661619、Unit39005661617 也全部实际成功；PR_CHECKED SHA256 e6476d9ff0b9ddce1bb10faf9ba667c64f7543a311ef7e82bb5726ee3f00ef16；DEV_CHECKED 21149d2a85c29731b1ac68595e64b4375312cb3dac5ff0610e97f697270edca5。PR 正文只追加一次验收，无新评论；附件上限错误保留，未删除历史附件。
+
+本地源码里程碑最终冻结提交065742bc59eeddbc78c4fa8d23fb4d89ce268877：core2690 passed+1同一POSIX skip、CPU Flow525 passed；四个新写入口回归和155结构节点均执行，102源码哈希一致，无GPU节点。相关入口TARGET3为369 passed+1同一skip，原八个Flow反例全部通过。四写流保留原对象/close-only语义，采用标准库closing和已有_owned_stream；三源码475→446行，净少29，全structure80文件/9044行，对起点9132净少88，不夸大幅度或标宏观目标完成。
+
+本批本地主题提交包含初稿及修正，不删失败历史；暂不为该29行精简单独再开源码PR，随下一完整同主题里程碑合入，13:10明确要求的记录PR209已完成。_staging_from_DEM、当前主题本地/远端均保留；main/dev保护分支未直接推送或修改，无数据/Run/provenance删除。原始证据及冻结校验在.tmp/structure-owned-writers，不随clone。
+
+### 283.5 同主题延伸：共享锁句柄退出去重
+
+继续只合批本地退出规则精简：cache_lock 在既有 ExitStack 中直接 enter_context(_owned_stream(closing(handle)))，移除与四个写入口同义的自有 close_handle 回调。release_lock 仍最后压栈、先解锁再关闭，held 登记、deadline/重试、OS 锁与原始异常优先级均保持；不把解锁协议抽成通用 helper。既有锁取消/获取/解锁/关闭多故障矩阵用于验收，另补原始代理不得 enter/exit 的实际锁入口回归。临时证据继续 .tmp/structure-owned-writers，不随 clone；本地累积，不立即开小 PR。
+
+共享锁延伸 targeted：307 passed、1同一POSIX skip，新锁代理节点执行；release_lock回调AST与cache_lock签名保持。共享锁只删除6行，整个structure80文件/9038行，对起点净少94；本延伸之后尚未重跑完整core/Flow，之前2690+1/525仅验证065742b，不能覆盖此提交。首个原字节替换guard因误假设CRLF拒绝，实际shared.py为LF；原始guard证据及未改源码基线LOCK_TARGET保留，修正后LF原样。继续合批本地commit，不新增PR。
+
+
+## 284. 2026-10-17：五入口退出复用完整 CPU 里程碑
+
+按最新人工指示，将现有唯一主题的写流/close-boundary 积累提交完整验收后推送，通过 PR 合 dev。冻结 c47a89fd5033eb94117c2e21e03fc0cd5e50cdf9；core2691 passed+1同一既有POSIX skip，CPU Flow525 passed；5个新增句柄代理节点、155结构节点全执行，102源码哈希保持。四源码合计源码净少35行，全structure80文件/9038行，相比起点9132净少94，幅度有限不标总目标完成。既有首轮8项Flow失败/TARGET2报告器错误/换行guard拒绝原证据保留在§283及.tmp，不随clone。
+
+五入口分别为atomic_write_text、Logger._emit、Tracker.begin_run/append_jsonl、cache_lock，复用标准库closing与已有_owned_stream，保留原始句柄、close-only语义、原始写入体/flush/锁获取与解锁次序、首错优先级与原子发布清理。无新helper、模块、API形状、产物布局或GPU。结构文档只补退出职责一句，本批过程与验收留在record；未更新main或删除分支/数据/_staging_from_DEM。最终head及actualdev CI待分别验收，不借旧head成功。

@@ -61,14 +61,8 @@ def cache_lock(root: Path | str, *, timeout: float = 120):
         yield
         return
     with contextlib.ExitStack() as stack:
-        handle = (root / '.rpipe.lock').open('a+b')
-        def close_handle(exc_type, _exc, _tb):
-            try:
-                handle.close()
-            except OSError:
-                if exc_type is None:
-                    raise
-        stack.push(close_handle)
+        handle = stack.enter_context(_owned_stream(contextlib.closing(
+            (root / '.rpipe.lock').open('a+b'))))
         deadline = time.monotonic() + timeout
         while True:
             try:

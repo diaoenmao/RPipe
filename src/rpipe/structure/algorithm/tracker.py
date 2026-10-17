@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from contextlib import closing
+
 import json
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
 from rpipe.structure.api.artifact_api import kinds
+from rpipe.structure.api.artifact_api import _owned_stream
 from rpipe.structure.api.artifact_api import atomic_write_text
 from rpipe.structure.algorithm.metric import MetricBundle
 
@@ -156,27 +159,17 @@ class AlgorithmTracker:
             and type(offset) is int and 0 <= offset <= self.jsonl_path.stat().st_size
         ):
             keep = offset
-        handle = self.jsonl_path.open('ab+')
-        try:
+        with _owned_stream(closing(self.jsonl_path.open('ab+'))) as handle:
             if handle.tell():
                 handle.seek(-1, 2)
                 if handle.read(1) != b'\n':
                     handle.write(b'\n')  # Isolate a crash's partial record from the new marker.
             handle.write((json.dumps({'event': 'start', 'keep_until': keep}) + '\n').encode('utf-8'))
-        except BaseException:
-            try:
-                handle.close()
-            except OSError:
-                pass
-            raise
-        else:
-            handle.close()
 
     def append_jsonl(self, split: str, *, progress: dict[str, Any] | None = None) -> None:
         self.jsonl_path.parent.mkdir(parents=True, exist_ok=True)
         means = self.mean(split)
-        handle = self.jsonl_path.open('a', encoding='utf-8')
-        try:
+        with _owned_stream(closing(self.jsonl_path.open('a', encoding='utf-8'))) as handle:
             for name, value in means.items():
                 row = {'step': self.step, 'split': split, 'name': name, 'mean': value}
                 if progress is not None:
@@ -187,14 +180,6 @@ class AlgorithmTracker:
                 line = json.dumps(row, ensure_ascii=False)
                 handle.write(line + '\n')
             handle.flush()
-        except BaseException:
-            try:
-                handle.close()
-            except OSError:
-                pass
-            raise
-        else:
-            handle.close()
 
     def flush_state(self) -> None:
         body = self.state_dict()

@@ -9,6 +9,8 @@ LEVEL is ``INFO``, ``WARN``, or ``ERROR``, padded to 5 characters.
 
 from __future__ import annotations
 
+from contextlib import closing
+
 import traceback
 from datetime import datetime
 from pathlib import Path
@@ -57,18 +59,9 @@ class Logger:
                                 separator = '\n'
                 except OSError:
                     pass  # shortcut: unreadable tails stay append-only; repair requires readable log bytes.
-                handle = self.path.open('a', encoding='utf-8')
-                try:
+                with _owned_stream(closing(self.path.open('a', encoding='utf-8'))) as handle:
                     handle.write(separator + text + '\n')
                     handle.flush()
-                except BaseException:
-                    try:
-                        handle.close()
-                    except OSError:
-                        pass
-                    raise
-                else:
-                    handle.close()
             except (OSError, ValueError) as error:
                 if first_error is None:
                     first_error = error

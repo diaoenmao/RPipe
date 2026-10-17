@@ -835,3 +835,31 @@ def test_shared_digest_read_exit_preserves_first_failure(tmp_path, reader_exit_c
     assert len(handles) == len(closes) == 1 and handles[0].closed
     assert source.read_bytes() == target.read_bytes() == payload
     assert target.samefile(source) is (case.expected is None)
+
+
+def test_cache_lock_keeps_raw_stream_without_proxy_context(tmp_path, monkeypatch):
+    root = tmp_path / 'shared'
+    original_open, handles, closed = Path.open, [], []
+    class Proxy:
+        def __init__(self, raw):
+            self.raw = raw
+        def __getattr__(self, name):
+            return getattr(self.raw, name)
+        def __enter__(self):
+            pytest.fail('lock must keep the original stream proxy')
+        def __exit__(self, *args):
+            pytest.fail('lock owns close, not proxy context semantics')
+        def close(self):
+            closed.append(self.raw)
+            self.raw.close()
+    def opening(path, mode='r', *args, **kwargs):
+        raw = original_open(path, mode, *args, **kwargs)
+        if path == root / '.rpipe.lock' and mode == 'a+b':
+            handles.append(raw)
+            return Proxy(raw)
+        return raw
+    monkeypatch.setattr(Path, 'open', opening)
+    for _ in range(2):
+        with cache_lock(root, timeout=0):
+            assert not handles[-1].closed
+    assert len(handles) == 2 and closed == handles and all(h.closed for h in handles)
