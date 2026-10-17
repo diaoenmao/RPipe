@@ -260,3 +260,20 @@ def test_capacity_bytes_uses_final_unit_without_fallback(size, text):
 def test_capacity_wall_sum_preserves_empty_and_nonnegative_groups():
     assert estimate_wall_seconds([]) == 0
     assert estimate_wall_seconds([[], [{'seconds': -5}], [{'seconds': '3'}, {'seconds': 2}]]) == 3
+
+
+@pytest.mark.parametrize('gpu_count', [0, 1, 2])
+def test_pack_jobs_keeps_wave_resource_order_and_original_jobs(gpu_count):
+    jobs = [{'run_id': 'eval', 'mode': 'eval', 'device': 'cpu', 'estimate_model': 'linear'},
+            {'run_id': 'cpu-a', 'device': 'cpu', 'estimate_model': 'linear', 'gpu': 'old'},
+            {'run_id': 'cuda', 'device': 'cuda', 'estimate_model': 'linear', 'vram_bytes': 1},
+            {'run_id': 'cpu-b', 'device': 'cpu', 'estimate_model': 'linear'}]
+    gpus = [GpuInfo(index=i, name='synthetic', total_bytes=10, free_bytes=10)
+            for i in range(gpu_count)]
+    batches = pack_jobs(jobs, gpus)
+    assert [[job['run_id'] for job in group] for group in batches] == [
+        ['cpu-a', 'cpu-b'], ['cuda'], ['eval']]
+    assert batches[0][0] is jobs[1] and batches[0][1] is jobs[3]
+    assert batches[1][0] is jobs[2] and batches[2][0] is jobs[0]
+    assert all('gpu' not in jobs[i] for i in [0, 1, 3])
+    assert jobs[2].get('gpu') == ('0' if gpu_count else None)

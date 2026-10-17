@@ -172,31 +172,18 @@ def pack_jobs(
     """Same-type batches. Train then eval; never mix resnet with linear in one wait."""
     batches: list[list[dict[str, Any]]] = []
     for wave in job_waves(jobs):
-        batches.extend(_pack_wave(wave, gpus, safety=safety))
+        clusters: dict[str, list[dict[str, Any]]] = {}
+        for job in wave:
+            key = _pack_class(job)
+            clusters.setdefault(key, []).append(job)
+        for group in clusters.values():
+            batches.extend(_pack_homogeneous(group, gpus, safety=safety))
     return batches
 
 
 def _pack_class(job: dict[str, Any]) -> str:
     name = str(job.get('estimate_model') or '').strip().lower()
     return f'{_job_device(job)}:{name or "job"}'
-
-
-def _pack_wave(
-    wave: list[dict[str, Any]],
-    gpus: list[GpuInfo],
-    *,
-    safety: float,
-) -> list[list[dict[str, Any]]]:
-    if not wave:
-        return []
-    clusters: dict[str, list[dict[str, Any]]] = {}
-    for job in wave:
-        key = _pack_class(job)
-        clusters.setdefault(key, []).append(job)
-    batches: list[list[dict[str, Any]]] = []
-    for group in clusters.values():
-        batches.extend(_pack_homogeneous(group, gpus, safety=safety))
-    return batches
 
 
 def _pack_homogeneous(
