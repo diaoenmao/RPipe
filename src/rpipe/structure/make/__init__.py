@@ -1,5 +1,3 @@
-"""Multi-run configs, index, and launch scripts."""
-
 from pathlib import Path
 from typing import Any
 
@@ -31,7 +29,7 @@ from rpipe.structure.make.schedule import (
     run_succeeded,
     write_launch_scripts,
 )
-from rpipe.structure.make.write import write_run_configs, write_study_index
+from rpipe.structure.make.write import expand_study, write_run_configs, write_study_index
 
 __all__ = [
     'GpuInfo',
@@ -63,21 +61,3 @@ __all__ = [
     'write_run_configs',
     'write_study_index',
 ]
-
-
-def expand_study(study_dir: Path | str) -> dict[str, Any]:
-    """Write Run configs and index from ``study.yaml``."""
-    study_dir = ensure_study_layout(Path(study_dir).resolve())
-    study = load_study_yaml(study_dir)
-    load_recipe(study_dir, study)
-    patches = expand_patches(study)
-    configs = write_run_configs(study_dir, patches)
-    index_file = write_study_index(study_dir, study, configs)
-    provenance_file = write_provenance(study_dir, study)
-    return {
-        'study_dir': study_dir,
-        'index': index_file,
-        'configs': configs,
-        'provenance': provenance_file,
-        'study': study,
-    }

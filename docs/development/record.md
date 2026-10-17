@@ -1,3 +1,15 @@
+> 当前（2026-10-17）：reader PR201 已双侧验收清理；§2.1 结构首批在 structure-packages 完成本机验收，准备一个里程碑 PR→dev。
+> 验证：core 2466 passed +1 既有 skip、CPU Flow 525 passed；16 新结构节点全执行，0 fail/error（§267）。
+> 结果：15 个 init 仅导出；control 小文件归并，64 个实现文件已登记；80/9132 →79/9097（文件/行），尚未满足总目标。
+> 下一：首批最终 head 与实际 dev CI 验收、主题分支清理；新增 artifact/make 门面和 origin pickle 兼容方案须先确认。
+> 状态：未实施 API 形状/公开行为变化；不新增边界修复、不训练/GPU/main/tag；用户暂存与数据保留。
+
+> 当前（2026-10-17）：PR201 reader 修复与获批 §2.1 已合 dev eb9642b，最终 head/实际 dev 全部 CI 成功，#200 已关闭。
+> 验证：core 2450 passed +1 既有 skip、Flow 525 passed、72 新节点全执行；PR Unit38985157783、dev Unit38985763930（§266）。
+> 清理：codex/library-reader-exits 本地及远端已删除；累计远程主题清理 55，main/dev 与用户暂存、数据均保留。
+> 下一：目标已改为 §2.1 结构重构；首批只做包入口导出、control 合并和逐文件登记，保留 API/公开行为。
+> 状态：不再新增边界修复；跨层门面新增或旧 pickle 兼容如需改变 API/行为，先报告等确认；不训练/GPU/main/tag。
+
 > 当前（2026-10-17）：PR201 reader 失败/取消修复已完成本地验收；按 08:05 最新指示收尾，停止新增边界修复。
 > 验证：core 2450 passed +1 既有 skip、CPU Flow 525 passed；72 新回归全执行（§263，.tmp/audit144/FINAL_LOCAL_CHECKED.json；临时证据不随 clone）。
 > 最新：Enmao 已批准 structure.md §2.1，原样纳入本批独立 docs 提交；先验收 PR201 最终 head 和实际 dev 的全部 CI。
@@ -4368,3 +4380,36 @@ B144完整本机验收补记：fdfef59源码CORE_FINAL2450passed+1既有skip、F
 ## 265. 2026-10-17：reader 收尾与获批结构重构交接
 
 08:05 指示批准 `docs/code/structure.md` §2.1，先前 §264 的外部草稿隔离为当时事实，现将同一 60 行原文纳入 PR201；正文 SHA256 8fff8069de374f17daabb1e64d3fbaa3e53452ad4b8c9e77616417f74bab833c。仅文档变化，不改变已验证 reader 生产代码。最终 head CI 必须重新验收；完成 actual dev 验收与分支清理后停止边界扩展，转入结构重构。重构保持磁盘产物布局与现有公开行为；涉及 API 形状变化先报告等确认。
+
+
+## 266. 2026-10-17：reader 双侧验收完成，目标正式切换为结构重构
+
+PR201 final `f6a9b601d2e9aa15e0038520a8a05995566be44b` 的 Branch38985157801、Package38985157797、Unit38985157783 全部实际矩阵与聚合成功；正常合入 dev `eb9642be893d14d69ffe9975fdb336b13150666e` 后，实际 dev Package38985763981 / Unit38985763930 全部成功。严格 PR_CHECKED SHA256 `179c55231e217047cfad1a407c3b55f3c00989312b9208d4ba93d1da44ea1baf`，DEV_CHECKED `ca67b281d0fe13dc81196d811e143c449aa9be54762b0c44b9160d78c58e58c5`，均在 `.tmp/audit144/`，不随 clone。原 Issue 正文保全，仅一次验收评论后关闭 #200；PR 正文追加验收，清理本地与远端 `codex/library-reader-exits`。保护 refs 未变，无其他分支、worktree、数据、结果或 provenance 删除。累计远端清理 55，周期基线 PR194 后已合 PR197/199/201 三项。
+
+按 08:05 新指示正式替换旧持续修复目标，不再开边界修复。新目标是 §2.1 结构重构，停止条件为所有机械结构检查通过、代码行数明显下降、现有测试全过。基线 structure 80 个 Python 文件 / 9,132 行，4 个 init 含实现；15 个 init 的 AST 和公开导出已盘点。structure 内 40 处、全 src 共 87 处直接跨层引用（flow 47 处）。这里只是依赖位置统计，不表示 87 个行为缺陷。
+
+首批方案：train/eval 实现原样迁至各自 loop.py，保留包级名称；asset.ensure_assets 并入现有 tree.py；make.expand_study 并入现有 write.py；merge/hash/mapping 合并为 mapping.py，layer Config 别名由 run_config 与 control 既有导出承接。所有 init 仅 import 与 __all__；现有 __all__ 保持。每层补齐逐文件登记，先增加 export-only AST 回归，再做迁移与现有 core/CPU Flow 验证。
+
+后续跨层 API 方案尚未实施：现有仅四层门面，没有 artifact_api / make_api。严格落地 §2.1.5 需要给这些既有能力增加门面；origin 迁移还涉及历史 pickle 的模块限定名。依照用户明确要求，涉及 API 形状或对外行为变化时先报告等确认，不通过兼容旁路或静默改变行为绕开此门。
+
+
+## 267. 2026-10-17：结构重构首批实施与后续 API 决策边界
+
+先提交 50409f1 的 export-only AST 检查：旧 15 个包入口均因首条 docstring 失败（15 failed /0 error/skip）；其中真正含函数/类实现的是前述 4 个包，不能把 15 个语法信号记成 15 个运行缺陷。ecc3064 将 train/eval 执行体原样迁入 loop.py，保留原包所有既有名称（含已使用的私有 helper）；将 asset.ensure_assets / make.expand_study 并入已有 tree.py / write.py；control 的 merge/hash 并入 mapping，四层 Config 别名回到 run_config/既有 control 导出。所有 15 个包入口只做 import 或 __all__，64 个非 init 文件在对应层表逐项登记。当前 origin.py 仍登记为待迁入 system，未声称八包/跨层 API 检查已经通过。
+
+新 16 个结构节点均已执行通过；core 2466 passed +1 既有 skip（0 fail/error），CPU Flow 的最终证据与 PR/实际 dev 验收随后追加。所有原 __all__ 逐项保持，train/eval 原绑定名保留；两份执行模块 AST、7 个迁移函数体 AST 与旧版相等，未移除原校验或错误处理。当前 79 文件/9,097 行，较 80/9,132 减 1 文件/35 行；这是阶段结果，尚不满足总目标“行数明显下降”。本地临时证据在 .tmp/structure-refactor，不随 clone。
+
+首个宽范围针对性进程遗漏 CPU 线程限制，按唯一 basetemp 精确识别并停止自有测试进程，保留 TARGET.log、临时输入和取消进程清单；取消不能作为通过或库失败。其后 core/Flow 使用 OMP/MKL/OPENBLAS=1、空 CUDA_VISIBLE_DEVICES 和既有排除 external/gpu/slow 条件。最初迁移核验脚本误写 asset/tree.py 路径，以及 diff --check 拒绝两个文件尾空行，已校正；这些为校验脚本/排版拒绝，不计生产缺陷。prepare/run.py 仅按原字节替换 import，保留原混合换行，未整文件规范化。
+
+后续 API 方案（未实施，按 08:05 指示先报告等确认）：
+
+| **位置** | **具体方案** | **兼容/影响** |
+| --- | --- | --- |
+| structure/api/artifact_api.py | 纯重导出现有 artifact 的 layout/config/result/index/shared/atomic/readout 能力，调用方切到此门面；不增加包装逻辑。 | 新增一个 API 模块；现有函数参数、返回、异常与磁盘布局不改。 |
+| structure/api/make_api.py | 纯重导出现有 make 的展开、recipe、调度、容量能力；flow 与其他层不再 import make 实现。 | 新增一个 API 模块；保持现有调用语义。 |
+| structure/api/system_api.py | 在原有门面重导出获批迁入 system 的 origin 能力，既有 data_api.load_hf_dataset / model_api.download_model 保留同名。 | API 名称新增；下载策略、缓存身份和请求生命周期不改。 |
+| system/origin.py 的历史 pickle 兼容 | 建议仅保留旧 rpipe.structure.origin 到迁入模块的一条模块别名，不添加根目录文件；生产调用仍只经 API。 | 已有 _DomesticReader / Dataset 回调 pickle 持有旧模块限定名，直接删除旧路径会使其无法读取。是否接受这条兼容映射须确认，不能静默破坏旧对象或增加兼容旁路。 |
+
+在上述 API 形状和兼容例外获确认前，只完成已授权的不变 API 里程碑；不擅自创建门面或迁移 origin，不新增边界修复，不训练、不使用 GPU、不修改 main/tag。
+
+首批最终本机验收（ecc3064）：core 2466 passed +1 既有 skip，CPU Flow 525 passed（均 0 fail/error；Flow 0 skip），新增 16 个结构节点全在 core 实际执行。LOCAL_CHECKED、XML、迁移 AST/__all__、原样旧 origin reader pickle 的模块限定名证据在 .tmp/structure-refactor。新旧 pickle 的实际迁移尚未实施，只验证当前 pickle 明确引用旧模块且当前可回读；兼容映射是待确认方案。

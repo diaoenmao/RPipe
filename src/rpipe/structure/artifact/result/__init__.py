@@ -1,5 +1,3 @@
-"""Result package."""
-
 from rpipe.structure.artifact.result.format import (
     STATUS_FAILED,
     STATUS_SUCCEEDED,

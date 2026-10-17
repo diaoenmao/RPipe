@@ -148,7 +148,7 @@ def test_on_eval_period_runs_eval_and_can_stop(tmp_path, monkeypatch):
         calls.append(1)
         return {'Accuracy': 0.4}
 
-    monkeypatch.setattr('rpipe.structure.algorithm.train.eval_test_split', fake_eval)
+    monkeypatch.setattr('rpipe.structure.algorithm.train.loop.eval_test_split', fake_eval)
     algo = TrainAlgorithm(
         AlgorithmConfig.from_mapping(
             {'mode': 'train', 'early_stop_patience': 1, 'early_stop_min_delta': 1.0}

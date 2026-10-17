@@ -1,3 +1,11 @@
+## 2026-10-17：结构首批本地通过，API 后续方案待确认（最新）
+
+唯一 codex/structure-packages；50409f1 先红15个init，ecc3064迁移/归并后16结构节点全过，core2466passed+1既有skip、Flow525passed。全部既有 __all__ 与迁移体保持，79文件/9097行（基线80/9132）；只完成首批，八包与跨层API尚未闭合。待统一PR及final-head/actualdev实际CI，不提前声称完成总目标。record§266–267含reader完成与后续artifact_api/make_api、system_api origin导出及旧pickle模块别名具体方案；依08:05指示，API形状/行为变化须先报告等确认。无新边界修复/训练/GPU/main/tag；用户暂存、数据和取消证据保留。
+
+## 2026-10-17：reader 收尾完成，转结构重构（最新）
+
+PR201 final f6a9b60 / actual dev eb9642b 全部实际 CI 成功，#200 已验收关闭；library-reader-exits 本地/远端已删，累计 55。§2.1 获批原文已随 PR201 入库。旧 B145/继续找边界文字仅历史，不再执行。新唯一分支 codex/structure-packages，目标正式改为结构重构；首批包入口/control/文件登记，详 record §266。涉及新增 artifact_api/make_api 与旧 origin pickle 兼容的后续方案须先报告等确认。不训练/GPU/main/tag，用户暂存与所有数据保留。
+
 ## 2026-10-17 B144/#200整类owned读已修，最终本机Flow进行中（最新）
 
 唯一library-reader-exits，生产fdfef59已提交；先31红425cd72→69红e4ab3e4（28failed/41passed）→设计e3a76ef，再五显式+19whole-file整类修。COMPLETE_TARGET72passed、ADJACENT2185passed+1既有skip、core2450passed+1既有skip，18模块限定逆变换AST核body/order/validation保持；fixture52与初AST checker拒绝保留，不当库失败。16旧故障夹具移实际owned-open边界，原断言不放宽。Flow525passed、72新节点全执行、81359终结0；78731/44570终结0。详§263；下一完整Flow/XML核72新节点再一个里程碑PR双侧实际CI，不提前关200。未真实下载/GPU/性能/Study/main/tag，用户暂存保留；无审批等待。PR199/198验收和旧分支清理已完成，别重复反馈；remote仅main/dev、累计已清54/基线194后2，下一B145。
