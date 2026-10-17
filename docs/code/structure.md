@@ -143,7 +143,7 @@ structure/
 - **规则：** 本文每节只写职责、依赖方向与对外接口。带 Issue / Bug 编号的修复说明、边界情况“契约”与变更过程，记入 [record.md](../development/record.md)，本文至多保留一句链接。
 - **理由：** 结构文档要能一口气读完并据此判断“东西该放哪”。修复日志会淹没结构信息，且随时间失效。
 - **检查：** 评审判断。新增内容出现 Issue / Bug 编号或修复叙事即应移出。
-- **说明：** 现有正文中的修复类段落暂不在本次移动，后续单独整理。
+- **说明：** 已定位的既有修复叙事原文见[开发记录归档](../development/record.md#2913-structure-history-archive)；新增修复过程同样记入开发记录。
 
 #### 2.1.8 派生项目副本以 RPipe 为准
 
@@ -550,10 +550,7 @@ HF 观测的连续坐标继承 checkpoint tracker.progress，再加本次 Traine
 
 flush **必须有**，与 print 同一套间隔，不能攒到 Run 结束：
 
-- **batch**：只内存 `append`
-- **report 间隔**（这一轮 step 结束时至少一次；中途用 `log_period`，整数 step，和 `checkpoint_period` 一样）：`system.Logger.report` 并立刻 flush `run.log`；tracker 往 jsonl 追加并 flush；写出 `tracker_state.json` 并 flush
-- **epoch 末**：`save`+`reset`，再 flush state
-- **execute 结束**：成功体最终 state 写失败须传播并阻止成功；已有执行错误或终止时尽力再 flush 一遍且保首错（Flow 通用收尾与原生 train 一致，见 B114/#154）
+修复过程与边界原文见[开发记录 §291.3](../development/record.md#2913-structure-history-archive)。
 
 原生 supervised train 结束时区分成功与已有异常：已有训练异常（含终止）时尽力 flush state，二次编码/发布失败不能替换原异常，已有 Logger 可用时尽力记录二次 traceback；无 Logger 或日志也失败时原异常仍继续。训练体正常完成后，最终 state 写失败仍传播并阻止成功，不静默吞掉。只调整现有结束收尾的异常优先级，不改训练步骤、周期内 flush、checkpoint/RNG 或 tracker 格式。
 
@@ -710,7 +707,7 @@ resume **不**改 config，**不**自己 write `result.json`。
 
 内建精确恢复只覆盖默认 MetricBundle 的 batch 指标（Loss / Accuracy / MSE）。RMSE / GLUE 的整段内部累积、以及自定义 metric 运行时未纳入恢复，不标记为完整数据恢复，续训明确警告；不能把默认分类指标的回归外推到这些指标。
 
-RNG 和采样位置恢复完整不等于所有算子数值确定。严格数值续训还要求经过验证的确定性运行条件、相同设备 / 依赖和实际精度；TF32 或其他设备 kernel 的重复前向差异仍按 B-023 的边界处理，不能通过本合同自动关闭。
+修复过程与边界原文见[开发记录 §291.3](../development/record.md#2913-structure-history-archive)。
 
 精确恢复要求预算、batch / sampler 和当前声明的训练算法设置一致；不允许把短预算 checkpoint 冒充原长预算前缀。改变环境、数据内容、精度或代码后是否仍等价需独立验证，本合同不跨设备保证数值一致。多 worker / 预取、自定义未实现恢复协议的数据、HF Trainer 不自动获得此能力。新 checkpoint 若缺少受支持的数据状态，续训明确警告仅为部分状态恢复；有完整状态但配置不匹配则拒绝，不能静默重放前缀。旧 checkpoint / 独立 eval 权重加载继续兼容；旧 checkpoint 训练恢复明确警告不保证连续等价。历史 Study 的拒绝续训门不会自动撤除。
 
@@ -1269,42 +1266,18 @@ Run 目录名必须为非空单一目录组件，拒绝点 / 父目录、分隔�
 4. Flow：summarize 之后是 **write**（写 result），再 **process**。
 
 
-共享准备锁的同线程重入使用 pid 与目录 stat 的 st_dev/st_ino 身份（与标准库 samefile 一致），避免普通/扩展命名空间路径自争用。该身份只存线程局部内存，实际路径和锁文件保持；其他线程/进程仍须取得 OS 锁。见 B103 / Issue134。
-
-
-migrate_shared在取得多个共享根锁前确保原有根目录存在，并按与cache_lock重入相同的物理目录身份排序，避免namespace拼写改变跨线程/进程加锁次序。原有四根、冲突检查、硬链接发布和诊断保留合同保持。见B104/Issue136。
-
-
-共享锁退出按先OS release、后句柄close处理：已有准备异常/取消时，清理OSError不得替换首错；正常结束的清理失败仍严格传播，多个清理故障保留先发生者，非IO程序错误继续暴露。未取得锁不尝试unlock，获取Timeout的cause/原预算、PID物理root重入键、多根顺序及OS所有权不变。prepared_resource失败staging不按锁清理删除。见B107/Issue142。
+修复过程与边界原文见[开发记录 §291.3](../development/record.md#2913-structure-history-archive)。
 
 
 文本写入、日志、Tracker 与共享锁复用 artifact 的句柄退出规则；写流以标准库 closing 保留原始句柄，锁仍先解锁后关闭。
 
-文本与ledger写入退出合同（Issue144）：_atomic、Logger._emit、AlgorithmTracker的begin_run/append_jsonl在已有写入/flush/编码异常或取消时，尽力close且仅不让close OSError替换首错；正常体close仍严格，非IO程序错继续暴露。打开模式、编码/newline、原JSON/日志字节、flush与追加顺序、原子发布和staging所有权保持；不引入通用I/O层。
-
-
-Study comparison PNG退出合同（Issue146）：main_exp/flow/process/curves.plot_report沿用库PNG已实施的同目录排他staging→保存/关闭→atomic_replace与自有figure/tmp清理规则，失败保留旧historical_comparison.png与peer；正常close严格、保存首错/取消不被close OSError替换。figsize/dpi、数据/轴/标注、返回None及科学比较/读取/gate函数保持，无文件架构或产物路径变化。
-
-
-冻结校验拒绝合同（Issue148）：check_frozen将无法完成解析的RecursionError和已有OSError/ValueError同样包装为ProvenanceChangedError并保留原cause，使初始/prepare冻结拒绝沿用已有成功字节保全规则。strict load_provenance仍抛真实解析异常，freeze关闭不触及坏文件；不改JSON限额/schema、路径、source/plan哈希、真实phase失败或任意程序RuntimeError传播。
+修复过程与边界原文见[开发记录 §291.3](../development/record.md#2913-structure-history-archive)。
 
 
 配方定义的自定义 checkpoint 对象：原生 System 和 compare checkpoint 读取经 system_api 的私有桥，在标准Run assets且该Study配方包已加载时选用局部兼容Unpickler；既有裸helper引用与其它物理根的私有引用解析到当前Study代码，非本地全局引用仍用标准pickle。没有已加载配方时保持原torch.load参数。此处只处理类定义的导入身份，不改变权重/optimizer/RNG恢复范围、指纹拒绝、数值门、weights_only=False或checkpoint文件协议/布局，不写回原checkpoint。绕过RPipe直接加载自定义Python类仍须使其定义代码可导入；使用原生System读取可保留旧helper与换根兼容。
 
 
-Logger中断尾行边界（B123/#168）：既有_emit在可读的非空尾字节既非LF也非CR时，以原append文本写在新record前补一个分隔；不截断/重写旧字节，合法记录的stdout/文件内容、编码/newline、追加权限及首错规则保持。可选尾读OSError沿原append-only行为继续，不能读旧日志时不保证修复中断半行；不因此新增读取权限要求。Tracker恢复协议与只读解析不改，非任意多写者事务。当前本机与合批状态见[record§207](../development/record.md)。
-
-
-Logger多行消息（B124/#170，2026-10-17本机修复）：内容行复用原完整record主体，保持同级别/Run/event、原行文本与每条IO错误规则；空/普通单行及原f-string转换保持。此规则沿用已有traceback逐行记录政策，不改变文件格式或Tracker；既有旧日志不重写/重建。当前工程验收状态见[record§213](../development/record.md)。
-
-
-共享锁在取得OS所有权并登记释放处理后才初始化空锁字节，等待者不在锁外写入；同一.rpipe.lock inode、超时预算、线程重入与进程退出释放保持。初始化write/flush失败及取消也走已登记的解锁/关闭，不替换主异常。见B128/#175、record§214–215。
-
-
-原生日志只读事件定位在已知Run上下文下使用平台Path组件身份比较，并保留紧邻事件边界：Windows大小写同组件别名不再回退误读正文tag，POSIX不同组件仍不同。比较不执行resolve/stat/samefile；原生产者、输入日志、事件集合/偏移、legacy回退、路径所有权守卫、traceback和排序保持。此规则不重建任意未知历史身份；本机实施与验证边界见B131/#179、record§222。
-
-
-NUMBERS.md既有Run ID代码单元格沿用原文本投影；对合法反引号ID选择正文不含的反引号分隔符并必要padding，以保留字面身份。普通ID的原Markdown字节、其他列/数值/链接/计划绑定和原子发布保持，无新依赖或通用富文本框架。协议依据[CommonMark §6.1](https://spec.commonmark.org/0.31.2/#code-spans)，B132/#180及同批读取身份边界证据见record§224。
+修复过程与边界原文见[开发记录 §291.3](../development/record.md#2913-structure-history-archive)。
 
 
 ### 国内源扩展入口（2026-10-17）
@@ -1312,4 +1285,4 @@ NUMBERS.md既有Run ID代码单元格沿用原文本投影；对合法反引号I
 origin=domestic在Data/Model注册builder前设置HF_ENDPOINT。模型builder可复用model_api.download_model(repo_id,cache_dir,revision=None)：现有本地路径不下载，远端先ModelScope snapshot_download，同ID/revision/cache_dir失败仅显式hf-mirror兜底，双失败保留异常链报错，取消不换源。HF数据builder复用data_api.load_hf_dataset，导入前/后核对已缓存HF端点，海外旧常量明确拒绝，要求新worker导入前选domestic。不reload第三方全局模块，不声称能管住任意builder/第三方脚本的自定义HTTP，接入作者须逐项审查外部URL并改国内源。ID不自动猜映射。可选hf包含modelscope/datasets，纯torch不强加依赖；没有国内镜像的torchvision类型仍拒绝。共享目录/历史配置/结果不变，新Study模板domestic。
 
 
-2026-10-17 国内下载边界（B143/#198）：现有 origin.py 统一模型/数据 SDK 的逐请求来源核验，使用 ContextVar 区分国内消费者及未标记调用。安装/还原短锁与实际消费者计数覆盖 worker、streaming generator、media feature decoder 和延迟文件读；不持锁等待 SDK 工作、不替换/关闭共享客户端。HF 实际 get_session/get_async_session 返回的 client class 也受检查，退出还原继承关系。没有新增模块/目录/公共配置、Dataset 类型或磁盘格式；仅可选 hf 使用路径增加明确的传输拒绝。支持边界及实际 SDK/协议验证限制见 README 与 artifact_consistency_design 的 B143 节。
+修复过程与边界原文见[开发记录 §291.3](../development/record.md#2913-structure-history-archive)。
