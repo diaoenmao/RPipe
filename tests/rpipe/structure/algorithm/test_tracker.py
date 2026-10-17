@@ -168,3 +168,54 @@ def test_tracker_stream_close_preserves_write_or_flush_failure(tmp_path, stream_
     assert tracker.jsonl_path.read_bytes().startswith(prefix)
     assert tracker.state_path.read_bytes() == b'old tracker state'
     assert calls[0] == 'write' and (phase != 'flush' or 'flush' in calls)
+
+
+@pytest.mark.parametrize('saved', [False, True])
+def test_display_mean_empty_segment_keeps_fallback_copy_and_state(tmp_path, saved):
+    tracker = AlgorithmTracker(tmp_path)
+    tracker.append('train', n=2, values={'second': 2.0, 'first': 0.0})
+    if saved:
+        tracker.save('train')
+    tracker.reset('train')
+    before = tracker.state_dict()
+    expected = {'second': 2.0 if saved else 0.0, 'first': 0.0}
+    displayed = tracker.display_mean('train')
+    assert displayed == expected and list(displayed) == ['second', 'first']
+    displayed['second'] = 999.0
+    assert tracker.display_mean('train') == expected
+    assert tracker.display_mean('missing') == {}
+    assert tracker.state_dict() == before
+
+
+def test_display_mean_running_zero_keeps_order_and_skips_inactive_saved_metric(tmp_path):
+    tracker = AlgorithmTracker(tmp_path)
+    tracker.append('train', values={'inactive': 7.0, 'zero': 8.0})
+    tracker.save('train')
+    tracker.reset('train')
+    tracker.append('train', n=3, values={'zero': 0.0, 'active': 2.0})
+    before = tracker.state_dict()
+    displayed = tracker.display_mean('train')
+    assert displayed == {'zero': 0.0, 'active': 2.0}
+    assert list(displayed) == ['zero', 'active']
+    assert tracker.state_dict() == before
+
+
+def test_display_mean_keeps_original_meter_error_instead_of_saved_fallback(tmp_path):
+    tracker = AlgorithmTracker(tmp_path)
+    failure = ValueError('meter display failed')
+
+    class Meter:
+        n = 1
+
+        @property
+        def mean(self):
+            raise failure
+
+    meter = Meter()
+    tracker._meters['train'] = {'broken': meter}
+    tracker._last_segment['train'] = {'saved': 4.0}
+    with pytest.raises(ValueError) as raised:
+        tracker.display_mean('train')
+    assert raised.value is failure
+    assert tracker._meters['train']['broken'] is meter
+    assert tracker._last_segment['train'] == {'saved': 4.0}
