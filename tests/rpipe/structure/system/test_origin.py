@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from rpipe.structure.origin import (
+from rpipe.structure.system.origin import (
     apply_model_origin,
     bind_endpoint,
     discard_bad_archive,
@@ -19,7 +19,7 @@ pytestmark = [
     pytest.mark.content,
     pytest.mark.p1,
     pytest.mark.structure_layer,
-    pytest.mark.module_data,
+    pytest.mark.module_system,
     pytest.mark.cost(cost_class='c1'),
     pytest.mark.result_type('categorical', detail='summary'),
 ]
@@ -119,7 +119,7 @@ def test_domestic_origin_is_set_before_registered_builder(monkeypatch, tmp_path,
 def test_domestic_model_uses_modelscope_before_mirror(monkeypatch, tmp_path):
     import sys
     import types
-    from rpipe.structure import origin
+    from rpipe.structure.system import origin
     calls = []
     def snapshot_download(**kwargs):
         calls.append(kwargs)
@@ -133,7 +133,7 @@ def test_domestic_model_uses_modelscope_before_mirror(monkeypatch, tmp_path):
 def test_domestic_model_falls_back_only_to_explicit_mirror(monkeypatch, tmp_path):
     import sys
     import types
-    from rpipe.structure import origin
+    from rpipe.structure.system import origin
     calls = []
     def missing(**kwargs):
         raise OSError('not available in ModelScope')
@@ -149,7 +149,7 @@ def test_domestic_model_falls_back_only_to_explicit_mirror(monkeypatch, tmp_path
 def test_domestic_model_dual_failure_keeps_both_diagnostics(monkeypatch, tmp_path):
     import sys
     import types
-    from rpipe.structure import origin
+    from rpipe.structure.system import origin
     def missing(**kwargs):
         raise OSError('ModelScope unavailable')
     def failed(**kwargs):
@@ -165,7 +165,7 @@ def test_domestic_model_dual_failure_keeps_both_diagnostics(monkeypatch, tmp_pat
 def test_hf_dataset_import_and_call_use_domestic_endpoint(monkeypatch, tmp_path):
     import sys
     import types
-    from rpipe.structure import origin
+    from rpipe.structure.system import origin
     calls = []
     def load_dataset(*args, **kwargs):
         calls.append((os.environ['HF_ENDPOINT'], args, kwargs))
@@ -178,7 +178,7 @@ def test_hf_dataset_import_and_call_use_domestic_endpoint(monkeypatch, tmp_path)
 def test_domestic_refuses_already_imported_foreign_dataset_endpoint(monkeypatch):
     import sys
     import types
-    from rpipe.structure import origin
+    from rpipe.structure.system import origin
     monkeypatch.setitem(sys.modules, 'datasets.config', types.SimpleNamespace(HF_ENDPOINT='https://huggingface.co'))
     with pytest.raises(RuntimeError, match='import'):
         origin.load_hf_dataset('org/data')
@@ -194,7 +194,7 @@ def test_domestic_accepts_cached_mirror_endpoint(monkeypatch, module_name, attr)
 
 def test_domestic_model_local_input_never_downloads(tmp_path, monkeypatch):
     import sys
-    from rpipe.structure.origin import download_model
+    from rpipe.structure.system.origin import download_model
     local = tmp_path / 'model'
     local.mkdir()
     monkeypatch.setitem(sys.modules, 'modelscope', None)
@@ -205,7 +205,7 @@ def test_domestic_model_local_input_never_downloads(tmp_path, monkeypatch):
 def test_domestic_model_missing_modelscope_uses_mirror(monkeypatch, tmp_path):
     import sys
     import types
-    from rpipe.structure.origin import download_model
+    from rpipe.structure.system.origin import download_model
     monkeypatch.setitem(sys.modules, 'modelscope', None)
     calls = []
     def mirror(**kwargs):
@@ -219,7 +219,7 @@ def test_domestic_model_missing_modelscope_uses_mirror(monkeypatch, tmp_path):
 def test_domestic_model_cancellation_does_not_try_another_source(monkeypatch, tmp_path):
     import sys
     import types
-    from rpipe.structure.origin import download_model
+    from rpipe.structure.system.origin import download_model
     def cancel(**kwargs):
         raise KeyboardInterrupt('cancel')
     monkeypatch.setitem(sys.modules, 'modelscope', types.SimpleNamespace(snapshot_download=cancel))
@@ -237,7 +237,7 @@ def test_domestic_model_cancellation_does_not_try_another_source(monkeypatch, tm
 def test_hf_dataset_rejects_explicit_overseas_urls(monkeypatch, args, kwargs):
     import sys
     import types
-    from rpipe.structure.origin import load_hf_dataset
+    from rpipe.structure.system.origin import load_hf_dataset
     def forbidden(*args, **kwargs):
         raise AssertionError('foreign URL reached datasets')
     monkeypatch.setitem(sys.modules, 'datasets', types.SimpleNamespace(load_dataset=forbidden))
@@ -246,7 +246,7 @@ def test_hf_dataset_rejects_explicit_overseas_urls(monkeypatch, args, kwargs):
 
 
 def test_archive_checksum_read_exit_preserves_first_failure(tmp_path, reader_exit_case, reader_close_fault):
-    from rpipe.structure.origin import DownloadEndpoint
+    from rpipe.structure.system.origin import DownloadEndpoint
     case = reader_exit_case
     source, peer = tmp_path / 'archive.bin', tmp_path / 'peer'
     payload = b'synthetic immutable archive'

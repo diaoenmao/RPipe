@@ -174,7 +174,7 @@ def bind_endpoint(ctor: Any, endpoint: DownloadEndpoint) -> Iterator[DownloadEnd
 
 
 def _md5(path: Path) -> str:
-    from rpipe.structure.artifact._atomic import _owned_stream
+    from rpipe.structure.api.artifact_api import _owned_stream
 
     digest = hashlib.md5()
     with _owned_stream(path.open('rb')) as handle:

@@ -9,7 +9,7 @@ from types import ModuleType
 from typing import Any
 from uuid import uuid4
 
-from rpipe.structure.make.recipe import STUDY_PHASES, study_phase_files, study_phases_enabled
+from rpipe.structure.api.make_api import STUDY_PHASES, study_phase_files, study_phases_enabled
 
 
 def run_study_phase(study_dir: Path | str, phase: str, ctx: Any, study: dict[str, Any], *, entry: str = 'run') -> bool:

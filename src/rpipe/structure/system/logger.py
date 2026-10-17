@@ -14,8 +14,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from rpipe.structure.artifact._atomic import _owned_stream
-from rpipe.structure.artifact.asset import kinds
+from rpipe.structure.api.artifact_api import _owned_stream
+from rpipe.structure.api.artifact_api import kinds
 
 _LEVELS = {'INFO': 'INFO ', 'WARN': 'WARN ', 'ERROR': 'ERROR'}
 

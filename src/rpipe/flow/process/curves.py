@@ -7,9 +7,9 @@ from pathlib import Path
 from typing import Any
 
 from rpipe.flow.process.aggregate import collect_from_index, load_curve_series, summarize_curve_series
-from rpipe.structure.artifact._atomic import atomic_replace
-from rpipe.structure.artifact.paths import DOCS_DIRNAME
-from rpipe.structure.artifact.result import STATUS_SUCCEEDED
+from rpipe.structure.api.artifact_api import atomic_replace
+from rpipe.structure.api.artifact_api import DOCS_DIRNAME
+from rpipe.structure.api.artifact_api import STATUS_SUCCEEDED
 
 FIGURES_DIRNAME = 'figures'
 LEARNING_CURVES_NAME = 'learning_curves.png'

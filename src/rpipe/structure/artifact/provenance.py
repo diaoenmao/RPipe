@@ -40,7 +40,7 @@ def _inside(study_dir: Path, raw: str) -> Path:
 def source_files(study_dir: Path | str, study: dict[str, Any]) -> dict[str, str]:
     """Library and Study two-column sources, declarations, recipe, and extra inputs."""
     import rpipe
-    from rpipe.structure.make.recipe import study_phase_files
+    from rpipe.structure.api.make_api import study_phase_files
 
     study_dir = Path(study_dir).resolve()
     package = Path(rpipe.__file__).resolve().parent

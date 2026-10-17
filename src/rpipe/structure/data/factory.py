@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import Any, Callable, Iterator
 
 from rpipe.structure.data.config import DataConfig
-from rpipe.structure.artifact.shared import cache_lock, reference_tree
-from rpipe.structure.origin import apply_model_origin, bind_endpoint, discard_bad_archive, endpoint_for
+from rpipe.structure.api.artifact_api import cache_lock, reference_tree
+from rpipe.structure.api.system_api import apply_model_origin, bind_endpoint, discard_bad_archive, endpoint_for
 
 
 class Data:
@@ -217,7 +217,7 @@ def _train_loader_for_samples(
 ) -> Any:
     from torch.utils.data import DataLoader, RandomSampler
 
-    from rpipe.structure.system.runtime import make_generator, worker_init_fn
+    from rpipe.structure.api.system_api import make_generator, worker_init_fn
 
     if num_samples <= 0:
         return _empty_train_loader(dataset, batch_size)
@@ -359,8 +359,8 @@ def _build_torch_vision(
     import torch
     from torch.utils.data import DataLoader, Subset
 
-    from rpipe.structure.system.runtime import make_generator, worker_init_fn
-    from rpipe.structure.system.torchvision_load import import_torchvision
+    from rpipe.structure.api.system_api import make_generator, worker_init_fn
+    from rpipe.structure.api.system_api import import_torchvision
 
     import_torchvision()
     from torchvision import datasets

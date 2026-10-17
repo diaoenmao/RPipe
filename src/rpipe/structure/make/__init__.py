@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Any
 
-from rpipe.structure.artifact.layout import ensure_study_layout
-from rpipe.structure.artifact.provenance import write_provenance
+from rpipe.structure.api.artifact_api import ensure_study_layout
+from rpipe.structure.api.artifact_api import write_provenance
 from rpipe.structure.make.expand import expand_patches, load_study_yaml
 from rpipe.structure.make.recipe import RecipeContext, apply_recipe, load_recipe
 from rpipe.structure.make.capacity import (

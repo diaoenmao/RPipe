@@ -7,8 +7,8 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-from rpipe.structure.artifact.asset import kinds
-from rpipe.structure.artifact._atomic import atomic_write_text
+from rpipe.structure.api.artifact_api import kinds
+from rpipe.structure.api.artifact_api import atomic_write_text
 from rpipe.structure.algorithm.metric import MetricBundle
 
 

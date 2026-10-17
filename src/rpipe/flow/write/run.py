@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from rpipe.flow.context import FlowContext
-from rpipe.structure.artifact.asset import ensure_assets, list_asset_files
-from rpipe.structure.artifact.result import write_result
+from rpipe.structure.api.artifact_api import ensure_assets, list_asset_files
+from rpipe.structure.api.artifact_api import write_result
 
 
 def run(ctx: FlowContext) -> None:

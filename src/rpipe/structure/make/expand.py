@@ -9,8 +9,8 @@ from typing import Any
 
 import yaml
 
-from rpipe.structure.artifact._atomic import _read_text
-from rpipe.structure.origin import normalize_origin
+from rpipe.structure.api.artifact_api import _read_text
+from rpipe.structure.api.system_api import normalize_origin
 
 
 def set_dotted(mapping: dict[str, Any], dotted: str, value: Any) -> None:

@@ -7,10 +7,10 @@ from pathlib import Path
 from typing import Any, Callable
 
 from rpipe.structure.model.config import ModelConfig
-from rpipe.structure.artifact.shared import cache_lock
+from rpipe.structure.api.artifact_api import cache_lock
 from rpipe.structure.model.init_param import init_param
 from rpipe.structure.model.shape import resolve_shape
-from rpipe.structure.origin import apply_model_origin, normalize_origin
+from rpipe.structure.api.system_api import apply_model_origin, normalize_origin
 
 
 class Model:

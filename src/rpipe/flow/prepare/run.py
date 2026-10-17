@@ -7,14 +7,14 @@ import copy
 from rpipe.flow.context import FlowContext
 from rpipe.flow.study import run_study_phase
 from rpipe.structure.api import algorithm_api, data_api, model_api, system_api
-from rpipe.structure.artifact.asset import ensure_assets
-from rpipe.structure.artifact.config import load_config
-from rpipe.structure.artifact.provenance import check_frozen
+from rpipe.structure.api.artifact_api import ensure_assets
+from rpipe.structure.api.artifact_api import load_config
+from rpipe.structure.api.artifact_api import check_frozen
 from rpipe.structure.control import control_from_config, validate_control
 from rpipe.structure.control import AlgorithmConfig, DataConfig, ModelConfig, SystemConfig
-from rpipe.structure.make.expand import load_study_yaml
-from rpipe.structure.make.recipe import RecipeContext, apply_recipe
-from rpipe.structure.origin import apply_model_origin, normalize_origin
+from rpipe.structure.api.make_api import load_study_yaml
+from rpipe.structure.api.make_api import RecipeContext, apply_recipe
+from rpipe.structure.api.system_api import apply_model_origin, normalize_origin
 
 
 def run(ctx: FlowContext) -> None:
@@ -56,7 +56,7 @@ def run(ctx: FlowContext) -> None:
     data_config = DataConfig.from_mapping(ctx.control.data)
     data_paths = {}
     if data_config.source in (None, 'torch'):
-        from rpipe.structure.data.factory import vision_root
+        from rpipe.structure.api.data_api import vision_root
         name = vision_root(data_config.name)
         if name is not None:
             # Profiles are Study-owned; never borrow another Study's normalization.

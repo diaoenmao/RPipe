@@ -5,8 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from rpipe.flow.context import FlowContext
-from rpipe.structure.artifact.provenance import capture_environment, load_provenance
-from rpipe.structure.artifact.result import STATUS_SUCCEEDED
+from rpipe.structure.api.artifact_api import capture_environment, load_provenance
+from rpipe.structure.api.artifact_api import STATUS_SUCCEEDED
 
 
 def _snapshot(obj: Any) -> dict[str, Any]:

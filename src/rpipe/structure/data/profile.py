@@ -12,12 +12,12 @@ from typing import Any
 
 import yaml
 
-from rpipe.structure.artifact._atomic import _read_text, atomic_write_text
+from rpipe.structure.api.artifact_api import _read_text, atomic_write_text
 from rpipe.structure.data.config import DataConfig
-from rpipe.structure.artifact.shared import shared_paths
+from rpipe.structure.api.artifact_api import shared_paths
 from rpipe.structure.data.factory import DataFactory, vision_root
-from rpipe.structure.make.expand import load_study_yaml
-from rpipe.structure.origin import normalize_origin
+from rpipe.structure.api.make_api import load_study_yaml
+from rpipe.structure.api.system_api import normalize_origin
 
 STATS_NAME = 'stats.yaml'
 

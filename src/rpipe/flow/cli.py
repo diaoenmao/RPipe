@@ -8,19 +8,19 @@ from pathlib import Path
 from typing import Any
 
 from rpipe.flow.process import process_path, run_study as process_study
-from rpipe.structure.artifact.provenance import (
+from rpipe.structure.api.artifact_api import (
     ProvenanceChangedError,
     check_frozen,
     load_provenance,
     provenance_changes,
 )
-from rpipe.structure.artifact.readout import format_logs, format_status, list_runs, write_numbers
-from rpipe.structure.artifact.readout.compare import compare_runs, format_compare, write_compare
+from rpipe.structure.api.artifact_api import format_logs, format_status, list_runs, write_numbers
+from rpipe.structure.api.artifact_api import compare_runs, format_compare, write_compare
 from rpipe.flow.context import FlowContext
 from rpipe.flow.runner import FlowRunner
-from rpipe.structure.artifact import artifact_layout, load_config
-from rpipe.structure.artifact.activity import announce, clear_activity, read_activity, _format_activity
-from rpipe.structure.make import (
+from rpipe.structure.api.artifact_api import artifact_layout, load_config
+from rpipe.structure.api.artifact_api import announce, clear_activity, read_activity, _format_activity
+from rpipe.structure.api.make_api import (
     expand_study,
     filter_batches_by_mode,
     filter_jobs_by_mode,
@@ -31,9 +31,9 @@ from rpipe.structure.make import (
     run_succeeded,
     write_launch_scripts,
 )
-from rpipe.structure.origin import apply_model_origin, normalize_origin
+from rpipe.structure.api.system_api import apply_model_origin, normalize_origin
 from rpipe.structure.api import data_api
-from rpipe.structure.make.capacity import (
+from rpipe.structure.api.make_api import (
     attach_estimates,
     batch_summaries,
     capacity_report,
@@ -397,7 +397,7 @@ def _execute_process(args: argparse.Namespace) -> int:
 
 
 def _execute_data(args: argparse.Namespace) -> int:
-    from rpipe.structure.data.profile import profile_study
+    from rpipe.structure.api.data_api import profile_study
 
     written = profile_study(args.study_dir)
     for path in written:
@@ -543,7 +543,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.cmd == 'shared':
         import json
-        from rpipe.structure.artifact.shared import migrate_shared, shared_paths
+        from rpipe.structure.api.artifact_api import migrate_shared, shared_paths
         try:
             body = migrate_shared(args.study_dir) if args.migrate else {
                 key: str(value) for key, value in shared_paths(args.study_dir).items()}

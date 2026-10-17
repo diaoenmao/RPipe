@@ -37,7 +37,15 @@ def test_new_facades_are_pure_reexports(name):
     import importlib
     module = importlib.import_module('rpipe.structure.api.' + name)
     for node in ast.parse(Path(module.__file__).read_text(encoding='utf-8-sig')).body:
-        assert isinstance(node, (ast.Import, ast.ImportFrom, ast.Assign)), (name, type(node).__name__)
+        if isinstance(node, ast.Assign):
+            assert len(node.targets) == 1 and isinstance(node.targets[0], ast.Name) and node.targets[0].id == '__all__'
+            assert isinstance(ast.literal_eval(node.value), list)
+        else:
+            assert isinstance(node, (ast.Import, ast.ImportFrom)), (name, type(node).__name__)
+        if isinstance(node, ast.ImportFrom):
+            original = importlib.import_module(node.module)
+            for alias in node.names:
+                assert getattr(module, alias.asname or alias.name) is getattr(original, alias.name)
 
 
 def test_structure_has_exactly_eight_packages():
@@ -58,3 +66,10 @@ def test_cross_layer_imports_use_facades(path):
             if module and module.startswith('rpipe.structure.'):
                 target = module.split('.')[2]
                 assert target in (layer, 'api', 'control'), (path, node.lineno, module)
+
+
+def test_origin_builders_keep_existing_public_names():
+    from rpipe.structure.api import data_api, model_api, system_api
+    from rpipe.structure.system import origin
+    assert data_api.load_hf_dataset is system_api.load_hf_dataset is origin.load_hf_dataset
+    assert model_api.download_model is system_api.download_model is origin.download_model
