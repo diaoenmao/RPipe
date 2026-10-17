@@ -1,3 +1,5 @@
+> 2026-10-17最新：PR216双侧实际CI全绿，dev ee9050f9，当前源码全部入dev；本轮复查无值得继续实施的同文件源码精简。按新要求已在record§290.3写§2.1八条小结：结构专项153pass/0skip，机械违规0；粒度待评审、旧叙事获准暂缓、派生同步未验收，不称总体完成。78文件/8989行，净少2文件/143行；完整CPU2743+1既有skip/Flow525覆盖同一源码。当前入口.tmp/structure-tracker-final/STATE.json；只有本地收尾小结待后续合批，无活句柄。保留_staging/分支/数据，不改main/API形状/文件架构/布局，不跑GPU/测速。盘点基线213，之后214–216累计3次。
+
 > 2026-10-17最新：PR215双侧实际CI全绿，dev7bd0e9f；后续tracker展示筛选本地78332d0，core2743+1既有skip/CPU Flow525、4新展示/153结构节点及前批回归执行，100源码哈希通过，未推送/开PR。record§289/.tmp/structure-tracker-display/STATE.json为当前入口；PR215证据.tmp/structure-origin-final。structure78文件/8989行，起点净少143，总目标未完成。盘点基线213、之后214/215共2次合入；无活句柄，保留_staging/分支/数据，不改main/API形状/文件架构/布局，不跑GPU/测速/逐路径审计，继续主题合批。
 
 > 2026-10-17最新：PR214双侧实际CI全绿，dev7275d8b；后续origin摘要读取循环本地06ca025，core2739+1既有skip/CPU Flow525、4新块边界/6既有reader退出/153结构节点及前批回归执行，100源码哈希通过，未推送/开PR。record§288/.tmp/structure-origin-digest/STATE.json为当前入口；PR214证据.tmp/structure-json-percent-final。structure78文件/8992行，对起点净少140，总目标未完成；盘点基线213，214为之后第1个合入。无活句柄，保留_staging/分支/数据，不改main/API形状/文件架构/布局，不跑GPU/测速/逐路径审计，继续主题合批。
