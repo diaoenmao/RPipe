@@ -135,3 +135,22 @@ def test_remaining_seconds_scales_with_leftover():
     assert remaining_seconds(elapsed=10.0, origin=0, current=0, total=10) is None
     assert remaining_seconds(elapsed=5.0, origin=4, current=5, total=5) == 0
     assert format_hms(40) == '0:00:40'
+
+
+@pytest.mark.parametrize('unit,epochs,steps,expected', [
+    ('step', 3, 5, 5), ('epoch', 3, 5, 3), ('epoch', None, 7, 7),
+    ('epoch', None, None, 1), ('epoch', 0, 7, 1), ('step', 9, 0, 1),
+    ('epoch', -3, 7, 1), ('step', 9, -2, 1),
+])
+def test_scheduler_horizon_preserves_unit_precedence_fallback_and_lower_bound(unit, epochs, steps, expected):
+    from rpipe.structure.algorithm.progress import ProgressBudget
+    assert ProgressBudget(unit, epochs, steps, 1).scheduler_t_max() == expected
+
+
+@pytest.mark.parametrize('unit,epochs,steps,error', [
+    ('step', 4, None, TypeError), ('epoch', 'bad', 7, ValueError),
+])
+def test_scheduler_horizon_still_rejects_selected_invalid_integer(unit, epochs, steps, error):
+    from rpipe.structure.algorithm.progress import ProgressBudget
+    with pytest.raises(error):
+        ProgressBudget(unit, epochs, steps, 1).scheduler_t_max()

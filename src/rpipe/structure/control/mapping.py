@@ -23,11 +23,8 @@ def split_known(mapping: dict[str, Any], known: set[str]) -> tuple[dict[str, Any
 
 
 def emit(known: dict[str, Any], extras: dict[str, Any]) -> dict[str, Any]:
-    out: dict[str, Any] = {}
-    for key, value in known.items():
-        if value is None or value == {} or value == []:
-            continue
-        out[key] = value
+    out = {key: value for key, value in known.items()
+           if not (value is None or value == {} or value == [])}
     out.update(extras)
     return out
 

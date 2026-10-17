@@ -103,6 +103,5 @@ def training_arguments_kwargs(
     except ImportError:
         return kwargs
     overlay = filter_args(getattr(TrainingArguments, '__init__', TrainingArguments), blob)
-    for key, value in overlay.items():
-        kwargs[key] = value
+    kwargs.update(overlay)
     return kwargs

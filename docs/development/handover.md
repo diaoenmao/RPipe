@@ -1,3 +1,5 @@
+> 2026-10-17最新：PR211双侧实际CI全绿，dev4f28bcf；后续现有配置操作本地09ce2f9，core2704+1既有skip/CPU Flow525、5新节点/153结构节点执行、100源码哈希一致，尚未推送/开PR。record§285与.tmp/structure-config-operations/STATE.json为当前入口；PR211证据.tmp/structure-model-final。后续不改文件架构/API形状/磁盘产物布局，不测速或逐路径审计；保留分支/数据/_staging_from_DEM，不改main，无活句柄，继续主题合批。
+
 > 2026-10-17最新：PR210双侧实际CI全绿，dev2955ef4；后续模型碎文件本地e712c93已完整CPU core2699+1既有skip/Flow525、10新节点/153结构节点通过、100源码哈希一致，尚未推送/开PR。record§284与.tmp/structure-model-candidate/STATE.json为当前入口；PR210证据.tmp/structure-close-milestone。保留分支、数据与_staging_from_DEM，不改main/API/产物布局；无活句柄，继续同主题合批。
 
 > 2026-10-17：PR209已双侧实际CI验收，dev be8f3a2；后续写流复用源码本地065742b，core2690+1既有skip/CPU Flow525、四新节点及155结构节点通过、102源码哈希一致。record§283/.tmp/structure-owned-writers/STATE.json为当前入口；本批源码尚未推送/开PR，继续同主题合批；保留首轮Flow8失败及TARGET2报告器错误。无活测试句柄，不删分支/数据/_staging_from_DEM，不改main或API形状。
