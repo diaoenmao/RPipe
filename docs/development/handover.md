@@ -1,3 +1,5 @@
+> 2026-10-17最新：PR210双侧实际CI全绿，dev2955ef4；后续模型碎文件本地e712c93已完整CPU core2699+1既有skip/Flow525、10新节点/153结构节点通过、100源码哈希一致，尚未推送/开PR。record§284与.tmp/structure-model-candidate/STATE.json为当前入口；PR210证据.tmp/structure-close-milestone。保留分支、数据与_staging_from_DEM，不改main/API/产物布局；无活句柄，继续同主题合批。
+
 > 2026-10-17：PR209已双侧实际CI验收，dev be8f3a2；后续写流复用源码本地065742b，core2690+1既有skip/CPU Flow525、四新节点及155结构节点通过、102源码哈希一致。record§283/.tmp/structure-owned-writers/STATE.json为当前入口；本批源码尚未推送/开PR，继续同主题合批；保留首轮Flow8失败及TARGET2报告器错误。无活测试句柄，不删分支/数据/_staging_from_DEM，不改main或API形状。
 
 > 2026-10-17本轮PR207/208均已双侧实际CI验收，最新dev4483455、最终head104b53a；core2686+1既有skip/CPU Flow525，40新节点及155结构节点通过。record§282.7–282.8/.tmp/structure-config-final/STATE.json为当前依据；源码全入dev，无活句柄，只有收尾文档本地待下一批。五次盘点基线208，0开放PR/Issue、1主worktree；分支与数据保留。全structure净减59行，幅度有限不标宏观完成；goal控制仍旧paused且工具不能恢复，人工授权工作已执行完成。

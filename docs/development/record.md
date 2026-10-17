@@ -1,3 +1,21 @@
+> 当前（2026-10-17）：按新收尾授权推送现有模型归并与parent延伸，当前完整CPU验收通过（§285）。
+> 验证：core2699 passed+1既有skip、CPU Flow525 passed；10新节点/153结构节点执行、100源码哈希一致。
+> 范围：structure78文件/9023行，本批较dev净少15行；仅推送既有归并，后续不改文件架构/产物布局。
+> 状态：PR最终head与actualdev实际CI尚待验收，不用本地结果替代合入。
+> 保护：保留_staging_from_DEM/分支/数据；不改main、不force push、不跑GPU或测速。
+
+> 当前（2026-10-17）：PR210已双侧实际CI验收；后续模型归并与parent兜底精简本地积累，尚未推送。
+> 最新验证：恢复相邻/结构165 passed；完整core2699+1既有skip/Flow525仅覆盖e712c93，parent延伸后需重跑。
+> 结果：structure78文件/9023行，对起点净少109；API形状与产物布局保持，不标总目标完成。
+> 下一步：继续有依据的同主题精简，完整里程碑再冻结验收/PR，避免小PR。
+> 保护：无活句柄，保留分支、数据、_staging_from_DEM；不改main、不force push、不跑GPU。
+
+> 当前（2026-10-17）：PR210已普通合dev2955ef4，最终head与actualdev全部实际CI成功（§284.3）。
+> 后续本地：两个单调用模型函数已归并factory，core2699 passed+1既有skip、CPU Flow525 passed。
+> 证据：10新节点/153结构节点执行，100源码哈希一致；两模块各2318正式候选0引用/0读取错误。
+> 结果与边界：structure78文件/9026行，对起点净少106行；模型批次尚未推送/开PR/合dev，目标仍未标完成。
+> 保护：无活句柄，保留分支/数据/_staging_from_DEM，不改main/API形状/产物布局，不跑GPU。
+
 > 当前（2026-10-17）：按新收尾授权推送五入口退出复用里程碑；冻结源码完整CPU验收通过（§284）。
 > 验证：core2691 passed+1既有skip，CPU Flow525 passed；5新节点/155结构节点执行，102源码哈希一致。
 > 范围：源码净少35行，全structure80文件/9038行；API形状与产物布局保持。
@@ -4883,3 +4901,36 @@ PR209 最终 head ad7f1740ffb9089e290f5aa2a79e8b2ec181f5e5 的 Branch39005314326
 按最新人工指示，将现有唯一主题的写流/close-boundary 积累提交完整验收后推送，通过 PR 合 dev。冻结 c47a89fd5033eb94117c2e21e03fc0cd5e50cdf9；core2691 passed+1同一既有POSIX skip，CPU Flow525 passed；5个新增句柄代理节点、155结构节点全执行，102源码哈希保持。四源码合计源码净少35行，全structure80文件/9038行，相比起点9132净少94，幅度有限不标总目标完成。既有首轮8项Flow失败/TARGET2报告器错误/换行guard拒绝原证据保留在§283及.tmp，不随clone。
 
 五入口分别为atomic_write_text、Logger._emit、Tracker.begin_run/append_jsonl、cache_lock，复用标准库closing与已有_owned_stream，保留原始句柄、close-only语义、原始写入体/flush/锁获取与解锁次序、首错优先级与原子发布清理。无新helper、模块、API形状、产物布局或GPU。结构文档只补退出职责一句，本批过程与验收留在record；未更新main或删除分支/数据/_staging_from_DEM。最终head及actualdev CI待分别验收，不借旧head成功。
+
+### 284.1 PR210 最终 head 验收与下一项模型碎文件归并
+
+最终head57355f247f116ac0f24d83298747c1038f179f01的Branch39006929505/Package39006929420/Unit39006929541全部实际矩阵与聚合成功后普通合dev 2955ef4b64e5ba86000c9a4e5a00a332ff5237ba；实际dev CI 独立验收中。head与实际dev的源码/测试/Study/结构文档无差异。保留当前本地/远端分支与所有数据。
+
+下一项按§2.1.4归并model/shape.py与model/init_param.py：两文件均只有factory一个调用模块，model_api及model包未导出这两个函数；factory原已通过import绑定同名函数，归并后调用名/签名/函数AST保持，不改门面。两模块各自正式2318持久化候选扫描0引用、0读取错误，不反序列化、不触碰_staging_from_DEM；不代表未知下游。shape临时提案36组输入/异常/不修改输入结果相同。函数原样并入factory、删除两个单调用源码碎文件并更新逐文件登记，不留别名/兼容旁路；磁盘产物布局与科学计算实现不变。原始证据.tmp/structure-shape-candidate与.tmp/structure-model-candidate不随clone。
+
+### 284.2 模型碎文件本地实施
+
+两个原函数定义逐项AST相同，model_api与model包导出未动；factory原已有的两个同名调用对象改为本地定义，旧两个源码文件归并删除，无数据/产物改动。定向model+结构173 passed，10个shape优先级/空维度/整数转换错误/不修改输入节点和153结构节点全执行；两处文件登记删除后结构参数化节点随真实文件树减少2，不当漏测。model三文件合计285→273行，减少2个单调用碎文件、12行；全structure78文件/9026行，对起点净少106行，仍不夸大总目标完成。完整CPU需当前新提交冻结后验证，PR210实际dev单独验收中。
+
+### 284.3 PR210 双侧实际 CI 完成
+
+最终head57355f247f116ac0f24d83298747c1038f179f01的Branch39006929505/Package39006929420/Unit39006929541全部实际矩阵与聚合成功，普通合入dev2955ef4b64e5ba86000c9a4e5a00a332ff5237ba；actualdev的Package39007437894/Unit39007438040及所有实际矩阵与聚合同样成功。PR_CHECKED SHA256 67af5c6eb6bb8b0fba0f82304c72d197cf7692539b71d23b10c8b4926b0eb51c；DEV_CHECKED 410bcb7587553a43e80386606c494754d03cf19f6efb1101fb25d0152c543cc9。原head与actualdev源码/测试/Study/结构文档无差异；当前后续模型代码单独验证，不把它混作PR210范围。PR正文验收只追加一次，不发重复评论；附件100上限错误保留，不删历史附件。main/local dev/origin main保护引用与合前相同；本地/远端主题保留，无数据/结果/Run/provenance删除。周期盘点基线208，210是之后第2个合入，不重跑五次盘点。
+
+### 284.4 后续模型归并完整 CPU 验收（本地、未推送）
+
+冻结e712c932a842e6440305eaf7249967a416daf00f：core2699 passed+1同一既有POSIX skip，CPU Flow525 passed；10个新增shape节点、153个当前文件树结构节点均执行，100源码哈希一致，无GPU节点。两个旧模块各自正式2318候选扫描0引用/0读取错误，函数AST原样。全structure78文件/9026行，对起点9132净少106；这是源文件范围的变化，不把增加回归和详细证据的整个仓库说成缩行，也不标总目标完成。
+
+本批源码仍仅本地e712c93，收尾记录随下个同主题完整里程碑合入；不因本地通过立即另开小PR。剩余35行以下单定义文件是各层Config和已批准API门面，依现有职责保留，不为缩文件强并。原始验证/36组输入对照/两个模块扫描在.tmp/structure-model-candidate与.tmp/structure-shape-candidate，不随clone。无活测试/CI观察句柄。
+
+### 284.5 同主题延伸：删除不可达的 parent 兜底
+
+algorithm.resume.study_dir_from_assets 在try之前已由标准Path构造并resolve，且保留assets名称检查；之后三次Path.parent是纯路径运算，根路径parent仍是根，原except Exception返回None分支不可达。删除3行异常包装，不改None/name/resolve拒绝或恢复流程，不增加helper；本仓库仅一处该形态。7组含根/浅层/assets/非assets/None输入原新输出一致，恢复相邻测试随后定向执行；模型批次e712c93完整CPU结果不能覆盖此后续改动，后续完整里程碑需重新冻结。原证据.tmp/structure-model-candidate，不随clone。
+
+parent延伸：恢复相邻与当前结构定向165 passed、0skip。全structure78文件/9023行，对起点净少109。仅本地主题提交；此后续改动尚未跑完整core/Flow，不复用e712c93的100哈希冻结证明为当前提交背书。
+
+
+## 285. 2026-10-17：模型归并及 parent 延伸完整里程碑收尾
+
+按最新人工明确授权，先推送现有e712c93/2c314a2/bad633e本地积累，通过单个PR合dev，后续精简仅在现有文件内做，不再改变文件架构或逐路径审计。冻结bad633ef014d8a99161b8061b40b22ccb18f1d9b的新完整CPU：core2699 passed+1同一既有POSIX skip、Flow525 passed；10新增shape节点/153当前结构节点执行，100源码哈希一致。这次结果覆盖parent延伸，不借e712c93旧绿灯。全structure78文件/9023行，比PR210的9038少15；比起点9132净少109，整体目标未称完成。
+
+范围为此前两模型函数原样归并、同名factory对象/公开门面保持及不可达Path.parent包装删除，说明/2318正式候选0引用扫描/函数AST/7与36组对照/旧失败证据见§284和原.tmp，不随clone。仅源码归并删除旧碎文件，不是删除实验数据或结果；_staging_from_DEM仍唯一未跟踪，未添加或读取。后续公开API形状与on-disk布局不变，无GPU/测速/强推/main操作。最终head及actualdev CI需分别真实验收。
