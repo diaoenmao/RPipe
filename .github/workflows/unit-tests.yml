@@ -38,7 +38,7 @@ jobs:
           cache: pip
 
       - name: Install package and pytest
-        run: python -m pip install -e ".[dev]" "huggingface_hub==1.33.0" "datasets==5.0.0" "httpx==0.28.1" requests aiohttp Pillow
+        run: python -m pip install -e ".[dev,tensorboard]" "huggingface_hub==1.33.0" "datasets==5.0.0" "httpx==0.28.1" requests aiohttp Pillow
 
       - name: Run core unit tests
         run: python tests/run.py --core
@@ -47,6 +47,11 @@ jobs:
         run: >-
           python tests/run.py --all --cost-class c1 --cost-class c2 --
           -m "(integration or e2e) and not external and not gpu and not slow"
+
+      - name: Read back optional TensorBoard events (CPU, offline)
+        run: >-
+          python tests/run.py --all --cost-class c1 --
+          tests/rpipe/flow/process/test_curves.py -k tensorboard_real_event_roundtrip
 
   unit-gate:
     name: Unit tests
