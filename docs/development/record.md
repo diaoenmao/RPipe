@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR213双侧实际CI全绿，actualdev664e46b，未重复远端操作。
+> 后续本地：JSON重复体+百分位筛选02475f5，完整CPUcore2735 passed+1既有skip、Flow525 passed。
+> 证据：6新筛选+8前批JSON节点/153结构节点执行、100源码哈希一致；structure78文件/8995行，净少137。
+> 未完成：后续源码未推送/开PR/合dev，继续主题合批，不为小改动另开PR；总体Occam目标未完成。
+> 保护：无活句柄，不碰_staging/分支/数据/main/API形状/文件架构/产物布局，不跑GPU/测速/逐路径审计。
+
 > 当前（2026-10-17）：PR213双侧实际CI全绿，已普通合dev664e46b（§287.2）。
 > 后续本地：checkpoint JSON重复体精简bdb4256，core2729 passed+1既有skip、CPU Flow525 passed。
 > 证据：8新节点/153结构节点执行、100源码哈希一致；structure78文件/9001行，起点净少131。
@@ -5054,3 +5060,9 @@ factory.py188→185，全structure78文件/9001行，对起点9132净少131；�
 仅在现有algorithm/progress.py的crossed_percents中，把本地列表/for/continue/append等价改为一条原生列表推导；非正total/current的原返回门、ratio计算、already成员判断先于阈值比较、1e-12容差、输入顺序/重复项及异常传播不变，不更新already，不改checkpoint名字去重或训练/HF调用。已核对checkpoint_names/native train/HF调用方，无新函数或文件，不改API或产物布局。120组原新函数对照（一次性生成器、无序/重复百分位、已处理集合、非正进度）输出与集合一致，原证据.tmp/structure-percent-filter不随clone。补充公共函数回归后再冻结完整CPU，不能借bdb4256旧全量或PR213绿灯验收本延伸；不为少量缩行单独开PR。
 
 百分位延伸定向210 passed/0skip，6新节点和153结构节点执行；签名/返回注解及其他声明AST不变。筛选函数净少6行，全structure78文件/8995行，对起点净少137；仅源码范围，不将包含新增测试/文档的仓库称整体缩行。随后冻结本地提交重跑完整CPU。
+
+### 287.5 百分位延伸完整CPU（本地、未推送）
+
+冻结02475f5cf7512ab1d289c1af8ffd6d2c76ec51de：core2735 passed+1同一既有POSIX skip、CPU Flow525 passed；6新百分位节点、前批8个JSON节点及153结构节点全部执行，100源码哈希一致。定向210 passed/0skip，120组原新对照一致；非正进度不消费输入、一次性生成器顺序/重复项、already成员先于阈值比较的短路、集合不修改和原迭代异常身份均保持。仅crossed_percents的列表构造改原生推导，签名/返回注解及其余声明AST不变，没有新helper/模块/防御层，不改百分位容差、checkpoint命名/去重、调用时机或产物布局。
+
+本延伸净少6行，连同本地JSON净少9行，全structure78文件/8995行，对起点9132净少137；只是源码范围，幅度有限不称宏观完成。源码仅本地bdb4256与02475f5，未推送/开PR/合dev，继续同主题合批，不借PR213远端绿灯验收本地后续。当前入口.tmp/structure-percent-filter/STATE.json，旧STATE有指针；原对照/冻结/XML/日志不随clone，无活测试/CI句柄。未做GPU/训练/真实下载/测速/逐路径审计；_staging_from_DEM及现有分支/数据均保留。

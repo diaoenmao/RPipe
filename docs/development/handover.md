@@ -1,3 +1,5 @@
+> 2026-10-17最新：PR213双侧CI已验收，dev664e46b；后续同文件JSON/百分位筛选本地02475f5，core2735+1既有skip/CPU Flow525、6新筛选+8JSON节点/153结构节点/100源码哈希通过，未推送/开PR。record§287.5/.tmp/structure-percent-filter/STATE.json为当前入口；structure78文件/8995行，起点净少137，总目标未完成。继续主题合批，不为小改动开PR；保留_staging/分支/数据，不改main/API形状/文件架构/产物布局，不跑GPU/测速/逐路径审计，无活句柄。
+
 > 2026-10-17最新：PR213双侧实际CI全绿，dev664e46b；后续同文件checkpoint JSON精简本地bdb4256，core2729+1既有skip/CPU Flow525、8新节点/153结构节点/100源码哈希通过，未推送/开PR。record§287/.tmp/structure-checkpoint-json/STATE.json为当前入口；PR213证据.tmp/structure-root-final。structure78文件/9001行，净少131但总目标未完成。五次盘点基线213、0开放PR/Issue、1主worktree，分支/数据/_staging保留。无活句柄，不改main/API形状/文件架构/产物布局，不跑GPU/测速/逐路径审计，继续主题合批。
 
 > 2026-10-17最新：PR212双侧实际CI全绿，devb184390；后续同文件root发射共享本地e2de26e，core2721+1既有skip/CPU Flow525、7新节点/153结构节点/100源码哈希通过，尚未推送/开PR。record§286/.tmp/structure-root-mapping/STATE.json为当前入口；PR212证据.tmp/structure-config-final2。保留分支/数据/_staging，不改main/文件架构/API/产物布局，不测速或逐路径审计；无活句柄，继续主题合批。goal工具旧paused已再核对，未伪称恢复。
