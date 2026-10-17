@@ -1,8 +1,8 @@
-> 当前（2026-10-17 PR219后）：继续同文件/同函数内部净删减，4函数本地净少16行，79文件/8966行。
-> 变更：删重复分组顺序状态/名称去重循环/HF别名字典，规则改原生短路；API、其他声明AST、文件架构与产物布局保持。
-> 验证：106原新对照一致；完整core2775 passed+1既有skip、CPU Flow525 passed，11新增/154结构节点与101源码哈希通过。
-> 下一步：只在现有范围积累实质里程碑，本地主题提交；本批不因16行另开PR，不提新架构改动。
-> 边界（19:25新授权）：rpipe已恢复每15分钟续跑；三个副本仅在新可用里程碑版本后周期同步，本批不同步。保留分支/数据/_staging，不合main/force push/GPU/测速。
+> 当前（2026-10-17 19:32确认后）：现有文件内净删减继续本地累计，5函数比dev少18行，79文件/8964行。
+> 变更：前四函数归并外，tracker.save删跨split临时snapshot和复制；API、其他声明AST、架构与产物布局保持。
+> 验证：冻结73ea0b1完整core2779 passed+1既有skip、CPU Flow525 passed，4新保存/154结构节点、101源码哈希通过；前四106对照保留。
+> 下一步：继续积累实质净删减里程碑，本地主题提交；未推送/开PR/合dev，不为本次2行另开PR。
+> 边界：rpipe每15分钟续跑ACTIVE；三个副本待新可用里程碑后周期同步，当前不派生。保留分支/数据/_staging，不动main/GPU/测速。
 
 > 当前（2026-10-17）：PR217/218双侧实际CI全部成功，最新dev1bded360；源码与实质文档均已入dev。
 > 已完成：结构小结发布、14段旧叙事原文迁移/回链；153结构节点通过，原文哈希/标题/63项登记保持。
@@ -5452,3 +5452,9 @@ Enmao 本次明确批准恢复每15分钟周期续跑。通过应用 automation_
 ### 295.4 同文件 tracker 保存中间状态删减候选
 
 19:32人工再次确认定时保留、当前不派生；继续已授权净删减。查阅 AlgorithmTracker.save 的 train/eval 调用与既有均值/恢复测试，删除仅用于临时分组的跨split snapshot字典和最终dict复制，直接在每个split保存点计算完后替换_last_segment[name]；不改变finish_full先行、meter顺序、均值算术和history、异常传播及失败split旧状态保留。不引入helper/文件/接口，不改JSONL/状态持久化格式。新增正常全split/单split/空split及中途meter异常回归；完整验证结果随后补记，当前不能沿用b0bb61d哈希验收此候选。
+
+### 295.5 tracker保存候选完整CPU通过，继续累计
+
+源码73ea0b1a4322f771f816334185998b18c2dccf5d已冻结验收：定向tracker/logger 103 passed，完整core2779 passed/1同一既有Windows POSIX执行权限skip/0fail/error；CPU Flow525 passed/0skip/fail/error。新增4节点（全split、单split、空split、meter中途异常）与154结构节点实际执行；冻结HEAD和101源码哈希一致。所有原有声明/签名保持，save以外AST一致；tracker223→221，仅删2行及中间字典/复制，不宣称重大产出。原始日志/XML、BASE_tracker、AST_CHECKED、FROZEN、LOCAL_CHECKED位于.tmp/structure-tracker-save，不随clone；保留原inline批次及更早全部失败证据。
+
+唯一主题仍codex/structure-artifacts，当前入口.tmp/structure-tracker-save/STATE.json，原inline STATE有指针；没有活测试/CI观察句柄。连同前四函数，当前未推源码相对实际dev1b64a6e2净少18行，79文件/8964行，相对起点9132累计少168行约1.84%，总目标未完成。当前没有推送/PR/远端CI，不把本地绿灯当dev验收；按19:32确认继续同文件净瘦身，攒完整实质里程碑，不为此2行或文档另开PR。定时ACTIVE保持，三个副本当前未派生，未改API/布局/main，未用GPU或测速，_staging与分支/数据保留。
