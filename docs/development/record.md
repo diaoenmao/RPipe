@@ -4385,3 +4385,25 @@ PR201 final `f6a9b601d2e9aa15e0038520a8a05995566be44b` 的 Branch38985157801、P
 首批方案：train/eval 实现原样迁至各自 loop.py，保留包级名称；asset.ensure_assets 并入现有 tree.py；make.expand_study 并入现有 write.py；merge/hash/mapping 合并为 mapping.py，layer Config 别名由 run_config 与 control 既有导出承接。所有 init 仅 import 与 __all__；现有 __all__ 保持。每层补齐逐文件登记，先增加 export-only AST 回归，再做迁移与现有 core/CPU Flow 验证。
 
 后续跨层 API 方案尚未实施：现有仅四层门面，没有 artifact_api / make_api。严格落地 §2.1.5 需要给这些既有能力增加门面；origin 迁移还涉及历史 pickle 的模块限定名。依照用户明确要求，涉及 API 形状或对外行为变化时先报告等确认，不通过兼容旁路或静默改变行为绕开此门。
+
+
+## 267. 2026-10-17：结构重构首批实施与后续 API 决策边界
+
+先提交 50409f1 的 export-only AST 检查：旧 15 个包入口均因首条 docstring 失败（15 failed /0 error/skip）；其中真正含函数/类实现的是前述 4 个包，不能把 15 个语法信号记成 15 个运行缺陷。ecc3064 将 train/eval 执行体原样迁入 loop.py，保留原包所有既有名称（含已使用的私有 helper）；将 asset.ensure_assets / make.expand_study 并入已有 tree.py / write.py；control 的 merge/hash 并入 mapping，四层 Config 别名回到 run_config/既有 control 导出。所有 15 个包入口只做 import 或 __all__，64 个非 init 文件在对应层表逐项登记。当前 origin.py 仍登记为待迁入 system，未声称八包/跨层 API 检查已经通过。
+
+新 16 个结构节点均已执行通过；core 2466 passed +1 既有 skip（0 fail/error），CPU Flow 的最终证据与 PR/实际 dev 验收随后追加。所有原 __all__ 逐项保持，train/eval 原绑定名保留；两份执行模块 AST、7 个迁移函数体 AST 与旧版相等，未移除原校验或错误处理。当前 79 文件/9,097 行，较 80/9,132 减 1 文件/35 行；这是阶段结果，尚不满足总目标“行数明显下降”。本地临时证据在 .tmp/structure-refactor，不随 clone。
+
+首个宽范围针对性进程遗漏 CPU 线程限制，按唯一 basetemp 精确识别并停止自有测试进程，保留 TARGET.log、临时输入和取消进程清单；取消不能作为通过或库失败。其后 core/Flow 使用 OMP/MKL/OPENBLAS=1、空 CUDA_VISIBLE_DEVICES 和既有排除 external/gpu/slow 条件。最初迁移核验脚本误写 asset/tree.py 路径，以及 diff --check 拒绝两个文件尾空行，已校正；这些为校验脚本/排版拒绝，不计生产缺陷。prepare/run.py 仅按原字节替换 import，保留原混合换行，未整文件规范化。
+
+后续 API 方案（未实施，按 08:05 指示先报告等确认）：
+
+| **位置** | **具体方案** | **兼容/影响** |
+| --- | --- | --- |
+| structure/api/artifact_api.py | 纯重导出现有 artifact 的 layout/config/result/index/shared/atomic/readout 能力，调用方切到此门面；不增加包装逻辑。 | 新增一个 API 模块；现有函数参数、返回、异常与磁盘布局不改。 |
+| structure/api/make_api.py | 纯重导出现有 make 的展开、recipe、调度、容量能力；flow 与其他层不再 import make 实现。 | 新增一个 API 模块；保持现有调用语义。 |
+| structure/api/system_api.py | 在原有门面重导出获批迁入 system 的 origin 能力，既有 data_api.load_hf_dataset / model_api.download_model 保留同名。 | API 名称新增；下载策略、缓存身份和请求生命周期不改。 |
+| system/origin.py 的历史 pickle 兼容 | 建议仅保留旧 rpipe.structure.origin 到迁入模块的一条模块别名，不添加根目录文件；生产调用仍只经 API。 | 已有 _DomesticReader / Dataset 回调 pickle 持有旧模块限定名，直接删除旧路径会使其无法读取。是否接受这条兼容映射须确认，不能静默破坏旧对象或增加兼容旁路。 |
+
+在上述 API 形状和兼容例外获确认前，只完成已授权的不变 API 里程碑；不擅自创建门面或迁移 origin，不新增边界修复，不训练、不使用 GPU、不修改 main/tag。
+
+首批最终本机验收（ecc3064）：core 2466 passed +1 既有 skip，CPU Flow 525 passed（均 0 fail/error；Flow 0 skip），新增 16 个结构节点全在 core 实际执行。LOCAL_CHECKED、XML、迁移 AST/__all__、原样旧 origin reader pickle 的模块限定名证据在 .tmp/structure-refactor。新旧 pickle 的实际迁移尚未实施，只验证当前 pickle 明确引用旧模块且当前可回读；兼容映射是待确认方案。
