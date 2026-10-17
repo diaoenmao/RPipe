@@ -1,3 +1,28 @@
+## 2026-10-18 01:11 Wrap-up：已保全，等待派工/提案审批
+
+本节为当前交接入口；下方“ACTIVE/PAUSED、待推送、待CI”等均为历史阶段，不能据此恢复自动任务或重复操作。工作分支为 `codex/structure-artifacts`，本次只提交/推送收尾，不开PR、不合dev/main、不打tag、不启动实验；15分钟自动任务已删除，不自动恢复。
+
+### 当前结论与已保全内容
+
+保持既有公开行为、API、文件架构和磁盘产物布局时，当前已确认的安全净瘦身已到头；不为数字硬删、不把搬运算净删。structure现有79源码/8904行，相对起点9132行净少228行约2.50%，登记缺失/失效均0。[唯一合并proposal§七](structure_simplification_proposal.md#七2026-10-17-2331-剩余项一次性盘点与合并审批入口)完整列出79文件、13重复/相似项、19职责热点及收益/风险/验证；[record§299](record.md)保留开发事实。
+
+PR222已入dev `f55a8732f12c31999efc15f8aa33381cb3970843`且双侧实际CI全绿。其后工作分支的生产改动仅`9dd7d2b`删除Model快照的无用返回中间态，净少1行；模型/结构CPU专项174 passed，字典表达式及其他声明AST一致。该1行尚未通过新PR合dev，不能借PR222的CI说本分支已做全量验收。其余后续为验收记录、清单、proposal与本次交接，已按主题保全。
+
+### P1取舍：保留现状，提案待批
+
+P1不是已授权实施任务。单一bundle可能减少旧恢复路径，但会改变诊断分片、legacy payload/meta读取及恢复合同；毛删50–90行不等于净删，新增转换/诊断会抵消收益，净0–70只是条件预算。当前决定维持现有保存/读取行为、旧对象与staging，不新增兼容别名或迁移工具。负责人若批准方向，先列实际bundle-only/legacy-only/mixed对象与调用方，明确保全、转换/回退、诊断和失败验证后再定实施；无法保全合同或无净收益则撤回。P2/P3亦未获实施批准，纯分责/未证实正收益不做。本次不创建proposal PR。
+
+### clone后的接手步骤
+
+1. clone仓库并checkout `codex/structure-artifacts`，核对实际`git status`及`git log`；不要仅checkout dev后误以为已包含本次proposal和1行未合源码。
+2. 先读本节、proposal§七、record§299/300及[structure§2.1](../code/structure.md#21-结构约束)。正式结论、估算、取舍和复验入口均在Git内，不依赖本机临时JSON。`.tmp/structure-remaining`原始日志/XML/AST与字节证据不随clone，未假称已入库。
+3. 如需复验当前局部改动，按[testing](testing.md)准备CPU环境后执行 `python tests/run.py --core -- tests/rpipe/structure/model tests/rpipe/structure/test_structure.py --basetemp .tmp/wrap-up-model-structure`。不为接手自动跑实验/GPU；下一获批源码里程碑才按范围冻结并完整core+CPU Flow及双侧实际CI。
+4. 建议由监督安排回正常正确性bug修复：接到具体Issue后核对设计/调用方、先复现和红回归，再最小修复并按主题合批PR→dev；当前不自行新开bug运动，不把建议当新实施授权。若先审P1，则严格按批准范围推进，不能因本次wrap-up直接实施。
+
+### 未跟踪DEM暂存
+
+本机 `_staging_from_DEM/` 是监督从DEM复制的两份中文研究计划规范/模板交接暂存（中文原名+ASCII别名，共4文件），与正式 `docs/research/standards/` 两份正本原字节一致，大小/hash/相对链接见proposal。它不是源码、Run数据或新的正式docs；不重复登记/提交，也不删、不移动、不通过ignore隐藏。clone不含该暂存，但已含正式标准/模板，因此接手不依赖它。
+
 ## 2026-10-17 23:33：已取消15分钟自跑，结束当前瘦身
 
 Enmao明确取消自动空转；rpipe automation已删除（deleteStatus=deleted），不自动恢复。现有行为/API/架构/布局合同内，安全瘦身已到头；剩余79文件、13重复/相似项、19热点及条件收益/风险/验证均在唯一proposal§七与record§299。跨文件方案未批不做，等监督具体派工/提案决定或转回正常修bug。无新PR，不为产出硬删；_staging_from_DEM保持未跟踪不动。下述PAUSED等为先前历史状态，以本条为准。
