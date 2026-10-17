@@ -4348,3 +4348,12 @@ PRODUCTION_STRUCTURE_CHECKED对18源模块逆转仅声明的19call/5with、impor
 
 
 B144完整本机验收补记：fdfef59源码CORE_FINAL2450passed+1既有skip、FLOW_FINAL525passed/0skip，72新节点逐项与COMPLETE_TARGET核对为66core+6Flow全部执行；先红69全部包含，前批86SDK回归也在完整Flow全部执行。FINAL_LOCAL_CHECKED保存18源码hash/四XMLhash/72节点与边界（临时不随clone）；81359/78731/44570均terminal0，无活句柄。102实际Python源码与Git跟踪集合精确相同，无分支切换旧源码残留。下一统一类别PR，确切final-head和actualdev全部实际CI仍必需；200未关闭，不把本机绿当已合/发布。
+
+
+## 264. 2026-10-17：推送前外部结构文档改动保全
+
+本批10d9180已提交且完整本机绿，推送前工作区门禁发现docs/code/structure.md额外未提交60行结构约束（文件mtime07:58:48），来源未核实，不是本批所写；旧检查如实拒绝并保留PRE_PUSH_STATUS。全文原样快照/哈希8fff8069de374f17daabb1e64d3fbaa3e53452ad4b8c9e77616417f74bab833c留.tmp/audit144/EXTERNAL_STRUCTURE_PROTECTED，未覆盖、暂存、回退或夹带提交；用户_staging_from_DEM也保留。
+
+已阅读该结构草稿。它要求后续迁origin/训练实现、收紧跨层api等，而当前任务明确不改文件架构/产物布局。本批仅按已合dev与先红/设计保留既有依赖方向，在现有IO模块收敛读取退出，没有新增文件/层/公开配置；不把并行草稿自动变成全库架构迁移任务，不为此停止正确性推进。草稿本身留给其所属工作流，不在本批PR宣称全架构迁移或合规完成。
+
+本机CI观察器复用既有严格checker，仅在副本ci-check.py显式允许上述一个已核验SHA的外部文档M状态，加原用户暂存；任何其他工作区变化仍拒绝，final-head/分支/mergeable/所有实际矩阵与聚合的条件完全保留，不改基础checker。这样独立验证已提交代码，同时保全并行文档；不是忽略未保全生产改动。若该文档再变，hash检查会拒绝，重新核对后处理。无用户提问/审批等待，无新生产变化或实验动作。
