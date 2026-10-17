@@ -5448,3 +5448,7 @@ Enmao 本次明确批准恢复每15分钟周期续跑。通过应用 automation_
 继续现有文件/函数内部的真实净删减，commit 按主题保全，完整实质里程碑再批量 PR→dev。新的模块、目录、职责搬移或 API/产物布局变化，仍须先写 proposal 并提交后等审；派生同步口径批准不扩大这些范围。当前本地 b0bb61d 四函数净少16行的批次和尾记仍未推送/开PR/合dev，79文件/8966行；完整 CPU core2775 passed+1既有skip、Flow525 passed，11新节点/154结构节点、106对照与101源码哈希沿用§294同一源码证据，不借PR219绿灯。
 
 本次只改文档、定时配置及本机状态元数据，101源码哈希重新核对一致，未重复完整CPU测试，不为此开纯文档小PR。STATE 的 source_files 补列已经测试的 make/expand.py（原清单漏记，不是新增改动）；源码冻结提交保持 b0bb61d，不将文档提交冒充已测源码。保留分支、数据、结果和 _staging，不碰 main/tag/release，不 force push，不用 GPU/训练/测速。宏观净瘦身目标未宣称完成。
+
+### 295.4 同文件 tracker 保存中间状态删减候选
+
+19:32人工再次确认定时保留、当前不派生；继续已授权净删减。查阅 AlgorithmTracker.save 的 train/eval 调用与既有均值/恢复测试，删除仅用于临时分组的跨split snapshot字典和最终dict复制，直接在每个split保存点计算完后替换_last_segment[name]；不改变finish_full先行、meter顺序、均值算术和history、异常传播及失败split旧状态保留。不引入helper/文件/接口，不改JSONL/状态持久化格式。新增正常全split/单split/空split及中途meter异常回归；完整验证结果随后补记，当前不能沿用b0bb61d哈希验收此候选。
