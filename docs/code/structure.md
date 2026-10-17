@@ -741,7 +741,8 @@ RNG 和采样位置恢复完整不等于所有算子数值确定。严格数值�
 | `system/logger.py` | System Logger: stdout + assets/logs/run.log (flush on every emit). |
 | `system/runtime.py` | Apply Run seed and torch runtime flags. Call at the start of prepare. |
 | `system/torchvision_load.py` | Load torchvision after its native ops are actually registered. |
-| `system/origin.py` | 国内来源、SDK 传输策略与延迟读取生命周期；经 system_api 对外提供。 |
+| `system/origin.py` | 来源与端点选择、模型/数据下载入口及输入预检；公开名称经 system_api 对外提供。 |
+| `system/transfers.py` | SDK 传输钩子、并发策略作用域及延迟 reader/media/generator 生命周期；私有状态由本模块独占。 |
 
 管理计算在硬件上的执行（concept §6 **system**）：设备、精度、并行、内存与 IO。prepare 确认设备与输出位置；checkpoint **文件**读写在本层，**resume 语义**在 algorithm（§6.11.3）。声明字段由 **`SystemConfig`** 从 JSON / Config 加载。
 

@@ -4605,3 +4605,11 @@ Data类及_loader_options/_empty_train_loader/_train_loader_for_samples移入run
 schedule566→366行，scripts208行：8个函数原AST一致，包含等待组校验、原子发布及生成的旧schedule导入字面量；15个保留schedule函数在仅还原_group_mode局部有序去重后AST一致。新模块不反向import schedule，不引入循环导入、包装层或新API形状。既有名称经普通直接import保留，8个逐对象导出身份节点均执行；另补train/eval重复日志标签CPU回归（Popen全为测试替身，console=shared）。72组空/单模式/混合模式、round/split/batch组合的旧/新render返回字符串完全相同；没有执行生成命令。
 
 仓库统一入口c1/c2、not gpu/not external/not slow：结构+全部make+CLI retry共535 passed/0fail/error/skip。证据`.tmp/structure-scripts/`不随clone，LOCAL_TARGETED_CHECKED SHA256 `be148115f8e8988d587401434bcf3b02fb34baa3077442ff32428da9f408be2a`。原Data重构的229 CPU通过仍仅为其当时定向验证；当前整批完整core/Flow/CI尚待origin分责后执行，不用PR204或旧成功替代。整体79文件/9140行，仍未达到明显缩行。
+
+## 279. 2026-10-17：origin 来源入口与私有传输生命周期分责
+
+### 279.1 方案与边界
+
+按最新人工指示继续同一 codex/structure-artifacts 里程碑。origin 保留公开函数、DownloadEndpoint、端点/输入预检；SDK transport hook、reader/media/generator 及全部可变 scope 状态一起迁入 system/transfers.py，避免复制标量状态或循环 import。system_api、data_api.load_hf_dataset、model_api.download_model 的名称、签名和对象身份关系不变，不增加旧 origin 别名。现有 SDK 测试仅将私有状态读取改指实际所有者；迁移函数逐项 AST 对照，并核查正式 pickle 字节引用。
+
+同时删除 torchvision_load 中必达 return/raise 循环之后不可达的 last-error 兜底，保留重试次数钳制、清理、退避和原异常；补最小次数与耗尽回归。设计先记录再实施。合并 data/runtime、schedule/scripts 与本批后冻结源码，完整 core + 显式 not-gpu 的 CPU Flow 回归，再一次 PR 经双侧实际 CI 合 dev。保留所有失败证据、暂存和分支；不训练、不改磁盘产物布局或 API 形状。
