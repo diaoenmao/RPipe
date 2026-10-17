@@ -1,8 +1,8 @@
-> 当前（2026-10-17 17:45 后）：按新人工指示继续 CPU 同文件净删减；PR201–218 已验收，架构 proposal 已写、未实施。
-> 本地进展：删除缓存校验后的重复防御及单调用装箱包装；生产净少14行、少1函数/1 if，78文件/8975行。
-> 验证：200组缓存与163组装箱原新对照一致，make+结构定向543 passed；完整CPU尚待本批冻结后执行。
-> 下一步：同主题本地积累里程碑，不为这两项或proposal单独开PR；硬件分责/类身份/副本同步等待具体proposal确认。
-> 保护：未改公开签名/API形状/文件架构/磁盘布局，保留分支/数据/_staging，无GPU/测速/main操作。
+> 当前（2026-10-17 17:45 后）：按新指示继续CPU同文件净删减；架构proposal已写供确认，未实施架构或副本同步。
+> 本地进展：缓存重复防御与单调用装箱包装删除，生产净少14行、少1函数/1 if；78文件/8975行，累计净少157行（1.72%）。
+> 验证：core2748 passed+1既有POSIXskip、CPU Flow525 passed；5新节点/153结构节点执行，100源码哈希一致。
+> 下一步：在当前文件职责内继续积累实质净删减；两项源码和proposal仅本地提交，不为此单独开PR，远端CI尚未验收本批。
+> 状态：定时恢复被自动审批拒绝，仍PAUSED；无活测试句柄，保留分支/数据/_staging，不改API/文件架构/磁盘布局/main，不用GPU/测速。
 
 > 当前（2026-10-17）：PR217/218双侧实际CI全部成功，最新dev1bded360；源码与实质文档均已入dev。
 > 已完成：结构小结发布、14段旧叙事原文迁移/回链；153结构节点通过，原文哈希/标题/63项登记保持。
@@ -5350,3 +5350,11 @@ PR218最终head00bca588a7627ab8ccd1d868e6934a735f6122df的Branch39020447379/Pack
 load_launch_plan移除4处已被wait_groups保证的dict判断（3处and门、1处静默过滤）、重复jobs get/default及列表复制；保留所有信任边界和readiness调用顺序。capacity将单调用_pack_wave分组体并回pack_jobs，删除包装签名/调用层及job_waves保证不可达的空wave门，无新helper。两个模块其余函数/类声明AST和保留函数签名/返回注解逐一一致。schedule366→365、capacity385→372，本批生产净少14行；源码78文件/8975行，对起点9132累计净少157行（约1.72%），仍不称总体完成。模块AST共少1函数、1 if、1 BoolOp节点；这不是对运行性能的测量。
 
 200组真实JSON缓存对照的返回/异常、readiness调用轨迹、原缓存字节一致；163组离线合成装箱对照的组序、输入变更与对象身份一致，无硬件探测。便携新增2缓存+3装箱公共入口节点；首定向284 passed，扩展make+结构543 passed/0skip（含153结构节点）。全部.raw对照脚本/JSON/XML/日志留.tmp/structure-redundant-checks，不随clone。完整CPU及远端CI尚未用本批新源码验收，不能借PR218绿灯。
+
+### 292.3 本地完整CPU验收与后续节奏
+
+冻结源码提交d7964d1584aba92615df9260191ba77ceeda803c后，tests/run.py core实际2748 passed/1 skipped/0fail/error，唯一skip仍为Windows上的POSIX executable mode bits；CPU Flow显式c1/c2与not gpu/external/slow，525 passed/0skip/fail/error。5个新增公共入口节点及153个结构节点均在CORE.xml实际执行，100源码SHA256和冻结HEAD逐项一致。TARGET2为543pass；200缓存/163装箱原新对照均一致。LOCAL_CHECKED.json与CORE/FLOW XML/日志、FROZEN/METRICS/对照证据位于.tmp/structure-redundant-checks，不随clone；便携测试与proposal已本地提交，无活句柄。
+
+当前生产净删14行，函数少1、if少1，仍只是同主题里程碑的起步，不夸大为总体完成，也不为这两项马上推送/开PR。源码本地未入dev，不借PR218已绿CI验收；后续继续当前文件内可证明的冗余删除，保留入口验证、故障/关闭/数据保全规则及公开行为。架构proposal四项已具体写清，Enmao确认前不拆hardware、不迁GpuInfo、不同步派生副本；方案已披露新类模块身份风险，不能把迁移当无影响或净删减。
+
+本轮尝试按“继续”指示恢复每15分钟rpipe heartbeat，被自动审批拒绝：恢复此前明确暂停的周期调度具有持续副作用，最新指示只明确允许CPU工作，未明确允许恢复定时器。拒绝原文留AUTOMATION_RESTORE_REJECTED.json，不绕过或间接改配置；定时器保持PAUSED，继续在人工会话完成独立CPU工作。恢复调度需要明确授权，不把审批拒绝当库代码失败。
