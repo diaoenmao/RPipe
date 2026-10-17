@@ -4777,3 +4777,9 @@ Control+结构CPU204 passed/0fail/error/skip，31个新增portable节点全执�
 冻结源码后完整core2677 passed/1同一既有POSIX skip，CPU Flow525 passed/0skip，均0fail/error；31个新合同节点及155个结构节点全执行。102库源码哈希前后一致。FULL_CHECKED SHA256 `a3279a3d7dec3cc1cb91d45e5eb34eba8c300d413c751e21da5b671cdadf676c`，原始log/XML/原型/签名字段对照在.tmp/structure-config（不随clone），不把原型或PR207成功代替当前验收。
 
 实际应用后的四类Config字段定义、方法签名/装饰器及原模块均与基线相同，api/目录和Study代码无差异；没有新增公开门面、基类或配置字段。既有Control hash/Run ID与序列化回归全部保留执行。源文件仍80个、总9089行，对总起点9132净少43行；四类重复序列化实现归一到现有Control职责，幅度有限，不为行数删除错误处理或增加泛化框架。按本轮继续Occam里程碑授权将本批作为一个Config PR收尾，先最终head全部实际CI再普通合dev，后验actualdev全部实际CI；不合main、不force push，不删分支/数据。
+
+### 282.4 同一PR纳入三类重复构造的内部复用
+
+复查发现Model/Algorithm/System的from_mapping构造段相同，继续纳入同一个Config PR208，不另开PR。Control增加私有_layer_from_mapping，显式传入原基础字段tuple；保留fields(cls)识别、原默认值、config浅拷贝、extras分配与构造kwargs顺序，不把子类新增字段自动传给构造器。Data.from_mapping保留独立origin拒绝及原构造逻辑，不增加策略flag、回调框架或基类。公开方法/构造签名、模块、字段与API门面均不变。
+
+三类各7组输入/转换异常以及子类默认值、kwargs顺序的临时原型对照一致。实施前记录此方案，再补portable回归并重新完整CPU及最终head CI。中间head52ae26a的原始2677/525结果和CI记录仍在.tmp/structure-config，属于中间版本；不删除/取消其Run，不替代扩充后的最终版本验收。最终证据改存.tmp/structure-config-final，仍使用PR208唯一分支。
