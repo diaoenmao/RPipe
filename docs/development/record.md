@@ -1,3 +1,21 @@
+> 当前（2026-10-17）：按最新人工指示收尾capacity精简，完整CPU回归通过，准备推送/PR→dev（§281.3）。
+> 验证：core2646 passed+1同一既有skip、CPU Flow525 passed；15新节点及155结构节点全部执行。
+> 结果：102源码哈希前后相同，7333组纯函数差分一致；capacity393→385行，公开输出/策略不变。
+> 下一：最终head与actualdev分别验收全部实际CI，然后继续同主题实质精简；整体明显缩行未达成。
+> 状态：旧目标模式元数据仍paused，非本轮审批门；当前人工授权工作继续，保留分支/暂存/数据。
+
+> 当前（2026-10-17）：PR206已双侧验收；同分支继续capacity纯函数精简，本地make/结构540 passed（§281）。
+> 验证：7333组旧/新返回或异常一致，15个新增回归节点全部执行；不探测GPU、不下载、不测速。
+> 结果：移除重复累加/转换、合并重复格式返回与不可达兜底；capacity393→385行，API和输出精度不变。
+> 下一：继续同主题积累完整精简批次，再完整core/CPU Flow和双侧CI；此小批不单独开PR。
+> 状态：整体80文件/9117行，未达明显缩行；当前完整回归/CI尚未执行，保留分支/暂存/数据。
+
+> 当前（2026-10-17）：PR206 已合 dev cfbb09e，本批双侧实际矩阵/聚合 CI 全绿验收完成（§280.4）。
+> 验证：core2631 passed+1既有skip、CPU Flow525 passed；4新节点/155结构节点执行，102源码哈希一致。
+> 结果：CIFAR端点共享有序元数据，26组差分一致；API形状、字段/异常与产物布局保持。
+> 下一：整体80文件/9125行，明显缩行目标仍未完成；后续同主题积累完整精简批次，不新开边界修复。
+> 状态：无存活验证句柄；保留本地/远端工作分支、暂存和数据；收尾记录本地提交随下批合入。
+
 > 当前（2026-10-17）：按最新人工要求将本地origin元数据精简收尾为一批，完整CPU回归通过，准备PR→dev（§280.3）。
 > 验证：core2631 passed+1同一既有skip、CPU Flow525 passed；4个新增节点和155结构节点全执行。
 > 结果：102库源码哈希冻结前后一致；origin244→222行，公开API/磁盘布局保持，旧/新端点26组一致。
@@ -4681,3 +4699,33 @@ system/结构CPU396 passed/0fail/error/skip，4个新节点全部执行；此前
 监督助手明确要求将当前本地累积提交推送并开PR→dev，本批按该当次授权收尾，覆盖上一条继续积累、不单开小PR的阶段安排。源码冻结后 core2631 passed/1同一既有POSIX skip、CPU Flow525 passed/0skip，均0fail/error；4个新增端点节点及155个结构约束节点全部执行，102库源码哈希前后一致。FULL_CHECKED SHA256 `2d5a8e5c656d57dc3221963d8f6cc612c9ae5dc065332df33f7e511865ef3797`，原始日志/XML在.tmp/structure-simplify（不随clone）；测试均由tests/run.py选择c1/c2并明确排除gpu/external/slow，未运行GPU。
 
 公开门面名称与形状、端点全部字段、异常与磁盘产物布局保持。当前80文件/9125行，对目标起点仅减7行，本批不标整体Occam完成。下一步唯一PR最终head与实际dev分别验收全部实际矩阵/聚合CI；按最新人工保留本地/远端分支和_staging_from_DEM，不删数据、不碰main/tag、不force push。
+
+### 280.4 PR206 双侧实际CI验收与收尾
+
+[PR206](https://github.com/DreamSoul-AI/RPipe/pull/206) 正常合 dev `cfbb09ee198983d9c01241d4a323b44114f01e35`。最终head `f6700d677923532f1cd39b2923e485fe54ecea76` 的 Branch38999590279、Package38999590217、Unit38999590311及全部实际矩阵/聚合成功；actualdev Package39000056058、Unit39000056064及全部实际矩阵/聚合同样成功。PR_CHECKED SHA256 `28dff279e1d9dd78e2cd0a05b452410e3a1d96553c891349fb2676134ee08467`，DEV_CHECKED `5ae53886986bdc31c2486ebe2b0fafa2c7789dddfecd972513d4741e62cf0049`。本地完整回归见§280.3，实际dev快进后102源码哈希仍与冻结前一致；不借用PR205验收。
+
+实际dev与head的源码/测试/Study/结构文档无差异；main、本地dev、origin/main不变。依最新人工保留本地/远端codex/structure-artifacts与_staging_from_DEM，不删数据、不force push。PR正文只追加一次完整验收，无重复评论；应用附件100上限错误保留，链接有效，不删除历史附件绕过。工作分支普通快进至actualdev，收尾文档本地主题提交随下一完整批次合入，不另开纯文档PR。原始证据.tmp/structure-simplify不随clone。整体明显缩行仍未达成，不标总目标完成。
+
+### 280.5 后续候选只读复查
+
+源码/测试AST名称引用扫描未找到无引用的顶层私有实现；函数精确AST比较（仅忽略名称与docstring）只识别data/model的各10行to_mapping重复。该结果不是删除或新增跨层抽象的决定，本轮未改这些实现。证据NEXT_DUPLICATE_SCAN.json为本地候选索引；后续继续按职责和实际合同判断，不为行数强造抽象。
+
+## 281. 2026-10-17：capacity 汇总计算与不可达兜底精简（本地累积）
+
+### 281.1 方案
+
+沿用同一主题继续精简，保持容量/调度策略和所有公开输出。estimate_wall_seconds直接求各组非负整数最大值之和，去掉重复累加与必为int后的重复int转换；format_duration合并同一小时/分钟后缀的重复返回，保留小时级不显示秒的原精度；format_bytes固定单位序列最后一项必返回，删除不可达尾部兜底。仅修改这些纯函数，不调用GPU探测、不改变SAFETY/装箱/性能策略。先旧/新差分与边界回归，再本地主题提交，同批积累完整里程碑，不为这几个函数单开小PR。
+
+### 281.2 实施与CPU定向验证
+
+三个纯函数按方案实施，capacity393→385行，整体80文件/9117行（对起点9132少15行，仍不能宣称整体明显缩行）。7333组旧/新纯函数返回或异常一致，包含分钟/小时精度边界、单位上界、空/负数组及转换异常；未运行硬件探测或性能测量。15个portable新节点覆盖duration9、bytes5、wall1，保留小时级忽略秒与TiB封顶原行为，不扩展API。
+
+仓库入口c1/c2及not gpu/external/slow，全部make+结构540 passed/0fail/error/skip，15新节点全部执行。LOCAL_CHECKED SHA256 `62d036a3cc5c7d0b23f5189ec9f3c0f1e2dbb53d7aa2ef8bd35a39571eab08bb`；原始代码/差分/XML/log在.tmp/structure-capacity，不随clone。尚未执行当前提交的完整core/Flow/CI，不复用PR206结果；同一分支本地主题提交累积完整里程碑，不为本小批另开PR。
+
+### 281.3 当次收尾授权与完整CPU回归
+
+最新监督指示明确要求将本地capacity批次回归、推送并PR→dev，本批按当次授权收尾。冻结后core2646 passed/1同一既有POSIX skip、CPU Flow525 passed/0skip，均0fail/error；15新节点与155结构节点全执行，102库源码哈希不变。FULL_CHECKED SHA256 `9d66b4f01795c5b6c4eae245f1cea530834ca3084bc4662dbc4501ed50d2b26a`，原始log/XML/差分在.tmp/structure-capacity（不随clone）。全部新运行经tests/run.py选择c1/c2及not gpu/external/slow，不运行GPU。
+
+容量策略、SAFETY、GPU探测、装箱算法、公开函数签名和输出精度均不变。本批80文件/9117行仍仅比起点少15行，不标整体明显缩行完成。后续继续保持API形状的实质精简，不添加旧origin别名或恢复边界修复运动。
+
+另外，get_goal实际返回旧objective及paused状态，仍写08:05 API待审门；09:12及后续批准已解除该等待门。工具不能恢复active或改写未完成目标，未伪称恢复。旧元数据不覆盖本轮继续执行授权，不据此停工；其状态会影响回合结束后的目标自动续跑，已告知。

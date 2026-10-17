@@ -252,10 +252,7 @@ def _job_seconds(job: dict[str, Any]) -> int:
 
 def estimate_wall_seconds(batches: list[list[dict[str, Any]]]) -> int:
     """Sum of per-wait max(job seconds). Group wall equals the slowest job."""
-    total = 0
-    for batch in batches:
-        total += max((_job_seconds(job) for job in batch), default=0)
-    return int(total)
+    return sum(max((_job_seconds(job) for job in batch), default=0) for batch in batches)
 
 
 def format_duration(seconds: int) -> str:
@@ -263,13 +260,9 @@ def format_duration(seconds: int) -> str:
     hours, rem = divmod(value, 3600)
     minutes, secs = divmod(rem, 60)
     if hours:
-        if minutes:
-            return f'{hours}h{minutes}m'
-        return f'{hours}h'
+        return f'{hours}h{minutes}m' if minutes else f'{hours}h'
     if minutes:
-        if secs:
-            return f'{minutes}m{secs}s'
-        return f'{minutes}m'
+        return f'{minutes}m{secs}s' if secs else f'{minutes}m'
     return f'{secs}s'
 
 
@@ -308,7 +301,6 @@ def format_bytes(n: int) -> str:
                 return f'{int(value)}{unit}'
             return f'{value:.1f}{unit}'
         value /= 1024
-    return f'{n}B'
 
 
 def capacity_report(
