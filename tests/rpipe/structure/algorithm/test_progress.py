@@ -154,3 +154,33 @@ def test_scheduler_horizon_still_rejects_selected_invalid_integer(unit, epochs, 
     from rpipe.structure.algorithm.progress import ProgressBudget
     with pytest.raises(error):
         ProgressBudget(unit, epochs, steps, 1).scheduler_t_max()
+
+
+@pytest.mark.parametrize('current,total', [(0, 4), (-1, 4), (2, 0), (2, -1)])
+def test_percent_crossing_nonpositive_progress_does_not_consume_input(current, total):
+    def untouched():
+        raise AssertionError('percent input must remain untouched')
+        yield 0.25
+
+    assert crossed_percents(current, total, untouched(), set()) == []
+
+
+def test_percent_crossing_preserves_generator_order_duplicates_and_membership_short_circuit():
+    covered = object()
+    already = {covered, 0.75}
+    values = iter([0.5, covered, 0.25, 0.5, 0.75, 1.0])
+    assert crossed_percents(2, 4, values, already) == [0.5, 0.25, 0.5]
+    assert list(values) == []
+    assert already == {covered, 0.75}
+
+
+def test_percent_crossing_keeps_original_iterator_failure():
+    failure = OSError('percent iterator failed')
+
+    def broken():
+        yield 0.25
+        raise failure
+
+    with pytest.raises(OSError) as raised:
+        crossed_percents(2, 4, broken(), set())
+    assert raised.value is failure

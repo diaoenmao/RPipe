@@ -185,13 +185,7 @@ def crossed_percents(
     if total <= 0 or current <= 0:
         return []
     ratio = current / total
-    hit: list[float] = []
-    for percent in percents:
-        if percent in already:
-            continue
-        if ratio + 1e-12 >= percent:
-            hit.append(percent)
-    return hit
+    return [percent for percent in percents if percent not in already and ratio + 1e-12 >= percent]
 
 
 def checkpoint_names(

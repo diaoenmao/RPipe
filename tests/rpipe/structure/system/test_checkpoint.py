@@ -185,3 +185,98 @@ def test_checkpoint_windows_denial_commits_or_preserves_old_bundle(tmp_path, mon
         assert len(calls) == 6 and bundle.read_bytes() == old_bytes
         assert system.load_checkpoint('latest') == old
         assert system.load_checkpoint(str(bundle.with_suffix(''))) == old
+
+
+@pytest.mark.parametrize('tracker,logger', [(None, None), ({}, []), (False, 0), ({'label': '中文'}, {'step': 2})])
+def test_checkpoint_json_pieces_keep_bytes_presence_and_order(tmp_path, monkeypatch, tracker, logger):
+    import json
+    import os
+    from rpipe.structure.api import artifact_api
+    from rpipe.structure.system import factory
+
+    system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
+    write, read = artifact_api.atomic_write_text, factory._read_text
+    writes, reads = [], []
+
+    def record_write(path, text, *args, **kwargs):
+        if Path(path).name in ('tracker.json', 'logger.json'):
+            writes.append(Path(path).name)
+        return write(path, text, *args, **kwargs)
+
+    def record_read(path):
+        if Path(path).name in ('tracker.json', 'logger.json'):
+            reads.append(Path(path).name)
+        return read(path)
+
+    monkeypatch.setattr(artifact_api, 'atomic_write_text', record_write)
+    monkeypatch.setattr(factory, '_read_text', record_read)
+    payload = {'step': 2, 'tracker': tracker, 'logger': logger}
+    bundle = system.save_checkpoint(payload, 'latest')
+    folder = bundle.with_suffix('')
+    expected = {'step': 2}
+    for key, value in [('tracker', tracker), ('logger', logger)]:
+        piece = folder / f'{key}.json'
+        assert piece.exists() == (value is not None)
+        if value is not None:
+            encoded = json.dumps(value, indent=2, ensure_ascii=False).replace('\n', os.linesep)
+            assert piece.read_bytes() == encoded.encode('utf-8')
+            expected[key] = value
+    assert writes == [f'{key}.json' for key in ('tracker', 'logger') if payload[key] is not None]
+    assert system.load_checkpoint('latest') == payload
+    bundle.unlink()
+    assert system.load_checkpoint(str(folder)) == expected
+    assert reads == writes
+
+
+@pytest.mark.parametrize('failure_key', ['tracker', 'logger'])
+def test_checkpoint_json_write_failure_keeps_original_error_and_bundle(tmp_path, monkeypatch, failure_key):
+    from rpipe.structure.api import artifact_api
+
+    system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
+    old = {'step': 1, 'tracker': {'step': 1}, 'logger': {'path': 'run.log'}}
+    bundle = system.save_checkpoint(old, 'latest')
+    previous = bundle.read_bytes()
+    write, calls = artifact_api.atomic_write_text, []
+    failure = OSError('json piece write failed')
+
+    def fail_piece(path, text, *args, **kwargs):
+        if Path(path).name in ('tracker.json', 'logger.json'):
+            calls.append(Path(path).stem)
+            if Path(path).stem == failure_key:
+                raise failure
+        return write(path, text, *args, **kwargs)
+
+    monkeypatch.setattr(artifact_api, 'atomic_write_text', fail_piece)
+    with pytest.raises(OSError) as raised:
+        system.save_checkpoint({'step': 2, 'tracker': {}, 'logger': {}}, 'latest')
+    assert raised.value is failure
+    assert calls == (['tracker'] if failure_key == 'tracker' else ['tracker', 'logger'])
+    assert bundle.read_bytes() == previous
+    assert system.load_checkpoint('latest') == old
+
+
+@pytest.mark.parametrize('failure_key', ['tracker', 'logger'])
+def test_checkpoint_json_read_failure_keeps_original_error_order_and_bytes(tmp_path, monkeypatch, failure_key):
+    from rpipe.structure.system import factory
+
+    system = SystemFactory.build(SystemConfig.from_mapping({'device': 'cpu'}), tmp_path)
+    folder = system.checkpoint_dir() / 'legacy'
+    folder.mkdir()
+    for key in ('tracker', 'logger'):
+        (folder / f'{key}.json').write_bytes(b'{}')
+    before = {p.name: p.read_bytes() for p in folder.iterdir()}
+    read, calls = factory._read_text, []
+    failure = OSError('json piece read failed')
+
+    def fail_piece(path):
+        calls.append(Path(path).stem)
+        if Path(path).stem == failure_key:
+            raise failure
+        return read(path)
+
+    monkeypatch.setattr(factory, '_read_text', fail_piece)
+    with pytest.raises(OSError) as raised:
+        system.load_checkpoint(str(folder))
+    assert raised.value is failure
+    assert calls == (['tracker'] if failure_key == 'tracker' else ['tracker', 'logger'])
+    assert {p.name: p.read_bytes() for p in folder.iterdir()} == before
