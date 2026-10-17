@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：按最新人工指示收尾capacity精简，完整CPU回归通过，准备推送/PR→dev（§281.3）。
+> 验证：core2646 passed+1同一既有skip、CPU Flow525 passed；15新节点及155结构节点全部执行。
+> 结果：102源码哈希前后相同，7333组纯函数差分一致；capacity393→385行，公开输出/策略不变。
+> 下一：最终head与actualdev分别验收全部实际CI，然后继续同主题实质精简；整体明显缩行未达成。
+> 状态：旧目标模式元数据仍paused，非本轮审批门；当前人工授权工作继续，保留分支/暂存/数据。
+
 > 当前（2026-10-17）：PR206已双侧验收；同分支继续capacity纯函数精简，本地make/结构540 passed（§281）。
 > 验证：7333组旧/新返回或异常一致，15个新增回归节点全部执行；不探测GPU、不下载、不测速。
 > 结果：移除重复累加/转换、合并重复格式返回与不可达兜底；capacity393→385行，API和输出精度不变。
@@ -4715,3 +4721,11 @@ system/结构CPU396 passed/0fail/error/skip，4个新节点全部执行；此前
 三个纯函数按方案实施，capacity393→385行，整体80文件/9117行（对起点9132少15行，仍不能宣称整体明显缩行）。7333组旧/新纯函数返回或异常一致，包含分钟/小时精度边界、单位上界、空/负数组及转换异常；未运行硬件探测或性能测量。15个portable新节点覆盖duration9、bytes5、wall1，保留小时级忽略秒与TiB封顶原行为，不扩展API。
 
 仓库入口c1/c2及not gpu/external/slow，全部make+结构540 passed/0fail/error/skip，15新节点全部执行。LOCAL_CHECKED SHA256 `62d036a3cc5c7d0b23f5189ec9f3c0f1e2dbb53d7aa2ef8bd35a39571eab08bb`；原始代码/差分/XML/log在.tmp/structure-capacity，不随clone。尚未执行当前提交的完整core/Flow/CI，不复用PR206结果；同一分支本地主题提交累积完整里程碑，不为本小批另开PR。
+
+### 281.3 当次收尾授权与完整CPU回归
+
+最新监督指示明确要求将本地capacity批次回归、推送并PR→dev，本批按当次授权收尾。冻结后core2646 passed/1同一既有POSIX skip、CPU Flow525 passed/0skip，均0fail/error；15新节点与155结构节点全执行，102库源码哈希不变。FULL_CHECKED SHA256 `9d66b4f01795c5b6c4eae245f1cea530834ca3084bc4662dbc4501ed50d2b26a`，原始log/XML/差分在.tmp/structure-capacity（不随clone）。全部新运行经tests/run.py选择c1/c2及not gpu/external/slow，不运行GPU。
+
+容量策略、SAFETY、GPU探测、装箱算法、公开函数签名和输出精度均不变。本批80文件/9117行仍仅比起点少15行，不标整体明显缩行完成。后续继续保持API形状的实质精简，不添加旧origin别名或恢复边界修复运动。
+
+另外，get_goal实际返回旧objective及paused状态，仍写08:05 API待审门；09:12及后续批准已解除该等待门。工具不能恢复active或改写未完成目标，未伪称恢复。旧元数据不覆盖本轮继续执行授权，不据此停工；其状态会影响回合结束后的目标自动续跑，已告知。
