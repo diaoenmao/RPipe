@@ -141,17 +141,14 @@ def _iter_pairs(data: Any, split: str):
 def _data_names(study: dict[str, Any]) -> list[str]:
     names: list[str] = []
     axes = study.get('axes') if isinstance(study.get('axes'), dict) else {}
-    axis_names = axes.get('data.name') if isinstance(axes, dict) else None
+    axis_names = axes.get('data.name')
     if isinstance(axis_names, list):
         names.extend(str(item) for item in axis_names)
     fixed = study.get('fixed') if isinstance(study.get('fixed'), dict) else {}
-    data = fixed.get('data') if isinstance(fixed, dict) else None
+    data = fixed.get('data')
     if isinstance(data, dict) and data.get('name'):
         names.append(str(data['name']))
-    seen: list[str] = []
-    for name in names:
-        if name not in seen:
-            seen.append(name)
+    seen = list(dict.fromkeys(names))
     if not seen:
         raise ValueError('study.yaml has no data.name')
     return seen

@@ -219,3 +219,56 @@ def test_display_mean_keeps_original_meter_error_instead_of_saved_fallback(tmp_p
     assert raised.value is failure
     assert tracker._meters['train']['broken'] is meter
     assert tracker._last_segment['train'] == {'saved': 4.0}
+
+
+@pytest.mark.parametrize('split', [None, 'train', 'empty'])
+def test_save_publishes_split_snapshot_in_meter_order(tmp_path, split):
+    from types import SimpleNamespace
+
+    tracker = AlgorithmTracker(tmp_path)
+    tracker.append('train', values={'second': 4.0, 'first': 2.0})
+    tracker.append('test', values={'Loss': 3.0})
+    calls = []
+
+    def finish(name):
+        calls.append(name)
+        return {'full': 0.0}
+
+    tracker.metrics = SimpleNamespace(finish_full=finish)
+    tracker.save(split)
+    names = ['train', 'test'] if split is None else [split]
+    assert calls == names
+    assert list(tracker._last_segment) == names
+    for name in names:
+        expected = {'train': ['second', 'first', 'full'], 'test': ['Loss', 'full']}.get(name, ['full'])
+        assert list(tracker.segment_mean(name)) == expected
+        assert tracker.segment_mean(name)['full'] == 0.0
+        assert all(len(meter.history) == 1 for meter in tracker._meters[name].values())
+    saved = tracker.segment_mean(names[0])
+    saved.clear()
+    assert tracker.segment_mean(names[0])
+
+
+def test_save_meter_error_keeps_old_split_and_completed_prior_split(tmp_path):
+    from types import SimpleNamespace
+
+    tracker = AlgorithmTracker(tmp_path)
+    tracker.append('test', values={'Loss': 3.0})
+    tracker.append('train', values={'first': 2.0})
+    error = RuntimeError('save point failed')
+    calls = []
+
+    def fail():
+        calls.append('fail')
+        raise error
+
+    tracker._meters['train']['broken'] = SimpleNamespace(save_point=fail)
+    previous = {'old': 9.0}
+    tracker._last_segment['train'] = previous
+    tracker.metrics = SimpleNamespace(finish_full=lambda name: {})
+    with pytest.raises(RuntimeError) as caught:
+        tracker.save()
+    assert caught.value is error and calls == ['fail']
+    assert tracker._last_segment['train'] is previous
+    assert tracker.segment_mean('test') == {'Loss': 3.0}
+    assert tracker._meters['train']['first'].history == [2.0]

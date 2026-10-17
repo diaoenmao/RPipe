@@ -82,3 +82,34 @@ def test_filter_args_retains_reserved_unknown_and_variadic_guards():
                'args': token, 'y': token, 'kwargs': token}
     result = filter_args(constructor, payload)
     assert list(result) == ['x', 'y'] and all(value is token for value in result.values())
+
+
+@pytest.mark.parametrize('epsilon, present, expected', [
+    ({'adam_epsilon': 7}, True, 7),
+    ({'adam_epsilon': 7, 'eps': 0}, True, 0),
+    ({'adam_epsilon': 7, 'eps': None}, False, None),
+])
+def test_hf_alias_forwarding_keeps_order_identity_and_epsilon_default(monkeypatch, epsilon, present, expected):
+    import sys
+    from types import SimpleNamespace
+    class Arguments:
+        def __init__(self):
+            pass
+    monkeypatch.setitem(sys.modules, 'transformers', SimpleNamespace(TrainingArguments=Arguments))
+    token = object()
+    payload = {'num_steps': 1, 'weight_decay': 0, 'warmup_ratio': token, 'warmup_steps': 0,
+               'adam_beta1': 0, 'adam_beta2': 0, 'momentum': token, **epsilon}
+    config = AlgorithmConfig.from_mapping(payload)
+    result = training_arguments_kwargs(config, output_dir='unused', resume_from_checkpoint='resume')
+    tail = ['weight_decay', 'warmup_ratio', 'warmup_steps', 'adam_beta1', 'adam_beta2']
+    if present:
+        tail.append('adam_epsilon')
+    tail += ['momentum', 'resume_from_checkpoint']
+    assert list(result)[-len(tail):] == tail
+    assert ('adam_epsilon' in result) == present
+    if present:
+        assert result['adam_epsilon'] == expected
+    assert result['warmup_ratio'] is result['momentum'] is token
+    assert result['max_grad_norm'] == 0.0
+    assert result['resume_from_checkpoint'] == 'resume'
+    assert config.extras['momentum'] is token

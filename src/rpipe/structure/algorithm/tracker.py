@@ -130,14 +130,12 @@ class AlgorithmTracker:
 
     def save(self, split: str | None = None) -> None:
         splits = [split] if split else list(self._meters)
-        snapshot: dict[str, dict[str, float]] = {}
         for name in splits:
             for metric, value in self.metrics.finish_full(name).items():
                 self._meter(name, metric).append(value, 1)
-            snapshot[name] = {}
-            for metric, meter in self._meters.get(name, {}).items():
-                snapshot[name][metric] = meter.save_point()
-            self._last_segment[name] = dict(snapshot[name])
+            self._last_segment[name] = {
+                metric: meter.save_point() for metric, meter in self._meters.get(name, {}).items()
+            }
 
     def reset(self, split: str | None = None) -> None:
         splits = [split] if split else list(self._meters)
