@@ -5048,3 +5048,9 @@ parent延伸：恢复相邻与当前结构定向165 passed、0skip。全structur
 冻结bdb4256c33321fb0e6690a02007c5470cc928d7b：core2729 passed+1同一既有POSIX skip、CPU Flow525 passed；8新增公共入口回归及153结构节点全部执行，100源码哈希一致。两方法之外声明/函数签名保持，JSON tracker→logger顺序、None省略与falsey写入、平台原生文本换行/UTF-8字节、bundle优先和legacy pieces读取、原异常身份/输入字节/旧bundle保全均覆盖。首次新增测试182 passed/1 failed仅因Windows换行预期错误，纠正预期后定向183 passed/0skip，原日志/XML保留；没有通过修改生产格式使测试通过。
 
 factory.py188→185，全structure78文件/9001行，对起点9132净少131；幅度仍有限，不标宏观完成。没有新helper/模块或文件架构/API形状/产物布局变更，不测速/逐路径审计/训练/GPU，未做真实模型数据下载。源码本地提交，后续同主题完整里程碑合批，不为3行精简或收尾记录另开小PR。原证据.tmp/structure-checkpoint-json不随clone，无活测试/CI观察句柄；当前状态入口为其中STATE.json，PR213独立证据保留。
+
+### 287.4 同主题延伸：百分位checkpoint筛选原生归纳
+
+仅在现有algorithm/progress.py的crossed_percents中，把本地列表/for/continue/append等价改为一条原生列表推导；非正total/current的原返回门、ratio计算、already成员判断先于阈值比较、1e-12容差、输入顺序/重复项及异常传播不变，不更新already，不改checkpoint名字去重或训练/HF调用。已核对checkpoint_names/native train/HF调用方，无新函数或文件，不改API或产物布局。120组原新函数对照（一次性生成器、无序/重复百分位、已处理集合、非正进度）输出与集合一致，原证据.tmp/structure-percent-filter不随clone。补充公共函数回归后再冻结完整CPU，不能借bdb4256旧全量或PR213绿灯验收本延伸；不为少量缩行单独开PR。
+
+百分位延伸定向210 passed/0skip，6新节点和153结构节点执行；签名/返回注解及其他声明AST不变。筛选函数净少6行，全structure78文件/8995行，对起点净少137；仅源码范围，不将包含新增测试/文档的仓库称整体缩行。随后冻结本地提交重跑完整CPU。
