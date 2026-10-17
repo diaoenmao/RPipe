@@ -8,9 +8,39 @@ from typing import Any, Callable
 
 from rpipe.structure.model.config import ModelConfig
 from rpipe.structure.api.artifact_api import cache_lock
-from rpipe.structure.model.init_param import init_param
-from rpipe.structure.model.shape import resolve_shape
 from rpipe.structure.api.system_api import apply_model_origin, normalize_origin
+
+
+def init_param(m: Any) -> Any:
+    import torch.nn as nn
+
+    if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d)):
+        nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+        if m.bias is not None:
+            m.bias.data.zero_()
+    elif isinstance(m, nn.BatchNorm2d):
+        if m.weight is not None:
+            m.weight.data.fill_(1)
+        if m.bias is not None:
+            m.bias.data.zero_()
+    elif isinstance(m, nn.Linear):
+        if m.bias is not None:
+            m.bias.data.zero_()
+    return m
+
+
+def resolve_shape(cfg: dict[str, Any], data_meta: dict[str, Any] | None) -> tuple[tuple[int, ...], int]:
+    meta = dict(data_meta or {})
+    target_size = int(cfg.get('target_size') or cfg.get('out_features') or meta.get('target_size') or 10)
+    if cfg.get('data_size') is not None:
+        data_size = tuple(int(x) for x in cfg['data_size'])
+    elif meta.get('data_size') is not None:
+        data_size = tuple(int(x) for x in meta['data_size'])
+    elif cfg.get('in_features') is not None:
+        data_size = (int(cfg['in_features']),)
+    else:
+        data_size = (1, 28, 28)
+    return data_size, target_size
 
 
 class Model:

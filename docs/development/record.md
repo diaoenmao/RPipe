@@ -4883,3 +4883,13 @@ PR209 最终 head ad7f1740ffb9089e290f5aa2a79e8b2ec181f5e5 的 Branch39005314326
 按最新人工指示，将现有唯一主题的写流/close-boundary 积累提交完整验收后推送，通过 PR 合 dev。冻结 c47a89fd5033eb94117c2e21e03fc0cd5e50cdf9；core2691 passed+1同一既有POSIX skip，CPU Flow525 passed；5个新增句柄代理节点、155结构节点全执行，102源码哈希保持。四源码合计源码净少35行，全structure80文件/9038行，相比起点9132净少94，幅度有限不标总目标完成。既有首轮8项Flow失败/TARGET2报告器错误/换行guard拒绝原证据保留在§283及.tmp，不随clone。
 
 五入口分别为atomic_write_text、Logger._emit、Tracker.begin_run/append_jsonl、cache_lock，复用标准库closing与已有_owned_stream，保留原始句柄、close-only语义、原始写入体/flush/锁获取与解锁次序、首错优先级与原子发布清理。无新helper、模块、API形状、产物布局或GPU。结构文档只补退出职责一句，本批过程与验收留在record；未更新main或删除分支/数据/_staging_from_DEM。最终head及actualdev CI待分别验收，不借旧head成功。
+
+### 284.1 PR210 最终 head 验收与下一项模型碎文件归并
+
+最终head57355f247f116ac0f24d83298747c1038f179f01的Branch39006929505/Package39006929420/Unit39006929541全部实际矩阵与聚合成功后普通合dev 2955ef4b64e5ba86000c9a4e5a00a332ff5237ba；实际dev CI 独立验收中。head与实际dev的源码/测试/Study/结构文档无差异。保留当前本地/远端分支与所有数据。
+
+下一项按§2.1.4归并model/shape.py与model/init_param.py：两文件均只有factory一个调用模块，model_api及model包未导出这两个函数；factory原已通过import绑定同名函数，归并后调用名/签名/函数AST保持，不改门面。两模块各自正式2318持久化候选扫描0引用、0读取错误，不反序列化、不触碰_staging_from_DEM；不代表未知下游。shape临时提案36组输入/异常/不修改输入结果相同。函数原样并入factory、删除两个单调用源码碎文件并更新逐文件登记，不留别名/兼容旁路；磁盘产物布局与科学计算实现不变。原始证据.tmp/structure-shape-candidate与.tmp/structure-model-candidate不随clone。
+
+### 284.2 模型碎文件本地实施
+
+两个原函数定义逐项AST相同，model_api与model包导出未动；factory原已有的两个同名调用对象改为本地定义，旧两个源码文件归并删除，无数据/产物改动。定向model+结构173 passed，10个shape优先级/空维度/整数转换错误/不修改输入节点和153结构节点全执行；两处文件登记删除后结构参数化节点随真实文件树减少2，不当漏测。model三文件合计285→273行，减少2个单调用碎文件、12行；全structure78文件/9026行，对起点净少106行，仍不夸大总目标完成。完整CPU需当前新提交冻结后验证，PR210实际dev单独验收中。

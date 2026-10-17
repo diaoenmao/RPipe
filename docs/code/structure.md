@@ -286,10 +286,8 @@ flowchart LR
 | --- | --- |
 | `model/config.py` | ModelConfig dataclass. |
 | `model/custom_torch.py` | custom_torch models from git main: linear, mlp, cnn, resnet10/18, wresnet. |
-| `model/factory.py` | Runtime Model object, registry, and factory. |
-| `model/init_param.py` | Weight init matching git main ``src/model/model.py`` ``init_param``. |
+| `model/factory.py` | Runtime Model、registry 与模型构建，包含形状解析和参数初始化。 |
 | `model/input_norm.py` | Input normalize and train augmentation in front of the network. |
-| `model/shape.py` | Shape helpers for custom_torch builders (no torch import). |
 
 构建可调用模型能力（concept §6 **model**）。网络本体由第三方提供；本层负责注册、建构与对外可消费的 **`Model`**。声明字段由 **`ModelConfig`** 从 JSON / Config 加载。
 
