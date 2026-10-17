@@ -1,7 +1,7 @@
 > 当前（2026-10-17 18:30 后）：获批硬件分责已本地实施；正式2318/临时154121持久化候选0引用/0读取错误。
 > 影响：GpuInfo模块身份按批准改变；既有公开导出/签名/普通repr保持，合成旧/新pickle协议0–5通过，无兼容别名。
 > 分账：迁移净增7行，合并前批真删除后对dev净少7行；79文件/8982行，减少包装与重复判断，不称总体完成。
-> 验证：make+结构559 passed，270容量对照一致；完整CPU待本批冻结执行，后续统一里程碑PR，不拆小PR。
+> 验证：完整core2764 passed+1既有skip、CPU Flow525 passed，20新节点/154结构节点执行、101源码哈希一致；统一里程碑PR。
 > 保护：定时器继续PAUSED，派生同步不实施，保留分支/数据/_staging，不改make_api/flow/磁盘布局/main，不跑GPU/测速。
 
 > 当前（2026-10-17）：PR217/218双侧实际CI全部成功，最新dev1bded360；源码与实质文档均已入dev。
@@ -5388,3 +5388,9 @@ Enmao已批准新建make/hardware.py，仅迁GpuInfo、probe_gpus、_probe_torch
 如实分账：capacity372→293，hardware新增86行，分责本身净增7行；与§292已真实净删14行合计，对实际dev1bded360生产净删7行，structure79文件/8982行，对最初9132净少150行约1.64%。新增1源码文件、0新helper，撤掉1单调用包装和重复类型过滤；另减少2不可达三元分支、2重复非空检查。硬件迁移不计瘦身，整体缩行仍有限，不称宏观完成。本批作为完整make职责分离+冗余删除里程碑统一验收/PR，不为每项拆PR。
 
 接下来冻结源码提交与101源码哈希，再跑完整core和显式CPU Flow；签名、make_api/flow/init原字节、旧合成pickle及实例repr已分别核验。最终head及实际dev CI必须各自全量实际执行后方可验收，不借PR218或前一批本机成功。定时器按18:30明确要求保持暂停，派生副本不实施；不删分支/数据、不动main。
+
+### 293.4 完整CPU验证与里程碑交付准备
+
+冻结010a9a36e94b027248f5fe517f8c0a2bd06c08fd后，完整core2764 passed/1同一既有POSIX executable mode skip/0fail/error，CPU Flow525 passed/0skip/fail/error；c1/c2且显式排除gpu/external/slow。整批20新增节点（§292的5、hardware的11、容量4）和154当前结构节点均在CORE.xml执行，101源码哈希/冻结HEAD一致。原声明迁移、公开导出/签名/普通repr、合成旧协议0–5及新协议0–5分别验收，额外270容量对照、前批200缓存/163装箱对照保持。原始证据和LOCAL_CHECKED/FROZEN均在.tmp/structure-hardware及前批目录，不随clone；临时文本补查超时限制保留，无活本地测试句柄。
+
+以完整make职责分离+真重复删除统一交付一条PR→dev：四硬件声明经批准迁移，现有make_api/flow/init字节不变，capacity保留计算/装箱/报告；20节点与结构登记同批，不另拆小PR。生产实际净少7行，不把搬移算净删减。后续最终head/实际dev各自所有实际矩阵及聚合成功才验收；本机全绿不替代CI。定时器明确保持PAUSED，不再请求恢复；派生副本仍待批准，不读改vendor，不删分支/数据、不动main/tag/release。
