@@ -32,6 +32,23 @@ def _normalize_tags(value: Any) -> list[str]:
     return sorted(set(items))
 
 
+def _config_mapping(config: Any, out: dict[str, Any]) -> dict[str, Any]:
+    if config.seed is not None:
+        out['seed'] = config.seed
+    if config.experiment is not None:
+        out['experiment'] = config.experiment
+    if config.description is not None:
+        out['description'] = config.description
+    if config.tags:
+        out['tags'] = list(config.tags)
+    out['data'] = config.data.to_mapping()
+    out['model'] = config.model.to_mapping()
+    out['algorithm'] = config.algorithm.to_mapping()
+    out['system'] = config.system.to_mapping()
+    out.update(config.extras)
+    return out
+
+
 @dataclass
 class ExperimentConfig:
     """Experiment-level base config (no run id)."""
@@ -63,21 +80,7 @@ class ExperimentConfig:
         )
 
     def to_mapping(self) -> dict[str, Any]:
-        out: dict[str, Any] = {}
-        if self.seed is not None:
-            out['seed'] = self.seed
-        if self.experiment is not None:
-            out['experiment'] = self.experiment
-        if self.description is not None:
-            out['description'] = self.description
-        if self.tags:
-            out['tags'] = list(self.tags)
-        out['data'] = self.data.to_mapping()
-        out['model'] = self.model.to_mapping()
-        out['algorithm'] = self.algorithm.to_mapping()
-        out['system'] = self.system.to_mapping()
-        out.update(self.extras)
-        return out
+        return _config_mapping(self, {})
 
 
 @dataclass
@@ -120,20 +123,7 @@ class RunConfig:
         out: dict[str, Any] = {}
         if self.id:
             out['id'] = self.id
-        if self.seed is not None:
-            out['seed'] = self.seed
-        if self.experiment is not None:
-            out['experiment'] = self.experiment
-        if self.description is not None:
-            out['description'] = self.description
-        if self.tags:
-            out['tags'] = list(self.tags)
-        out['data'] = self.data.to_mapping()
-        out['model'] = self.model.to_mapping()
-        out['algorithm'] = self.algorithm.to_mapping()
-        out['system'] = self.system.to_mapping()
-        out.update(self.extras)
-        return out
+        return _config_mapping(self, out)
 
     def with_computed_id(self) -> RunConfig:
         mapping = self.to_mapping()

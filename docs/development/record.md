@@ -4985,3 +4985,13 @@ parent延伸：恢复相邻与当前结构定向165 passed、0skip。全structur
 按最新明确授权先推送既有09ce2f9/cf600c8/900d172，通过单个PR合dev。冻结900d1720c204db0c9cda6d56645b4c77725d1a2a重新跑完整CPU：core2714 passed+1同一既有POSIX skip、Flow525 passed；15个本批比较/覆盖/过滤/预算节点、153结构节点执行，100源码哈希一致。该结果覆盖预算延伸，不借09ce2f9旧完整结果。四个现有函数净少9行，全structure78文件/9014行，对起点净少118，不标总体目标完成。API形状、全部既有过滤/单位/整数拒绝/下限、键序/身份/None覆盖及磁盘布局保持，无GPU/真实Trainer/测速/逐路径审计。
 
 原3/5/1组字典操作与72组预算对照见§285/.tmp/structure-config-operations，不随clone；无新建/迁移文件。后续同文件root配置字段共享仅临时提案，不在当前冻结源码。最终head和actualdev实际CI仍需分别验收。_staging_from_DEM保留未跟踪，不改main/不force push/不删分支或数据。
+
+### 286.1 PR212最终head成功与同文件root发射共享
+
+最终head1c929af873cd5c4536a7e492d439eace381e78e4的Branch39010264308/Package39010264253/Unit39010264209全部实际矩阵与聚合成功后普通合devb184390928fd3fe8fa24ca03826ac0c2e5186948，actualdev CI独立验收中。原head/dev源码、测试、Study、结构文档无差异，当前主题分支及数据保留。
+
+下一项仅改现有control/run_config.py：ExperimentConfig.to_mapping与RunConfig.to_mapping除out/id前缀以外的字段发射体AST完全相同。以同文件私有_config_mapping(config,out)复用该原样代码，两个现有调用方各自创建原来的out，Run仍先放id；不增加选项、基类、公开方法或通用序列化框架，不改类字段/构造/签名，不互相借用公开to_mapping。seed/空字符串/tags浅复制、四layer调用次序、extras末尾覆盖与id键位保持。20组字节/id/异常对照及6组layer次序/原异常身份/extra身份提案一致，证据.tmp/structure-root-mapping不随clone。正式回归随后验证；本次不新建/迁移文件，不改API形状/on-disk布局，不测速或逐路径审计。
+
+### 286.2 root字段共享本地定向
+
+两个类的字段/构造/其他方法AST保持，公共发射体仅参数名self→config后AST原样；Run的id前缀由原方法保留，同文件一个私有函数只供当前两个调用方，不新增公开helper/框架。定向221 passed/0skip，7新节点全执行；测试覆盖layer次序、id键位、extras末尾覆盖与身份、tags浅复制、原异常身份及子类默认字段不扩张。run_config.py164→154行，结构78文件/9004行，比起点净少128；总体目标未称完成。后续冻结本地新提交跑完整CPU，PR212 actualdev独立验收中；原20+6组对照/AST与日志.tmp/structure-root-mapping不随clone。
