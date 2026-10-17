@@ -4515,3 +4515,8 @@ PR202 final `a634074bb1bdd81d58fbe7c6a52d0395626be9e4`：Branch38986989262、Pac
 core2601 passed +1同一POSIX executable mode bits skip，CPU Flow525 passed/0skip；针对性1538 passed +1同一skip。与PR203 core节点对照只减少被删除5文件对应的跨层导入检查，其余全部执行；结构机械检查仍通过。LOCAL_CHECKED SHA256 `da54b3b35d10af155c7468c25f813919c3e763846c1cc6f6191ca1522f6efa24`，证据 `.tmp/structure-artifacts/` 不随clone。验证未调用GPU或实际下载模型/数据。
 
 逐Git跟踪源码统计：目标起点80文件/9132行；PR20279/9097；PR20381/9172；当前76/9152。不得把搬移/少文件当成明显缩行，总目标未完成。当前分支本地按主题提交，未开新PR，继续capacity/schedule/data factory/origin的职责拆分及有依据的去重，再合完整里程碑；不为文档几行单开PR。周期清理基线203保持。
+
+
+## 274. 2026-10-17：make capacity 职责精简方案
+
+延续同一structure-artifacts里程碑：将capacity中纯配置内存/时间估算及job注解挪至make/estimate.py，capacity保留硬件发现/分组/报告和原有公开名称的直接导出；不改数值、阈值、设备准入或估算口径，不执行测速/硬件探测。按职责新增模块，不为bug扩张。分组用dict原生插入顺序替代并行order列表；连续名称折叠用标准库groupby。补交错类别顺序/连续标签回归，并做旧实现差分；完整批次后再PR。

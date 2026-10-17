@@ -1213,7 +1213,8 @@ Study 编排清单。`rpipe.structure.artifact.index`，**不是** Flow 的 writ
 
 | **文件（相对 structure/）** | **职责** |
 | --- | --- |
-| `make/capacity.py` | Estimate ``--round`` from Run configs and GPU memory. |
+| `make/capacity.py` | Hardware discovery, batch packing and capacity reporting. |
+| `make/estimate.py` | Config-only job memory/time estimates and annotation; no hardware probing. |
 | `make/expand.py` | Expand a Study declaration into Run patches. |
 | `make/recipe.py` | Load a Study recipe and call its ``register(ctx)`` before Data / Model are built. |
 | `make/schedule.py` | GPU round-robin and ``&`` / ``wait`` launch scripts. |
