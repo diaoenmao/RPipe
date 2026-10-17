@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：按新收尾授权推送现有模型归并与parent延伸，当前完整CPU验收通过（§285）。
+> 验证：core2699 passed+1既有skip、CPU Flow525 passed；10新节点/153结构节点执行、100源码哈希一致。
+> 范围：structure78文件/9023行，本批较dev净少15行；仅推送既有归并，后续不改文件架构/产物布局。
+> 状态：PR最终head与actualdev实际CI尚待验收，不用本地结果替代合入。
+> 保护：保留_staging_from_DEM/分支/数据；不改main、不force push、不跑GPU或测速。
+
 > 当前（2026-10-17）：PR210已双侧实际CI验收；后续模型归并与parent兜底精简本地积累，尚未推送。
 > 最新验证：恢复相邻/结构165 passed；完整core2699+1既有skip/Flow525仅覆盖e712c93，parent延伸后需重跑。
 > 结果：structure78文件/9023行，对起点净少109；API形状与产物布局保持，不标总目标完成。
@@ -4921,3 +4927,10 @@ PR209 最终 head ad7f1740ffb9089e290f5aa2a79e8b2ec181f5e5 的 Branch39005314326
 algorithm.resume.study_dir_from_assets 在try之前已由标准Path构造并resolve，且保留assets名称检查；之后三次Path.parent是纯路径运算，根路径parent仍是根，原except Exception返回None分支不可达。删除3行异常包装，不改None/name/resolve拒绝或恢复流程，不增加helper；本仓库仅一处该形态。7组含根/浅层/assets/非assets/None输入原新输出一致，恢复相邻测试随后定向执行；模型批次e712c93完整CPU结果不能覆盖此后续改动，后续完整里程碑需重新冻结。原证据.tmp/structure-model-candidate，不随clone。
 
 parent延伸：恢复相邻与当前结构定向165 passed、0skip。全structure78文件/9023行，对起点净少109。仅本地主题提交；此后续改动尚未跑完整core/Flow，不复用e712c93的100哈希冻结证明为当前提交背书。
+
+
+## 285. 2026-10-17：模型归并及 parent 延伸完整里程碑收尾
+
+按最新人工明确授权，先推送现有e712c93/2c314a2/bad633e本地积累，通过单个PR合dev，后续精简仅在现有文件内做，不再改变文件架构或逐路径审计。冻结bad633ef014d8a99161b8061b40b22ccb18f1d9b的新完整CPU：core2699 passed+1同一既有POSIX skip、Flow525 passed；10新增shape节点/153当前结构节点执行，100源码哈希一致。这次结果覆盖parent延伸，不借e712c93旧绿灯。全structure78文件/9023行，比PR210的9038少15；比起点9132净少109，整体目标未称完成。
+
+范围为此前两模型函数原样归并、同名factory对象/公开门面保持及不可达Path.parent包装删除，说明/2318正式候选0引用扫描/函数AST/7与36组对照/旧失败证据见§284和原.tmp，不随clone。仅源码归并删除旧碎文件，不是删除实验数据或结果；_staging_from_DEM仍唯一未跟踪，未添加或读取。后续公开API形状与on-disk布局不变，无GPU/测速/强推/main操作。最终head及actualdev CI需分别真实验收。
