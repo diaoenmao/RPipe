@@ -1,3 +1,33 @@
+> 当前（2026-10-17）：Config读写共享完整里程碑CPU验收通过，更新原PR208最终head（§282.6）。
+> 验证：core2686 passed+1同一既有skip、CPU Flow525 passed；40新节点/155结构节点全执行，102源码哈希一致。
+> 结果：四层共享序列化，三层共享显式构造，Data专用origin校验不变；公开字段/签名/模块/API和产物布局保持。
+> 下一：更新同一PR208并验最终head全部实际CI→合dev→实际dev全部CI，不借用中间head绿灯。
+> 状态：80文件/9073行，对起点净减59行，幅度有限不标总目标完成；保留分支/暂存/数据，旧goal元数据仍paused。
+
+> 当前（2026-10-17）：同一Config PR208纳入三类共享构造，最终定向CPU213 passed，准备重新完整验收（§282.5）。
+> 验证：新增子类默认值/构造kwargs序/Data origin拒绝9节点通过，整批新增合同节点共40项。
+> 结果：内部复用映射读取与写出，公开字段/方法/模块/产物布局不变；Data专用校验保持独立。
+> 下一：最终源码冻结后core/CPU Flow→更新原PR208→最终head与actualdev双侧实际CI；不另开小PR。
+> 状态：中间head52ae26a证据保留，不作最终验收；保留分支/暂存/数据，旧goal暂停不据此停工。
+
+> 当前（2026-10-17）：继续完成Config共享映射里程碑，本机完整CPU回归通过，准备同主题PR→dev（§282.3）。
+> 验证：core2677 passed+1同一既有skip、CPU Flow525 passed；31新节点/155结构节点全执行，102源码哈希不变。
+> 结果：四类Config公开字段/方法/模块与API门面保持；共享内部序列化，移除重复复制和递归前判断。
+> 下一：最终head与actualdev分别验收全部实际CI；总体80文件/9089行，净减43行，不夸大缩行幅度。
+> 状态：保留分支/暂存/数据；旧goal元数据仍paused，当前人工授权工作照常推进，不新增边界修复。
+
+> 当前（2026-10-17）：PR207已双侧验收；同分支继续Config共享映射精简，定向CPU204 passed（§282）。
+> 验证：31个新增输入隔离/字段序/extras/merge节点全执行；临时原型四层各10组及100组合并一致。
+> 结果：公开Config方法、字段、pickle模块与磁盘布局保持，仅增加Control私有共享helper，去除重复复制/判定。
+> 下一：冻结当前源码并完整core/CPU Flow验证，然后同主题里程碑PR→dev，不借用旧批CI结论。
+> 状态：分支/暂存/数据保留；总体明显缩行不标完成；旧goal暂停元数据不作为本轮执行等待门。
+
+> 当前（2026-10-17）：PR207 已合 dev 0d9b764，本批双侧实际CI全绿验收完成（§281.4）。
+> 验证：core2646 passed+1既有skip、CPU Flow525 passed；15新节点和155结构节点执行，102源码哈希一致。
+> 结果：三项capacity纯函数精简，21函数签名/19其余定义不变，7333组差分相同。
+> 下一：同主题继续Config共享映射和重复复制/校验精简；整体明显缩行仍未达成，不新增边界修复。
+> 状态：保留本地/远程分支、暂存、数据；旧goal元数据仍paused，但本轮按现有人工授权继续。
+
 > 当前（2026-10-17）：按最新人工指示收尾capacity精简，完整CPU回归通过，准备推送/PR→dev（§281.3）。
 > 验证：core2646 passed+1同一既有skip、CPU Flow525 passed；15新节点及155结构节点全部执行。
 > 结果：102源码哈希前后相同，7333组纯函数差分一致；capacity393→385行，公开输出/策略不变。
@@ -4729,3 +4759,53 @@ system/结构CPU396 passed/0fail/error/skip，4个新节点全部执行；此前
 容量策略、SAFETY、GPU探测、装箱算法、公开函数签名和输出精度均不变。本批80文件/9117行仍仅比起点少15行，不标整体明显缩行完成。后续继续保持API形状的实质精简，不添加旧origin别名或恢复边界修复运动。
 
 另外，get_goal实际返回旧objective及paused状态，仍写08:05 API待审门；09:12及后续批准已解除该等待门。工具不能恢复active或改写未完成目标，未伪称恢复。旧元数据不覆盖本轮继续执行授权，不据此停工；其状态会影响回合结束后的目标自动续跑，已告知。
+
+### 281.4 PR207 双侧实际CI验收
+
+[PR207](https://github.com/DreamSoul-AI/RPipe/pull/207) 已正常合 dev `0d9b764b7eb3bf606a51a2a34f1599c3b5ba4573`；最终head `52bf7ff02aaba1425df911360fcfa101297f932a` 的 Branch39001526221、Package39001526282、Unit39001526204及全部实际矩阵/聚合成功；actualdev Package39002074615、Unit39002074569及全部实际矩阵/聚合同样成功。PR_CHECKED SHA256 `ea8a3962d591b32aa61c293dd6b53c159db70c4814288e0935d3f266fe9697c5`，DEV_CHECKED `18e80c3859b8ce7fc261954d6445522355c10d2f199ba8c2dd492d920675ba16`。库源码/测试/Study/结构文档在head与actualdev间无差异，普通快进后102源码哈希仍等于完整验证前冻结值。
+
+21个函数签名与19个其余函数/类AST不变；仅三项纯汇总函数体改变，不改GPU探测/装箱/SAFETY及API/磁盘布局。PR正文只追加一次真实验收；应用附件100上限错误保留，不删除历史附件。按最新人工保留本地/远端codex/structure-artifacts与暂存/数据，main、本地dev和origin/main不变，不force push。收尾文档本地主题提交随下一完整批次合入，不为几行记录另开PR。原始证据.tmp/structure-capacity不随clone。
+
+整体80文件/9117行，仅比起点少15行，仍不称明显缩行目标完成。下一步继续Config映射内部复用；临时原型100组merge、四层各10组Config对照已通过，但不作为生产实施/完整回归验收。旧目标paused元数据不作为新的API待审门，也未伪称已恢复active。
+
+## 282. 2026-10-17：四层Config共享映射与重复校验精简
+
+### 282.1 方案与API边界
+
+在同一codex/structure-artifacts主题继续。既有Control映射模块增加一个私有_layer_mapping纯函数，四类Config.to_mapping仍在各原模块、保留原公开签名，以显式原字段顺序传入该helper；保留config浅拷贝、空项省略、extras最后覆盖及叶对象共享，不使用会深复制的asdict，不自动扩展子类字段。既有emit等模块名称保留，未增加api/门面或改公开接口形状，不需要另造层或继承框架。
+
+from_mapping复用split_known已有的单次dict复制与None归一化，删去四处调用端重复复制；Data origin拒绝与各层构造转换原样保留。deep_merge保留函数入口的dict/叶替换判定，递归时不再在调用端重复同一判定；保留基底不变、未改叶对象身份及patch覆盖/键序。临时原型100组merge与四层各10组转换/异常、签名与映射访问轨迹一致，仍须实施后portable回归与完整CPU/CI验收。
+
+不改API形状、类所在模块、pickle路径、配置/产物布局；不跑GPU或实验、不做性能测量。先按此设计实施和本地验证，同主题完整里程碑收尾，不为单个函数或几行文档开碎PR。
+
+### 282.2 实施与定向回归
+
+五个既有源文件实施原型方案，无新增源文件或公开门面。四层保留原emit/split_known等名称，新增的_layer_mapping只为内部复用；to_mapping保持显式字段表和原方法/签名，未引入基类、动态子类字段或deepcopy。from_mapping只移除调用端重复dict复制，split_known的输入隔离/None归一化和Data origin拒绝仍保留；deep_merge只移除递归前重复判断，入口判定与叶替换身份保留。
+
+Control+结构CPU204 passed/0fail/error/skip，31个新增portable节点全执行（12输入隔离/空值、4extras覆盖身份、4字段序、5叶替换、5非mapping替换、1分支复制/引用身份），均围绕既有输出/隔离合同。LOCAL_TARGETED_CHECKED SHA256 `0a864a75c3aea3ad0f9bb98044dc0d0a0d8634c60a15f5fc8baf54111df8ff33`，证据.tmp/structure-config不随clone。当前80文件/9089行，不凭单次定向结果宣称完整验收。接下来冻结源码、完整core/CPU Flow与最终head/actualdev双侧CI，作为一个Config映射里程碑PR收尾。
+
+### 282.3 完整CPU验收与Config里程碑收尾
+
+冻结源码后完整core2677 passed/1同一既有POSIX skip，CPU Flow525 passed/0skip，均0fail/error；31个新合同节点及155个结构节点全执行。102库源码哈希前后一致。FULL_CHECKED SHA256 `a3279a3d7dec3cc1cb91d45e5eb34eba8c300d413c751e21da5b671cdadf676c`，原始log/XML/原型/签名字段对照在.tmp/structure-config（不随clone），不把原型或PR207成功代替当前验收。
+
+实际应用后的四类Config字段定义、方法签名/装饰器及原模块均与基线相同，api/目录和Study代码无差异；没有新增公开门面、基类或配置字段。既有Control hash/Run ID与序列化回归全部保留执行。源文件仍80个、总9089行，对总起点9132净少43行；四类重复序列化实现归一到现有Control职责，幅度有限，不为行数删除错误处理或增加泛化框架。按本轮继续Occam里程碑授权将本批作为一个Config PR收尾，先最终head全部实际CI再普通合dev，后验actualdev全部实际CI；不合main、不force push，不删分支/数据。
+
+### 282.4 同一PR纳入三类重复构造的内部复用
+
+复查发现Model/Algorithm/System的from_mapping构造段相同，继续纳入同一个Config PR208，不另开PR。Control增加私有_layer_from_mapping，显式传入原基础字段tuple；保留fields(cls)识别、原默认值、config浅拷贝、extras分配与构造kwargs顺序，不把子类新增字段自动传给构造器。Data.from_mapping保留独立origin拒绝及原构造逻辑，不增加策略flag、回调框架或基类。公开方法/构造签名、模块、字段与API门面均不变。
+
+三类各7组输入/转换异常以及子类默认值、kwargs顺序的临时原型对照一致。实施前记录此方案，再补portable回归并重新完整CPU及最终head CI。中间head52ae26a的原始2677/525结果和CI记录仍在.tmp/structure-config，属于中间版本；不删除/取消其Run，不替代扩充后的最终版本验收。最终证据改存.tmp/structure-config-final，仍使用PR208唯一分支。
+
+### 282.5 扩充后的实施与定向回归
+
+新增Control私有_layer_from_mapping，Model/Algorithm/System原from_mapping保留classmethod/公开签名，以显式字段tuple复用它；Data原from_mapping及origin拒绝AST未动。既有模块名称保留，没有公开门面/基类/配置字段或pickle路径变化。字段识别仍用原dataclass fields，构造只传原基础字段，不自动扩展子类字段，config/extras/kwargs序保持。
+
+Control+结构CPU213 passed/0fail/error/skip，新增扩充节点9项（4子类默认值、4构造kwargs序、1Data子类origin拒绝），整批新合同节点40。LOCAL_TARGETED_CHECKED SHA256 `f3d11562412013498d445de01b63bfdb5759446fe48fe7b138967b8d3fbe3cb2`。当前80文件/9073行；完整core/Flow及最终CI尚未执行，不能套用中间head证据。最终证据.tmp/structure-config-final，不随clone；原.tmp/structure-config证据及GitHub旧Run不删不取消。
+
+### 282.6 扩充后最终完整CPU回归
+
+最终源码冻结后core2686 passed/1同一既有POSIX skip，CPU Flow525 passed/0skip，均0fail/error。整批40新合同节点和155结构节点全部执行；102库源码哈希前后一致。FULL_CHECKED SHA256 `88f2457fe6a62c90bdd5b3faff69b565b300d6359896ddb4bfeb3cddba5787c9`，最终证据.tmp/structure-config-final不随clone。字段定义、classmethod/方法签名及装饰器逐项相同，Data.from_mapping含origin校验AST未变；api/与Study源码无差异，无类或pickle路径迁移。
+
+初稿head52ae26a的Branch39002973172/Package39002973153/Unit39002973161均已完成success，原始Run/本地证据保留，但不作本次最终head验收。一项中间Run查询误填SHA返回空，已由原PRE_MERGE和git rev-parse核对后重新取得实际3条success；空结果未用于验收，原尝试保留，不当库失败。更新原PR208，不创建额外PR、不取消/删除旧Run。
+
+最终仍80个源文件、9073行，对起点9132净减59行；主要删除重复转换与判断，保留必需校验和公共形状，不夸大幅度。下一步正常push与最终head/actualdev双侧实际CI；合后按累计约5个PR做只读分支/worktree/PR/Issue盘点，当前人工明确不删分支或数据，清理不越权。

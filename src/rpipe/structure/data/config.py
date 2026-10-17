@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, fields
 from typing import Any
 
-from rpipe.structure.control.mapping import emit, split_known
+from rpipe.structure.control.mapping import emit, split_known, _layer_mapping
 
 
 @dataclass
@@ -19,7 +19,7 @@ class DataConfig:
     @classmethod
     def from_mapping(cls, mapping: dict[str, Any] | None) -> DataConfig:
         known_names = {f.name for f in fields(cls) if f.name != 'extras'}
-        body, extras = split_known(dict(mapping or {}), known_names)
+        body, extras = split_known(mapping, known_names)
         if body.get('origin') not in (None, '') or extras.get('origin') not in (None, ''):
             raise ValueError('origin is set on the Study, not under data')
         return cls(
@@ -31,12 +31,4 @@ class DataConfig:
         )
 
     def to_mapping(self) -> dict[str, Any]:
-        return emit(
-            {
-                'name': self.name,
-                'source': self.source,
-                'path': self.path,
-                'config': dict(self.config) if self.config else None,
-            },
-            self.extras,
-        )
+        return _layer_mapping(self, ('name', 'source', 'path'))
