@@ -5458,3 +5458,9 @@ Enmao 本次明确批准恢复每15分钟周期续跑。通过应用 automation_
 源码73ea0b1a4322f771f816334185998b18c2dccf5d已冻结验收：定向tracker/logger 103 passed，完整core2779 passed/1同一既有Windows POSIX执行权限skip/0fail/error；CPU Flow525 passed/0skip/fail/error。新增4节点（全split、单split、空split、meter中途异常）与154结构节点实际执行；冻结HEAD和101源码哈希一致。所有原有声明/签名保持，save以外AST一致；tracker223→221，仅删2行及中间字典/复制，不宣称重大产出。原始日志/XML、BASE_tracker、AST_CHECKED、FROZEN、LOCAL_CHECKED位于.tmp/structure-tracker-save，不随clone；保留原inline批次及更早全部失败证据。
 
 唯一主题仍codex/structure-artifacts，当前入口.tmp/structure-tracker-save/STATE.json，原inline STATE有指针；没有活测试/CI观察句柄。连同前四函数，当前未推源码相对实际dev1b64a6e2净少18行，79文件/8964行，相对起点9132累计少168行约1.84%，总目标未完成。当前没有推送/PR/远端CI，不把本地绿灯当dev验收；按19:32确认继续同文件净瘦身，攒完整实质里程碑，不为此2行或文档另开PR。定时ACTIVE保持，三个副本当前未派生，未改API/布局/main，未用GPU或测速，_staging与分支/数据保留。
+
+### 295.6 19:44周期续跑：候选有界复查，源码保持
+
+核对当前主题与工作区，仅未跟踪_staging保留，执行25秒上限fetch且不prune。选读现有函数的局部重复：result状态/容器校验属于入口信任边界，torchvision重试包含半导入清理与最后异常传播，不能删；vision训练/测试两个ToTensor实例若共享会改变对象身份，不因表面重复改为一个；data/model注册与构建属于不同层、参数/后处理合同不同，不能在当前同文件范围强合。未选中值得实施的实质新候选，本轮无源码/测试改变，不重跑未变源码的完整CPU，也未推送/开小PR。
+
+101源码哈希与73ea0b1完整CPU基线一致，沿用core2779+1既有skip/Flow525及154结构节点证据；已有本地净少18行继续累计。此为上述局部候选复查，不是全仓无冗余证明或宏观完成。进一步跨职责合并仍需具体proposal审查；当前不提出无依据架构改动。15分钟续跑保持ACTIVE，派生等新可用里程碑版本，未触碰副本/分支/数据/_staging。实际fetch与候选决定留.tmp/structure-tracker-save/FOLLOWUP_20261017T1144.json，不随clone。
