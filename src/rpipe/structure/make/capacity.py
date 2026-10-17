@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from rpipe.structure.artifact import load_config
+from rpipe.structure.api.artifact_api import load_config
 from rpipe.structure.make.schedule import job_waves
 from rpipe.structure.control.mapping import get_setting
 

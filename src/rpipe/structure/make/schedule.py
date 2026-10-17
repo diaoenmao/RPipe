@@ -10,12 +10,12 @@ from pathlib import Path
 from typing import Any
 
 from rpipe.structure.api.algorithm_api import sibling_train_dependency
-from rpipe.structure.artifact import CorruptArtifactError, load_config
-from rpipe.structure.artifact.index import load_index
-from rpipe.structure.artifact.layout import validate_run_directory
-from rpipe.structure.artifact._atomic import _read_text, atomic_write_text
-from rpipe.structure.artifact.result import write_result
-from rpipe.structure.artifact.result.format import STATUS_SUCCEEDED, decode_result
+from rpipe.structure.api.artifact_api import CorruptArtifactError, load_config
+from rpipe.structure.api.artifact_api import load_index
+from rpipe.structure.api.artifact_api import validate_run_directory
+from rpipe.structure.api.artifact_api import _read_text, atomic_write_text
+from rpipe.structure.api.artifact_api import write_result
+from rpipe.structure.api.artifact_api import STATUS_SUCCEEDED, decode_result
 from rpipe.structure.control.mapping import get_setting
 
 SCRIPTS_DIRNAME = 'scripts'

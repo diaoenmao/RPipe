@@ -1,7 +1,7 @@
 """Manual historical/current stage calibration, invoked by recipe.py, not a hook."""
 from __future__ import annotations
 
-from rpipe.structure.artifact.shared import shared_paths
+from rpipe.structure.api.artifact_api import shared_paths
 
 import argparse
 import hashlib
@@ -39,7 +39,7 @@ def correct_samples(accuracy, count):
 
 
 def main(recipe, argv):
-    from rpipe.structure.artifact._atomic import atomic_write_text
+    from rpipe.structure.api.artifact_api import atomic_write_text
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--data', choices=['MNIST', 'CIFAR10'], default='CIFAR10')
@@ -64,16 +64,16 @@ def main(recipe, argv):
     recipe.bootstrap()
     os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
     import torch
-    from rpipe.structure.algorithm.config import AlgorithmConfig
-    from rpipe.structure.algorithm.train import TrainAlgorithm
-    from rpipe.structure.algorithm.tracker import AlgorithmTracker
-    from rpipe.structure.data.config import DataConfig
-    from rpipe.structure.data.factory import DataFactory
-    from rpipe.structure.model.config import ModelConfig
-    from rpipe.structure.model.factory import ModelFactory
-    from rpipe.structure.system.config import SystemConfig
-    from rpipe.structure.system.factory import SystemFactory
-    from rpipe.structure.system.runtime import apply_runtime
+    from rpipe.structure.api.algorithm_api import AlgorithmConfig
+    from rpipe.structure.api.algorithm_api import TrainAlgorithm
+    from rpipe.structure.api.algorithm_api import AlgorithmTracker
+    from rpipe.structure.api.data_api import DataConfig
+    from rpipe.structure.api.data_api import DataFactory
+    from rpipe.structure.api.model_api import ModelConfig
+    from rpipe.structure.api.model_api import ModelFactory
+    from rpipe.structure.api.system_api import SystemConfig
+    from rpipe.structure.api.system_api import SystemFactory
+    from rpipe.structure.api.system_api import apply_runtime
 
     torch.set_num_threads(2)
     torch.set_num_interop_threads(1)
@@ -97,8 +97,8 @@ def main(recipe, argv):
         'scope': 'serial real train/test/checkpoint; first segment warmup; no probe input hashing or snapshots',
         'memory_scope': 'cumulative PyTorch peaks from setup through each phase; excludes context/driver/other processes',
         'output_dir_local_only': str(output), 'sides': {}}
-    from rpipe.structure.artifact.provenance import source_files
-    from rpipe.structure.make import load_study_yaml
+    from rpipe.structure.api.artifact_api import source_files
+    from rpipe.structure.api.make_api import load_study_yaml
     report['source_hashes'] = source_files(recipe.STUDY, load_study_yaml(recipe.STUDY))
 
     def sync():

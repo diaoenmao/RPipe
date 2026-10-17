@@ -4,10 +4,10 @@ import threading
 
 import pytest
 
-from rpipe.structure.origin import bind_endpoint, domestic_endpoint, foreign_endpoint
+from rpipe.structure.system.origin import bind_endpoint, domestic_endpoint, foreign_endpoint
 
 pytestmark = [pytest.mark.unit, pytest.mark.content, pytest.mark.p1,
-              pytest.mark.structure_layer, pytest.mark.module_data,
+              pytest.mark.structure_layer, pytest.mark.module_system,
               pytest.mark.cost(cost_class='c1'),
               pytest.mark.result_type('categorical', detail='summary')]
 

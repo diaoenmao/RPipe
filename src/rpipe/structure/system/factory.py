@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from rpipe.structure.artifact._atomic import _read_text
+from rpipe.structure.api.artifact_api import _read_text
 from rpipe.structure.system.config import SystemConfig
 from rpipe.structure.system.logger import Logger
 
@@ -32,7 +32,7 @@ class System:
         return module.to(torch.device(self.device))
 
     def checkpoint_dir(self) -> Path:
-        from rpipe.structure.artifact.asset import kinds
+        from rpipe.structure.api.artifact_api import kinds
 
         directory = Path(self.assets_dir) / kinds.CHECKPOINTS
         directory.mkdir(parents=True, exist_ok=True)
@@ -44,7 +44,7 @@ class System:
         import shutil
         import torch
 
-        from rpipe.structure.artifact._atomic import atomic_replace, atomic_write_text
+        from rpipe.structure.api.artifact_api import atomic_replace, atomic_write_text
 
         stem = str(name).replace('/', '_').replace('\\', '_')
         if not stem or stem in ('.', '..') or Path(stem).name != stem:

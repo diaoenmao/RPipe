@@ -7,11 +7,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from rpipe.structure.origin import download_model
+from rpipe.structure.system.origin import download_model
 
 pytestmark = [
     pytest.mark.integration, pytest.mark.content, pytest.mark.p1,
-    pytest.mark.structure_layer, pytest.mark.module_data,
+    pytest.mark.structure_layer, pytest.mark.module_system,
     pytest.mark.cost(cost_class='c1'),
     pytest.mark.result_type('categorical', detail='summary'),
 ]
@@ -248,7 +248,7 @@ def test_modelscope_requests_policy_precedes_transfer(monkeypatch, tmp_path, tar
 
 @pytest.mark.parametrize('streaming', [False, True])
 def test_dataset_helper_guards_eager_and_deferred_requests(monkeypatch, tmp_path, streaming):
-    from rpipe.structure.origin import load_hf_dataset
+    from rpipe.structure.system.origin import load_hf_dataset
     requests = pytest.importorskip('requests')
     calls = []
 
@@ -295,7 +295,7 @@ def test_actual_dataset_streaming_preserves_views_state_and_pickle(monkeypatch, 
     import pickle
     datasets = pytest.importorskip('datasets')
     from huggingface_hub import constants
-    from rpipe.structure import origin
+    from rpipe.structure.system import origin
     monkeypatch.setattr(constants, 'ENDPOINT', 'https://hf-mirror.com')
     monkeypatch.setattr(datasets.config, 'HF_ENDPOINT', 'https://hf-mirror.com')
     monkeypatch.setattr(socket.socket, 'connect', lambda *a, **k: pytest.fail('real network'))
@@ -327,7 +327,7 @@ def test_actual_dataset_deferred_generator_refuses_transfer(monkeypatch, tmp_pat
     datasets = pytest.importorskip('datasets')
     requests = pytest.importorskip('requests')
     from huggingface_hub import constants
-    from rpipe.structure.origin import load_hf_dataset
+    from rpipe.structure.system.origin import load_hf_dataset
     monkeypatch.setattr(constants, 'ENDPOINT', 'https://hf-mirror.com')
     monkeypatch.setattr(datasets.config, 'HF_ENDPOINT', 'https://hf-mirror.com')
     calls = []
@@ -362,7 +362,7 @@ def test_aiohttp_actual_redirect_loop_checks_before_next_connection(monkeypatch,
     import inspect
     aiohttp = pytest.importorskip('aiohttp')
     from multidict import CIMultiDict, CIMultiDictProxy
-    from rpipe.structure import origin
+    from rpipe.structure.system import origin
     calls = []
 
     async def connect(self, request, **kwargs):
@@ -418,7 +418,7 @@ def _dataset_worker_policy_probe(batch):
     import os
     import requests
     import threading
-    from rpipe.structure import origin
+    from rpipe.structure.system import origin
     entered = []
 
     class Adapter(requests.adapters.BaseAdapter):
@@ -453,7 +453,7 @@ def test_dataset_download_workers_keep_domestic_policy(monkeypatch, backend):
     datasets = pytest.importorskip('datasets')
     from datasets.download import download_manager
     from huggingface_hub import constants
-    from rpipe.structure.origin import load_hf_dataset
+    from rpipe.structure.system.origin import load_hf_dataset
     parallel = importlib.import_module('datasets.parallel.parallel')
     pool = (ThreadPool if backend == 'threads' else multiprocessing.get_context('spawn').Pool
             if backend == 'spawn' else multiprocessing.Pool)
@@ -485,7 +485,7 @@ def test_dataset_download_workers_keep_domestic_policy(monkeypatch, backend):
     (None, None),
 ])
 def test_dataset_generator_close_keeps_primary_failure_and_context(primary, close_error):
-    from rpipe.structure import origin
+    from rpipe.structure.system import origin
     closed = []
 
     class Iterator:
@@ -532,7 +532,7 @@ def actual_image_case(monkeypatch):
     from PIL import Image
     from huggingface_hub import constants, HfFileSystem
     import datasets.features.image as image_module
-    from rpipe.structure.origin import load_hf_dataset
+    from rpipe.structure.system.origin import load_hf_dataset
     # A native streaming deepcopy mutates a populated fsspec cache while copying it.
     monkeypatch.setattr(HfFileSystem, '_cache', {})
     monkeypatch.setattr(constants, 'ENDPOINT', 'https://hf-mirror.com')
@@ -654,7 +654,7 @@ def test_domestic_sdk_worker_keeps_guard_after_parent_scope_returns(monkeypatch)
     from concurrent.futures import ThreadPoolExecutor
     from threading import Event
     requests = pytest.importorskip('requests')
-    from rpipe.structure import origin
+    from rpipe.structure.system import origin
     started, release = Event(), Event()
     calls = []
 
@@ -695,7 +695,7 @@ def test_actual_media_feature_keeps_deferred_file_guard(monkeypatch, kind, strea
     datasets = pytest.importorskip('datasets')
     requests = pytest.importorskip('requests')
     from huggingface_hub import constants
-    from rpipe.structure import origin
+    from rpipe.structure.system import origin
     monkeypatch.setattr(constants, 'ENDPOINT', 'https://hf-mirror.com')
     monkeypatch.setattr(datasets.config, 'HF_ENDPOINT', 'https://hf-mirror.com')
     monkeypatch.setattr(datasets.config, 'HUB_DATASETS_URL',
@@ -783,7 +783,7 @@ def test_actual_media_feature_keeps_deferred_file_guard(monkeypatch, kind, strea
 @pytest.mark.parametrize('protocol', range(2, 6))
 def test_domestic_reader_preserves_binary_file_protocol_and_pickle(protocol):
     import pickle
-    from rpipe.structure import origin
+    from rpipe.structure.system import origin
     reader = origin._DomesticReader(io.BytesIO(b'first\nsecond\n'))
     assert reader.__getstate__() == {'stream': reader.stream}
     reader = pickle.loads(pickle.dumps(reader, protocol=protocol))
@@ -876,7 +876,7 @@ def test_actual_async_sdk_client_getter_keeps_guard_and_client(monkeypatch, allo
     httpx = pytest.importorskip('httpx')
     pytest.importorskip('huggingface_hub')
     from huggingface_hub.utils import _http
-    from rpipe.structure import origin
+    from rpipe.structure.system import origin
     calls = []
     method = httpx.AsyncClient._send_single_request
 
@@ -914,7 +914,7 @@ def test_actual_async_sdk_client_getter_keeps_guard_and_client(monkeypatch, allo
 def test_domestic_sdk_unsupported_client_fails_before_use(monkeypatch):
     pytest.importorskip('huggingface_hub')
     from huggingface_hub.utils import _http
-    from rpipe.structure import origin
+    from rpipe.structure.system import origin
     client = object()
     getter = lambda: client
     monkeypatch.setattr(_http, 'get_session', getter)

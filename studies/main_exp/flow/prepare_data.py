@@ -26,7 +26,7 @@ import tarfile
 import urllib.request
 from urllib.parse import urlsplit
 
-from rpipe.structure.origin import domestic_endpoint
+from rpipe.structure.api.system_api import domestic_endpoint
 
 
 STUDY = Path(__file__).resolve().parents[1]
@@ -126,7 +126,7 @@ def download(url: str, destination: Path, md5: str) -> dict[str, str]:
 
 
 def reuse_caches(data_root: Path, expected: dict[str, str], cache_roots: list[Path]) -> dict[str, str]:
-    from rpipe.structure.artifact.shared import link_input
+    from rpipe.structure.api.artifact_api import link_input
     copied = {}
     for relative, expected_hash in expected.items():
         destination = data_root / relative
@@ -231,9 +231,9 @@ def split_counts(data_root: Path) -> dict[str, dict[str, int]]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    from rpipe.structure.artifact._atomic import atomic_write_text
+    from rpipe.structure.api.artifact_api import atomic_write_text
 
-    from rpipe.structure.artifact.shared import cache_lock, shared_paths
+    from rpipe.structure.api.artifact_api import cache_lock, shared_paths
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--data-root', type=Path, default=shared_paths(STUDY)['data'])
     parser.add_argument('--manifest', type=Path, default=STUDY / 'docs' / 'DATA_MANIFEST.json')

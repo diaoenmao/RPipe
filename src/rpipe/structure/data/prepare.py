@@ -7,14 +7,14 @@ from pathlib import Path
 from threading import RLock
 from typing import Any
 
-from rpipe.structure.artifact.activity import announce
-from rpipe.structure.artifact.config import load_config
-from rpipe.structure.artifact.layout import ensure_study_layout
-from rpipe.structure.artifact.shared import cache_lock, shared_paths
-from rpipe.structure.artifact._atomic import _read_text, atomic_write_text
+from rpipe.structure.api.artifact_api import announce
+from rpipe.structure.api.artifact_api import load_config
+from rpipe.structure.api.artifact_api import ensure_study_layout
+from rpipe.structure.api.artifact_api import cache_lock, shared_paths
+from rpipe.structure.api.artifact_api import _read_text, atomic_write_text
 from rpipe.structure.data.config import DataConfig
 from rpipe.structure.data.factory import DataFactory, vision_root
-from rpipe.structure.origin import endpoint_for, normalize_origin
+from rpipe.structure.api.system_api import endpoint_for, normalize_origin
 
 READY_NAME = '.ready'
 _prepare_environment_lock = RLock()

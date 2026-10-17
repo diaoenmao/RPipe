@@ -12,14 +12,14 @@ from rpipe.flow.process.aggregate import (
     summarize,
 )
 from rpipe.flow.process.curves import write_learning_curves
-from rpipe.structure.artifact._atomic import atomic_write_text
-from rpipe.structure.artifact.index import index_path, load_index
-from rpipe.structure.artifact.result.format import encode_result
+from rpipe.structure.api.artifact_api import atomic_write_text
+from rpipe.structure.api.artifact_api import index_path, load_index
+from rpipe.structure.api.artifact_api import encode_result
 from rpipe.flow.context import StudyProcessContext
 from rpipe.flow.study import run_study_phase
-from rpipe.structure.artifact.provenance import check_frozen
-from rpipe.structure.make.expand import load_study_yaml
-from rpipe.structure.make.recipe import study_phases_enabled
+from rpipe.structure.api.artifact_api import check_frozen
+from rpipe.structure.api.make_api import load_study_yaml
+from rpipe.structure.api.make_api import study_phases_enabled
 
 
 def run_study(study_dir: Path | str) -> dict[str, Any]:

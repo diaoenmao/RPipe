@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from rpipe.flow.context import FlowContext
 from rpipe.flow.process.aggregate import load_curve_series, run_process_path
-from rpipe.structure.artifact._atomic import atomic_write_text
-from rpipe.structure.artifact.errors import CorruptArtifactError
-from rpipe.structure.artifact.result import load_result
-from rpipe.structure.artifact.result.format import encode_result
+from rpipe.structure.api.artifact_api import atomic_write_text
+from rpipe.structure.api.artifact_api import CorruptArtifactError
+from rpipe.structure.api.artifact_api import load_result
+from rpipe.structure.api.artifact_api import encode_result
 
 
 def run(ctx: FlowContext) -> None:

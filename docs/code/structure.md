@@ -42,12 +42,12 @@
 |------|--------|--------|
 | **能力** | Experiment + 各层 Registry（经 api 可查询） | 注册名解析到第三方实现 |
 | **取值** | **make**（`axes` × `seeds`）写入 | Artifact Config → prepare → `Control` |
-| **层间调用** | Structure 柱内 / 外部调用方 | 四层经 `structure.api.*`；Control 经 `control/` |
+| **层间调用** | Structure 柱内 / 外部调用方 | 各层经 `structure.api.*`；Control 经 `control/` |
 
 ### 1.3 柱内依赖方向
 
 ```
-api/                 → data_api / model_api / system_api / algorithm_api
+api/                 → data_api / model_api / system_api / algorithm_api / artifact_api / make_api
 control/             → Control 与编解码/契约；无 control_api
 data/                → Data / DataRegistry / DataFactory / DataConfig
 model/               → Model / ModelRegistry / ModelFactory / ModelConfig
@@ -57,7 +57,7 @@ artifact/            → layout / config / result / asset / index IO，以及 re
 make/                → 多实验：展开、写 config/index、调度脚本；调 control + artifact；不 import 四层、不 import flow
 ```
 
-- 四层跨层只走对应 `*_api`
+- 各层跨层只走对应 `*_api`；control 沿用既有例外
 - 层实现目录之间不直连
 - 第三方建构在各层实现内完成；经 Factory 得到运行时对象再经 api 交出
 - algorithm 经 `data_api` / `model_api` / `system_api` 使用 `Data` / `Model` / `System`（含 System 上的 Logger）；数字观测走 **AlgorithmTracker**
@@ -107,10 +107,10 @@ structure/
 #### 2.1.2 固定八个子包，顶层不放文件
 
 - **规则：** `structure/` 下只允许 §2 骨架中的八个子包：`api`、`control`、`data`、`model`、`algorithm`、`system`、`artifact`、`make`。顶层除 `__init__.py` 外不放任何文件。新增子包或顶层文件须先经项目负责人批准，并在同一 PR 中更新 §2 与本节。
-- **归属说明：** 国内源与下载解析（现 `origin.py`）属于运行环境能力，归入 `system/`，对外经 `system_api` 暴露。`artifact/readout/`（status / logs / compare 等读数展示）保留在 `artifact/` 内，不另立一层。
+- **归属说明：** 国内源与下载解析（`system/origin.py`）属于运行环境能力，归入 `system/`，对外经 `system_api` 暴露。`artifact/readout/`（status / logs / compare 等读数展示）保留在 `artifact/` 内，不另立一层。
 - **理由：** 层数固定，依赖方向（§1.3）才可推理。顶层散文件天然游离于层之外，最容易变成被各层直连的“公共杂物间”。
 - **检查：** 测试列出 `structure/` 的直接子项，必须恰好等于上述八个目录加 `__init__.py`。
-- **现存违例：** `structure/origin.py` 位于顶层，待迁入 `system/`。
+- **实现位置：** 来源与下载解析位于 `system/origin.py`，跨层与 flow 调用经 `system_api`。
 
 #### 2.1.3 每个文件都登记
 
@@ -160,6 +160,8 @@ structure/
 
 | **文件（相对 structure/）** | **职责** |
 | --- | --- |
+| `api/artifact_api.py` | 磁盘产物层的纯重导出门面。 |
+| `api/make_api.py` | 脚本生成层的纯重导出门面。 |
 | `api/algorithm_api.py` | algorithm_api: Algorithm, AlgorithmTracker, AlgorithmFactory.build, AlgorithmConfig. |
 | `api/data_api.py` | data_api: Data, DataFactory.build, DataConfig. |
 | `api/model_api.py` | model_api: Model, ModelFactory.build, ModelConfig. |
@@ -170,6 +172,8 @@ structure/
 | `data_api` | 暴露 `Data`、`DataFactory.build`、`DataConfig` |
 | `model_api` | 暴露 `Model`、`ModelFactory.build`、`ModelConfig` |
 | `system_api` | 暴露 `System`、`Logger`、`SystemFactory.build`、`SystemConfig` |
+| `artifact_api` | 磁盘产物层入口；纯重导出 layout/config/result/index/shared/atomic/readout。 |
+| `make_api` | 脚本生成层入口；纯重导出展开、recipe、调度与容量能力。 |
 | `algorithm_api` | 暴露 `Algorithm`、`AlgorithmTracker`、`AlgorithmFactory.build`、`AlgorithmConfig` |
 
 ---
@@ -736,7 +740,7 @@ RNG 和采样位置恢复完整不等于所有算子数值确定。严格数值�
 | `system/logger.py` | System Logger: stdout + assets/logs/run.log (flush on every emit). |
 | `system/runtime.py` | Apply Run seed and torch runtime flags. Call at the start of prepare. |
 | `system/torchvision_load.py` | Load torchvision after its native ops are actually registered. |
-| `origin.py` | 国内来源解析和传输策略；后续迁入 system，尚未迁移。 |
+| `system/origin.py` | 国内来源、SDK 传输策略与延迟读取生命周期；经 system_api 对外提供。 |
 
 管理计算在硬件上的执行（concept §6 **system**）：设备、精度、并行、内存与 IO。prepare 确认设备与输出位置；checkpoint **文件**读写在本层，**resume 语义**在 algorithm（§6.11.3）。声明字段由 **`SystemConfig`** 从 JSON / Config 加载。
 

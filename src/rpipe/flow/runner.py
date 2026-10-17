@@ -6,12 +6,12 @@ import os
 from importlib import import_module
 from pathlib import Path
 
-from rpipe.structure.artifact.result import STATUS_FAILED, STATUS_SUCCEEDED, write_result
+from rpipe.structure.api.artifact_api import STATUS_FAILED, STATUS_SUCCEEDED, write_result
 from rpipe.flow.context import FlowContext
 from rpipe.flow.study import run_study_phase
-from rpipe.structure.artifact.provenance import ProvenanceChangedError, check_frozen
-from rpipe.structure.make.expand import load_study_yaml
-from rpipe.structure.make.recipe import STUDY_PHASES, study_phases_enabled
+from rpipe.structure.api.artifact_api import ProvenanceChangedError, check_frozen
+from rpipe.structure.api.make_api import load_study_yaml
+from rpipe.structure.api.make_api import STUDY_PHASES, study_phases_enabled
 
 PHASES = STUDY_PHASES
 
@@ -61,7 +61,7 @@ class FlowRunner:
         existing = ctx.state.get('logger')
         if existing is not None:
             return existing
-        from rpipe.structure.system.logger import Logger
+        from rpipe.structure.api.system_api import Logger
 
         logger = Logger(ctx.layout.assets_dir)
         ctx.state['logger'] = logger
@@ -91,7 +91,7 @@ class FlowRunner:
         preserve an existing success; other phase failures still replace it.
         """
         try:
-            from rpipe.structure.artifact.result import load_result
+            from rpipe.structure.api.artifact_api import load_result
 
             if preserve_success and ctx.layout.result_path.is_file():
                 existing = load_result(ctx.layout.result_path)

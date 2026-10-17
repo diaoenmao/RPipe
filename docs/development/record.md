@@ -1,3 +1,21 @@
+> 当前（2026-10-17）：09:12 批准的门面/origin 迁移已完成本地验收，准备统一里程碑 PR→dev；不再等待旧 API 审批门。
+> 验证：core 2606 passed +1 同一既有 skip、CPU Flow 525 passed，最终156结构节点全执行（§270）。
+> 证据：正式2318 checkpoint旧引用0，临时115989候选仅人工探针命中1；无读取错误，无旧模块别名（§269）。
+> 结果：八包、纯导出 init/新门面、逐文件登记和 src/当前Study跨层API检查通过；大文件职责精简及明显缩行尚待后续。
+> 下一：最终head/实际dev CI分别验收后清理主题；继续已授权结构精简，不训练/GPU/main/tag、不动实验数据。
+
+> 当前（2026-10-17）：09:12 已批准 artifact_api/make_api 与 origin→system_api；旧别名未批准且不添加，复用 structure-api-design。
+> 证据：正式 Study 2318 checkpoint 旧引用0；临时115989候选仅命中上轮人工探针1，全部成功读取检查（§269）。
+> 结论：本仓库未发现实际在用旧对象；不把探针当兼容需求，不跟随库外链接或声称覆盖未知下游。
+> 下一：纯重导出门面、调用方迁移与八包/跨层检查，测试及完整CI后一个里程碑PR→dev。
+> 状态：旧确认门已按新指示解除对应范围；不训练/GPU/main/tag、不改签名/返回/磁盘布局、不加兼容旁路。
+
+> 当前（2026-10-17）：reader PR201 与结构首批 PR202 均已合 dev 并完成最终 head/实际 dev 全部 CI 验收；当前 dev d37fea6。
+> 验证：core 2466 passed +1 同一既有 skip、CPU Flow 525 passed，16 新结构节点全执行（§267–268；PR202/dev CI）。
+> 结果：15 个 init 仅导出，64 个实现文件登记；80/9132 →79/9097；两主题本地/远端已清理，结构总目标尚未完成。
+> 下一：record §267 的 artifact_api/make_api 新门面及旧 origin pickle 最小兼容映射，依 08:05 明确要求先报告等确认。
+> 状态：API 方案未实施；仅本地 structure-api-design 保存报告待下批，不单开 docs PR；不训练/GPU/main/tag，用户暂存与数据保留。
+
 > 当前（2026-10-17）：reader PR201 已双侧验收清理；§2.1 结构首批在 structure-packages 完成本机验收，准备一个里程碑 PR→dev。
 > 验证：core 2466 passed +1 既有 skip、CPU Flow 525 passed；16 新结构节点全执行，0 fail/error（§267）。
 > 结果：15 个 init 仅导出；control 小文件归并，64 个实现文件已登记；80/9132 →79/9097（文件/行），尚未满足总目标。
@@ -4413,3 +4431,52 @@ PR201 final `f6a9b601d2e9aa15e0038520a8a05995566be44b` 的 Branch38985157801、P
 在上述 API 形状和兼容例外获确认前，只完成已授权的不变 API 里程碑；不擅自创建门面或迁移 origin，不新增边界修复，不训练、不使用 GPU、不修改 main/tag。
 
 首批最终本机验收（ecc3064）：core 2466 passed +1 既有 skip，CPU Flow 525 passed（均 0 fail/error；Flow 0 skip），新增 16 个结构节点全在 core 实际执行。LOCAL_CHECKED、XML、迁移 AST/__all__、原样旧 origin reader pickle 的模块限定名证据在 .tmp/structure-refactor。新旧 pickle 的实际迁移尚未实施，只验证当前 pickle 明确引用旧模块且当前可回读；兼容映射是待确认方案。
+
+
+## 268. 2026-10-17：结构首批双侧验收与清理完成，进入 API 确认门
+
+PR202 final `a634074bb1bdd81d58fbe7c6a52d0395626be9e4`：Branch38986989262、Package38986988983、Unit38986988940 的全部实际矩阵/聚合成功；正常合入实际 dev `d37fea623e4f1a6f3f12d00adc1e9c53a8efdf54`，其 Package38987596219 / Unit38987596216 全部实际矩阵/聚合成功。PR_CHECKED SHA256 `a8a74a7d08ac49c1b2841f24be891433a6e621f0997cde336f1f3e2ca9f70315`，DEV_CHECKED `5c095c6d12cc3a7ab8f2c33a6ff8ce2d083dba1200c7cfd9f3eabf9bd4d935b7`；本机 XML / LOCAL_CHECKED / Git 祖先与保护 refs 检查 / 取消和校验拒绝证据在 .tmp/structure-refactor，不随 clone。实际 dev 的 src/tests/structure.md 与最终 head 完全相同。79 个实际 Python 源文件与 Git 跟踪集合精确相等；旧 control 三模块无遗留路径引用。
+
+本轮删除清单（均已合 dev、提交保全、无工作区改动，仅主工作树）：
+
+| **已删除本地及远端主题** | **对应验收 PR / dev** |
+| --- | --- |
+| codex/library-reader-exits | PR201 / eb9642be893d14d69ffe9975fdb336b13150666e；#200 已一次验收评论后关闭。 |
+| codex/structure-packages | PR202 / d37fea623e4f1a6f3f12d00adc1e9c53a8efdf54。 |
+
+当前远端仅 main/dev；累计远端主题清理 56（累计数，不是待清数量）。周期基线 PR194 后已有 PR197/199/201/202 四批合并；每批自有分支已及时清理。保护的本地 main/dev 与 origin/main refs 未变，无数据、结果、Run、provenance 或 worktree 删除。PR202 正文已追加一次真实双侧验收和删除清单，回读保留原正文，不重复评论。
+
+首批完成不等于总目标完成：八包约束仍被根 origin.py 阻挡，跨层调用仍待 API 收口，大文件职责精简与明显缩行还未完成。15 个入口只导出和逐文件登记两项已落地。API 新增和旧 pickle 的最小模块别名方案见 §267；origin 经 system_api 属已批准方向，尚待确认的是额外 artifact/make 门面形状以及历史 pickle 兼容映射例外。按照用户 08:05 的“若改动会改变 api 的形状或对外行为，先停下报告，等确认”，在此门等待，不自行把 heartbeat 或旧持续修复目标当作批准。
+
+保留一个本地未推分支 codex/structure-api-design，仅保存这份收尾与待确认报告，随下一完整里程碑合入，不单开纯 docs 小 PR。未改任何待确认 API 的实现；不再新开边界 Issue，不训练、不占 GPU、不改 main、不打 tag/发布、不 force push。
+
+
+## 269. 2026-10-17：09:12 API 方案批准与实际旧 pickle 清点
+
+新增 artifact_api.py（磁盘产物层）与 make_api.py（脚本生成层）获批准，采用纯重导出；origin 迁入 system 并经 system_api，原 data_api.load_hf_dataset / model_api.download_model 同名保留。旧模块别名未获批准，先检查实际产物，不能把可构造的理论反例当作迁移需求。
+
+只读清点范围：本仓库 asset/shared/studies/tests/src/docs/_staging_from_DEM，以及 .tmp，按 .pt/.pth/.pkl/.pickle/.bin/.joblib/.dill/.ckpt 枚举（rg 不跟随目录链接）。zip checkpoint 只读 pickle 成员，其他候选按原字节流定位 rpipe.structure.origin；不反序列化、不执行 pickle、不加载模型或训练。三份当前 Study 声明均无自定义库外 shared.root；未跟随库外重解析目录，未知下游和内存中对象不在本次范围。
+
+| **分类** | **候选文件路径数** | **旧模块引用命中** | **结论** |
+| --- | --- | --- | --- |
+| 正式目录（全部位于 studies，均为 .pt） | 2318 | 0 | 本仓库已存正式 checkpoint 未发现该引用。 |
+| 临时输出 | 115989 | 1 | 唯一命中 .tmp/structure-refactor/OLD_ORIGIN_READER.pkl，是本会话上轮生成的人工探针，不是正式消费产物。 |
+
+最终扫描 118307 条候选记录、0 读取错误；唯一命中的 SHA256 与上轮 PICKLE_MODULE_REFERENCE.json 的探针记录精确相同。没有发现本仓库实际在用的旧对象，因此不添加任何旧模块别名或兼容旁路。原 §267–268 “旧 pickle 需要兼容”是待评估方案，现被此实际盘点结论约束，不能据此自行加别名。若以后提供真实受影响文件，按指示重新报告并等确认。
+
+证据保留在 .tmp/structure-api：PICKLE_SCAN.json、formal_scan.json、temporary_scan.json、NUL 分隔原清单、脚本与历史拒绝（不随 clone）。首次不限重解析边界的 os.walk 广扫已按唯一自有进程身份取消；后续按行解析 rg 清单误拆换行文件名，产生 175 个伪缺失路径，结果保留为 PICKLE_SCAN_NEWLINE_REJECTED.json，改用 NUL 清单后全部读取成功。两项是扫描器取消/校验拒绝，不是仓库运行缺陷，也不删除任何输入。
+
+本批实现计划：新门面只 import 原对象；跨层调用使用对应门面，层内直连和 control 既有例外保留。为避免提前加载未完成的层，api 包只声明导出名，由 structure 完成 control 类型导出后导入六个门面；不使用 __getattr__ 懒加载或兜底包装。增加八包、纯重导出门面、逐文件跨层 import 检查，现有包入口/文件登记检查继续执行。迁移 origin 不添加旧路径文件、sys.modules 别名或重复实现，原生命周期/下载策略/缓存格式不变。
+
+迁移阶段回归与修正：首轮针对性失败来自测试仍以 from rpipe.structure import origin 访问旧入口，已按新归属改为 system.origin，未恢复别名；随后 248 项针对性全过。首次完整 core 暴露当前 Study raw 准备脚本遗漏旧路径（真实迁移遗漏，失败 XML 保留）；已迁移该调用，并把其他 89 处当前 Study 框架直连统一切门面。仅补现有对象的纯重导出；对 ac37afe 限定还原 import 模块名后，现有程序体/默认参数/校验/顺序 AST 相同。新增架构检查覆盖 src 与当前 Study flow/structure/recipe 代码；docs/versions、shared/runs 和历史数值未改，不执行 Study 或测速。CALLERS 236 项通过；完整 core/Flow 在最终源基线重新执行，不以前一阶段 Flow 代替验收。首次 AST 检查误选已迁移后的 HEAD 寻找旧 origin 文件，拒绝保留并改用迁移前 ac37afe；这是校验基线错误，不算库失败。
+
+
+## 270. 2026-10-17：门面与 origin 迁移里程碑本地验收
+
+生产基线 2c1f278，core 2606 passed +1 与上批同名同原因的既有 skip（0 fail/error），CPU Flow 525 passed（0 fail/error/skip）。最终结构检查 156 项均在 core 实际执行；相对导入与 root-package 导入检查增强后，156 项又单独全执行通过，节点集完全相同，生产源码未变。三个跨层旁路样例均被拒绝，API/control 合法导入被接受；检查只允许 control 的既有声明导出，未用大小写泛放行。LOCAL_CHECKED.json 与 XML/负例检查在 .tmp/structure-api，不随 clone。
+
+新门面只重导出原对象，实际检查每个 import 绑定身份相同；data_api.load_hf_dataset / model_api.download_model 与 system_api / system.origin 为同一函数对象。api 的声明与 structure 根的最终导入分开，以已有普通 import 顺序消除初始化环，不引入动态 __getattr__、包装函数或并行兜底。origin 代码只变文件位置和 artifact helper import；127 个 src/当前 Study 模块经限定逆转 import 模块名后 AST 相同（CURRENT_DEFINITIONS_CHECKED）。
+
+初始 RED：120 项中 29 failed/91 passed（0 error/skip）；SHAPE 的唯一失败为当时尚未更新的文件登记；TARGET 的39失败为旧测试入口遗漏，CORE 的80 setup errors为遗漏的当前 Study raw caller，均保留。修正归属与调用方后 TARGET2 248 passed、CALLERS 236 passed，最终完整 core/Flow 如上。源扫描器的175伪缺失与错误AST基线拒绝单独保留，不混为库缺陷。
+
+仅修改当前 Study 的 import；归档版本、shared/runs、正式数字、checkpoint、原始数据和磁盘格式未变；未运行 Study、测速、原生 codec 或 GPU。后续继续合并过碎 artifact 文件并按职责精简 capacity/schedule/data factory/origin；本批机械结构规则已过，不等于“行数明显下降”和全部重构目标完成。

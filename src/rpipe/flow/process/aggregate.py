@@ -8,11 +8,11 @@ import statistics
 from pathlib import Path
 from typing import Any
 
-from rpipe.structure.artifact._atomic import _owned_stream, _read_text
-from rpipe.structure.artifact.asset import kinds
-from rpipe.structure.artifact.errors import CorruptArtifactError
-from rpipe.structure.artifact.paths import PROCESS_NAME, RESULT_NAME, RUNS_DIRNAME
-from rpipe.structure.artifact.result import STATUS_SUCCEEDED, load_result
+from rpipe.structure.api.artifact_api import _owned_stream, _read_text
+from rpipe.structure.api.artifact_api import kinds
+from rpipe.structure.api.artifact_api import CorruptArtifactError
+from rpipe.structure.api.artifact_api import PROCESS_NAME, RESULT_NAME, RUNS_DIRNAME
+from rpipe.structure.api.artifact_api import STATUS_SUCCEEDED, load_result
 
 
 def process_path(study_dir: Path | str) -> Path:

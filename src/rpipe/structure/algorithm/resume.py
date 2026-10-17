@@ -100,7 +100,7 @@ def sibling_train_checkpoint(
 
 def sibling_train_ids(study_dir: Path, run_id: str) -> list[str]:
     """Match the current index's factors and seed, even before checkpoints exist."""
-    from rpipe.structure.artifact.index import load_index
+    from rpipe.structure.api.artifact_api import load_index
 
     try:
         index = load_index(study_dir)
@@ -174,7 +174,7 @@ def _has_checkpoint_material(path: Path) -> bool:
 
 def sibling_train_dependency(study_dir: Path, run_id: str) -> str | None:
     """Identify the train that launch must finish before this eval can run."""
-    from rpipe.structure.artifact import load_config
+    from rpipe.structure.api.artifact_api import load_config
 
     root = Path(study_dir) / 'runs' / run_id
     try:

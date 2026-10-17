@@ -10,8 +10,8 @@ from pathlib import Path
 def write_observed_run(root, *, snapshots, best, data, model, implementation):
     import json
     import torch
-    from rpipe.structure.artifact import artifact_layout, write_config, write_result
-    from rpipe.structure.artifact._atomic import atomic_write_text
+    from rpipe.structure.api.artifact_api import artifact_layout, write_config, write_result
+    from rpipe.structure.api.artifact_api import atomic_write_text
 
     root = Path(root)
     if root.parent.name != 'runs':
@@ -50,7 +50,7 @@ def write_observed_run(root, *, snapshots, best, data, model, implementation):
 def run(ctx):
     """Write observed artifacts and validate them before the outer result commits."""
     import torch
-    from rpipe.structure.artifact.readout.compare import compare_runs, write_compare
+    from rpipe.structure.api.artifact_api import compare_runs, write_compare
     from ...structure.algorithm.paired import save_json
 
     workspace = ctx.state['algorithm'].workspace

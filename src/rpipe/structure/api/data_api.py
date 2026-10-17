@@ -16,4 +16,7 @@ def prepare_shared(study_dir: Path | str, config_paths: list[Path]) -> list[str]
     """Project-shared data. Call from make, before any run-one."""
     return prepare_shared_data(study_dir, config_paths)
 
-from rpipe.structure.origin import load_hf_dataset
+from rpipe.structure.api.system_api import load_hf_dataset
+
+from rpipe.structure.data.factory import vision_root
+from rpipe.structure.data.profile import profile_study
