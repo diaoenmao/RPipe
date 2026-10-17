@@ -277,3 +277,10 @@ def test_pack_jobs_keeps_wave_resource_order_and_original_jobs(gpu_count):
     assert batches[1][0] is jobs[2] and batches[2][0] is jobs[0]
     assert all('gpu' not in jobs[i] for i in [0, 1, 3])
     assert jobs[2].get('gpu') == ('0' if gpu_count else None)
+
+
+@pytest.mark.parametrize('vram, expected', [(-10, 2), (0, 1), (None, 1), (1, 2)])
+def test_suggest_round_keeps_positive_vram_floor_and_default(vram, expected):
+    jobs = [{'run_id': name, 'gpu': '0', 'vram_bytes': vram} for name in ['a', 'b']]
+    gpu = GpuInfo(0, 'synthetic', total_bytes=4, free_bytes=4)
+    assert suggest_round(jobs, [gpu]) == expected

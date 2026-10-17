@@ -1210,9 +1210,10 @@ Study 编排清单。`rpipe.structure.artifact.index`，**不是** Flow 的 writ
 
 | **文件（相对 structure/）** | **职责** |
 | --- | --- |
-| `make/capacity.py` | Hardware discovery, batch packing and capacity reporting. |
+| `make/capacity.py` | Batch packing, capacity calculation and reporting; existing hardware exports remain direct imports. |
 | `make/estimate.py` | Config-only job memory/time estimates and annotation; no hardware probing. |
 | `make/expand.py` | Expand a Study declaration into Run patches. |
+| `make/hardware.py` | GpuInfo and GPU discovery through nvidia-smi or optional torch; no packing or reporting. |
 | `make/recipe.py` | Load a Study recipe and call its ``register(ctx)`` before Data / Model are built. |
 | `make/schedule.py` | Run readiness, launch-plan reuse and subprocess lifecycle. |
 | `make/scripts.py` | Wait-group validation, shell generation and atomic script publication. |

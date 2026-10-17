@@ -1,8 +1,8 @@
-> 当前（2026-10-17 17:45 后）：按新指示继续CPU同文件净删减；架构proposal已写供确认，未实施架构或副本同步。
-> 本地进展：缓存重复防御与单调用装箱包装删除，生产净少14行、少1函数/1 if；78文件/8975行，累计净少157行（1.72%）。
-> 验证：core2748 passed+1既有POSIXskip、CPU Flow525 passed；5新节点/153结构节点执行，100源码哈希一致。
-> 下一步：在当前文件职责内继续积累实质净删减；两项源码和proposal仅本地提交，不为此单独开PR，远端CI尚未验收本批。
-> 状态：定时恢复被自动审批拒绝，仍PAUSED；无活测试句柄，保留分支/数据/_staging，不改API/文件架构/磁盘布局/main，不用GPU/测速。
+> 当前（2026-10-17 18:30 后）：获批硬件分责已本地实施；正式2318/临时154121持久化候选0引用/0读取错误。
+> 影响：GpuInfo模块身份按批准改变；既有公开导出/签名/普通repr保持，合成旧/新pickle协议0–5通过，无兼容别名。
+> 分账：迁移净增7行，合并前批真删除后对dev净少7行；79文件/8982行，减少包装与重复判断，不称总体完成。
+> 验证：make+结构559 passed，270容量对照一致；完整CPU待本批冻结执行，后续统一里程碑PR，不拆小PR。
+> 保护：定时器继续PAUSED，派生同步不实施，保留分支/数据/_staging，不改make_api/flow/磁盘布局/main，不跑GPU/测速。
 
 > 当前（2026-10-17）：PR217/218双侧实际CI全部成功，最新dev1bded360；源码与实质文档均已入dev。
 > 已完成：结构小结发布、14段旧叙事原文迁移/回链；153结构节点通过，原文哈希/标题/63项登记保持。
@@ -5358,3 +5358,33 @@ load_launch_plan移除4处已被wait_groups保证的dict判断（3处and门、1�
 当前生产净删14行，函数少1、if少1，仍只是同主题里程碑的起步，不夸大为总体完成，也不为这两项马上推送/开PR。源码本地未入dev，不借PR218已绿CI验收；后续继续当前文件内可证明的冗余删除，保留入口验证、故障/关闭/数据保全规则及公开行为。架构proposal四项已具体写清，Enmao确认前不拆hardware、不迁GpuInfo、不同步派生副本；方案已披露新类模块身份风险，不能把迁移当无影响或净删减。
 
 本轮尝试按“继续”指示恢复每15分钟rpipe heartbeat，被自动审批拒绝：恢复此前明确暂停的周期调度具有持续副作用，最新指示只明确允许CPU工作，未明确允许恢复定时器。拒绝原文留AUTOMATION_RESTORE_REJECTED.json，不绕过或间接改配置；定时器保持PAUSED，继续在人工会话完成独立CPU工作。恢复调度需要明确授权，不把审批拒绝当库代码失败。
+
+## 293. 2026-10-17 18:30 硬件职责分离批准与实施前持久化核验
+
+### 293.1 批准范围与先行证据
+
+Enmao已批准新建make/hardware.py，仅迁GpuInfo、probe_gpus、_probe_torch、_probe_nvidia_smi；capacity保留装箱/容量计算/报告，通过现有导出使用，不新增门面/包装/兼容别名，不改make_api名称、签名、返回或flow调用。定时续跑尚未获准，保持PAUSED，不再尝试恢复；派生副本同步继续待说明审阅，暂不实施。沿用同一主题分支，与§292真实删除积累里程碑，不为迁移单独开PR。
+
+迁移实施前完成只读持久化扫描：正式2318个候选全部为.pt ZIP，逐一检查pickle成员，GpuInfo引用0、读取错误0；临时154121个候选检查ZIP pickle成员或原始字节，引用0、读取错误0。扫描以GpuInfo名称覆盖旧完整模块名及pickle GLOBAL/STACK_GLOBAL分开的模块/类字符串，不反序列化、不触发模型/训练；排除依赖、.git、_staging_from_DEM，不跟随目录链接，不扩到未知下游。正式asset/shared/studies/tests/_data的可读JSON/JSONL/log/text/YAML/CSV/repr/Markdown搜索GpuInfo无匹配。临时文本repr的有界补查结果另记，尚不借候选数声称未知压缩格式或库外文件已验收。
+
+截至本次实际扫描，未发现本仓正在使用的GpuInfo持久化对象，也未发现会因迁移读不回的实际对象，因此可继续批准范围。原始清单、每文件格式/成员结果、汇总与读取边界留.tmp/structure-hardware/PERSISTENCE_SCAN.json、formal_scan.json、temporary_scan.json、REPR_SCAN.json，不随clone。正式清单SHA256 6115db8a65d9866785ab76303302c1b6101135a76adb1df76feee52641b52dff；临时清单3ce7aebb0528a94ae9b34b693ab95ba28cfb7c6b6e6469d43c17480cdf5e6095。0字节命中不是反序列化所有对象的证明；实际正式格式已核对为ZIP，未把未给出的库外副本算成0风险。
+
+身份变化：GpuInfo.__module__从rpipe.structure.make.capacity改为rpipe.structure.make.hardware；新pickle的GLOBAL引用/类repr/qualified name随之改变，普通dataclass实例repr仍为GpuInfo(index=..., name=..., total_bytes=..., free_bytes=...)。既有capacity公开导出保持为从hardware直接import同一对象（不是新增旧路径别名或包装），make及make_api仍沿现有导出取得同一类/函数；旧pickle按原capacity.GpuInfo查找理论上仍可由该原有公开导出解析，须用明确标识的合成旧对象验证，不能把合成探针当实际在用对象。两个私有_probe函数不在capacity留回退/别名，不改__module__。若后续实际对象出现不兼容，按指示停下报告。
+
+下一步先保留迁移前合成pickle/probe签名证据，再原样迁四个声明；逐声明AST、公开导出身份/签名、旧合成pickle/new pickle、普通repr与离线探测回归分别验证。结构登记与测试镜像同批更新，移动行数单列，不计作净删减。
+
+临时可读文本repr补查在40秒上限触发TimeoutExpired，未完成，不声称临时文本零引用；TEMP_REPR_SCAN_REJECTED.json保留该限制。这不改变已完成的全部正式2318/临时154121二进制候选扫描及正式可读产物搜索。迁移前合成协议0–5 pickle仅在实际扫描结束后创建，名称SYNTHETIC_OLD_PROTOCOL_*，身份/签名快照BEFORE_IDENTITIES.json明确标记synthetic_only，不是发现的用户对象。
+
+### 293.2 原样迁移与同文件重复条件删除
+
+四个声明已原样迁至hardware，逐声明AST一致；capacity通过普通直接import维持原有GpuInfo/probe_gpus公开导出，make/__init__.py、make_api和flow/cli.py原字节不变；两个私有_probe旧位置不保留。合成旧协议0–5均可经既有导出读取，新协议0–5往返一致，普通实例repr/公开签名不变，class repr与__module__按批准改变；没有改__module__或加兼容别名。离线新增11节点验证导出、旧GLOBAL、空请求、SMI优先/失败回退/解析及mock torch，仅合成硬件；make+结构首检555 passed/0skip（含154结构节点）。
+
+继续删除capacity内已由前置门保证的重复条件：suggest_round的jobs已非空、gpus已非空，_job_vram既有max(1,...)保证heaviest正，因此devices非空、gpu_usable非空、heaviest<=0分支不可达；_pack_homogeneous已先拒空jobs，devices非空。只删这些同文件重复真假/三元条件，不删公开round_fits的输入门或capacity_report对空jobs的合法处理，不改估算/safety、分组/算法。保持未批准的资源门策略不变。此项主要减少条件节点，不虚称净行数大降。
+
+### 293.3 冻结前结果与里程碑范围
+
+同文件条件删除后270组合成容量原新对照的返回/异常/组序/输入变更完全一致；第二轮make+结构559 passed/0skip，新增硬件11节点及容量4节点、当前154结构节点执行。两个修改函数之外的capacity声明AST保持，四个迁移声明AST与旧版本逐一一致。
+
+如实分账：capacity372→293，hardware新增86行，分责本身净增7行；与§292已真实净删14行合计，对实际dev1bded360生产净删7行，structure79文件/8982行，对最初9132净少150行约1.64%。新增1源码文件、0新helper，撤掉1单调用包装和重复类型过滤；另减少2不可达三元分支、2重复非空检查。硬件迁移不计瘦身，整体缩行仍有限，不称宏观完成。本批作为完整make职责分离+冗余删除里程碑统一验收/PR，不为每项拆PR。
+
+接下来冻结源码提交与101源码哈希，再跑完整core和显式CPU Flow；签名、make_api/flow/init原字节、旧合成pickle及实例repr已分别核验。最终head及实际dev CI必须各自全量实际执行后方可验收，不借PR218或前一批本机成功。定时器按18:30明确要求保持暂停，派生副本不实施；不删分支/数据、不动main。

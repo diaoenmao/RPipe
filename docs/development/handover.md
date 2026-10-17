@@ -1,4 +1,4 @@
-> 2026-10-17 17:45 后：继续CPU同文件Occam净删减，record§292/proposal/.tmp/structure-redundant-checks/STATE.json为当前入口。源码d7964d1本地未推/开PR/合dev，净少14行/1函数，78文件8975行；完整core2748pass+1既有POSIXskip/Flow525pass、5新节点/153结构节点/100源码哈希一致，无活句柄。两项只作为积累，不立即小PR；架构/类身份/派生同步待proposal明确确认。定时恢复遭自动审批拒绝，rpipe仍PAUSED，不绕过；人工CPU工作照常。保留分支/数据/_staging，不改main/API形状/文件架构/布局，不跑GPU/测速。
+> 2026-10-17 18:30 后：硬件分责获批，先行正式2318/临时154121二进制持久化候选均0引用/0读错；正式可读repr0命中，临时文本补查40s超时限制保留。四声明原AST迁入make/hardware.py，无私有兼容别名，API/flow/init原字节保持，合成旧新协议0–5通过。结合§292净删除，本批对dev净少7行、79文件/8982行；新增15节点/make+结构559pass/270容量对照一致，完整CPU待冻结后执行，再统一里程碑PR。当前.tmp/structure-hardware/STATE.json/record§293；定时器保持暂停，派生同步未批准不实施，不删分支/数据/_staging，不动main/GPU/测速。
 
 > 2026-10-17停止交接：PR217/218均双侧实际CI全绿，最新dev1bded360，源码和实质文档全部入dev。14段结构旧叙事原文迁移/回链完成，153结构节点通过，100源码哈希保持；源码78文件/8989行，完整CPU2743+1既有skip/Flow525覆盖同一源码。剩余粒度重划受架构冻结限制、派生同步缺根/版本/范围，已入库见record§291.4；按最新“无可做项写卡点后停下”指示已停止，定时rpipe为PAUSED，不凭旧heartbeat恢复。宏观目标未称完成；当前.tmp/structure-history-cleanup/STATE.json，无活句柄。盘点基线218、1主worktree/0开放PR/Issue；分支/数据/_staging保留，无API/布局/main/GPU变更。只有本地验收尾记待保全，不为它另开PR。
 
