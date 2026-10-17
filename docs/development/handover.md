@@ -1,3 +1,5 @@
+> 2026-10-17 17:45 后：新人工指示继续CPU同文件净删减，旧条件停止不再阻塞。record§292及structure_simplification_proposal.md为当前入口；架构/类身份/副本同步未批准不实施。当前本地两项净少14行、78文件/8975行，原新对照200+163组、make+结构543pass；完整CPU待冻结验证，不借旧CI。积累里程碑不为两项开PR。保留分支/数据/_staging，不动main/API/文件架构/布局/GPU；定时器仍暂停，按人工本轮推进。
+
 > 2026-10-17停止交接：PR217/218均双侧实际CI全绿，最新dev1bded360，源码和实质文档全部入dev。14段结构旧叙事原文迁移/回链完成，153结构节点通过，100源码哈希保持；源码78文件/8989行，完整CPU2743+1既有skip/Flow525覆盖同一源码。剩余粒度重划受架构冻结限制、派生同步缺根/版本/范围，已入库见record§291.4；按最新“无可做项写卡点后停下”指示已停止，定时rpipe为PAUSED，不凭旧heartbeat恢复。宏观目标未称完成；当前.tmp/structure-history-cleanup/STATE.json，无活句柄。盘点基线218、1主worktree/0开放PR/Issue；分支/数据/_staging保留，无API/布局/main/GPU变更。只有本地验收尾记待保全，不为它另开PR。
 
 > 2026-10-17：PR217已普通合dev712a3d2，head全绿/actualdev验收中；后续14段结构旧叙事原文迁至record§291.3，标题/63登记/原文哈希保持，结构专项153pass。仅文档，无源码/API/文件架构/布局改变；当前.tmp/structure-history-cleanup/STATE.json。剩余粒度拆分受架构冻结限制、库外同步缺根/版本/范围，详见record§291.4；本批双侧CI后按最新指示停下，不制造新源码项。保留_staging/分支/数据，不跑GPU/测速。
