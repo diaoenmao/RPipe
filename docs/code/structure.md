@@ -102,7 +102,7 @@ structure/
 - **规则：** 任何 `__init__.py` 只允许 `import` / `from … import …` 与 `__all__`。不得定义函数、类、常量表，不得执行有副作用的逻辑（注册、读文件、环境探测等）。
 - **理由：** 包导入应当廉价、无副作用、可预测。实现写在 `__init__` 里会让模块边界失效：无法单独引用、难以测试、循环导入难以排查，读者也找不到实现在哪。
 - **检查：** 测试以 AST 遍历 `structure/` 下所有 `__init__.py`，顶层语句只允许 `Import`、`ImportFrom` 和对 `__all__` 的赋值。
-- **现存违例：** `algorithm/train/__init__.py` 内含训练实现（约 480 行），须迁到同包内的具名模块（如 `algorithm/train/loop.py`），`__init__` 只保留导出。
+- **实现位置：** train/eval 的执行实现位于各自 `loop.py`，包入口只做既有名称导出。
 
 #### 2.1.2 固定八个子包，顶层不放文件
 
@@ -155,6 +155,16 @@ structure/
 
 ## 3. `structure/api/`（门面）
 
+
+### 3.0 文件登记
+
+| **文件（相对 structure/）** | **职责** |
+| --- | --- |
+| `api/algorithm_api.py` | algorithm_api: Algorithm, AlgorithmTracker, AlgorithmFactory.build, AlgorithmConfig. |
+| `api/data_api.py` | data_api: Data, DataFactory.build, DataConfig. |
+| `api/model_api.py` | model_api: Model, ModelFactory.build, ModelConfig. |
+| `api/system_api.py` | system_api: System, Logger, SystemFactory.build, SystemConfig. |
+
 | **单元** | **职责** |
 |------|------|
 | `data_api` | 暴露 `Data`、`DataFactory.build`、`DataConfig` |
@@ -165,6 +175,17 @@ structure/
 ---
 
 ## 4. `structure/data/`（实现 + 类）
+
+
+### 4.0 文件登记
+
+| **文件（相对 structure/）** | **职责** |
+| --- | --- |
+| `data/config.py` | DataConfig dataclass. |
+| `data/factory.py` | Runtime Data object, registry, and factory. |
+| `data/prepare.py` | Materialize project-shared datasets once (not per Run). |
+| `data/profile.py` | Dataset profile written next to shared data. |
+| `data/resume.py` | Replay sampler indices, never consumed dataset transforms, on CPU-loader resume. |
 
 把研究所需输入组织为可消费数据流（concept §6 **data**）。数据集本体由第三方提供；本层负责注册、建构与对外可消费的 **`Data`**。声明字段由 **`DataConfig`** 从 JSON / Config 加载。
 
@@ -252,6 +273,18 @@ flowchart LR
 ---
 
 ## 5. `structure/model/`（实现 + 类）
+
+
+### 5.0 文件登记
+
+| **文件（相对 structure/）** | **职责** |
+| --- | --- |
+| `model/config.py` | ModelConfig dataclass. |
+| `model/custom_torch.py` | custom_torch models from git main: linear, mlp, cnn, resnet10/18, wresnet. |
+| `model/factory.py` | Runtime Model object, registry, and factory. |
+| `model/init_param.py` | Weight init matching git main ``src/model/model.py`` ``init_param``. |
+| `model/input_norm.py` | Input normalize and train augmentation in front of the network. |
+| `model/shape.py` | Shape helpers for custom_torch builders (no torch import). |
 
 构建可调用模型能力（concept §6 **model**）。网络本体由第三方提供；本层负责注册、建构与对外可消费的 **`Model`**。声明字段由 **`ModelConfig`** 从 JSON / Config 加载。
 
@@ -345,6 +378,28 @@ flowchart LR
 ---
 
 ## 6. `structure/algorithm/`（实现 + 类）
+
+
+### 6.0 文件登记
+
+| **文件（相对 structure/）** | **职责** |
+| --- | --- |
+| `algorithm/base.py` | Algorithm base class (no factory import). |
+| `algorithm/batch.py` | Native batch prep: flatten only when the module is a linear-style head. |
+| `algorithm/config.py` | AlgorithmConfig dataclass. |
+| `algorithm/eval/loop.py` | Eval mode: independent algorithm; resume then score. |
+| `algorithm/eval_hook.py` | Test-split body for train ``AlgorithmHook.on_eval_period`` (not a Flow mode). |
+| `algorithm/factory.py` | Algorithm factory: mode + source → implementation. |
+| `algorithm/hf_map.py` | Map algorithm extras onto Transformers TrainingArguments (same keys as native). |
+| `algorithm/hook.py` | AlgorithmHook: named loop insertion points (not a Flow phase). |
+| `algorithm/kwargs.py` | Pass config extras through a constructor, keeping only valid parameters. |
+| `algorithm/metric.py` | Batch / full metrics compatible with git main names (Loss, Accuracy, MSE, RMSE, GLUE). |
+| `algorithm/optim.py` | Native optimizer / scheduler (algorithm-layer interface). |
+| `algorithm/progress.py` | Train budget and checkpoint cadence (epoch or step). |
+| `algorithm/resume.py` | Resume target resolution (algorithm-layer; system only loads files). |
+| `algorithm/tracker.py` | AlgorithmTracker: numeric ledger (curves in assets/tracker). |
+| `algorithm/train/loop.py` | Train mode. |
+| `algorithm/transformers_trainer.py` | algorithm.source: transformers_trainer — §6.11 keys, real HuggingFace Trainer loop. |
 
 在任务范式下定义怎么算（concept §6 **algorithm**）。本层用 **`mode`** 区分 **train / eval / inference**（一次配置一个 mode；要组合多种 mode 由 Study / 多次运行或 Control 切换）。**当前 native 只注册 train / eval**；`mode: inference` 会在 Factory 报错。经 `data_api` / `model_api` / `system_api` 使用已落地的 `Data` / `Model` / `System`。声明字段由 **`AlgorithmConfig`** 加载。
 
@@ -671,6 +726,18 @@ RNG 和采样位置恢复完整不等于所有算子数值确定。严格数值�
 
 ## 7. `structure/system/`（实现 + 类）
 
+
+### 7.0 文件登记
+
+| **文件（相对 structure/）** | **职责** |
+| --- | --- |
+| `system/config.py` | SystemConfig dataclass. |
+| `system/factory.py` | Runtime System object, factory, and Logger. |
+| `system/logger.py` | System Logger: stdout + assets/logs/run.log (flush on every emit). |
+| `system/runtime.py` | Apply Run seed and torch runtime flags. Call at the start of prepare. |
+| `system/torchvision_load.py` | Load torchvision after its native ops are actually registered. |
+| `origin.py` | 国内来源解析和传输策略；后续迁入 system，尚未迁移。 |
+
 管理计算在硬件上的执行（concept §6 **system**）：设备、精度、并行、内存与 IO。prepare 确认设备与输出位置；checkpoint **文件**读写在本层，**resume 语义**在 algorithm（§6.11.3）。声明字段由 **`SystemConfig`** 从 JSON / Config 加载。
 
 ### 7.1 本层自有类型
@@ -792,6 +859,16 @@ Logger **不**改 AlgorithmTracker 的 mean/history；**不**写 TensorBoard。
 ---
 
 ## 8. `structure/control/`（实验侧控制器）
+
+
+### 8.0 文件登记
+
+| **文件（相对 structure/）** | **职责** |
+| --- | --- |
+| `control/contract.py` | Light contract checks for RunConfig / Control. |
+| `control/control.py` | Control object: holds RunConfig for one Run. |
+| `control/mapping.py` | Config mapping, deep merge, and stable content identifiers. |
+| `control/run_config.py` | ExperimentConfig / RunConfig and merge + id hashing. |
 
 编排层级与 concept §2 / §5 一致：
 
@@ -954,6 +1031,30 @@ prepare：`control_from_config` →（可选契约）→ 各 `*_api` Factory.bui
 
 ## 9. `structure/artifact/`
 
+
+### 9.0 文件登记
+
+| **文件（相对 structure/）** | **职责** |
+| --- | --- |
+| `artifact/_atomic.py` | Atomic text write (unique temp file then replace). |
+| `artifact/activity.py` | Current Study task, so a long make can be seen without waiting for the final print. |
+| `artifact/asset/kinds.py` | Relative asset paths under ``runs/<id>/assets/``. |
+| `artifact/asset/tree.py` | Create and list files under a Run assets directory. |
+| `artifact/config/format.py` | YAML mapping encode / decode for Run config. |
+| `artifact/config/io.py` | Config entity IO (Study writes; prepare reads). |
+| `artifact/errors.py` | Artifact IO errors. |
+| `artifact/index.py` | Study ``index.json`` — orchestration plan written before Flow. |
+| `artifact/layout.py` | Study Artifact directory layout (shared + one Run subtree). |
+| `artifact/paths.py` | Canonical leaf names under a Study / Run. |
+| `artifact/provenance.py` | Study provenance: source / plan hashes, environment, and the freeze gate. |
+| `artifact/readout/compare.py` | Compare two Run directories: result metrics, tracker history, checkpoint state. |
+| `artifact/readout/logs.py` | Print Study run.log event lines in timestamp order. Does not write a file. |
+| `artifact/readout/report.py` | Write Experiment and Run number tables from process.json. Does not write a conclusion. |
+| `artifact/readout/status.py` | Read-only Study listing: index plan joined with each Run result. |
+| `artifact/result/format.py` | JSON mapping encode / decode for result. |
+| `artifact/result/io.py` | Result entity IO. |
+| `artifact/shared.py` | Project input roots, interprocess preparation lock, and explicit cache migration. |
+
 持久化 IO 与路径。**不**解析 control 业务语义；**不** import `flow` 或四层实现。形状可做最小检查；字段契约在 `structure.control.contract`。
 
 ### 9.1 目录与磁盘
@@ -1113,6 +1214,17 @@ Study 编排清单。`rpipe.structure.artifact.index`，**不是** Flow 的 writ
 ---
 
 ## 10. `make/`
+
+
+### 10.0 文件登记
+
+| **文件（相对 structure/）** | **职责** |
+| --- | --- |
+| `make/capacity.py` | Estimate ``--round`` from Run configs and GPU memory. |
+| `make/expand.py` | Expand a Study declaration into Run patches. |
+| `make/recipe.py` | Load a Study recipe and call its ``register(ctx)`` before Data / Model are built. |
+| `make/schedule.py` | GPU round-robin and ``&`` / ``wait`` launch scripts. |
+| `make/write.py` | Expand a Study declaration and write Run configs, index, and provenance. |
 
 多实验管理与调度脚本化。与 **control** 并列：control 做**一次**合并；make **循环**调用 control 与 artifact。不直接 import 四层或 flow；调度时经 `algorithm_api` 复用 resume 的 sibling 依赖解析，避免另写一套匹配规则。
 

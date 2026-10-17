@@ -12,7 +12,7 @@ from typing import Any
 from rpipe.structure.artifact._atomic import _owned_stream, atomic_write_text
 from rpipe.structure.artifact.paths import INDEX_NAME
 from rpipe.structure.artifact.asset.kinds import RUN_LOG
-from rpipe.structure.control.hashing import compute_index_id
+from rpipe.structure.control.mapping import compute_index_id
 
 
 def index_path(study_dir: Path | str) -> Path:

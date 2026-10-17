@@ -5,14 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from rpipe.structure.control.hashing import compute_run_id
-from rpipe.structure.control.layers import (
-    AlgorithmConfig,
-    DataConfig,
-    ModelConfig,
-    SystemConfig,
-)
-from rpipe.structure.control.merge import deep_merge
+from rpipe.structure.control.mapping import compute_run_id
+from rpipe.structure.algorithm.config import AlgorithmConfig
+from rpipe.structure.data.config import DataConfig
+from rpipe.structure.model.config import ModelConfig
+from rpipe.structure.system.config import SystemConfig
+from rpipe.structure.control.mapping import deep_merge
 
 # Legacy keys that must not affect run id / are not RunConfig fields.
 _IGNORE_TOP = frozenset({'slug', 'control_slug', 'raw'})

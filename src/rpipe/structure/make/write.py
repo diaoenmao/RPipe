@@ -1,9 +1,14 @@
-"""Write Run configs and the Study index."""
+"""Expand a Study declaration and write Run configs, index, and provenance."""
 
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
+
+from rpipe.structure.artifact.layout import ensure_study_layout
+from rpipe.structure.artifact.provenance import write_provenance
+from rpipe.structure.make.expand import expand_patches, load_study_yaml
+from rpipe.structure.make.recipe import load_recipe
 
 from rpipe.structure.artifact import (
     artifact_layout,
@@ -51,3 +56,21 @@ def write_study_index(
         experiments=experiments,
     )
     return write_index(study_dir, index)
+
+
+def expand_study(study_dir: Path | str) -> dict[str, Any]:
+    """Write Run configs and index from ``study.yaml``."""
+    study_dir = ensure_study_layout(Path(study_dir).resolve())
+    study = load_study_yaml(study_dir)
+    load_recipe(study_dir, study)
+    patches = expand_patches(study)
+    configs = write_run_configs(study_dir, patches)
+    index_file = write_study_index(study_dir, study, configs)
+    provenance_file = write_provenance(study_dir, study)
+    return {
+        'study_dir': study_dir,
+        'index': index_file,
+        'configs': configs,
+        'provenance': provenance_file,
+        'study': study,
+    }

@@ -1,5 +1,3 @@
-"""Control: ExperimentConfig / RunConfig / Control + merge / hash id / contract."""
-
 from __future__ import annotations
 
 from rpipe.structure.control.contract import (
@@ -13,15 +11,12 @@ from rpipe.structure.control.control import (
     control_from_run_config,
     control_to_config,
 )
-from rpipe.structure.control.hashing import canonical_json, compute_index_id, compute_run_id
-from rpipe.structure.control.layers import (
+from rpipe.structure.control.mapping import canonical_json, compute_index_id, compute_run_id, deep_merge
+from rpipe.structure.control.run_config import (
     AlgorithmConfig,
     DataConfig,
     ModelConfig,
     SystemConfig,
-)
-from rpipe.structure.control.merge import deep_merge
-from rpipe.structure.control.run_config import (
     ExperimentConfig,
     RunConfig,
     experiment_config_from_mapping,

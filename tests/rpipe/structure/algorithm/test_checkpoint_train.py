@@ -402,7 +402,7 @@ def test_training_rejects_empty_iterator_before_successful_checkpoint(tmp_path, 
 def test_unrecorded_device_rng_is_not_marked_as_complete_resume(tmp_path, monkeypatch):
     from types import SimpleNamespace
     import torch
-    import rpipe.structure.algorithm.train as train
+    import rpipe.structure.algorithm.train.loop as train
     from rpipe.structure.data.factory import Data
 
     dataset = torch.utils.data.TensorDataset(torch.ones(2, 2), torch.zeros(2, dtype=torch.long))

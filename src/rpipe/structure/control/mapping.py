@@ -1,7 +1,9 @@
-"""Split known dataclass fields from extras; omit empty values on emit."""
+"""Config mapping, deep merge, and stable content identifiers."""
 
 from __future__ import annotations
 
+import hashlib
+import json
 from typing import Any
 
 
@@ -27,3 +29,41 @@ def emit(known: dict[str, Any], extras: dict[str, Any]) -> dict[str, Any]:
         out[key] = value
     out.update(extras)
     return out
+
+
+def deep_merge(base: Any, patch: Any) -> Any:
+    """Recursively merge patch onto base. Patch wins on conflicts; lists replace."""
+    if not isinstance(base, dict) or not isinstance(patch, dict):
+        return patch
+    out = dict(base)
+    for key, value in patch.items():
+        if key in out and isinstance(out[key], dict) and isinstance(value, dict):
+            out[key] = deep_merge(out[key], value)
+        else:
+            out[key] = value
+    return out
+
+
+
+# Human metadata / self id — must not change content-addressed identity.
+_HASH_EXCLUDE = frozenset({'id', 'description'})
+
+
+def canonical_json(mapping: dict[str, Any]) -> str:
+    """Stable JSON: sorted keys, exclude id/description, compact separators."""
+    body = {k: v for k, v in mapping.items() if k not in _HASH_EXCLUDE}
+    return json.dumps(body, sort_keys=True, separators=(',', ':'), default=str)
+
+
+def compute_content_id(mapping: dict[str, Any], *, length: int = 16) -> str:
+    """SHA-256 hex digest of canonical content, truncated to ``length`` chars."""
+    digest = hashlib.sha256(canonical_json(mapping).encode('utf-8')).hexdigest()
+    return digest[:length]
+
+
+def compute_run_id(mapping: dict[str, Any], *, length: int = 16) -> str:
+    return compute_content_id(mapping, length=length)
+
+
+def compute_index_id(mapping: dict[str, Any], *, length: int = 16) -> str:
+    return compute_content_id(mapping, length=length)

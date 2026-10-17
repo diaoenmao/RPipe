@@ -11,7 +11,7 @@ from rpipe.structure.artifact.asset import ensure_assets
 from rpipe.structure.artifact.config import load_config
 from rpipe.structure.artifact.provenance import check_frozen
 from rpipe.structure.control import control_from_config, validate_control
-from rpipe.structure.control.layers import AlgorithmConfig, DataConfig, ModelConfig, SystemConfig
+from rpipe.structure.control import AlgorithmConfig, DataConfig, ModelConfig, SystemConfig
 from rpipe.structure.make.expand import load_study_yaml
 from rpipe.structure.make.recipe import RecipeContext, apply_recipe
 from rpipe.structure.origin import apply_model_origin, normalize_origin
