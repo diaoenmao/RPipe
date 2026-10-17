@@ -1,3 +1,9 @@
+> 当前（2026-10-17 23:31）：剩余结构一次盘点完成，唯一proposal§七含79文件、13重复/相似项、19职责热点；待人工批准。
+> 机械结果：未登记0/失效0；同文件安全返回中间态实删1行，structure79文件8904行，起点净少228行约2.50%。
+> 验证：模型/结构CPU专项174 passed/0skip/fail/error，字典表达式与其他声明AST不变；未重复全量或借旧CI。
+> 待批：P1恢复/布局净预算0–70需前置验证，P2/P3正收益未证实；架构未实施，本次只推工作分支、不开PR。
+> 停止：续跑PAUSED，等本proposal批准；_staging四份暂存与2份正式docs一致，保留未跟踪，不删数据/分支/派生/main/GPU。
+
 > 当前（2026-10-17）：TensorBoard 禁令已撤除；PR222 普通合dev f55a873，最终head与actualdev全部实际CI成功。
 > 能力：JSONL有效轨迹独立导出event，可选tensorboard组，Logger原字节不变；不改正式Run布局/结果链。
 > 验证：完整core2813 passed+1既有skip、CPU Flow525 passed；13新core节点+真实event读回，双侧各4矩阵的event专项均实际成功。
@@ -5537,3 +5543,16 @@ Enmao 明确批准可选 TensorBoard：scalars.jsonl 是唯一数值主源，展
 head/dev 的源码、测试、Study、docs、依赖与CI树一致；冻结 b2b9dba 与最终head的源码/测试/Study/pyproject一致，101源码哈希保全。定向最终128 passed，完整core2813 passed+1同一既有POSIXskip、CPU Flow525 passed。原始证据 .tmp/tensorboard-export（不随clone）。Logger 相对本批基准dev c7ae1ad 原字节不变；没有新增生产模块或移动目录，生产三个现有文件净增54行。宏观Occam目标不因此标完成；structure仍79文件/8905行，相对9132起点净少227行约2.49%。
 
 剩余能力边界为分数epoch/未知坐标/int64越界的明确拒绝；标准event整数step无法无损承载它们，本批未擅定缩放、取整或observation替代。若要求TensorBoard也展示分数epoch，须另定坐标呈现合同；现有JSONL/PNG及恢复轨迹保持。三个派生副本暂不同步。本地验收尾记随下一实质源码里程碑保全，不为尾记新开PR。盘点基线218后219–222共4次，按最新人工授权保留当前分支与数据，未到约5次不重复盘点。
+
+
+## 299. 2026-10-17 23:31 剩余结构一次盘点、推分支后等批
+
+按人工要求覆盖连续空轮做法，已将全部剩余清单合写进[唯一proposal§七](structure_simplification_proposal.md#七2026-10-17-2331-剩余项一次性盘点与合并审批入口)：79源码逐项登记与分类、13项重复/相似实现、19个较长职责文件；每项给出净收益估算和当前阻塞（跨文件/布局/公开行为风险、或同文件安全归纳已做）。未登记0、失效0；不把同import/字段、不同信任边界、科学门和资源退出自动算成重复代码。
+
+同文件安全项只落实Model.to_result_snapshot的无用返回局部变量，实际净少1行，原字典AST与其他声明一致。174模型/结构CPU节点passed、0skip/fail/error；无新分支或公开行为，不重复全量CPU/GPU/训练，完整core+Flow留给下一获批源码里程碑。structure79文件8904行，相对9132净少228行约2.50%；本次1行不冒称有分量源码里程碑，主要产出是完整剩余项/合同取舍。基线8f06b63与dev f55a873源码一致，未借PR222旧CI验新源码。
+
+P1（承接B2）为checkpoint单一发布与显式legacy导入的方向评审，旧路径毛删50–90，但迁移/诊断实现可能吃掉收益，净预算0–70且必须获批后进一步证实；旧对象、诊断/staging不动。P2算法共享、P3生命周期分责净收益目前未证实为正或仅搬移0，不以17行重复块充当净删17，也不推荐为小收益添mixin/Registry框架。所有架构项未实施，未开PR；proposal合写而非拆多个小请求。
+
+_staging_from_DEM是DEM中文规范/模板的人工交接暂存，4文件（两原名+两ASCII别名）对应2份正式docs正本，原字节一致：规范SHA256 61fc9fbe1130810b41ef25d3655eef2f83289b60306458ad5e4c17b9d4658bd3，模板b53a7250fd57f754a57a2ac3ddb918eefe7a0ac7a4c28096f39c858486370f44。清单/大小/正式相对链接见proposal；不属于structure/*.py，无需加源码登记，也不再重复提交正式文档。保持??未跟踪，不删/搬/隐藏/误提交；未读DEM原盘，不外推它当前状态。
+
+原始全包AST/文件/字节清单、TARGET日志/XML和局部AST证明位于.tmp/structure-remaining，不随clone。本次检查状态与有界fetch成功，只推codex/structure-artifacts，不开PR，不合dev/main、不打tag、不删分支或数据，不碰下游。按“写完停下等批”已将rpipe每15分钟自动续跑设PAUSED，保留原规则；人工批准后再按范围恢复，不等下一轮自动重扫，heartbeat不是批准。

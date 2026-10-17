@@ -1,3 +1,9 @@
+## 2026-10-17 23:31：剩余项完整清单，推分支后停止等批
+
+最新人工要求不开PR。当前唯一审批入口structure_simplification_proposal.md§七、record§299：79文件全登记，13重复/相似项、19职责热点逐项给出净收益/阻塞；安全局部返回中间态净少1行，模型/结构CPU174passed，structure8904行。P1恢复合同/布局未批，P2/P3只有0或未证实净收益，不擅移模块/加框架。_staging_from_DEM四份人工交接暂存与两份正式中文规范/模板原字节一致，不加入源码登记，保持未跟踪不删不提交。
+
+rpipe自动续跑已PAUSED（原15分钟规则保留），停止等本提案人工批准，不在下一心跳重扫/补记/自动开PR。PR222此前双侧全绿仍是历史验收，不借其绿灯验本次1行源码。尾记与本次proposal按主题提交后只推现有codex/structure-artifacts，无dev/main/布局/派生/GPU变更。原始证据.tmp/structure-remaining不随clone。
+
 ## 2026-10-17 TensorBoard 展示批次完成（record §298）
 
 PR222 已普通合 dev f55a8732f12c31999efc15f8aa33381cb3970843，最终head/actualdev全部实际CI成功，双侧各4个CPU矩阵的真实event读回步骤全部执行成功。授权禁令已撤除，README/structure/监控文档/中英文研究计划已同步；命令 `python -m rpipe tensorboard <study> --out .tmp/tensorboard/<new-snapshot>`，依赖仅 `[tensorboard]` 可选组，Logger不改，JSONL是唯一数值主源。
