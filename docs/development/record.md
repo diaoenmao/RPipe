@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR203 已双侧 CI 验收并清理主题；下一批 artifact 五文件归并在 structure-artifacts 本地验收完成（§272–273）。
+> 验证：core2601 passed +1同一既有skip；CPU Flow525 passed；针对性1538 passed +1既有skip；41定义AST一致。
+> 结果：structure 81/9172→76/9152（文件/行）；相对目标起点80/9132仍多20行，尚未满足明显缩行的停止条件。
+> 下一：在同一未合分支继续大模块职责精简，完整里程碑再开PR/CI→dev；不新增边界修复。
+> 状态：无审批阻塞；无训练/GPU/main/tag；不动用户暂存/实验数据，库外未知pickle未覆盖。
+
 > 当前（2026-10-17）：PR203 已合 dev 70526bd，最终 head/实际 dev 全部矩阵及聚合 CI 通过；门面与 origin 迁移验收完成。
 > 验证：core2606 passed +1既有skip、Flow525、156结构检查；正式2318 checkpoint旧origin引用0（§269–270）。
 > 清理：codex/structure-api-design 本地+远端已删；周期基线203，累计远端删除57；新 structure-artifacts 与暂存/数据保留。
@@ -4500,3 +4506,12 @@ PR202 final `a634074bb1bdd81d58fbe7c6a52d0395626be9e4`：Branch38986989262、Pac
 约5 PR周期（194→203）盘点：仅一个主工作树，无开放 PR/Issue；codex/structure-api-design 提交已保全，删除本地及远端；累计远程清理57。当前新分支 codex/structure-artifacts 未合保留，清理前后该分支tip、全部diff与status一致；main/dev/origin/main保护引用不变。无废弃登记worktree、无其他未合主题。证据 `.tmp/structure-api/` 不随clone。附件工具因100条上限拒绝附加PR203，GitHub PR与验收均正常；保留历史附件不绕过上限。
 
 本批继续 §271 的归并，未新增文件/包装层/边界缺陷任务；原子写及错误处理保留。实现中脚本先改了将删除文件的import，git rm因本地修改拒绝；逐字核对为本次import替换后恢复该import并正常git rm，未使用force、未丢用户内容。
+
+
+## 273. 2026-10-17：artifact 五文件归并本地验收（未开 PR）
+
+实施提交 `f74ef588a0a7c84e961f1bd50c7b6d8b64b42c18`：paths/errors→layout，asset/tree→asset/kinds，config/result format→各自io，删除5个实现文件；tests镜像test_tree→test_kinds，当前调用导入和结构登记同步。现有公开门面及kinds模块身份保留，无旧模块兼容旁路。41个原函数/类/常量定义AST一致，仅paths/kinds常量限定改为本地同值名称；原子写、校验、错误处理和磁盘路径未变。
+
+core2601 passed +1同一POSIX executable mode bits skip，CPU Flow525 passed/0skip；针对性1538 passed +1同一skip。与PR203 core节点对照只减少被删除5文件对应的跨层导入检查，其余全部执行；结构机械检查仍通过。LOCAL_CHECKED SHA256 `da54b3b35d10af155c7468c25f813919c3e763846c1cc6f6191ca1522f6efa24`，证据 `.tmp/structure-artifacts/` 不随clone。验证未调用GPU或实际下载模型/数据。
+
+逐Git跟踪源码统计：目标起点80文件/9132行；PR20279/9097；PR20381/9172；当前76/9152。不得把搬移/少文件当成明显缩行，总目标未完成。当前分支本地按主题提交，未开新PR，继续capacity/schedule/data factory/origin的职责拆分及有依据的去重，再合完整里程碑；不为文档几行单开PR。周期清理基线203保持。
