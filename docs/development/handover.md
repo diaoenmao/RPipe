@@ -1,3 +1,5 @@
+> PR220双侧实际CI已验收：最终head8882698、actualdev2c6bf0c8全部实际矩阵/聚合成功，record§296.2/.tmp/structure-vision-specs/STATE.json complete。6处同文件净删55行（规格单项37），79文件8927行；core2785+1既有skip/CPU Flow525，21新增/154结构节点/101源码哈希一致，生产全部入dev。宏观目标未完成；后续找较大同文件候选，空轮不追加record，尾记随下批源码PR。保留分支/数据/_staging；15分钟定时ACTIVE，本批不派生，不动架构/API/产物布局/main/GPU/测速。无活句柄，盘点基线218后累计219/220两次。
+
 > 当前里程碑：record§296/.tmp/structure-vision-specs/STATE.json，源码770619e视觉规格归并单项净少37行，连同前批6处累计比dev净少55行，79文件8927行。定向206pass，完整CPU core2785pass+1既有skip/Flow525pass；21新增/154结构节点/101源码哈希通过。无新helper/API/文件架构/产物布局，待一个里程碑PR与双侧实际CI验收；空轮不再追加record。15分钟定时ACTIVE，不派生/不删分支或数据/不动main/GPU/_staging。
 
 > 19:32确认后继续本地净删减：源码73ea0b1 tracker.save删临时snapshot/复制，定向103pass，完整core2779pass+1既有skip/CPU Flow525pass；4新节点/154结构节点/101哈希通过。5函数累计比dev少18行，79文件8964行；未推送/开PR/合dev，继续攒实质里程碑。当前record§295.5/.tmp/structure-tracker-save/STATE.json，无活句柄；15分钟定时ACTIVE，三个副本待新可用里程碑后周期同步，本批不派生。不动API/文件架构/产物布局/main/GPU/测速，保留分支/数据/_staging。
