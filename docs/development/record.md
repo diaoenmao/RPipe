@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：data/runtime、schedule/scripts、origin/transfers 合批本地完整 CPU 验收通过，准备一次 PR→dev（§279）。
+> 验证：core2627 passed+1同一既有skip、CPU Flow525 passed；16个新增行为回归及1个迁移节点全执行，冻结库源码哈希不变。
+> 结果：origin593→244行、transfers361行；公开门面/签名/返回/磁盘布局保持，2318正式候选旧限定名引用0。
+> 下一：最终head全部实际CI通过后正常合dev，再核验实际dev；整体明显缩行仍未达成，不标总目标完成。
+> 状态：首轮收集重名拒绝证据保留，已修后完整重跑；本轮显式排除GPU，按最新人工保留分支/数据。
+
 > 当前（2026-10-17）：同一structure-artifacts分支推进data/runtime及schedule/scripts分责；本轮make/结构/CLI CPU针对性535 passed（§277–278）。
 > 验证：8个脚本函数AST相同、15个schedule函数规范化对照相同；72组生成文本逐字一致，原生成脚本导入仍可用。
 > 结构：schedule566→366行、scripts208行；整体79文件/9140行，尚未明显缩行，不标总完成。
@@ -4623,3 +4629,11 @@ torchvision_load 删除5行不可达兜底，新增5个次数/耗尽/原异常�
 ### 279.3 完整回归首轮收集拒绝
 
 首次 core 在收集阶段退出2：新 data/test_runtime.py 与既有 system/test_runtime.py 同名，pytest 默认导入发生 import-file-mismatch（529 deselected、1 collection error，未执行测试）。保留 CORE.log/XML/EXIT；仅将新增 Data 测试文件改为 test_runtime_data.py，沿用既有 test_origin_concurrency 等职责后缀命名，不改全仓 pytest 导入设置或生产代码。修正后重新执行整批，不能沿用旧结果。
+
+### 279.4 整批 CPU 完整验收
+
+冻结后 core2627 passed/1同一既有POSIX skip、CPU Flow525 passed/0skip，均0fail/error。16个本批新增行为回归及1个原有迁移节点全执行（Data身份1、schedule导出8、模式日志2、重试耗尽5，另Data原有迁移节点1），不把迁移节点称为新增行为。102个库源码哈希前后相同。LOCAL_CHECKED SHA256 `1697168e33befb8c435e9f9504ea431731c6963961e7e3acef7f36aa0c654f04`，原始 XML/log/选择错误证据在 .tmp/structure-origin，不随clone。
+
+当前 structure 80文件/9147行，对照目标起点80文件/9132行，仍未明显缩行；本批只验收职责拆分与有据精简，不声称总目标完成。首轮 core 收集重名错误保留，改文件名后上述完整重跑通过。全部新运行使用仓库入口、c1/c2及 not gpu/external/slow；没有新增GPU运行或真实网络下载。下一步同一分支推送、唯一 PR→dev、最终head和实际dev双侧实际CI；不新开碎文档PR。
+
+验收脚本首次用名称包含gpu判断GPU执行，误将CPU容量/配置测试名拒绝；CHECKER_REJECTED.json 保留，未将其当库失败或重跑通过测试。GPU排除依据为仓库入口实际 -m/not-gpu 与c1/c2筛选；XML确认旧误选CUDA恢复节点未执行。
