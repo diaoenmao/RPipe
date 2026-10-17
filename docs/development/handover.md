@@ -1,3 +1,5 @@
+> 2026-10-17：PR204 finalefa7782→actual dev0f4174f双侧全部实际CI成功，见record§276及.tmp/structure-artifacts/STATE.json。最新人工明确不删分支/数据：structure-artifacts本地/远端保留，本地已快进dev接续下一批；收尾文档本地提交随下批合入，不单开文档PR。core2608+1同一既有skip/Flow525，原始provenance拒绝证据保留。整体结构目标仍未完成，继续schedule/data factory/origin职责精简，不改API形状，不等旧审批，不训练/GPU/main/tag/force。
+
 > 2026-10-17：codex/structure-artifacts完整本地验收core2608+1同一既有skip/Flow525，99库源码哈希全程一致；首轮源码尾空行改动触发provenance拒绝已完整留证并冻结重跑。见record§275与.tmp/structure-artifacts/STATE.json。最新人工明确本批不删分支/数据；下一为push一次PR→dev、双侧全部实际CI。PR203已验收，勿重复操作；结构总目标未完成。
 
 > 2026-10-17：PR203 final5167cea/actual dev70526bd全部实际CI验收，本地/远端structure-api-design已删，周期基线203。09:12 API授权已实施，不再等待旧审批。下一批codex/structure-artifacts本地f74ef58完成5文件归并，core2601+1既有skip/Flow525全通过；未开PR，继续同分支大模块职责精简，见record §273和.tmp/structure-artifacts/STATE.json。当前76文件/9152行，比目标起点9132仍多20，总目标未完成。保留用户暂存与数据，不新增边界修复，不训练/GPU/main/tag。

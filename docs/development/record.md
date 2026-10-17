@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR204 已正常合 dev 0f4174f，最终head与实际dev全部矩阵/聚合CI通过，本批验收完成（§276）。
+> 验证：core2608 passed +1同一既有skip、CPU Flow525 passed；head Unit38993832863，dev Unit38994348622。
+> 结果：artifact五文件归并、估算独立、分组简化；77文件/9146行；原始失败/拒绝完整保留，无旁路或API形状变更。
+> 下一：同一保留分支继续schedule/data factory/origin职责精简；整体明显缩行未达成，目标不标完成。
+> 状态：依最新人工保留本地与远端分支、不删数据；无训练/GPU/测速/main/tag/force；收尾记录本地提交随下批合入。
+
 > 当前（2026-10-17）：structure-artifacts 完整本地里程碑验收通过，准备一次 push/PR→dev；不再等待旧 API 审批（§275）。
 > 验证：core2608 passed +1同一既有skip、CPU Flow525 passed；99个库源码哈希重跑前后相同。
 > 结果：artifact归并5文件、配置估算独立、dict顺序/groupby简化；当前77文件/9146行，整体明显缩行仍未达成。
@@ -4548,3 +4554,12 @@ core2601 passed +1同一POSIX executable mode bits skip，CPU Flow525 passed/0sk
 首轮core通过，Flow524 passed/1 failed：代理在测试运行时清理estimate.py尾空行，真实provenance门正确拒绝success-no-retry；不是生产缺陷。保留FLOW_FINAL.xml/日志/FULL_FIRST_FAILURES.json及DIFF_CHECK_REJECTED.json，修正流程为冻结源码后全部重跑；未改/绕过provenance、未删除失败。EOF清理AST不变。
 
 最新人工要求优先于旧周期清理约定：本批不删除本地或远端分支、数据；main/tag/force push不操作。公开门面形状、签名/返回/异常及磁盘产物布局不变；按本地主题提交，一次里程碑PR合dev并双侧实际CI验收。
+
+
+## 276. 2026-10-17：PR204 双侧全部实际CI验收，依最新指示保留分支
+
+[PR204](https://github.com/DreamSoul-AI/RPipe/pull/204)最终head `efa77829b8ed23241140a789be8261a378dc5e9a`：Branch38993832830、Package38993832827、Unit38993832863全部实际矩阵和聚合成功；正常合入实际dev `0f4174f018db5c64e5a09675ee0328758c39add2`，Package38994348413、Unit38994348622所有实际矩阵与聚合再次成功。PR_CHECKED SHA256 `86b15226a25f5a7cf49ca1b471d3952b9d8f6ddeffc378134acf5d927a89bbc5`；DEV_CHECKED `6bffcdfcf1fc7fd3785bfd86665b780d20a77033b4b7d20fe3a1fc4d7716e509`。实际dev与最终head的src/tests/studies/structure.md一致；原PR正文只追加一次验收，不重派/重合。证据`.tmp/structure-artifacts/`不随clone。
+
+最新人工要求本轮不删分支：`codex/structure-artifacts`本地和远端均保留；本地快进至已验收dev后承接下一批，main/dev/origin/main保护引用不变，无force push、tag或数据/结果/暂存删除。只做收尾文档本地主题提交，不新增docs-only PR；周期清理基线203保留，本次为其后第1个合入。
+
+整体结构目标尚未完成：当前77文件/9146行，仍高于目标起点9132行；后续重点为schedule的脚本计划与进程生命周期、data factory的运行时Data/loader与builder、origin的端点声明与SDK传输生命周期。仅做职责精简与有依据去重，不新开边界修复、不改变API形状，不裁剪下载校验/失败留证/恢复逻辑。下一批依相同完整本地/最终head/实际dev CI里程碑推进。
