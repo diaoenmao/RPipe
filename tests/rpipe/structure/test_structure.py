@@ -66,12 +66,19 @@ def test_cross_layer_imports_use_facades(path):
     layer = parts[1] if len(parts) > 2 and parts[0] == 'structure' else None
     if layer in ('api', 'control'):
         return
+    from importlib.util import resolve_name
+    from rpipe.structure.control import __all__ as control_exports
+    package = ('rpipe.' + '.'.join(path.parent.relative_to(ROOT.parent).parts)).rstrip('.') if parts else '.'.join(path.parent.relative_to(ROOT.parents[2]).parts)
     for node in ast.walk(ast.parse(path.read_text(encoding='utf-8-sig'))):
-        modules = [node.module] if isinstance(node, ast.ImportFrom) else [a.name for a in node.names] if isinstance(node, ast.Import) else []
+        if isinstance(node, ast.ImportFrom):
+            module = resolve_name('.' * node.level + (node.module or ''), package) if node.level else node.module
+            modules = [module + '.' + a.name for a in node.names] if module == 'rpipe.structure' else [module]
+        else:
+            modules = [a.name for a in node.names] if isinstance(node, ast.Import) else []
         for module in modules:
             if module and module.startswith('rpipe.structure.'):
                 target = module.split('.')[2]
-                assert target in (layer, 'api', 'control'), (path, node.lineno, module)
+                assert target in (layer, 'api', 'control') or (module.rsplit('.', 1)[0] == 'rpipe.structure' and target in control_exports), (path, node.lineno, module)
 
 
 def test_origin_builders_keep_existing_public_names():

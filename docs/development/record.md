@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：09:12 批准的门面/origin 迁移已完成本地验收，准备统一里程碑 PR→dev；不再等待旧 API 审批门。
+> 验证：core 2606 passed +1 同一既有 skip、CPU Flow 525 passed，最终156结构节点全执行（§270）。
+> 证据：正式2318 checkpoint旧引用0，临时115989候选仅人工探针命中1；无读取错误，无旧模块别名（§269）。
+> 结果：八包、纯导出 init/新门面、逐文件登记和 src/当前Study跨层API检查通过；大文件职责精简及明显缩行尚待后续。
+> 下一：最终head/实际dev CI分别验收后清理主题；继续已授权结构精简，不训练/GPU/main/tag、不动实验数据。
+
 > 当前（2026-10-17）：09:12 已批准 artifact_api/make_api 与 origin→system_api；旧别名未批准且不添加，复用 structure-api-design。
 > 证据：正式 Study 2318 checkpoint 旧引用0；临时115989候选仅命中上轮人工探针1，全部成功读取检查（§269）。
 > 结论：本仓库未发现实际在用旧对象；不把探针当兼容需求，不跟随库外链接或声称覆盖未知下游。
@@ -4463,3 +4469,14 @@ PR202 final `a634074bb1bdd81d58fbe7c6a52d0395626be9e4`：Branch38986989262、Pac
 本批实现计划：新门面只 import 原对象；跨层调用使用对应门面，层内直连和 control 既有例外保留。为避免提前加载未完成的层，api 包只声明导出名，由 structure 完成 control 类型导出后导入六个门面；不使用 __getattr__ 懒加载或兜底包装。增加八包、纯重导出门面、逐文件跨层 import 检查，现有包入口/文件登记检查继续执行。迁移 origin 不添加旧路径文件、sys.modules 别名或重复实现，原生命周期/下载策略/缓存格式不变。
 
 迁移阶段回归与修正：首轮针对性失败来自测试仍以 from rpipe.structure import origin 访问旧入口，已按新归属改为 system.origin，未恢复别名；随后 248 项针对性全过。首次完整 core 暴露当前 Study raw 准备脚本遗漏旧路径（真实迁移遗漏，失败 XML 保留）；已迁移该调用，并把其他 89 处当前 Study 框架直连统一切门面。仅补现有对象的纯重导出；对 ac37afe 限定还原 import 模块名后，现有程序体/默认参数/校验/顺序 AST 相同。新增架构检查覆盖 src 与当前 Study flow/structure/recipe 代码；docs/versions、shared/runs 和历史数值未改，不执行 Study 或测速。CALLERS 236 项通过；完整 core/Flow 在最终源基线重新执行，不以前一阶段 Flow 代替验收。首次 AST 检查误选已迁移后的 HEAD 寻找旧 origin 文件，拒绝保留并改用迁移前 ac37afe；这是校验基线错误，不算库失败。
+
+
+## 270. 2026-10-17：门面与 origin 迁移里程碑本地验收
+
+生产基线 2c1f278，core 2606 passed +1 与上批同名同原因的既有 skip（0 fail/error），CPU Flow 525 passed（0 fail/error/skip）。最终结构检查 156 项均在 core 实际执行；相对导入与 root-package 导入检查增强后，156 项又单独全执行通过，节点集完全相同，生产源码未变。三个跨层旁路样例均被拒绝，API/control 合法导入被接受；检查只允许 control 的既有声明导出，未用大小写泛放行。LOCAL_CHECKED.json 与 XML/负例检查在 .tmp/structure-api，不随 clone。
+
+新门面只重导出原对象，实际检查每个 import 绑定身份相同；data_api.load_hf_dataset / model_api.download_model 与 system_api / system.origin 为同一函数对象。api 的声明与 structure 根的最终导入分开，以已有普通 import 顺序消除初始化环，不引入动态 __getattr__、包装函数或并行兜底。origin 代码只变文件位置和 artifact helper import；127 个 src/当前 Study 模块经限定逆转 import 模块名后 AST 相同（CURRENT_DEFINITIONS_CHECKED）。
+
+初始 RED：120 项中 29 failed/91 passed（0 error/skip）；SHAPE 的唯一失败为当时尚未更新的文件登记；TARGET 的39失败为旧测试入口遗漏，CORE 的80 setup errors为遗漏的当前 Study raw caller，均保留。修正归属与调用方后 TARGET2 248 passed、CALLERS 236 passed，最终完整 core/Flow 如上。源扫描器的175伪缺失与错误AST基线拒绝单独保留，不混为库缺陷。
+
+仅修改当前 Study 的 import；归档版本、shared/runs、正式数字、checkpoint、原始数据和磁盘格式未变；未运行 Study、测速、原生 codec 或 GPU。后续继续合并过碎 artifact 文件并按职责精简 capacity/schedule/data factory/origin；本批机械结构规则已过，不等于“行数明显下降”和全部重构目标完成。

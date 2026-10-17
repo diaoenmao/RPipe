@@ -172,6 +172,8 @@ structure/
 | `data_api` | 暴露 `Data`、`DataFactory.build`、`DataConfig` |
 | `model_api` | 暴露 `Model`、`ModelFactory.build`、`ModelConfig` |
 | `system_api` | 暴露 `System`、`Logger`、`SystemFactory.build`、`SystemConfig` |
+| `artifact_api` | 磁盘产物层入口；纯重导出 layout/config/result/index/shared/atomic/readout。 |
+| `make_api` | 脚本生成层入口；纯重导出展开、recipe、调度与容量能力。 |
 | `algorithm_api` | 暴露 `Algorithm`、`AlgorithmTracker`、`AlgorithmFactory.build`、`AlgorithmConfig` |
 
 ---
