@@ -1,3 +1,21 @@
+> 当前（2026-10-17 18:30 后）：获批硬件分责已本地实施；正式2318/临时154121持久化候选0引用/0读取错误。
+> 影响：GpuInfo模块身份按批准改变；既有公开导出/签名/普通repr保持，合成旧/新pickle协议0–5通过，无兼容别名。
+> 分账：迁移净增7行，合并前批真删除后对dev净少7行；79文件/8982行，减少包装与重复判断，不称总体完成。
+> 验证：完整core2764 passed+1既有skip、CPU Flow525 passed，20新节点/154结构节点执行、101源码哈希一致；统一里程碑PR。
+> 保护：定时器继续PAUSED，派生同步不实施，保留分支/数据/_staging，不改make_api/flow/磁盘布局/main，不跑GPU/测速。
+
+> 当前（2026-10-17）：PR217/218双侧实际CI全部成功，最新dev1bded360；源码与实质文档均已入dev。
+> 已完成：结构小结发布、14段旧叙事原文迁移/回链；153结构节点通过，原文哈希/标题/63项登记保持。
+> 剩余卡点：粒度分责超出当前架构冻结范围；派生核验缺目标根/版本/允许范围，已入库见§291.4。
+> 按指示停止：当前范围无值得继续实施的项，定时续跑已暂停；总体Occam目标未称完成，无活测试/CI句柄。
+> 保护：盘点新基线218，0开放PR/Issue、分支/数据保留；无API/布局/main变更、无GPU/测速，仅验收尾记本地待保全。
+
+> 当前（2026-10-17）：PR217双侧实际CI全绿；PR218最终head全绿，已普通合dev1bded360，actualdev独立验收中。
+> 已推进：14段旧修复叙事原文迁移及回链已入dev，结构专项153 passed/0skip，源码/测试/Study/API/布局未改。
+> 卡点：真正粒度分责需架构范围许可；派生同步缺目标根/版本/核验范围。已入库说明见§291.4。
+> 盘点：214–218五次合入已核对，1主worktree、0开放PR/Issue；分支/数据保留，删除清单为空。
+> 收口：完成PR218实际dev验收与尾记后按指示停下，不新增无依据改动，不用GPU/测速，不动main。
+
 > 当前（2026-10-17）：PR217已合dev712a3d2，最终head实际CI全绿，actualdev独立验收中。
 > 可执行项：14段旧修复叙事已原文迁入§291.3，结构文档回链，标题树/63项登记保持；结构专项153 passed/0skip。
 > 后续里程碑：仅文档整理，无源码/测试/Study/API/布局改动；原文哈希保全证据在.tmp/structure-history-cleanup。
@@ -5302,3 +5320,77 @@ NUMBERS.md既有Run ID代码单元格沿用原文本投影；对合法反引号I
 | 宏观明显缩行目标 | 源码仍78文件/8989物理行，对起点少2文件/143行约1.57%；本批只整理文档，不冒充源码缩行 | 当前范围内无进一步值得做的候选，不能通过改API/架构或删科学门强行达成；总体目标不标完成 |
 
 文档迁移后结构专项153 passed/0skip，14段原文字节哈希全部匹配、标题树与63项登记一致，显式Bug/Issue修复标记不再留在structure.md；100源码哈希及所有测试/Study文件未变。未重跑无变更的本地完整CPU；最近完整core2743+1既有POSIXskip/Flow525仍覆盖同一源码，最终head/实际dev CI仍分别要求全部真实矩阵与聚合成功。最新指示为无可做项则写清卡点后停下；完成本批双侧验收后执行该停止条件，不恢复旧边界修复运动，不为活跃制造任务。
+
+### 291.5 PR217/218双侧验收、盘点与按指示停止
+
+PR217最终head4ba629800f779efc7e29fcf519267f70122cf2b5的Branch39019820698/Package39019820683/Unit39019820682全部实际矩阵与聚合成功后普通合actualdev712a3d2b4243fdbafa4ace360dfa179ef0e834cc；实际dev的Package39020263125/Unit39020263295及全部实际矩阵/聚合同样成功。PR_CHECKED SHA256 13dcf9596b9c425752cfdb294a4a74273981d0fdeb7cf77ed0da3ec7ed13a36e；DEV_CHECKED 5ab03e9f85cdb426def2647a44458d6b5ab36c6c44381a303e37c99024078aa1。
+
+PR218最终head00bca588a7627ab8ccd1d868e6934a735f6122df的Branch39020447379/Package39020447354/Unit39020447269全部实际矩阵与聚合成功，且PR217实际dev先独立验收后，普通合actualdev1bded360b3a4547cfbc85647320ac95af89e81c9；实际dev的Package39021083280/Unit39021083289及全部实际矩阵/聚合同样成功。PR_CHECKED SHA256 df4cdbb15dda5a15d95d5f3313cc52591a868d03496356e8f1541ee89196a146；DEV_CHECKED 392089bb8ccc9342d54bbcc484d00aa2c6953dca116946884f3435fec706e19b。两批head/各自实际dev对应的源码、测试、Study与本批文档树一致；PR正文各一次追加验收，无重复评论。附件100上限错误及有效链接保留，未删除历史附件。两批证据分别为.tmp/structure-milestone-final与.tmp/structure-history-cleanup，不随clone。
+
+14段旧叙事在record§291.3逐段原文保全，迁移后的结构专项153 passed/0skip，标题树和63项登记保持；源码/测试/Study/API/产物布局没有改变，100源码哈希仍与完整CPU基线78332d0一致。完整CPU2743 passed+1既有POSIX skip/Flow525为同一源码，不因纯文档重复本地全量；远端最终head与actualdev均各自全量验收。源码78文件/8989行，起点净少2文件/143行约1.57%；本批文档迁移不冒充源码缩行。
+
+从盘点基线213到214–218累计5次合入，已核对1个主worktree、0开放PR/Issue，无其他未合主题待定。main/local dev/origin main保护引用与合前相同，本地/远端当前主题均保留；origin/HEAD为符号引用。遵循最新不删分支/数据指示，删除分支/worktree清单为空，未删Run/实验数据/结果/provenance/_staging；新盘点基线218。
+
+最新指示为若无当前可做项则写清各自卡点后停下。已完成不改架构/API/布局的可执行文档项；剩余粒度重划与库外同步的具体条件已随PR218写入§291.4，当前没有值得实施的同文件源码候选，因此执行停止条件。定时维护rpipe已确认为PAUSED，防止旧heartbeat自行拉起工作；没有声称宏观目标完成，也没有把旧goal工具的paused伪称恢复。后续需新的明确范围或继续指示；不重复索取已批准的旧API方案。
+
+当前源码与实质文档均已入dev；本节和交接只是本地验收尾记，主题提交保全，不为尾记再开PR。无活测试/CI句柄，不训练/实验/GPU/测速/逐路径审计，不改main/tag/release、不force push、不花钱、不覆盖vendor或向其他会话发消息。
+
+## 292. 2026-10-17 17:45 后的净删减里程碑与架构 proposal
+
+最新人工指示覆盖§291.5的条件停止：继续CPU同文件精简，以净行数和复杂度下降验收，积累完整里程碑后再开PR。架构变更先交具体proposal、Enmao确认前不实施，派生同步一并待确认。具体范围、问题、接口/副本影响、预计量与风险见[structure_simplification_proposal.md](structure_simplification_proposal.md)。当前实际dev1bded360、78文件/8989行是新批基线；旧CI只证明旧源码。已核对工作区仅未跟踪_staging_from_DEM，有界fetch成功，保留全部分支/数据和staging。
+
+首个同文件候选为load_launch_plan校验成功后的重复类型防御；保留JSON/wait_groups信任边界、设备/配置一致性与失败返回语义，先验证再收纳。不为本提案或一两项改动单独开PR。旧goal工具paused不伪称已恢复，定时器仍暂停；本轮按新的人工继续指示执行独立CPU工作。
+
+### 292.1 同文件净删减范围
+
+在同一make职责里程碑中另纳入capacity.pack_jobs的单调用_pack_wave包装：调用方只传job_waves生成的非空list，包装只分组再调用_pack_homogeneous；把这段分组直接放回既有pack_jobs，删掉单调用函数和不可达空wave分支。全仓src/tests检索只有该调用与定义，没有公共导出；不动GpuInfo/探测/估算/容量报告/文件职责。保留_pack_homogeneous的资源/CPU处理、分组顺序、job原对象及gpu赋值，不把proposal中的硬件迁移偷偷并入。先做离线原新对照和公共入口回归，再冻结完整CPU验证。
+
+### 292.2 首批删除与冻结前检查
+
+load_launch_plan移除4处已被wait_groups保证的dict判断（3处and门、1处静默过滤）、重复jobs get/default及列表复制；保留所有信任边界和readiness调用顺序。capacity将单调用_pack_wave分组体并回pack_jobs，删除包装签名/调用层及job_waves保证不可达的空wave门，无新helper。两个模块其余函数/类声明AST和保留函数签名/返回注解逐一一致。schedule366→365、capacity385→372，本批生产净少14行；源码78文件/8975行，对起点9132累计净少157行（约1.72%），仍不称总体完成。模块AST共少1函数、1 if、1 BoolOp节点；这不是对运行性能的测量。
+
+200组真实JSON缓存对照的返回/异常、readiness调用轨迹、原缓存字节一致；163组离线合成装箱对照的组序、输入变更与对象身份一致，无硬件探测。便携新增2缓存+3装箱公共入口节点；首定向284 passed，扩展make+结构543 passed/0skip（含153结构节点）。全部.raw对照脚本/JSON/XML/日志留.tmp/structure-redundant-checks，不随clone。完整CPU及远端CI尚未用本批新源码验收，不能借PR218绿灯。
+
+### 292.3 本地完整CPU验收与后续节奏
+
+冻结源码提交d7964d1584aba92615df9260191ba77ceeda803c后，tests/run.py core实际2748 passed/1 skipped/0fail/error，唯一skip仍为Windows上的POSIX executable mode bits；CPU Flow显式c1/c2与not gpu/external/slow，525 passed/0skip/fail/error。5个新增公共入口节点及153个结构节点均在CORE.xml实际执行，100源码SHA256和冻结HEAD逐项一致。TARGET2为543pass；200缓存/163装箱原新对照均一致。LOCAL_CHECKED.json与CORE/FLOW XML/日志、FROZEN/METRICS/对照证据位于.tmp/structure-redundant-checks，不随clone；便携测试与proposal已本地提交，无活句柄。
+
+当前生产净删14行，函数少1、if少1，仍只是同主题里程碑的起步，不夸大为总体完成，也不为这两项马上推送/开PR。源码本地未入dev，不借PR218已绿CI验收；后续继续当前文件内可证明的冗余删除，保留入口验证、故障/关闭/数据保全规则及公开行为。架构proposal四项已具体写清，Enmao确认前不拆hardware、不迁GpuInfo、不同步派生副本；方案已披露新类模块身份风险，不能把迁移当无影响或净删减。
+
+本轮尝试按“继续”指示恢复每15分钟rpipe heartbeat，被自动审批拒绝：恢复此前明确暂停的周期调度具有持续副作用，最新指示只明确允许CPU工作，未明确允许恢复定时器。拒绝原文留AUTOMATION_RESTORE_REJECTED.json，不绕过或间接改配置；定时器保持PAUSED，继续在人工会话完成独立CPU工作。恢复调度需要明确授权，不把审批拒绝当库代码失败。
+
+## 293. 2026-10-17 18:30 硬件职责分离批准与实施前持久化核验
+
+### 293.1 批准范围与先行证据
+
+Enmao已批准新建make/hardware.py，仅迁GpuInfo、probe_gpus、_probe_torch、_probe_nvidia_smi；capacity保留装箱/容量计算/报告，通过现有导出使用，不新增门面/包装/兼容别名，不改make_api名称、签名、返回或flow调用。定时续跑尚未获准，保持PAUSED，不再尝试恢复；派生副本同步继续待说明审阅，暂不实施。沿用同一主题分支，与§292真实删除积累里程碑，不为迁移单独开PR。
+
+迁移实施前完成只读持久化扫描：正式2318个候选全部为.pt ZIP，逐一检查pickle成员，GpuInfo引用0、读取错误0；临时154121个候选检查ZIP pickle成员或原始字节，引用0、读取错误0。扫描以GpuInfo名称覆盖旧完整模块名及pickle GLOBAL/STACK_GLOBAL分开的模块/类字符串，不反序列化、不触发模型/训练；排除依赖、.git、_staging_from_DEM，不跟随目录链接，不扩到未知下游。正式asset/shared/studies/tests/_data的可读JSON/JSONL/log/text/YAML/CSV/repr/Markdown搜索GpuInfo无匹配。临时文本repr的有界补查结果另记，尚不借候选数声称未知压缩格式或库外文件已验收。
+
+截至本次实际扫描，未发现本仓正在使用的GpuInfo持久化对象，也未发现会因迁移读不回的实际对象，因此可继续批准范围。原始清单、每文件格式/成员结果、汇总与读取边界留.tmp/structure-hardware/PERSISTENCE_SCAN.json、formal_scan.json、temporary_scan.json、REPR_SCAN.json，不随clone。正式清单SHA256 6115db8a65d9866785ab76303302c1b6101135a76adb1df76feee52641b52dff；临时清单3ce7aebb0528a94ae9b34b693ab95ba28cfb7c6b6e6469d43c17480cdf5e6095。0字节命中不是反序列化所有对象的证明；实际正式格式已核对为ZIP，未把未给出的库外副本算成0风险。
+
+身份变化：GpuInfo.__module__从rpipe.structure.make.capacity改为rpipe.structure.make.hardware；新pickle的GLOBAL引用/类repr/qualified name随之改变，普通dataclass实例repr仍为GpuInfo(index=..., name=..., total_bytes=..., free_bytes=...)。既有capacity公开导出保持为从hardware直接import同一对象（不是新增旧路径别名或包装），make及make_api仍沿现有导出取得同一类/函数；旧pickle按原capacity.GpuInfo查找理论上仍可由该原有公开导出解析，须用明确标识的合成旧对象验证，不能把合成探针当实际在用对象。两个私有_probe函数不在capacity留回退/别名，不改__module__。若后续实际对象出现不兼容，按指示停下报告。
+
+下一步先保留迁移前合成pickle/probe签名证据，再原样迁四个声明；逐声明AST、公开导出身份/签名、旧合成pickle/new pickle、普通repr与离线探测回归分别验证。结构登记与测试镜像同批更新，移动行数单列，不计作净删减。
+
+临时可读文本repr补查在40秒上限触发TimeoutExpired，未完成，不声称临时文本零引用；TEMP_REPR_SCAN_REJECTED.json保留该限制。这不改变已完成的全部正式2318/临时154121二进制候选扫描及正式可读产物搜索。迁移前合成协议0–5 pickle仅在实际扫描结束后创建，名称SYNTHETIC_OLD_PROTOCOL_*，身份/签名快照BEFORE_IDENTITIES.json明确标记synthetic_only，不是发现的用户对象。
+
+### 293.2 原样迁移与同文件重复条件删除
+
+四个声明已原样迁至hardware，逐声明AST一致；capacity通过普通直接import维持原有GpuInfo/probe_gpus公开导出，make/__init__.py、make_api和flow/cli.py原字节不变；两个私有_probe旧位置不保留。合成旧协议0–5均可经既有导出读取，新协议0–5往返一致，普通实例repr/公开签名不变，class repr与__module__按批准改变；没有改__module__或加兼容别名。离线新增11节点验证导出、旧GLOBAL、空请求、SMI优先/失败回退/解析及mock torch，仅合成硬件；make+结构首检555 passed/0skip（含154结构节点）。
+
+继续删除capacity内已由前置门保证的重复条件：suggest_round的jobs已非空、gpus已非空，_job_vram既有max(1,...)保证heaviest正，因此devices非空、gpu_usable非空、heaviest<=0分支不可达；_pack_homogeneous已先拒空jobs，devices非空。只删这些同文件重复真假/三元条件，不删公开round_fits的输入门或capacity_report对空jobs的合法处理，不改估算/safety、分组/算法。保持未批准的资源门策略不变。此项主要减少条件节点，不虚称净行数大降。
+
+### 293.3 冻结前结果与里程碑范围
+
+同文件条件删除后270组合成容量原新对照的返回/异常/组序/输入变更完全一致；第二轮make+结构559 passed/0skip，新增硬件11节点及容量4节点、当前154结构节点执行。两个修改函数之外的capacity声明AST保持，四个迁移声明AST与旧版本逐一一致。
+
+如实分账：capacity372→293，hardware新增86行，分责本身净增7行；与§292已真实净删14行合计，对实际dev1bded360生产净删7行，structure79文件/8982行，对最初9132净少150行约1.64%。新增1源码文件、0新helper，撤掉1单调用包装和重复类型过滤；另减少2不可达三元分支、2重复非空检查。硬件迁移不计瘦身，整体缩行仍有限，不称宏观完成。本批作为完整make职责分离+冗余删除里程碑统一验收/PR，不为每项拆PR。
+
+接下来冻结源码提交与101源码哈希，再跑完整core和显式CPU Flow；签名、make_api/flow/init原字节、旧合成pickle及实例repr已分别核验。最终head及实际dev CI必须各自全量实际执行后方可验收，不借PR218或前一批本机成功。定时器按18:30明确要求保持暂停，派生副本不实施；不删分支/数据、不动main。
+
+### 293.4 完整CPU验证与里程碑交付准备
+
+冻结010a9a36e94b027248f5fe517f8c0a2bd06c08fd后，完整core2764 passed/1同一既有POSIX executable mode skip/0fail/error，CPU Flow525 passed/0skip/fail/error；c1/c2且显式排除gpu/external/slow。整批20新增节点（§292的5、hardware的11、容量4）和154当前结构节点均在CORE.xml执行，101源码哈希/冻结HEAD一致。原声明迁移、公开导出/签名/普通repr、合成旧协议0–5及新协议0–5分别验收，额外270容量对照、前批200缓存/163装箱对照保持。原始证据和LOCAL_CHECKED/FROZEN均在.tmp/structure-hardware及前批目录，不随clone；临时文本补查超时限制保留，无活本地测试句柄。
+
+以完整make职责分离+真重复删除统一交付一条PR→dev：四硬件声明经批准迁移，现有make_api/flow/init字节不变，capacity保留计算/装箱/报告；20节点与结构登记同批，不另拆小PR。生产实际净少7行，不把搬移算净删减。后续最终head/实际dev各自所有实际矩阵及聚合成功才验收；本机全绿不替代CI。定时器明确保持PAUSED，不再请求恢复；派生副本仍待批准，不读改vendor，不删分支/数据、不动main/tag/release。

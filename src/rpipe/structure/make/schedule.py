@@ -180,25 +180,24 @@ def load_launch_plan(
     except (KeyError, TypeError, ValueError):
         return None
     for job in payload['jobs']:
-        if isinstance(job, dict) and not include_done and run_succeeded(study_dir, str(job.get('run_id') or '')):
+        if not include_done and run_succeeded(study_dir, str(job.get('run_id') or '')):
             continue
-        if isinstance(job, dict) and str(job.get('device') or '').lower() == 'cpu' and job.get('gpu') is not None:
+        if str(job.get('device') or '').lower() == 'cpu' and job.get('gpu') is not None:
             return None
-        if isinstance(job, dict) and job.get('config') and Path(str(job['config'])).is_file():
+        if job.get('config') and Path(str(job['config'])).is_file():
             mode, device = _job_fields(Path(str(job['config'])))
             if mode != job_mode(job) or device != str(job.get('device') or 'cuda').lower():
                 return None
 
     def _keep(rows: list) -> list[dict[str, Any]]:
-        kept = [job for job in rows if isinstance(job, dict)]
         if include_done:
-            return kept
-        return [job for job in kept if not run_succeeded(study_dir, str(job.get('run_id') or ''))]
+            return list(rows)
+        return [job for job in rows if not run_succeeded(study_dir, str(job.get('run_id') or ''))]
 
-    jobs = _keep(list(payload.get('jobs') or []))
+    jobs = _keep(payload['jobs'])
     batches = None
     if isinstance(raw_batches, list) and raw_batches and isinstance(raw_batches[0], list):
-        batches = [kept for kept in (_keep(list(group)) for group in raw_batches) if kept]
+        batches = [kept for kept in (_keep(group) for group in raw_batches) if kept]
     return {
         'jobs_json': path,
         'job_list': jobs,

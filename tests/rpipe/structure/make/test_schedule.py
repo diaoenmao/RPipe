@@ -908,3 +908,25 @@ def test_launch_mode_log_collapses_repeated_labels(tmp_path, monkeypatch, capsys
     assert schedule.launch_jobs(tmp_path, jobs, console='shared') == [0, 0]
     lines = [line for line in capsys.readouterr().out.splitlines() if line.startswith('launch:')]
     assert lines == [f'launch: wait 1/1 mode={mode}']
+
+
+@pytest.mark.parametrize('include_done', [False, True])
+def test_validated_cache_keeps_job_and_batch_order_without_rewriting(tmp_path, monkeypatch, include_done):
+    jobs = [{'run_id': name, 'device': 'cpu', 'extra': {'keep': 0}}
+            for name in ['pending-a', 'done', 'pending-b']]
+    payload = {'jobs': jobs, 'batches': [[], [jobs[2], jobs[1]], [jobs[0]]],
+               'num_gpus': 0, 'round': 2}
+    cache = tmp_path / 'scripts/jobs.json'
+    cache.parent.mkdir()
+    cache.write_text(json.dumps(payload), encoding='utf-8')
+    before = cache.read_bytes()
+    monkeypatch.setattr(schedule, 'run_succeeded', lambda study, run: run == 'done')
+    plan = schedule.load_launch_plan(tmp_path, init_gpu=0, num_gpus=0,
+                                     round_size=2, include_done=include_done)
+    assert plan['job_list'] == (jobs if include_done else [jobs[0], jobs[2]])
+    assert plan['batches'] == [[jobs[2], jobs[1]] if include_done else [jobs[2]], [jobs[0]]]
+    assert plan['n_jobs'] == (3 if include_done else 2)
+    assert plan['job_list'][0] is not plan['batches'][-1][0]
+    plan['job_list'][0]['extra']['keep'] = 9
+    assert plan['batches'][-1][0]['extra'] == {'keep': 0}
+    assert cache.read_bytes() == before

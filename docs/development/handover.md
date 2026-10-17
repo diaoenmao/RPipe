@@ -1,3 +1,7 @@
+> 2026-10-17 18:30硬件里程碑：批准范围内四声明原AST迁入hardware，无私有旧别名，make_api/flow/init字节保持；正式2318/临时154121持久化候选0引用0读取错误，正式可读repr0匹配，临时文本补查40s超时限制保留。冻结010a9a3完整core2764pass+1既有POSIXskip/Flow525pass、20新增/154结构节点/101源码哈希通过，合成旧/新协议0–5通过。对dev净少7行、79文件8982行；同一里程碑准备一条PR→dev并双侧实际CI验收，不能借旧绿灯。record§293/.tmp/structure-hardware/STATE.json；定时器PAUSED、派生同步未批准不做，不删分支/数据/_staging，不合main/GPU/测速。
+
+> 2026-10-17停止交接：PR217/218均双侧实际CI全绿，最新dev1bded360，源码和实质文档全部入dev。14段结构旧叙事原文迁移/回链完成，153结构节点通过，100源码哈希保持；源码78文件/8989行，完整CPU2743+1既有skip/Flow525覆盖同一源码。剩余粒度重划受架构冻结限制、派生同步缺根/版本/范围，已入库见record§291.4；按最新“无可做项写卡点后停下”指示已停止，定时rpipe为PAUSED，不凭旧heartbeat恢复。宏观目标未称完成；当前.tmp/structure-history-cleanup/STATE.json，无活句柄。盘点基线218、1主worktree/0开放PR/Issue；分支/数据/_staging保留，无API/布局/main/GPU变更。只有本地验收尾记待保全，不为它另开PR。
+
 > 2026-10-17：PR217已普通合dev712a3d2，head全绿/actualdev验收中；后续14段结构旧叙事原文迁至record§291.3，标题/63登记/原文哈希保持，结构专项153pass。仅文档，无源码/API/文件架构/布局改变；当前.tmp/structure-history-cleanup/STATE.json。剩余粒度拆分受架构冻结限制、库外同步缺根/版本/范围，详见record§291.4；本批双侧CI后按最新指示停下，不制造新源码项。保留_staging/分支/数据，不跑GPU/测速。
 
 > 2026-10-17最新：PR216双侧实际CI全绿，dev ee9050f9，当前源码全部入dev；本轮复查无值得继续实施的同文件源码精简。按新要求已在record§290.3写§2.1八条小结：结构专项153pass/0skip，机械违规0；粒度待评审、旧叙事获准暂缓、派生同步未验收，不称总体完成。78文件/8989行，净少2文件/143行；完整CPU2743+1既有skip/Flow525覆盖同一源码。当前入口.tmp/structure-tracker-final/STATE.json；只有本地收尾小结待后续合批，无活句柄。保留_staging/分支/数据，不改main/API形状/文件架构/布局，不跑GPU/测速。盘点基线213，之后214–216累计3次。
