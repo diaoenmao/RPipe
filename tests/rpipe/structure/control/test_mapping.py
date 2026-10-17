@@ -17,3 +17,80 @@ def test_raw_setting_lookup_matches_runtime_config(config_type, key, nested):
     if nested is not None:
         mapping['config'] = {key: nested['value']}
     assert get_setting(mapping, key) == config_type.from_mapping(mapping).setting(key)
+
+
+from rpipe.structure.data.config import DataConfig
+from rpipe.structure.model.config import ModelConfig
+
+
+@pytest.mark.parametrize('config_type', [DataConfig, ModelConfig, AlgorithmConfig, SystemConfig])
+@pytest.mark.parametrize('kind', ['none', 'dict', 'readonly'])
+def test_layer_mapping_preserves_input_and_shallow_copy_contract(config_type, kind):
+    from types import MappingProxyType
+
+    if kind == 'none':
+        assert config_type.from_mapping(None).to_mapping() == {}
+        return
+    body = {'source': 'stub', 'config': {'x': 1}, 'custom': {'leaf': 2}}
+    mapping = MappingProxyType(body) if kind == 'readonly' else body
+    config = config_type.from_mapping(mapping)
+    assert body == {'source': 'stub', 'config': {'x': 1}, 'custom': {'leaf': 2}}
+    assert config.config is not body['config']
+    assert config.extras['custom'] is body['custom']
+    config.config['x'] = 3
+    assert body['config']['x'] == 1
+    emitted = config.to_mapping()
+    assert emitted['config'] == {'x': 3} and emitted['config'] is not config.config
+    assert emitted['custom'] is body['custom']
+
+
+@pytest.mark.parametrize('config_type', [DataConfig, ModelConfig, AlgorithmConfig, SystemConfig])
+def test_layer_mapping_preserves_extras_override_and_identity(config_type):
+    leaf, shadow = object(), {'override': True}
+    config = config_type.from_mapping({'source': 'stub', 'config': {'x': 1}, 'custom': leaf})
+    config.extras.update(source='override', config=shadow)
+    result = config.to_mapping()
+    assert result['source'] == 'override' and result['config'] is shadow
+    assert result['custom'] is leaf
+    assert config.source == 'stub' and config.config == {'x': 1}
+    assert list(result) == ['source', 'config', 'custom']
+
+
+@pytest.mark.parametrize('config_type,order', [
+    (DataConfig, ['name', 'source', 'path', 'config', 'mode', 'custom']),
+    (ModelConfig, ['name', 'source', 'path', 'config', 'mode', 'custom']),
+    (AlgorithmConfig, ['mode', 'source', 'path', 'config', 'name', 'custom']),
+    (SystemConfig, ['source', 'path', 'config', 'name', 'mode', 'custom']),
+])
+def test_layer_mapping_keeps_existing_field_order(config_type, order):
+    body = dict(name='n', mode='train', source='stub', path='p', config={'x': 1}, custom=2)
+    assert list(config_type.from_mapping(body).to_mapping()) == order
+
+
+@pytest.mark.parametrize('value', [None, False, 2, 'replacement', [1, 2]])
+def test_deep_merge_leaf_replacement_keeps_patch_identity(value):
+    from rpipe.structure.control.mapping import deep_merge
+    base, patch = {'x': {'old': 1}}, {'x': value}
+    assert deep_merge(base, patch)['x'] is value
+    assert base == {'x': {'old': 1}}
+
+
+@pytest.mark.parametrize('base,patch', [
+    (None, {'x': 1}), ([1], {'x': 1}), ({'x': 1}, [2]), ({'x': 1}, None), ([1], []),
+])
+def test_deep_merge_nonmapping_replaces_without_copy(base, patch):
+    from rpipe.structure.control.mapping import deep_merge
+    assert deep_merge(base, patch) is patch
+
+
+def test_deep_merge_copies_changed_branches_and_retains_other_references():
+    from rpipe.structure.control.mapping import deep_merge
+    kept, added = {'leaf': 1}, [2]
+    base = {'nested': {'a': 1}, 'kept': kept}
+    patch = {'nested': {'b': 2}, 'new': added}
+    result = deep_merge(base, patch)
+    assert result == {'nested': {'a': 1, 'b': 2}, 'kept': kept, 'new': added}
+    assert result['nested'] is not base['nested'] and result['nested'] is not patch['nested']
+    assert result['kept'] is kept and result['new'] is added
+    assert base == {'nested': {'a': 1}, 'kept': kept} and patch['nested'] == {'b': 2}
+    assert list(result) == ['nested', 'kept', 'new']

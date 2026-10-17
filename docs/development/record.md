@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR207已双侧验收；同分支继续Config共享映射精简，定向CPU204 passed（§282）。
+> 验证：31个新增输入隔离/字段序/extras/merge节点全执行；临时原型四层各10组及100组合并一致。
+> 结果：公开Config方法、字段、pickle模块与磁盘布局保持，仅增加Control私有共享helper，去除重复复制/判定。
+> 下一：冻结当前源码并完整core/CPU Flow验证，然后同主题里程碑PR→dev，不借用旧批CI结论。
+> 状态：分支/暂存/数据保留；总体明显缩行不标完成；旧goal暂停元数据不作为本轮执行等待门。
+
 > 当前（2026-10-17）：PR207 已合 dev 0d9b764，本批双侧实际CI全绿验收完成（§281.4）。
 > 验证：core2646 passed+1既有skip、CPU Flow525 passed；15新节点和155结构节点执行，102源码哈希一致。
 > 结果：三项capacity纯函数精简，21函数签名/19其余定义不变，7333组差分相同。
@@ -4753,3 +4759,9 @@ system/结构CPU396 passed/0fail/error/skip，4个新节点全部执行；此前
 from_mapping复用split_known已有的单次dict复制与None归一化，删去四处调用端重复复制；Data origin拒绝与各层构造转换原样保留。deep_merge保留函数入口的dict/叶替换判定，递归时不再在调用端重复同一判定；保留基底不变、未改叶对象身份及patch覆盖/键序。临时原型100组merge与四层各10组转换/异常、签名与映射访问轨迹一致，仍须实施后portable回归与完整CPU/CI验收。
 
 不改API形状、类所在模块、pickle路径、配置/产物布局；不跑GPU或实验、不做性能测量。先按此设计实施和本地验证，同主题完整里程碑收尾，不为单个函数或几行文档开碎PR。
+
+### 282.2 实施与定向回归
+
+五个既有源文件实施原型方案，无新增源文件或公开门面。四层保留原emit/split_known等名称，新增的_layer_mapping只为内部复用；to_mapping保持显式字段表和原方法/签名，未引入基类、动态子类字段或deepcopy。from_mapping只移除调用端重复dict复制，split_known的输入隔离/None归一化和Data origin拒绝仍保留；deep_merge只移除递归前重复判断，入口判定与叶替换身份保留。
+
+Control+结构CPU204 passed/0fail/error/skip，31个新增portable节点全执行（12输入隔离/空值、4extras覆盖身份、4字段序、5叶替换、5非mapping替换、1分支复制/引用身份），均围绕既有输出/隔离合同。LOCAL_TARGETED_CHECKED SHA256 `0a864a75c3aea3ad0f9bb98044dc0d0a0d8634c60a15f5fc8baf54111df8ff33`，证据.tmp/structure-config不随clone。当前80文件/9089行，不凭单次定向结果宣称完整验收。接下来冻结源码、完整core/CPU Flow与最终head/actualdev双侧CI，作为一个Config映射里程碑PR收尾。

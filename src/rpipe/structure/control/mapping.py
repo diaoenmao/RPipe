@@ -31,16 +31,19 @@ def emit(known: dict[str, Any], extras: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+def _layer_mapping(layer: Any, names: tuple[str, ...]) -> dict[str, Any]:
+    known = {name: getattr(layer, name) for name in names}
+    known['config'] = dict(layer.config) if layer.config else None
+    return emit(known, layer.extras)
+
+
 def deep_merge(base: Any, patch: Any) -> Any:
     """Recursively merge patch onto base. Patch wins on conflicts; lists replace."""
     if not isinstance(base, dict) or not isinstance(patch, dict):
         return patch
     out = dict(base)
     for key, value in patch.items():
-        if key in out and isinstance(out[key], dict) and isinstance(value, dict):
-            out[key] = deep_merge(out[key], value)
-        else:
-            out[key] = value
+        out[key] = deep_merge(out[key], value) if key in out else value
     return out
 
 
