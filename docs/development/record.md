@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：按新收尾授权推送五入口退出复用里程碑；冻结源码完整CPU验收通过（§284）。
+> 验证：core2691 passed+1既有skip，CPU Flow525 passed；5新节点/155结构节点执行，102源码哈希一致。
+> 范围：源码净少35行，全structure80文件/9038行；API形状与产物布局保持。
+> 状态：PR最终head与实际devCI尚待验收，不把本地CPU通过称为已合入。
+> 保护：保留当前分支/数据/_staging_from_DEM；不改main、不force push、不跑GPU。
+
 > 最新延伸（2026-10-17）：共享锁退出规则与四写流复用同一close-only规则，本地targeted307 passed+1既有skip；完整core/Flow需下批冻结后重跑（§283.5）。
 
 > 当前（2026-10-17 13:10指示收尾）：PR209已普通合dev be8f3a2，最终head与实际dev全部CI成功（§283.4）。
@@ -4870,3 +4876,10 @@ PR209 最终 head ad7f1740ffb9089e290f5aa2a79e8b2ec181f5e5 的 Branch39005314326
 继续只合批本地退出规则精简：cache_lock 在既有 ExitStack 中直接 enter_context(_owned_stream(closing(handle)))，移除与四个写入口同义的自有 close_handle 回调。release_lock 仍最后压栈、先解锁再关闭，held 登记、deadline/重试、OS 锁与原始异常优先级均保持；不把解锁协议抽成通用 helper。既有锁取消/获取/解锁/关闭多故障矩阵用于验收，另补原始代理不得 enter/exit 的实际锁入口回归。临时证据继续 .tmp/structure-owned-writers，不随 clone；本地累积，不立即开小 PR。
 
 共享锁延伸 targeted：307 passed、1同一POSIX skip，新锁代理节点执行；release_lock回调AST与cache_lock签名保持。共享锁只删除6行，整个structure80文件/9038行，对起点净少94；本延伸之后尚未重跑完整core/Flow，之前2690+1/525仅验证065742b，不能覆盖此提交。首个原字节替换guard因误假设CRLF拒绝，实际shared.py为LF；原始guard证据及未改源码基线LOCK_TARGET保留，修正后LF原样。继续合批本地commit，不新增PR。
+
+
+## 284. 2026-10-17：五入口退出复用完整 CPU 里程碑
+
+按最新人工指示，将现有唯一主题的写流/close-boundary 积累提交完整验收后推送，通过 PR 合 dev。冻结 c47a89fd5033eb94117c2e21e03fc0cd5e50cdf9；core2691 passed+1同一既有POSIX skip，CPU Flow525 passed；5个新增句柄代理节点、155结构节点全执行，102源码哈希保持。四源码合计源码净少35行，全structure80文件/9038行，相比起点9132净少94，幅度有限不标总目标完成。既有首轮8项Flow失败/TARGET2报告器错误/换行guard拒绝原证据保留在§283及.tmp，不随clone。
+
+五入口分别为atomic_write_text、Logger._emit、Tracker.begin_run/append_jsonl、cache_lock，复用标准库closing与已有_owned_stream，保留原始句柄、close-only语义、原始写入体/flush/锁获取与解锁次序、首错优先级与原子发布清理。无新helper、模块、API形状、产物布局或GPU。结构文档只补退出职责一句，本批过程与验收留在record；未更新main或删除分支/数据/_staging_from_DEM。最终head及actualdev CI待分别验收，不借旧head成功。

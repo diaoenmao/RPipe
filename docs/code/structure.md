@@ -1280,9 +1280,7 @@ migrate_shared在取得多个共享根锁前确保原有根目录存在，并按
 共享锁退出按先OS release、后句柄close处理：已有准备异常/取消时，清理OSError不得替换首错；正常结束的清理失败仍严格传播，多个清理故障保留先发生者，非IO程序错误继续暴露。未取得锁不尝试unlock，获取Timeout的cause/原预算、PID物理root重入键、多根顺序及OS所有权不变。prepared_resource失败staging不按锁清理删除。见B107/Issue142。
 
 
-共享锁沿用同一 close-only 退出规则：ExitStack 注册 _owned_stream(closing(handle)) 后仍先执行 release_lock，再关闭句柄，不改锁协议或异常优先级。
-
-写流退出规则复用（2026-10-17）：atomic_write_text、Logger._emit 与 Tracker 的 begin_run/append_jsonl 以标准库 closing 保留原始写句柄，再复用既有 _owned_stream，移除重复 close 框架；保留各写入体与原有错误优先级，不新增 I/O 抽象。
+文本写入、日志、Tracker 与共享锁复用 artifact 的句柄退出规则；写流以标准库 closing 保留原始句柄，锁仍先解锁后关闭。
 
 文本与ledger写入退出合同（Issue144）：_atomic、Logger._emit、AlgorithmTracker的begin_run/append_jsonl在已有写入/flush/编码异常或取消时，尽力close且仅不让close OSError替换首错；正常体close仍严格，非IO程序错继续暴露。打开模式、编码/newline、原JSON/日志字节、flush与追加顺序、原子发布和staging所有权保持；不引入通用I/O层。
 
