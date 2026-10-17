@@ -4842,3 +4842,9 @@ PR正文只追加一次最终真实验收，无重复评论；附件100上限错
 ### 283.2 写流精简针对性验收
 
 四处写入体 AST 原样相等，三源码文件 475→440 行（净少 35），不靠格式缩行；_atomic 的既有混合换行原样保留。tests/run.py 显式 c1/c2、not gpu/external/slow 运行 atomic/logger/tracker：189 passed、1 既有 POSIX 模式 skip；现有写入/flush/close 双故障、取消、原字节保全测试覆盖复用后的实际入口。不新增镜像实现测试。完整 CPU core/Flow 尚待本批冻结后执行；PR209 实际 dev CI 独立进行。
+
+### 283.3 保留首轮反例并修正句柄语义
+
+首轮 core2686 passed+1既有skip；Flow517 passed/8 failed。直接传写流给 _owned_stream 会调用代理 __enter__，部分代理经 __getattr__ 返回底层文件，绕过原 write 拒绝；这是本次重构引入的行为差异，不是测试误报。保留 CORE/FLOW.xml/log 与主题提交560898f。使用标准库 closing 保持此前只调用 close、始终使用原句柄的合同，再复用既有错误优先级；不改八项失败回归。新增四个实际写入口代理不应 enter/exit 的回归，完整验证需重跑新提交。
+
+新回归第一次代理范围过宽，误拦截测试报告器的 events.jsonl 追加造成 INTERNALERROR（TARGET2 原日志保留）；已将代理限定到该测试 tmp_path，不改库以适应报告器。TARGET3 已全部通过，含原八个 Flow 反例与四个新入口。closing 是标准库的 close-only 适配，不引入新 helper 或修改 _owned_stream 的读取合同。

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from contextlib import closing
+
 import time
 import uuid
 from contextlib import ExitStack, contextmanager
@@ -25,12 +27,12 @@ def _owned_stream(manager):
 
 
 def _read_text(path: Path | str, *, errors: str = 'strict') -> str:
-    with _owned_stream(Path(path).open('r', encoding='utf-8', errors=errors)) as handle:
+    with _owned_stream(closing(Path(path).open('r', encoding='utf-8', errors=errors))) as handle:
         return handle.read()
 
 
 def _read_bytes(path: Path | str) -> bytes:
-    with _owned_stream(Path(path).open('rb')) as handle:
+    with _owned_stream(closing(Path(path).open('rb'))) as handle:
         return handle.read()
 
 
@@ -59,7 +61,7 @@ def atomic_write_text(path: Path | str, text: str, encoding: str = 'utf-8', *, n
             mode = None
         tmp.touch(exist_ok=False)
         owned = True
-        with _owned_stream(tmp.open('w', encoding=encoding, newline=newline)) as handle:
+        with _owned_stream(closing(tmp.open('w', encoding=encoding, newline=newline))) as handle:
             handle.write(text)
         if mode is not None:
             tmp.chmod(mode)

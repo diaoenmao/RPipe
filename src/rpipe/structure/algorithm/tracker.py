@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from contextlib import closing
+
 import json
 from collections import defaultdict
 from pathlib import Path
@@ -157,7 +159,7 @@ class AlgorithmTracker:
             and type(offset) is int and 0 <= offset <= self.jsonl_path.stat().st_size
         ):
             keep = offset
-        with _owned_stream(self.jsonl_path.open('ab+')) as handle:
+        with _owned_stream(closing(self.jsonl_path.open('ab+'))) as handle:
             if handle.tell():
                 handle.seek(-1, 2)
                 if handle.read(1) != b'\n':
@@ -167,7 +169,7 @@ class AlgorithmTracker:
     def append_jsonl(self, split: str, *, progress: dict[str, Any] | None = None) -> None:
         self.jsonl_path.parent.mkdir(parents=True, exist_ok=True)
         means = self.mean(split)
-        with _owned_stream(self.jsonl_path.open('a', encoding='utf-8')) as handle:
+        with _owned_stream(closing(self.jsonl_path.open('a', encoding='utf-8'))) as handle:
             for name, value in means.items():
                 row = {'step': self.step, 'split': split, 'name': name, 'mean': value}
                 if progress is not None:
