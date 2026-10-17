@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：本轮PR207与PR208均已合dev并双侧实际CI全绿，最新dev4483455（§282.7）。
+> 验证：最终core2686 passed+1既有skip、CPU Flow525 passed；40新节点/155结构节点全执行，102源码哈希一致。
+> 结果：Config转换5文件238→194行，全structure9132→9073行；公开API/字段/模块/产物布局保持，不夸大总缩行幅度。
+> 盘点：自203累计5合入，1主worktree、0开放PR/Issue；main/dev及当前主题本地远端均保留，删除清单为空。
+> 状态：生产改动全部已合dev，无活句柄；仅收尾文档本地提交随下批合入。目标控制仍旧paused，工具不能恢复active。
+
 > 当前（2026-10-17）：Config读写共享完整里程碑CPU验收通过，更新原PR208最终head（§282.6）。
 > 验证：core2686 passed+1同一既有skip、CPU Flow525 passed；40新节点/155结构节点全执行，102源码哈希一致。
 > 结果：四层共享序列化，三层共享显式构造，Data专用origin校验不变；公开字段/签名/模块/API和产物布局保持。
@@ -4809,3 +4815,17 @@ Control+结构CPU213 passed/0fail/error/skip，新增扩充节点9项（4子类�
 初稿head52ae26a的Branch39002973172/Package39002973153/Unit39002973161均已完成success，原始Run/本地证据保留，但不作本次最终head验收。一项中间Run查询误填SHA返回空，已由原PRE_MERGE和git rev-parse核对后重新取得实际3条success；空结果未用于验收，原尝试保留，不当库失败。更新原PR208，不创建额外PR、不取消/删除旧Run。
 
 最终仍80个源文件、9073行，对起点9132净减59行；主要删除重复转换与判断，保留必需校验和公共形状，不夸大幅度。下一步正常push与最终head/actualdev双侧实际CI；合后按累计约5个PR做只读分支/worktree/PR/Issue盘点，当前人工明确不删分支或数据，清理不越权。
+
+### 282.7 最终head与实际dev双侧验收
+
+[PR208](https://github.com/DreamSoul-AI/RPipe/pull/208) 正常合 dev `44834551b0f3806652f5139bfa6570256b3f0967`。最终head `104b53af99ab885f77392a5250430bf3627d25be` 的Branch39003702496、Package39003702477、Unit39003702487及全部实际矩阵/聚合成功；actualdev Package39004183686、Unit39004183696及全部实际矩阵/聚合同样成功。PR_CHECKED SHA256 `0400a62b053ab69f6acf612c3a530b367c6fed87e4a1eae7ed04037620783285`，DEV_CHECKED `95ac53befbe54fc0612ce141ad8b01b133a238a97f65c23de5a39f72b0a14ef0`。源码/测试/Study/结构文档在head与actualdev间无差异，普通快进后102库源码哈希仍与最终完整回归冻结值一致。
+
+本轮先完整收尾PR207（§281.4），随后继续并完成同主题Config PR208，不在capacity小批完成后待命。最终40新增合同节点和155结构节点全执行；Config/Control五文件从238→194行（净44），全structure9132→9073（净59），幅度有限，不把总目标标为完成。公开字段/构造与方法签名、kwargs顺序、子类默认值、类模块/持久化路径、浅复制/extra覆盖和Data origin拒绝保持；无新公开API或基类，原origin兼容状态未改。
+
+PR正文只追加一次最终真实验收，无重复评论；附件100上限错误保留，链接有效，不删除历史附件。GitHub初稿Run和本地中间证据均保留，未取消/删除，不借其绿灯验收最终代码。原始证据.tmp/structure-config-final不随clone。main、本地dev与origin/main保护引用不变，不发布/tag/force push，不覆盖下游或数据；本地/远程主题依授权保留。收尾记录本地主题提交随下一完整源代码里程碑合入，不另开纯记录PR。
+
+### 282.8 五次合入后的只读周期盘点
+
+上一基线203，本次204/205/206/207/208共5个dev合入均有GitHub实际合并记录。盘点基线更新为208；主worktree仅D:/GitHub/diaoenmao/RPipe一处，无废弃登记worktree；开放PR0、Issue0，无需重复关闭。保留本地main/dev/codex/structure-artifacts，远端origin/main、origin/dev、origin/codex/structure-artifacts及origin/HEAD符号引用。当前主题虽已保全合入仍在用且人工明确不删分支/数据，本次删除分支/worktree/数据清单均为空；未更改GitHub自动删除设置。INVENTORY_RAW/INVENTORY_CHECKED在本地最终证据目录。
+
+最终再次get_goal确认仍是旧08:05 API待审objective、status=paused；后续人工批准已解除审批门，本轮工作确已继续完成，但工具不支持恢复active或改写未完成目标，未伪称恢复。该元数据会影响回合结束后的目标自动续跑，已在会话报告；不据其重新索取已批准API许可，也不以虚假完成状态替代恢复。
