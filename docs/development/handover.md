@@ -1,3 +1,9 @@
+## 2026-10-17 TensorBoard 展示批次完成（record §298）
+
+PR222 已普通合 dev f55a8732f12c31999efc15f8aa33381cb3970843，最终head/actualdev全部实际CI成功，双侧各4个CPU矩阵的真实event读回步骤全部执行成功。授权禁令已撤除，README/structure/监控文档/中英文研究计划已同步；命令 `python -m rpipe tensorboard <study> --out .tmp/tensorboard/<new-snapshot>`，依赖仅 `[tensorboard]` 可选组，Logger不改，JSONL是唯一数值主源。
+
+本机core2813+1既有skip/Flow525、定向128；生产净增54行是展示能力，不计作瘦身。分数epoch/未知或越界横轴明确拒绝，不能静默截断；完整JSONL/PNG仍保留原坐标，需要TensorBoard分数epoch呈现时另定合同。结构目标继续按已登记系统计划推进，B2未批准不动。原始证据.tmp/tensorboard-export不随clone；无活测试/观察句柄。尾记本地随下一实质里程碑；保留分支/数据/_staging，不派生/main/GPU。定时ACTIVE，禁止重复PR221/222合并或验收。
+
 > 当前：record§297/.tmp/structure-systematic/STATE.json；22:19系统盘点79文件/15init/64登记，未登记0，proposal§六含全文件清单和B1/B2/B3计划。B1源码ec9254a四文件六函数净删22行，79文件8905行；定向486pass，完整core2800pass+1既有skip/CPU Flow525pass，15新节点/154结构节点/101哈希通过，无活测试句柄。待一个里程碑PR与双侧实际CI。B2恢复/布局合同仅proposal待批，未动旧格式/诊断/staging；不等待新目标，不为空轮补记，保留分支/数据/_staging，不派生/main/GPU/测速。
 
 > PR220双侧实际CI已验收：最终head8882698、actualdev2c6bf0c8全部实际矩阵/聚合成功，record§296.2/.tmp/structure-vision-specs/STATE.json complete。6处同文件净删55行（规格单项37），79文件8927行；core2785+1既有skip/CPU Flow525，21新增/154结构节点/101源码哈希一致，生产全部入dev。宏观目标未完成；后续找较大同文件候选，空轮不追加record，尾记随下批源码PR。保留分支/数据/_staging；15分钟定时ACTIVE，本批不派生，不动架构/API/产物布局/main/GPU/测速。无活句柄，盘点基线218后累计219/220两次。

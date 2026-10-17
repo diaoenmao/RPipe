@@ -1,8 +1,8 @@
-> 当前（2026-10-17 22:40 后）：TensorBoard 禁令已撤除；JSONL 唯一数值主源的可选独立导出已实现，Logger 原字节不变。
-> 验证：冻结 b2b9dba 完整 core2813 passed+1既有skip、CPU Flow525 passed，101源码哈希及HEAD未变；真实event离线读回已通过。
-> 前批：PR221 已双侧全部实际CI成功，普通合dev c7ae1ad；本批展示能力待里程碑PR与双侧CI，不借前批绿灯。
-> 限制：TensorBoard int64 step 不能原样表达分数epoch，本批明确拒绝不截断；完整JSONL/PNG保留原坐标，后续呈现方案需另定。
-> 保护：可选依赖，不改tracker/logger架构及正式布局，不训练/GPU/测速，不派生/main/删分支数据；_staging不碰。
+> 当前（2026-10-17）：TensorBoard 禁令已撤除；PR222 普通合dev f55a873，最终head与actualdev全部实际CI成功。
+> 能力：JSONL有效轨迹独立导出event，可选tensorboard组，Logger原字节不变；不改正式Run布局/结果链。
+> 验证：完整core2813 passed+1既有skip、CPU Flow525 passed；13新core节点+真实event读回，双侧各4矩阵的event专项均实际成功。
+> 净产出：新增展示能力生产净增54行，不冒称净瘦身；structure仍79文件/8905行，B2合同提案未实施。
+> 限制与保护：分数epoch明确拒绝不截断，原JSONL/PNG保留坐标；无GPU/训练/服务/派生/main/删分支数据，_staging不碰。
 
 > 当前（2026-10-17 22:19后）：全structure系统盘点完成，79文件、15导出init、64登记非init，未登记/失效0；批次计划已入proposal§六。
 > 第一可执行B1：四个现有文件六函数体净少22行，79文件/8905行；无新helper/API/文件架构/磁盘布局。
@@ -5528,3 +5528,12 @@ Enmao 明确批准可选 TensorBoard：scalars.jsonl 是唯一数值主源，展
 冻结 b2b9dba 完整 core2813 passed+1同一既有POSIXskip、CPU Flow525 passed；101源码哈希与HEAD未变。定向首次127 passed（含真实可选event读回），随后补一项flush失败分类进入完整core；正式远端CI将为可选组单独执行真实event回读，不把可选包加入主依赖。原始日志/XML/冻结证明在 .tmp/tensorboard-export，不随clone。
 
 新增展示能力覆盖：JSONL回滚尾段剔除/同坐标最后值、Run隔离、精确双精度scalar读回、整数epoch/step（含0）、tag组件转义、不读state补数值、拒绝分数/未知/越界横轴、缺依赖及writer构造/写入/flush/close失败退出2并保持源与正式result原字节、拒绝复用旧导出目录。没有真实训练/GPU/下载或服务启动。与前批dev对比，现有三个生产文件净增加54行（CLI13、共用JSONL读出4、event导出37），新增一个显式命令和一个可选依赖组；这是新能力，不计作结构净瘦身。无新生产模块、目录或Logger改动。分数epoch的TensorBoard呈现仍为明确的能力缺口，不把整数验收外推为全横轴支持。
+
+
+### 298.2 PR222 双侧实际 CI 验收与剩余边界
+
+最终 head 0a3e680c773eb542301f85430de7e38e7c0cdb38 的 Branch39042657859 / Package39042657858 / Unit39042657877 全部实际矩阵及聚合成功；普通合 dev f55a8732f12c31999efc15f8aa33381cb3970843 后，实际 dev Package39043207276 / Unit39043207231 全部实际矩阵及聚合成功。两侧各四个 CPU 平台/Python 矩阵的“Read back optional TensorBoard events (CPU, offline)”步骤均实际成功（共8项），不是仅依赖模拟 writer 或聚合绿灯。PR_CHECKED SHA256 5ff52738ffe58e8dbce1d81ad55010416411484f2d2968dad38d8990cc2f1388；DEV_CHECKED 690a2aebfe99f3067ec6b8ede01a529cea2992933380db41743277d288d49c55。PR正文只追加一次验收，应用附件100上限错误与有效PR链接保留，不删历史附件。
+
+head/dev 的源码、测试、Study、docs、依赖与CI树一致；冻结 b2b9dba 与最终head的源码/测试/Study/pyproject一致，101源码哈希保全。定向最终128 passed，完整core2813 passed+1同一既有POSIXskip、CPU Flow525 passed。原始证据 .tmp/tensorboard-export（不随clone）。Logger 相对本批基准dev c7ae1ad 原字节不变；没有新增生产模块或移动目录，生产三个现有文件净增54行。宏观Occam目标不因此标完成；structure仍79文件/8905行，相对9132起点净少227行约2.49%。
+
+剩余能力边界为分数epoch/未知坐标/int64越界的明确拒绝；标准event整数step无法无损承载它们，本批未擅定缩放、取整或observation替代。若要求TensorBoard也展示分数epoch，须另定坐标呈现合同；现有JSONL/PNG及恢复轨迹保持。三个派生副本暂不同步。本地验收尾记随下一实质源码里程碑保全，不为尾记新开PR。盘点基线218后219–222共4次，按最新人工授权保留当前分支与数据，未到约5次不重复盘点。
