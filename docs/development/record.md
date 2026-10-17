@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR212已普通合devb184390，最终head与actualdev全部实际CI成功（§286.3）。
+> 后续本地：两root配置发射体共享e2de26e，core2721 passed+1既有skip、CPU Flow525 passed。
+> 证据：7新节点/153结构节点执行、100源码哈希一致；structure78文件/9004行，对起点净少128。
+> 未完成：后续root源码尚未推送/开PR/合dev，继续主题合批；宏观目标未称完成，goal控制仍旧paused。
+> 保护：无活句柄，不碰_staging，不改main/API形状/文件架构/产物布局，不删分支或数据，不跑GPU/测速/逐路径审计。
+
 > 当前（2026-10-17）：按14:28收尾授权推送配置字典与预算完整批次，当前CPU验收通过（§286）。
 > 验证：core2714 passed+1既有skip、CPU Flow525 passed；15新节点/153结构节点执行、100源码哈希一致。
 > 范围：四个现有函数净少9行，structure78文件/9014行；无文件架构/API形状/产物布局变化。
@@ -4995,3 +5001,15 @@ parent延伸：恢复相邻与当前结构定向165 passed、0skip。全structur
 ### 286.2 root字段共享本地定向
 
 两个类的字段/构造/其他方法AST保持，公共发射体仅参数名self→config后AST原样；Run的id前缀由原方法保留，同文件一个私有函数只供当前两个调用方，不新增公开helper/框架。定向221 passed/0skip，7新节点全执行；测试覆盖layer次序、id键位、extras末尾覆盖与身份、tags浅复制、原异常身份及子类默认字段不扩张。run_config.py164→154行，结构78文件/9004行，比起点净少128；总体目标未称完成。后续冻结本地新提交跑完整CPU，PR212 actualdev独立验收中；原20+6组对照/AST与日志.tmp/structure-root-mapping不随clone。
+
+### 286.3 PR212 双侧实际 CI 完成
+
+最终head1c929af873cd5c4536a7e492d439eace381e78e4的Branch39010264308/Package39010264253/Unit39010264209所有实际矩阵及聚合成功后普通合devb184390928fd3fe8fa24ca03826ac0c2e5186948；actualdev的Package39010727041/Unit39010727098及全部实际矩阵/聚合同样成功。PR_CHECKED SHA256 aac773555947653f8e4c8daccdb446c3d5ac0e57e4cea80a671b30f43f14184a；DEV_CHECKED 311d615c85deb540485cf69e8abe0079f6175fff85ff79e28b90640761a25cbe。原head/dev源码、测试、Study、结构文档一致；后续root代码本地单独验证，不借PR212绿灯验收。PR正文只追加一次验收，无重复评论；附件100上限错误保留，不删历史附件。main/local dev/origin main保护引用未变，当前主题本地/远端及数据/_staging_from_DEM保留；未发布或打tag。周期盘点基线208，209–212累计4次合入，未满约5次，不重复盘点/清理。
+
+### 286.4 后续root共享完整CPU（本地、未推送）
+
+冻结e2de26eb245ed8424b063146934248710f5335e4：core2721 passed+1同一既有POSIX skip、CPU Flow525 passed；7新公共映射回归/153结构节点执行，100源码哈希一致，无GPU节点。定向221 passed无skip，20组字节/id/异常及6组layer顺序/身份/异常对照一致。公共发射体AST仅self→config参数重命名后相同；两类字段/构造/其他方法AST保持，私有函数仅服务当前两个调用方，不新增公开API、可选参数或文件。
+
+保留Run的原id前缀，各caller传入原本新建的out；seed/空字符串/tags浅复制、data/model/algorithm/system调用顺序、extras末尾覆盖与id键位、原异常身份及子类默认字段不扩张保持。run_config.py164→154行，全structure78文件/9004行，起点9132净少128；不夸大总体缩行，不标总目标完成。后续源码仅本地e2de26e，未推送/开PR/合dev，随下个完整同主题里程碑合批。无文件架构/API形状/磁盘产物布局变化，无测速或逐路径审计。原证据.tmp/structure-root-mapping不随clone，无活测试/CI观察句柄。
+
+本轮get_goal重新只读核对，仍是旧含API待审门的objective且status=paused，工具不支持恢复active；后续批准已解除旧门，本轮授权工作已持续执行并完成上述结果，没有伪称目标控制已恢复，也不重复索取已批准API许可。
