@@ -1,3 +1,5 @@
+> 当前里程碑：record§296/.tmp/structure-vision-specs/STATE.json，源码770619e视觉规格归并单项净少37行，连同前批6处累计比dev净少55行，79文件8927行。定向206pass，完整CPU core2785pass+1既有skip/Flow525pass；21新增/154结构节点/101源码哈希通过。无新helper/API/文件架构/产物布局，待一个里程碑PR与双侧实际CI验收；空轮不再追加record。15分钟定时ACTIVE，不派生/不删分支或数据/不动main/GPU/_staging。
+
 > 19:32确认后继续本地净删减：源码73ea0b1 tracker.save删临时snapshot/复制，定向103pass，完整core2779pass+1既有skip/CPU Flow525pass；4新节点/154结构节点/101哈希通过。5函数累计比dev少18行，79文件8964行；未推送/开PR/合dev，继续攒实质里程碑。当前record§295.5/.tmp/structure-tracker-save/STATE.json，无活句柄；15分钟定时ACTIVE，三个副本待新可用里程碑后周期同步，本批不派生。不动API/文件架构/产物布局/main/GPU/测速，保留分支/数据/_staging。
 
 > PR219后净删减本地累计：record§294/.tmp/structure-inline/STATE.json为当前入口，源码b0bb61d未推/开PR/合dev，4既有函数体内净少16行，79文件8966行，无新helper/接口/文件架构/布局。完整core2775pass+1既有POSIXskip/Flow525pass、11新节点/154结构节点/101源码哈希通过；106原新对照一致、TARGET2 293pass。a740952等尾记保留，继续攒实质里程碑而不为小批PR；不借PR219绿灯验本地后续。无活测试句柄；19:25新授权已恢复rpipe每15分钟续跑，见record§295。三个副本仅在新可用里程碑版本后周期同步，本批不同步；保留分支/数据/_staging，不动main/GPU/测速；新架构必须proposal提交后等审。
