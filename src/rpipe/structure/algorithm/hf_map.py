@@ -83,17 +83,11 @@ def training_arguments_kwargs(
     if period > 1:
         kwargs['gradient_accumulation_steps'] = period
     blob = algorithm_blob(config)
-    aliases = {
-        'weight_decay': blob.get('weight_decay'),
-        'warmup_ratio': blob.get('warmup_ratio'),
-        'warmup_steps': blob.get('warmup_steps'),
-        'adam_beta1': blob.get('adam_beta1'),
-        'adam_beta2': blob.get('adam_beta2'),
-        'adam_epsilon': blob.get('eps', blob.get('adam_epsilon')),
-        'max_grad_norm': blob.get('max_grad_norm'),
-        'momentum': blob.get('momentum'),
-    }
-    for key, value in aliases.items():
+    for key in ('weight_decay', 'warmup_ratio', 'warmup_steps', 'adam_beta1',
+                'adam_beta2', 'adam_epsilon', 'max_grad_norm', 'momentum'):
+        value = blob.get(key)
+        if key == 'adam_epsilon':
+            value = blob.get('eps', value)
         if value is not None:
             kwargs[key] = value
     if resume_from_checkpoint:

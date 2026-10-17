@@ -49,14 +49,10 @@ def experiment_entries(
 ) -> list[dict[str, Any]]:
     """Group Run configs by Experiment factors (axes, excluding seed)."""
     groups: dict[str, dict[str, Any]] = {}
-    order: list[str] = []
     for path, cfg in configs:
         factors = {key: _get_dotted(cfg, key) for key in axis_keys}
         token = json.dumps(factors, sort_keys=True, default=str)
-        if token not in groups:
-            groups[token] = {'factors': factors, 'runs': []}
-            order.append(token)
-        groups[token]['runs'].append(
+        groups.setdefault(token, {'factors': factors, 'runs': []})['runs'].append(
             {
                 'id': cfg.get('id'),
                 'seed': cfg.get('seed'),
@@ -67,7 +63,7 @@ def experiment_entries(
                 'log': _run_log_ref(str(cfg.get('id') or path.parent.name)),
             }
         )
-    return [groups[key] for key in order]
+    return list(groups.values())
 
 
 def build_index(

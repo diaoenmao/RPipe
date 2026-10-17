@@ -52,10 +52,7 @@ def format_description(template: str, patch: dict[str, Any], experiment: str) ->
 
 
 def match_when(axis_flat: dict[str, Any], when: dict[str, Any]) -> bool:
-    for key, expected in when.items():
-        if axis_flat.get(key) != expected:
-            return False
-    return True
+    return not any(axis_flat.get(key) != expected for key, expected in when.items())
 
 
 def axis_keys_from_study(study: dict[str, Any]) -> list[str]:

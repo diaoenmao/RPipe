@@ -528,3 +528,26 @@ def test_saved_plan_unexpected_reader_error_propagates(tmp_path, monkeypatch):
 def test_missing_saved_plan_still_requests_rebuild(tmp_path):
     assert load_launch_plan(tmp_path, init_gpu=0, num_gpus=1, round_size=0) is None
     assert list(tmp_path.iterdir()) == []
+
+
+@pytest.mark.parametrize('outcome', ['match', 'mismatch', 'raise'])
+def test_match_when_keeps_inequality_short_circuit_and_exception_identity(outcome):
+    from rpipe.structure.make.expand import match_when
+    calls = []
+    primary = RuntimeError('synthetic comparison refusal')
+    class Value:
+        def __ne__(self, other):
+            calls.append(other)
+            if outcome == 'raise':
+                raise primary
+            return outcome == 'mismatch'
+        def __eq__(self, other):
+            pytest.fail('match_when must preserve the inequality operation')
+    if outcome == 'raise':
+        with pytest.raises(RuntimeError) as caught:
+            match_when({'first': Value(), 'second': Value()}, {'first': 1, 'second': 2})
+        assert caught.value is primary
+    else:
+        assert match_when({'first': Value(), 'second': Value()}, {'first': 1, 'second': 2}) == (outcome == 'match')
+    assert calls == ([1, 2] if outcome == 'match' else [1])
+    assert match_when({}, {}) is True

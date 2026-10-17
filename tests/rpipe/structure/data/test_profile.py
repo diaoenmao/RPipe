@@ -47,3 +47,20 @@ def test_recorded_stats_replace_the_builtin_table(tmp_path: Path):
 def test_data_names_come_from_axes_and_fixed():
     names = _data_names({'axes': {'data.name': ['MNIST', 'CIFAR10']}, 'fixed': {'data': {'name': 'MNIST'}}})
     assert names == ['MNIST', 'CIFAR10']
+
+
+@pytest.mark.parametrize('study, expected', [
+    ({'axes': {'data.name': ['b', 'a', 'b', 'A']}, 'fixed': {'data': {'name': 'a'}}}, ['b', 'a', 'A']),
+    ({'axes': {'data.name': [1, '1', 0, '', None]}, 'fixed': {'data': {'name': 1}}}, ['1', '0', '', 'None']),
+    ({'axes': [], 'fixed': {'data': {'name': 'MNIST'}}}, ['MNIST']),
+])
+def test_data_names_keep_string_conversion_first_occurrence_and_input(study, expected):
+    import copy
+    before = copy.deepcopy(study)
+    assert _data_names(study) == expected
+    assert study == before
+
+
+def test_data_names_still_rejects_missing_names():
+    with pytest.raises(ValueError, match='study.yaml has no data.name'):
+        _data_names({'axes': {'data.name': ()}, 'fixed': {'data': {'name': 0}}})

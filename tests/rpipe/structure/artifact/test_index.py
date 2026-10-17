@@ -37,3 +37,19 @@ def test_index_real_json_error_survives_secondary_close(tmp_path, reader_close_f
             load_index(tmp_path)
     assert len(handles) == len(closes) == 1 and handles[0].closed
     assert path.read_bytes() == b'{broken JSON'
+
+
+def test_experiment_entries_keep_first_seen_group_order_and_run_identity(tmp_path):
+    from rpipe.structure.artifact.index import experiment_entries
+    configs = []
+    for i, model in enumerate(['b', 'a', 'b', 'c', 'a']):
+        tags = [f'tag-{i}']
+        configs.append((tmp_path / f'runs/r{i}/config.yaml',
+                        {'id': f'r{i}', 'seed': i, 'model': {'name': model}, 'tags': tags}))
+    groups = experiment_entries(configs=configs, axis_keys=['model.name'], study_dir=tmp_path)
+    assert [g['factors'] for g in groups] == [{'model.name': x} for x in ['b', 'a', 'c']]
+    assert [[r['id'] for r in g['runs']] for g in groups] == [['r0', 'r2'], ['r1', 'r4'], ['r3']]
+    assert groups[0]['runs'][0]['tags'] is configs[0][1]['tags']
+    assert groups[0]['runs'][0]['config'] == 'runs/r0/config.yaml'
+    assert groups[0]['runs'][0]['log'] == 'runs/r0/assets/logs/run.log'
+    assert experiment_entries(configs=[], axis_keys=[], study_dir=tmp_path) == []
