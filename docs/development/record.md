@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR213双侧实际CI全绿，已普通合dev664e46b（§287.2）。
+> 后续本地：checkpoint JSON重复体精简bdb4256，core2729 passed+1既有skip、CPU Flow525 passed。
+> 证据：8新节点/153结构节点执行、100源码哈希一致；structure78文件/9001行，起点净少131。
+> 未完成：后续源码未推送/开PR/合dev，继续主题合批；总体Occam目标未称完成。
+> 保护：盘点基线213、0开放PR/Issue，分支/数据/_staging保留；无活句柄，不跑GPU/测速/逐路径审计。
+
 > 当前（2026-10-17）：PR213已普通合dev664e46b，最终head全部实际CI成功；actualdev独立验收中。
 > 后续本地：同文件checkpoint tracker/logger JSON重复体精简，定向183 passed，8新节点执行。
 > 范围：仅两处原生有序循环，factory.py188→185；无API形状/文件架构/产物布局变化。
@@ -5030,3 +5036,15 @@ parent延伸：恢复相邻与当前结构定向165 passed、0skip。全structur
 ### 287.1 checkpoint JSON定向验证
 
 定向183 passed/0skip，8新增公共入口节点与153结构节点全执行：None不写，False/0/空容器写入，原JSON字节与tracker→logger顺序、bundle读取及legacy pieces读取一致；写失败保留原异常身份和已提交bundle，读失败保留顺序/原异常/输入字节。首次182 passed/1 failed来自新增测试将Windows CRLF误预期为LF；只修测试为平台原生换行，生产代码未再改，原TARGET日志/XML保留。两方法以既有顺序循环复用，其他声明/签名AST保持，无新helper或模块。原始证据.tmp/structure-checkpoint-json不随clone。随后冻结本地提交执行完整CPU，不借PR213验收后续源码，不为3行精简另开PR。
+
+### 287.2 PR213双侧实际CI完成与周期盘点
+
+最终head54fc13b03608b4670b8e43c44c896ddb1cd2c15d的Branch39011928453/Package39011928473/Unit39011928456全部实际矩阵与聚合成功后普通合dev664e46b61979c6f14a6be7ab23f8a96ef0449652；actualdev的Package39012465462/Unit39012465428及所有实际矩阵/聚合同样成功。PR_CHECKED SHA256 7cc523766a069467858461322fceda7f600ee86f84b0cc98ba8b57e37b4fbb9f；DEV_CHECKED 0fdaf5699a8b340a8930140d02f72e8f49cf4549fa28ba491a42d975b82e8b69。head/dev源码、测试、Study、结构文档无差异，后续bdb4256另做本地验证，不借远端绿灯验收。PR正文一次性追加验收标记，无重复评论，附件100上限错误保留。证据.tmp/structure-root-final不随clone。
+
+从盘点基线208至209–213共5次合入，重新核对1个主worktree、0开放PR/Issue；本地main/dev/当前主题与远端main/dev/当前主题均保留，origin/HEAD仅为符号引用。main/local dev/origin main保护引用与合前相同，无其他未合主题待定，无已处理开放单需要重复关闭。最新人工明确保留分支与数据，删除清单为空，未删worktree/实验数据/结果/Run/provenance/_staging；新盘点基线213。
+
+### 287.3 后续checkpoint JSON完整CPU（本地、未推送）
+
+冻结bdb4256c33321fb0e6690a02007c5470cc928d7b：core2729 passed+1同一既有POSIX skip、CPU Flow525 passed；8新增公共入口回归及153结构节点全部执行，100源码哈希一致。两方法之外声明/函数签名保持，JSON tracker→logger顺序、None省略与falsey写入、平台原生文本换行/UTF-8字节、bundle优先和legacy pieces读取、原异常身份/输入字节/旧bundle保全均覆盖。首次新增测试182 passed/1 failed仅因Windows换行预期错误，纠正预期后定向183 passed/0skip，原日志/XML保留；没有通过修改生产格式使测试通过。
+
+factory.py188→185，全structure78文件/9001行，对起点9132净少131；幅度仍有限，不标宏观完成。没有新helper/模块或文件架构/API形状/产物布局变更，不测速/逐路径审计/训练/GPU，未做真实模型数据下载。源码本地提交，后续同主题完整里程碑合批，不为3行精简或收尾记录另开小PR。原证据.tmp/structure-checkpoint-json不随clone，无活测试/CI观察句柄；当前状态入口为其中STATE.json，PR213独立证据保留。
