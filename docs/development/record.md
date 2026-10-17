@@ -1,8 +1,8 @@
-> 当前（2026-10-17 18:30 后）：获批硬件分责已本地实施；正式2318/临时154121持久化候选0引用/0读取错误。
-> 影响：GpuInfo模块身份按批准改变；既有公开导出/签名/普通repr保持，合成旧/新pickle协议0–5通过，无兼容别名。
-> 分账：迁移净增7行，合并前批真删除后对dev净少7行；79文件/8982行，减少包装与重复判断，不称总体完成。
-> 验证：完整core2764 passed+1既有skip、CPU Flow525 passed，20新节点/154结构节点执行、101源码哈希一致；统一里程碑PR。
-> 保护：定时器继续PAUSED，派生同步不实施，保留分支/数据/_staging，不改make_api/flow/磁盘布局/main，不跑GPU/测速。
+> 当前（2026-10-17）：硬件职责分离与make冗余删除已合PR219，actualdev1b64a6e2；最终head和实际dev全部实际CI全绿。
+> 先行证据：正式2318/临时154121持久化候选0引用/0读取错误；合成旧/新协议0–5通过，类模块身份改变已明确记录。
+> 验证：core2764 passed+1既有POSIXskip、CPU Flow525 passed，20新增/154结构节点执行、101源码哈希一致。
+> 分账：真删减14行、分责开销+7行，合计对dev净少7行；79文件/8982行，宏观目标未完成；源码全部入dev，仅验收尾记本地待合批。
+> 边界：临时文本循环fixture读取限制已留证；定时器PAUSED、派生不同步，保留分支/数据/_staging，无API调用形状/磁盘布局/main/GPU变更。
 
 > 当前（2026-10-17）：PR217/218双侧实际CI全部成功，最新dev1bded360；源码与实质文档均已入dev。
 > 已完成：结构小结发布、14段旧叙事原文迁移/回链；153结构节点通过，原文哈希/标题/63项登记保持。
@@ -5394,3 +5394,13 @@ Enmao已批准新建make/hardware.py，仅迁GpuInfo、probe_gpus、_probe_torch
 冻结010a9a36e94b027248f5fe517f8c0a2bd06c08fd后，完整core2764 passed/1同一既有POSIX executable mode skip/0fail/error，CPU Flow525 passed/0skip/fail/error；c1/c2且显式排除gpu/external/slow。整批20新增节点（§292的5、hardware的11、容量4）和154当前结构节点均在CORE.xml执行，101源码哈希/冻结HEAD一致。原声明迁移、公开导出/签名/普通repr、合成旧协议0–5及新协议0–5分别验收，额外270容量对照、前批200缓存/163装箱对照保持。原始证据和LOCAL_CHECKED/FROZEN均在.tmp/structure-hardware及前批目录，不随clone；临时文本补查超时限制保留，无活本地测试句柄。
 
 以完整make职责分离+真重复删除统一交付一条PR→dev：四硬件声明经批准迁移，现有make_api/flow/init字节不变，capacity保留计算/装箱/报告；20节点与结构登记同批，不另拆小PR。生产实际净少7行，不把搬移算净删减。后续最终head/实际dev各自所有实际矩阵及聚合成功才验收；本机全绿不替代CI。定时器明确保持PAUSED，不再请求恢复；派生副本仍待批准，不读改vendor，不删分支/数据、不动main/tag/release。
+
+### 293.5 PR219 双侧实际CI验收与持久化补查边界
+
+[PR219](https://github.com/DreamSoul-AI/RPipe/pull/219)最终head6518de02de006734cfd6c64d3439ade6d5325c10的Branch39025955124、Package39025955125、Unit39025955140全部实际矩阵与聚合成功后，普通合actualdev1b64a6e2ea84f6c346295924542562c63f6ca35c。实际dev的Package39026476381、Unit39026476362及所有真实矩阵/聚合独立成功，无skipped/neutral替代job成功。PR_CHECKED SHA256 0e21a10113fc0a027873e1652f91bfbc8026847908939a9623d72810fa69a37c；DEV_CHECKED 45d360b3061eeba71fa1c17e9c4c9696635a1de28527968032e4ce6c4fa559ed。head与实际dev源码、测试、Study和文档树一致，101源码哈希仍等于完整CPU冻结010a9a3。PR正文以唯一PR219_ACTUAL_DEV_ACCEPTED标记追加验收，没有重复评论；应用附件100上限错误和有效PR链接保留，不删历史附件。原始证据在.tmp/structure-hardware，不随clone。
+
+实施前正式2318/临时154121二进制候选0引用/0读错及正式可读产物0命中保持原结论。临时文本首次40秒超时后，按目录有界补查494个分区：399分区无读取错误，95分区共373条os error1921，均已用is_symlink确认是历史自引用测试fixture（370条cyclic.log及3条result/tracker状态循环链接）；未删改fixture。唯一文本命中是扫描结束后明确生成的BEFORE_IDENTITIES.json合成身份快照，不是在用对象；不能把未读到的循环文件或未知库外副本写成零风险。澄清方法表述：rg不遍历目录符号链接，但会尝试读取文件符号链接；初始二进制扫描原描述中的“no symlink following”不能扩大解释为绝不触及文件链接。PARTITIONED_REPR_SCAN/REPR_CLASSIFIED/METHOD_CLARIFICATION保存原错误、分类和方法限制，原超时拒绝也保留。
+
+本批已完成：四硬件声明原AST迁移、GpuInfo新模块身份影响明确、普通repr/公开签名/现有导出身份保持，合成旧pickle协议0–5与新pickle协议0–5通过；未添加私有旧别名/包装/新门面，make_api、make包init、flow/cli原字节保持。结合缓存冗余过滤与装箱单调用包装删除、容量重复条件删除，实际生产对dev基线净少7行，79文件/8982行；迁移净增7行不冒充瘦身。源码全部入dev，本机core2764pass+1既有POSIXskip、Flow525pass，20新增/154结构节点与双侧实际CI验收完成，不称宏观Occam目标完成。
+
+后续仍按同文件有依据的净删减积累完整里程碑，不能以几行收尾记录另开PR；本节与交接仅本地主题提交保全，源码已合，无未合源码或存活测试/扫描/CI观察句柄。当前入口.tmp/structure-hardware/STATE.json。盘点基线218，219为之后第1次，不重复全面盘点；最新人工保留分支/数据，删除清单为空。main/local dev/origin main引用未动，当前主题本地/远端均保留，_staging未触碰或误提交；不训练/实验/GPU/测速，不打tag/发版/force push/花钱/覆盖vendor/向其他会话发消息。按18:30明确指示，rpipe继续PAUSED，不尝试恢复；派生同步待Enmao审阅说明，暂不实施。
