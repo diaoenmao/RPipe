@@ -280,3 +280,45 @@ def test_cifar_endpoint_retains_exact_archive_contract(name, archive, checksum, 
     assert asdict(endpoint) == dict(name=name, origin=policy, url=f'{host}/{archive}',
                                    mirrors=(), archive=archive, archive_md5=checksum)
     assert endpoint.location == f'{host}/{archive}'
+
+
+@pytest.mark.parametrize('size', [0, 1, 1024 * 1024, 1024 * 1024 + 7])
+def test_archive_checksum_preserves_block_reads_and_input_bytes(tmp_path, monkeypatch, size):
+    from rpipe.structure.system.origin import DownloadEndpoint
+
+    source = tmp_path / 'archive.bin'
+    payload = (b'chunk-data' * (size // 10 + 1))[:size]
+    source.write_bytes(payload)
+    endpoint = DownloadEndpoint('synthetic', 'domestic', archive=source.name,
+                                archive_md5=hashlib.md5(payload).hexdigest())
+    open_file, calls, handles = Path.open, [], []
+
+    class Reader:
+        def __init__(self, handle):
+            self.handle = handle
+
+        def __enter__(self):
+            self.handle.__enter__()
+            return self
+
+        def __exit__(self, *args):
+            return self.handle.__exit__(*args)
+
+        def read(self, count):
+            calls.append(count)
+            return self.handle.read(count)
+
+    def traced_open(path, *args, **kwargs):
+        handle = open_file(path, *args, **kwargs)
+        if path == source and args == ('rb',):
+            handles.append(handle)
+            return Reader(handle)
+        return handle
+
+    with monkeypatch.context() as patch:
+        patch.setattr(Path, 'open', traced_open)
+        discard_bad_archive(tmp_path, endpoint)
+    expected_reads = (size + 1024 * 1024 - 1) // (1024 * 1024) + 1
+    assert calls == [1024 * 1024] * expected_reads
+    assert len(handles) == 1 and handles[0].closed
+    assert source.read_bytes() == payload

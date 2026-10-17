@@ -1,3 +1,15 @@
+> 当前（2026-10-17）：PR214双侧实际CI全绿，已普通合dev7275d8b（§288.2）。
+> 后续本地：origin摘要读取循环06ca025，core2739 passed+1既有skip、CPU Flow525 passed。
+> 证据：4新块边界/6既有reader退出/153结构节点及前批回归执行、100源码哈希一致；structure78文件/8992行，净少140。
+> 未完成：后续源码未推送/开PR/合dev，继续同主题合批，不为3行精简单开PR；总体Occam目标未完成。
+> 保护：无活句柄，保留_staging/分支/数据，不改main/API形状/文件架构/布局，不跑GPU/测速/逐路径审计。
+
+> 当前（2026-10-17）：PR214已普通合dev7275d8b，最终head全部实际CI成功；actualdev独立验收中。
+> 后续本地：origin校验和读取循环归纳，定向196 passed，4新块边界/6既有reader退出/153结构节点执行。
+> 范围：仅原生赋值表达式，保留1MiB读取与_owned_stream语义，不改签名/文件架构/产物布局。
+> 未完成：后续完整CPU与源码PR尚未完成，总体Occam目标未完成。
+> 保护：不碰_staging/分支/数据/main，不训练/GPU/测速/逐路径审计。
+
 > 当前（2026-10-17）：PR213双侧实际CI全绿，actualdev664e46b，未重复远端操作。
 > 后续本地：JSON重复体+百分位筛选02475f5，完整CPUcore2735 passed+1既有skip、Flow525 passed。
 > 证据：6新筛选+8前批JSON节点/153结构节点执行、100源码哈希一致；structure78文件/8995行，净少137。
@@ -5066,3 +5078,24 @@ factory.py188→185，全structure78文件/9001行，对起点9132净少131；�
 冻结02475f5cf7512ab1d289c1af8ffd6d2c76ec51de：core2735 passed+1同一既有POSIX skip、CPU Flow525 passed；6新百分位节点、前批8个JSON节点及153结构节点全部执行，100源码哈希一致。定向210 passed/0skip，120组原新对照一致；非正进度不消费输入、一次性生成器顺序/重复项、already成员先于阈值比较的短路、集合不修改和原迭代异常身份均保持。仅crossed_percents的列表构造改原生推导，签名/返回注解及其余声明AST不变，没有新helper/模块/防御层，不改百分位容差、checkpoint命名/去重、调用时机或产物布局。
 
 本延伸净少6行，连同本地JSON净少9行，全structure78文件/8995行，对起点9132净少137；只是源码范围，幅度有限不称宏观完成。源码仅本地bdb4256与02475f5，未推送/开PR/合dev，继续同主题合批，不借PR213远端绿灯验收本地后续。当前入口.tmp/structure-percent-filter/STATE.json，旧STATE有指针；原对照/冻结/XML/日志不随clone，无活测试/CI句柄。未做GPU/训练/真实下载/测速/逐路径审计；_staging_from_DEM及现有分支/数据均保留。
+
+
+## 288. 2026-10-17 JSON/百分位里程碑收尾与origin读取循环归纳
+
+按最新明确收尾授权推送本地b83b0c6并创建[PR214](https://github.com/DreamSoul-AI/RPipe/pull/214)。最终headb83b0c650ca5d18b4213b5728f4fba4ec4b300ad的Branch39014936716/Package39014936688/Unit39014936772全部实际矩阵及聚合成功，普通合actualdev7275d8b66a1c8b1c4f907246a64ac66b7a459208；head/dev源码、测试、Study、结构文档一致。PR_CHECKED SHA256 a607dc42eca71ee4c7322c2e1c27870a53de1c5810bdc28042b9a3ec98b0ec65；actualdev CI独立等待，不将head结果当集成验收。原始证据.tmp/structure-json-percent-final不随clone，附件100上限错误保留，不删历史附件。
+
+后续仅在现有system/origin.py的_md5读取循环，以赋值表达式合并原read/真假判断/break，保留1MiB块、每次读取时机、EOF真假语义、digest.update顺序以及原_owned_stream上下文/关闭/异常身份。无新helper/模块，不改签名、下载源、摘要算法/校验规则、归档名字或产物布局。24组离线原新流对照（空/多块/非字节falsey终止、读取/关闭/双故障）结果、读取/关闭轨迹及原异常身份一致；已核对原基线6个reader失败/取消/关闭回归实际执行，不能代替候选验收。新增公开discard_bad_archive入口的空/1字节/恰好1MiB/跨块回归，随后定向及冻结完整CPU；不测速或下载真实模型数据。候选仅净少3行，继续本地合批，不单独开小PR。原证据.tmp/structure-origin-digest不随clone。
+
+### 288.1 origin摘要循环定向CPU
+
+定向196 passed/0skip，4新空/短/块边界/跨块节点、6既有reader失败/取消/关闭节点和153结构节点全执行。公开归档入口逐1MiB读取，包含末尾EOF读取，摘要匹配时输入原字节保留，真实句柄关闭；24组原新流结果及轨迹对照一致。_md5签名/返回注解与其余声明AST不变，_owned_stream原上下文和digest.update未改，只有while/read/真假/break合为赋值表达式。源码净少3行，全structure78文件/8992行，对起点9132净少140；仅本地提交，随后冻结完整CPU，不借PR214或旧本地绿灯验收。
+
+### 288.2 PR214 双侧实际CI完成
+
+最终headb83b0c650ca5d18b4213b5728f4fba4ec4b300ad的Branch39014936716/Package39014936688/Unit39014936772全部实际矩阵与聚合成功后普通合actualdev7275d8b66a1c8b1c4f907246a64ac66b7a459208；实际dev的Package39015408920/Unit39015408925及全部实际矩阵/聚合同样成功。PR_CHECKED SHA256 a607dc42eca71ee4c7322c2e1c27870a53de1c5810bdc28042b9a3ec98b0ec65；DEV_CHECKED b78ed6372cf378137f853478f4a17a26ae97ca14614e47233136d0af7655b7ae。head/dev源码、测试、Study、结构文档无差异，不借后续origin本地结果验收PR。PR正文一次追加验收标记，无重复评论；附件100上限错误保留，不删历史附件。main/local dev/origin main保护引用与合前相同，当前本地/远端主题及数据/_staging全部保留，不force push/发布/tag。盘点基线213，214是后续第1个合入，未达到约5次，不重复盘点或关闭已处理单。原始证据.tmp/structure-json-percent-final不随clone。
+
+### 288.3 后续origin摘要循环完整CPU（本地、未推送）
+
+冻结06ca025fc5df00c4677b00949725e2afd33062f5：core2739 passed+1同一既有POSIX skip、CPU Flow525 passed；4新空/短/块边界/跨块回归、6既有reader失败/取消/关闭节点、前批6百分位与8JSON节点以及153结构节点全部执行，100源码哈希一致。定向196 passed/0skip；24组离线原新读取/终止/关闭/原异常身份对照一致。只将_md5原read/真假判断/break合为原生赋值表达式，1MiB读取（含EOF读取）、digest更新次序及_owned_stream边界不变；全部签名/返回注解与其余声明AST保持。公开discard_bad_archive摘要匹配时原输入字节保留、真实句柄关闭；没有下载真实归档/模型或数据，没有改下载源、校验规则、归档路径/产物布局。
+
+源码净少3行，全structure78文件/8992行，对起点9132净少140；幅度有限，不标总目标完成。仅本地源码提交，未推送/开PR/合dev，继续同主题合批，不为3行精简或收尾记录单开PR。原证据.tmp/structure-origin-digest不随clone，当前STATE指向此处，无活测试/CI句柄。不新建/迁移模块，不改API形状，未跑训练/GPU/测速/逐路径审计，保留_staging/分支/数据。
