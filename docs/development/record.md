@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR211已双侧实际CI验收；后续配置预算精简仍本地积累，尚未推送。
+> 最新验证：预算/HF/结构177 passed、10新节点执行；全量2704+1既有skip/Flow525仅覆盖09ce2f9，预算延伸后需重跑。
+> 结果：structure78文件/9014行，对起点净少118；API形状/文件架构/产物布局保持，目标未标完成。
+> 下一步：有依据的同主题局部精简，完整里程碑再冻结验收/PR，避免小PR。
+> 保护：无活句柄，不碰_staging_from_DEM，不改main、不删分支或数据、不force push、不跑GPU/测速/逐路径审计。
+
 > 当前（2026-10-17）：PR211已普通合dev4f28bcf，最终head与actualdev全部实际CI成功（§285.3）。
 > 后续本地：现有配置字典操作精简09ce2f9，core2704 passed+1既有skip、CPU Flow525 passed。
 > 证据：5新节点/153结构节点执行、100源码哈希一致；structure78文件/9017行，对起点净少115。
@@ -4960,3 +4966,9 @@ parent延伸：恢复相邻与当前结构定向165 passed、0skip。全structur
 冻结09ce2f96ed1658599a25476d2916986f678dd782：core2704 passed+1同一既有POSIX skip、CPU Flow525 passed；5新比较/覆盖/过滤回归与153结构节点执行，100源码哈希一致，无GPU节点。定向205 passed，无skip。全部生产函数签名/返回注解保持，比较仍使用原来的等值语义/短路顺序，不改为不等值比较；空值省略、键序、对象身份、None覆盖与过滤门保持。HF覆盖以合成TrainingArguments签名验证，不加载真实Trainer/网络服务，不作真实HF/GPU实验结论。
 
 三个现有函数净少6行，全structure78文件/9017行，相比起点净少115；这是源代码范围，不将整个含新增回归/证据文档的仓库说成缩行，不标宏观目标完成。最新授权下未新增/迁移文件，未改文件架构或on-disk布局；未测速、未逐路径审计。后续代码仅本地09ce2f9，随后续同主题完整里程碑合批，不立即再开小PR。本地原证据.tmp/structure-config-operations及PR211.tmp/structure-model-final不随clone，无活测试/CI观察句柄。
+
+### 285.5 同主题延伸：调度 horizon 重复转换去重
+
+仅在现有ProgressBudget.scheduler_t_max中，将epoch优先、step回退的两处相同int/max表达式合为一次；step分支原样，故step的None/无效整数仍拒绝，非step的双None仍回退1。签名/字段/单位选择/下限1和异常保持，不改调度器构造或科学门，不新建/迁移文件。已核对两个训练调用方，72组step/epoch与空/0/负数/字符串输入的原新输出/异常一致；无测速/GPU或逐路径审计。便携预算回归随后执行，之前09ce2f9的完整2704+1/525结果不覆盖本延伸，后续里程碑需再冻结完整验证。原证据.tmp/structure-config-operations不随clone。
+
+预算延伸目标177 passed/0skip，10个新预算节点与当前结构节点执行。源码净少3行，structure78文件/9014行，对起点净少118；仅本地提交，完整core/Flow尚未覆盖。

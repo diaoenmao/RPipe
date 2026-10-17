@@ -29,11 +29,8 @@ class ProgressBudget:
     def scheduler_t_max(self) -> int:
         if self.unit == UNIT_STEP:
             return max(int(self.num_steps), 1)
-        if self.num_epochs is not None:
-            return max(int(self.num_epochs), 1)
-        if self.num_steps is not None:
-            return max(int(self.num_steps), 1)
-        return 1
+        horizon = self.num_epochs if self.num_epochs is not None else self.num_steps
+        return max(int(horizon), 1) if horizon is not None else 1
 
 
 def format_hms(seconds: float) -> str:
