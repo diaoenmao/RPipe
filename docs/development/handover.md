@@ -1,3 +1,5 @@
+> 2026-10-17 PR207双侧实际CI已完成：head52bf7ff、actualdev0d9b764；core2646+1既有skip、CPU Flow525、15新节点/155结构节点通过。record§281.4/.tmp/structure-capacity/STATE.json为当前依据；继续Config映射精简，无活验证句柄，保留分支/数据。整体80文件/9117行未达明显缩行；旧goal仍paused但本轮人工工作继续。
+
 > 2026-10-17 PR206 双侧实际CI完成：head f6700d6、actualdev cfbb09e，core2631+1既有skip/CPU Flow525；4新节点及155结构节点全执行。record§280.4与.tmp/structure-simplify/STATE.json为当前状态；无活句柄，分支/暂存/数据保留。总体80文件/9125行未达明显缩行，继续同主题完整批次，不恢复边界修复。
 
 > 2026-10-17 PR205 双侧实际CI验收完成：head bf2a9d3，actualdev e7d3096；core2627+1既有skip/CPU Flow525，结构155节点全过。record§279.5与.tmp/structure-origin/STATE.json为当前状态，无活句柄；分支及数据按最新人工保留。总体80文件/9147行，明显缩行未达成，继续结构精简，不新开边界修复。
