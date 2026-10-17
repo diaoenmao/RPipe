@@ -1,3 +1,9 @@
+## 2026-10-17：PR202 双侧验收/清理完成；API 方案等确认（最新）
+
+PR202 final a634074 / actual dev d37fea6 全部实际CI成功（Unit38986988940/38987596216，Package38986988983/38987596219，Branch38986989262），core2466passed+1同一旧skip、Flow525passed、16新节点全执行。structure79文件/9097行，15 init纯导出、64实现登记；总目标未完成。structure-packages 本地/远端正常删；reader PR201/200亦已验收关闭清理，远端仅main/dev，累计清理56，基线194后4批。详record§268；无需重复合并/关闭/反馈。
+
+唯一未合本地 codex/structure-api-design，仅收尾/决策报告，未推/未PR，后续批次复用。依用户08:05明确条件，新增 artifact_api/make_api 及旧 origin pickle 兼容映射的API/行为方案（record§267）先报告等确认；不把旧heartbeat或goal当批准，不重启新边界修复。八包/API收口/大文件精简/明显缩行尚未完成。无运行中测试/CI观察句柄，不训练/GPU/main/tag，不删数据/结果/用户暂存。heartbeat已同步新目标和等待门，周期/通知意图不变。
+
 ## 2026-10-17：结构首批本地通过，API 后续方案待确认（最新）
 
 唯一 codex/structure-packages；50409f1 先红15个init，ecc3064迁移/归并后16结构节点全过，core2466passed+1既有skip、Flow525passed。全部既有 __all__ 与迁移体保持，79文件/9097行（基线80/9132）；只完成首批，八包与跨层API尚未闭合。待统一PR及final-head/actualdev实际CI，不提前声称完成总目标。record§266–267含reader完成与后续artifact_api/make_api、system_api origin导出及旧pickle模块别名具体方案；依08:05指示，API形状/行为变化须先报告等确认。无新边界修复/训练/GPU/main/tag；用户暂存、数据和取消证据保留。

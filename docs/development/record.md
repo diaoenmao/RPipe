@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：reader PR201 与结构首批 PR202 均已合 dev 并完成最终 head/实际 dev 全部 CI 验收；当前 dev d37fea6。
+> 验证：core 2466 passed +1 同一既有 skip、CPU Flow 525 passed，16 新结构节点全执行（§267–268；PR202/dev CI）。
+> 结果：15 个 init 仅导出，64 个实现文件登记；80/9132 →79/9097；两主题本地/远端已清理，结构总目标尚未完成。
+> 下一：record §267 的 artifact_api/make_api 新门面及旧 origin pickle 最小兼容映射，依 08:05 明确要求先报告等确认。
+> 状态：API 方案未实施；仅本地 structure-api-design 保存报告待下批，不单开 docs PR；不训练/GPU/main/tag，用户暂存与数据保留。
+
 > 当前（2026-10-17）：reader PR201 已双侧验收清理；§2.1 结构首批在 structure-packages 完成本机验收，准备一个里程碑 PR→dev。
 > 验证：core 2466 passed +1 既有 skip、CPU Flow 525 passed；16 新结构节点全执行，0 fail/error（§267）。
 > 结果：15 个 init 仅导出；control 小文件归并，64 个实现文件已登记；80/9132 →79/9097（文件/行），尚未满足总目标。
@@ -4413,3 +4419,21 @@ PR201 final `f6a9b601d2e9aa15e0038520a8a05995566be44b` 的 Branch38985157801、P
 在上述 API 形状和兼容例外获确认前，只完成已授权的不变 API 里程碑；不擅自创建门面或迁移 origin，不新增边界修复，不训练、不使用 GPU、不修改 main/tag。
 
 首批最终本机验收（ecc3064）：core 2466 passed +1 既有 skip，CPU Flow 525 passed（均 0 fail/error；Flow 0 skip），新增 16 个结构节点全在 core 实际执行。LOCAL_CHECKED、XML、迁移 AST/__all__、原样旧 origin reader pickle 的模块限定名证据在 .tmp/structure-refactor。新旧 pickle 的实际迁移尚未实施，只验证当前 pickle 明确引用旧模块且当前可回读；兼容映射是待确认方案。
+
+
+## 268. 2026-10-17：结构首批双侧验收与清理完成，进入 API 确认门
+
+PR202 final `a634074bb1bdd81d58fbe7c6a52d0395626be9e4`：Branch38986989262、Package38986988983、Unit38986988940 的全部实际矩阵/聚合成功；正常合入实际 dev `d37fea623e4f1a6f3f12d00adc1e9c53a8efdf54`，其 Package38987596219 / Unit38987596216 全部实际矩阵/聚合成功。PR_CHECKED SHA256 `a8a74a7d08ac49c1b2841f24be891433a6e621f0997cde336f1f3e2ca9f70315`，DEV_CHECKED `5c095c6d12cc3a7ab8f2c33a6ff8ce2d083dba1200c7cfd9f3eabf9bd4d935b7`；本机 XML / LOCAL_CHECKED / Git 祖先与保护 refs 检查 / 取消和校验拒绝证据在 .tmp/structure-refactor，不随 clone。实际 dev 的 src/tests/structure.md 与最终 head 完全相同。79 个实际 Python 源文件与 Git 跟踪集合精确相等；旧 control 三模块无遗留路径引用。
+
+本轮删除清单（均已合 dev、提交保全、无工作区改动，仅主工作树）：
+
+| **已删除本地及远端主题** | **对应验收 PR / dev** |
+| --- | --- |
+| codex/library-reader-exits | PR201 / eb9642be893d14d69ffe9975fdb336b13150666e；#200 已一次验收评论后关闭。 |
+| codex/structure-packages | PR202 / d37fea623e4f1a6f3f12d00adc1e9c53a8efdf54。 |
+
+当前远端仅 main/dev；累计远端主题清理 56（累计数，不是待清数量）。周期基线 PR194 后已有 PR197/199/201/202 四批合并；每批自有分支已及时清理。保护的本地 main/dev 与 origin/main refs 未变，无数据、结果、Run、provenance 或 worktree 删除。PR202 正文已追加一次真实双侧验收和删除清单，回读保留原正文，不重复评论。
+
+首批完成不等于总目标完成：八包约束仍被根 origin.py 阻挡，跨层调用仍待 API 收口，大文件职责精简与明显缩行还未完成。15 个入口只导出和逐文件登记两项已落地。API 新增和旧 pickle 的最小模块别名方案见 §267；origin 经 system_api 属已批准方向，尚待确认的是额外 artifact/make 门面形状以及历史 pickle 兼容映射例外。按照用户 08:05 的“若改动会改变 api 的形状或对外行为，先停下报告，等确认”，在此门等待，不自行把 heartbeat 或旧持续修复目标当作批准。
+
+保留一个本地未推分支 codex/structure-api-design，仅保存这份收尾与待确认报告，随下一完整里程碑合入，不单开纯 docs 小 PR。未改任何待确认 API 的实现；不再新开边界 Issue，不训练、不占 GPU、不改 main、不打 tag/发布、不 force push。
