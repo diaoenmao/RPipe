@@ -500,6 +500,10 @@ def main(argv: list[str] | None = None) -> int:
     one_p.add_argument('run_id', type=str)
     one_p.add_argument('--phases', default='')
 
+    tb_p = sub.add_parser('tensorboard', help='export JSONL trajectories to a fresh TensorBoard directory')
+    tb_p.add_argument('study_dir', type=Path)
+    tb_p.add_argument('--out', type=Path, required=True, help='new export directory outside the Study')
+
     proc_p = sub.add_parser('process', help='Study-level process: mean/std/min/max history')
     proc_p.add_argument('study_dir', type=Path, help='Path to studies/<name>/')
 
@@ -560,6 +564,15 @@ def main(argv: list[str] | None = None) -> int:
         return _execute_launch(args)
     if args.cmd == 'run-one':
         return _execute_run_one(args)
+    if args.cmd == 'tensorboard':
+        from rpipe.flow.process.curves import export_tensorboard
+        try:
+            dest = export_tensorboard(args.study_dir, args.out)
+        except Exception as exc:
+            print(f'TensorBoard export failed: {exc}', file=sys.stderr)
+            return 2
+        print(dest)
+        return 0
     if args.cmd == 'process':
         return _execute_process(args)
     if args.cmd == 'report':

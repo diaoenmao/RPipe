@@ -2,11 +2,11 @@
 
 独立探索 Issue：[90](https://github.com/DreamSoul-AI/RPipe/issues/90)。
 
-2026-10-16 按最新周期性清理指示，已核对 PR92 的调研文档交付及实际 dev CI，关闭本交付 Issue。本文仍是初步调研与条件性建议；后续选型、迁移和实现未获自动授权，需要新的具体合同与任务。
+2026-10-16 按最新周期性清理指示，已核对 PR92 的调研文档交付及实际 dev CI，关闭本交付 Issue。本文保留初步调研依据。2026-10-17 22:40 Enmao 已明确授权 JSONL→TensorBoard 可选展示；不授权迁回 legacy-dayan 或改 tracker/logger 架构。
 
 ## 一、结论与状态
 
-记录日期2026-10-16。**保留当前 logger/tracker，不立即迁回 legacy-dayan，不引入新依赖或服务。** TensorBoard 仍可作为本地曲线/媒体的候选展示工具；是否“够用”取决于是否需要跨Run查询、团队协作、制品目录或自动硬件遥测，不能只按流行度判断。迁回旧logger不是恢复一个无状态适配器：旧实现还持有指标聚合、计数和恢复状态，直接替换会影响已有合同。
+记录日期2026-10-16。**保留当前 logger/tracker，不迁回 legacy-dayan；TensorBoard 放可选依赖组，不启用外部服务。** TensorBoard 仍可作为本地曲线/媒体的候选展示工具；是否“够用”取决于是否需要跨Run查询、团队协作、制品目录或自动硬件遥测，不能只按流行度判断。迁回旧logger不是恢复一个无状态适配器：旧实现还持有指标聚合、计数和恢复状态，直接替换会影响已有合同。
 
 本次仅只读源码和官方文档；没有安装/运行任何logger、起服务、联网同步指标、开通付费资源、采样GPU或做速度比较。下述是能力比较和建议，不是部署验收或最终选型。
 
@@ -39,10 +39,21 @@ W&B官方文档说明指标/媒体可通过log记录，SDK支持offline本地记
 
 ## 四、建议的下一步与准入合同
 
-先列实际缺失的监控问题：当前哪个Run/指标/错误不能由status/logs/JSONL回答，是否必须跨机器/多人协作，再决定工具。若只缺交互曲线，可先设计从现有JSONL导出到独立展示的最小候选；**这里只建议，不新增文件、写入位置或writer**。若需要团队/制品追踪，再单独评估MLflow/W&B，不能把模板落库或跨项目shared作为其前置。
+先列实际缺失的监控问题：当前哪个Run/指标/错误不能由status/logs/JSONL回答，是否必须跨机器/多人协作，再决定工具。若只缺交互曲线，可先设计从现有JSONL导出到独立展示的最小候选；该最小候选已获 2026-10-17 22:40 授权，按下述导出合同实施。若需要团队/制品追踪，再单独评估MLflow/W&B，不能把模板落库或跨项目shared作为其前置。
 
 任何后续实施先明确layout内合法位置、依赖是否可选、关闭展示时零额外产物/外部请求、记录失败是否影响任务状态。正确性回归应覆盖：sample-weighted均值不变；同一optimizer_step/epoch横轴；恢复/回滚不把旧失败尾段计入有效曲线；writer缺依赖/拒写/flush/close失败不覆盖正式result和peer；每Run隔离、单写者、无泄漏凭据。采用模拟writer和合成记录，不跑训练/GPU或性能比较。工程缺陷另开Issue与红测试，不能将本次选型探索当已复现bug。
 
 ## 五、阅读边界
 
-检索/阅读日期2026-10-16。实际阅读上列官方教程/能力文档及明确源码文件；未开展产品全面审计、运行集成、网络服务/权限测试或历史logger科学等价复验。最初PyTorch旧URL跳转及W&B部分guides读取失败，改用可读官方教程/API/SDK入口；不把读取失败当产品不支持。文中推荐为条件性推断，实施仍需具体需求与合同测试。
+检索/阅读日期2026-10-16。实际阅读上列官方教程/能力文档及明确源码文件；未开展产品全面审计、运行集成、网络服务/权限测试或历史logger科学等价复验。最初PyTorch旧URL跳转及W&B部分guides读取失败，改用可读官方教程/API/SDK入口；不把读取失败当产品不支持。工具比较仍为条件性推断；JSONL→TensorBoard 展示已获得单独授权，须通过下述合同测试。
+
+
+## 六、2026-10-17 授权的最小导出合同
+
+`pip install -e ".[tensorboard]"` 后，显式执行 `python -m rpipe tensorboard studies/<study> --out .tmp/tensorboard/<new-snapshot>`，再手动运行 `tensorboard --logdir .tmp/tensorboard/<new-snapshot>`。命令不自动启动服务。输出目录必须不存在且与 Study 目录互不包含；不改正式磁盘布局。每次导出使用新目录，并只查看本次目录，不能把不同恢复快照叠加为同一轨迹。
+
+唯一数值源是各 Run 的 `assets/tracker/scalars.jsonl`，复用 process 的有效轨迹选择、恢复 keep_until 与同坐标最后值规则；不读取 tracker_state.json 作第二数值源。每 Run 独立 writer 并关闭；tag 按 step/epoch、split、metric 区分，split/metric 组件转义。Logger 一行不改，不新增在线写入/均值聚合或 tracker 状态。
+
+TensorBoard event.step 为 int64，标准 Scalars UI 不能原样表示分数 epoch。当前实现只导出可精确表示的非负整数 optimizer_step/epoch；分数 epoch、未知 observation 或 int64 越界会在创建目录前明确拒绝，不取整、不猜单位。原 JSONL/PNG 仍支持这些轨迹；若需分数 epoch 的 TensorBoard 展示，须另定可逆坐标呈现方案，不能静默改变科学横轴。[官方 Event 协议](https://github.com/tensorflow/tensorboard/blob/master/tensorboard/compat/proto/event.proto)
+
+导出与 Run/Study 正式执行链完全分离：缺可选依赖、目录拒写、writer 写入/flush/close 失败仅使导出命令返回 2，正式 result、process、JSONL、checkpoint 不被改写。失败的新目录保留作诊断，不自动删除；成功返回的路径才是本次完整快照。不宣称多个 Run 的导出具有事务性，也不支持在训练时增量追写旧 event。

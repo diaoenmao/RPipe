@@ -45,7 +45,7 @@ flow/
     individual.py            # 本 Run 派生结果
     study.py                 # 整轮 Study 聚合
     aggregate.py             # 结果 / 曲线聚合
-    curves.py                # 绘图
+    curves.py                # 绘图与显式 JSONL→TensorBoard 展示导出
 ```
 
 每阶段一个包，约定 `run(ctx: FlowContext) -> None`。实现放 `run.py` 或阶段内按职责命名的模块；所有 Flow `__init__.py` 只保留说明、导入和公开导出，不定义阶段函数或承载业务实现。`FlowRunner` 按 `PHASES` 动态 import 阶段包并调用其导出的 `run`，已有包级调用接口不变。cli 解析参数后：`make` 调 `structure.make`；`launch` 优先读 `scripts/jobs.json`，没有或 `--remake` 才再 make，再对选定 Run 调 `FlowRunner`。

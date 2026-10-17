@@ -167,3 +167,134 @@ def test_curve_only_uses_explicit_valid_coordinates(tmp_path, coordinates, unit,
     (tracker / 'scalars.jsonl').write_text('\n'.join(map(json.dumps, rows)), encoding='utf-8')
     series = load_curve_series(tmp_path, 'run')['test']['Loss']
     assert series['unit'] == unit and series['x'] == x
+
+
+@pytest.fixture
+def tensorboard_writer(monkeypatch):
+    import sys
+    from types import SimpleNamespace
+    writers = []
+
+    class Writer:
+        def __init__(self, *, log_dir):
+            self.path, self.rows, self.closed = Path(log_dir), [], False
+            self.path.mkdir(parents=True)
+            writers.append(self)
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            self.closed = True
+        def add_scalar(self, tag, value, *, global_step, **kwargs):
+            self.rows.append((tag, global_step, value, kwargs))
+
+    monkeypatch.setitem(sys.modules, 'torch.utils.tensorboard', SimpleNamespace(SummaryWriter=Writer))
+    return writers
+
+
+def _tb_source(study, run, rows):
+    path = study / 'runs' / run / 'assets/tracker/scalars.jsonl'
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(b''.join(json.dumps(row).encode() + b'\n' for row in rows))
+    return path
+
+
+def test_tensorboard_exports_rollback_snapshot_and_keeps_inputs(tmp_path, tensorboard_writer):
+    from rpipe.flow.process.curves import export_tensorboard
+    study = tmp_path / 'study'
+    first = {'split': 'train', 'name': 'Loss', 'mean': 1.25, 'optimizer_step': 1}
+    tail = dict(first, mean=99, optimizer_step=2)
+    keep = len(json.dumps(first).encode()) + 1
+    scalar = _tb_source(study, 'a', [first, tail, {'event': 'start', 'keep_until': keep},
+                                    dict(first, mean=2.5, optimizer_step=2),
+                                    dict(first, mean=3.5, optimizer_step=2)])
+    result = study / 'runs/a/result.json'
+    result.write_bytes(b'{"status":"succeeded"}')
+    # Conflicting state is deliberately excluded from this display source.
+    (scalar.parent / 'tracker_state.json').write_text(json.dumps({'splits': {'extra': {'OnlyState': {'history': [99]}}}}))
+    _tb_source(study, 'b', [dict(first, mean=8)])
+    before = {p: p.read_bytes() for p in study.rglob('*') if p.is_file()}
+    dest = export_tensorboard(study, tmp_path / 'events')
+    assert [w.path for w in tensorboard_writer] == [dest / 'a', dest / 'b']
+    assert [r[:3] for r in tensorboard_writer[0].rows] == [('step/train/Loss', 1, 1.25), ('step/train/Loss', 2, 3.5)]
+    assert all(w.closed for w in tensorboard_writer)
+    assert {p: p.read_bytes() for p in before} == before
+    with pytest.raises(FileExistsError):
+        export_tensorboard(study, dest)
+    assert {p: p.read_bytes() for p in before} == before
+
+
+@pytest.mark.parametrize('coordinate', [{'epoch': 2.0}, {'epoch': 0}, {'optimizer_step': 0}])
+def test_tensorboard_keeps_integer_coordinates_and_tag_identity(tmp_path, tensorboard_writer, coordinate):
+    from rpipe.flow.process.curves import export_tensorboard
+    study = tmp_path / 'study'
+    _tb_source(study, 'a', [{'split': 'train/a', 'name': 'Loss/b', 'mean': 0, **coordinate}])
+    export_tensorboard(study, tmp_path / 'events')
+    unit = 'epoch' if 'epoch' in coordinate else 'step'
+    assert tensorboard_writer[0].rows[0][:3] == (f'{unit}/train%2Fa/Loss%2Fb', int(next(iter(coordinate.values()))), 0)
+
+
+@pytest.mark.parametrize('coordinate', [{'epoch': 0.5}, {}, {'optimizer_step': 2**63}])
+def test_tensorboard_refuses_lossy_coordinates_before_writing(tmp_path, tensorboard_writer, coordinate):
+    from rpipe.flow.process.curves import export_tensorboard
+    study = tmp_path / 'study'
+    _tb_source(study, 'a', [{'split': 'train', 'name': 'Loss', 'mean': 1, **coordinate}])
+    with pytest.raises(ValueError, match='integer optimizer_step/epoch'):
+        export_tensorboard(study, tmp_path / 'events')
+    assert not (tmp_path / 'events').exists()
+    assert not tensorboard_writer
+
+
+@pytest.mark.parametrize('failure', ['missing', 'construct', 'write', 'flush', 'close'])
+def test_tensorboard_cli_failure_preserves_formal_results(tmp_path, monkeypatch, capsys, failure):
+    import sys
+    from types import SimpleNamespace
+    from rpipe.flow.cli import main
+    study = tmp_path / 'study'
+    _tb_source(study, 'a', [{'split': 'train', 'name': 'Loss', 'mean': 1, 'epoch': 1}])
+    result = study / 'runs/a/result.json'
+    result.write_bytes(b'formal-result')
+    before = {p: p.read_bytes() for p in study.rglob('*') if p.is_file()}
+    closed = []
+    class Writer:
+        def __init__(self, **kwargs):
+            if failure == 'construct':
+                raise OSError('constructor failure')
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            closed.append(True)
+            if failure in ('flush', 'close'):
+                raise OSError(f'{failure} failure')
+        def add_scalar(self, *args, **kwargs):
+            if failure == 'write':
+                raise OSError('write failure')
+    monkeypatch.setitem(sys.modules, 'torch.utils.tensorboard', None if failure == 'missing' else SimpleNamespace(SummaryWriter=Writer))
+    assert main(['tensorboard', str(study), '--out', str(tmp_path / 'events')]) == 2
+    assert 'TensorBoard export failed' in capsys.readouterr().err
+    assert {p: p.read_bytes() for p in before} == before
+    assert bool(closed) == (failure in ('write', 'flush', 'close'))
+
+
+def test_tensorboard_refuses_study_output_and_state_only_inputs(tmp_path, tensorboard_writer):
+    from rpipe.flow.process.curves import export_tensorboard
+    study = tmp_path / 'study'
+    study.mkdir()
+    with pytest.raises(ValueError, match='separate'):
+        export_tensorboard(study, study / 'events')
+    with pytest.raises(ValueError, match='no JSONL'):
+        export_tensorboard(study, tmp_path / 'events')
+    assert not (tmp_path / 'events').exists()
+
+
+@pytest.mark.external
+def test_tensorboard_real_event_roundtrip(tmp_path):
+    pytest.importorskip('tensorboard')
+    from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
+    from rpipe.flow.process.curves import export_tensorboard
+    from tensorboard.util import tensor_util
+    study = tmp_path / 'study'
+    _tb_source(study, 'a', [{'split': 'test', 'name': 'Accuracy', 'mean': 1.23456789012345, 'epoch': 2}])
+    dest = export_tensorboard(study, tmp_path / 'events')
+    events = EventAccumulator(str(dest / 'a')).Reload().Tensors('epoch/test/Accuracy')
+    assert len(events) == 1 and events[0].step == 2
+    assert tensor_util.make_ndarray(events[0].tensor_proto).item() == 1.23456789012345
