@@ -223,3 +223,37 @@ def test_dataloader_honors_pin_memory_and_workers(tmp_path, monkeypatch):
     assert test.pin_memory is True
     assert train.num_workers == 0
     assert data.meta['pin_memory'] is True
+
+
+@pytest.mark.parametrize('name,shape,classes,mean,std,augmentation', [
+    ('MNIST', (1, 28, 28), 10, (0.1307,), (0.3081,), None),
+    ('FashionMNIST', (1, 28, 28), 10, (0.2860,), (0.3530,), None),
+    ('CIFAR10', (3, 32, 32), 10, (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010), 'cifar'),
+    ('CIFAR100', (3, 32, 32), 100, (0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761), 'cifar'),
+    ('SVHN', (3, 32, 32), 10, (0.4377, 0.4438, 0.4728), (0.1980, 0.2010, 0.1970), 'svhn'),
+])
+def test_vision_specs_keep_constructor_statistics_and_field_order(name, shape, classes, mean, std, augmentation):
+    from rpipe.structure.data.factory import _VISION_TORCH, vision_root
+
+    expected = {
+        'root': name.lower(), 'ctor': name,
+        'train_kw': {'split': 'train'} if name == 'SVHN' else {'train': True},
+        'test_kw': {'split': 'test'} if name == 'SVHN' else {'train': False},
+        'data_size': shape, 'target_size': classes, 'mean': mean, 'std': std,
+        'train_aug': augmentation,
+    }
+    assert _VISION_TORCH[name] == expected
+    assert list(_VISION_TORCH[name]) == list(expected)
+    assert vision_root(name) == expected['root']
+
+
+def test_vision_specs_keep_order_and_independent_split_options(monkeypatch):
+    from rpipe.structure.data.factory import _VISION_TORCH, DataRegistry
+
+    names = ['MNIST', 'FashionMNIST', 'CIFAR10', 'CIFAR100', 'SVHN']
+    assert list(_VISION_TORCH) == names
+    options = [spec[key] for spec in _VISION_TORCH.values() for key in ('train_kw', 'test_kw')]
+    assert len({id(option) for option in options}) == 10
+    monkeypatch.setitem(_VISION_TORCH['MNIST']['train_kw'], 'probe', True)
+    assert all('probe' not in option for option in options[1:])
+    assert all(DataRegistry.get(name, 'torch') is not None for name in names)

@@ -70,61 +70,24 @@ def _build_stub(data_config: DataConfig, assets_dir: Path, seed: int | None = No
 
 
 _VISION_TORCH: dict[str, dict[str, Any]] = {
-    'MNIST': {
-        'root': 'mnist',
-        'ctor': 'MNIST',
-        'train_kw': {'train': True},
-        'test_kw': {'train': False},
-        'data_size': (1, 28, 28),
-        'target_size': 10,
-        'mean': (0.1307,),
-        'std': (0.3081,),
-        'train_aug': None,
-    },
-    'FashionMNIST': {
-        'root': 'fashionmnist',
-        'ctor': 'FashionMNIST',
-        'train_kw': {'train': True},
-        'test_kw': {'train': False},
-        'data_size': (1, 28, 28),
-        'target_size': 10,
-        'mean': (0.2860,),
-        'std': (0.3530,),
-        'train_aug': None,
-    },
-    'CIFAR10': {
-        'root': 'cifar10',
-        'ctor': 'CIFAR10',
-        'train_kw': {'train': True},
-        'test_kw': {'train': False},
-        'data_size': (3, 32, 32),
-        'target_size': 10,
-        'mean': (0.4914, 0.4822, 0.4465),
-        'std': (0.2023, 0.1994, 0.2010),
-        'train_aug': 'cifar',
-    },
-    'CIFAR100': {
-        'root': 'cifar100',
-        'ctor': 'CIFAR100',
-        'train_kw': {'train': True},
-        'test_kw': {'train': False},
-        'data_size': (3, 32, 32),
-        'target_size': 100,
-        'mean': (0.5071, 0.4867, 0.4408),
-        'std': (0.2675, 0.2565, 0.2761),
-        'train_aug': 'cifar',
-    },
-    'SVHN': {
-        'root': 'svhn',
-        'ctor': 'SVHN',
-        'train_kw': {'split': 'train'},
-        'test_kw': {'split': 'test'},
-        'data_size': (3, 32, 32),
-        'target_size': 10,
-        'mean': (0.4377, 0.4438, 0.4728),
-        'std': (0.1980, 0.2010, 0.1970),
-        'train_aug': 'svhn',
-    },
+    name: {
+        'root': name.lower(),
+        'ctor': name,
+        'train_kw': {'split': 'train'} if name == 'SVHN' else {'train': True},
+        'test_kw': {'split': 'test'} if name == 'SVHN' else {'train': False},
+        'data_size': shape,
+        'target_size': classes,
+        'mean': mean,
+        'std': std,
+        'train_aug': augmentation,
+    }
+    for name, shape, classes, mean, std, augmentation in (
+        ('MNIST', (1, 28, 28), 10, (0.1307,), (0.3081,), None),
+        ('FashionMNIST', (1, 28, 28), 10, (0.2860,), (0.3530,), None),
+        ('CIFAR10', (3, 32, 32), 10, (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010), 'cifar'),
+        ('CIFAR100', (3, 32, 32), 100, (0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761), 'cifar'),
+        ('SVHN', (3, 32, 32), 10, (0.4377, 0.4438, 0.4728), (0.1980, 0.2010, 0.1970), 'svhn'),
+    )
 }
 
 
