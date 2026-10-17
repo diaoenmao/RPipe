@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR213已普通合dev664e46b，最终head全部实际CI成功；actualdev独立验收中。
+> 后续本地：同文件checkpoint tracker/logger JSON重复体精简，定向183 passed，8新节点执行。
+> 范围：仅两处原生有序循环，factory.py188→185；无API形状/文件架构/产物布局变化。
+> 未完成：后续完整CPU与源码PR尚未完成；总体Occam目标未称完成。
+> 保护：保留首次182pass/1fail测试换行证据，保留_staging/分支/数据，不跑GPU或测速。
+
 > 当前（2026-10-17）：PR212已普通合devb184390，最终head与actualdev全部实际CI成功（§286.3）。
 > 后续本地：两root配置发射体共享e2de26e，core2721 passed+1既有skip、CPU Flow525 passed。
 > 证据：7新节点/153结构节点执行、100源码哈希一致；structure78文件/9004行，对起点净少128。
@@ -5013,3 +5019,14 @@ parent延伸：恢复相邻与当前结构定向165 passed、0skip。全structur
 保留Run的原id前缀，各caller传入原本新建的out；seed/空字符串/tags浅复制、data/model/algorithm/system调用顺序、extras末尾覆盖与id键位、原异常身份及子类默认字段不扩张保持。run_config.py164→154行，全structure78文件/9004行，起点9132净少128；不夸大总体缩行，不标总目标完成。后续源码仅本地e2de26e，未推送/开PR/合dev，随下个完整同主题里程碑合批。无文件架构/API形状/磁盘产物布局变化，无测速或逐路径审计。原证据.tmp/structure-root-mapping不随clone，无活测试/CI观察句柄。
 
 本轮get_goal重新只读核对，仍是旧含API待审门的objective且status=paused，工具不支持恢复active；后续批准已解除旧门，本轮授权工作已持续执行并完成上述结果，没有伪称目标控制已恢复，也不重复索取已批准API许可。
+
+
+## 287. 2026-10-17 root里程碑收尾与同文件checkpoint JSON重复体精简
+
+按最新明确授权推送54fc13b并创建[PR213](https://github.com/DreamSoul-AI/RPipe/pull/213)。最终head54fc13b03608b4670b8e43c44c896ddb1cd2c15d的Branch39011928453/Package39011928473/Unit39011928456全部实际矩阵及聚合成功，普通合dev664e46b61979c6f14a6be7ab23f8a96ef0449652。PR_CHECKED SHA256 7cc523766a069467858461322fceda7f600ee86f84b0cc98ba8b57e37b4fbb9f；head/dev源码、测试、Study、结构文档一致。actualdev CI独立等待，不将head绿灯当集成验收。附件100上限错误保留，不删历史附件。
+
+后续方案只在现有system/factory.py中，将save_checkpoint和legacy load_checkpoint各自tracker/logger JSON的两个重复块改为原顺序元组循环，不增helper、常量表或模块。仍先tracker后logger；写时只省略None，False/0/空容器保留，JSON indent=2/ensure_ascii=False和文件名不变；读时仍逐个is_file/读取/解析。原异常继续传播，不改bundle优先、旧快照保全、staging/incomplete/publish/清理或meta格式回退。所有签名、其他方法及模块声明AST保持。仅两处重复体净少3行，不为此另开小PR，继续同主题合批；公共入口补字节/空值/顺序及读写失败证据回归。暂存与分支/数据均保留，不跑GPU/实验/测速，不改文件架构/API形状/产物布局。
+
+### 287.1 checkpoint JSON定向验证
+
+定向183 passed/0skip，8新增公共入口节点与153结构节点全执行：None不写，False/0/空容器写入，原JSON字节与tracker→logger顺序、bundle读取及legacy pieces读取一致；写失败保留原异常身份和已提交bundle，读失败保留顺序/原异常/输入字节。首次182 passed/1 failed来自新增测试将Windows CRLF误预期为LF；只修测试为平台原生换行，生产代码未再改，原TARGET日志/XML保留。两方法以既有顺序循环复用，其他声明/签名AST保持，无新helper或模块。原始证据.tmp/structure-checkpoint-json不随clone。随后冻结本地提交执行完整CPU，不借PR213验收后续源码，不为3行精简另开PR。

@@ -69,10 +69,9 @@ class System:
             value = payload.get(key)
             if value is not None:
                 torch.save(value, tmp / f'{key}.pt')
-        if payload.get('tracker') is not None:
-            atomic_write_text(tmp / 'tracker.json', json.dumps(payload['tracker'], indent=2, ensure_ascii=False))
-        if payload.get('logger') is not None:
-            atomic_write_text(tmp / 'logger.json', json.dumps(payload['logger'], indent=2, ensure_ascii=False))
+        for key in ('tracker', 'logger'):
+            if payload.get(key) is not None:
+                atomic_write_text(tmp / f'{key}.json', json.dumps(payload[key], indent=2, ensure_ascii=False))
         meta = {
             key: value
             for key, value in payload.items()
@@ -146,12 +145,10 @@ class System:
                 piece = path / f'{key}.pt'
                 if piece.is_file():
                     assembled[key] = torch.load(piece, map_location=self.device, weights_only=False, **pickle_options)
-            tracker_json = path / 'tracker.json'
-            if tracker_json.is_file():
-                assembled['tracker'] = json.loads(_read_text(tracker_json))
-            logger_json = path / 'logger.json'
-            if logger_json.is_file():
-                assembled['logger'] = json.loads(_read_text(logger_json))
+            for key in ('tracker', 'logger'):
+                piece = path / f'{key}.json'
+                if piece.is_file():
+                    assembled[key] = json.loads(_read_text(piece))
             return assembled or None
         if not path.is_file():
             return None
