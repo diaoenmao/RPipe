@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：Config读写共享完整里程碑CPU验收通过，更新原PR208最终head（§282.6）。
+> 验证：core2686 passed+1同一既有skip、CPU Flow525 passed；40新节点/155结构节点全执行，102源码哈希一致。
+> 结果：四层共享序列化，三层共享显式构造，Data专用origin校验不变；公开字段/签名/模块/API和产物布局保持。
+> 下一：更新同一PR208并验最终head全部实际CI→合dev→实际dev全部CI，不借用中间head绿灯。
+> 状态：80文件/9073行，对起点净减59行，幅度有限不标总目标完成；保留分支/暂存/数据，旧goal元数据仍paused。
+
 > 当前（2026-10-17）：同一Config PR208纳入三类共享构造，最终定向CPU213 passed，准备重新完整验收（§282.5）。
 > 验证：新增子类默认值/构造kwargs序/Data origin拒绝9节点通过，整批新增合同节点共40项。
 > 结果：内部复用映射读取与写出，公开字段/方法/模块/产物布局不变；Data专用校验保持独立。
@@ -4795,3 +4801,11 @@ Control+结构CPU204 passed/0fail/error/skip，31个新增portable节点全执�
 新增Control私有_layer_from_mapping，Model/Algorithm/System原from_mapping保留classmethod/公开签名，以显式字段tuple复用它；Data原from_mapping及origin拒绝AST未动。既有模块名称保留，没有公开门面/基类/配置字段或pickle路径变化。字段识别仍用原dataclass fields，构造只传原基础字段，不自动扩展子类字段，config/extras/kwargs序保持。
 
 Control+结构CPU213 passed/0fail/error/skip，新增扩充节点9项（4子类默认值、4构造kwargs序、1Data子类origin拒绝），整批新合同节点40。LOCAL_TARGETED_CHECKED SHA256 `f3d11562412013498d445de01b63bfdb5759446fe48fe7b138967b8d3fbe3cb2`。当前80文件/9073行；完整core/Flow及最终CI尚未执行，不能套用中间head证据。最终证据.tmp/structure-config-final，不随clone；原.tmp/structure-config证据及GitHub旧Run不删不取消。
+
+### 282.6 扩充后最终完整CPU回归
+
+最终源码冻结后core2686 passed/1同一既有POSIX skip，CPU Flow525 passed/0skip，均0fail/error。整批40新合同节点和155结构节点全部执行；102库源码哈希前后一致。FULL_CHECKED SHA256 `88f2457fe6a62c90bdd5b3faff69b565b300d6359896ddb4bfeb3cddba5787c9`，最终证据.tmp/structure-config-final不随clone。字段定义、classmethod/方法签名及装饰器逐项相同，Data.from_mapping含origin校验AST未变；api/与Study源码无差异，无类或pickle路径迁移。
+
+初稿head52ae26a的Branch39002973172/Package39002973153/Unit39002973161均已完成success，原始Run/本地证据保留，但不作本次最终head验收。一项中间Run查询误填SHA返回空，已由原PRE_MERGE和git rev-parse核对后重新取得实际3条success；空结果未用于验收，原尝试保留，不当库失败。更新原PR208，不创建额外PR、不取消/删除旧Run。
+
+最终仍80个源文件、9073行，对起点9132净减59行；主要删除重复转换与判断，保留必需校验和公共形状，不夸大幅度。下一步正常push与最终head/actualdev双侧实际CI；合后按累计约5个PR做只读分支/worktree/PR/Issue盘点，当前人工明确不删分支或数据，清理不越权。
