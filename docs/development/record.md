@@ -4619,3 +4619,7 @@ schedule566→366行，scripts208行：8个函数原AST一致，包含等待组�
 origin 593→244行，私有 transfers361行；25个函数/类逐项 AST 相同，包含传输白名单、scope/fork/并发恢复、reader/media/generator 的取消与失败清理。公开函数仍定义于 origin，system_api 与其他门面无变更，无旧别名。正式2318个持久化候选按原始字节或ZIP内pickle成员扫描：旧 system.origin 引用0、读取错误0（不反序列化、不代表未知下游）；证据 .tmp/structure-origin/PICKLE_SCAN.json 不随clone。
 
 torchvision_load 删除5行不可达兜底，新增5个次数/耗尽/原异常身份回归。仓库入口 c1/c2 显式排除 gpu/external/slow，system+结构392 passed/0fail/error/skip；SDK网络均为既有测试替身。迁移定义对照及原始日志均保留，尚未把定向结果当作整批验收。当前整体文件/行数在完整验收时记实，不把职责迁移称为明显缩行。
+
+### 279.3 完整回归首轮收集拒绝
+
+首次 core 在收集阶段退出2：新 data/test_runtime.py 与既有 system/test_runtime.py 同名，pytest 默认导入发生 import-file-mismatch（529 deselected、1 collection error，未执行测试）。保留 CORE.log/XML/EXIT；仅将新增 Data 测试文件改为 test_runtime_data.py，沿用既有 test_origin_concurrency 等职责后缀命名，不改全仓 pytest 导入设置或生产代码。修正后重新执行整批，不能沿用旧结果。
