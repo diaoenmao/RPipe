@@ -1,3 +1,5 @@
+> 最新延伸（2026-10-17）：共享锁退出规则与四写流复用同一close-only规则，本地targeted307 passed+1既有skip；完整core/Flow需下批冻结后重跑（§283.5）。
+
 > 当前（2026-10-17 13:10指示收尾）：PR209已普通合dev be8f3a2，最终head与实际dev全部CI成功（§283.4）。
 > 最新源码：四写流退出复用已本地主题提交，core2690 passed+1既有skip、CPU Flow525 passed。
 > 结果：四新回归/155结构节点全执行、102源码哈希一致；全structure80文件/9044行，较起点净少88行。
@@ -4862,3 +4864,9 @@ PR209 最终 head ad7f1740ffb9089e290f5aa2a79e8b2ec181f5e5 的 Branch39005314326
 本地源码里程碑最终冻结提交065742bc59eeddbc78c4fa8d23fb4d89ce268877：core2690 passed+1同一POSIX skip、CPU Flow525 passed；四个新写入口回归和155结构节点均执行，102源码哈希一致，无GPU节点。相关入口TARGET3为369 passed+1同一skip，原八个Flow反例全部通过。四写流保留原对象/close-only语义，采用标准库closing和已有_owned_stream；三源码475→446行，净少29，全structure80文件/9044行，对起点9132净少88，不夸大幅度或标宏观目标完成。
 
 本批本地主题提交包含初稿及修正，不删失败历史；暂不为该29行精简单独再开源码PR，随下一完整同主题里程碑合入，13:10明确要求的记录PR209已完成。_staging_from_DEM、当前主题本地/远端均保留；main/dev保护分支未直接推送或修改，无数据/Run/provenance删除。原始证据及冻结校验在.tmp/structure-owned-writers，不随clone。
+
+### 283.5 同主题延伸：共享锁句柄退出去重
+
+继续只合批本地退出规则精简：cache_lock 在既有 ExitStack 中直接 enter_context(_owned_stream(closing(handle)))，移除与四个写入口同义的自有 close_handle 回调。release_lock 仍最后压栈、先解锁再关闭，held 登记、deadline/重试、OS 锁与原始异常优先级均保持；不把解锁协议抽成通用 helper。既有锁取消/获取/解锁/关闭多故障矩阵用于验收，另补原始代理不得 enter/exit 的实际锁入口回归。临时证据继续 .tmp/structure-owned-writers，不随 clone；本地累积，不立即开小 PR。
+
+共享锁延伸 targeted：307 passed、1同一POSIX skip，新锁代理节点执行；release_lock回调AST与cache_lock签名保持。共享锁只删除6行，整个structure80文件/9038行，对起点净少94；本延伸之后尚未重跑完整core/Flow，之前2690+1/525仅验证065742b，不能覆盖此提交。首个原字节替换guard因误假设CRLF拒绝，实际shared.py为LF；原始guard证据及未改源码基线LOCK_TARGET保留，修正后LF原样。继续合批本地commit，不新增PR。
