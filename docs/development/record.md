@@ -1,3 +1,9 @@
+> 当前（2026-10-17）：PR215双侧实际CI全绿，已普通合dev7bd0e9f（§289.2）。
+> 后续本地：tracker展示筛选78332d0，core2743 passed+1既有skip、CPU Flow525 passed。
+> 证据：4新展示/153结构节点及前批回归执行、100源码哈希一致；structure78文件/8989行，对起点净少143。
+> 未完成：后续源码未推送/开PR/合dev，继续同主题合批，不为3行精简单开PR；总体Occam目标未完成。
+> 保护：无活句柄，不碰_staging/分支/数据/main/API形状/文件架构/布局，不跑GPU/测速/逐路径审计。
+
 > 当前（2026-10-17）：PR215已普通合dev7bd0e9f，最终head全部实际CI成功；actualdev独立验收中。
 > 后续本地：tracker展示筛选归纳，定向252 passed，4新公共入口/153结构节点执行。
 > 范围：仅n>0字典筛选，均值/save/reset/状态AST保持，不改API形状/文件架构/产物布局。
@@ -5116,3 +5122,13 @@ factory.py188→185，全structure78文件/9001行，对起点9132净少131；�
 ### 289.1 tracker展示筛选定向CPU
 
 定向252 passed/0skip，4新公共入口与153结构节点全执行，Logger联调回归通过。覆盖无活动样本时回退及返回副本、零均值仍显示、键序与不活跃旧指标省略、读取前后状态不变、原meter异常不被保存段吞掉；16组原新访问/fallback轨迹一致。仅display_mean的本地循环改原生推导，均值算术/权重/save/reset/history/状态恢复以及其余模块声明AST不变，公开签名/注解保持。源码净少3行，全structure78文件/8989行，对起点净少143，幅度有限不标宏观完成。随后冻结提交跑完整CPU，不借PR215或旧本地成功验收。原证据.tmp/structure-tracker-display不随clone。
+
+### 289.2 PR215双侧实际CI完成
+
+最终head44c03648f64ebc344b3f292d2a62fa924d735f9c的Branch39016550638/Package39016549245/Unit39016549150全部实际矩阵及聚合成功后普通合actualdev7bd0e9fea71d84d3745d009b1a24c5c07788371b；实际dev的Package39017036450/Unit39017036408及所有实际矩阵/聚合同样成功。PR_CHECKED SHA256 f64b35fad7731f959adb09d38d25ffaf6741d83d4467293c21ecea01c58c7905；DEV_CHECKED d0757f15e17031760a2f4e8dfa3efe4a47a9f1f70af4536d990c052ce627c989。head/dev源码、测试、Study、结构文档一致，不借后续本地tracker结果验收PR。PR正文一次追加验收标记，无重复评论；附件100上限错误保留，不删历史附件。main/local dev/origin main保护引用与合前相同，主题本地/远端、数据/_staging保留，无force push/main/tag/release操作。盘点基线213，214/215为之后2个合入，未满约5不重复盘点/关单/清理。原证据.tmp/structure-origin-final不随clone。
+
+### 289.3 后续tracker展示筛选完整CPU（本地、未推送）
+
+冻结78332d0a0e998fe2ad3681423cb19f8fadf880fb：core2743 passed+1同一既有POSIX skip、CPU Flow525 passed；4新增展示回归、153结构节点和前批4摘要/6reader退出/6百分位/8JSON节点全部执行，100源码哈希一致。定向252 passed/0skip，16组原新输出/属性访问/fallback调用对照一致。display_mean保留n>0门、零值、键序、无活动项时segment_mean回退、返回副本/读取不改状态以及原meter异常传播。只把局部字典循环改原生推导，均值算术/save/reset/权重/history/状态恢复及其他声明AST保持，签名/返回注解不变。
+
+源码净少3行，全structure78文件/8989行，对起点9132净少143；幅度有限不标总体完成。后续仅本地源码提交，未推送/开PR/合dev，继续同主题完整里程碑合批，不为3行或收尾记录单开PR。当前入口.tmp/structure-tracker-display/STATE.json，旧STATE有指针；原对照/冻结/XML/日志不随clone，无活测试/CI句柄。不改API形状/文件架构/磁盘布局，不训练/GPU/真实下载/测速/逐路径审计，保留_staging/分支/数据。
